@@ -8,6 +8,7 @@ using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Deductions;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Request.Runners;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models.Accounting;
 using Microsoft.EntityFrameworkCore;
@@ -107,6 +108,9 @@ public class CovenantContext : DbContext
     public DbSet<ReportSubContractorOtherDeduction> ReportSubContractorOtherDeduction { get; set; }
     public DbSet<ReportSubcontractorWageDetail> ReportSubcontractorWageDetail { get; set; }
     public DbSet<Candidate> Candidates { get; set; }
+    public DbSet<Runner> Runners { get; set; }
+    public DbSet<RunnerStatusHistory> RunnerStatusHistories { get; set; }
+    public DbSet<RunnerInterview> RunnerInterviews { get; set; }
     public DbSet<CandidateSkill> CandidateSkills { get; set; }
     public DbSet<CandidatePhone> CandidatePhones { get; set; }
     public DbSet<CandidateDocument> CandidateDocuments { get; set; }

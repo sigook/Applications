@@ -9,7 +9,6 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Services;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -18,42 +17,22 @@ namespace Covenant.Api.Controllers.WebSite;
 
 [Route("api/[controller]")]
 [ApiController]
-public class WebSiteController : ControllerBase
+public class WebSiteController(
+    ISigookBusClient client,
+    IRazorViewToStringRenderer razorViewToStringRenderer,
+    IEmailService emailService,
+    IRequestRepository requestRepository,
+    IMemoryCache memoryCache,
+    IOptions<ServiceBusConfiguration> options,
+    IFilesContainer filesContainer) : ControllerBase
 {
-    private readonly ISigookBusClient client;
-    private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
-    private readonly IEmailService emailService;
-    private readonly IRequestRepository requestRepository;
-    private readonly IMemoryCache memoryCache;
-    private readonly ServiceBusConfiguration serviceBusConfiguration;
-    private readonly IFilesContainer filesContainer;
-    private readonly IConfiguration configuration;
-    private readonly FilesConfiguration filesConfiguration;
-    private readonly ILogger<WebSiteController> logger;
-
-    public WebSiteController(
-        ISigookBusClient client,
-        IRazorViewToStringRenderer razorViewToStringRenderer,
-        IEmailService emailService,
-        IRequestRepository requestRepository,
-        IMemoryCache memoryCache,
-        IOptions<ServiceBusConfiguration> options,
-        IFilesContainer filesContainer,
-        IConfiguration configuration,
-        IOptions<FilesConfiguration> filesOptions,
-        ILogger<WebSiteController> logger)
-    {
-        this.client = client;
-        this.razorViewToStringRenderer = razorViewToStringRenderer;
-        this.emailService = emailService;
-        this.requestRepository = requestRepository;
-        this.memoryCache = memoryCache;
-        serviceBusConfiguration = options.Value;
-        this.filesContainer = filesContainer;
-        this.configuration = configuration;
-        filesConfiguration = filesOptions.Value;
-        this.logger = logger;
-    }
+    private readonly ISigookBusClient client = client;
+    private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
+    private readonly IEmailService emailService = emailService;
+    private readonly IRequestRepository requestRepository = requestRepository;
+    private readonly IMemoryCache memoryCache = memoryCache;
+    private readonly ServiceBusConfiguration serviceBusConfiguration = options.Value;
+    private readonly IFilesContainer filesContainer = filesContainer;
 
     /// <summary>Sends a contact-form email from the public website.</summary>
     /// <param name="contact">Contact form data.</param>

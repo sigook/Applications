@@ -8,11 +8,12 @@ namespace Covenant.Common.Entities.Request
         {
         }
 
-        public RequestRecruiter(Guid requestId, Guid recruiterId, DateTime? workDate = null)
+        public RequestRecruiter(Guid requestId, Guid recruiterId, DateTime createdAt, DateTime? workDate = null)
         {
             RequestId = requestId;
             RecruiterId = recruiterId;
             WorkDate = workDate?.Date;
+            CreatedAt = createdAt;
         }
 
         public Guid Id { get; private set; } = Guid.NewGuid();
@@ -21,13 +22,13 @@ namespace Covenant.Common.Entities.Request
         public AgencyPersonnel Recruiter { get; private set; }
         public Guid RecruiterId { get; private set; }
         public DateTime? WorkDate { get; private set; }
-        public DateTime CreatedAt { get; private set; } = DateTime.Now;
+        public DateTime CreatedAt { get; private set; }
         public ICollection<WorkerDispatch> Dispatches { get; private set; } = new List<WorkerDispatch>();
 
-        public void AddDispatch(Guid workerProfileId, string createdBy = null)
+        public void AddDispatch(Guid workerProfileId, DateTime createdAt, Guid? createdBy = null)
         {
             if (Dispatches.Any(d => d.WorkerProfileId == workerProfileId)) return;
-            Dispatches.Add(new WorkerDispatch(Id, workerProfileId, createdBy));
+            Dispatches.Add(new WorkerDispatch(Id, workerProfileId, createdAt, createdBy));
         }
 
         public void RemoveDispatch(Guid workerProfileId)

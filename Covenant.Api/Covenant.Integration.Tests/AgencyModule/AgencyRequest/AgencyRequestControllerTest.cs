@@ -465,7 +465,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
             FakeRequest.InvitationSentItAt = new DateTime(2021, 01, 01);
             FakeRequest.WorkerSalary = 50_000m;
             FakeRequest.UpdateIsAsap(true);
-            FakeRequest.AddRecruiter(FakeRecruiter);
+            FakeRequest.AddRecruiter(FakeRecruiter, FakeRequest.CreatedAt);
             FakeRequest.AddWorker(FakeWorker.Id, FakeRequest.CreatedAt.AddDays(1));
             var newShift = new Shift();
             newShift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));

@@ -1,3 +1,4 @@
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -17,6 +18,10 @@ namespace Covenant.Infrastructure.Configurations.Request
             builder.HasOne(d => d.WorkerProfile)
                 .WithMany()
                 .HasForeignKey(d => d.WorkerProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(d => d.CreatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
             builder.HasIndex(k => new { k.RequestRecruiterId, k.WorkerProfileId }).IsUnique();
         }

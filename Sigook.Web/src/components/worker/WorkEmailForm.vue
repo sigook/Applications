@@ -8,15 +8,21 @@
     </b-message>
     <div class="container-flex">
       <div class="col-12">
-        <b-field label="New Email" :type="formErrors.newEmail ? 'is-danger' : ''"
+        <b-field :type="formErrors.newEmail ? 'is-danger' : ''"
           :message="formErrors.newEmail || ''">
+          <template #label>
+            New Email <span class="has-text-danger">*</span>
+          </template>
           <b-input type="email" v-model="newEmail" name="newEmail">
           </b-input>
         </b-field>
       </div>
       <div class="col-12">
-        <b-field label="Confirm Email" :type="formErrors.confirmEmail ? 'is-danger' : ''"
+        <b-field :type="formErrors.confirmEmail ? 'is-danger' : ''"
           :message="formErrors.confirmEmail || ''">
+          <template #label>
+            Confirm Email <span class="has-text-danger">*</span>
+          </template>
           <b-input type="email" @paste.prevent v-model="confirmEmail" name="confirmEmail">
           </b-input>
         </b-field>

@@ -53,6 +53,7 @@ public interface IRequestRepository
     Task<IEnumerable<RequestApplicant>> GetRequestApplicants(Expression<Func<RequestApplicant, bool>> expression);
     Task<PaginatedList<RequestApplicantDetailModel>> GetRequestApplicants(Guid requestId, GetRequestApplicantFilter filter);
     Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm);
+    Task<List<ApplicantSearchResultModel>> SearchRunnerProspects(Guid agencyId, Guid requestId, string searchTerm);
     Task<RequestComission> GetRequestComission(Guid requestId);
     Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId);
     Task SaveChangesAsync();

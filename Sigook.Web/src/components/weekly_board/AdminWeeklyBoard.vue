@@ -78,6 +78,7 @@
                   <b-button class="card-remove" type="is-ghost" size="is-small" icon-right="close"
                     title="Remove assignment" :disabled="isSaving" @click.stop="confirmUnassign(assignment)"></b-button>
                 </div>
+                <div class="card-position">{{ assignment.jobTitle }}</div>
                 <div class="card-company">{{ assignment.companyName }}</div>
                 <div class="card-sent">{{ assignment.workersSent }} sent</div>
               </div>
@@ -110,8 +111,9 @@
           <div class="detail-row">
             <b-tag :type="statusTagType(detail.status)" rounded>{{ statusLabel(detail.status) }}</b-tag>
           </div>
-          <workers-collapse v-if="detail.dispatches.length > 0" :key="detail.requestId" class="detail-workers"
-            label="Workers" :count="detail.dispatches.length">
+          <collapse-section v-if="detail.dispatches.length > 0" :key="detail.requestId" class="detail-workers"
+            variant="compact" :model-value="false">
+            <template #title>Workers ({{ detail.dispatches.length }})</template>
             <ul>
               <li v-for="worker in detail.dispatches" :key="worker.workerProfileId">
                 <router-link :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">{{
@@ -119,7 +121,7 @@
                 <span class="detail-worker-email">{{ worker.email }}</span>
               </li>
             </ul>
-          </workers-collapse>
+          </collapse-section>
         </section>
         <footer class="modal-card-foot is-justify-content-space-between">
           <b-button type="is-danger" icon-left="trash-can-outline" :loading="isSaving" @click="onUnassign(detail)">
@@ -150,7 +152,7 @@ import type {
   AssignPreset,
 } from '@/types/weeklyBoard';
 import AssignRecruiterModal from './AssignRecruiterModal.vue';
-import WorkersCollapse from './WorkersCollapse.vue';
+import CollapseSection from '@/components/CollapseSection.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 
@@ -515,6 +517,12 @@ watch(range, loadBoard, { immediate: true });
     .card-company {
       font-size: 0.8rem;
       color: $grey-font;
+    }
+
+    .card-position {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: $grey-dark;
     }
 
     .card-sent {

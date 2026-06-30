@@ -8,6 +8,7 @@ import {
 
 const AgencyRequests = () => import("@/pages/agency/Requests.vue");
 const AgencyWeeklyBoard = () => import("@/pages/agency/WeeklyBoard.vue");
+const AgencyAttendanceReview = () => import("@/pages/agency/AttendanceReview.vue");
 const AgencyRequest = () => import("@/pages/agency/Request.vue");
 const AgencyCreateRequest = () => import("@/pages/agency/AgencyCreateRequest.vue");
 const AgencyWorkers = () => import("@/pages/agency/Workers.vue");
@@ -47,6 +48,15 @@ const routesAgency: RouteRecordRaw[] = [
     path: "/recruiting/weekly-board",
     component: AgencyWeeklyBoard,
     name: "agency-weekly-board",
+    meta: {
+      requiresAuth: true,
+      role: [agency, agencyPersonnel],
+    },
+  },
+  {
+    path: "/recruiting/attendance-review",
+    component: AgencyAttendanceReview,
+    name: "agency-attendance-review",
     meta: {
       requiresAuth: true,
       role: [agency, agencyPersonnel],
