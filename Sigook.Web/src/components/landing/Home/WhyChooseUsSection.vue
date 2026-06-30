@@ -46,14 +46,7 @@
 
           <div class="why__map-wrap">
             <span class="why__map-halo" aria-hidden="true"></span>
-            <button
-              type="button"
-              class="why__map"
-              aria-haspopup="dialog"
-              :aria-expanded="mapPreview"
-              aria-label="Enlarge the coverage map to read state names"
-              @click="mapPreview = true"
-            >
+            <div class="why__map">
               <img
                 src="@/assets/images/v2/why-choose-us/usa-minimal-map.png"
                 alt="Sigook® coverage across the United States"
@@ -63,10 +56,7 @@
                 loading="lazy"
                 decoding="async"
               />
-              <span class="why__map-hint" aria-hidden="true">
-                <LandingIcon name="search" />
-              </span>
-            </button>
+            </div>
           </div>
         </div>
 
@@ -102,68 +92,13 @@
       </div>
     </div>
 
-    <Teleport to="body">
-      <transition name="why-zoom">
-        <div
-          v-if="mapPreview"
-          ref="zoomRef"
-          class="why-zoom"
-          role="dialog"
-          aria-modal="true"
-          aria-label="United States coverage map with state names"
-          @click.self="mapPreview = false"
-        >
-          <button
-            type="button"
-            class="why-zoom__close"
-            aria-label="Close enlarged map"
-            @click="mapPreview = false"
-          >
-            <LandingIcon name="close" />
-          </button>
-
-          <img
-            src="@/assets/images/v2/why-choose-us/usa-coverage-map.webp"
-            alt="Sigook® coverage map with U.S. state names"
-            class="why-zoom__img"
-          />
-        </div>
-      </transition>
-    </Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
-import { useFocusTrap } from '@/composables/useFocusTrap'
-import { useBodyScrollLock } from '@/composables/useBodyScrollLock'
 import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
 import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
-import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
-
-const mapPreview = ref(false)
-const zoomRef = ref<HTMLElement | null>(null)
-const { lock, unlock } = useBodyScrollLock()
-useFocusTrap(mapPreview, zoomRef)
-
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') mapPreview.value = false
-}
-
-watch(mapPreview, (open) => {
-  if (open) {
-    lock()
-    window.addEventListener('keydown', onKeydown)
-  } else {
-    unlock()
-    window.removeEventListener('keydown', onKeydown)
-  }
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', onKeydown)
-})
 
 const NETWORK_POINTS = [
   'Recruiters and coverage across all major US markets',
@@ -436,135 +371,12 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   width: 100%;
   max-width: 600px;
   margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  cursor: zoom-in;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 0.4s var(--ease-brand);
-}
-
-.why__map:hover {
-  transform: translateY(-4px) scale(1.01);
-}
-
-.why__map:focus-visible {
-  outline: 2px solid var(--c-brand-cyan);
-  outline-offset: 6px;
 }
 
 .why__map-img {
   display: block;
   width: 100%;
   height: auto;
-}
-
-.why__map-hint {
-  position: absolute;
-  right: clamp(14px, 1.8vw, 22px);
-  bottom: clamp(14px, 1.8vw, 22px);
-  z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: clamp(38px, 4vw, 46px);
-  height: clamp(38px, 4vw, 46px);
-  border-radius: 50%;
-  color: #fff;
-  background: var(--c-brand-cyan);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 6px 16px rgba(0, 173, 239, 0.4);
-  pointer-events: none;
-  transition: transform 0.3s var(--ease-brand);
-}
-
-.why__map-hint svg {
-  width: 52%;
-  height: 52%;
-}
-
-.why__map:hover .why__map-hint {
-  transform: scale(1.08);
-}
-
-.why-zoom {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(16px, 4vw, 56px);
-  background: rgba(6, 22, 38, 0.82);
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
-  cursor: zoom-out;
-}
-
-.why-zoom__img {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: min(94vw, 1180px);
-  max-height: 88vh;
-  border-radius:
-    clamp(20px, 2vw, 32px) 0
-    clamp(20px, 2vw, 32px) 0;
-  box-shadow: 0 40px 100px -24px rgba(0, 0, 0, 0.7);
-  cursor: default;
-  transition: transform 0.45s var(--ease-brand);
-}
-
-.why-zoom__close {
-  position: absolute;
-  top: clamp(14px, 2.5vw, 28px);
-  right: clamp(14px, 2.5vw, 28px);
-  width: clamp(40px, 4vw, 48px);
-  height: clamp(40px, 4vw, 48px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.10);
-  border: 1px solid rgba(255, 255, 255, 0.30);
-  color: #fff;
-  cursor: pointer;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease;
-}
-
-.why-zoom__close:hover {
-  background: var(--c-brand-cyan);
-  border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy);
-  transform: rotate(90deg);
-}
-
-.why-zoom__close svg {
-  width: 50%;
-  height: 50%;
-}
-
-.why-zoom-enter-active,
-.why-zoom-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.why-zoom-leave-active {
-  pointer-events: none;
-}
-
-.why-zoom-enter-from,
-.why-zoom-leave-to {
-  opacity: 0;
-}
-
-.why-zoom-enter-from .why-zoom__img,
-.why-zoom-leave-to .why-zoom__img {
-  transform: scale(0.9);
 }
 
 .why__features {
