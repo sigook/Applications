@@ -32,7 +32,7 @@
                 <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button type="is-ghost" @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
                 </b-tooltip>
-                <b-tooltip label="Edit" type="is-dark" append-to-body>
+                <b-tooltip v-if="isPayrollManager" label="Edit" type="is-dark" append-to-body>
                   <b-button type="is-ghost" icon-right="pencil" @click="editPunchCard(slotProps.item)">
                   </b-button>
                 </b-tooltip>
@@ -74,7 +74,7 @@
               <b-field :type="itemErrors[slotProps.index] ? 'is-danger' : ''"
                 :message="itemErrors[slotProps.index] || ''">
                 <b-numberinput v-model="slotProps.item.totalHoursApproved" placeholder="Hours"
-                  :disabled="!!slotProps.item.id" step="0.01" :name="'item' + slotProps.index"
+                  :disabled="!isPayrollManager || !!slotProps.item.id" step="0.01" :name="'item' + slotProps.index"
                   title="Approved hours" :controls="false">
                 </b-numberinput>
                 <b-button type="is-ghost" @click="validatePost(slotProps.item, slotProps.index)" v-if="!slotProps.item.id"
@@ -116,10 +116,13 @@ import {
 import Calendar from '../calendar/CalendarPunchCard.vue';
 import TimeSheetModal from '../../components/agency_request/AgencyRequestTimeSheetModal.vue';
 import TimeSheetDetail from '../../components/agency_request/AgencyRequestTimeSheetDetail.vue';
+import { useBillingAdmin } from '@/composables/useBillingAdmin';
 
 dayjs.extend(duration);
 
 const props = defineProps<{ workerId: any; requestId: any; request: any; worker: any }>();
+
+const { isPayrollManager } = useBillingAdmin();
 
 const startDate = ref('');
 const endDate = ref('');

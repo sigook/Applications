@@ -673,6 +673,17 @@ export interface CreateRequestApplicantModel {
   comments?: string;
 }
 
+// Result of GET /api/AgencyRequest/{id}/Applicant/Search. Mirrors backend ApplicantSearchResultModel.
+export interface ApplicantSearchResult {
+  workerProfileId?: string | null;
+  candidateId?: string | null;
+  numberId: number;
+  name: string;
+  email?: string;
+  type: string;
+  approvedToWork: boolean;
+}
+
 // Item returned for an applicant. Mirrors RequestApplicantDetailModel.
 export interface AgencyRequestApplicant {
   id: string;

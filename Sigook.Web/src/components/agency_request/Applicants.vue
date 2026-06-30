@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <b-field grouped position="is-right">
-        <b-button @click="modalManageWorkers = true">Manage Applicants</b-button>
+        <b-button type="is-primary" icon-left="plus" @click="modalManageWorkers = true">Manage Applicants</b-button>
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="createdBy"

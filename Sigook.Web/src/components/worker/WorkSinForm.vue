@@ -3,9 +3,11 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="'SIN/SSN#'"
-          :type="formErrors.socialInsurance ? 'is-danger' : ''"
+        <b-field :type="formErrors.socialInsurance ? 'is-danger' : ''"
           :message="formErrors.socialInsurance || ''">
+          <template #label>
+            SIN/SSN# <span class="has-text-danger">*</span>
+          </template>
           <b-input type="text" v-model="socialInsurance" name="social insurance #">
           </b-input>
         </b-field>
@@ -36,8 +38,11 @@
         </b-field>
       </div>
       <div class="col-12" v-if="sin.socialInsuranceExpire === true">
-        <b-field :label="'Expire'" :type="formErrors.dueDate ? 'is-danger' : ''"
+        <b-field :type="formErrors.dueDate ? 'is-danger' : ''"
           :message="formErrors.dueDate || ''">
+          <template #label>
+            Expire <span class="has-text-danger">*</span>
+          </template>
           <b-datepicker v-model="dueDate" name="due date" append-to-body position="is-top-right">
           </b-datepicker>
         </b-field>

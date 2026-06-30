@@ -3,7 +3,7 @@
     <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 30%" />
     <!-- Atmospheric magnifier decoration — bottom-center anchor (final
          unused position, closes the family alongside Home TL, About TR,
-         SP BR, Industries BL, Talents CR, Employers CL, News TC) -->
+         SP BR, Industries BL, Talents CR, Employers CL) -->
     <DecoMagnifier class="partner-hero__magnifier" />
 
     <div class="partner-hero__content">

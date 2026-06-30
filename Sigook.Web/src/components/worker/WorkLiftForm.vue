@@ -3,9 +3,12 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-12">
-        <b-field :label="'Can you Lift up to'" class="has-text-weight-normal"
+        <b-field class="has-text-weight-normal"
           :type="formErrors.liftId ? 'is-danger' : ''"
           :message="formErrors.liftId || ''">
+          <template #label>
+            Can you Lift up to <span class="has-text-danger">*</span>
+          </template>
           <b-select v-model="liftId" placeholder="Select option" expanded
             name="lift">
             <option v-for="item in lifts" :value="item.id" v-bind:key="item.id">

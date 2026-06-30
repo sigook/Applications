@@ -40,7 +40,7 @@
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Issued">
           <b-datepicker v-model="issued" :focused-date="todayDate" :max-date="todayDate"
-            position="is-top-left" />
+            :mobile-native="false" append-to-body position="is-top-right" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
@@ -50,7 +50,7 @@
             Expires <span class="has-text-danger">*</span>
           </template>
           <b-datepicker v-model="expires" :focused-date="todayDate" :min-date="todayDate"
-            position="is-top-left" name="licenseExpires" />
+            :mobile-native="false" append-to-body position="is-top-right" name="licenseExpires" />
         </b-field>
       </div>
       <div class="col-12 mt-5">

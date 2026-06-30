@@ -1121,11 +1121,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private static Expression<Func<WorkerProfile, bool>> BuildWorkerSearchPredicate(
         Guid agencyId, string searchLower, bool isNumericSearch, long numberId,
-        IQueryable<RequestApplicant> existingApplicants, IQueryable<WorkerRequest> bookedWorkers)
+        Expression<Func<WorkerProfile, bool>> exclusion)
     {
         var predicate = PredicateBuilder.New<WorkerProfile>(wp => wp.AgencyId == agencyId);
-        predicate = predicate.And(wp => !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id));
-        predicate = predicate.And(wp => !bookedWorkers.Any(wr => wr.WorkerId == wp.WorkerId));
+        predicate = predicate.And(exclusion);
 
         var search = PredicateBuilder.New<WorkerProfile>(false);
         search = search.Or(wp => (wp.FirstName + " " + wp.LastName).ToLower().Contains(searchLower));
@@ -1137,10 +1136,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private static Expression<Func<CandidateEntity, bool>> BuildCandidateSearchPredicate(
         Guid agencyId, string searchLower, bool isNumericSearch, long numberId,
-        IQueryable<RequestApplicant> existingApplicants)
+        Expression<Func<CandidateEntity, bool>> exclusion)
     {
         var predicate = PredicateBuilder.New<CandidateEntity>(c => c.AgencyId == agencyId);
-        predicate = predicate.And(c => !existingApplicants.Any(ra => ra.CandidateId == c.Id));
+        predicate = predicate.And(exclusion);
 
         var search = PredicateBuilder.New<CandidateEntity>(false);
         search = search.Or(c => c.Name.ToLower().Contains(searchLower));
@@ -1151,17 +1150,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return predicate.And(search);
     }
 
-    public async Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm)
+    private async Task<List<ApplicantSearchResultModel>> SearchWorkersAndCandidates(
+        Expression<Func<WorkerProfile, bool>> workerPredicate,
+        Expression<Func<CandidateEntity, bool>> candidatePredicate)
     {
-        var searchLower = searchTerm.ToLower();
-
-        var existingApplicants = context.RequestApplicant.Where(ra => ra.RequestId == requestId);
-        var bookedWorkers = context.WorkerRequest.Where(wr => wr.RequestId == requestId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
-
-        var isNumericSearch = long.TryParse(searchTerm, out var numberId);
-        var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId, existingApplicants, bookedWorkers);
-        var candidatePredicate = BuildCandidateSearchPredicate(agencyId, searchLower, isNumericSearch, numberId, existingApplicants);
-
         var workers = from wp in context.WorkerProfile.Where(workerPredicate)
                       join u in context.User on wp.WorkerId equals u.Id
                       select new ApplicantSearchResultModel
@@ -1195,6 +1187,37 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .Take(20)
             .AsNoTracking()
             .ToListAsync();
+    }
+
+    public Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm)
+    {
+        var searchLower = searchTerm.ToLower();
+        var isNumericSearch = long.TryParse(searchTerm, out var numberId);
+
+        var existingApplicants = context.RequestApplicant.Where(ra => ra.RequestId == requestId);
+        var bookedWorkers = context.WorkerRequest.Where(wr => wr.RequestId == requestId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
+
+        var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
+            wp => !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id) && !bookedWorkers.Any(wr => wr.WorkerId == wp.WorkerId));
+        var candidatePredicate = BuildCandidateSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
+            c => !existingApplicants.Any(ra => ra.CandidateId == c.Id));
+
+        return SearchWorkersAndCandidates(workerPredicate, candidatePredicate);
+    }
+
+    public Task<List<ApplicantSearchResultModel>> SearchRunnerProspects(Guid agencyId, Guid requestId, string searchTerm)
+    {
+        var searchLower = searchTerm.ToLower();
+        var isNumericSearch = long.TryParse(searchTerm, out var numberId);
+
+        var existingRunners = context.Runners.Where(r => r.RequestId == requestId);
+
+        var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
+            wp => !existingRunners.Any(r => r.WorkerProfileId == wp.Id));
+        var candidatePredicate = BuildCandidateSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
+            c => !existingRunners.Any(r => r.CandidateId == c.Id));
+
+        return SearchWorkersAndCandidates(workerPredicate, candidatePredicate);
     }
 
     public async Task<RequestComission> GetRequestComission(Guid requestId) => await context.RequestComissions.FirstOrDefaultAsync(rc => rc.RequestId == requestId);

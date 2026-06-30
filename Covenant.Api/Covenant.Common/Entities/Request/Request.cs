@@ -332,18 +332,18 @@ namespace Covenant.Common.Entities.Request
             return Result.Ok();
         }
 
-        public Result AddRecruiter(AgencyPersonnel recruiter, DateTime? workDate = null)
+        public Result AddRecruiter(AgencyPersonnel recruiter, DateTime now, DateTime? workDate = null)
         {
             if (recruiter is null) throw new ArgumentNullException(nameof(recruiter));
             DateTime? day = workDate?.Date;
             if (_recruiters.Count(a => a.WorkDate == day) >= MaximumNumberOfRecruiters) return Result.Fail($"The maximum number of recruiters is {MaximumNumberOfRecruiters}");
             if (_recruiters.Any(a => a.RecruiterId == recruiter.Id && a.WorkDate == day)) return Result.Fail();
-            _recruiters.Add(new RequestRecruiter(Id, recruiter.Id, day));
-            UpdatedAt = DateTime.Now;
+            _recruiters.Add(new RequestRecruiter(Id, recruiter.Id, now, day));
+            UpdatedAt = now;
             return Result.Ok();
         }
 
-        public Result RemoveRecruiter(Guid id, DateTime? workDate = null)
+        public Result RemoveRecruiter(Guid id, DateTime now, DateTime? workDate = null)
         {
             DateTime? day = workDate?.Date;
             var entity = _recruiters.FirstOrDefault(c => c.RecruiterId == id && c.WorkDate == day);
@@ -351,11 +351,11 @@ namespace Covenant.Common.Entities.Request
             {
                 _recruiters.Remove(entity);
             }
-            UpdatedAt = DateTime.Now;
+            UpdatedAt = now;
             return Result.Ok();
         }
 
-        public Result MoveRecruiterAssignment(Guid fromRecruiterId, DateTime fromWorkDate, Guid toRecruiterId, DateTime toWorkDate)
+        public Result MoveRecruiterAssignment(Guid fromRecruiterId, DateTime fromWorkDate, Guid toRecruiterId, DateTime toWorkDate, DateTime now)
         {
             DateTime from = fromWorkDate.Date;
             DateTime to = toWorkDate.Date;
@@ -364,7 +364,7 @@ namespace Covenant.Common.Entities.Request
             if (fromRecruiterId == toRecruiterId && from == to) return Result.Ok();
             if (_recruiters.Any(a => a.RecruiterId == toRecruiterId && a.WorkDate == to)) return Result.Fail("The recruiter is already assigned to this order on that day");
             entity.MoveTo(toRecruiterId, to);
-            UpdatedAt = DateTime.Now;
+            UpdatedAt = now;
             return Result.Ok();
         }
 

@@ -645,6 +645,92 @@ public class RequestSource
 
 ---
 
+### Runner
+
+**Table:** `Runners` (entities under `Entities/Request/Runners/`)
+
+**Purpose:** A Candidate or Worker actively submitted to a specific Request (order), tracked through a recruiting pipeline with full status history and interviews. The same person can be a Runner on multiple requests at once, each with independent status and history. Like `RequestApplicant`, a runner references **either** a `WorkerProfile` **or** a `Candidate` (mutually exclusive) and preserves the link to the original record — no personal data is duplicated.
+
+```csharp
+public class Runner
+{
+    public Guid Id { get; private set; }
+    public long NumberId { get; private set; }
+    public Guid AgencyId { get; private set; }
+    public Guid RequestId { get; private set; }           // the order (OrderId)
+    public Guid? WorkerProfileId { get; private set; }    // worker XOR candidate
+    public Guid? CandidateId { get; private set; }
+    public RunnerType Type { get; private set; }          // Active / Passive
+    public RunnerStatus Status { get; private set; }      // current stage
+    public DateTime? StartDate { get; private set; }      // set only when status = Hired (required to hire)
+    public DateTime CreatedAt { get; private set; }
+    public Guid CreatedBy { get; private set; }           // acting user id
+    public DateTime? UpdatedAt { get; private set; }
+    public Guid? UpdatedBy { get; private set; }          // acting user id of the last status change (set with UpdatedAt)
+
+    // Backing-field collections (append-only history + interviews)
+    public IEnumerable<RunnerStatusHistory> StatusHistory { get; }
+    public IEnumerable<RunnerInterview> Interviews { get; }
+
+    // Domain methods (single source of truth for the rules below)
+    public static Result<Runner> CreateFromWorker(...);
+    public static Result<Runner> CreateFromCandidate(...);
+    public static bool CanAddInterview(RunnerStatus status);
+    public Result ChangeStatus(RunnerStatus next, Guid changedBy, string comments = null, DateTime? startDate = null);
+    public Result<RunnerInterview> AddInterview(...);
+    public Result RescheduleInterview(Guid interviewId, DateTime newDate, string rescheduledBy);
+}
+```
+
+**Business rules (enforced in the domain entity):**
+- Created with `Status = SentToClient` and an initial `RunnerStatusHistory` entry (`PreviousStatus = null`).
+- Status transitions are **unrestricted** (any → any) **except**: a `Hired` runner is terminal — its status cannot change.
+- Every status change **appends** (never overwrites) a `RunnerStatusHistory` row.
+- Moving to `Hired` **requires** a `StartDate`; the transition is rejected without it. `StartDate` is captured only on this transition.
+- `CreatedBy`/`UpdatedBy` on the runner and `ChangedBy` on each history row are all the **acting user's id** (`Guid`, from `IIdentityServerService.GetUserId()`) — resolved inside the service, not passed by callers. Every status change stamps `UpdatedAt` + `UpdatedBy`; because `Hired` is terminal, `UpdatedBy` on a hired runner is the recruiter who hired them — the per-user key for the attendance-review notification (no nickname, no `StatusHistory` scan).
+- A worker/candidate cannot be a Runner **twice on the same request** (`IRunnerRepository.RunnerExists` guard, regardless of current status).
+- Interviews can be **added or rescheduled only** when status is `InterviewScheduled` or `InterviewRescheduled` (`Runner.CanAddInterview`). Rescheduling auto-transitions the runner to `InterviewRescheduled`.
+
+**RunnerType Enum:** `Active = 1` (reached the order on their own initiative), `Passive = 2` (sourced by a recruiter).
+
+**RunnerStatus Enum:** `SentToClient = 1`, `InterviewScheduled = 2`, `InterviewRescheduled = 3`, `NoLongerAvailable = 4`, `NoShow = 5`, `WaitingForInterviewFeedback = 6`, `WaitingForFinalDecision = 7`, `Rejected = 8`, `InOnboardingProcess = 9`, `Hired = 10`. Stored as text via `EnumToStringConverter`.
+
+**Child entities:**
+
+```csharp
+public class RunnerStatusHistory          // Table: RunnerStatusHistories (append-only)
+{
+    public Guid Id { get; }
+    public Guid RunnerId { get; }
+    public RunnerStatus? PreviousStatus { get; }   // null for the initial entry
+    public RunnerStatus NewStatus { get; }
+    public string ChangedBy { get; }
+    public DateTime ChangedAt { get; }
+    public string Comments { get; }
+}
+
+public class RunnerInterview               // Table: RunnerInterviews
+{
+    public Guid Id { get; }
+    public Guid RunnerId { get; }
+    public DateTime ScheduledDate { get; }
+    public InterviewType Type { get; }             // Phone / Video / Onsite
+    public string Interviewer { get; }
+    public InterviewStatus Status { get; }         // Scheduled / Rescheduled
+    public string Feedback { get; }
+    public string Notes { get; }
+    public int RescheduleCount { get; }
+    public DateTime CreatedAt { get; }
+    public string CreatedBy { get; }
+    public DateTime? RescheduledAt { get; }
+    public string RescheduledBy { get; }
+}
+```
+
+**API:** `RunnersController` at `api/agency/requests/{requestId}/Runners` (Agency policy + `AgencyIdFilter`): list/detail, create, `PUT {id}/Status`, `POST {id}/Interview`, `PUT {id}/Interview/{interviewId}/Reschedule`, and `GET {requestId}/Runners/Search?searchTerm=` (workers/candidates that can be added as runners, **excluding those already runners** on the request — backed by `IRequestRepository.SearchRunnerProspects`, which reuses the applicant-search predicates with a runner-based exclusion). Enums are serialized as numbers (no `JsonStringEnumConverter`).
+
+---
+
 ## ⏱️ TIMESHEET Module
 
 ### TimeSheet

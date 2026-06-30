@@ -2,10 +2,12 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <div class="col-6">
-        <b-field :label="'Identification type'"
-          :type="formErrors.identificationType1 ? 'is-danger' : ''"
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <b-field :type="formErrors.identificationType1 ? 'is-danger' : ''"
           :message="formErrors.identificationType1 || ''">
+          <template #label>
+            Identification type <span class="has-text-danger">*</span>
+          </template>
           <b-select v-model="identificationType1" name="identificationType1" expanded>
             <option :value="null" disabled>{{ "Select" }}</option>
             <option v-for="(type, index) in identificationTypes" :value="type"
@@ -15,14 +17,14 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-6">
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field :label="'Identification Number'"
           :type="formErrors.identificationNumber1 ? 'is-danger' : ''"
           :message="formErrors.identificationNumber1 || ''">
           <b-input type="text" v-model="identificationNumber1" name="identificationNumber1" expanded />
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="col-12 col-padding">
         <b-field :label="'Identification file'">
           <div v-if="worker.identificationType1File && worker.identificationType1File.fileName"
             class="selected-file-display">
@@ -41,10 +43,12 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-6">
-        <b-field :label="'Identification type'"
-          :type="formErrors.identificationType2 ? 'is-danger' : ''"
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <b-field :type="formErrors.identificationType2 ? 'is-danger' : ''"
           :message="formErrors.identificationType2 || ''">
+          <template #label>
+            Identification type <span class="has-text-danger">*</span>
+          </template>
           <b-select v-model="identificationType2" name="identificationType2" expanded>
             <option :value="null" disabled>{{ "Select" }}</option>
             <option v-for="(type, index) in identificationTypes" :value="type"
@@ -54,14 +58,14 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-6">
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field :label="'Identification Number'"
           :type="formErrors.identificationNumber2 ? 'is-danger' : ''"
           :message="formErrors.identificationNumber2 || ''">
           <b-input type="text" v-model="identificationNumber2" name="identificationNumber2" expanded />
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="col-12 col-padding">
         <b-field :label="'Identification file'">
           <div v-if="worker.identificationType2File && worker.identificationType2File.fileName"
             class="selected-file-display">
@@ -80,7 +84,7 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="col-12 col-padding">
         <b-field :label="'Got Police Check/Background?'">
           <b-switch v-model="worker.havePoliceCheckBackground" :true-value="true" :false-value="false">
             {{ worker.havePoliceCheckBackground ? "Yes" : "No" }}

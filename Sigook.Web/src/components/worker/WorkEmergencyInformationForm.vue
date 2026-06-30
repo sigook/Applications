@@ -2,40 +2,49 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <div class="col-4">
+      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field :label="'Do you have any health problems / allergies?'" class="has-text-weight-normal">
           <b-switch v-model="worker.haveAnyHealthProblem">
             {{ worker.haveAnyHealthProblem ? 'Yes' : 'No' }}
           </b-switch>
         </b-field>
       </div>
-      <div class="col-4" v-if="worker.haveAnyHealthProblem">
-        <b-field :label="`${'Which'} ?`" :type="formErrors.healthProblem ? 'is-danger' : ''"
+      <div class="col-sm-12 col-md-4 col-lg-4 col-padding" v-if="worker.haveAnyHealthProblem">
+        <b-field :type="formErrors.healthProblem ? 'is-danger' : ''"
           :message="formErrors.healthProblem || ''">
+          <template #label>
+            Which ? <span class="has-text-danger">*</span>
+          </template>
           <b-input type="text" v-model="healthProblem" name="health problem">
           </b-input>
         </b-field>
       </div>
-      <div class="col-4" v-if="worker.haveAnyHealthProblem">
+      <div class="col-sm-12 col-md-4 col-lg-4 col-padding" v-if="worker.haveAnyHealthProblem">
         <b-field :label="'Other allergies'" class="has-text-weight-normal">
           <b-input type="text" v-model="worker.otherHealthProblem">
           </b-input>
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="col-12 col-padding">
         <h1 class="fw-bold">{{ 'In case of emergency notify' }}</h1>
       </div>
-      <div class="col-6">
-        <b-field :label="'Name'" :type="formErrors.contactEmergencyName ? 'is-danger' : ''"
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <b-field :type="formErrors.contactEmergencyName ? 'is-danger' : ''"
           :message="formErrors.contactEmergencyName || ''">
+          <template #label>
+            Name <span class="has-text-danger">*</span>
+          </template>
           <b-input type="text" v-model="contactEmergencyName" name="contact emergency">
           </b-input>
         </b-field>
       </div>
-      <div class="col-6">
-        <b-field :label="'Last Name'" class="has-text-weight-normal"
+      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <b-field class="has-text-weight-normal"
           :type="formErrors.contactEmergencyLastName ? 'is-danger' : ''"
           :message="formErrors.contactEmergencyLastName || ''">
+          <template #label>
+            Last Name <span class="has-text-danger">*</span>
+          </template>
           <b-input type="text" v-model="contactEmergencyLastName" name="contact emergency lastname" expanded>
           </b-input>
         </b-field>

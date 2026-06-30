@@ -7,7 +7,6 @@ using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook.Agency;

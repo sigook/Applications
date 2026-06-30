@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <b-field grouped position="is-right">
-        <b-button @click="modalManageWorkers = true" icon-right="calendar-start">
+        <b-button type="is-primary" icon-left="plus" @click="modalManageWorkers = true">
           {{ "Manage Workers" }}
         </b-button>
         <b-button type="is-ghost" icon-right="file-excel"

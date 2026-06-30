@@ -3,20 +3,29 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="formErrors.company ? 'is-danger' : ''" :label="'Company'"
+        <b-field :type="formErrors.company ? 'is-danger' : ''"
           :message="formErrors.company || ''">
+          <template #label>
+            Company <span class="has-text-danger">*</span>
+          </template>
           <b-input type="text" v-model="company" :name="'company'" />
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="formErrors.supervisor ? 'is-danger' : ''" :label="'Supervisor'"
+        <b-field :type="formErrors.supervisor ? 'is-danger' : ''"
           :message="formErrors.supervisor || ''">
+          <template #label>
+            Supervisor <span class="has-text-danger">*</span>
+          </template>
           <b-input type="text" v-model="supervisor" :name="'supervisor'" />
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-field :type="formErrors.duties ? 'is-danger' : ''" :label="'Duties'"
+        <b-field :type="formErrors.duties ? 'is-danger' : ''"
           :message="formErrors.duties || ''">
+          <template #label>
+            Duties <span class="has-text-danger">*</span>
+          </template>
           <b-input type="textarea" v-model="duties" :name="'duties'" />
         </b-field>
       </div>
@@ -29,8 +38,11 @@
         </b-field>
       </div>
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field :type="formErrors.startDate ? 'is-danger' : ''" :label="'Start date'"
+        <b-field :type="formErrors.startDate ? 'is-danger' : ''"
           :message="formErrors.startDate || ''">
+          <template #label>
+            Start date <span class="has-text-danger">*</span>
+          </template>
           <b-datepicker v-model="startDate" :name="'startDate'"
             :max-date="disableStartDate" append-to-body position="is-top-right">
           </b-datepicker>

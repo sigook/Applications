@@ -2787,6 +2787,149 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestSource", (string)null);
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AgencyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CandidateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("NumberId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("WorkerProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgencyId");
+
+                    b.HasIndex("CandidateId");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("WorkerProfileId");
+
+                    b.ToTable("Runners");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Feedback")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Interviewer")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RescheduleCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("RescheduledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RescheduledBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RunnerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ScheduledDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunnerId");
+
+                    b.ToTable("RunnerInterviews");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ChangedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PreviousStatus")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RunnerId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RunnerId");
+
+                    b.ToTable("RunnerStatusHistories");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3012,8 +3155,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("RequestRecruiterId")
                         .HasColumnType("uuid");
@@ -3022,6 +3165,8 @@ namespace Covenant.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("WorkerProfileId");
 
@@ -4687,6 +4832,61 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Source");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                        .WithMany()
+                        .HasForeignKey("AgencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
+                        .WithMany()
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                        .WithMany()
+                        .HasForeignKey("WorkerProfileId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Agency");
+
+                    b.Navigation("Candidate");
+
+                    b.Navigation("Request");
+
+                    b.Navigation("WorkerProfile");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
+                        .WithMany("Interviews")
+                        .HasForeignKey("RunnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Runner");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
+                        .WithMany("StatusHistory")
+                        .HasForeignKey("RunnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Runner");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.WorkerRequest", "WorkerRequest")
@@ -4741,6 +4941,11 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
                 {
+                    b.HasOne("Covenant.Common.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
                         .WithMany("Dispatches")
                         .HasForeignKey("RequestRecruiterId")
@@ -5238,6 +5443,13 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
                 {
                     b.Navigation("Dispatches");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+                {
+                    b.Navigation("Interviews");
+
+                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>

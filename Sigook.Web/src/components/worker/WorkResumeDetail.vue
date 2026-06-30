@@ -16,21 +16,9 @@
                 </span>
             </div>
         </div>
-        <!-- custom modal -->
-        <transition name="modal">
-            <div v-if="modal" class="vue-modal">
-                <div class="modal-mask">
-                    <div class="modal-wrapper">
-                        <div class="modal-container modal-light">
-                            <span class="fz1 fw-bold">{{ "Resume" }}</span>
-                            <button @click="modal = false" type="button" class="cross-icon">{{ 'Close' }}</button>
-                            <resume-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </transition>
-        <!-- end custom modal -->
+        <b-modal v-model="modal" width="500px">
+            <resume-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
+        </b-modal>
     </section>
 </template>
 

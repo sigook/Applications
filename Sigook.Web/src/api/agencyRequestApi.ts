@@ -15,6 +15,7 @@ import type {
   RejectWorkerModel,
   AgencyRequestApplicantFilter,
   AgencyRequestApplicant,
+  ApplicantSearchResult,
   CreateRequestApplicantModel,
   UpdateApplicantCommentsPayload,
   AgencyRequestSkillModel,
@@ -108,7 +109,7 @@ export function rejectAgencyRequestWorker(requestId: string, workerId: string, m
 // Applicants
 // ---------------------------------------------------------------------------
 
-export function searchAgencyRequestApplicants(requestId: string, searchTerm: string): Promise<AgencyRequestApplicant[]> {
+export function searchAgencyRequestApplicants(requestId: string, searchTerm: string): Promise<ApplicantSearchResult[]> {
   return http.get(`/api/AgencyRequest/${requestId}/Applicant/Search`, { params: { searchTerm } }).then(r => r.data);
 }
 

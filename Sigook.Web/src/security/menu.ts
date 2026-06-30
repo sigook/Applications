@@ -56,6 +56,11 @@ export default {
           icon: "view-week",
           label: "Weekly Board",
         },
+        // {
+        //   to: "/recruiting/attendance-review",
+        //   icon: "clipboard-check-outline",
+        //   label: "Attendance Review",
+        // },
         {
           to: "/recruiting/candidates",
           icon: "account-hard-hat",
