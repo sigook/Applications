@@ -15,7 +15,7 @@ import mgr from '@/security/securityService';
 import { useSecurityStore } from '@/stores/security';
 
 // import the styles
-import '@/assets/css/bootstrap-layered.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import '@ntohq/buefy-next/dist/buefy.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
