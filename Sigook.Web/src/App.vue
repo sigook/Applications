@@ -108,7 +108,7 @@ onUnmounted(() => {
 
 <style lang="scss">
 @import "assets/scss/variables";
-@import "assets/fonts.css";
+@import "assets/scss/fonts";
 @import "assets/scss/master";
 
 .no-menu {
