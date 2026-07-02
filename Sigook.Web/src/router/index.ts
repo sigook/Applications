@@ -92,7 +92,7 @@ function setCanonical(path: string): void {
 const SITE_NAME = "Sigook";
 const DEFAULT_TITLE = "Sigook® - Connecting Talent with Opportunity";
 const DEFAULT_DESCRIPTION =
-  "Sigook connects job seekers with top employers across Canada and the US. Find temporary, contract, and permanent jobs in skilled trades, industrial, and professional sectors.";
+  "Sigook connects job seekers with top employers across the United States. Find temporary, contract, and permanent jobs in skilled trades, industrial, and professional sectors.";
 
 function setMetaContent(selector: string, value: string): void {
   const el = document.querySelector<HTMLMetaElement>(selector);
