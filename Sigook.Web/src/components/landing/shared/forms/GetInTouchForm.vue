@@ -312,7 +312,7 @@ function handleReset() {
 .git-card__textarea :deep(.textarea) {
   width: 100%;
   max-width: 100%;
-  border: 1.5px solid #e3e8ed;
+  border: 1.5px solid var(--c-input-border);
   border-radius: 14px;
   font-family: var(--font-family);
   font-size: 14px;
@@ -341,13 +341,13 @@ function handleReset() {
 
 .git-card__input :deep(.input)::placeholder,
 .git-card__textarea :deep(.textarea)::placeholder {
-  color: #a8b3bd;
+  color: var(--c-input-placeholder);
 }
 
 .git-card__input :deep(.input):hover,
 .git-card__select :deep(.select select:hover),
 .git-card__textarea :deep(.textarea:hover) {
-  border-color: #c8d3dd;
+  border-color: var(--c-input-border-hover);
 }
 
 .git-card__input :deep(.input):focus,
@@ -355,7 +355,7 @@ function handleReset() {
 .git-card__textarea :deep(.textarea:focus) {
   border-color: var(--c-brand-cyan);
   box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.12);
-  background-color: #fbfdff;
+  background-color: var(--c-input-focus-bg);
 }
 
 .git-card__input--error :deep(.input),
@@ -384,7 +384,7 @@ function handleReset() {
 }
 
 .git-card__select--placeholder :deep(.select select) {
-  color: #a8b3bd;
+  color: var(--c-input-placeholder);
 }
 
 .git-card__textarea :deep(.textarea) {

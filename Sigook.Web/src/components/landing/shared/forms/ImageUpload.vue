@@ -94,7 +94,7 @@ onUnmounted(() => {
   width: clamp(120px, 14vw, 160px);
   height: clamp(120px, 14vw, 160px);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 2px dashed rgba(255, 255, 255, 0.40);
   overflow: hidden;
   cursor: pointer;

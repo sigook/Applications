@@ -118,7 +118,7 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.10);
+  background: var(--c-glass-fill-strong);
   border: 1px solid rgba(255, 255, 255, 0.20);
   border-radius: 999px;
   padding: 7px 18px;

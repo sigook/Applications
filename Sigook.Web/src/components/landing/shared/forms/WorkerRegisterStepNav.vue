@@ -73,7 +73,7 @@ defineProps<{
   width: clamp(32px, 3.4vw, 40px);
   height: clamp(32px, 3.4vw, 40px);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1.5px solid rgba(255, 255, 255, 0.30);
   color: rgba(255, 255, 255, 0.60);
   font-size: clamp(13px, 1.1vw, 14px);

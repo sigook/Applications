@@ -327,7 +327,7 @@ onUnmounted(() => {
 }
 
 .op-list__item:hover {
-  background: rgba(255, 255, 255, 0.10);
+  background: var(--c-glass-fill-strong);
   border-color: rgba(255, 255, 255, 0.28);
   transform: translateX(2px);
 }

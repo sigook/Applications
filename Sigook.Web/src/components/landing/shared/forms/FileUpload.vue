@@ -53,7 +53,7 @@ function onChange(value: File | File[] | null): void {
   gap: 10px;
   padding: 10px 22px;
   background: rgba(255, 255, 255, 0.08);
-  border: 1.5px dashed rgba(255, 255, 255, 0.45);
+  border: 1.5px $1 var(--c-glass-border-strong);
   border-radius: 999px;
   color: #fff;
   font-family: var(--font-family);
@@ -97,7 +97,7 @@ function onChange(value: File | File[] | null): void {
 
 .landing-fileupload--disabled:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.45);
+  border-color: var(--c-glass-border-strong);
   transform: none;
 }
 </style>

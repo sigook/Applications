@@ -205,7 +205,7 @@ function onSendResume(): void {
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 1.8vw, 20px);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius:
     0 clamp(18px, 2vw, 26px)

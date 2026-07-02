@@ -182,10 +182,10 @@ function onSearch(): void {
   padding: clamp(20px, 2.2vw, 28px);
   background: linear-gradient(180deg,
     rgba(255, 255, 255, 0.10) 0%,
-    rgba(255, 255, 255, 0.04) 100%);
+    var(--c-glass-fill-soft) 100%);
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid var(--c-glass-border);
   border-radius:
     clamp(20px, 2.5vw, 28px) clamp(20px, 2.5vw, 28px)
     clamp(20px, 2.5vw, 28px) clamp(40px, 5vw, 56px);
@@ -213,8 +213,8 @@ function onSearch(): void {
   width: 100%;
   height: clamp(44px, 4.4vw, 50px);
   padding: 0 14px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: var(--c-glass-fill);
+  border: 1px solid var(--c-glass-border);
   border-radius: 12px;
   color: #fff;
   font-family: var(--font-family);
@@ -232,14 +232,14 @@ function onSearch(): void {
 }
 
 .op-hero__input:hover {
-  background: rgba(255, 255, 255, 0.10);
+  background: var(--c-glass-fill-strong);
   border-color: rgba(255, 255, 255, 0.40);
 }
 
 .op-hero__input:focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
-  box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
+  box-shadow: var(--focus-ring-cyan);
 }
 
 .op-hero__submit {

@@ -343,7 +343,7 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
 .our-history__chips li {
   padding: clamp(8px, 1vw, 10px) clamp(14px, 1.6vw, 20px);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.88);
   font-size: clamp(12px, 1vw, 13.5px);

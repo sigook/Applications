@@ -177,8 +177,8 @@ function onDismiss(): void {
 }
 
 .vtoast__update:hover {
-  background: #0098d6;
-  border-color: #0098d6;
+  background: var(--c-brand-cyan-strong);
+  border-color: var(--c-brand-cyan-strong);
   transform: translateY(-1px);
   box-shadow: 0 8px 18px rgba(0, 173, 239, 0.35);
 }
@@ -200,7 +200,7 @@ function onDismiss(): void {
   width: 28px;
   height: 28px;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid var(--c-glass-border);
   border-radius: 50%;
   color: rgba(255, 255, 255, 0.70);
   cursor: pointer;

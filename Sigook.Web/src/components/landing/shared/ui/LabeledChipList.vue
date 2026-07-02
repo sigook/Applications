@@ -64,7 +64,7 @@ withDefaults(defineProps<{
   align-items: center;
   gap: 8px;
   padding: clamp(6px, 0.6vw, 8px) clamp(14px, 1.4vw, 18px);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   backdrop-filter: blur(10px) saturate(140%);
@@ -91,7 +91,7 @@ withDefaults(defineProps<{
 }
 
 .labeled-chip-list__chip:hover {
-  background: rgba(255, 255, 255, 0.10);
+  background: var(--c-glass-fill-strong);
   border-color: rgba(255, 255, 255, 0.30);
   transform: translateY(-1px);
 }

@@ -100,8 +100,8 @@ function adaptCreateTag(raw: string | T): T {
   gap: 6px;
   padding: 8px 12px;
   min-height: clamp(44px, 4.4vw, 48px);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: var(--c-glass-fill);
+  border: 1px solid var(--c-glass-border);
   border-radius: 12px;
   cursor: text;
   box-shadow: none;
@@ -111,7 +111,7 @@ function adaptCreateTag(raw: string | T): T {
 .landing-taginput__field :deep(.taginput-container.is-focused) {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
-  box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
+  box-shadow: var(--focus-ring-cyan);
 }
 
 .landing-taginput__field :deep(.taginput-container .tag:not(body)) {
@@ -177,7 +177,7 @@ function adaptCreateTag(raw: string | T): T {
   margin: 0;
   padding: 6px;
   background: var(--c-brand-navy);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid var(--c-glass-border);
   border-radius: 12px;
   max-height: 220px;
   overflow-y: auto;

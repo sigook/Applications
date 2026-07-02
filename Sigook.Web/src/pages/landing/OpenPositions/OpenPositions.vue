@@ -64,8 +64,8 @@ import CandidateApplyModal from '@/components/landing/shared/forms/CandidateAppl
   width: clamp(56px, 6vw, 72px);
   height: clamp(56px, 6vw, 72px);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: var(--c-glass-fill-strong);
+  border: 1px solid var(--c-glass-border);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     0 8px 18px rgba(0, 0, 0, 0.2);
@@ -90,7 +90,7 @@ import CandidateApplyModal from '@/components/landing/shared/forms/CandidateAppl
 .op-page :deep(.industries-carousel__nav) {
   width: clamp(44px, 4.4vw, 56px);
   height: clamp(44px, 4.4vw, 56px);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--c-glass-fill-strong);
   border-color: rgba(255, 255, 255, 0.28);
   backdrop-filter: blur(10px) saturate(150%);
   -webkit-backdrop-filter: blur(10px) saturate(150%);

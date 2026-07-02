@@ -81,8 +81,8 @@ function onInput(value: string | number | null): void {
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
   padding: 0 14px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: var(--c-glass-fill);
+  border: 1px solid var(--c-glass-border);
   border-radius: 12px;
   color: #fff;
   font-family: var(--font-family);
@@ -101,14 +101,14 @@ function onInput(value: string | number | null): void {
 }
 
 .landing-input :deep(.input):hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.36);
+  background: var(--c-glass-fill-strong);
+  border-color: var(--c-glass-border-hover);
 }
 
 .landing-input :deep(.input):focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
-  box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
+  box-shadow: var(--focus-ring-cyan);
 }
 
 .landing-input :deep(.input):disabled {
@@ -121,7 +121,7 @@ function onInput(value: string | number | null): void {
 }
 
 .landing-input--error :deep(.input):focus {
-  box-shadow: 0 0 0 3px rgba(229, 45, 39, 0.20);
+  box-shadow: var(--focus-ring-red);
 }
 
 .landing-input__error {

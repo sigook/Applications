@@ -132,7 +132,7 @@ onUnmounted(() => observer?.disconnect())
     clamp(22px, 2.6vw, 32px);
   background: linear-gradient(180deg,
     rgba(255, 255, 255, 0.10) 0%,
-    rgba(255, 255, 255, 0.04) 100%);
+    var(--c-glass-fill-soft) 100%);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.18);

@@ -828,7 +828,7 @@ onMounted(async () => {
 
 .reg-form__btn--ghost {
   background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border: 1.5px $1 var(--c-glass-border-strong);
   color: #fff;
 }
 

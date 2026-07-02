@@ -262,7 +262,7 @@ onUnmounted(stopTimer)
   padding: 48px 56px 40px;
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.04) 100%
+    var(--c-glass-fill-soft) 100%
   );
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
@@ -337,7 +337,7 @@ onUnmounted(stopTimer)
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.10);
+  background: var(--c-glass-fill-strong);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.25);

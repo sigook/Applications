@@ -73,7 +73,7 @@
   .industries-carousel-panel::before {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(255, 255, 255, 0.22);
+    background: var(--c-glass-fill-active);
   }
 
   .industries-carousel-panel__surface {

@@ -129,7 +129,7 @@ import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vu
   align-items: center;
   gap: 6px;
   padding: clamp(14px, 1.8vw, 20px) clamp(20px, 2.6vw, 32px);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: clamp(16px, 2vw, 22px);
   backdrop-filter: blur(12px) saturate(150%);

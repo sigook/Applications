@@ -111,7 +111,7 @@ function formatIndex(idx: number): string {
 }
 
 .industry-card:hover {
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: var(--c-glass-border);
   transform: translateY(-4px);
 }
 
@@ -296,7 +296,7 @@ function formatIndex(idx: number): string {
   align-items: center;
   gap: 8px;
   padding: clamp(8px, 1vw, 11px) clamp(18px, 2vw, 24px);
-  background: rgba(255, 255, 255, 0.10);
+  background: var(--c-glass-fill-strong);
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 999px;
   color: #fff;

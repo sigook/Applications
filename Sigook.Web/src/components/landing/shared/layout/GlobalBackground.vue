@@ -67,7 +67,7 @@
   width: 220px; height: 220px;
   top: 12%; left: 8%;
   background: transparent;
-  border: 3px solid rgba(255, 255, 255, 0.22);
+  border: 3px solid var(--c-glass-border);
   animation: drift-g 54s ease-in-out infinite;
 }
 
@@ -158,7 +158,7 @@
     background:
       radial-gradient(circle at 85% 8%, rgba(255, 255, 255, 0.10) 0%, transparent 38%),
       radial-gradient(circle at 10% 90%, rgba(255, 255, 255, 0.07) 0%, transparent 42%),
-      radial-gradient(circle at 82% 60%, rgba(255, 255, 255, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 82% 60%, var(--c-glass-fill) 0%, transparent 40%),
       radial-gradient(circle at 80% 20%, rgba(0, 173, 239, 0.15) 0%, transparent 45%),
       linear-gradient(
         180deg,

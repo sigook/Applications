@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import '@/assets/css/tokens.css';
+import '@/assets/scss/tokens.scss';
 import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue';
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -359,8 +359,8 @@ onUnmounted(() => {
 }
 
 .nav__cta--primary:hover {
-  background: #0098d6;
-  border-color: #0098d6;
+  background: var(--c-brand-cyan-strong);
+  border-color: var(--c-brand-cyan-strong);
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(0, 173, 239, 0.40);
 }
@@ -460,7 +460,7 @@ onUnmounted(() => {
   margin-right: -6px;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   color: #fff;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.25s ease;
@@ -591,7 +591,7 @@ onUnmounted(() => {
   }
 
   .nav__cta--ghost {
-    background: rgba(255, 255, 255, 0.22);
+    background: var(--c-glass-fill-active);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }

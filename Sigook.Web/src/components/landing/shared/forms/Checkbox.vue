@@ -40,7 +40,7 @@ defineEmits<{
   width: 18px;
   height: 18px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1px solid rgba(255, 255, 255, 0.30);
   transition: background 0.2s ease, border-color 0.2s ease;
   flex-shrink: 0;

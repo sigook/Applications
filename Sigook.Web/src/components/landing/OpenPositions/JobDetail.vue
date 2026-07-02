@@ -108,7 +108,7 @@ const formattedPosted = computed(() => {
   --jd-fg: rgba(255, 255, 255, 0.82);
   --jd-fg-strong: #fff;
   --jd-fg-muted: rgba(255, 255, 255, 0.5);
-  --jd-divider: rgba(255, 255, 255, 0.1);
+  --jd-divider: var(--c-glass-fill-strong);
 
   position: relative;
   padding: clamp(26px, 3.2vw, 40px) clamp(24px, 3vw, 40px);
