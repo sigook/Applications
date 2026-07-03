@@ -44,13 +44,6 @@
 <script setup lang="ts" generic="T">
 import { ref, computed } from 'vue'
 
-/**
- * Autocomplete — single-select text input with filtered dropdown.
- *
- * The model is a plain string (what's currently typed); the parent listens
- * to `@select` to capture the chosen object (`T`). The parent supplies the
- * `data` list and filters it (or hands an already-filtered list back).
- */
 const props = withDefaults(defineProps<{
   modelValue?: string
   data: readonly T[]
@@ -62,7 +55,6 @@ const props = withDefaults(defineProps<{
   loading?: boolean
   optionKey?: keyof T & string
   optionLabel?: keyof T & string
-  /** When set, renders a "+ Add 'query'" footer in the dropdown. */
   allowAdd?: boolean
 }>(), {
   required: false,
@@ -157,8 +149,8 @@ function onAddNew(): void {
   width: 100%;
   height: clamp(44px, 4.4vw, 48px);
   padding: 0 14px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: var(--c-glass-fill);
+  border: 1px solid var(--c-glass-border);
   border-radius: 12px;
   color: #fff;
   font-family: var(--font-family);
@@ -173,14 +165,14 @@ function onAddNew(): void {
 }
 
 .landing-autocomplete__control:hover {
-  background: rgba(255, 255, 255, 0.10);
-  border-color: rgba(255, 255, 255, 0.36);
+  background: var(--c-glass-fill-strong);
+  border-color: var(--c-glass-border-hover);
 }
 
 .landing-autocomplete__control:focus {
   background: rgba(255, 255, 255, 0.12);
   border-color: var(--c-brand-cyan);
-  box-shadow: 0 0 0 3px rgba(0, 173, 239, 0.20);
+  box-shadow: var(--focus-ring-cyan);
 }
 
 .landing-autocomplete--error .landing-autocomplete__control {
@@ -196,8 +188,8 @@ function onAddNew(): void {
   list-style: none;
   margin: 0;
   padding: 6px;
-  background: #0f2f44;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: var(--c-brand-navy);
+  border: 1px solid var(--c-glass-border);
   border-radius: 12px;
   max-height: 220px;
   overflow-y: auto;

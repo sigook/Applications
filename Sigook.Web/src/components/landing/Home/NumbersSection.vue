@@ -50,13 +50,12 @@
 
 <script setup lang="ts">
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
-import SecondaryCard from '@/components/landing/shared/SecondaryCard.vue'
+import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
 
 const { el: sectionRef, visible } = useRevealOnScroll()
 </script>
 
 <style scoped>
-/* ── Section shell — transparent (background lives in GlobalBackground) ─── */
 .numbers {
   position: relative;
   margin-top: -177px;
@@ -80,7 +79,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   text-align: center;
 }
 
-/* ── Header ──────────────────────────────────────────────────────────────── */
 .numbers__header {
   max-width: 720px;
   margin-bottom: 64px;
@@ -88,7 +86,7 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   transform: translateY(20px);
   transition:
     opacity 0.7s ease-out,
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.7s var(--ease-brand);
 }
 
 .numbers.is-visible .numbers__header {
@@ -126,7 +124,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   margin: 0;
 }
 
-/* ── Stat cards row — SecondaryCard instances laid out in a flex row ───── */
 .numbers__stats {
   display: flex;
   gap: 32px;
@@ -138,12 +135,9 @@ const { el: sectionRef, visible } = useRevealOnScroll()
 
 .numbers__stat {
   width: 280px;
-  /* Left-align content inside the card (eyebrow + number + label) — mirrors Figma */
   text-align: left;
 }
 
-/* Number + label — typography lives at the section level so the stat
-   slot stays content-agnostic in the canonical SecondaryCard. */
 .numbers__stat :deep(.secondary-card__body) {
   display: flex;
   flex-direction: column;
@@ -172,7 +166,6 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   text-transform: uppercase;
 }
 
-/* ── Mobile (≤ 1023px) ───────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .numbers {
     height: 1280px;

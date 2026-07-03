@@ -65,7 +65,6 @@ function onEditingNote() {
   localStorage.setItem(keyLocalstorage, newNote.note);
 }
 
-// created()
 if (props.currentNote) {
   newNote.id = props.currentNote.id;
   newNote.color = props.currentNote.color;

@@ -1,6 +1,5 @@
 <template>
   <section class="partner-process">
-    <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="partner-process__surface" aria-hidden="true"></div>
 
     <LandingSectionHeader
@@ -24,7 +23,6 @@
         ]"
         :style="{ transitionDelay: `${idx * 140}ms` }"
       >
-        <!-- Big number — the visual anchor of each card -->
         <span class="partner-process__number" aria-hidden="true">
           {{ String(idx + 1).padStart(2, '0') }}
         </span>
@@ -40,23 +38,8 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Partner — "How it works" 4-step onboarding section.
- *
- * Panel-style (mirror border-radius from Types section → TR+BL to create
- * a zig-zag rhythm between the two panels of the page).
- *
- * Each step is an ordered-list item with:
- *  • A giant 2-digit number (01..04) as the visual anchor
- *  • Eyebrow tag (timing or label)
- *  • Title (the verb of the step)
- *  • Short body
- *
- * Steps fade up with IntersectionObserver stagger — handled manually here
- * because the wrapper isn't a SecondaryCard.
- */
 import { ref, onMounted, onUnmounted } from 'vue'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 
 interface Step {
   readonly eyebrow: string
@@ -69,34 +52,29 @@ const STEPS: readonly Step[] = [
   {
     eyebrow: 'Day 1',
     title: 'Apply',
-    body:
-      'Tell us about your specialty, your network, and the track you want. A partner success manager replies within two business days.',
+    body: 'Tell us about your specialty, your network, and the track you want. A partner success manager replies within two business days.',
     tone: 'cyan',
   },
   {
     eyebrow: 'Week 1',
     title: 'Onboard',
-    body:
-      'One half-day session: compliance setup, platform access, payroll wiring, and a walkthrough of our active client list.',
+    body: 'One half-day session: compliance setup, platform access, payroll wiring, and a walkthrough of our active client list.',
     tone: 'blue',
   },
   {
     eyebrow: 'Weeks 2–3',
     title: 'Match',
-    body:
-      'You source candidates or open client conversations. We back you with templates, market data, and a recruiter buddy for the first deal.',
+    body: 'You source candidates or open client conversations. We back you with templates, market data, and a recruiter buddy for the first deal.',
     tone: 'cyan',
   },
   {
     eyebrow: 'Week 4+',
     title: 'Earn',
-    body:
-      'Your placement closes. Revenue is calculated transparently, paid on the same cycle as our employees — and it compounds from there.',
+    body: 'Your placement closes. Revenue is calculated transparently, paid on the same cycle as our employees — and it compounds from there.',
     tone: 'red',
   },
-] as const
+]
 
-// Per-step intersection observer so the cards fade up in sequence.
 const stepRefs = ref<HTMLElement[]>([])
 const visibleSteps = ref<boolean[]>(STEPS.map(() => false))
 let observer: IntersectionObserver | null = null
@@ -120,13 +98,12 @@ onUnmounted(() => observer?.disconnect())
 </script>
 
 <style scoped>
-/* ── Panel shell — TR+BL radius mirrors Types section (TL+BR) ───────────── */
 .partner-process {
   position: relative;
   width: 100%;
-  margin-top: clamp(-180px, -10vw, -80px);
+  margin-top: var(--panel-overlap);
   padding:
-    clamp(140px, 14vw, 200px)
+    var(--section-pad-y-lg)
     clamp(20px, 3vw, 64px);
   display: flex;
   flex-direction: column;
@@ -134,8 +111,8 @@ onUnmounted(() => observer?.disconnect())
   gap: clamp(48px, 6vw, 80px);
   z-index: 5;
   border-radius:
-    0 clamp(80px, 10vw, 150px)
-    0 clamp(80px, 10vw, 150px);
+    0 var(--r-brand-fluid)
+    0 var(--r-brand-fluid);
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -158,7 +135,6 @@ onUnmounted(() => observer?.disconnect())
   pointer-events: none;
 }
 
-/* ── Steps — 4 cols desktop, 2 tablet, 1 mobile ─────────────────────────── */
 .partner-process__steps {
   list-style: none;
   padding: 0;
@@ -180,7 +156,7 @@ onUnmounted(() => observer?.disconnect())
     clamp(22px, 2.6vw, 32px);
   background: linear-gradient(180deg,
     rgba(255, 255, 255, 0.10) 0%,
-    rgba(255, 255, 255, 0.04) 100%);
+    var(--c-glass-fill-soft) 100%);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -196,7 +172,7 @@ onUnmounted(() => observer?.disconnect())
   transform: translateY(40px) scale(0.95);
   transition:
     opacity 0.7s ease-out,
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.7s var(--ease-brand);
 }
 
 .partner-process__step--visible {
@@ -204,7 +180,6 @@ onUnmounted(() => observer?.disconnect())
   transform: translateY(0) scale(1);
 }
 
-/* Tone glow in the BL corner — accents the step's brand color */
 .partner-process__step::before {
   content: '';
   position: absolute;
@@ -238,7 +213,6 @@ onUnmounted(() => observer?.disconnect())
     transparent 70%);
 }
 
-/* ── Big step number — the visual anchor ─────────────────────────────────── */
 .partner-process__number {
   position: relative;
   z-index: 1;
@@ -257,7 +231,6 @@ onUnmounted(() => observer?.disconnect())
 }
 
 .partner-process__step--blue .partner-process__number {
-  /* Slightly lighter than brand blue so it reads on the dark panel */
   color: #5cb1ff;
 }
 
@@ -265,7 +238,6 @@ onUnmounted(() => observer?.disconnect())
   color: var(--c-brand-red);
 }
 
-/* ── Step body ──────────────────────────────────────────────────────────── */
 .partner-process__step-body {
   position: relative;
   z-index: 1;
@@ -299,7 +271,6 @@ onUnmounted(() => observer?.disconnect())
   margin: 0;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .partner-process__steps { grid-template-columns: repeat(2, 1fr); }
 }

@@ -32,9 +32,7 @@
           rel="noopener noreferrer"
           :aria-label="`${member.name} on LinkedIn`"
         >
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .78 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .78 23.2 0 22.22 0z" />
-          </svg>
+          <LandingIcon name="linkedin" />
           <span>LinkedIn</span>
         </a>
       </article>
@@ -43,7 +41,9 @@
 </template>
 
 <script setup lang="ts">
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import teamMembersData from '@/data/landing/teamMembers.json'
 
 interface Member {
   readonly name: string
@@ -53,71 +53,7 @@ interface Member {
   readonly photo: string | null
 }
 
-const MEMBERS: readonly Member[] = [
-  {
-    name: 'Andrea Gonzalez',
-    role: 'Co-Founder & CEO',
-    bio: 'Majority owner of the Covenant Group family, Andrea guides the company\'s direction and long-term vision.',
-    linkedin: 'https://www.linkedin.com/in/andreagonzalesgm/',
-    photo: null,
-  },
-  {
-    name: 'David Ballesteros',
-    role: 'Co-Founder & Business Director',
-    bio: 'Drives growth initiatives, strategic partnerships, and new ventures across staffing, technology, and workforce services.',
-    linkedin: 'https://www.linkedin.com/in/saulo-david-ballesteros-8391513/',
-    photo: null,
-  },
-  {
-  name: 'Isabella Zabaleta',
-    role: 'Operations and Management Support Assistant',
-    bio: 'Provides essential support to our operations and management teams, ensuring smooth workflows and efficient processes across the organization.',
-    linkedin: 'https://www.linkedin.com/in/isabella-zabaleta-marketing-ux/',
-    photo: null,
-  },
-  {
-    name: 'Leonardo Gomez',
-    role: 'Recruiter & Talent Acquisition',
-    bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
-    linkedin: 'https://www.linkedin.com/in/leonardo-gomez-22279b23a/',
-    photo: null,
-  },
-  {
-    name: 'Daniela Garcia',
-      role: 'Recruiter & Talent Acquisition',
-      bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
-      linkedin: 'https://www.linkedin.com/in/danielagarciasaave',
-      photo: null,
-  },
-  {
-    name: 'Carol Vargas',
-      role: 'Recruiter & Talent Acquisition',
-      bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
-      linkedin: '#',
-      photo: null,
-  },
-  {
-    name: 'Indira Martinez',
-      role: 'Payroll Specialist',
-      bio: 'Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.',
-      linkedin: 'https://www.linkedin.com/in/indira-yasmin-martinez-rubiano-3247a978/',
-      photo: null,
-  },
-  {
-    name: 'Juan González',
-      role: 'CTO - Lead Developer',
-      bio: 'Experienced technology leader and fullstack developer, responsible for overseeing our technical strategy and leading the development of innovative solutions that drive our business forward.',
-      linkedin: '#',
-      photo: null,
-  },
-  {
-    name: 'Juan Betancur',
-      role: 'Senior Fullstack Developer',
-      bio: 'Experienced fullstack developer with a strong focus on building scalable and maintainable web applications.',
-      linkedin: 'https://www.linkedin.com/in/juan-betancur-b868b2213',
-      photo: null,
-  }
-]
+const MEMBERS = teamMembersData as unknown as readonly Member[]
 
 function initials(name: string): string {
   return name
@@ -140,7 +76,7 @@ function hasLinkedin(member: Member): boolean {
   position: relative;
   width: 100%;
   padding:
-    clamp(72px, 10vw, 140px)
+    var(--section-pad-y)
     clamp(20px, 3vw, 40px)
     clamp(96px, 12vw, 180px);
   isolation: isolate;
@@ -180,7 +116,7 @@ function hasLinkedin(member: Member): boolean {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.35s var(--ease-brand),
     border-color 0.3s ease,
     box-shadow 0.3s ease;
 }

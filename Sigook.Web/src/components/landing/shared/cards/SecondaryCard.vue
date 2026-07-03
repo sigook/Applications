@@ -1,0 +1,317 @@
+<template>
+  <article
+    ref="cardRef"
+    class="secondary-card"
+    :class="[
+      `secondary-card--${variant}`,
+      { 'secondary-card--visible': visible, 'secondary-card--expanded': expanded },
+    ]"
+    :style="{ transitionDelay: `${delay}ms` }"
+  >
+    <div
+      v-if="$slots.expanded"
+      class="secondary-card__red-veil"
+      aria-hidden="true"
+    ></div>
+
+    <div v-if="$slots.icon" class="secondary-card__icon">
+      <slot name="icon" />
+    </div>
+
+    <span v-if="eyebrow" class="secondary-card__eyebrow">{{ eyebrow }}</span>
+
+    <h3 v-if="title" class="secondary-card__title">{{ title }}</h3>
+
+    <div v-if="$slots.default" class="secondary-card__body">
+      <slot />
+    </div>
+
+    <ul v-if="list && list.length" class="secondary-card__list">
+      <li v-for="item in list" :key="item">{{ item }}</li>
+    </ul>
+
+    <div v-if="$slots.expanded" class="secondary-card__expanded">
+      <slot name="expanded" />
+    </div>
+
+    <div v-if="$slots.button" class="secondary-card__button-wrap">
+      <slot name="button" />
+    </div>
+  </article>
+</template>
+
+<script lang="ts">
+export type SecondaryCardVariant = 'blue' | 'cyan' | 'red'
+</script>
+
+<script setup lang="ts">
+import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
+
+withDefaults(defineProps<{
+  variant?: SecondaryCardVariant
+  eyebrow?: string
+  title?: string
+  list?: readonly string[]
+  delay?: number
+  expanded?: boolean
+}>(), {
+  variant: 'cyan',
+  delay: 0,
+  expanded: false,
+})
+
+const { el: cardRef, visible } = useRevealOnScroll()
+</script>
+
+<style scoped>
+.secondary-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding:
+    clamp(32px, 4vw, 48px)
+    clamp(24px, 3vw, 36px);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+  color: #fff;
+  isolation: isolate;
+  font-family: var(--font-family);
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(40px) scale(0.92);
+  transition:
+    opacity 0.7s ease-out,
+    transform 0.7s var(--ease-brand);
+}
+
+.secondary-card--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.secondary-card__red-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  background: linear-gradient(135deg,
+    rgba(229, 45, 39, 0.42) 0%,
+    rgba(229, 45, 39, 0.14) 50%,
+    rgba(21, 117, 187, 0.32) 100%);
+}
+
+.secondary-card--expanded .secondary-card__red-veil {
+  opacity: 1;
+}
+
+.secondary-card__expanded {
+  position: relative;
+  z-index: 1;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.6s ease,
+    opacity 0.35s ease,
+    margin-top 0.6s ease;
+}
+
+.secondary-card--expanded .secondary-card__expanded {
+  max-height: 1400px;
+  opacity: 1;
+  margin-top: clamp(14px, 1.6vw, 18px);
+}
+
+.secondary-card::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  width: clamp(120px, 14vw, 200px);
+  height: clamp(120px, 14vw, 200px);
+  z-index: 0;
+}
+
+.secondary-card--blue {
+  background: linear-gradient(135deg,
+    rgba(21, 117, 187, 0.42) 0%,
+    rgba(21, 117, 187, 0.14) 50%,
+    rgba(229, 45, 39, 0.32) 100%);
+  border-radius:
+    clamp(20px, 2.4vw, 32px) clamp(48px, 6vw, 80px)
+    clamp(20px, 2.4vw, 32px) clamp(48px, 6vw, 80px);
+}
+
+.secondary-card--blue::before {
+  top: 0;
+  right: 0;
+  background: radial-gradient(circle at top right,
+    rgba(229, 45, 39, 0.55) 0%,
+    rgba(229, 45, 39, 0.18) 35%,
+    transparent 70%);
+  border-radius: 0 clamp(48px, 6vw, 80px) 0 0;
+}
+
+.secondary-card--cyan {
+  background: linear-gradient(135deg,
+    rgba(0, 173, 239, 0.34) 0%,
+    rgba(21, 117, 187, 0.22) 50%,
+    rgba(229, 45, 39, 0.30) 100%);
+  border-radius:
+    clamp(48px, 6vw, 80px) clamp(20px, 2.4vw, 32px)
+    clamp(48px, 6vw, 80px) clamp(20px, 2.4vw, 32px);
+}
+
+.secondary-card--cyan::before {
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle at top left,
+    rgba(0, 173, 239, 0.55) 0%,
+    rgba(0, 173, 239, 0.18) 35%,
+    transparent 70%);
+  border-radius: clamp(48px, 6vw, 80px) 0 0 0;
+}
+
+.secondary-card--red {
+  background: linear-gradient(135deg,
+    rgba(229, 45, 39, 0.42) 0%,
+    rgba(229, 45, 39, 0.14) 50%,
+    rgba(21, 117, 187, 0.32) 100%);
+  border-radius:
+    clamp(20px, 2.4vw, 32px) clamp(48px, 6vw, 80px)
+    clamp(20px, 2.4vw, 32px) clamp(48px, 6vw, 80px);
+}
+
+.secondary-card--red::before {
+  top: 0;
+  right: 0;
+  background: radial-gradient(circle at top right,
+    rgba(21, 117, 187, 0.60) 0%,
+    rgba(21, 117, 187, 0.20) 35%,
+    transparent 70%);
+  border-radius: 0 clamp(48px, 6vw, 80px) 0 0;
+}
+
+.secondary-card__icon {
+  position: relative;
+  z-index: 1;
+  margin-bottom: clamp(14px, 1.6vw, 20px);
+  font-size: clamp(32px, 3.8vw, 48px);
+  color: #fff;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+  line-height: 0;
+}
+
+.secondary-card__eyebrow {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  font-size: clamp(10px, 0.9vw, 12px);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-brand-cyan);
+  margin-bottom: clamp(12px, 1.4vw, 18px);
+}
+
+.secondary-card--red .secondary-card__eyebrow {
+  color: #fff;
+  opacity: 0.85;
+}
+
+.secondary-card__title {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin: 0;
+}
+
+.secondary-card__body {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(13px, 1.15vw, 15px);
+  font-weight: 400;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.secondary-card__title + .secondary-card__body {
+  margin-top: clamp(12px, 1.4vw, 16px);
+}
+
+.secondary-card__list {
+  position: relative;
+  z-index: 1;
+  list-style: none;
+  padding: 0;
+  margin: clamp(14px, 1.6vw, 18px) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.secondary-card__list li {
+  position: relative;
+  padding-left: 18px;
+  font-size: clamp(13px, 1.1vw, 14px);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.secondary-card__list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.secondary-card__button-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(20px, 2.4vw, 28px);
+}
+
+.secondary-card__body :deep(> *:first-child) { margin-top: 0; }
+.secondary-card__body :deep(> *:last-child)  { margin-bottom: 0; }
+
+@media (max-width: 1023px) {
+  .secondary-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 16px 24px rgba(0, 0, 0, 0.28);
+  }
+
+  .secondary-card--blue {
+    background: linear-gradient(135deg,
+      rgba(21, 117, 187, 0.56) 0%,
+      rgba(21, 117, 187, 0.30) 50%,
+      rgba(229, 45, 39, 0.46) 100%);
+  }
+
+  .secondary-card--cyan {
+    background: linear-gradient(135deg,
+      rgba(0, 173, 239, 0.50) 0%,
+      rgba(21, 117, 187, 0.38) 50%,
+      rgba(229, 45, 39, 0.44) 100%);
+  }
+
+  .secondary-card--red {
+    background: linear-gradient(135deg,
+      rgba(229, 45, 39, 0.56) 0%,
+      rgba(229, 45, 39, 0.30) 50%,
+      rgba(21, 117, 187, 0.46) 100%);
+  }
+}
+</style>

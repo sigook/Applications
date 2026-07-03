@@ -11,10 +11,7 @@
       />
       <img v-if="previewUrl" :src="previewUrl" alt="Profile preview" class="landing-imageupload__preview" />
       <span v-else class="landing-imageupload__placeholder" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-          <circle cx="12" cy="13" r="4" />
-        </svg>
+        <LandingIcon name="camera" />
       </span>
       <span class="landing-imageupload__overlay">
         {{ previewUrl ? 'Change photo' : 'Add photo' }}
@@ -27,12 +24,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const ALLOWED = ['jpeg', 'jpg', 'png', 'gif']
 const MAX_SIZE_KB = 10_000
 
 const props = withDefaults(defineProps<{
-  /** Initial image URL (e.g. when editing an existing profile). */
   initialUrl?: string
   hint?: string
   disabled?: boolean
@@ -47,7 +44,6 @@ const emit = defineEmits<{
 const inputRef = ref<HTMLInputElement | null>(null)
 const previewUrl = ref<string | null>(props.initialUrl ?? null)
 const error = ref('')
-/** Track URLs we created via `createObjectURL` so we can revoke them. */
 const ownedUrls: string[] = []
 
 watch(() => props.initialUrl, (url) => {
@@ -58,14 +54,12 @@ function onChange(event: Event): void {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (!file) return
 
-  // Validate extension
   const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
   if (!ALLOWED.includes(ext)) {
     error.value = `Allowed: ${ALLOWED.join(', ')}`
     return
   }
 
-  // Validate size
   if (file.size / 1024 > MAX_SIZE_KB) {
     error.value = `Max size ${MAX_SIZE_KB / 1000}MB`
     return
@@ -79,7 +73,6 @@ function onChange(event: Event): void {
 }
 
 onMounted(() => {
-  // No-op
 })
 
 onUnmounted(() => {
@@ -101,7 +94,7 @@ onUnmounted(() => {
   width: clamp(120px, 14vw, 160px);
   height: clamp(120px, 14vw, 160px);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 2px dashed rgba(255, 255, 255, 0.40);
   overflow: hidden;
   cursor: pointer;

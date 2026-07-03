@@ -17,10 +17,6 @@
 import { computed } from 'vue'
 import Input from '@/components/landing/shared/forms/Input.vue'
 
-/**
- * PhoneInput — Input wrapper that auto-formats 10-digit North-American
- * phone numbers as "AAA BBB-CCCC".
- */
 const props = withDefaults(defineProps<{
   modelValue?: string
   label?: string

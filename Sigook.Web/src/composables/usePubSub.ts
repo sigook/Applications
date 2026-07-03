@@ -11,8 +11,6 @@ export function usePubSub(): PubSub {
   const subscribers = ref<string[]>([]);
 
   function subscribe(event: string): void {
-    // Note: the original mixin used array-indexed-by-string access which always returns undefined,
-    // so this condition is always true. Preserving historical behavior.
     if (!(subscribers.value as unknown as Record<string, boolean>)[event]) {
       subscribers.value.push(event);
     }

@@ -22,5 +22,5 @@ import WhyChooseUsSection from '@/components/landing/Home/WhyChooseUsSection.vue
 import CertifiedSection from '@/components/landing/Home/CertifiedSection.vue'
 import AppDownloadSection from '@/components/landing/Home/AppDownloadSection.vue'
 import TestimonialsSection from '@/components/landing/Home/TestimonialsSection.vue'
-import ContactSection from '@/components/landing/shared/ContactSection.vue'
+import ContactSection from '@/components/landing/shared/sections/ContactSection.vue'
 </script>

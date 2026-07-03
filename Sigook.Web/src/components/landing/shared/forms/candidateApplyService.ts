@@ -58,11 +58,6 @@ function generateFileName(prefix: string, originalFileName: string): string {
   return `${prefix}_${generateGuidWithoutDashes()}${getFileExtension(originalFileName)}`
 }
 
-/**
- * Build the multipart payload (CandidateViewModel + optional resume) and post
- * it to the website candidate endpoint. Mirrors the Covenant application
- * submit logic, kept entirely under the landing territory.
- */
 export function submitCandidateApplication(
   data: CandidateFormData,
   requestId?: string,
