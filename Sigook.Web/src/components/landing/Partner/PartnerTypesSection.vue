@@ -42,7 +42,6 @@
 import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
 import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/cards/PrimaryCard.vue'
-import partnerTracksData from '@/data/landing/partnerTracks.json'
 
 interface PartnerTrack {
   readonly key: string
@@ -55,7 +54,38 @@ interface PartnerTrack {
   readonly variant: PrimaryCardVariant
 }
 
-const TRACKS = partnerTracksData as readonly PartnerTrack[]
+const TRACKS: readonly PartnerTrack[] = [
+  {
+    key: 'recruiter',
+    eyebrow: 'Independent Recruiter',
+    title: 'Recruiter Partner',
+    body: 'Source and screen candidates for the industries you know best — engineering, logistics, construction, IT, or professional services. You stay independent; Sigook provides the compliance, payroll, and client onboarding behind you.',
+    benefits: [
+      'Full back-office support',
+      'Compliance + payroll handled',
+      'Client onboarding structure',
+      'Your brand stays yours',
+    ],
+    ctaLabel: 'Apply as recruiter',
+    ctaHref: '#partner-contact',
+    variant: 'navy',
+  },
+  {
+    key: 'business',
+    eyebrow: 'Business Developer',
+    title: 'Business Partner',
+    body: 'Bring your client relationships and let Sigook handle delivery. You share the ongoing revenue from every placement or project, while contracts, compliance, and client success live with us.',
+    benefits: [
+      'Ongoing revenue share',
+      'Sigook handles delivery',
+      'Keep your relationships',
+      'Ideal for consultants',
+    ],
+    ctaLabel: 'Apply as business partner',
+    ctaHref: '#partner-contact',
+    variant: 'red',
+  },
+]
 </script>
 
 <style scoped>

@@ -31,7 +31,7 @@
 
     <section v-if="job.description" class="job-detail__section">
       <h4 class="job-detail__section-title">Description</h4>
-      <div class="job-detail__html" v-html="safeDescription"></div>
+      <div class="job-detail__html" v-html="job.description"></div>
     </section>
 
     <section v-if="job.shift" class="job-detail__section">
@@ -41,12 +41,12 @@
 
     <section v-if="job.responsibilities" class="job-detail__section">
       <h4 class="job-detail__section-title">Responsibilities</h4>
-      <div class="job-detail__html" v-html="safeResponsibilities"></div>
+      <div class="job-detail__html" v-html="job.responsibilities"></div>
     </section>
 
     <section v-if="job.requirements" class="job-detail__section">
       <h4 class="job-detail__section-title">Requirements</h4>
-      <div class="job-detail__html" v-html="safeRequirements"></div>
+      <div class="job-detail__html" v-html="job.requirements"></div>
     </section>
 
     <footer class="job-detail__footer">
@@ -67,7 +67,6 @@
  *   - Mobile : inline expanded under the active list item
  */
 import { computed } from 'vue'
-import DOMPurify from 'dompurify'
 import type { JobViewModel } from '@/types/website'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
 import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
@@ -76,9 +75,6 @@ import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 const props = defineProps<{
   job: JobViewModel
 }>()
-const safeDescription = computed(() => DOMPurify.sanitize(props.job.description ?? ''))
-const safeResponsibilities = computed(() => DOMPurify.sanitize(props.job.responsibilities ?? ''))
-const safeRequirements = computed(() => DOMPurify.sanitize(props.job.requirements ?? ''))
 
 const registerModal = useCandidateApplyModal()
 

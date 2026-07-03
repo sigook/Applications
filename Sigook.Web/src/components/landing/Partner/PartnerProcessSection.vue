@@ -40,7 +40,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
-import partnerProcessData from '@/data/landing/partnerProcess.json'
 
 interface Step {
   readonly eyebrow: string
@@ -49,7 +48,32 @@ interface Step {
   readonly tone: 'cyan' | 'blue' | 'red'
 }
 
-const STEPS = partnerProcessData as readonly Step[]
+const STEPS: readonly Step[] = [
+  {
+    eyebrow: 'Day 1',
+    title: 'Apply',
+    body: 'Tell us about your specialty, your network, and the track you want. A partner success manager replies within two business days.',
+    tone: 'cyan',
+  },
+  {
+    eyebrow: 'Week 1',
+    title: 'Onboard',
+    body: 'One half-day session: compliance setup, platform access, payroll wiring, and a walkthrough of our active client list.',
+    tone: 'blue',
+  },
+  {
+    eyebrow: 'Weeks 2–3',
+    title: 'Match',
+    body: 'You source candidates or open client conversations. We back you with templates, market data, and a recruiter buddy for the first deal.',
+    tone: 'cyan',
+  },
+  {
+    eyebrow: 'Week 4+',
+    title: 'Earn',
+    body: 'Your placement closes. Revenue is calculated transparently, paid on the same cycle as our employees — and it compounds from there.',
+    tone: 'red',
+  },
+]
 
 const stepRefs = ref<HTMLElement[]>([])
 const visibleSteps = ref<boolean[]>(STEPS.map(() => false))

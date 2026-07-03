@@ -103,7 +103,6 @@ import SliderDots from '@/components/landing/shared/ui/SliderDots.vue'
 import TertiaryCard, { type TertiaryCardVariant } from '@/components/landing/shared/cards/TertiaryCard.vue'
 import IndustryIcon, { type IndustryIconName } from '@/components/landing/shared/icons/IndustryIcon.vue'
 import { useCarousel } from '@/composables/useCarousel'
-import industriesCarouselData from '@/data/landing/industriesCarousel.json'
 
 interface IndustryCard {
   readonly kind: 'industry'
@@ -135,7 +134,19 @@ const props = withDefaults(defineProps<{
   learnMoreSubtitle: 'Explore all sectors',
 })
 
-const INDUSTRIES = industriesCarouselData as readonly IndustryCard[]
+const INDUSTRIES: readonly IndustryCard[] = [
+  { kind: 'industry', key: 'automotive', title: 'Automotive', iconName: 'automotive', tone: 'blue' },
+  { kind: 'industry', key: 'aviation', title: 'Aviation', iconName: 'aviation', tone: 'cyan' },
+  { kind: 'industry', key: 'construction', title: 'Construction', iconName: 'construction', tone: 'red' },
+  { kind: 'industry', key: 'engineering', title: 'Engineering', iconName: 'engineering', tone: 'blue' },
+  { kind: 'industry', key: 'technology', title: 'Technology & IT', iconName: 'technology', tone: 'cyan' },
+  { kind: 'industry', key: 'finance', title: 'Finance', iconName: 'finance', tone: 'red' },
+  { kind: 'industry', key: 'legal', title: 'Legal', iconName: 'legal', tone: 'blue' },
+  { kind: 'industry', key: 'logistics', title: 'Logistics', iconName: 'logistics', tone: 'cyan' },
+  { kind: 'industry', key: 'manufacturing', title: 'Manufacturing', iconName: 'manufacturing', tone: 'red' },
+  { kind: 'industry', key: 'retail', title: 'Retail', iconName: 'retail', tone: 'blue' },
+  { kind: 'industry', key: 'transportation', title: 'Transportation', iconName: 'transportation', tone: 'cyan' },
+]
 
 const CARDS_PER_SLIDE = 3
 

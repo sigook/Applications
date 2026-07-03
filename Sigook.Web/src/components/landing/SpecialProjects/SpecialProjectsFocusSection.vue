@@ -27,7 +27,6 @@
 <script setup lang="ts">
 import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/cards/SecondaryCard.vue'
-import focusAreasData from '@/data/landing/focusAreas.json'
 
 interface FocusArea {
   readonly eyebrow: string
@@ -36,7 +35,32 @@ interface FocusArea {
   readonly variant: SecondaryCardVariant
 }
 
-const AREAS = focusAreasData as unknown as readonly FocusArea[]
+const AREAS: readonly FocusArea[] = [
+  {
+    eyebrow: 'Capability Building',
+    title: 'Workforce Development',
+    body: 'Initiatives that support workforce growth, industry needs, and talent development at every level — from entry to specialist.',
+    variant: 'blue',
+  },
+  {
+    eyebrow: 'In Motion',
+    title: 'Featured Initiatives',
+    body: 'Programs and projects making real impact today — across cities, sectors, and public–private partnerships.',
+    variant: 'cyan',
+  },
+  {
+    eyebrow: 'Way of Working',
+    title: 'How We Collaborate',
+    body: 'Shoulder-to-shoulder with clients, partners, and communities — co-designing workforce solutions that actually stick.',
+    variant: 'red',
+  },
+  {
+    eyebrow: 'On the Horizon',
+    title: 'Future Initiatives',
+    body: 'Exploring the opportunities and programs that will shape the next decade of work — and the people who power it.',
+    variant: 'cyan',
+  },
+]
 </script>
 
 <style scoped>

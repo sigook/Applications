@@ -32,7 +32,6 @@
 import { h, type FunctionalComponent } from 'vue'
 import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
 import SecondaryCard, { type SecondaryCardVariant } from '@/components/landing/shared/cards/SecondaryCard.vue'
-import partnerBenefitsData from '@/data/landing/partnerBenefits.json'
 
 const svg = (paths: string[]): FunctionalComponent => () =>
   h('svg', {
@@ -89,7 +88,36 @@ const ICONS: Record<string, FunctionalComponent> = {
   rocket: IconRocket,
 }
 
-const BENEFITS: readonly Benefit[] = (partnerBenefitsData as readonly BenefitData[]).map(
+const BENEFITS: readonly Benefit[] = ([
+  {
+    eyebrow: 'Set Your Own Pace',
+    title: 'Full Autonomy',
+    body: 'Pick your hours, your territory, your specialty. No quotas, no central dispatch — your book of business runs on your rhythm.',
+    variant: 'cyan',
+    icon: 'autonomy',
+  },
+  {
+    eyebrow: 'Coast to Coast',
+    title: 'Nationwide Reach',
+    body: 'Place across the United States through one license, one contract, one payroll system. We absorb the multi-state overhead.',
+    variant: 'blue',
+    icon: 'reach',
+  },
+  {
+    eyebrow: 'Compliant by Default',
+    title: 'Licensed Agency',
+    body: "Operate under Sigook's certifications, insurance, and audit-ready compliance framework — you get the credibility of a tier-1 firm on day one.",
+    variant: 'cyan',
+    icon: 'licensed',
+  },
+  {
+    eyebrow: 'Real Upside',
+    title: 'Entrepreneurial Rewards',
+    body: 'Performance-based comp with no ceiling. The deals you close compound into ongoing revenue, not capped commissions.',
+    variant: 'red',
+    icon: 'rocket',
+  },
+] as readonly BenefitData[]).map(
   (b) => ({
     eyebrow: b.eyebrow,
     title: b.title,

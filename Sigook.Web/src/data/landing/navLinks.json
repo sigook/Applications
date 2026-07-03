@@ -1,8 +1,0 @@
-[
-  { "label": "Open Positions", "to": "/open-positions" },
-  { "label": "Talents", "to": "/talents" },
-  { "label": "Employers", "to": "/employers" },
-  { "label": "Industries", "to": "/industries" },
-  { "label": "Special Projects", "to": "/special-projects" },
-  { "label": "About Us", "to": "/about" }
-]

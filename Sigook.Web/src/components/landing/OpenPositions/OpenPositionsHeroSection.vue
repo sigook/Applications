@@ -53,7 +53,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/hero/HeroBackground.vue'
 import heroImage from '@/assets/images/v2/hero/open-positions.webp'

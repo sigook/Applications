@@ -57,7 +57,6 @@
 
 <script setup lang="ts">
 import SocialLinks from '@/components/landing/shared/ui/SocialLinks.vue'
-import footerLinksData from '@/data/landing/footerLinks.json'
 
 interface FooterLink {
   readonly label: string
@@ -71,7 +70,29 @@ interface FooterColumn {
   readonly links: readonly FooterLink[]
 }
 
-const footerLinks = footerLinksData as readonly FooterColumn[]
+const footerLinks: readonly FooterColumn[] = [
+  {
+    eyebrow: 'Company',
+    ariaLabel: 'Company',
+    links: [
+      { label: 'About Us', to: '/about' },
+      { label: 'Open Positions', to: '/open-positions' },
+      { label: 'Industries', to: '/industries' },
+      { label: 'Special Projects', to: '/special-projects' },
+      { label: 'Become a Partner', to: '/partner' },
+    ],
+  },
+  {
+    eyebrow: 'Services',
+    ariaLabel: 'Services',
+    links: [
+      { label: 'Temporary Staffing', to: '/employers' },
+      { label: 'Payroll Services', to: '/payroll' },
+      { label: 'Workforce Solutions', to: '/talents' },
+      { label: 'Compliance', to: '/certified' },
+    ],
+  },
+]
 
 const currentYear = new Date().getFullYear()
 </script>
