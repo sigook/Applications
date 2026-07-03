@@ -59,7 +59,7 @@ function onGetCompanyInvoice() {
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
-    .catch((e: any) => {
+    .catch((e: unknown) => {
       isLoading.value = false;
       showAlertError(e);
     });
@@ -72,7 +72,7 @@ function downloadInvoicePdf(item: any) {
       isLoading.value = false;
       downloadPDF(response, "Invoice_" + item.numberId);
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

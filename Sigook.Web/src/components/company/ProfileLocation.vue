@@ -112,9 +112,9 @@ function updateLocation(location: any) {
       isLoading.value = false;
       closeModal();
       getLocations();
-    }).catch((error: any) => {
+    }).catch((error: unknown) => {
       isLoading.value = false;
-      showAlertError(error.data);
+      showAlertError((error as { data?: unknown }).data);
     });
 }
 
@@ -125,9 +125,9 @@ function createLocation(location: any) {
       isLoading.value = false;
       closeModal();
       getLocations();
-    }).catch((error: any) => {
+    }).catch((error: unknown) => {
       isLoading.value = false;
-      showAlertError(error.data);
+      showAlertError((error as { data?: unknown }).data);
     });
 }
 

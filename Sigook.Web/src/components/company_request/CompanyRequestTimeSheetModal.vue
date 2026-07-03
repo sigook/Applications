@@ -114,13 +114,13 @@ function saveHours() {
     missingHours: dayjs(item.missinghoursToDate).format("HH:mm:ss"),
     missingHoursOvertime: dayjs(item.missingHoursOvertimeToDate).format("HH:mm:ss"),
   };
-  validateHoursTimeSheet(route.params.id, props.worker.workerId, item.id, model)
+  validateHoursTimeSheet(route.params.id as string, props.worker.workerId, item.id, model)
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Updated');
       emit("updateData");
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

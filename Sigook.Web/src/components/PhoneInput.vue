@@ -72,7 +72,7 @@ watch(() => props.defaultValue, (val) => {
 });
 
 const errors = computed(() => ({
-  phone: interacted.value ? ((formErrors.value as any).phone || '') : '',
+  phone: interacted.value ? ((formErrors.value as Record<string, string>).phone || '') : '',
 }));
 
 function markInteracted() {

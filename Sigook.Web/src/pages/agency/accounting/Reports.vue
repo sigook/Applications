@@ -34,7 +34,7 @@ const router = useRouter();
 const agencyStore = useAgencyStore();
 
 const tab = ref<string | null>(null);
-const isUsaAgency = computed(() => agencyStore.usaAgency);
+const isUsaAgency = computed(() => agencyStore.agency.usaAgency);
 
 if (isUsaAgency.value) {
   tab.value = '4';

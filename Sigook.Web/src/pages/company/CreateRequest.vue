@@ -298,7 +298,7 @@ function submitRequest(payload: any) {
       router.push('company-requests');
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       showAlertError(error);
       isLoading.value = false;
     });

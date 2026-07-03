@@ -84,8 +84,8 @@ function onGetProfile() {
       companyProfile.value = data;
       isLoading.value = false;
     })
-    .catch((error: any) => {
-      showAlertError(error.data);
+    .catch((error: unknown) => {
+      showAlertError((error as { data?: unknown }).data);
       isLoading.value = false;
     });
 }

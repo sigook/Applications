@@ -72,7 +72,7 @@ function validateAll() {
 
 function updateEmail(email: string) {
   isLoading.value = true;
-  updateAgencyCompanyEmail(props.companyProfileId, { newEmail: email })
+  updateAgencyCompanyEmail(String(props.companyProfileId), { newEmail: email })
     .then(() => {
       isLoading.value = false;
       emit('closeModal', true, email);

@@ -1,4 +1,4 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
 import type {
   Gender,
   IdentificationType,
@@ -17,65 +17,65 @@ import type {
 } from '@/types/common';
 
 export function getGenders(): Promise<Gender[]> {
-  return http.get('/api/Catalog/gender').then(r => r.data);
+  return api.get<Gender[]>('/api/Catalog/gender');
 }
 
 export function getIdentificationTypes(): Promise<IdentificationType[]> {
-  return http.get('/api/Catalog/identificationType').then(r => r.data);
+  return api.get<IdentificationType[]>('/api/Catalog/identificationType');
 }
 
 export function getAvailability(): Promise<Availability[]> {
-  return http.get('/api/Catalog/availability').then(r => r.data);
+  return api.get<Availability[]>('/api/Catalog/availability');
 }
 
 export function getAvailabilityTimes(): Promise<AvailabilityTime[]> {
-  return http.get('/api/Catalog/availabilityTime').then(r => r.data);
+  return api.get<AvailabilityTime[]>('/api/Catalog/availabilityTime');
 }
 
 export function getDays(): Promise<Day[]> {
-  return http.get('/api/Catalog/day').then(r => r.data);
+  return api.get<Day[]>('/api/Catalog/day');
 }
 
 export function fetchLifts(): Promise<Lift[]> {
-  return http.get('/api/Catalog/lift').then(r => r.data);
+  return api.get<Lift[]>('/api/Catalog/lift');
 }
 
 export function fetchLanguages(): Promise<Language[]> {
-  return http.get('/api/Catalog/language').then(r => r.data);
+  return api.get<Language[]>('/api/Catalog/language');
 }
 
 export function getWsibGroups(): Promise<WsibGroup[]> {
-  return http.get('/api/Catalog/wsibgroup').then(r => r.data);
+  return api.get<WsibGroup[]>('/api/Catalog/wsibgroup');
 }
 
 export function getSkills(): Promise<Skill[]> {
-  return http.get('/api/Catalog/skills').then(r => r.data);
+  return api.get<Skill[]>('/api/Catalog/skills');
 }
 
 export function getIndustries(): Promise<Industry[]> {
-  return http.get('/api/Catalog/industry').then(r => r.data);
+  return api.get<Industry[]>('/api/Catalog/industry');
 }
 
 export function getReasonCancellationRequest(): Promise<CancellationReason[]> {
-  return http.get('/api/Catalog/reasonCancellationRequest').then(r => r.data);
+  return api.get<CancellationReason[]>('/api/Catalog/reasonCancellationRequest');
 }
 
 export function getCompanyStatus(): Promise<CatalogItem<number>[]> {
-  return http.get('/api/Catalog/companyStatus').then(r => r.data);
+  return api.get<CatalogItem<number>[]>('/api/Catalog/companyStatus');
 }
 
 export function getSources(): Promise<Source[]> {
-  return http.get('/api/Catalog/source').then(r => r.data);
+  return api.get<Source[]>('/api/Catalog/source');
 }
 
 export function getSourcesForRequests(): Promise<Source[]> {
-  return http.get('/api/Catalog/source/requests').then(r => r.data);
+  return api.get<Source[]>('/api/Catalog/source/requests');
 }
 
 export function getTaxCategories(): Promise<TaxCategory[]> {
-  return http.get('/api/Catalog/tax-categories').then(r => r.data);
+  return api.get<TaxCategory[]>('/api/Catalog/tax-categories');
 }
 
 export function addIndustry(industry: { id?: string; value: string }): Promise<Industry> {
-  return http.post('/api/Catalog/industry', industry).then(r => r.data);
+  return api.post<Industry>('/api/Catalog/industry', industry);
 }

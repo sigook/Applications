@@ -105,7 +105,7 @@ function getProfile() {
       workerStore.setWorkerProfile(data);
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -118,7 +118,7 @@ function updateProfile() {
       workerStore.setWorkerProfile(data);
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -219,10 +219,6 @@ getProfile();
 
     button {
       margin: 0;
-    }
-
-    .md-btn {
-      padding: 5px 12px;
     }
   }
 }

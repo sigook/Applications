@@ -1,6 +1,6 @@
-import type { Directive } from 'vue';
+import type { Directive, DirectiveBinding } from 'vue';
 
-function addStatusClass(element: HTMLElement, binding: any): void {
+function addStatusClass(element: HTMLElement, binding: DirectiveBinding<{ status: string }>): void {
   const statusClass = 'status-' + binding.value.status.toLowerCase();
   element.classList.add(statusClass);
 }

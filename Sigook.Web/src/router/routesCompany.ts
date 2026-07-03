@@ -22,21 +22,23 @@ const routesCompany: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/request/:id",
-    component: CompanyRequest,
-    meta: {
-      requiresAuth: true,
-      role: [company, companyUser],
-    },
-  },
-  {
-    path: "/create-request",
+    path: "/company-requests/create",
     component: CreateRequest,
     meta: {
       requiresAuth: true,
       role: [company, companyUser],
     },
   },
+  {
+    path: "/company-requests/:id",
+    component: CompanyRequest,
+    meta: {
+      requiresAuth: true,
+      role: [company, companyUser],
+    },
+  },
+  { path: "/request/:id", redirect: (to) => `/company-requests/${to.params.id}` },
+  { path: "/create-request", redirect: "/company-requests/create" },
   {
     path: "/company-invoices",
     component: CompanyReports,

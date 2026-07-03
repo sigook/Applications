@@ -53,7 +53,7 @@
                 <span v-if="props.row.isAsap" class="request-flag request-flag--asap">Asap</span>
                 <span v-if="props.row.workerSalary" class="request-flag request-flag--dh">DH</span>
               </div>
-              <router-link :to="{ path: '/agency-request/' + props.row.id }">
+              <router-link :to="{ path: '/recruiting/requests/' + props.row.id }">
                 <p>{{ props.row.numberId }}</p>
               </router-link>
               <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
@@ -66,7 +66,7 @@
               @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
-            <router-link :to="{ path: '/agency-companies/company/' + props.row.companyProfileId }">
+            <router-link :to="{ path: '/recruiting/companies/' + props.row.companyProfileId }">
               {{ props.row.companyFullName }}
             </router-link>
           </template>
@@ -205,15 +205,15 @@
               <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
             </template>
             <b-dropdown-item aria-role="listitem"
-              @click="router.push({ path: '/agency-request/' + props.row.id, query: { tab: 'Applicants' } })">
+              @click="router.push({ path: '/recruiting/requests/' + props.row.id, query: { tab: 'Applicants' } })">
               Applicants
             </b-dropdown-item>
             <b-dropdown-item aria-role="listitem"
-              @click="router.push({ path: '/agency-request/' + props.row.id, query: { tab: 'Runners' } })">
+              @click="router.push({ path: '/recruiting/requests/' + props.row.id, query: { tab: 'Runners' } })">
               Runners
             </b-dropdown-item>
             <b-dropdown-item aria-role="listitem"
-              @click="router.push({ path: '/agency-request/' + props.row.id, query: { tab: 'Workers' } })">
+              @click="router.push({ path: '/recruiting/requests/' + props.row.id, query: { tab: 'Workers' } })">
               Workers
             </b-dropdown-item>
           </b-dropdown>
@@ -329,7 +329,7 @@ function onCellClick(row: any, column: any, rowIndex: number) {
   switch (column.field) {
     case 'workersQuantityWorking':
       router.push({
-        path: `/agency-request/${row.id}`,
+        path: `/recruiting/requests/${row.id}`,
         query: { tab: 'Workers' }
       });
       break;
@@ -343,7 +343,7 @@ function onCellClick(row: any, column: any, rowIndex: number) {
     case 'actions':
       break;
     default:
-      router.push(`/agency-request/${row.id}`);
+      router.push(`/recruiting/requests/${row.id}`);
       break;
   }
 }

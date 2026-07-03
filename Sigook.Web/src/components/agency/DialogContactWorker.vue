@@ -4,7 +4,6 @@
         <div class="contain-new-worker">
             <p>{{ "Comment"}}</p>
             <textarea title="comment"></textarea>
-            <!-- <button class="background-btn create-btn primary-button btn-radius">Send</button>-->
         </div>
     </div>
 </template>

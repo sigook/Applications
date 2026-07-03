@@ -2,7 +2,7 @@
   <div>
     <div class="container-flex justify-content-between mb-4">
       <h3 class="fw-bold">Notes</h3>
-      <button @click="showModalNotes = true" class="sm-save-button">Add</button>
+      <b-button type="is-primary" size="is-small" outlined rounded @click="showModalNotes = true">Add</b-button>
     </div>
 
     <div class="mb-5">

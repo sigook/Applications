@@ -237,7 +237,7 @@ function onCellClick(row: any, column: any) {
     case 'actions':
       break;
     default:
-      router.push(`/agency-workers/worker/${row.workerProfileId}`);
+      router.push(`/recruiting/workers/${row.workerProfileId}`);
       break;
   }
 }

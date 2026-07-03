@@ -95,11 +95,12 @@ export interface AgencyDetail {
   wsibGroup?: { value: string }[];
   contactInformation?: AgencyContactInformation[];
   locations?: AgencyLocationDetail[];
-  agencies?: AgencyDetail[];
+  agencies?: PersonnelAgencyItem[];
   agencyType?: AgencyType;
   logo?: { fileName?: string; pathFile?: string } | null;
   usaAgency?: boolean;
   masterAgency?: boolean;
+  profileImage?: string | null;
 }
 
 // Mirrors backend AgencyContactInformationModel (Covenant.Common.Models.Agency).
@@ -141,11 +142,14 @@ export interface AgencyPersonnelListItem {
   email: string;
 }
 
-// Item returned by GET /api/PersonnelAgency
+// Item returned by GET /api/PersonnelAgency. Mirrors backend PersonnelAgencyModel.
 export interface PersonnelAgencyItem {
   id: string;
-  fullName: string;
+  name: string;
+  email: string;
+  agencyId: string;
   isPrimary: boolean;
+  logo?: string | null;
 }
 
 // Body for POST /api/Agency. Mirrors backend AgencyModel

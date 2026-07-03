@@ -153,6 +153,8 @@ import { createAgencyCompany, updateAgencyCompany } from '@/api/agencyCompanyApi
 
 const route = useRoute();
 const router = useRouter();
+const companyBase = computed(() =>
+  route.path.startsWith('/sales') ? '/sales/companies' : '/recruiting/companies');
 const billingAdmin = useBillingAdmin();
 const pubSub = usePubSub();
 
@@ -248,13 +250,15 @@ async function init() {
   const existing = meta.company;
   if (existing) {
     company.value = { ...existing, companyProfileId: existing.id };
-    statuses.value = meta.companyStatuses as any[];
-    industryOptions.value = meta.industryList as any[];
-    salesRepresentatives.value = meta.agencyPersonnel as any[];
+    statuses.value = meta.companyStatuses as unknown[];
+    industryOptions.value = meta.industryList as unknown[];
+    salesRepresentatives.value = meta.agencyPersonnel as unknown[];
     isUpdate.value = true;
 
-    if (existing.industry?.industry) {
-      industrySelected.value = existing.industry.industry;
+    const rawIndustry = existing.industry?.industry;
+    const industryValue = typeof rawIndustry === 'string' ? rawIndustry : rawIndustry?.value;
+    if (rawIndustry) {
+      industrySelected.value = typeof rawIndustry === 'string' ? { value: rawIndustry } : rawIndustry;
     }
     const record = salesRepresentatives.value.find((sr) => sr.id === existing.salesRepresentativeId);
     if (record) salesRepresentativeSelected.value = record;
@@ -262,7 +266,7 @@ async function init() {
     form.hydrate({
       fullName: existing.fullName || '',
       businessName: existing.businessName || '',
-      industry: existing.industry?.industry?.value || '',
+      industry: industryValue || '',
       companyStatus: existing.companyStatus ?? null,
       salesRepresentative: record ? `${record.name} - ${record.email}` : '',
       about: existing.about || '',
@@ -328,11 +332,11 @@ function submitCreateCompany(payload: any) {
     .then((response: any) => {
       isLoading.value = false;
       showAlertSuccess('Company created');
-      router.push('/agency-companies/company/' + response.id);
+      router.push(companyBase.value + '/' + response.id);
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
-      showAlertError(error.data);
+      showAlertError((error as { data?: unknown }).data);
     });
 }
 
@@ -342,11 +346,11 @@ function submitUpdateCompany(payload: any) {
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Company updated');
-      router.push('/agency-companies/company/' + company.value.companyProfileId);
+      router.push(companyBase.value + '/' + company.value.companyProfileId);
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
-      showAlertError(error.data);
+      showAlertError((error as { data?: unknown }).data);
     });
 }
 

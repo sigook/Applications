@@ -2,7 +2,7 @@
   <div>
     <div class="container-flex justify-content-between mb-4">
       <h3 class="fw-bold">Location</h3>
-      <button @click="showModal = true" class="fw-bold fz-1 sm-btn outline-btn orange-button btn-radius">Add</button>
+      <b-button type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
     </div>
     <div class="location-table-wrap">
     <b-table :data="data" narrowed hoverable paginated pagination-size="is-small" :per-page="pageSize" v-model:current-page="pageIndex"

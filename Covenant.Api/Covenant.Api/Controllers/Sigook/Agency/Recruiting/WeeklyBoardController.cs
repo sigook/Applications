@@ -28,6 +28,13 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     public async Task<IActionResult> GetMine([FromQuery] WeeklyBoardFilter filter) =>
         Ok(await weeklyBoardService.GetRecruiterWeeklyBoard(filter));
 
+    /// <summary>Gets every worker dispatched to an order across all recruiters and work days.</summary>
+    /// <param name="requestId">Identifier of the order.</param>
+    [HttpGet("{requestId:guid}/dispatches")]
+    [ProducesResponseType(typeof(IEnumerable<WeeklyBoardDispatchModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOrderDispatches(Guid requestId) =>
+        Ok(await weeklyBoardService.GetOrderDispatches(requestId));
+
     /// <summary>Assigns one or more recruiters to an order for one or more work days.</summary>
     /// <param name="model">Assignment data: order, work days and recruiters.</param>
     [HttpPost]

@@ -187,21 +187,21 @@ async function getAgencyInfo() {
 async function getCompanyInfo() {
   const response = await getCompanyProfile();
   currentUser.value.fullName = response.businessName;
-  (currentUser.value as { profileImage: string | null }).profileImage = response.logo?.pathFile ?? null;
+  currentUser.value.profileImage = response.logo?.pathFile ?? null;
   profileUrl.value = '/company-profile';
 }
 
 async function getCompanyUserInfo() {
   const user = await securityStore.getUser();
   currentUser.value.fullName = user.profile.name;
-  (currentUser.value as { profileImage: string | null }).profileImage = null;
+  currentUser.value.profileImage = null;
   profileUrl.value = '/company-user-profile';
 }
 
 async function getWorkerInfo() {
   const data = await getMyProfile();
   currentUser.value.fullName = `${data.firstName} ${data.lastName}`;
-  (currentUser.value as { profileImage: string | null }).profileImage = data.workerProfileImage;
+  currentUser.value.profileImage = data.workerProfileImage;
   profileUrl.value = '/worker-profile';
 }
 

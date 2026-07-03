@@ -274,7 +274,7 @@ function sendValidation(values: any) {
     reimbursements: values.reimbursements || 0,
     reimbursementsDescription: values.reimbursementsDes || '',
   };
-  updateAgencyWorkerTimeSheet(route.params.id, props.worker.workerId, localEditableDay.value.id, model)
+  updateAgencyWorkerTimeSheet(route.params.id as string, props.worker.workerId, localEditableDay.value.id, model)
     .then(() => {
       isLoading.value = false;
       const updated = {
@@ -296,7 +296,7 @@ function sendValidation(values: any) {
       showAlertSuccess('Updated');
       emit('updateData');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

@@ -56,3 +56,9 @@ export enum WorkerStatus {
   NotWorking = 0,
   Working = 1,
 }
+
+export enum ClockType {
+  None = 0,
+  ClockIn = 1,
+  ClockOut = 2,
+}

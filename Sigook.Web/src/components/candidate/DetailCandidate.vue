@@ -51,7 +51,7 @@
             </b-field>
           </div>
         </div>
-        <button class="background-btn create-btn orange-button btn-radius" type="submit">Update</button>
+        <b-button type="is-primary" rounded native-type="submit">Update</b-button>
       </form>
     </div>
   </div>
@@ -102,7 +102,7 @@ const hasDnuPermission = computed(() => {
 
 function loadCandidate() {
   isLoading.value = true;
-  getAgencyCandidate(props.candidateId)
+  getAgencyCandidate(String(props.candidateId))
     .then(response => {
       isLoading.value = false;
       candidate.value = response;
@@ -137,7 +137,7 @@ function submitCandidate() {
     email: email.value,
     address: address.value,
   };
-  updateAgencyCandidate(props.candidateId, payload)
+  updateAgencyCandidate(String(props.candidateId), payload)
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Updated');

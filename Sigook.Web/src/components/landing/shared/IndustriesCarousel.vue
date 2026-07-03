@@ -177,7 +177,7 @@ const CARDS_PER_SLIDE = 3
 
 // Append the learn-more card from props, then chunk all 12 cards into 4 slides.
 // Computed so the learn-more copy stays reactive if the parent rebinds props.
-const SLIDES = computed<readonly CarouselCard[][]>(() => {
+const SLIDES = computed<CarouselCard[][]>(() => {
   const learnMore: LearnMoreCard = {
     kind: 'learn-more',
     key: 'learn-more',

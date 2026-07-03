@@ -12,14 +12,14 @@ html:root {
 .b-table .table-wrapper.has-sticky-header {
   padding-right: 12px;
 
-  > .table > thead {
+  >.table>thead {
     position: sticky;
     top: 0;
     z-index: 20;
     background: $white;
   }
 
-  > .table > thead th {
+  >.table>thead th {
     position: static;
     background: $white;
   }

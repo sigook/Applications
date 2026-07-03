@@ -70,7 +70,7 @@
           </b-table-column>
           <b-table-column field="comments" label="Comments" v-slot="props">
             <span v-html="props.row.comments"></span>
-            <b-button type="is-ghost" icon-right="pencil" @click="showEditModal(props.row, props.row.index)">
+            <b-button type="is-ghost" icon-right="pencil" @click="showEditModal(props.row)">
             </b-button>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
@@ -162,7 +162,7 @@ function onCellClick(row: any, column: any) {
       break;
     default:
       if (row.workerProfileId) {
-        router.push(`/agency-workers/worker/${row.workerProfileId}`);
+        router.push(`/recruiting/workers/${row.workerProfileId}`);
       }
   }
 }

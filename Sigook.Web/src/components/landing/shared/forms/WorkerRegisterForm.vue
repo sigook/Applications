@@ -143,7 +143,7 @@
           :options="filteredSkills"
           label="Skills"
           placeholder="Select or add skills"
-          option-key="id"
+          option-key="skill"
           option-label="skill"
           :allow-new="true"
           :create-tag="(raw) => ({ skill: raw } as unknown as { id: number; skill: string })"
@@ -835,7 +835,7 @@ async function onSubmit(): Promise<void> {
     showAlertSuccess('Your account has been created')
     emit('submitted', id)
     if (props.redirectOnSuccess) {
-      const route = isLogin.value ? `/agency-workers/worker/${id}` : '/'
+      const route = isLogin.value ? `/recruiting/workers/${id}` : '/'
       router.push(route)
     }
   } catch (err: unknown) {

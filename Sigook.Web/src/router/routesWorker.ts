@@ -40,16 +40,7 @@ const routesWorker: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/worker-request/:id",
-    component: WorkerRequest,
-    name: "worker-request",
-    meta: {
-      requiresAuth: true,
-      role: [worker],
-    },
-  },
-  {
-    path: "/worker-request-applied/:id",
+    path: "/worker-requests/applied/:id",
     component: WorkerRequestApplied,
     name: "worker-applied",
     meta: {
@@ -57,6 +48,17 @@ const routesWorker: RouteRecordRaw[] = [
       role: [worker],
     },
   },
+  {
+    path: "/worker-requests/:id",
+    component: WorkerRequest,
+    name: "worker-request",
+    meta: {
+      requiresAuth: true,
+      role: [worker],
+    },
+  },
+  { path: "/worker-request/:id", redirect: (to) => `/worker-requests/${to.params.id}` },
+  { path: "/worker-request-applied/:id", redirect: (to) => `/worker-requests/applied/${to.params.id}` },
   {
     path: "/punch-card",
     component: PunchCard,

@@ -64,13 +64,13 @@
           <div class="container-flex">
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <PhoneInput ref="phoneComponent" :required="true" model="Mobile Number"
-                :defaultValue="worker.mobileNumber" @formattedPhone="(phone) => (worker.mobileNumber = phone)" />
+                :defaultValue="worker.mobileNumber as string" @formattedPhone="(phone) => (worker.mobileNumber = phone)" />
             </div>
           </div>
           <div class="step-navigation-buttons">
             <span></span>
             <b-button type="is-primary" @click="validateAndGoToStep(1)">
-              {{ 'Next' || 'Next Step' }}
+              {{ 'Next' }}
             </b-button>
           </div>
         </b-step-item>
@@ -154,10 +154,10 @@
           </div>
           <div class="step-navigation-buttons">
             <b-button @click="goToPreviousStep()">
-              {{ 'Previous' || 'Previous' }}
+              {{ 'Previous' }}
             </b-button>
             <b-button type="is-primary" @click="validateAndGoToStep(2)">
-              {{ 'Next' || 'Next Step' }}
+              {{ 'Next' }}
             </b-button>
           </div>
         </b-step-item>
@@ -517,10 +517,10 @@
           </div>
           <div class="step-navigation-buttons">
             <b-button @click="goToPreviousStep()">
-              {{ 'Previous' || 'Previous' }}
+              {{ 'Previous' }}
             </b-button>
             <b-button type="is-primary" @click="validateAndGoToStep(3)">
-              {{ 'Next' || 'Next Step' }}
+              {{ 'Next' }}
             </b-button>
           </div>
         </b-step-item>
@@ -575,7 +575,7 @@
             <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
               <div class="step-navigation-buttons">
                 <b-button @click="goToPreviousStep()">
-                  {{ 'Previous' || 'Previous' }}
+                  {{ 'Previous' }}
                 </b-button>
                 <b-button type="is-primary" native-type="submit">
                   {{ "Register" }}
@@ -765,11 +765,11 @@ async function registerWorkerFn() {
     const id = await registerWorker(formData);
     isLoading.value = false;
     showAlertSuccess('Your account has been created');
-    const route = isLogin.value ? `/agency-workers/worker/${id}` : '/home';
+    const route = isLogin.value ? `/recruiting/workers/${id}` : '/home';
     router.push(route);
-  } catch (error: any) {
+  } catch (error: unknown) {
     isLoading.value = false;
-    showAlertError(error.data);
+    showAlertError((error as { data?: unknown }).data);
   }
 }
 
@@ -777,7 +777,7 @@ async function validateForm() {
   const fields = ['email', 'password', 'confirmPassword'];
   if (!isLogin.value) fields.push('agreeTermsAndConditions');
   markInteracted(fields);
-  const results = await Promise.all(fields.map((f) => validateField(f as any)));
+  const results = await Promise.all(fields.map((f) => validateField(f as Parameters<typeof validateField>[0])));
   const allValid = results.every((r: any) => r.valid);
   if (allValid) {
     registerWorkerFn();
@@ -798,7 +798,7 @@ function goToPreviousStep() {
 async function validateStep1() {
   const fields = ['firstName', 'lastName', 'birthDay', 'gender'];
   markInteracted(fields);
-  const results = await Promise.all(fields.map((f) => validateField(f as any)));
+  const results = await Promise.all(fields.map((f) => validateField(f as Parameters<typeof validateField>[0])));
   const fieldsValid = results.every((r: any) => r.valid);
   const addressValid = await addressComponent.value.validateAddress();
   const phoneValid = await phoneComponent.value.validatePhone();
@@ -814,7 +814,7 @@ async function validateStep3() {
     fields.push('identificationType2', 'identificationNumber2');
   }
   markInteracted(fields);
-  const results = await Promise.all(fields.map((f) => validateField(f as any)));
+  const results = await Promise.all(fields.map((f) => validateField(f as Parameters<typeof validateField>[0])));
   let valid = results.every((r: any) => r.valid);
 
   const next: Record<string, string> = {};
@@ -1009,7 +1009,7 @@ function saveImage(image: any) {
   if (!worker.profileImage) {
     worker.profileImage = { fileName: image.name };
   } else {
-    (worker.profileImage as any).fileName = image.name;
+    (worker.profileImage as { fileName: string }).fileName = image.name;
   }
 }
 

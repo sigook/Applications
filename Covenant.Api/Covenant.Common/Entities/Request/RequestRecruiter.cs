@@ -25,10 +25,11 @@ namespace Covenant.Common.Entities.Request
         public DateTime CreatedAt { get; private set; }
         public ICollection<WorkerDispatch> Dispatches { get; private set; } = new List<WorkerDispatch>();
 
-        public void AddDispatch(Guid workerProfileId, DateTime createdAt, Guid? createdBy = null)
+        public bool AddDispatch(Guid workerProfileId, DateTime createdAt, Guid? createdBy = null)
         {
-            if (Dispatches.Any(d => d.WorkerProfileId == workerProfileId)) return;
+            if (Dispatches.Any(d => d.WorkerProfileId == workerProfileId)) return false;
             Dispatches.Add(new WorkerDispatch(Id, workerProfileId, createdAt, createdBy));
+            return true;
         }
 
         public void RemoveDispatch(Guid workerProfileId)

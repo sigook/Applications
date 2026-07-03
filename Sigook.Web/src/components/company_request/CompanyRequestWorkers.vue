@@ -167,9 +167,9 @@ function getWorkers() {
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
-      showAlertError(error.data);
+      showAlertError((error as { data?: unknown }).data);
     });
 }
 
@@ -185,9 +185,9 @@ function onRejectWorker(comments: string) {
     .then(() => {
       isLoading.value = false;
       getWorkers();
-    }).catch((error: any) => {
+    }).catch((error: unknown) => {
       isLoading.value = false;
-      showAlertError(error.data);
+      showAlertError((error as { data?: unknown }).data);
     });
 }
 

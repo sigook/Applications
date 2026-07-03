@@ -1,4 +1,4 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
 import type {
   AgencyInvoiceFilter,
   AgencyInvoiceListResponse,
@@ -14,19 +14,19 @@ import type {
 // ---------------------------------------------------------------------------
 
 export function getAgencyInvoices(filter: AgencyInvoiceFilter): Promise<AgencyInvoiceListResponse> {
-  return http.get('/api/agency/accounting/Invoices', { params: { ...filter } }).then(r => r.data);
+  return api.get<AgencyInvoiceListResponse>('/api/agency/accounting/Invoices', { params: { ...filter } });
 }
 
 export function previewAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<InvoiceSummaryModel> {
-  return http.post('/api/agency/accounting/Invoices/Preview', payload).then(r => r.data);
+  return api.post<InvoiceSummaryModel>('/api/agency/accounting/Invoices/Preview', payload);
 }
 
 export function createAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<void> {
-  return http.post('/api/agency/accounting/Invoices', payload).then(() => {});
+  return api.post('/api/agency/accounting/Invoices', payload);
 }
 
 export function deleteAgencyInvoice(payload: DeleteInvoicePayload): Promise<void> {
-  return http.delete(`/api/agency/accounting/Invoices/${payload.invoiceId}`, { data: payload }).then(() => {});
+  return api.del(`/api/agency/accounting/Invoices/${payload.invoiceId}`, { data: payload });
 }
 
 // ---------------------------------------------------------------------------
@@ -34,13 +34,11 @@ export function deleteAgencyInvoice(payload: DeleteInvoicePayload): Promise<void
 // ---------------------------------------------------------------------------
 
 export function downloadInvoicePdf(invoiceId: string): Promise<Blob> {
-  return http
-    .get(`/api/agency/accounting/Invoices/${invoiceId}/pdf`, { responseType: 'blob' })
-    .then(r => r.data);
+  return api.get<Blob>(`/api/agency/accounting/Invoices/${invoiceId}/pdf`, { responseType: 'blob' });
 }
 
 export function getPayStubsByInvoice(invoiceId: string): Promise<PayStubDeleteWarningItem[]> {
-  return http.get(`/api/agency/accounting/Invoices/${invoiceId}/paystubs`).then(r => r.data);
+  return api.get<PayStubDeleteWarningItem[]>(`/api/agency/accounting/Invoices/${invoiceId}/paystubs`);
 }
 
 export function sendInvoiceEmail(payload: SendInvoiceEmailPayload): Promise<void> {
@@ -49,9 +47,7 @@ export function sendInvoiceEmail(payload: SendInvoiceEmailPayload): Promise<void
   formData.append('subject', payload.subject);
   formData.append('message', payload.body);
   payload.attachments.forEach(file => formData.append('files', file));
-  return http
-    .post(`/api/agency/accounting/Invoices/${payload.invoiceId}/email`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    .then(() => {});
+  return api.post(`/api/agency/accounting/Invoices/${payload.invoiceId}/email`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 }

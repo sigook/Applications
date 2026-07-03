@@ -13,5 +13,5 @@ export const formatFileSize = (size: number | string): string => {
  * Checks if vee-validate is defined globally.
  */
 export const isDefinedGlobally = (): boolean => {
-    return typeof (window as any).VeeValidate !== 'undefined';
+    return typeof (window as unknown as { VeeValidate?: unknown }).VeeValidate !== 'undefined';
 };

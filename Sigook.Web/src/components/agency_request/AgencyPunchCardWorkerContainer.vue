@@ -239,11 +239,7 @@ function changeDecimalToHour(time: any) {
 }
 
 function todayTimeZero(time: any) {
-  const date = new Date(time);
-  date.setHours(0);
-  date.setMinutes(0);
-  date.setSeconds(0);
-  return date;
+  return dayjs(time).hour(0).minute(0).second(0).format('YYYY-MM-DDTHH:mm:ss');
 }
 
 function loadTimeSheetUsages(item: any) {

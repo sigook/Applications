@@ -144,7 +144,7 @@ async function loadProvinces(c: CountryOption | null): Promise<void> {
     provinces.value = []
     return
   }
-  provinces.value = await fetchProvinces(c.id as number)
+  provinces.value = await fetchProvinces(String(c.id))
 }
 
 async function loadCities(p: ProvinceOption | null): Promise<void> {
@@ -152,7 +152,7 @@ async function loadCities(p: ProvinceOption | null): Promise<void> {
     cities.value = []
     return
   }
-  cities.value = await fetchCities(p.id as number)
+  cities.value = await fetchCities(String(p.id))
 }
 
 void loadCountries()

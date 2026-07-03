@@ -51,9 +51,8 @@
             <div v-if="showEditor">
               <QuillEditor theme="snow" content-type="html" v-model:content="editorContent" :toolbar="customToolbar" />
               <br />
-              <button class="sm-save-button" v-if="editorContent" @click="saveInvoiceNotes()">
-                {{ "Save" }}
-              </button>
+              <b-button v-if="editorContent" type="is-primary" size="is-small" outlined rounded
+                @click="saveInvoiceNotes()">Save</b-button>
             </div>
           </transition>
         </div>
@@ -188,7 +187,7 @@ function showNotesEditor() {
 
 function loadInvoiceNotes() {
   isLoading.value = true;
-  getInvoiceNotes(route.params.id)
+  getInvoiceNotes(route.params.id as string)
     .then((response) => {
       editorContent.value = response.htmlNotes;
       showEditor.value = true;
@@ -206,7 +205,7 @@ function saveInvoiceNotes() {
     showAlertError("Notes can't be greater that 500 characters.");
   } else {
     isLoading.value = true;
-    postInvoiceNotes(route.params.id, { htmlNotes: editorContent.value })
+    postInvoiceNotes(route.params.id as string, { htmlNotes: editorContent.value })
       .then(() => {
         showAlertSuccess("Updated");
         isLoading.value = false;
@@ -222,7 +221,7 @@ function loadCompanyInvoiceRecipients() {
   if (!showRecipients.value) {
     isLoading.value = true;
     showRecipients.value = true;
-    getCompanyInvoiceRecipients(route.params.id)
+    getCompanyInvoiceRecipients(route.params.id as string)
       .then((response) => {
         isLoading.value = false;
         companyRecipients.value = response;
@@ -239,7 +238,7 @@ function loadCompanyInvoiceRecipients() {
 
 function saveCompanyInvoiceRecipient(values: { name: string; email: string }) {
   isLoading.value = true;
-  postCompanyInvoiceRecipient(route.params.id, values)
+  postCompanyInvoiceRecipient(route.params.id as string, values)
     .then((response) => {
       companyRecipients.value.push({
         id: response.id,

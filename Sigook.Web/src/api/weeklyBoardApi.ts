@@ -1,7 +1,8 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
 import type {
   WeeklyBoard,
   RecruiterWeeklyBoard,
+  WeeklyBoardDispatch,
   WeeklyBoardFilter,
   AssignRecruitersPayload,
   UnassignRecruiterPayload,
@@ -13,29 +14,33 @@ import type {
 const baseUrl = '/api/agency/recruiting/WeeklyBoard';
 
 export function getWeeklyBoard(filter: WeeklyBoardFilter): Promise<WeeklyBoard> {
-  return http.get(baseUrl, { params: { ...filter } }).then(r => r.data);
+  return api.get<WeeklyBoard>(baseUrl, { params: { ...filter } });
 }
 
 export function getRecruiterWeeklyBoard(filter: WeeklyBoardFilter): Promise<RecruiterWeeklyBoard> {
-  return http.get(`${baseUrl}/mine`, { params: { ...filter } }).then(r => r.data);
+  return api.get<RecruiterWeeklyBoard>(`${baseUrl}/mine`, { params: { ...filter } });
+}
+
+export function getRequestDispatches(requestId: string): Promise<WeeklyBoardDispatch[]> {
+  return api.get<WeeklyBoardDispatch[]>(`${baseUrl}/${requestId}/dispatches`);
 }
 
 export function addWorkers(payload: DispatchWorkersPayload): Promise<void> {
-  return http.post(`${baseUrl}/dispatch`, payload).then(() => {});
+  return api.post(`${baseUrl}/dispatch`, payload);
 }
 
 export function removeWorker(payload: RemoveWorkerPayload): Promise<void> {
-  return http.delete(`${baseUrl}/dispatch`, { params: { ...payload } }).then(() => {});
+  return api.del(`${baseUrl}/dispatch`, { params: { ...payload } });
 }
 
 export function assignRecruiters(payload: AssignRecruitersPayload): Promise<void> {
-  return http.post(baseUrl, payload).then(() => {});
+  return api.post(baseUrl, payload);
 }
 
 export function unassignRecruiter(payload: UnassignRecruiterPayload): Promise<void> {
-  return http.delete(baseUrl, { params: { ...payload } }).then(() => {});
+  return api.del(baseUrl, { params: { ...payload } });
 }
 
 export function moveAssignment(payload: MoveAssignmentPayload): Promise<void> {
-  return http.post(`${baseUrl}/move`, payload).then(() => {});
+  return api.post(`${baseUrl}/move`, payload);
 }

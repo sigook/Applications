@@ -109,7 +109,7 @@ import { uploadFile } from "@/utils/fileUpload";
 import { getGenders, getSources } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
 import { createAgencyCandidate } from "@/api/agencyCandidateApi";
-import type { Source } from "@/types/common";
+import type { Source, Gender } from "@/types/common";
 
 const emit = defineEmits<{ (e: 'onClose', value: boolean): void }>();
 
@@ -147,7 +147,7 @@ function markInteracted(fields: string[]) {
 
 const activeStep = ref(0);
 const isLoading = ref(false);
-const genders = ref<Array<{ id: number; value: string }>>([]);
+const genders = ref<Gender[]>([]);
 const sourceList = ref<Source[]>([]);
 const sourceError = ref('');
 const phoneNumber = ref('');
@@ -156,7 +156,7 @@ const candidate = reactive<{
   phoneNumbers: Array<{ phoneNumber: string }>;
   skills: string[];
   sourceId: string | null;
-  gender: { id: number; value: string } | null;
+  gender: Gender | null;
   hasVehicle: boolean;
   residencyStatus: string | null;
   fileName: string | null;
@@ -176,7 +176,7 @@ watch(() => candidate.sourceId, () => { sourceError.value = ''; });
 async function validateStep1(): Promise<boolean> {
   const fields = ['name', 'email', 'address'];
   markInteracted(fields);
-  const results = await Promise.all(fields.map((f) => validateField(f as any)));
+  const results = await Promise.all(fields.map((f) => validateField(f as Parameters<typeof validateField>[0])));
   const fieldsValid = results.every((r: any) => r.valid);
   const phoneValid = phoneComponent.value ? await phoneComponent.value.validatePhone() : false;
   sourceError.value = candidate.sourceId ? '' : 'Source is required';
@@ -231,7 +231,7 @@ function submitCandidate(values: any) {
       showAlertSuccess("Created");
       emit('onClose', true);
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

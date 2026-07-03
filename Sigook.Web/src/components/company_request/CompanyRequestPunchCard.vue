@@ -137,8 +137,8 @@ function getWorkers() {
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
-    .catch((error: any) => {
-      showAlertError(error.data);
+    .catch((error: unknown) => {
+      showAlertError((error as { data?: unknown }).data);
       isLoading.value = false;
     });
 }
@@ -150,7 +150,7 @@ function downloadTimeSheetDocument() {
       isLoading.value = false;
       downloadFile(response, `TimeSheet_${serverParams.requestId}`);
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

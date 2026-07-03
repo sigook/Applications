@@ -49,7 +49,7 @@ function changeTab(tab: string) {
     visitedTabs.value.push(tab);
   }
   router.push({
-    path: `/agency-detail/${route.params.id}`,
+    path: `/sales/agencies/${route.params.id}`,
     query: {
       tab: tab,
     },
@@ -58,7 +58,7 @@ function changeTab(tab: string) {
 
 function loadAgency() {
   isLoading.value = false;
-  getAgency(route.params.id as any)
+  getAgency(route.params.id as string)
     .then((a: any) => {
       agency.value = a;
       isLoading.value = false;

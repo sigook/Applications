@@ -65,7 +65,7 @@ function load() {
 }
 
 function goToPunchCard(worker: RunnerStartingToday) {
-  router.push({ path: `/agency-request/${worker.requestId}`, query: { tab: 'PunchCard' } });
+  router.push({ path: `/recruiting/requests/${worker.requestId}`, query: { tab: 'PunchCard' } });
 }
 
 load();

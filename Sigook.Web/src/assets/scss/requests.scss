@@ -15,6 +15,7 @@
   .section-left {
     padding: 10px 40px 10px 10px;
   }
+
   .section-right {
     padding: 10px;
   }
@@ -24,6 +25,7 @@
   .relative {
     position: relative;
   }
+
   .btn-icon-sm {
     background-size: 100%;
     min-width: 14px;
@@ -44,16 +46,20 @@
 
   .table-requests {
     border: 0;
+
     col {
       width: 100%;
     }
+
     thead {
       display: none;
     }
+
     tbody {
       display: flex;
       flex-wrap: wrap;
     }
+
     tr {
       display: inline-flex;
       flex-wrap: wrap;
@@ -64,22 +70,28 @@
       border-radius: 5px;
       position: relative;
     }
+
     td {
       flex-basis: 100%;
+
       &:before {
         display: none;
       }
+
       &.action {
         display: inline-block;
         flex-basis: auto;
       }
+
       &:nth-child(1) {
         flex-basis: 40px;
       }
+
       &:nth-child(2) {
         flex-basis: calc(100% - 50px);
         padding-top: 0;
       }
+
       &.action {
         position: absolute;
         right: 0;
@@ -90,6 +102,7 @@
     tbody td {
       padding: 4px 0;
     }
+
     .btn-icon-sm {
       width: 30px;
       height: 30px;
@@ -103,6 +116,7 @@
 
   .agency-workers {
     padding: 0 !important;
+
     td.action {
       position: static;
       vertical-align: inherit;
@@ -117,7 +131,8 @@
       width: 100%;
       margin: 10px 0;
     }
-    .action > .text-center > button {
+
+    .action>.text-center>button {
       margin: 0;
       padding: 0 10px;
     }
@@ -127,6 +142,7 @@
     .section-left {
       padding: 0;
     }
+
     .section-right {
       padding: 0;
       margin-top: 16px;
@@ -141,10 +157,12 @@
   .wrapper-request-top {
     padding: 0;
     display: block;
+
     h2 {
       margin: 0;
     }
-    & > div > img {
+
+    &>div>img {
       display: none;
     }
   }
