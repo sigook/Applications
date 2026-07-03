@@ -1,7 +1,6 @@
 <template>
   <section class="app">
     <div class="app__inner">
-      <!-- TOP: CTA + phone hero -->
       <div class="app__top">
         <div class="app__copy">
           <span class="app__eyebrow">Sigook® App</span>
@@ -21,7 +20,7 @@
               aria-label="Download Sigook on the App Store"
             >
               <img
-                src="@/assets/images/v2/app-download/app-store-apple.webp"
+                src="@/assets/images/landing/app-download/app-store-apple.webp"
                 alt=""
                 class="app__badge-icon app__badge-icon--apple"
                 loading="lazy"
@@ -41,7 +40,7 @@
               aria-label="Get Sigook® on Google Play"
             >
               <img
-                src="@/assets/images/v2/app-download/app-store-google.webp"
+                src="@/assets/images/landing/app-download/app-store-google.webp"
                 alt=""
                 class="app__badge-icon"
                 loading="lazy"
@@ -58,7 +57,7 @@
         <div class="app__phone-wrap" aria-hidden="true">
           <span class="app__phone-halo"></span>
           <img
-            src="@/assets/images/v2/app-download/app-hand-phone.webp"
+            src="@/assets/images/landing/app-download/app-hand-phone.webp"
             alt=""
             class="app__phone-img"
             width="1024"
@@ -69,7 +68,6 @@
         </div>
       </div>
 
-      <!-- BOTTOM: Features -->
       <div class="app__bottom">
         <div class="app__bottom-inner">
           <span class="app__bottom-eyebrow">Workforce platform</span>
@@ -80,18 +78,7 @@
 
           <ul class="app__features">
             <li v-for="feature in features" :key="feature">
-              <svg
-                class="app__check"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <LandingIcon name="check" class="app__check" />
               <span>{{ feature }}</span>
             </li>
           </ul>
@@ -102,6 +89,8 @@
 </template>
 
 <script setup lang="ts">
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+
 const features = [
   'One platform. Total workforce visibility.',
   'Real-time attendance and supervisor-approved shifts.',
@@ -112,17 +101,9 @@ const features = [
 </script>
 
 <style scoped>
-/* ============================================================
-   App Download — background lives in GlobalBackground.
-   This section keeps its content + overlap extensions.
-   ============================================================ */
-
 .app {
   position: relative;
   min-height: 1380px;
-  /* Extend up behind CertifiedSection AND down behind TestimonialsSection so
-     the wedges left by their asymmetric corners reveal GlobalBackground instead
-     of a colour mismatch. */
   margin-top: -200px;
   padding-top: 200px;
   margin-bottom: -200px;
@@ -133,7 +114,6 @@ const features = [
   color: #fff;
 }
 
-/* ── Inner container ──────────────────────────────────────── */
 .app__inner {
   position: relative;
   max-width: var(--container-max);
@@ -142,7 +122,6 @@ const features = [
   z-index: 1;
 }
 
-/* ── TOP: CTA + phone ─────────────────────────────────────── */
 .app__top {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
@@ -191,7 +170,6 @@ const features = [
   max-width: 380px;
 }
 
-/* ── Store badges ─────────────────────────────────────────── */
 .app__badges {
   display: flex;
   flex-direction: row;
@@ -253,7 +231,6 @@ const features = [
   font-weight: 600;
 }
 
-/* ── Phone hero with cyan halo ─────────────────────────────── */
 .app__phone-wrap {
   position: relative;
   display: flex;
@@ -299,7 +276,6 @@ const features = [
   50%      { transform: rotate(-1.5deg) translateY(-12px); }
 }
 
-/* ── BOTTOM: Features ─────────────────────────────────────── */
 .app__bottom {
   position: relative;
 }
@@ -375,9 +351,6 @@ const features = [
   margin-top: 2px;
 }
 
-/* ============================================================
-   Mobile  ≤ 1023px
-   ============================================================ */
 @media (max-width: 1023px) {
   .app {
     min-height: 0;

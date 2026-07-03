@@ -14,7 +14,6 @@
     </div>
 
     <form v-else class="reg-form__body" @submit.prevent="onSubmit">
-      <!-- ── Step 1 — Personal Information ───────────────────────────────── -->
       <section v-show="currentStep === 'personal'" class="reg-form__step">
         <h3 class="reg-form__step-title">Personal information</h3>
 
@@ -69,14 +68,13 @@
 
         <footer class="reg-form__nav">
           <span></span>
-          <button type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
             <span>Next</span>
             <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </button>
+          </b-button>
         </footer>
       </section>
 
-      <!-- ── Step 2 — Additional Details ─────────────────────────────────── -->
       <section v-show="currentStep === 'details'" class="reg-form__step">
         <h3 class="reg-form__step-title">Additional details</h3>
 
@@ -114,7 +112,7 @@
           <div v-if="resume" class="reg-form__doc-card">
             <div class="reg-form__doc-card-head">
               <span class="reg-form__doc-filename">📑 {{ resume.name }}</span>
-              <button type="button" class="reg-form__doc-remove" @click="deleteResume">Remove</button>
+              <b-button native-type="button" class="reg-form__doc-remove" @click="deleteResume">Remove</b-button>
             </div>
           </div>
           <p v-if="resumeError" class="reg-form__doc-error">{{ resumeError }}</p>
@@ -138,18 +136,17 @@
         </div>
 
         <footer class="reg-form__nav">
-          <button type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
             <span>Previous</span>
-          </button>
-          <button type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
+          </b-button>
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
             <span>Next</span>
             <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </button>
+          </b-button>
         </footer>
       </section>
 
-      <!-- ── Step 3 — Review & Submit ────────────────────────────────────── -->
       <section v-show="currentStep === 'review'" class="reg-form__step">
         <h3 class="reg-form__step-title">Review &amp; submit</h3>
 
@@ -209,14 +206,14 @@
         <p v-if="errors.termsAccepted" class="reg-form__field-error">{{ errors.termsAccepted }}</p>
 
         <footer class="reg-form__nav">
-          <button type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
+          <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
             <span>Previous</span>
-          </button>
-          <button type="submit" class="reg-form__btn reg-form__btn--submit" :disabled="isSubmitting">
+          </b-button>
+          <b-button native-type="submit" class="reg-form__btn reg-form__btn--submit" :disabled="isSubmitting">
             <span>{{ isSubmitting ? 'Submitting…' : 'Submit Application' }}</span>
             <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </button>
+          </b-button>
         </footer>
       </section>
     </form>
@@ -247,14 +244,10 @@ import {
   type CandidateFormData,
 } from '@/components/landing/shared/forms/candidateApplyService'
 
-/* ── Props / emits ──────────────────────────────────────────────────────── */
 
 const props = withDefaults(defineProps<{
-  /** Optional job title shown in the context banner ("Applying for: X"). */
   jobTitle?: string
-  /** Backend Request id the application should attach to, if any. */
   requestId?: string
-  /** Kept for API parity with WorkerRegisterForm; modal usage passes false. */
   redirectOnSuccess?: boolean
 }>(), {
   redirectOnSuccess: false,
@@ -265,9 +258,6 @@ const emit = defineEmits<{
 }>()
 
 const contextLine = computed(() => props.jobTitle || '')
-
-/* ── Step machine ───────────────────────────────────────────────────────── */
-
 type StepKey = 'personal' | 'details' | 'review'
 const STEPS: readonly StepDescriptor[] = [
   { key: 'personal', label: 'Personal' },
@@ -277,9 +267,6 @@ const STEPS: readonly StepDescriptor[] = [
 
 const currentStep = ref<StepKey>('personal')
 const currentStepIdx = computed(() => STEPS.findIndex((s) => s.key === currentStep.value))
-
-/* ── Validation (mirrors Covenant useApplicationForm) ───────────────────── */
-
 const schema = yup.object({
   fullName: yup.string().required('Full name is required').max(60, 'Full name must be at most 60 characters'),
   email: yup
@@ -319,7 +306,6 @@ const { value: address } = useField<string>('address')
 const { value: status } = useField<string>('status')
 const { value: termsAccepted } = useField<boolean>('termsAccepted')
 
-/* "Show error only after the user has touched the field" */
 const interacted = reactive<Record<string, boolean>>({})
 function markInteracted(fields: string[]): void {
   for (const f of fields) interacted[f] = true
@@ -347,7 +333,6 @@ const errors = computed<Record<string, string>>(() => {
   return out
 })
 
-/* ── Object-bound selects (sync into validated string fields) ───────────── */
 
 interface StatusOption { id: string; value: string }
 const statusOptions: StatusOption[] = RESIDENCY_STATUS.map((s) => ({ id: s, value: s }))
@@ -364,7 +349,6 @@ watch(selectedStatus, (s) => { status.value = s?.id ?? '' })
 
 const resumeRequired = computed(() => selectedSource.value?.value === 'Linkedin')
 
-/* ── Skills (TagInput with object tags) ─────────────────────────────────── */
 
 const allSkills = ref<Skill[]>([])
 const skillTags = ref<Skill[]>([])
@@ -385,8 +369,6 @@ function createSkillTag(raw: string): Skill {
   return { skill: value }
 }
 
-/* ── Vehicle + resume ───────────────────────────────────────────────────── */
-
 const hasVehicle = ref(false)
 const resume = ref<File | null>(null)
 const resumeError = ref('')
@@ -404,8 +386,6 @@ function handleResumeUpload(file: File | null): void {
 function deleteResume(): void {
   resume.value = null
 }
-
-/* ── Step navigation + validation ───────────────────────────────────────── */
 
 async function validateStepPersonal(): Promise<boolean> {
   const fields = ['fullName', 'email', 'phone', 'countryId', 'address']
@@ -449,8 +429,6 @@ function goPrev(): void {
   const idx = currentStepIdx.value
   if (idx > 0) currentStep.value = STEPS[idx - 1].key as StepKey
 }
-
-/* ── Submit ─────────────────────────────────────────────────────────────── */
 
 const isLoading = ref(true)
 const loadingText = ref('Loading…')
@@ -497,8 +475,6 @@ async function onSubmit(): Promise<void> {
   }
 }
 
-/* ── Catalog loading ────────────────────────────────────────────────────── */
-
 onMounted(async () => {
   try {
     const [countryList, sourceList, skillList] = await Promise.all([
@@ -509,11 +485,9 @@ onMounted(async () => {
     countries.value = countryList
     sources.value = sourceList
     allSkills.value = skillList
-    // Default the source to the "Sigook" entry (this form lives on the Sigook site).
     const defaultSource = sourceList.find((s) => s.value === 'Sigook')
     if (defaultSource) selectedSource.value = defaultSource
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('[CandidateApplyForm] catalog load failed:', err)
   } finally {
     isLoading.value = false
@@ -635,7 +609,6 @@ onMounted(async () => {
   color: rgba(255, 255, 255, 0.70);
 }
 
-/* ── Document block ─────────────────────────────────────────────────────── */
 .reg-form__doc-block {
   display: flex;
   flex-direction: column;
@@ -673,7 +646,7 @@ onMounted(async () => {
 
 .reg-form__doc-card {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--c-glass-border-soft);
   border-radius: 14px;
   padding: 16px;
   display: flex;
@@ -721,14 +694,13 @@ onMounted(async () => {
   margin: 0;
 }
 
-/* ── Review summary ─────────────────────────────────────────────────────── */
 .reg-form__summary {
   display: flex;
   flex-direction: column;
   gap: 0;
   margin: 0;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--c-glass-border-soft);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -777,7 +749,6 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* ── Account / terms ────────────────────────────────────────────────────── */
 .reg-form__link {
   color: var(--c-brand-cyan);
   text-decoration: underline;
@@ -791,7 +762,6 @@ onMounted(async () => {
   margin: 4px 0 0;
 }
 
-/* ── Nav buttons ────────────────────────────────────────────────────────── */
 .reg-form__nav {
   display: flex;
   align-items: center;
@@ -822,9 +792,23 @@ onMounted(async () => {
     box-shadow 0.25s ease;
 }
 
+.reg-form__btn {
+  height: auto;
+}
+
+.reg-form__btn > :deep(span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .reg-form__btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.reg-form__doc-remove {
+  height: auto;
 }
 
 .reg-form__btn--primary,
@@ -844,14 +828,14 @@ onMounted(async () => {
 
 .reg-form__btn--ghost {
   background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  border: 1.5px $1 var(--c-glass-border-strong);
   color: #fff;
 }
 
 .reg-form__btn--ghost:hover {
   background: #fff;
   border-color: #fff;
-  color: var(--c-brand-navy, #0f2f44);
+  color: var(--c-brand-navy);
   transform: translateY(-1px);
 }
 
@@ -873,7 +857,6 @@ onMounted(async () => {
   transform: scaleX(-1) translateX(3px);
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 720px) {
   .reg-form__grid--2col {
     grid-template-columns: 1fr;

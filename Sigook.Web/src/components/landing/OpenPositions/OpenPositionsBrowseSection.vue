@@ -10,14 +10,5 @@
 </template>
 
 <script setup lang="ts">
-/**
- * OpenPositions — Industries carousel.
- *
- * Thin wrapper around the shared IndustriesCarousel with job-board copy —
- * gives users an alternative discovery path when title search doesn't fit.
- *
- * The "Learn more" card already links to /v2/industries (handled inside
- * the shared component), which keeps cross-page navigation consistent.
- */
-import IndustriesCarousel from '@/components/landing/shared/IndustriesCarousel.vue'
+import IndustriesCarousel from '@/components/landing/shared/sections/IndustriesCarousel.vue'
 </script>

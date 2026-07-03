@@ -5,10 +5,7 @@
 
       <div class="job-detail__meta">
         <span class="job-detail__meta-item job-detail__meta-item--location">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
+          <LandingIcon name="location" />
           {{ job.location }}
         </span>
 
@@ -72,7 +69,8 @@
 import { computed } from 'vue'
 import type { JobViewModel } from '@/types/website'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
 const props = defineProps<{
   job: JobViewModel
@@ -102,12 +100,11 @@ const formattedPosted = computed(() => {
 </script>
 
 <style scoped>
-/* ── Shell ──────────────────────────────────────────────────────────────── */
 .job-detail {
   --jd-fg: rgba(255, 255, 255, 0.82);
   --jd-fg-strong: #fff;
   --jd-fg-muted: rgba(255, 255, 255, 0.5);
-  --jd-divider: rgba(255, 255, 255, 0.1);
+  --jd-divider: var(--c-glass-fill-strong);
 
   position: relative;
   padding: clamp(26px, 3.2vw, 40px) clamp(24px, 3vw, 40px);
@@ -129,7 +126,6 @@ const formattedPosted = computed(() => {
   overflow: hidden;
 }
 
-/* Decorative bottom-left glow */
 .job-detail::before {
   content: '';
   position: absolute;
@@ -146,7 +142,6 @@ const formattedPosted = computed(() => {
     transparent 72%);
 }
 
-/* ── Header — title + meta + apply ──────────────────────────────────────── */
 .job-detail__head {
   position: relative;
   z-index: 1;
@@ -192,7 +187,6 @@ const formattedPosted = computed(() => {
   height: 14px;
 }
 
-/* Type chip */
 .job-detail__chip {
   display: inline-block;
   padding: 4px 12px;
@@ -206,13 +200,11 @@ const formattedPosted = computed(() => {
   color: var(--c-brand-cyan);
 }
 
-/* ── Apply CTA — solid red pill (matches Figma) ─────────────────────────── */
 .job-detail__apply {
   align-self: flex-start;
   margin-top: clamp(8px, 1vw, 12px);
 }
 
-/* ── Sections — Description / Schedule / Responsibilities / Requirements ─── */
 .job-detail__section {
   position: relative;
   z-index: 1;
@@ -319,7 +311,6 @@ const formattedPosted = computed(() => {
   background: var(--c-brand-cyan);
 }
 
-/* ── Footer — posted date + ref ─────────────────────────────────────────── */
 .job-detail__footer {
   position: relative;
   z-index: 1;

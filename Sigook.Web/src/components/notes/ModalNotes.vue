@@ -31,7 +31,6 @@
       </pagination>
     </div>
 
-    <!-- NOTES custom modal -->
     <transition name="modal">
       <div v-if="showModalUpdate" class="vue-modal min-width-0">
         <div class="modal-mask">
@@ -46,7 +45,6 @@
         </div>
       </div>
     </transition>
-    <!-- end CREATE custom modal -->
   </div>
 </template>
 <script setup lang="ts">

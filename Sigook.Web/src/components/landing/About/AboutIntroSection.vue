@@ -1,7 +1,6 @@
 <template>
   <section class="about-intro">
     <HeroBackground :image="heroImage" :image-sm="heroImageSm" focal="center 30%" />
-    <!-- Atmospheric magnifier decoration — right-side anchor (mirrors Home Hero's left placement) -->
     <DecoMagnifier class="about-intro__magnifier" />
 
     <div class="about-intro__content">
@@ -20,7 +19,6 @@
         genuine care, we turn trust and integrity into lasting partnerships.
       </p>
 
-      <!-- Credential line — historical footprint (replaces the legacy "Get in Touch" CTA) -->
       <ul class="about-intro__credentials">
         <li
           v-for="(credential, idx) in CREDENTIALS"
@@ -48,13 +46,13 @@
 </template>
 
 <script setup lang="ts">
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import HeroBackground from '@/components/landing/shared/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/about.webp'
-import heroImageSm from '@/assets/images/v2/hero/about-960.webp'
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
-import LabeledChipList from '@/components/landing/shared/LabeledChipList.vue'
-import ScrollIndicator from '@/components/landing/shared/ScrollIndicator.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
+import HeroBackground from '@/components/landing/shared/hero/HeroBackground.vue'
+import heroImage from '@/assets/images/landing/hero/about.webp'
+import heroImageSm from '@/assets/images/landing/hero/about-960.webp'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
+import LabeledChipList from '@/components/landing/shared/ui/LabeledChipList.vue'
+import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vue'
 
 const CREDENTIALS = [
   'Since 2008',
@@ -72,7 +70,6 @@ const VALUES = [
 </script>
 
 <style scoped>
-/* ── Section shell — transparent (GlobalBackground shows through) ───────── */
 .about-intro {
   position: relative;
   width: 100%;
@@ -82,13 +79,11 @@ const VALUES = [
   isolation: isolate;
 }
 
-/* ── Decorative magnifier — top-right anchor (mirror of Home Hero) ──────── */
 .about-intro__magnifier {
   top: clamp(14%, 16vw, 18%);
   right: clamp(6%, 7vw, 9%);
 }
 
-/* ── Content stack — vertically centered editorial layout ───────────────── */
 .about-intro__content {
   position: relative;
   z-index: 2;
@@ -97,7 +92,6 @@ const VALUES = [
   align-items: center;
   justify-content: center;
   min-height: max(100vh, 1080px);
-  /* Fluid padding: clears fixed navbar + leaves room before next section overlap */
   padding:
     clamp(80px, 12vw, 140px)
     clamp(20px, 3vw, 32px)
@@ -107,15 +101,13 @@ const VALUES = [
   margin: 0 auto;
 }
 
-/* Spacing between stack elements lives here — atoms own their own visual */
 .about-intro__eyebrow {
   margin-bottom: clamp(24px, 3.5vw, 36px);
 }
 
-/* ── Main heading — large editorial with cyan accent ────────────────────── */
 .about-intro__heading {
   font-family: var(--font-family);
-  font-size: clamp(32px, 5.5vw, 60px);
+  font-size: var(--text-hero-size);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
@@ -129,10 +121,9 @@ const VALUES = [
   color: var(--c-brand-cyan);
 }
 
-/* ── Subtitle / value prop ──────────────────────────────────────────────── */
 .about-intro__subtitle {
   font-family: var(--font-family);
-  font-size: clamp(14px, 1.4vw, 17px);
+  font-size: var(--text-hero-sub-size);
   font-weight: 400;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.85);
@@ -141,7 +132,6 @@ const VALUES = [
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
-/* ── Credential line — historical footprint badges separated by cyan dots ── */
 .about-intro__credentials {
   list-style: none;
   margin: 0 0 clamp(36px, 5vw, 64px);
@@ -174,7 +164,6 @@ const VALUES = [
   flex-shrink: 0;
 }
 
-/* ── Scroll indicator — absolute positioning lives on the parent class ──── */
 .about-intro__scroll {
   position: absolute;
   bottom: clamp(20px, 3vw, 36px);
@@ -183,7 +172,6 @@ const VALUES = [
   z-index: 2;
 }
 
-/* ── Mobile-only behaviors (clamp can't express conditional layout) ─────── */
 @media (max-width: 1023px) {
   .about-intro {
     min-height: 100svh;
@@ -193,7 +181,6 @@ const VALUES = [
     min-height: 100svh;
   }
 
-  /* Stack credentials vertically on narrow viewports for legibility */
   .about-intro__credentials {
     flex-direction: column;
   }

@@ -1,7 +1,6 @@
 import { RouteRecordRaw } from 'vue-router';
 import roles from "@/security/roles";
 
-// Lazy loading para rutas de trabajador
 const WorkerRegister = () => import("@/pages/worker/Register.vue");
 const WorkerRequests = () => import("@/pages/worker/Requests.vue");
 const WorkerRequest = () => import("@/pages/worker/Request.vue");

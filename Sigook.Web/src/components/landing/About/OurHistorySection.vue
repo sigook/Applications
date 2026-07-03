@@ -84,7 +84,8 @@
 
 <script setup lang="ts">
 import { useRevealOnScroll } from '@/composables/useRevealOnScroll'
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import historyMilestonesData from '@/data/landing/historyMilestones.json'
 
 interface Milestone {
   readonly year: string
@@ -92,33 +93,7 @@ interface Milestone {
   readonly body: string
 }
 
-const MILESTONES: readonly Milestone[] = [
-  {
-    year: '2008',
-    title: 'A Toronto beginning',
-    body: 'Covenant Group Ltd. was incorporated in Toronto by husband-and-wife team Andrea and David — created to provide sales and marketing consulting for international companies entering the Canadian market, and Canadian organizations expanding into Latin America.',
-  },
-  {
-    year: '2016',
-    title: 'From consulting to staffing',
-    body: 'Their mission evolved into something broader: helping the growing community of immigrants arriving in Canada access meaningful work. The company shifted to staffing for the industrial, manufacturing, and logistics sectors — quickly creating thousands of jobs across Canada and becoming a trusted partner for high-volume operations.',
-  },
-  {
-    year: '2020',
-    title: 'Recognized as essential',
-    body: 'Recognized as an essential workplace during the public health emergency, Covenant Group grew significantly — supporting essential operations and connecting workers with opportunities at a critical time.',
-  },
-  {
-    year: '2021',
-    title: 'SIGOOK launches in the U.S.',
-    body: 'Andrea and David expanded into the United States, incorporating Covenant Group Investors LLC, operating under the DBA SIGOOK.',
-  },
-  {
-    year: 'Today',
-    title: 'A multi-state growth story',
-    body: 'SIGOOK has grown beyond Florida to serve clients across multiple states — employing approximately 1,500 workers in under four years. As part of the Covenant Group family, it delivers flexible staffing, recruitment, and workforce support, continually expanding to build a more prepared, productive, and resilient workforce.',
-  },
-] as const
+const MILESTONES = historyMilestonesData as readonly Milestone[]
 
 const { el: timeline, visible: revealed } = useRevealOnScroll({
   threshold: 0.12,
@@ -131,9 +106,9 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
 .our-history {
   position: relative;
   width: 100%;
-  margin-top: clamp(-180px, -10vw, -80px);
+  margin-top: var(--panel-overlap);
   padding:
-    clamp(140px, 14vw, 200px)
+    var(--section-pad-y-lg)
     clamp(20px, 3vw, 64px)
     clamp(96px, 12vw, 160px);
   display: flex;
@@ -141,8 +116,8 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   align-items: center;
   z-index: 5;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0 22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -159,13 +134,13 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   right: 0;
   z-index: -1;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
@@ -174,8 +149,8 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   inset: 0;
   z-index: 0;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: linear-gradient(
     180deg,
     rgba(9, 48, 85, 0.65) 0%,
@@ -208,7 +183,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   margin: 0 auto;
 }
 
-/* ── Timeline ───────────────────────────────────────────────────────────── */
 .our-history__timeline {
   --rail: clamp(38px, 4.6vw, 52px);
   --line-x: clamp(11px, 1.3vw, 15px);
@@ -240,7 +214,7 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   transform: translateY(18px);
   transition:
     opacity 0.6s ease,
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.6s var(--ease-brand);
 }
 
 .our-history__milestone:last-child {
@@ -289,7 +263,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   margin: 0;
 }
 
-/* ── SIGOOK meaning callout ─────────────────────────────────────────────── */
 .our-history__meaning {
   margin-top: clamp(40px, 5.5vw, 64px);
   padding: clamp(24px, 3.2vw, 40px);
@@ -340,7 +313,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   color: rgba(255, 255, 255, 0.82);
 }
 
-/* ── What's next ────────────────────────────────────────────────────────── */
 .our-history__next {
   margin-top: clamp(36px, 5vw, 56px);
 }
@@ -371,14 +343,13 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
 .our-history__chips li {
   padding: clamp(8px, 1vw, 10px) clamp(14px, 1.6vw, 20px);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.88);
   font-size: clamp(12px, 1vw, 13.5px);
   font-weight: 500;
 }
 
-/* ── Closing ────────────────────────────────────────────────────────────── */
 .our-history__closing {
   margin-top: clamp(36px, 5vw, 56px);
   padding-top: clamp(26px, 3.2vw, 38px);
@@ -417,7 +388,6 @@ const { el: timeline, visible: revealed } = useRevealOnScroll({
   line-height: 1;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 560px) {
   .our-history__letters {
     grid-template-columns: 1fr;

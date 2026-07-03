@@ -1,6 +1,5 @@
 <template>
   <section id="partner-types" class="partner-types">
-    <!-- Inner glass surface — materializes the panel against GlobalBackground -->
     <div class="partner-types__surface" aria-hidden="true"></div>
 
     <LandingSectionHeader
@@ -40,20 +39,9 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Partner — "Two Tracks" section.
- *
- * Replaces the Figma toggle (Recruiter / Business) with two side-by-side
- * PrimaryCards — both visible at once, no clicking required. This gives the
- * Sigook brand the same "audience picker" language already used on Home
- * (Find Work / Find Talent) and Employers/Talents Solutions sections.
- *
- * Recruiter Partner = navy variant (the steady, structured track).
- * Business Partner  = red variant (the entrepreneurial, revenue-share track).
- */
-import LandingSectionHeader from '@/components/landing/shared/LandingSectionHeader.vue'
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/PrimaryCard.vue'
+import LandingSectionHeader from '@/components/landing/shared/sections/LandingSectionHeader.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import PrimaryCard, { type PrimaryCardVariant } from '@/components/landing/shared/cards/PrimaryCard.vue'
 
 interface PartnerTrack {
   readonly key: string
@@ -71,8 +59,7 @@ const TRACKS: readonly PartnerTrack[] = [
     key: 'recruiter',
     eyebrow: 'Independent Recruiter',
     title: 'Recruiter Partner',
-    body:
-      'Source and screen candidates for the industries you know best — engineering, logistics, construction, IT, or professional services. You stay independent; Sigook provides the compliance, payroll, and client onboarding behind you.',
+    body: 'Source and screen candidates for the industries you know best — engineering, logistics, construction, IT, or professional services. You stay independent; Sigook provides the compliance, payroll, and client onboarding behind you.',
     benefits: [
       'Full back-office support',
       'Compliance + payroll handled',
@@ -87,8 +74,7 @@ const TRACKS: readonly PartnerTrack[] = [
     key: 'business',
     eyebrow: 'Business Developer',
     title: 'Business Partner',
-    body:
-      'Bring your client relationships and let Sigook handle delivery. You share the ongoing revenue from every placement or project, while contracts, compliance, and client success live with us.',
+    body: 'Bring your client relationships and let Sigook handle delivery. You share the ongoing revenue from every placement or project, while contracts, compliance, and client success live with us.',
     benefits: [
       'Ongoing revenue share',
       'Sigook handles delivery',
@@ -99,17 +85,16 @@ const TRACKS: readonly PartnerTrack[] = [
     ctaHref: '#partner-contact',
     variant: 'red',
   },
-] as const
+]
 </script>
 
 <style scoped>
-/* ── Panel shell ────────────────────────────────────────────────────────── */
 .partner-types {
   position: relative;
   width: 100%;
-  margin-top: clamp(-180px, -10vw, -80px);
+  margin-top: var(--panel-overlap);
   padding:
-    clamp(140px, 14vw, 200px)
+    var(--section-pad-y-lg)
     clamp(20px, 3vw, 64px);
   display: flex;
   flex-direction: column;
@@ -117,8 +102,8 @@ const TRACKS: readonly PartnerTrack[] = [
   gap: clamp(48px, 6vw, 80px);
   z-index: 5;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -135,13 +120,13 @@ const TRACKS: readonly PartnerTrack[] = [
   right: 0;
   z-index: -1;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
@@ -150,8 +135,8 @@ const TRACKS: readonly PartnerTrack[] = [
   inset: 0;
   z-index: 0;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: linear-gradient(
     180deg,
     rgba(9, 48, 85, 0.65) 0%,
@@ -162,7 +147,6 @@ const TRACKS: readonly PartnerTrack[] = [
   pointer-events: none;
 }
 
-/* ── Cards grid — 2 cols desktop, stack mobile ──────────────────────────── */
 .partner-types__cards {
   position: relative;
   z-index: 2;
@@ -180,7 +164,6 @@ const TRACKS: readonly PartnerTrack[] = [
   flex-direction: column;
 }
 
-/* ── Mobile-only behaviors ──────────────────────────────────────────────── */
 @media (max-width: 899px) {
   .partner-types__cards { grid-template-columns: 1fr; }
 }

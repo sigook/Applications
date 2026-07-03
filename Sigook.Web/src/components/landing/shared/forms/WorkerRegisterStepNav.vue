@@ -14,18 +14,7 @@
         ]"
       >
         <span class="step-nav__circle" aria-hidden="true">
-          <svg
-            v-if="idx < current"
-            viewBox="0 0 14 14"
-            class="step-nav__tick"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="11 4 6 9 3 6" />
-          </svg>
+          <LandingIcon v-if="idx < current" name="check-sm" class="step-nav__tick" />
           <span v-else>{{ idx + 1 }}</span>
         </span>
         <span class="step-nav__label">{{ step.label }}</span>
@@ -40,17 +29,8 @@
 </template>
 
 <script setup lang="ts">
-/**
- * WorkerRegisterStepNav — horizontal stepper indicator.
- *
- * Three visual states per step:
- *   • done    — cyan filled circle with check mark
- *   • current — cyan outlined circle with white number + label cyan
- *   • pending — muted glass circle, muted label
- *
- * Steps are passed in by the parent so the same nav can serve different
- * flows (skip "Preferences" when the user is logged in, for instance).
- */
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+
 export interface StepDescriptor {
   readonly key: string
   readonly label: string
@@ -93,7 +73,7 @@ defineProps<{
   width: clamp(32px, 3.4vw, 40px);
   height: clamp(32px, 3.4vw, 40px);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1.5px solid rgba(255, 255, 255, 0.30);
   color: rgba(255, 255, 255, 0.60);
   font-size: clamp(13px, 1.1vw, 14px);
@@ -121,7 +101,6 @@ defineProps<{
   z-index: 1;
 }
 
-/* ── Current ────────────────────────────────────────────────────────────── */
 .step-nav__item--current .step-nav__circle {
   background: rgba(0, 173, 239, 0.18);
   border-color: var(--c-brand-cyan);
@@ -133,11 +112,10 @@ defineProps<{
   color: var(--c-brand-cyan);
 }
 
-/* ── Done ───────────────────────────────────────────────────────────────── */
 .step-nav__item--done .step-nav__circle {
   background: var(--c-brand-cyan);
   border-color: var(--c-brand-cyan);
-  color: var(--c-brand-navy, #0f2f44);
+  color: var(--c-brand-navy);
 }
 
 .step-nav__item--done .step-nav__connector {
@@ -148,13 +126,11 @@ defineProps<{
   color: rgba(255, 255, 255, 0.85);
 }
 
-/* ── Tick svg ───────────────────────────────────────────────────────────── */
 .step-nav__tick {
   width: 14px;
   height: 14px;
 }
 
-/* ── Responsive — hide labels on very small screens ─────────────────────── */
 @media (max-width: 479px) {
   .step-nav__label { display: none; }
 }
