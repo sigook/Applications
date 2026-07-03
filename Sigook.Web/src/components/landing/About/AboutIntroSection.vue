@@ -48,8 +48,8 @@
 <script setup lang="ts">
 import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
 import HeroBackground from '@/components/landing/shared/hero/HeroBackground.vue'
-import heroImage from '@/assets/images/v2/hero/about.webp'
-import heroImageSm from '@/assets/images/v2/hero/about-960.webp'
+import heroImage from '@/assets/images/landing/hero/about.webp'
+import heroImageSm from '@/assets/images/landing/hero/about-960.webp'
 import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
 import LabeledChipList from '@/components/landing/shared/ui/LabeledChipList.vue'
 import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vue'

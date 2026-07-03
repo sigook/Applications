@@ -46,8 +46,8 @@
 <script setup lang="ts">
 import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
 import PrimaryCard from '@/components/landing/shared/cards/PrimaryCard.vue'
-import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.webp'
-import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.webp'
+import talentsPhoto from '@/assets/images/landing/audience-banner/talents-worker.webp'
+import employersPhoto from '@/assets/images/landing/audience-banner/employers-office.webp'
 
 const talentBenefits: string[] = [
   'Access hundreds of jobs in skilled trades, industrial & professional fields',

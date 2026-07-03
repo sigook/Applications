@@ -45,8 +45,8 @@ import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
 import LabeledChipList from '@/components/landing/shared/ui/LabeledChipList.vue'
 import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vue'
 import logoWhite from '@/assets/images/logo-white-v2.png'
-import heroImage from '@/assets/images/v2/hero/home.webp'
-import heroImageSm from '@/assets/images/v2/hero/home-960.webp'
+import heroImage from '@/assets/images/landing/hero/home.webp'
+import heroImageSm from '@/assets/images/landing/hero/home-960.webp'
 
 const INDUSTRIES = [
   'Cybersecurity',

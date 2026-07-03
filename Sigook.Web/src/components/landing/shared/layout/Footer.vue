@@ -6,7 +6,7 @@
       <div class="footer__main">
         <div class="footer__brand">
           <img
-            src="@/assets/images/v2/footer/footer-logo.png"
+            src="@/assets/images/landing/footer/footer-logo.png"
             alt="Sigook Work Factory"
             class="footer__logo"
           />

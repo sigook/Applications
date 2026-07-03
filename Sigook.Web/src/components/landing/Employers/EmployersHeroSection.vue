@@ -30,8 +30,8 @@
  */
 import LandingHero from '@/components/landing/shared/hero/LandingHero.vue'
 import LabeledChipList from '@/components/landing/shared/ui/LabeledChipList.vue'
-import heroImage from '@/assets/images/v2/hero/employers.webp'
-import heroImageSm from '@/assets/images/v2/hero/employers-960.webp'
+import heroImage from '@/assets/images/landing/hero/employers.webp'
+import heroImageSm from '@/assets/images/landing/hero/employers-960.webp'
 
 const STAFFING_TYPES = [
   'Professional hires',

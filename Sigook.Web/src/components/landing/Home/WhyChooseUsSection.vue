@@ -7,7 +7,7 @@
     <div class="why__hero-back" aria-hidden="true"></div>
 
     <div class="why__hero">
-      <img src="@/assets/images/v2/why-choose-us/why-bg.webp" alt="" class="why__hero-bg" aria-hidden="true" loading="lazy" decoding="async" />
+      <img src="@/assets/images/landing/why-choose-us/why-bg.webp" alt="" class="why__hero-bg" aria-hidden="true" loading="lazy" decoding="async" />
       <div class="why__hero-overlay" aria-hidden="true"></div>
 
       <div class="why__hero-glow" aria-hidden="true"></div>
@@ -48,7 +48,7 @@
             <span class="why__map-halo" aria-hidden="true"></span>
             <div class="why__map">
               <img
-                src="@/assets/images/v2/why-choose-us/usa-minimal-map.png"
+                src="@/assets/images/landing/why-choose-us/usa-minimal-map.png"
                 alt="Sigook® coverage across the United States"
                 class="why__map-img"
                 width="600"

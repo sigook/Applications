@@ -4,8 +4,8 @@
 
     <section class="certified">
       <div class="certified__bg" aria-hidden="true">
-        <img src="@/assets/images/v2/certified/certified-bg.webp" alt="" class="certified__photo certified__photo--1" loading="lazy" decoding="async" />
-        <img src="@/assets/images/v2/certified/certified-bg2.webp" alt="" class="certified__photo certified__photo--2" loading="lazy" decoding="async" />
+        <img src="@/assets/images/landing/certified/certified-bg.webp" alt="" class="certified__photo certified__photo--1" loading="lazy" decoding="async" />
+        <img src="@/assets/images/landing/certified/certified-bg2.webp" alt="" class="certified__photo certified__photo--2" loading="lazy" decoding="async" />
       </div>
 
       <div class="certified__glow" aria-hidden="true"></div>

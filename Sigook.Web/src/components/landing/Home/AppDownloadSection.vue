@@ -20,7 +20,7 @@
               aria-label="Download Sigook on the App Store"
             >
               <img
-                src="@/assets/images/v2/app-download/app-store-apple.webp"
+                src="@/assets/images/landing/app-download/app-store-apple.webp"
                 alt=""
                 class="app__badge-icon app__badge-icon--apple"
                 loading="lazy"
@@ -40,7 +40,7 @@
               aria-label="Get Sigook® on Google Play"
             >
               <img
-                src="@/assets/images/v2/app-download/app-store-google.webp"
+                src="@/assets/images/landing/app-download/app-store-google.webp"
                 alt=""
                 class="app__badge-icon"
                 loading="lazy"
@@ -57,7 +57,7 @@
         <div class="app__phone-wrap" aria-hidden="true">
           <span class="app__phone-halo"></span>
           <img
-            src="@/assets/images/v2/app-download/app-hand-phone.webp"
+            src="@/assets/images/landing/app-download/app-hand-phone.webp"
             alt=""
             class="app__phone-img"
             width="1024"

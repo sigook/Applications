@@ -33,7 +33,7 @@
       <transition name="test-fade" mode="out-in">
         <article :key="currentSlide" class="testimonials__card">
           <img
-            src="@/assets/images/v2/testimonials/testimonials-quote-mark.png"
+            src="@/assets/images/landing/testimonials/testimonials-quote-mark.png"
             alt=""
             aria-hidden="true"
             class="testimonials__quote-mark"
@@ -78,7 +78,7 @@ interface Testimonial {
 
 const testimonials: readonly Testimonial[] = [
   {
-    bg: '/images/v2/testimonials/testimonials-slide1.webp',
+    bg: '/images/landing/testimonials/testimonials-slide1.webp',
     gradient: '',
     quote:
       '"I recommend Sigook Work Factory as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding."',
@@ -86,7 +86,7 @@ const testimonials: readonly Testimonial[] = [
     location: 'Doral, Florida',
   },
   {
-    bg: '/images/v2/testimonials/testimonials-slide2.webp',
+    bg: '/images/landing/testimonials/testimonials-slide2.webp',
     gradient: '',
     quote:
       '"Sigook transformed how we manage seasonal staffing. Their team is responsive, professional, and always delivers the right talent at the right time. Highly recommended."',
@@ -94,7 +94,7 @@ const testimonials: readonly Testimonial[] = [
     location: 'Seattle, WA',
   },
   {
-    bg: '/images/v2/testimonials/testimonials-slide3.webp',
+    bg: '/images/landing/testimonials/testimonials-slide3.webp',
     gradient: '',
     quote:
       '"From onboarding to invoicing, the entire process is seamless. Sigook is not just a staffing agency — they are a true workforce partner."',

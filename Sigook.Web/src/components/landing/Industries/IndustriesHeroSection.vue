@@ -26,8 +26,8 @@
 <script setup lang="ts">
 import LandingHero from '@/components/landing/shared/hero/LandingHero.vue'
 import LabeledChipList from '@/components/landing/shared/ui/LabeledChipList.vue'
-import heroImage from '@/assets/images/v2/hero/industries.webp'
-import heroImageSm from '@/assets/images/v2/hero/industries-960.webp'
+import heroImage from '@/assets/images/landing/hero/industries.webp'
+import heroImageSm from '@/assets/images/landing/hero/industries-960.webp'
 
 const PREVIEW_INDUSTRIES = [
   'Manufacturing',
