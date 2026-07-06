@@ -1,16 +1,16 @@
 <template>
   <div class="modal-card assign-modal">
     <header class="modal-card-head is-flex-direction-column is-align-items-start">
-      <p class="modal-card-title">Assign recruiter to an order</p>
-      <p class="has-text-grey is-size-7">Pick the order, the work day, and who runs it.</p>
+      <p class="modal-card-title">Assign recruiter to a request</p>
+      <p class="has-text-grey is-size-7">Pick the request, the work day, and who runs it.</p>
     </header>
     <section class="modal-card-body">
       <div class="container-flex">
         <div class="col-12 col-padding">
-          <b-field label="Order">
-            <b-autocomplete :data="orders" placeholder="RequestID, Position" :loading="isLoadingOrders"
+          <b-field label="Request">
+            <b-autocomplete :data="requests" placeholder="RequestID, Position" :loading="isLoadingRequests"
               :custom-formatter="(option: AgencyRequestListItem) => `#${option.numberId} | ${option.jobTitle} | ${option.companyFullName}`"
-              icon="magnify" append-to-body @typing="onOrderTyping" @select="onOrderSelected">
+              icon="magnify" append-to-body @typing="onRequestTyping" @select="onRequestSelected">
               <template v-slot="props">
                 <small>#{{ props.option.numberId }} | {{ props.option.jobTitle }} | {{ props.option.companyFullName }}
                 </small>
@@ -69,9 +69,9 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const isLoadingOrders = ref(false);
-const orders = ref<AgencyRequestListItem[]>([]);
-const selectedOrder = ref<AgencyRequestListItem | null>(null);
+const isLoadingRequests = ref(false);
+const requests = ref<AgencyRequestListItem[]>([]);
+const selectedRequest = ref<AgencyRequestListItem | null>(null);
 
 const personnel = ref<AgencyPersonnelListItem[]>([]);
 const filteredRecruiters = ref<AgencyPersonnelListItem[]>([]);
@@ -80,27 +80,27 @@ const selectedRecruiters = ref<AgencyPersonnelListItem[]>([]);
 const selectedDays = ref<string[]>(props.preset?.workDate ? [props.preset.workDate] : []);
 
 const canAssign = computed(
-  () => !!selectedOrder.value && selectedDays.value.length > 0 && selectedRecruiters.value.length > 0
+  () => !!selectedRequest.value && selectedDays.value.length > 0 && selectedRecruiters.value.length > 0
 );
 
-function onOrderTyping(value: string): void {
+function onRequestTyping(value: string): void {
   const filter: AgencyRequestFilter = {
     filter: value,
     statuses: [RequestStatus.Open, RequestStatus.Filled],
   };
-  isLoadingOrders.value = true;
+  isLoadingRequests.value = true;
   getAllAgencyRequests(filter)
     .then(response => {
-      orders.value = response;
+      requests.value = response;
     })
     .catch(error => showAlertError(error))
     .finally(() => {
-      isLoadingOrders.value = false;
+      isLoadingRequests.value = false;
     });
 }
 
-function onOrderSelected(option: AgencyRequestListItem | null): void {
-  selectedOrder.value = option;
+function onRequestSelected(option: AgencyRequestListItem | null): void {
+  selectedRequest.value = option;
 }
 
 function loadPersonnel(): void {
@@ -130,9 +130,9 @@ function toggleDay(date: string): void {
 }
 
 function submit(): void {
-  if (!canAssign.value || !selectedOrder.value) return;
+  if (!canAssign.value || !selectedRequest.value) return;
   emit('assign', {
-    requestId: selectedOrder.value.id,
+    requestId: selectedRequest.value.id,
     workDates: [...selectedDays.value],
     recruiterIds: selectedRecruiters.value.map(r => r.id),
   });

@@ -9,6 +9,7 @@ export interface WeeklyBoardDispatch {
   workerProfileId: string;
   fullName: string;
   email: string;
+  sentAt?: string | null;
 }
 
 // Mirrors WeeklyBoardAssignmentModel — a single order card placed on a

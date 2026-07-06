@@ -125,7 +125,7 @@ function saveContactInformation() {
       emit('save');
       showAlertSuccess("Updated");
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       showAlertError(error);
     });
 }

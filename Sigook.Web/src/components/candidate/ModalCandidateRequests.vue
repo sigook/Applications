@@ -59,7 +59,7 @@ function loadRequests() {
 
 function saveRequestApplicant() {
   isLoading.value = true;
-  postAgencyRequestApplicant(optionSelected.value.id, { candidateId: props.candidateId })
+  postAgencyRequestApplicant(optionSelected.value.id, { candidateId: String(props.candidateId) })
     .then(() => {
       isLoading.value = false;
       emit('onSelectRequest');

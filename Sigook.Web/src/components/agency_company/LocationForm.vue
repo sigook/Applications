@@ -50,6 +50,7 @@ import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import CvnAddress from "@/components/Address.vue";
 import { createAgencyCompanyLocation, updateAgencyCompanyLocation } from "@/api/agencyCompanyApi";
+import { createProfileLocation, updateProfileLocation } from "@/api/companyApi";
 
 const schema = yup.object({
   mainIntersection: yup.string().nullable().transform((v) => (v === '' ? null : v)).max(1000, 'Max 1000 characters'),
@@ -59,7 +60,7 @@ const schema = yup.object({
 const props = defineProps<{
   currentLocation?: any;
   currentIndex?: any;
-  profileId: any;
+  profileId?: string;
   enableProvinceSettings?: boolean;
 }>();
 const emit = defineEmits<{ (e: 'updateContent'): void }>();
@@ -106,13 +107,16 @@ async function validateForm() {
 
 function createLocation() {
   isLoading.value = true;
-  createAgencyCompanyLocation(props.profileId, location.value)
+  const request = props.profileId
+    ? createAgencyCompanyLocation(props.profileId, location.value)
+    : createProfileLocation(location.value);
+  request
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Created');
       emit('updateContent');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -120,13 +124,16 @@ function createLocation() {
 
 function updateLocation(id: any) {
   isLoading.value = true;
-  updateAgencyCompanyLocation(props.profileId, id, location.value)
+  const request = props.profileId
+    ? updateAgencyCompanyLocation(props.profileId, id, location.value)
+    : updateProfileLocation(id, location.value);
+  request
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Updated');
       emit('updateContent');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

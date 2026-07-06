@@ -161,7 +161,7 @@ function onSortChange(field: string, order: string) {
 }
 
 function onCellClick(row: any) {
-  router.push(`/agency-workers/worker/${row.id}`);
+  router.push(`/recruiting/workers/${row.id}`);
 }
 
 function onInputEntered(event: KeyboardEvent) {

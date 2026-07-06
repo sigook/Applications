@@ -24,8 +24,8 @@
             </div>
 
             <div class="actions">
-                <button @click="closeModal" type="button" class="background-btn gray-light-button sm-btn">{{ "Cancel"}}</button>
-                <button @click="uploadCroppedImage()" type="button" class="background-btn primary-button sm-btn">{{ "Crop and Upload"}}</button>
+                <b-button type="is-light" size="is-small" @click="closeModal">Cancel</b-button>
+                <b-button type="is-primary" size="is-small" @click="uploadCroppedImage()">Crop and Upload</b-button>
             </div>
 
         </div>
@@ -33,10 +33,10 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue';
+import { ref, defineAsyncComponent, type Component } from 'vue';
 import 'cropperjs/dist/cropper.css';
 
-const VueCropper = defineAsyncComponent(() => import("vue-cropperjs").then(m => (m as any).default));
+const VueCropper = defineAsyncComponent(() => import("vue-cropperjs").then(m => (m as { default: Component }).default));
 
 defineProps<{ image?: string }>();
 const emit = defineEmits<{
@@ -91,9 +91,6 @@ function closeModal() {
         }
 
         .actions {
-            .gray-light-button {
-                border: 1px solid #b5b4b4;
-            }
             button {
                 margin-left: 5px;
             }

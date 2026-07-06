@@ -234,7 +234,6 @@ onMounted(() => {
   margin-left: 10px;
 }
 
-/* Mobile responsive */
 @media (max-width: 768px) {
   .shifts-grid {
     grid-template-columns: 1fr;

@@ -11,7 +11,7 @@
       <template #end>
         <b-navbar-item tag="div" class="stat">
           <span class="stat-value">{{ board?.ordersCount ?? 0 }}</span>
-          <span class="stat-label">Orders this week</span>
+          <span class="stat-label">Requests this week</span>
         </b-navbar-item>
         <b-navbar-item tag="div" class="stat">
           <span class="stat-value">{{ board?.workersSent ?? 0 }}</span>

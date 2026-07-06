@@ -95,10 +95,10 @@ NightShiftRate = 1.15 (15% premium)
 
 ---
 
-#### 3. Holiday Rate
+#### 3. Holiday Rate (worked holiday)
 
 **Rule:**
-- Statutory holidays
+- Applies to hours **actually worked** on a statutory holiday
 - Typically 1.5x - 2.0x
 - Defined in `CompanyProfileJobPositionRate.HolidayRate`
 
@@ -112,6 +112,30 @@ HolidayAmount = HolidayHours × (AgencyRate × HolidayRate)
 HolidayRate = 1.5
 8 hours × ($25.00 × 1.5) = 8 × $37.50 = $300.00
 ```
+
+> Source: `HolidayHours` comes from `TimesheetCalculatorService.CalculateHoursBreakdown` (the `isHoliday && holidayIsPaid` branch). If the worker did not clock in on the holiday, `HolidayHours = 0` and this charge is $0 — the not-worked statutory pay is billed separately (see 3b).
+
+---
+
+#### 3b. Public Holiday Pay (statutory holiday NOT worked)
+
+**Rule:**
+- Statutory holiday pay owed even when the worker does **not** work the holiday (ESA labour benefit)
+- Only when the company profile has paid holidays enabled (`TimeSheet.PaidHolidays`)
+- Worker must qualify per the ESA "last and first scheduled day" test (`GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`)
+- Amount uses a **4-week look-back average** of what was billed to the company, NOT `hours × rate`
+
+**Calculation:**
+```
+holidayWeekEnd = end of the week before the holiday's week
+lookbackStart  = four work weeks earlier
+charges        = InvoiceRepository.GetCompanyRegularCharges(companyProfileId, lookbackStart, holidayWeekEnd, qualifyingDays)
+PublicHolidayPay (per worker) = charges.AmountToPay   // ESA average of company charges
+```
+
+> This mirrors the pay-stub side (`PayStubService` → `CalculateHolidayPayBase`), but the invoice averages **company charges** (agency rate) while the pay stub averages **worker wages**, so the markup is preserved.
+>
+> Invoice side: `CanadaInvoiceService.GetInvoiceHolidaysAsync` → `InvoiceHoliday` entities → added via `Invoice.AddHolidays`, summed into `holidaysSubtotal`, then HST applies. Only Canadian invoices carry public-holiday-not-worked pay.
 
 ---
 

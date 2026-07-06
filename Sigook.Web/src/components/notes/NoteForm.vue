@@ -13,8 +13,7 @@
       <div>
         <color-picker @onSelectColor="(color) => changeColor(color)"></color-picker>
       </div>
-      <button type="button" class="sm-btn fz-1 background-btn orange-button mt-0 btn-radius" @click="addNote()"> Save
-      </button>
+      <b-button type="is-primary" size="is-small" rounded class="mt-0" @click="addNote()">Save</b-button>
     </div>
   </div>
 </template>
@@ -66,7 +65,6 @@ function onEditingNote() {
   localStorage.setItem(keyLocalstorage, newNote.note);
 }
 
-// created()
 if (props.currentNote) {
   newNote.id = props.currentNote.id;
   newNote.color = props.currentNote.color;

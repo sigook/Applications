@@ -134,11 +134,11 @@ watch(address, () => { interacted.address = true; });
 watch(postalCode, () => { interacted.postalCode = true; });
 
 const errors = computed(() => ({
-  country: interacted.country ? ((formErrors.value as any).country || '') : '',
-  province: interacted.province ? ((formErrors.value as any).province || '') : '',
-  city: interacted.city ? ((formErrors.value as any).city || '') : '',
-  address: interacted.address ? ((formErrors.value as any).address || '') : '',
-  postalCode: interacted.postalCode ? ((formErrors.value as any).postalCode || '') : '',
+  country: interacted.country ? ((formErrors.value as Record<string, string>).country || '') : '',
+  province: interacted.province ? ((formErrors.value as Record<string, string>).province || '') : '',
+  city: interacted.city ? ((formErrors.value as Record<string, string>).city || '') : '',
+  address: interacted.address ? ((formErrors.value as Record<string, string>).address || '') : '',
+  postalCode: interacted.postalCode ? ((formErrors.value as Record<string, string>).postalCode || '') : '',
 }));
 
 function markAllInteracted() {

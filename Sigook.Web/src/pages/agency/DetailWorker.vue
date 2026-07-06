@@ -96,7 +96,7 @@
               </div>
               <ul>
                 <li v-for="(item, index) in worker.jobExperiences" v-bind:class="{ active: currentJobEx === index }"
-                  v-on:click="currentJobEx = index" v-bind:key="'jobExperiences' + index">
+                  v-on:click="currentJobEx = Number(index)" v-bind:key="'jobExperiences' + index">
                   <work-experience-detail :item="item" :workerId="worker.id" @getWorker="() => loadWorker()" />
                 </li>
               </ul>
@@ -205,7 +205,7 @@ function changeTab(tab: string) {
     visitedTabs.value.push(tab);
   }
   router.push({
-    path: `/agency-workers/worker/${route.params.id}`,
+    path: `/recruiting/workers/${route.params.id}`,
     query: { tab: tab },
   });
 }
@@ -234,7 +234,7 @@ function changePageComments(page: number) {
 
 function loadWorker() {
   isLoading.value = true;
-  getAgencyWorker(route.params.id as any)
+  getAgencyWorker(route.params.id as string)
     .then((w: any) => {
       isLoading.value = false;
       worker.value = w;

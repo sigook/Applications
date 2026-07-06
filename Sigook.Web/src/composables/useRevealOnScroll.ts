@@ -21,9 +21,7 @@ export interface UseRevealOnScrollOptions {
 }
 
 export interface UseRevealOnScrollReturn {
-  /** Template ref to the element being observed. */
   el: Ref<HTMLElement | null>
-  /** True while the element is intersecting (or after first reveal when `once`). */
   visible: Ref<boolean>
 }
 

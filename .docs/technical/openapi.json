@@ -20767,6 +20767,50 @@
         }
       }
     },
+    "/api/agency/recruiting/WeeklyBoard/{requestId}/dispatches": {
+      "get": {
+        "tags": [
+          "WeeklyBoard"
+        ],
+        "summary": "Gets every worker dispatched to an order across all recruiters and work days.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Identifier of the order.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardDispatchModel"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/recruiting/WeeklyBoard/move": {
       "post": {
         "tags": [
@@ -29778,6 +29822,11 @@
           },
           "email": {
             "type": "string",
+            "nullable": true
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },

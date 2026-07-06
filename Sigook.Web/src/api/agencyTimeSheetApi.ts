@@ -1,9 +1,9 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
 import type { TimeSheetListItem, TimeSheetModel, TimeSheetUsagesModel } from '@/types/company';
 
 // Get all timesheets for a worker on a request
 export function getAgencyWorkerTimeSheet(requestId: string, workerId: string): Promise<TimeSheetListItem[]> {
-  return http.get(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`).then(r => r.data);
+  return api.get<TimeSheetListItem[]>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`);
 }
 
 // Get timesheets filtered by date range
@@ -12,9 +12,9 @@ export function getAgencyWorkerTimeSheetByDate(
   workerId: string,
   date: { startDate: string; endDate: string },
 ): Promise<TimeSheetListItem[]> {
-  return http
-    .get(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`, { params: { ...date } })
-    .then(r => r.data);
+  return api.get<TimeSheetListItem[]>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`, {
+    params: { ...date },
+  });
 }
 
 export function postAgencyWorkerTimeSheet(
@@ -22,7 +22,7 @@ export function postAgencyWorkerTimeSheet(
   workerId: string,
   model: TimeSheetModel,
 ): Promise<{ id: string }> {
-  return http.post(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`, model).then(r => r.data);
+  return api.post<{ id: string }>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`, model);
 }
 
 export function updateAgencyWorkerTimeSheet(
@@ -31,15 +31,13 @@ export function updateAgencyWorkerTimeSheet(
   id: string,
   model: TimeSheetModel,
 ): Promise<void> {
-  return http.put(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}`, model).then(() => {});
+  return api.put(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}`, model);
 }
 
 export function deleteAgencyWorkerTimeSheet(requestId: string, workerId: string, id: string): Promise<void> {
-  return http.delete(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}`).then(() => {});
+  return api.del(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}`);
 }
 
 export function getAgencyTimeSheetUsages(requestId: string, workerId: string, id: string): Promise<TimeSheetUsagesModel> {
-  return http
-    .get(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}/Usages`)
-    .then(r => r.data);
+  return api.get<TimeSheetUsagesModel>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}/Usages`);
 }

@@ -99,7 +99,7 @@ const invoiceRecipients = ref<any[]>([]);
 const emailValidationMessage = ref('');
 const emailValidationType = ref('');
 const newEmail = reactive({
-  attachments: [] as any[]
+  attachments: [] as File[]
 });
 
 async function loadInvoiceRecipients() {

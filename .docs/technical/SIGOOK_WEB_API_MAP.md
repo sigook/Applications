@@ -417,10 +417,11 @@ Board where the agency assigns orders to recruiters per work day, and each recru
 |----------|------------|----------|--------------|---------------|-------|
 | `getWeeklyBoard(filter)` | GET | `/api/agency/recruiting/WeeklyBoard` | `WeeklyBoardFilter` (params) | `WeeklyBoard` | Admin board grouped by recruiter |
 | `getRecruiterWeeklyBoard(filter)` | GET | `/api/agency/recruiting/WeeklyBoard/mine` | `WeeklyBoardFilter` (params) | `RecruiterWeeklyBoard` | Current recruiter's board + sent workers |
+| `getOrderDispatches(requestId)` | GET | `/api/agency/recruiting/WeeklyBoard/{requestId}/dispatches` | `requestId` (route) | `WeeklyBoardDispatch[]` | All workers sent to an order across every recruiter/day (whole history, not just the visible week) |
 | `assignRecruiters(payload)` | POST | `/api/agency/recruiting/WeeklyBoard` | `AssignRecruitersPayload` | `void` | Assign recruiter(s) to an order per day |
 | `unassignRecruiter(payload)` | DELETE | `/api/agency/recruiting/WeeklyBoard` | `UnassignRecruiterPayload` (params) | `void` | Remove a day assignment |
 | `moveAssignment(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/move` | `MoveAssignmentPayload` | `void` | Move an assignment to another recruiter/day (keeps its dispatched workers; drag & drop) |
-| `addWorkers(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/dispatch` | `DispatchWorkersPayload` | `void` | Recruiter sends workers to an order/day |
+| `addWorkers(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/dispatch` | `DispatchWorkersPayload` | `void` | Recruiter sends workers to an order/day; adds a request note `"{workerName} was sent"` per newly sent worker |
 | `removeWorker(payload)` | DELETE | `/api/agency/recruiting/WeeklyBoard/dispatch` | `RemoveWorkerPayload` (params) | `void` | Remove a worker the recruiter sent |
 
 **Types:** `WeeklyBoard`, `RecruiterWeeklyBoard`, `WeeklyBoardRecruiterRow`, `WeeklyBoardAssignment`, `WeeklyBoardDispatch`, `WeeklyBoardFilter`, `AssignRecruitersPayload`, `UnassignRecruiterPayload`, `MoveAssignmentPayload`, `DispatchWorkersPayload`, `RemoveWorkerPayload` (from `src/types/weeklyBoard`)

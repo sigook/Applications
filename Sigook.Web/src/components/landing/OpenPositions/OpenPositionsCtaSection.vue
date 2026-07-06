@@ -34,9 +34,7 @@
           <ul class="op-cta__features" aria-label="What to expect">
             <li v-for="feature in features" :key="feature" class="op-cta__feature">
               <span class="op-cta__check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <LandingIcon name="check" />
               </span>
               <span class="op-cta__feature-text">{{ feature }}</span>
             </li>
@@ -48,9 +46,10 @@
 </template>
 
 <script setup lang="ts">
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
 import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
 
 const registerModal = useCandidateApplyModal()
 
@@ -75,7 +74,6 @@ function onSendResume(): void {
   font-family: var(--font-family);
 }
 
-/* ── Depth back-layer — transparent glass, peeks ~16px above & below card ─ */
 .op-cta__back {
   position: absolute;
   top: calc(clamp(8px, 1.5vw, 28px) - 16px);
@@ -84,13 +82,13 @@ function onSendResume(): void {
   right: 0;
   z-index: 0;
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
@@ -106,8 +104,8 @@ function onSendResume(): void {
     clamp(72px, 10vw, 120px)
     clamp(20px, 3vw, 64px);
   border-radius:
-    clamp(80px, 10vw, 150px) 0
-    clamp(80px, 10vw, 150px) 0;
+    var(--r-brand-fluid) 0
+    var(--r-brand-fluid) 0;
   overflow: hidden;
   background:
     linear-gradient(120deg,
@@ -207,7 +205,7 @@ function onSendResume(): void {
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 1.8vw, 20px);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-glass-fill);
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius:
     0 clamp(18px, 2vw, 26px)

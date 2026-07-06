@@ -1,9 +1,8 @@
 <template>
   <main class="apply-page">
-    <!-- Hero strip — sets context before the form starts. -->
     <header class="apply-page__hero">
       <EyebrowPill variant="red" class="apply-page__eyebrow">
-        Worker Registration
+        Apply
       </EyebrowPill>
       <h1 class="apply-page__heading">
         Join <span class="apply-page__heading-accent">Sigook.</span><br>
@@ -16,24 +15,17 @@
       </p>
     </header>
 
-    <!-- Form panel — glass surface holds the full WorkerRegisterForm. -->
     <section class="apply-page__form-wrap">
       <div class="apply-page__form">
-        <WorkerRegisterForm />
+        <CandidateApplyForm />
       </div>
     </section>
   </main>
 </template>
 
 <script setup lang="ts">
-/**
- * /v2/apply — full-page worker registration.
- *
- * Reuses the same WorkerRegisterForm core as the modal — the only
- * difference is the surrounding hero / panel chrome.
- */
-import EyebrowPill from '@/components/landing/shared/EyebrowPill.vue'
-import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegisterForm.vue'
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
+import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApplyForm.vue'
 </script>
 
 <style scoped>
@@ -43,7 +35,6 @@ import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegister
   color: #fff;
 }
 
-/* ── Hero strip ─────────────────────────────────────────────────────────── */
 .apply-page__hero {
   position: relative;
   z-index: 2;
@@ -86,7 +77,6 @@ import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegister
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
 }
 
-/* ── Form panel ─────────────────────────────────────────────────────────── */
 .apply-page__form-wrap {
   position: relative;
   z-index: 2;
@@ -112,7 +102,6 @@ import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegister
   isolation: isolate;
 }
 
-/* Decorative cyan glow in the asymmetric corner */
 .apply-page__form::before {
   content: '';
   position: absolute;
@@ -129,7 +118,6 @@ import WorkerRegisterForm from '@/components/landing/shared/forms/WorkerRegister
   border-radius: 0 clamp(64px, 7vw, 96px) 0 0;
 }
 
-/* Push form contents above the glow */
 .apply-page__form > :deep(*) {
   position: relative;
   z-index: 1;

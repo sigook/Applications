@@ -13,6 +13,7 @@ import { registerValidationRules } from '@/lang/validator';
 import { setupBuefyProgrammatic } from '@/utils/buefyProgrammatic';
 import mgr from '@/security/securityService';
 import { useSecurityStore } from '@/stores/security';
+import type { UserProfile } from '@/types/security';
 
 // import the styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -37,7 +38,7 @@ app.use(pinia);
 
 const securityStore = useSecurityStore(pinia);
 mgr.events.addUserLoaded((user) => {
-  securityStore.setUser(user as any);
+  securityStore.setUser(user as unknown as UserProfile);
 });
 mgr.events.addUserUnloaded(() => {
   securityStore.setUser(null);

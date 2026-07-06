@@ -1,4 +1,4 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
 import type { PaginatedList } from '@/types/common';
 import type {
   AgencyDetail,
@@ -13,61 +13,61 @@ import type {
 
 // Profile (current logged-in agency)
 export function getAgencyProfile(): Promise<AgencyDetail> {
-  return http.get('/api/Agency/Profile').then(r => r.data);
+  return api.get<AgencyDetail>('/api/Agency/Profile');
 }
 
 // Agency CRUD
 export function getAgency(id: string): Promise<AgencyDetail> {
-  return http.get(`/api/Agency/${id}`).then(r => r.data);
+  return api.get<AgencyDetail>(`/api/Agency/${id}`);
 }
 
 export function getAgenciesList(filter: AgencyListFilter): Promise<PaginatedList<AgencyListItem>> {
-  return http.get('/api/Agency', { params: { ...filter } }).then(r => r.data);
+  return api.get<PaginatedList<AgencyListItem>>('/api/Agency', { params: { ...filter } });
 }
 
 export function createAgency(model: CreateAgencyModel): Promise<{ id: string }> {
-  return http.post('/api/Agency', model).then(r => r.data);
+  return api.post<{ id: string }>('/api/Agency', model);
 }
 
 export function updateAgency(agency: AgencyDetail): Promise<void> {
-  return http.put('/api/Agency', agency).then(() => {});
+  return api.put('/api/Agency', agency);
 }
 
 // Agency Personnel (users of the agency back-office)
 export function getAgencyPersonnel(): Promise<AgencyPersonnelListItem[]> {
-  return http.get('/api/AgencyPersonnel').then(r => r.data);
+  return api.get<AgencyPersonnelListItem[]>('/api/AgencyPersonnel');
 }
 
 export function createAgencyPersonnel(model: AgencyPersonnelCreateModel): Promise<void> {
-  return http.post('/api/AgencyPersonnel', model).then(() => {});
+  return api.post('/api/AgencyPersonnel', model);
 }
 
 export function deleteAgencyPersonnel(id: string): Promise<void> {
-  return http.delete(`/api/AgencyPersonnel/${id}`).then(() => {});
+  return api.del(`/api/AgencyPersonnel/${id}`);
 }
 
 // Agency Locations (billing addresses)
 export function getAgencyLocations(): Promise<AgencyLocationDetail[]> {
-  return http.get('/api/Agency/Location').then(r => r.data);
+  return api.get<AgencyLocationDetail[]>('/api/Agency/Location');
 }
 
 export function createAgencyLocation(model: AgencyLocationDetail): Promise<{ id: string }> {
-  return http.post('/api/Agency/Location', model).then(r => r.data);
+  return api.post<{ id: string }>('/api/Agency/Location', model);
 }
 
 export function updateAgencyLocation(id: string, model: AgencyLocationDetail): Promise<void> {
-  return http.put(`/api/Agency/Location/${id}`, model).then(() => {});
+  return api.put(`/api/Agency/Location/${id}`, model);
 }
 
 export function deleteAgencyLocation(id: string): Promise<void> {
-  return http.delete(`/api/Agency/Location/${id}`).then(() => {});
+  return api.del(`/api/Agency/Location/${id}`);
 }
 
 // Personnel Agencies (agencies a user has access to + switching)
 export function getPersonnelAgencies(): Promise<PersonnelAgencyItem[]> {
-  return http.get('/api/PersonnelAgency').then(r => r.data);
+  return api.get<PersonnelAgencyItem[]>('/api/PersonnelAgency');
 }
 
 export function switchPersonnelAgency(id: string): Promise<void> {
-  return http.put(`/api/PersonnelAgency/${id}`).then(() => {});
+  return api.put(`/api/PersonnelAgency/${id}`);
 }

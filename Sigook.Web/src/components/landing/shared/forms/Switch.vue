@@ -1,28 +1,16 @@
 <template>
-  <label class="landing-switch" :class="{ 'landing-switch--on': modelValue }">
-    <input
-      type="checkbox"
-      class="landing-switch__input"
-      :checked="modelValue"
-      :disabled="disabled"
-      @change="$emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
-    />
-    <span class="landing-switch__track" aria-hidden="true">
-      <span class="landing-switch__thumb"></span>
-    </span>
-    <span v-if="$slots.default" class="landing-switch__label">
-      <slot />
-    </span>
-  </label>
+  <b-switch
+    class="landing-switch"
+    :class="{ 'landing-switch--on': modelValue }"
+    :model-value="modelValue"
+    :disabled="disabled"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
+    <slot />
+  </b-switch>
 </template>
 
 <script setup lang="ts">
-/**
- * Switch — pill toggle for boolean values.
- *
- * Off  → muted track + thumb on the left.
- * On   → cyan track + thumb on the right.
- */
 withDefaults(defineProps<{
   modelValue: boolean
   disabled?: boolean
@@ -47,25 +35,23 @@ defineEmits<{
   user-select: none;
 }
 
-.landing-switch__input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
+.landing-switch :deep(.control-label) {
+  padding-left: 0;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-.landing-switch__track {
+.landing-switch.switch :deep(input[type="checkbox"] + .check) {
   position: relative;
   width: 42px;
   height: 24px;
+  padding: 0;
   background: rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   transition: background 0.25s ease;
   flex-shrink: 0;
 }
 
-.landing-switch__thumb {
+.landing-switch.switch :deep(input[type="checkbox"] + .check::before) {
   position: absolute;
   top: 3px;
   left: 3px;
@@ -74,18 +60,18 @@ defineEmits<{
   background: #fff;
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.30);
-  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.25s var(--ease-brand);
 }
 
-.landing-switch--on .landing-switch__track {
+.landing-switch.switch :deep(input[type="checkbox"]:checked + .check) {
   background: var(--c-brand-cyan);
 }
 
-.landing-switch--on .landing-switch__thumb {
+.landing-switch.switch :deep(input[type="checkbox"]:checked + .check::before) {
   transform: translateX(18px);
 }
 
-.landing-switch:has(.landing-switch__input:disabled) {
+.landing-switch.is-disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }

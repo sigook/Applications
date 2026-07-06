@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw, RouteLocationNormalized } from "vue-router";
 import NotFound from "@/pages/NotFound.vue";
 import SilentRefresh from "@/pages/SilentRefresh.vue";
 import Unauthorized from "@/pages/Unauthorized.vue";
@@ -74,11 +74,6 @@ router.beforeEach(async (to, from, next) => {
   }
 });
 
-// Per-route canonical + og:url. index.html ships a single static canonical
-// pointing at the homepage; without this every SPA route would claim the
-// homepage as its canonical and search engines would treat them as duplicates.
-// The origin is the production host (not window.location.origin) so canonicals
-// stay correct on staging/preview domains.
 const CANONICAL_ORIGIN = "https://www.sigook.com";
 
 function setCanonical(path: string): void {
@@ -94,8 +89,33 @@ function setCanonical(path: string): void {
   if (ogUrl) ogUrl.setAttribute("content", url);
 }
 
+const SITE_NAME = "Sigook";
+const DEFAULT_TITLE = "Sigook® - Connecting Talent with Opportunity";
+const DEFAULT_DESCRIPTION =
+  "Sigook connects job seekers with top employers across the United States. Find temporary, contract, and permanent jobs in skilled trades, industrial, and professional sectors.";
+
+function setMetaContent(selector: string, value: string): void {
+  const el = document.querySelector<HTMLMetaElement>(selector);
+  if (el) el.setAttribute("content", value);
+}
+
+function setPageMeta(to: RouteLocationNormalized): void {
+  const isLanding = to.meta?.layout === "landing";
+  const pageTitle = to.meta?.title as string | undefined;
+  const pageDescription = to.meta?.description as string | undefined;
+  const title = isLanding && pageTitle ? `${pageTitle} | ${SITE_NAME}` : DEFAULT_TITLE;
+  const description = (isLanding && pageDescription) || DEFAULT_DESCRIPTION;
+
+  document.title = title;
+  setMetaContent('meta[name="description"]', description);
+  setMetaContent('meta[property="og:title"]', title);
+  setMetaContent('meta[property="og:description"]', description);
+  setMetaContent('meta[name="twitter:title"]', title);
+  setMetaContent('meta[name="twitter:description"]', description);
+}
+
 router.afterEach((to) => {
-  // Don't self-canonicalize unknown URLs (the SPA soft-serves 404s with HTTP 200).
+  setPageMeta(to);
   if (to.name === "not-found") return;
   setCanonical(to.path);
 });

@@ -22,7 +22,6 @@ const cs = (path: string, name: string, title: string): RouteRecordRaw => ({
 });
 
 const routesLanding: RouteRecordRaw[] = [
-    // ── Canonical public landing pages ──────────────────────────────────────
     {
         path: '/',
         name: 'home',
@@ -33,43 +32,43 @@ const routesLanding: RouteRecordRaw[] = [
         path: '/open-positions',
         name: 'open-positions',
         component: OpenPositions,
-        meta: { layout: 'landing', requiresAuth: false, title: 'Open Positions' },
+        meta: { layout: 'landing', requiresAuth: false, title: 'Open Positions', description: 'Browse current job openings in skilled trades, industrial, and professional roles. Search by title and location, and apply online with Sigook.' },
     },
     {
         path: '/industries',
         name: 'industries',
         component: Industries,
-        meta: { layout: 'landing', requiresAuth: false, title: 'Industries' },
+        meta: { layout: 'landing', requiresAuth: false, title: 'Industries', description: 'Explore the industries Sigook staffs — manufacturing, construction, logistics, engineering, technology and more — with sector-specialized recruiters.' },
     },
     {
         path: '/about',
         name: 'about',
         component: AboutUs,
-        meta: { layout: 'landing', requiresAuth: false, title: 'About Us' },
+        meta: { layout: 'landing', requiresAuth: false, title: 'About Us', description: 'Learn about Sigook, a workforce and staffing partner connecting skilled talent with employers through dependable, partnership-driven service.' },
     },
     {
         path: '/employers',
         name: 'employers',
         component: Employers,
-        meta: { layout: 'landing', requiresAuth: false, title: 'For Employers' },
+        meta: { layout: 'landing', requiresAuth: false, title: 'For Employers', description: 'Hire vetted professionals faster. Sigook delivers tailored staffing solutions for specialized and high-volume roles, from search to onboarding.' },
     },
     {
         path: '/talents',
         name: 'talents',
         component: Talents,
-        meta: { layout: 'landing', requiresAuth: false, title: 'For Talents' },
+        meta: { layout: 'landing', requiresAuth: false, title: 'For Talents', description: 'Find your next role with Sigook. We match skilled professionals with top employers and support you from application through placement.' },
     },
     {
         path: '/special-projects',
         name: 'special-projects',
         component: SpecialProjects,
-        meta: { layout: 'landing', requiresAuth: false },
+        meta: { layout: 'landing', requiresAuth: false, title: 'Special Projects', description: 'Sigook Special Projects — workforce development, specialized training, and innovative programs that strengthen local economies.' },
     },
     {
         path: '/partner',
         name: 'partner',
         component: Partner,
-        meta: { layout: 'landing', requiresAuth: false, title: 'Become a Partner' },
+        meta: { layout: 'landing', requiresAuth: false, title: 'Become a Partner', description: 'Become a Sigook partner. Independent recruiters and business developers plug into our compliance, payroll, and client base while keeping their brand.' },
     },
     {
         path: '/apply',
@@ -100,9 +99,6 @@ const routesLanding: RouteRecordRaw[] = [
     cs('/sign-up',    'sign-up',    'Sign Up'),
     cs('/sign-in',    'sign-in',    'Sign In'),
 
-    // ── Legacy slug redirects → canonical landing (preserve inbound links/SEO) ─
-    // Discontinued pages (direct-hiring, contact, atas) redirect to the closest
-    // page. The legal slugs are served directly by the canonical routes above.
     { path: '/home', redirect: '/' },
     { path: '/jobSeekers', redirect: '/open-positions' },
     { path: '/jobSeekers/:position', redirect: '/open-positions' },
@@ -114,8 +110,6 @@ const routesLanding: RouteRecordRaw[] = [
     { path: '/atas', redirect: '/' },
     { path: '/news/:slug', redirect: '/' },
     { path: '/news', redirect: '/' },
-
-    // ── Backward-compatibility: the landing previously lived under /v2/* ──────
     { path: '/v2/home', redirect: '/' },
     { path: '/v2/terms', redirect: '/terms-and-conditions' },
     { path: '/v2/:rest(.*)', redirect: (to) => `/${to.params.rest}` },

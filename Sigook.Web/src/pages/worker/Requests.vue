@@ -122,10 +122,10 @@ function onRowClick(row: any) {
   switch (row.status) {
     case appGlobals.$statusApply:
     case appGlobals.$statusBook:
-      router.push({ path: `/worker-request-applied/${row.id}` });
+      router.push({ path: `/worker-requests/applied/${row.id}` });
       break;
     default:
-      router.push({ path: `/worker-request/${row.id}` });
+      router.push({ path: `/worker-requests/${row.id}` });
   }
 }
 

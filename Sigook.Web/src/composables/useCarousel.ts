@@ -16,30 +16,23 @@ export interface UseCarouselOptions {
 }
 
 export interface UseCarouselReturn<T> {
-  /** Active slide index (0-based). */
   currentIndex: Ref<number>
-  /** Currently visible slide item. */
   currentItem: ComputedRef<T>
-  /** Total number of slides. */
   count: ComputedRef<number>
-  /** Jump to a specific slide index. Resets the auto-advance timer. */
   goTo: (index: number) => void
-  /** Advance to the next slide (wraps). */
   next: () => void
-  /** Start (or restart) the auto-advance timer. */
   start: () => void
-  /** Stop the auto-advance timer. */
   stop: () => void
 }
 
 export function useCarousel<T>(
-  items: T[] | (() => T[]),
+  items: readonly T[] | (() => readonly T[]),
   options: UseCarouselOptions = {}
 ): UseCarouselReturn<T> {
   const { intervalMs = 5000, autoStart = true } = options
 
-  const list = computed<T[]>(() =>
-    typeof items === 'function' ? (items as () => T[])() : items
+  const list = computed<readonly T[]>(() =>
+    typeof items === 'function' ? (items as () => readonly T[])() : items
   )
 
   const count = computed(() => list.value.length)
@@ -53,8 +46,17 @@ export function useCarousel<T>(
     currentIndex.value = (currentIndex.value + 1) % count.value
   }
 
+  function prefersReducedMotion(): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+  }
+
   function start() {
     stop()
+    if (prefersReducedMotion()) return
     timer = setInterval(next, intervalMs)
   }
 
@@ -68,7 +70,7 @@ export function useCarousel<T>(
   function goTo(index: number) {
     if (index < 0 || index >= count.value) return
     currentIndex.value = index
-    start() // reset timer on manual navigation
+    start()
   }
 
   onMounted(() => {

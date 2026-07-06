@@ -1,16 +1,13 @@
 <template>
   <div class="certified-wrap">
-    <!-- Back layer — same shape, sits 20px below the main section (peeks at bottom) -->
     <div class="certified__back" aria-hidden="true"></div>
 
     <section class="certified">
-      <!-- Photo layers -->
       <div class="certified__bg" aria-hidden="true">
-        <img src="@/assets/images/v2/certified/certified-bg.webp" alt="" class="certified__photo certified__photo--1" loading="lazy" decoding="async" />
-        <img src="@/assets/images/v2/certified/certified-bg2.webp" alt="" class="certified__photo certified__photo--2" loading="lazy" decoding="async" />
+        <img src="@/assets/images/landing/certified/certified-bg.webp" alt="" class="certified__photo certified__photo--1" loading="lazy" decoding="async" />
+        <img src="@/assets/images/landing/certified/certified-bg2.webp" alt="" class="certified__photo certified__photo--2" loading="lazy" decoding="async" />
       </div>
 
-      <!-- Decorative cyan glow + brand magnifier -->
       <div class="certified__glow" aria-hidden="true"></div>
       <DecoMagnifier class="certified__magnifier" />
 
@@ -36,21 +33,18 @@
 </template>
 
 <script setup lang="ts">
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
 </script>
 
 <style scoped>
-/* ── Wrapper — carries the overlap margin and z-index ── */
 .certified-wrap {
   position: relative;
   z-index: 2;
   margin-top: -556px;
-  /* 20px padding-top pushes the section down, exposing the back layer above it */
   padding-top: 20px;
 }
 
-/* ── Back layer — same dimensions + border-radius, 20px above section ── */
 .certified__back {
   position: absolute;
   top: 4px;
@@ -59,14 +53,13 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   height: 609px;
   border-radius: 150px 0 150px 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   z-index: 0;
 }
 
-/* ── Section shell ── */
 .certified {
   position: relative;
   z-index: 1;
@@ -74,11 +67,9 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   height: 577px;
   overflow: hidden;
   border-radius: 150px 0 150px 0;
-  /* Cast a soft shadow downward to reinforce the overlap onto AppDownload */
   box-shadow: 0 22px 40px -12px rgba(0, 0, 0, 0.45);
 }
 
-/* ── Photo background ── */
 .certified__bg {
   position: absolute;
   inset: 0;
@@ -105,7 +96,6 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   left: -0.56%;
 }
 
-/* ── Navy gradient overlay — matches DualCta / WhyChooseUs hero veil ──── */
 .certified::after {
   content: '';
   position: absolute;
@@ -117,7 +107,6 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   z-index: 0;
 }
 
-/* ── Decorative cyan glow — Hero language ──────────────────────────────── */
 .certified__glow {
   position: absolute;
   top: -80px;
@@ -132,13 +121,11 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   pointer-events: none;
 }
 
-/* ── Brand magnifier — position only (size/float/shadow from DecoMagnifier) ─ */
 .certified__magnifier {
   bottom: 40px;
   left: 56px;
 }
 
-/* ── Content — asymmetric split (heading left, body+CTA right) ─────────── */
 .certified__content {
   position: relative;
   z-index: 2;
@@ -197,10 +184,9 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   max-width: 560px;
 }
 
-/* ── Mobile ── */
 @media (max-width: 1023px) {
   .certified-wrap {
-    margin-top: -160px; /* overlaps the 160px blue extension of WhyChooseUs — photo sits on top of the blue */
+    margin-top: -160px;
     padding-top: 0;
   }
 
@@ -253,7 +239,7 @@ import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
   }
 
   .certified__divider {
-    margin: 16px 0 0 0;          /* left-aligned on mobile to match text */
+    margin: 16px 0 0 0;
     width: 64px;
   }
 

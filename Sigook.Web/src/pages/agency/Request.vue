@@ -7,7 +7,7 @@
     </div>
     <section class="wrapper-request-top" v-if="request">
       <div>
-        <router-link :to="'/agency-companies/company/' + request.companyProfileId">
+        <router-link :to="'/recruiting/companies/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" alt="logo" />
         </router-link>
         <h2 class="text-capitalize fz1 fw-bold">
@@ -33,7 +33,7 @@
             <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
           </template>
           <b-dropdown-item aria-role="listitem"
-            @click="router.push({ path: `/agency-update-request/${request.companyProfileId}/${request.id}` })">
+            @click="router.push({ path: `/recruiting/requests/update/${request.companyProfileId}/${request.id}` })">
             Edit Request
           </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" @click="showShiftModal = true">
@@ -150,7 +150,7 @@ function changeTab(tab: string) {
     visitedTabs.value.push(tab);
   }
   router.push({
-    path: `/agency-request/${route.params.id}`,
+    path: `/recruiting/requests/${route.params.id}`,
     query: { tab: tab },
   });
 }
@@ -166,7 +166,7 @@ function canCancelRequest(r: any) {
 
 function loadRequest() {
   isLoading.value = true;
-  getAgencyRequest(route.params.id as any)
+  getAgencyRequest(route.params.id as string)
     .then((response: any) => {
       const updatedRequest = Object.assign({}, response, {
         canEdit: canEditRequest(response),

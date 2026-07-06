@@ -40,10 +40,10 @@ import { useAppStore } from '@/stores/app';
 import { useSecurityStore } from '@/stores/security';
 import axios from 'axios';
 import SidebarLogged from '@/components/SidebarLogged.vue';
-import LandingHeader from '@/components/landing/shared/Header.vue';
-import LandingFooter from '@/components/landing/shared/Footer.vue';
-import LandingBackground from '@/components/landing/shared/GlobalBackground.vue';
-import AppVersionToast from '@/components/landing/shared/AppVersionToast.vue';
+import LandingHeader from '@/components/landing/shared/layout/Header.vue';
+import LandingFooter from '@/components/landing/shared/layout/Footer.vue';
+import LandingBackground from '@/components/landing/shared/layout/GlobalBackground.vue';
+import AppVersionToast from '@/components/landing/shared/layout/AppVersionToast.vue';
 
 const route = useRoute();
 const appStore = useAppStore();
@@ -108,7 +108,7 @@ onUnmounted(() => {
 
 <style lang="scss">
 @import "assets/scss/variables";
-@import "assets/fonts.css";
+@import "assets/scss/fonts";
 @import "assets/scss/master";
 
 .no-menu {
@@ -170,7 +170,7 @@ onUnmounted(() => {
 }
 
 /* Legacy .message-version banner removed — replaced by AppVersionToast
-   (src/components/landing/shared/AppVersionToast.vue) which renders
+   (src/components/landing/shared/layout/AppVersionToast.vue) which renders
    non-invasively in the bottom-right corner. */
 
 @media (max-width: 767px) {

@@ -1,6 +1,6 @@
 <template>
     <div class="container-requests">
-        <!--<router-link :to="'/agency-request/' + data.id">-->
+        <!--<router-link :to="'/recruiting/requests/' + data.id">-->
         <div class="container-requests-top">
             <span class="asap" v-if="data.isAsap">{{ 'Asap' }}</span>
             <img :src="data.logo" class="request-logo" />

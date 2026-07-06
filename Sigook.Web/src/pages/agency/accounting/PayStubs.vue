@@ -10,7 +10,7 @@
       <export :url="'/api/agency/accounting/PayStubs/file'" :params="serverParams" :fileName="'PayStubs'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button tag="router-link" to="/accounting/create-paystub" icon-left="plus">
+          <b-button tag="router-link" to="/accounting/paystubs/create" icon-left="plus">
             Create
           </b-button>
         </template>

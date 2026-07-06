@@ -527,7 +527,7 @@ function convertToWorker(candidateId: any) {
 
 function goToApplicants(item: any) {
   router.push({
-    path: `/agency-request/${item.id}`,
+    path: `/recruiting/requests/${item.id}`,
     query: { tab: 'Applicants' },
   });
 }

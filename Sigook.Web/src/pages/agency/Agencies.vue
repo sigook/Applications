@@ -11,7 +11,7 @@
     </div>
     <div>
       <b-field grouped position="is-right">
-        <b-button tag="router-link" to="/create-agency" icon-left="plus">
+        <b-button tag="router-link" to="/sales/agencies/create" icon-left="plus">
           {{ 'Create' }}
         </b-button>
       </b-field>
@@ -28,7 +28,7 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <router-link :to="{ path: '/agency-detail/' + props.row.id }">
+              <router-link :to="{ path: '/sales/agencies/' + props.row.id }">
                 <span class="d-block">{{ props.row.fullName }}</span>
                 <template v-for="(location, index) in props.row.locations">
                   <p v-if="index < 2" :key="location">

@@ -1,4 +1,6 @@
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
+using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Request.WeeklyBoard;
@@ -53,6 +55,12 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
         model.OrdersCount = assignments.Select(a => a.RequestId).Distinct().Count();
         model.WorkersSent = assignments.Sum(a => a.WorkersSent);
         return model;
+    }
+
+    public async Task<IEnumerable<WeeklyBoardDispatchModel>> GetOrderDispatches(Guid requestId)
+    {
+        var agencyId = identityServerService.GetAgencyId();
+        return await requestRepository.GetOrderDispatches(agencyId, requestId);
     }
 
     public async Task<Result> AssignRecruiters(AssignRecruitersModel model)
@@ -122,8 +130,21 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
         if (assignment is null) return Result.Fail("Assignment not found");
 
         var now = timeService.GetCurrentDateTime();
+        var addedWorkerIds = new List<Guid>();
         foreach (var workerProfileId in model.WorkerProfileIds.Distinct())
-            assignment.AddDispatch(workerProfileId, now, recruiter.UserId);
+            if (assignment.AddDispatch(workerProfileId, now, recruiter.UserId))
+                addedWorkerIds.Add(workerProfileId);
+
+        if (addedWorkerIds.Count > 0)
+        {
+            var names = await requestRepository.GetWorkerProfileNames(addedWorkerIds);
+            foreach (var workerProfileId in addedWorkerIds)
+            {
+                if (!names.TryGetValue(workerProfileId, out var name) || string.IsNullOrWhiteSpace(name)) continue;
+                var note = CovenantNote.Create($"{name} was sent", CovenantNote.RedColor, recruiter.Name).Value;
+                await requestRepository.Create(new RequestNote(model.RequestId, note));
+            }
+        }
 
         await requestRepository.SaveChangesAsync();
         return Result.Ok();

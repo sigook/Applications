@@ -1,4 +1,5 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
+import { ClockType } from '@/constants/enums';
 import type { PaginatedList } from '@/types/common';
 import type {
   WorkerProfile,
@@ -8,7 +9,6 @@ import type {
   WorkerCommentList,
   WageHistoryFilter,
   TimeSheetHistoryFilter,
-  ClockTypeResult,
   WorkerCatalogItem,
   WorkerBasicInformationModel,
   WorkerContactInformationModel,
@@ -24,205 +24,205 @@ import type {
 
 // Requests
 export function getJobs(filter: WorkerRequestFilter): Promise<PaginatedList<WorkerRequestListItem>> {
-  return http.get('/api/WorkerRequest', { params: { ...filter } }).then(r => r.data);
+  return api.get<PaginatedList<WorkerRequestListItem>>('/api/WorkerRequest', { params: { ...filter } });
 }
 
 export function getWorkerRequest(id: string): Promise<WorkerRequestDetail> {
-  return http.get(`/api/WorkerRequest/${id}`).then(r => r.data);
+  return api.get<WorkerRequestDetail>(`/api/WorkerRequest/${id}`);
 }
 
 export function workerRequestApplySelf(requestId: string, model: WorkerRequestApplyModel): Promise<void> {
-  return http.post(`/api/WorkerRequest/${requestId}/Apply/`, model).then(() => {});
+  return api.post(`/api/WorkerRequest/${requestId}/Apply/`, model);
 }
 
 export function workerRequestApply(workerId: string, requestId: string, model: WorkerRequestApplyModel): Promise<void> {
-  return http.post(`/api/WorkerRequest/${workerId}/${requestId}/Apply`, model).then(() => {});
+  return api.post(`/api/WorkerRequest/${workerId}/${requestId}/Apply`, model);
 }
 
 export function workerRequestDecline(id: string): Promise<void> {
-  return http.delete(`/api/WorkerRequest/Decline/${id}`).then(() => {});
+  return api.del(`/api/WorkerRequest/Decline/${id}`);
 }
 
 // TimeSheet
 export function workerRegisterTime(requestId: string, latitude: number, longitude: number): Promise<void> {
-  return http.post(`/api/WorkerRequest/${requestId}/TimeSheet`, { latitude, longitude }).then(() => {});
+  return api.post(`/api/WorkerRequest/${requestId}/TimeSheet`, { latitude, longitude });
 }
 
 export function workerGetTimeSheet(requestId: string): Promise<WorkerTimeSheetItem[]> {
-  return http.get(`/api/WorkerRequest/${requestId}/TimeSheet`).then(r => r.data);
+  return api.get<WorkerTimeSheetItem[]>(`/api/WorkerRequest/${requestId}/TimeSheet`);
 }
 
-export function getClockType(requestId: string, date: string): Promise<ClockTypeResult> {
-  return http.get(`/api/WorkerRequest/${requestId}/TimeSheet/clock-type`, { params: { date } }).then(r => r.data);
+export function getClockType(requestId: string, date: string): Promise<ClockType> {
+  return api.get<ClockType>(`/api/WorkerRequest/${requestId}/TimeSheet/clock-type`, { params: { date } });
 }
 
 // Comments
 export function getCommentsWorker(filter: WorkerCommentFilter): Promise<WorkerCommentList> {
-  return http.get(`/api/worker/${filter.workerId}/comment`, {
+  return api.get<WorkerCommentList>(`/api/worker/${filter.workerId}/comment`, {
     params: { PageSize: filter.size, PageIndex: filter.pageIndex }
-  }).then(r => r.data);
+  });
 }
 
 // Profile
 export function getMyProfile(): Promise<WorkerProfile> {
-  return http.get('/api/WorkerProfile/me').then(r => r.data);
+  return api.get<WorkerProfile>('/api/WorkerProfile/me');
 }
 
 export function registerWorker(payload: FormData): Promise<string> {
-  return http.post('/api/WorkerProfile', payload, {
+  return api.post<string>('/api/WorkerProfile', payload, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(r => r.data);
+  });
 }
 
 export function uploadWorker(profileId: string, worker: WorkerProfile): Promise<void> {
-  return http.put(`/api/WorkerProfile/${profileId}`, worker).then(() => {});
+  return api.put(`/api/WorkerProfile/${profileId}`, worker);
 }
 
 // Request History
 export function getWorkerRequestHistory(filter: WorkerRequestFilter): Promise<PaginatedList<WorkerRequestListItem>> {
-  return http.get('/api/WorkerRequestHistory', { params: { ...filter } }).then(r => r.data);
+  return api.get<PaginatedList<WorkerRequestListItem>>('/api/WorkerRequestHistory', { params: { ...filter } });
 }
 
 export function getWorkerRequestHistoryDetail(id: string): Promise<WorkerRequestDetail> {
-  return http.get(`/api/WorkerRequestHistory/${id}`).then(r => r.data);
+  return api.get<WorkerRequestDetail>(`/api/WorkerRequestHistory/${id}`);
 }
 
 // Job Experience
 export function createWorkerWorkExperience(profileId: string, model: WorkerJobExperienceModel): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/JobExperience`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/JobExperience`, model);
 }
 
 export function editWorkerWorkExperience(profileId: string, id: string, model: WorkerJobExperienceModel): Promise<void> {
-  return http.put(`/api/WorkerProfile/${profileId}/JobExperience/${id}`, model).then(() => {});
+  return api.put(`/api/WorkerProfile/${profileId}/JobExperience/${id}`, model);
 }
 
 export function deleteWorkerWorkExperience(profileId: string, id: string): Promise<void> {
-  return http.delete(`/api/WorkerProfile/${profileId}/JobExperience/${id}`).then(() => {});
+  return api.del(`/api/WorkerProfile/${profileId}/JobExperience/${id}`);
 }
 
 // SIN Information
 export function createWorkerSin(profileId: string, formData: FormData): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/SinInformation`, formData, {
+  return api.post(`/api/WorkerProfile/${profileId}/SinInformation`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(() => {});
+  });
 }
 
 // Basic Information
 export function createWorkerBasicInformation(profileId: string, model: WorkerBasicInformationModel): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/BasicInformation`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/BasicInformation`, model);
 }
 
 // Emergency Information
 export function createWorkerEmergencyInformation(profileId: string, model: WorkerEmergencyInformationModel): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/EmergencyInformation`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/EmergencyInformation`, model);
 }
 
 // Documents
 export function createWorkerDocuments(profileId: string, formData: FormData): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/Documents`, formData, {
+  return api.post(`/api/WorkerProfile/${profileId}/Documents`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(() => {});
+  });
 }
 
 // Resume
 export function createWorkerResume(profileId: string, formData: FormData): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/Resume`, formData, {
+  return api.post(`/api/WorkerProfile/${profileId}/Resume`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(() => {});
+  });
 }
 
 // Contact Information
 export function createWorkerContactInformation(profileId: string, model: WorkerContactInformationModel): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/ContactInformation`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/ContactInformation`, model);
 }
 
 // Availabilities
 export function createWorkerAvailabilities(profileId: string, model: WorkerCatalogItem[]): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/Availabilities`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/Availabilities`, model);
 }
 
 export function createWorkerAvailabilityTimes(profileId: string, model: WorkerCatalogItem[]): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/AvailabilityTimes`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/AvailabilityTimes`, model);
 }
 
 export function createWorkerAvailabilityDays(profileId: string, model: WorkerCatalogItem[]): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/AvailabilityDays`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/AvailabilityDays`, model);
 }
 
 // Location Preferences
 export function createWorkerLocationPreferences(profileId: string, model: WorkerCatalogItem[]): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/LocationPreferences`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/LocationPreferences`, model);
 }
 
 // Languages
 export function createWorkerLanguages(profileId: string, model: WorkerCatalogItem[]): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/Languages`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/Languages`, model);
 }
 
 // Other Information
 export function createWorkerOther(profileId: string, model: WorkerOtherInformationModel): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/OtherInformation`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/OtherInformation`, model);
 }
 
 // Skills
 export function createWorkerSkills(profileId: string, model: string[]): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/Skills`, model).then(() => {});
+  return api.post(`/api/WorkerProfile/${profileId}/Skills`, model);
 }
 
 // Licenses
 export function createWorkerLicenses(profileId: string, formData: FormData): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/Licenses`, formData, {
+  return api.post(`/api/WorkerProfile/${profileId}/Licenses`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(() => {});
+  });
 }
 
 export function deleteWorkerLicenses(profileId: string, licenseId: string): Promise<void> {
-  return http.delete(`/api/WorkerProfile/${profileId}/Licenses/${licenseId}`).then(() => {});
+  return api.del(`/api/WorkerProfile/${profileId}/Licenses/${licenseId}`);
 }
 
 // Certificates
 export function createWorkerCertificates(profileId: string, formData: FormData): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/Certificates`, formData, {
+  return api.post(`/api/WorkerProfile/${profileId}/Certificates`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(() => {});
+  });
 }
 
 export function deleteWorkerCertificates(profileId: string, certificateId: string): Promise<void> {
-  return http.delete(`/api/WorkerProfile/${profileId}/Certificates/${certificateId}`).then(() => {});
+  return api.del(`/api/WorkerProfile/${profileId}/Certificates/${certificateId}`);
 }
 
 // Other Documents
 export function createWorkerOtherDocuments(profileId: string, formData: FormData): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/OtherDocument`, formData, {
+  return api.post(`/api/WorkerProfile/${profileId}/OtherDocument`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(() => {});
+  });
 }
 
 export function deleteWorkerOtherDocuments(profileId: string, otherDocumentId: string): Promise<void> {
-  return http.delete(`/api/WorkerProfile/${profileId}/OtherDocument/${otherDocumentId}`).then(() => {});
+  return api.del(`/api/WorkerProfile/${profileId}/OtherDocument/${otherDocumentId}`);
 }
 
 // Profile Image
 export function createWorkerImage(profileId: string, formData: FormData): Promise<void> {
-  return http.post(`/api/WorkerProfile/${profileId}/ProfileImage`, formData, {
+  return api.post(`/api/WorkerProfile/${profileId}/ProfileImage`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(() => {});
+  });
 }
 
 // Wage History
 export function getWorkerProfileWageHistory(filter: WageHistoryFilter): Promise<PaginatedList<WorkerWageHistoryItem>> {
-  return http.get(`/api/WorkerProfile/${filter.profileId}/WageHistory`, { params: { ...filter } }).then(r => r.data);
+  return api.get<PaginatedList<WorkerWageHistoryItem>>(`/api/WorkerProfile/${filter.profileId}/WageHistory`, { params: { ...filter } });
 }
 
 export function getWorkerProfileWageHistoryAccumulated(profileId: string, rowNumber: number): Promise<WorkerWageHistoryItem> {
-  return http.get(`/api/WorkerProfile/${profileId}/WageHistory/${rowNumber}`).then(r => r.data);
+  return api.get<WorkerWageHistoryItem>(`/api/WorkerProfile/${profileId}/WageHistory/${rowNumber}`);
 }
 
 // TimeSheet History
 export function getWorkerProfileTimeSheetHistory(filter: TimeSheetHistoryFilter): Promise<PaginatedList<WorkerTimeSheetHistoryItem>> {
-  return http.get(`/api/WorkerProfile/${filter.profileId}/TimeSheetHistory`, { params: { ...filter } }).then(r => r.data);
+  return api.get<PaginatedList<WorkerTimeSheetHistoryItem>>(`/api/WorkerProfile/${filter.profileId}/TimeSheetHistory`, { params: { ...filter } });
 }
 
 export function getWorkerProfileTimeSheetHistoryAccumulated(profileId: string, rowNumber: number): Promise<WorkerTimeSheetHistoryItem> {
-  return http.get(`/api/WorkerProfile/${profileId}/TimeSheetHistory/${rowNumber}`).then(r => r.data);
+  return api.get<WorkerTimeSheetHistoryItem>(`/api/WorkerProfile/${profileId}/TimeSheetHistory/${rowNumber}`);
 }

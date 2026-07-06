@@ -17,9 +17,9 @@
           {{ request.requestStatus }}
         </div>
         <div v-if="currentUser.approvedToWork" class="d-inline-block">
-          <button v-if="canApply" class="orange-button md-btn background-btn btn-radius" @click="modalMessage = true">
+          <b-button v-if="canApply" type="is-primary" rounded @click="modalMessage = true">
             Apply
-          </button>
+          </b-button>
         </div>
       </div>
     </section>
@@ -33,9 +33,9 @@
         <RequestDetail v-if="request" :request="request"></RequestDetail>
         <div v-if="currentUser.approvedToWork" class="mt-5">
           <div v-if="canApply">
-            <button class="orange-button md-btn background-btn btn-radius" @click="modalMessage = true">
+            <b-button type="is-primary" rounded @click="modalMessage = true">
               Apply
-            </button>
+            </b-button>
           </div>
         </div>
         <div class="alert-warning text-center" v-else>
@@ -116,7 +116,7 @@ const canApply = computed(() => {
 });
 
 function getWorkerHistoryRequest() {
-  getWorkerRequestHistoryDetail(route.params.id)
+  getWorkerRequestHistoryDetail(route.params.id as string)
     .then((response: any) => {
       isLoading.value = false;
       request.value = response;
@@ -127,7 +127,7 @@ function getWorkerHistoryRequest() {
 }
 
 function getWorkerRequestFn() {
-  getWorkerRequest(route.params.id)
+  getWorkerRequest(route.params.id as string)
     .then((response: any) => {
       isLoading.value = false;
       request.value = response;
@@ -143,9 +143,9 @@ function applyToRequest(comment: string) {
   workerRequestApplySelf(request.value.id, model)
     .then(() => {
       isLoading.value = false;
-      router.push({ path: '/worker-request-applied/' + request.value.id });
+      router.push({ path: '/worker-requests/applied/' + request.value.id });
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

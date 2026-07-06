@@ -34,10 +34,9 @@
     </div>
 
     <div class="text-end pe-3">
-      <button class="background-btn md-btn orange-button btn-radius mt-3 mb-3" type="button"
-        @click="validateForm" :disabled="disableButton">
+      <b-button type="is-primary" rounded class="mt-3 mb-3" @click="validateForm" :disabled="disableButton">
         Save
-      </button>
+      </b-button>
     </div>
   </div>
 </template>

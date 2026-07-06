@@ -62,7 +62,7 @@ const currentContact = ref<any>(null);
 
 async function loadContactPersons() {
   isLoading.value = true;
-  await getAgencyCompanyContactPerson(profileId)
+  await getAgencyCompanyContactPerson(profileId as string)
     .then(response => {
       isLoading.value = false;
       data.value = response;
@@ -93,7 +93,7 @@ function onDeleteContactPerson(id: any) {
     .then(response => {
       if (response) {
         isLoading.value = true;
-        deleteAgencyCompanyContactPerson(profileId, id)
+        deleteAgencyCompanyContactPerson(profileId as string, id)
           .then(async () => {
             showAlertSuccess('Deleted');
             await loadContactPersons();

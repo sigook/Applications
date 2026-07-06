@@ -1,9 +1,13 @@
 <template>
-  <section class="testimonials">
-    <!-- Depth back-layer — transparent, peeks ~20px above & below the slide bg -->
+  <section
+    class="testimonials"
+    @mouseenter="stopTimer"
+    @mouseleave="startTimer"
+    @focusin="stopTimer"
+    @focusout="startTimer"
+  >
     <div class="testimonials__back" aria-hidden="true"></div>
 
-    <!-- Slide backgrounds — fade between them, start at the visible zone -->
     <div
       v-for="(slide, i) in testimonials"
       :key="i"
@@ -16,23 +20,20 @@
       <div class="testimonials__overlay"></div>
     </div>
 
-    <!-- Decorative cyan glow + brand magnifier -->
     <div class="testimonials__glow" aria-hidden="true"></div>
     <DecoMagnifier class="testimonials__magnifier" />
 
     <div class="testimonials__inner">
-      <!-- Header — eyebrow + heading + cyan divider (matches Numbers / WhyChooseUs) -->
       <header class="testimonials__header">
         <span class="testimonials__eyebrow">Testimonials</span>
         <h2 class="testimonials__title">What our clients say</h2>
         <div class="testimonials__divider" aria-hidden="true"></div>
       </header>
 
-      <!-- Animated glass quote card -->
       <transition name="test-fade" mode="out-in">
         <article :key="currentSlide" class="testimonials__card">
           <img
-            src="@/assets/images/v2/testimonials/testimonials-quote-mark.png"
+            src="@/assets/images/landing/testimonials/testimonials-quote-mark.png"
             alt=""
             aria-hidden="true"
             class="testimonials__quote-mark"
@@ -47,7 +48,6 @@
         </article>
       </transition>
 
-      <!-- Glass pill dots (matches Hero) -->
       <div class="testimonials__dots" role="tablist" aria-label="Testimonials navigation">
         <button
           v-for="(_, i) in testimonials"
@@ -66,30 +66,38 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import DecoMagnifier from '@/components/landing/shared/DecoMagnifier.vue'
-import slide1Bg from '@/assets/images/v2/testimonials/testimonials-slide1.webp'
-import slide2Bg from '@/assets/images/v2/testimonials/testimonials-slide2.webp'
-import slide3Bg from '@/assets/images/v2/testimonials/testimonials-slide3.webp'
+import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
 
-const testimonials = [
+interface Testimonial {
+  bg: string
+  gradient: string
+  quote: string
+  author: string
+  location: string
+}
+
+const testimonials: readonly Testimonial[] = [
   {
-    bg: slide1Bg,
+    bg: '/images/landing/testimonials/testimonials-slide1.webp',
     gradient: '',
-    quote: '"I recommend Sigook Work Factory as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding."',
+    quote:
+      '"I recommend Sigook Work Factory as an exceptional and reliable employment agency. Our company has been partnering with them since July 2020, and their service has been consistently outstanding."',
     author: 'HR Manager, Manufacturer',
     location: 'Doral, Florida',
   },
   {
-    bg: slide2Bg,
+    bg: '/images/landing/testimonials/testimonials-slide2.webp',
     gradient: '',
-    quote: '"Sigook transformed how we manage seasonal staffing. Their team is responsive, professional, and always delivers the right talent at the right time. Highly recommended."',
+    quote:
+      '"Sigook transformed how we manage seasonal staffing. Their team is responsive, professional, and always delivers the right talent at the right time. Highly recommended."',
     author: 'Business Owner, Retail',
     location: 'Seattle, WA',
   },
   {
-    bg: slide3Bg,
+    bg: '/images/landing/testimonials/testimonials-slide3.webp',
     gradient: '',
-    quote: '"From onboarding to invoicing, the entire process is seamless. Sigook is not just a staffing agency — they are a true workforce partner."',
+    quote:
+      '"From onboarding to invoicing, the entire process is seamless. Sigook is not just a staffing agency — they are a true workforce partner."',
     author: 'Operations Manager, Logistics',
     location: 'Atlanta, GA',
   },
@@ -107,52 +115,45 @@ function nextSlide() {
   currentSlide.value = (currentSlide.value + 1) % testimonials.length
 }
 
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+function stopTimer() {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+
 function startTimer() {
+  stopTimer()
+  if (prefersReducedMotion()) return
   timer = setInterval(nextSlide, 6000)
 }
 
 function resetTimer() {
-  if (timer) clearInterval(timer)
   startTimer()
 }
 
 onMounted(startTimer)
-onUnmounted(() => { if (timer) clearInterval(timer) })
+onUnmounted(stopTimer)
 </script>
 
 <style scoped>
-/*
-  Geometry (desktop):
-  ─────────────────────────────────────────────────────────────
-  AppDownload height          = 1380px
-  Stores pill bottom          = 940 + 52 = 992px  (from AppDL top)
-  Target bg start             = 992 + 60 = 1052px (from AppDL top)
-
-  testimonials margin-top     = -700px
-    → section top             = 1380 - 700 = 680px (from AppDL top)
-  bg_offset                   = 1052 - 680 = 372px (inside section)
-    → bg starts at AppDL y    = 680 + 372 = 1052  ✓
-
-  Transparent zone (shows AppDownload through): 0 – 372px within section
-  Blue zone (covers AppDownload + extends below): 372px – 1460px within section
-  Visible testimonials below AppDownload end: 1460 - 700 = 760px
-  ─────────────────────────────────────────────────────────────
-*/
-
-/* ── Section shell — preserves AppDownload overlap geometry ──────────────── */
 .testimonials {
   position: relative;
   height: 1460px;
-  /* No overflow:hidden — lets the bg shadow extend down into Contact for the smooth transition.
-     The bg has its own overflow:hidden so its photo still clips to the rounded corners. */
   background: transparent;
   margin-top: -700px;
   z-index: 3;
   isolation: isolate;
 }
 
-/* ── Depth back-layer — transparent glass, peeks ~20px above & below the
-   slide bg (same brand mirror shape: top-right + bottom-left rounded) ────── */
 .testimonials__back {
   position: absolute;
   top: 520px;
@@ -162,15 +163,13 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   z-index: 0;
   border-radius: 0 var(--r-brand) 0 var(--r-brand);
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
-/* ── Slide backgrounds — start at y=540 so top is transparent (AppDL bleeds through),
-       bottom carries the photo + navy veil. Same geometry as before. */
 .testimonials__bg {
   position: absolute;
   top: 540px;
@@ -180,10 +179,8 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0;
   transition: opacity 1s ease;
   pointer-events: none;
-  /* Asymmetric brand shape — top-right + bottom-left rounded */
   border-radius: 0 var(--r-brand) 0 var(--r-brand);
   overflow: hidden;
-  /* Soft shadows top + bottom — reinforces overlap with AppDownload (above) and Contact (below) */
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -205,7 +202,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   inset: 0;
 }
 
-/* Heavy navy gradient overlay — matches DualCta veil language */
 .testimonials__overlay {
   position: absolute;
   inset: 0;
@@ -214,7 +210,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
     linear-gradient(180deg, rgba(15, 47, 68, 0.45) 0%, rgba(15, 47, 68, 0.70) 100%);
 }
 
-/* ── Decorative cyan glow (Hero language) — top-right of visible blue zone ── */
 .testimonials__glow {
   position: absolute;
   z-index: 1;
@@ -229,14 +224,12 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   opacity: 0.22;
 }
 
-/* ── Brand magnifier — position only (size/float/shadow from DecoMagnifier) ─ */
 .testimonials__magnifier {
   z-index: 2;
   bottom: 170px;
   left: 7%;
 }
 
-/* ── Inner container ─────────────────────────────────────────────────────── */
 .testimonials__inner {
   position: relative;
   z-index: 3;
@@ -246,7 +239,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   padding: 0 var(--gutter-desktop);
 }
 
-/* ── Header — eyebrow + heading + cyan divider centered above quote card ─── */
 .testimonials__header {
   position: absolute;
   top: 660px;
@@ -284,7 +276,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   margin: 22px auto 0;
 }
 
-/* ── Quote glass card — centered, asymmetric brand radius ─────────────────── */
 .testimonials__card {
   position: absolute;
   top: 880px;
@@ -295,7 +286,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   padding: 48px 56px 40px;
   background: linear-gradient(135deg,
     rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.04) 100%
+    var(--c-glass-fill-soft) 100%
   );
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
@@ -311,7 +302,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   width: 36px;
   height: 36px;
   opacity: 0.85;
-  filter: brightness(0) invert(1);  /* force white tint regardless of source */
+  filter: brightness(0) invert(1);  
 }
 
 .testimonials__quote {
@@ -349,10 +340,9 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   margin: 0;
 }
 
-/* Card fade transition */
 .test-fade-enter-active,
 .test-fade-leave-active {
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.45s ease, transform 0.45s var(--ease-brand);
 }
 .test-fade-enter-from {
   opacity: 0;
@@ -363,7 +353,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   transform: translateX(-50%) translateY(-12px);
 }
 
-/* ── Glass pill dots — matches Hero exactly ──────────────────────────────── */
 .testimonials__dots {
   position: absolute;
   bottom: 80px;
@@ -372,7 +361,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255, 255, 255, 0.10);
+  background: var(--c-glass-fill-strong);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -398,7 +387,6 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   background-color: #fff;
 }
 
-/* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .testimonials {
     height: auto;
@@ -470,7 +458,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 
   .test-fade-enter-from,
   .test-fade-leave-to {
-    transform: translateY(10px);   /* reset translateX(-50%) for static mobile layout */
+    transform: translateY(10px);
   }
 
   .test-fade-leave-to {

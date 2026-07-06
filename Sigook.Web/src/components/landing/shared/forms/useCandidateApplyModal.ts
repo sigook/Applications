@@ -1,19 +1,8 @@
 import { ref, readonly, type Ref } from 'vue'
-
-/**
- * Module-scoped state — a tiny singleton store so any landing component can
- * open / close the CandidateApplyModal without dragging in Pinia.
- *
- * `context` is optional metadata (job title / number / request id) that callers
- * pass via `open()`; the modal reads it to display "Applying for: X" and to
- * attach the application to a specific Request.
- */
+import { lockScroll, unlockScroll } from '@/composables/useBodyScrollLock'
 export interface CandidateApplyModalContext {
-  /** Human-readable role title (shown in the modal header). */
   readonly jobTitle?: string
-  /** Human-readable job number (e.g. the request NumberId), if any. */
   readonly jobNumber?: string
-  /** Backend Request id the application should attach to, if any. */
   readonly requestId?: string
 }
 
@@ -22,18 +11,16 @@ const context = ref<CandidateApplyModalContext | null>(null)
 
 function open(ctx?: CandidateApplyModalContext): void {
   context.value = ctx ?? null
+  if (isOpen.value) return
   isOpen.value = true
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = 'hidden'
-  }
+  lockScroll()
 }
 
 function close(): void {
+  if (!isOpen.value) return
   isOpen.value = false
   context.value = null
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = ''
-  }
+  unlockScroll()
 }
 
 export function useCandidateApplyModal(): {

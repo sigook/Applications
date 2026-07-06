@@ -63,16 +63,7 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/agency-request/:id",
-    component: AgencyRequest,
-    name: "agency-request",
-    meta: {
-      requiresAuth: true,
-      role: [agency, agencyPersonnel],
-    },
-  },
-  {
-    path: "/agency-create-request/:companyProfileId",
+    path: "/recruiting/requests/create/:companyProfileId",
     component: AgencyCreateRequest,
     name: "agency-create-request",
     meta: {
@@ -81,7 +72,7 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/agency-update-request/:companyProfileId/:requestId",
+    path: "/recruiting/requests/update/:companyProfileId/:requestId",
     component: AgencyCreateRequest,
     name: "agency-update-request",
     meta: {
@@ -90,6 +81,16 @@ const routesAgency: RouteRecordRaw[] = [
     },
     beforeEnter: loadAgencyRequestToUpdateResolver
   },
+  {
+    path: "/recruiting/requests/:id",
+    component: AgencyRequest,
+    name: "agency-request",
+    meta: {
+      requiresAuth: true,
+      role: [agency, agencyPersonnel],
+    },
+  },
+  { path: "/agency-request/:id", redirect: (to) => `/recruiting/requests/${to.params.id}` },
   {
     path: "/recruiting/workers",
     component: AgencyWorkers,
@@ -101,16 +102,7 @@ const routesAgency: RouteRecordRaw[] = [
   },
   { path: "/agency-workers", redirect: "/recruiting/workers" },
   {
-    path: "/agency-workers/worker/:id",
-    component: AgencyDetailWorker,
-    name: "workerDetail",
-    meta: {
-      requiresAuth: true,
-      role: [agency, agencyPersonnel],
-    },
-  },
-  {
-    path: "/agency-workers/register-worker",
+    path: "/recruiting/workers/register",
     name: "agency-register-worker",
     component: WorkerRegister,
     meta: {
@@ -118,6 +110,16 @@ const routesAgency: RouteRecordRaw[] = [
       role: [agency, agencyPersonnel],
     },
   },
+  {
+    path: "/recruiting/workers/:id",
+    component: AgencyDetailWorker,
+    name: "workerDetail",
+    meta: {
+      requiresAuth: true,
+      role: [agency, agencyPersonnel],
+    },
+  },
+  { path: "/agency-workers/worker/:id", redirect: (to) => `/recruiting/workers/${to.params.id}` },
   {
     path: "/recruiting/companies",
     name: "recruiting-companies",
@@ -140,7 +142,7 @@ const routesAgency: RouteRecordRaw[] = [
   },
   { path: "/agency-companies", redirect: "/recruiting/companies" },
   {
-    path: "/create-company",
+    path: "/recruiting/companies/create",
     component: CreateCompany,
     meta: {
       requiresAuth: true,
@@ -148,7 +150,7 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/update-company/:companyProfileId",
+    path: "/recruiting/companies/update/:companyProfileId",
     component: CreateCompany,
     meta: {
       requiresAuth: true,
@@ -157,13 +159,40 @@ const routesAgency: RouteRecordRaw[] = [
     beforeEnter: loadCompanyToUpdateResolver
   },
   {
-    path: "/agency-companies/company/:id",
+    path: "/recruiting/companies/:id",
     component: AgencyDetailCompany,
     meta: {
       requiresAuth: true,
       role: [agency, agencyPersonnel],
     },
   },
+  {
+    path: "/sales/companies/create",
+    component: CreateCompany,
+    meta: {
+      requiresAuth: true,
+      role: [agency, agencyPersonnel],
+    },
+  },
+  {
+    path: "/sales/companies/update/:companyProfileId",
+    component: CreateCompany,
+    meta: {
+      requiresAuth: true,
+      role: [agency, agencyPersonnel],
+    },
+    beforeEnter: loadCompanyToUpdateResolver
+  },
+  {
+    path: "/sales/companies/:id",
+    component: AgencyDetailCompany,
+    meta: {
+      requiresAuth: true,
+      role: [agency, agencyPersonnel],
+    },
+  },
+  { path: "/agency-companies/company/:id", redirect: (to) => `/recruiting/companies/${to.params.id}` },
+  { path: "/create-company", redirect: "/recruiting/companies/create" },
   {
     path: "/agency-profile",
     component: AgencyProfile,
@@ -191,7 +220,7 @@ const routesAgency: RouteRecordRaw[] = [
   },
   { path: "/agency-agencies", redirect: "/sales/agencies" },
   {
-    path: "/create-agency",
+    path: "/sales/agencies/create",
     component: CreateAgency,
     meta: {
       requiresAuth: true,
@@ -199,13 +228,15 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/agency-detail/:id",
+    path: "/sales/agencies/:id",
     component: DetailAgency,
     meta: {
       requiresAuth: true,
       role: [agency, agencyPersonnel],
     },
   },
+  { path: "/agency-detail/:id", redirect: (to) => `/sales/agencies/${to.params.id}` },
+  { path: "/create-agency", redirect: "/sales/agencies/create" },
   {
     path: "/accounting/invoices",
     component: AgencyInvoices,
@@ -216,7 +247,7 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/accounting/create-invoice",
+    path: "/accounting/invoices/create",
     component: CreateInvoice,
     name: "create-invoice",
     meta: {
@@ -234,7 +265,7 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
-    path: "/accounting/create-paystub",
+    path: "/accounting/paystubs/create",
     component: CreatePayStub,
     name: "create-paystub",
     meta: {

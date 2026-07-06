@@ -2,7 +2,8 @@
     <div class="notes-container">
         <div class="container-flex justify-content-between mb-4">
             <h3 class="fw-bold mt-0 mb-0">Notes</h3>
-            <button @click="showModalNotes = true" class="sm-save-button align-self-center">Add</button>
+            <b-button type="is-primary" size="is-small" outlined rounded class="align-self-center"
+                @click="showModalNotes = true">Add</b-button>
         </div>
 
         <div class="mb-5">

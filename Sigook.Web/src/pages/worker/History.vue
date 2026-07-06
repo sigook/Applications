@@ -85,7 +85,7 @@ function fetchWorkerRequestHistory() {
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

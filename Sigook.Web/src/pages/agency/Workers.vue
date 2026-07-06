@@ -13,7 +13,7 @@
       <export :url="'/api/AgencyWorkerProfile/File'" :params="serverParams" :fileName="'Workers'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button tag="router-link" to="/agency-workers/register-worker" icon-left="plus">
+          <b-button tag="router-link" to="/recruiting/workers/register" icon-left="plus">
             {{ 'Create' }}
           </b-button>
         </template>
@@ -53,7 +53,7 @@
             </template>
             <template v-slot="props">
               <span class="d-block">
-                <router-link :to="{ path: '/agency-workers/worker/' + props.row.id }">
+                <router-link :to="{ path: '/recruiting/workers/' + props.row.id }">
                   {{ props.row.fullName }}
                 </router-link>
                 <b-icon v-if="props.row.approvedToWork" icon="check-all" size="is-small"></b-icon>
@@ -143,7 +143,7 @@
               <template #trigger>
                 <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
               </template>
-              <b-dropdown-item aria-role="listitem" @click="router.push(`/agency-workers/worker/${props.row.id}`)">
+              <b-dropdown-item aria-role="listitem" @click="router.push(`/recruiting/workers/${props.row.id}`)">
                 Edit
               </b-dropdown-item>
               <b-dropdown-item aria-role="listitem" v-if="!props.row.approvedToWork" @click="deleteWorker(props.row)">
@@ -234,7 +234,7 @@ function onCellClick(row: any, column: any) {
     case 'requests':
       break;
     default:
-      router.push(`/agency-workers/worker/${row.id}`);
+      router.push(`/recruiting/workers/${row.id}`);
   }
 }
 
@@ -262,7 +262,7 @@ function onFeatureChange() {
 
 function goToApplicants(item: any) {
   router.push({
-    path: `/agency-request/${item.id}`,
+    path: `/recruiting/requests/${item.id}`,
     query: { tab: 'Applicants' },
   });
 }

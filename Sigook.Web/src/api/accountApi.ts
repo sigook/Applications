@@ -1,14 +1,14 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
 import type { ChangeEmailRequest, GetEmailResponse } from '@/types/security';
 
 export function changeEmail(model: ChangeEmailRequest): Promise<void> {
-  return http.post('/api/Account/ChangeEmail', model).then(() => {});
+  return api.post('/api/Account/ChangeEmail', model);
 }
 
 export function getEmail(): Promise<GetEmailResponse> {
-  return http.get('/api/Account/GetEmail').then(r => r.data);
+  return api.get<GetEmailResponse>('/api/Account/GetEmail');
 }
 
 export function deactivateAccount(): Promise<void> {
-  return http.patch('/identity').then(() => {});
+  return api.patch('/identity');
 }

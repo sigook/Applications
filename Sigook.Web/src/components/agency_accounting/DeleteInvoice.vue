@@ -57,7 +57,7 @@ async function submitDeleteInvoice() {
   await deleteAgencyInvoice({
     invoiceId: props.invoice.id,
     payStubs: selectedPayStubs.value.map((payStub: any) => payStub.payStubId),
-  }).catch((error: any) => {
+  }).catch((error: unknown) => {
     isLoading.value = false;
     showAlertError(error);
   });

@@ -1,7 +1,6 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <!-- Highlight -->
     <div class="col-12 col-padding highlight-content" v-if="request">
       <div class="item">
         <span class="fw-bold">Rate / Salary</span>
@@ -58,7 +57,7 @@
       </div>
       <div class="item">
         <span class="fw-bold">Vaccination</span>
-        <router-link :to="'/agency-companies/company/' + request.companyProfileId">
+        <router-link :to="'/recruiting/companies/' + request.companyProfileId">
           <p>
             {{ request.vaccinationRequired ? "yes" : "No" }}
             <b-icon icon="needle" class="ms-2"></b-icon>
@@ -67,7 +66,6 @@
       </div>
     </div>
 
-    <!-- Role -->
     <div class="col-12 col-padding">
       <span class="fw-bold me-2">Role</span>
       <span class="fw-normal">{{ request.jobPosition }}</span>
@@ -76,10 +74,8 @@
       </span>
     </div>
 
-    <!-- Skills -->
     <skills :request="request"></skills>
 
-    <!-- Detail -->
     <section class="col-12 col-padding">
       <span class="fw-bold is-inline-block mb-2">Description</span>
       <pre class="long-description bullet-list" v-html="request.description"></pre>
@@ -90,7 +86,6 @@
       <pre class="long-description bullet-list" v-html="request.responsibilities"></pre>
     </section>
 
-    <!-- Requirements -->
     <section class="col-12 col-padding">
       <span class="fw-bold is-inline-block mb-2">Requirements</span>
       <pre class="long-description bullet-list" v-html="request.requirements"></pre>
@@ -101,14 +96,12 @@
       <pre class="long-description bullet-list" v-html="request.internalRequirements"></pre>
     </section>
 
-    <!-- Incentive -->
     <section class="col-12 col-padding" v-if="request.incentive">
       <span class="fw-bold is-inline-block mb-2">Plus </span>
       <span class="fw-normal ms-2"> {{ currency(request.incentive) }}</span>
       <pre class="long-description">{{ request.incentiveDescription }} </pre>
     </section>
 
-    <!-- Break -->
     <section class="col-12 col-padding">
       <span class="fw-bold me-2">Break</span>
       <span class="fw-normal">{{ request.durationBreak }}</span>

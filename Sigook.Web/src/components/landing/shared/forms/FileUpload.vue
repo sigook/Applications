@@ -1,35 +1,25 @@
 <template>
-  <label class="landing-fileupload" :class="{ 'landing-fileupload--disabled': disabled }">
-    <input
-      type="file"
-      class="landing-fileupload__input"
-      :accept="accept"
-      :disabled="disabled"
-      @change="onChange"
-      ref="inputRef"
-    />
+  <b-upload
+    class="landing-fileupload"
+    :class="{ 'landing-fileupload--disabled': disabled }"
+    :model-value="fileModel"
+    :accept="accept"
+    :disabled="disabled"
+    @update:model-value="onChange"
+  >
     <span class="landing-fileupload__icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="17 8 12 3 7 8" />
-        <line x1="12" y1="3" x2="12" y2="15" />
-      </svg>
+      <LandingIcon name="upload" />
     </span>
     <span class="landing-fileupload__label">
       <slot>{{ label }}</slot>
     </span>
-  </label>
+  </b-upload>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
+import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 
-/**
- * FileUpload — minimal file input styled as a glass pill.
- *
- * Emits the selected File (or null when cleared). Parent owns the file
- * card rendering / removal — this component just captures the upload.
- */
 withDefaults(defineProps<{
   label?: string
   accept?: string
@@ -44,13 +34,15 @@ const emit = defineEmits<{
   (e: 'file', value: File | null): void
 }>()
 
-const inputRef = ref<HTMLInputElement | null>(null)
+const fileModel = ref<File | File[] | null>(null)
 
-function onChange(event: Event): void {
-  const file = (event.target as HTMLInputElement).files?.[0] ?? null
+function onChange(value: File | File[] | null): void {
+  const file = Array.isArray(value) ? (value[0] ?? null) : (value ?? null)
+  fileModel.value = value
   emit('file', file)
-  // Clear so the same file can be re-uploaded later
-  if (inputRef.value) inputRef.value.value = ''
+  void nextTick(() => {
+    fileModel.value = null
+  })
 }
 </script>
 
@@ -61,7 +53,7 @@ function onChange(event: Event): void {
   gap: 10px;
   padding: 10px 22px;
   background: rgba(255, 255, 255, 0.08);
-  border: 1.5px dashed rgba(255, 255, 255, 0.45);
+  border: 1.5px $1 var(--c-glass-border-strong);
   border-radius: 999px;
   color: #fff;
   font-family: var(--font-family);
@@ -78,7 +70,7 @@ function onChange(event: Event): void {
   transform: translateY(-1px);
 }
 
-.landing-fileupload__input {
+.landing-fileupload.upload :deep(input[type="file"]) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -105,7 +97,7 @@ function onChange(event: Event): void {
 
 .landing-fileupload--disabled:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.45);
+  border-color: var(--c-glass-border-strong);
   transform: none;
 }
 </style>

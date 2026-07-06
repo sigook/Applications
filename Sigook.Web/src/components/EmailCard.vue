@@ -70,7 +70,7 @@ watch(() => props.item, (newVal) => {
 
 function onDeleteInvoiceRecipient(item: any, index?: number) {
   isLoading.value = true;
-  deleteCompanyInvoiceRecipient(route.params.id as any, item.id)
+  deleteCompanyInvoiceRecipient(route.params.id as string, item.id)
     .then(() => {
       isLoading.value = false;
       emit('updateDataEmailList', index);
@@ -96,7 +96,7 @@ function validateUpdate(_index?: number) {
 
 function onUpdateInvoiceRecipient(item: any) {
   isLoading.value = true;
-  updateCompanyInvoiceRecipient(route.params.id as any, item.id, { name: item.name, email: item.email })
+  updateCompanyInvoiceRecipient(route.params.id as string, item.id, { name: item.name, email: item.email })
     .then(() => {
       localItem.value = { ...item };
       disabled.value = true;

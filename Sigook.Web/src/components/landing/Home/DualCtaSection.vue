@@ -2,7 +2,6 @@
   <div class="dual-cta-wrap">
     <div class="dual-cta__back" aria-hidden="true"></div>
     <section class="dual-cta" aria-label="Find work or find talent">
-    <!-- Full-bleed background layers (fill the entire section, any width) -->
     <div class="dual-cta__bg" aria-hidden="true">
       <img :src="talentsPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--left" loading="lazy" decoding="async" />
       <img :src="employersPhoto" alt="" class="dual-cta__bg-img dual-cta__bg-img--right" loading="lazy" decoding="async" />
@@ -11,7 +10,6 @@
     <div class="dual-cta__veil" aria-hidden="true"></div>
     <div class="dual-cta__glow" aria-hidden="true"></div>
 
-    <!-- Inner canvas: max-width centered, holds the cards only -->
     <div class="dual-cta__canvas">
       <PrimaryCard
         variant="navy"
@@ -46,10 +44,10 @@
 </template>
 
 <script setup lang="ts">
-import ArrowPillCta from '@/components/landing/shared/ArrowPillCta.vue'
-import PrimaryCard from '@/components/landing/shared/PrimaryCard.vue'
-import talentsPhoto from '@/assets/images/v2/audience-banner/talents-worker.webp'
-import employersPhoto from '@/assets/images/v2/audience-banner/employers-office.webp'
+import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
+import PrimaryCard from '@/components/landing/shared/cards/PrimaryCard.vue'
+import talentsPhoto from '@/assets/images/landing/audience-banner/talents-worker.webp'
+import employersPhoto from '@/assets/images/landing/audience-banner/employers-office.webp'
 
 const talentBenefits: string[] = [
   'Access hundreds of jobs in skilled trades, industrial & professional fields',
@@ -72,7 +70,6 @@ const employerBenefits: string[] = [
   z-index: 5;
 }
 
-/* ── Depth back-layer — transparent glass, peeks ~16px top & bottom ─────── */
 .dual-cta__back {
   position: absolute;
   top: -16px;
@@ -82,10 +79,10 @@ const employerBenefits: string[] = [
   z-index: 0;
   border-radius: 150px 0 150px 0;
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(10px) saturate(120%);
-  -webkit-backdrop-filter: blur(10px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--c-glass-border-soft);
+  box-shadow: var(--sh-back);
   pointer-events: none;
 }
 
@@ -96,9 +93,7 @@ const employerBenefits: string[] = [
   z-index: 1;
   overflow: hidden;
   isolation: isolate;
-  /* Asymmetric brand shape — top-left + bottom-right curve reveal Hero/Numbers in overlap zones */
   border-radius: 150px 0 150px 0;
-  /* Soft drop shadows at top and bottom — smooth transitions into Hero (above) and Numbers (below) */
   box-shadow:
     0 -22px 40px -12px rgba(0, 0, 0, 0.45),
     0  22px 40px -12px rgba(0, 0, 0, 0.45);
@@ -112,7 +107,6 @@ const employerBenefits: string[] = [
   margin: 0 auto;
 }
 
-/* Background photos split 50/50 */
 .dual-cta__bg {
   position: absolute;
   inset: 0;
@@ -131,7 +125,6 @@ const employerBenefits: string[] = [
 .dual-cta__bg-img--left { object-position: center 22%; }
 .dual-cta__bg-img--right { object-position: center center; }
 
-/* Veil: navy gradient that blends the two photos and gives glass the contrast it needs */
 .dual-cta__veil {
   position: absolute;
   inset: 0;
@@ -151,7 +144,6 @@ const employerBenefits: string[] = [
     );
 }
 
-/* Cyan glow accent — tertiary color, sits between the two cards */
 .dual-cta__glow {
   position: absolute;
   z-index: 2;
@@ -167,11 +159,6 @@ const employerBenefits: string[] = [
   opacity: 0.32;
 }
 
-/*
-  Cards positioned around the canvas center so they keep a consistent ~120px
-  overlap zone at ANY desktop width (1024 → 1920+). Visual treatment (bg,
-  radius, padding, shadow, glass blur) lives in PrimaryCard.
-*/
 .dual-cta__card {
   position: absolute;
   width: 560px;
@@ -180,13 +167,11 @@ const employerBenefits: string[] = [
   cursor: pointer;
 }
 
-/* Find Work — navy, lower-left */
 .dual-cta__card--work {
   left: calc(50% - 500px);
   top: 180px;
 }
 
-/* Find Talent — red, upper-right, overlaps the work card horizontally */
 .dual-cta__card--talent {
   left: calc(50% - 60px);
   top: 80px;
@@ -196,7 +181,6 @@ const employerBenefits: string[] = [
   padding-right: 130px;
 }
 
-/* ── Mobile (≤ 1023px) ───────────────────────────────────── */
 @media (max-width: 1023px) {
   .dual-cta-wrap {
     margin-top: -100px;

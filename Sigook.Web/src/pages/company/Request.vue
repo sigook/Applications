@@ -4,7 +4,7 @@
 
     <section class="wrapper-request-top" v-if="request">
       <div>
-        <router-link :to="'/agency-companies/company/' + request.companyProfileId">
+        <router-link :to="'/recruiting/companies/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" />
         </router-link>
         <h2 class="text-capitalize fz1 fw-bold">
@@ -139,20 +139,20 @@ function onCancelRequest(reason: any) {
       showAlertSuccess('Cancelled');
       router.push('/company-requests');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
 }
 
 function getData() {
-  getRequest(route.params.id)
+  getRequest(route.params.id as string)
     .then((response: any) => {
       isLoading.value = false;
       request.value = response;
     })
-    .catch((error: any) => {
-      showAlertError(error.data);
+    .catch((error: unknown) => {
+      showAlertError((error as { data?: unknown }).data);
       isLoading.value = false;
     });
 }
@@ -164,12 +164,12 @@ function alertRequestAnotherWorker() {
 function onRequestAnotherWorker(comment: string) {
   modalValidationRequestAnotherWorker.value = false;
   isLoading.value = true;
-  requestAnotherWorkerApi(route.params.id, { comments: comment })
+  requestAnotherWorkerApi(route.params.id as string, { comments: comment })
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Requested');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -179,16 +179,16 @@ function onUpdateRequirements() {
   form.markInteracted(['requirements']);
   form.handleSubmit((values) => {
     isLoading.value = true;
-    editRequest(route.params.id, { requirements: values.requirements })
+    editRequest(route.params.id as string, { requirements: values.requirements })
       .then(() => {
         isLoading.value = false;
         showAlertSuccess('Updated');
         request.value.requirements = values.requirements;
         editContentModal.value = false;
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         isLoading.value = false;
-        showAlertError(error.data);
+        showAlertError((error as { data?: unknown }).data);
       });
   })();
 }
@@ -198,7 +198,7 @@ function changeTab(tab: string) {
     visitedTabs.value.push(tab);
   }
   router.push({
-    path: `/request/${route.params.id}`,
+    path: `/company-requests/${route.params.id}`,
     query: { tab: tab },
   });
 }

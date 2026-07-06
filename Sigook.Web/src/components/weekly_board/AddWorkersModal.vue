@@ -3,7 +3,7 @@
     <header class="modal-card-head is-flex-direction-column is-align-items-start">
       <p class="modal-card-title">Add workers to order</p>
       <p class="has-text-grey is-size-7">
-        Order #{{ assignment.numberId }} · {{ assignment.companyName }} — {{ workDateLabel }}
+        Request #{{ assignment.numberId }} · {{ assignment.companyName }} — {{ workDateLabel }}
       </p>
     </header>
     <section class="modal-card-body">

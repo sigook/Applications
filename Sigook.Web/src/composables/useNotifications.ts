@@ -20,7 +20,7 @@ function mapResponse(response: NotificationsResponse): AppNotification[] {
     title: r.workerName,
     lines: [`#${r.requestNumberId} · ${r.companyName}`, r.jobTitle],
     badge: `Day ${r.dayNumber} of ${FOLLOW_UP_DAYS}`,
-    route: `/agency-request/${r.requestId}?tab=PunchCard`,
+    route: `/recruiting/requests/${r.requestId}?tab=PunchCard`,
   }));
 
   return [...workersToReview];

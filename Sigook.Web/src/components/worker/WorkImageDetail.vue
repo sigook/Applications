@@ -21,10 +21,8 @@
                 @finishUpload="() => pubSub.unsubscribe()" class="mx-auto my-2">
               </upload-image>
               <div class="text-center">
-                <button class="background-btn md-btn red-button btn-radius mt-3 margin-right text-uppercase"
-                  @click="showEditModal = false" type="button">{{ "Cancel" }}</button>
-                <button class="background-btn md-btn primary-button btn-radius mt-3 text-uppercase"
-                  @click="createWorkerImageHandler()" type="button">{{ "Save" }}</button>
+                <b-button type="is-danger" rounded class="mt-3 me-2" @click="showEditModal = false">Cancel</b-button>
+                <b-button type="is-primary" rounded class="mt-3" @click="createWorkerImageHandler()">Save</b-button>
               </div>
             </div>
           </div>
