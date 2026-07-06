@@ -225,7 +225,7 @@ onUnmounted(() => {
 .op-list {
   position: relative;
   width: 100%;
-  margin-top: clamp(-360px, -33vh, -240px);
+  margin-top: clamp(-64px, -5vh, -32px);
   padding:
     clamp(16px, 2vw, 28px)
     clamp(24px, 5vw, 64px)
@@ -416,7 +416,7 @@ onUnmounted(() => {
 
 @media (max-width: 1023px) {
   .op-list {
-    margin-top: clamp(-56px, -6vh, -40px);
+    margin-top: clamp(-40px, -4vh, -24px);
   }
 
   .op-list__body {
@@ -447,7 +447,7 @@ onUnmounted(() => {
 
 @media (max-width: 599px) {
   .op-list {
-    margin-top: clamp(-80px, -10vh, -48px);
+    margin-top: clamp(-32px, -4vh, -20px);
   }
 }
 

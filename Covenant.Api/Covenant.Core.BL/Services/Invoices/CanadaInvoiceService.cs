@@ -137,7 +137,7 @@ public class CanadaInvoiceService(
         var invoiceHolidays = new List<InvoiceHoliday>();
         if (!model.DirectHiring)
         {
-            await GetInvoiceHolidaysAsync(timesheets, holidays, model.CompanyProfileId);
+            invoiceHolidays = await GetInvoiceHolidaysAsync(timesheets, holidays, model.CompanyProfileId);
         }
 
         // 4. Prepare additional items
@@ -251,7 +251,7 @@ public class CanadaInvoiceService(
 
         // Check if paid holidays are enabled
         var paidHolidays = timesheets.FirstOrDefault()?.PaidHolidays ?? false;
-        if (!paidHolidays || !holidays.Any())
+        if (!paidHolidays || holidays.Count == 0)
         {
             return invoiceHolidays;
         }

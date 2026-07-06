@@ -111,10 +111,7 @@
           <div class="detail-row">
             <b-tag :type="statusTagType(detail.status)" rounded>{{ statusLabel(detail.status) }}</b-tag>
           </div>
-          <div v-if="detailDispatchesLoading" class="detail-workers-loading has-text-grey is-size-7">
-            Loading workers…
-          </div>
-          <collapse-section v-else-if="detailDispatches.length > 0" :key="detail.requestId" class="detail-workers"
+          <collapse-section v-if="!isLoading && detailDispatches.length > 0" :key="detail.requestId" class="detail-workers"
             variant="compact" :model-value="false">
             <template #title>Workers ({{ detailDispatches.length }})</template>
             <ul>
@@ -184,7 +181,6 @@ const assignPreset = ref<AssignPreset | undefined>(undefined);
 const showDetail = ref(false);
 const detail = ref<WeeklyBoardAssignment | null>(null);
 const detailDispatches = ref<WeeklyBoardDispatch[]>([]);
-const detailDispatchesLoading = ref(false);
 
 const draggedAssignment = ref<WeeklyBoardAssignment | null>(null);
 const dropTarget = ref<{ recruiterId: string; date: string } | null>(null);
@@ -272,14 +268,14 @@ function openDetail(assignment: WeeklyBoardAssignment): void {
   detail.value = assignment;
   detailDispatches.value = [];
   showDetail.value = true;
-  detailDispatchesLoading.value = true;
+  isLoading.value = true;
   getRequestDispatches(assignment.requestId)
     .then(response => {
       detailDispatches.value = response;
     })
     .catch(error => showAlertError(error))
     .finally(() => {
-      detailDispatchesLoading.value = false;
+      isLoading.value = false;
     });
 }
 
