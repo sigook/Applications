@@ -15,7 +15,7 @@ const mgr = new UserManager({
   redirect_uri: redirectUrl + "/callback",
   response_type: "code",
   scope: "openid profile api1 roles offline_access",
-  post_logout_redirect_uri: redirectUrl + "/callback",
+  post_logout_redirect_uri: redirectUrl + "/",
   automaticSilentRenew: true,
   silent_redirect_uri: redirectUrl + "/silent-refresh",
   loadUserInfo: true,

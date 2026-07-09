@@ -208,7 +208,7 @@ async function getWorkerInfo() {
 function switchAgency(agency: { id: string; isPrimary: boolean }) {
   if (agency.isPrimary) return;
   switchPersonnelAgency(agency.id).then(async () => {
-    router.push('/recruiting/weekly-board');
+    router.push(menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles));
     await getAgencyInfo();
     window.location.reload();
   });

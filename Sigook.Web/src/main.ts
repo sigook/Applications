@@ -44,9 +44,8 @@ mgr.events.addUserUnloaded(() => {
   securityStore.setUser(null);
 });
 mgr.events.addAccessTokenExpired(() => {
-  mgr.signinSilent().catch(() => {
+  securityStore.silentSignin().catch(() => {
     securityStore.setUser(null);
-    securityStore.signIn();
   });
 });
 mgr.events.addSilentRenewError(() => {
