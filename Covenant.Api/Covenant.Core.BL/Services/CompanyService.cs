@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -91,7 +92,8 @@ public class CompanyService : ICompanyService
             Email = email.Value,
             Password = model.Password,
             ConfirmPassword = model.ConfirmPassword,
-            UserType = UserType.Company
+            UserType = UserType.Company,
+            Role = CovenantConstants.Role.Company
         });
         if (!user) return Result.Fail<Guid>(user.Errors);
         var location = model.Locations.First();
@@ -264,7 +266,8 @@ public class CompanyService : ICompanyService
                 {
                     Email = email.Value,
                     CompanyId = companyId,
-                    UserType = UserType.CompanyUser
+                    UserType = UserType.CompanyUser,
+                    Role = CovenantConstants.Role.CompanyUser
                 };
                 var newUser = await identityServerService.CreateUser(userModel);
                 if (newUser)

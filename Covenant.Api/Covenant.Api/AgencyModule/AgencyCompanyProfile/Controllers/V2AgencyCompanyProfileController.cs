@@ -51,8 +51,11 @@ public class V2AgencyCompanyProfileController : ControllerBase
     /// <param name="filter">Company filter and pagination parameters.</param>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<CompanyProfileListModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetCompanyProfiles([FromQuery] GetCompanyForAgencyFilter filter) =>
-        Ok(await companyRepository.GetCompaniesProfileForAgency(User.GetAgencyId(), filter));
+    public async Task<IActionResult> GetCompanyProfiles([FromQuery] GetCompanyForAgencyFilter filter)
+    {
+        filter.SalesUserId = null;
+        return Ok(await companyRepository.GetCompaniesProfileForAgency(User.GetAgencyId(), filter));
+    }
 
     /// <summary>Generates and downloads an Excel report of the current agency's company profiles.</summary>
     /// <param name="filter">Company filter parameters.</param>
@@ -61,6 +64,7 @@ public class V2AgencyCompanyProfileController : ControllerBase
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFileCompanyProfiles([FromQuery] GetCompanyForAgencyFilter filter)
     {
+        filter.SalesUserId = null;
         var data = companyRepository.GetAllCompaniesProfileForAgency(User.GetAgencyId(), filter).ToList();
         var file = await Mediator.Send(new GenerateAgencyCompanyProfileReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);

@@ -47,6 +47,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             requests = requests.Where(r => r.CompanyId == filter.CompanyId.Value);
         else
             requests = requests.Where(r => r.AgencyId == agencyId);
+        if (filter.SalesUserId.HasValue)
+        {
+            requests = requests.Where(r => context.RequestComissions
+                .Any(rc => rc.RequestId == r.Id && rc.AgencyPersonnel.UserId == filter.SalesUserId.Value));
+        }
         if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
         {
             var recruiterTerm = filter.DisplayRecruiters.ToLower();

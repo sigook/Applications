@@ -9,11 +9,25 @@ public static class CovenantConstants
 
     public static class Role
     {
+        public const string SuperAdmin = "superadmin";
+        public const string Admin = "admin";
+        public const string Recruiting = "recruiting";
+        public const string Sales = "sales";
         public const string Company = "company";
         public const string CompanyUser = "company.user";
-        public const string AgencyPersonnel = "agency.personnel";
         public const string Worker = "worker";
-        public const string Agency = "agency";
+
+        public static readonly string[] AgencyAccess = [SuperAdmin, Admin, Recruiting];
+
+        public static readonly string[] AgencyStaff = [.. AgencyAccess, Sales];
+
+        public static readonly string[] SalesAccess = [SuperAdmin, Admin, Sales];
+
+        public static readonly string[] Accounting = [SuperAdmin, Admin];
+
+        public static readonly string[] AgencyAssignable = [Admin, Recruiting, Sales];
+
+        public static readonly string[] SuperAdminAssignable = [SuperAdmin, .. AgencyAssignable];
     }
 
     public static class Validation

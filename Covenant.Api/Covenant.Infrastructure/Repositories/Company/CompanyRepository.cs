@@ -184,6 +184,8 @@ namespace Covenant.Infrastructure.Repositories.Company
                 .Include(cp => cp.Company)
                 .Include(cp => cp.Notes)
                 .AsQueryable();
+            if (filter.SalesUserId.HasValue)
+                companies = companies.Where(cp => cp.SalesRepresentative.UserId == filter.SalesUserId.Value);
             var query = from cp in companies
                         join cf in _context.CovenantFile on cp.LogoId equals cf.Id into tmp
                         from cfl in tmp.DefaultIfEmpty()

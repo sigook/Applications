@@ -222,7 +222,7 @@ public class IdentityServerService : IIdentityServerService
 
     public Guid GetUserId() => httpContextAccessor.HttpContext.User.GetUserId();
 
-    public bool IsAdmin() => httpContextAccessor.HttpContext.User.IsPayrollManager();
+    public bool IsAdmin() => httpContextAccessor.HttpContext.User.IsAccountingManager();
 
     public IEnumerable<Guid> GetAgencyIds() => httpContextAccessor.HttpContext.User.GetAgencyIds();
 
