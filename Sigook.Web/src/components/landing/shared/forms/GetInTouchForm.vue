@@ -120,6 +120,11 @@
         {{ submitError }}
       </div>
 
+      <div class="git-card__captcha">
+        <Checkbox v-model="captchaToken" theme="light" @expired="captchaToken = ''" @error="captchaToken = ''" />
+        <span v-if="captchaError" class="git-card__field-error">{{ captchaError }}</span>
+      </div>
+
       <b-button native-type="submit" class="git-card__submit" :disabled="submitting">
         <span>{{ submitting ? 'Sending…' : 'Save & Send' }}</span>
         <ArrowIcon v-if="!submitting" :width="32" :height="11" :stroke-width="1.5" color="#fff" />
@@ -140,6 +145,7 @@ import { submitContactForm } from '@/api/websiteApi'
 import { getCountries, getProvinces } from '@/api/locationApi'
 import type { Province } from '@/types/common'
 import ArrowIcon from '@/components/landing/shared/icons/ArrowIcon.vue'
+import { Checkbox, useRecaptchaProvider } from 'vue-recaptcha/head'
 
 withDefaults(defineProps<{ size?: 'default' | 'compact' }>(), { size: 'default' })
 
@@ -162,6 +168,10 @@ const submitting  = ref(false)
 const submitted   = ref(false)
 const submitError = ref('')
 
+useRecaptchaProvider()
+const captchaToken = ref('')
+const captchaError = ref('')
+
 const states = ref<Province[]>([])
 
 onMounted(async () => {
@@ -179,6 +189,12 @@ async function handleFormSubmit() {
   const result = await validate()
   if (!result.valid) return
 
+  if (!captchaToken.value) {
+    captchaError.value = 'Please verify that you are not a robot'
+    return
+  }
+  captchaError.value = ''
+
   submitting.value  = true
   submitError.value = ''
   submitted.value   = false
@@ -193,10 +209,11 @@ async function handleFormSubmit() {
       location:        fields.state.value,
       message:         fields.message.value,
       subject:         fields.industry.value || '',
-      captchaResponse: '',
+      captchaResponse: captchaToken.value,
     })
     submitted.value = true
     resetAll()
+    captchaToken.value = ''
   } catch {
     submitError.value = 'Something went wrong. Please try again later.'
   } finally {
@@ -206,6 +223,8 @@ async function handleFormSubmit() {
 
 function handleReset() {
   resetAll()
+  captchaToken.value = ''
+  captchaError.value = ''
   submitted.value   = false
   submitError.value = ''
 }
@@ -424,6 +443,10 @@ function handleReset() {
   background: rgba(229, 45, 39, 0.08);
   color: var(--c-brand-red);
   border: 1px solid rgba(229, 45, 39, 0.20);
+}
+
+.git-card__captcha {
+  margin-top: 4px;
 }
 
 .git-card__submit {

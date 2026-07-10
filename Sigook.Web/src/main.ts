@@ -13,6 +13,8 @@ import { registerValidationRules } from '@/lang/validator';
 import { setupBuefyProgrammatic } from '@/utils/buefyProgrammatic';
 import mgr from '@/security/securityService';
 import { useSecurityStore } from '@/stores/security';
+import { VueRecaptchaPlugin } from 'vue-recaptcha/head';
+import { recaptchaSiteKey } from '@/utils/recaptcha';
 
 // import the styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -54,6 +56,7 @@ mgr.events.addSilentRenewError(() => {
 
 app.use(Buefy);
 setupBuefyProgrammatic(app);
+app.use(VueRecaptchaPlugin, { v2SiteKey: recaptchaSiteKey });
 app.use(VueScrollTo);
 app.use(VueLazyload, {
   preLoad: 1.3,
