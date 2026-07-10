@@ -205,6 +205,11 @@
         </Checkbox>
         <p v-if="errors.termsAccepted" class="reg-form__field-error">{{ errors.termsAccepted }}</p>
 
+        <div class="reg-form__captcha">
+          <RecaptchaCheckbox v-model="captchaToken" theme="dark" @expired="captchaToken = ''" @error="captchaToken = ''" />
+          <p v-if="captchaError" class="reg-form__field-error">{{ captchaError }}</p>
+        </div>
+
         <footer class="reg-form__nav">
           <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
@@ -233,6 +238,7 @@ import TagInput from '@/components/landing/shared/forms/TagInput.vue'
 import Switch from '@/components/landing/shared/forms/Switch.vue'
 import Checkbox from '@/components/landing/shared/forms/Checkbox.vue'
 import WorkerRegisterStepNav, { type StepDescriptor } from '@/components/landing/shared/forms/WorkerRegisterStepNav.vue'
+import { Checkbox as RecaptchaCheckbox, useRecaptchaProvider } from 'vue-recaptcha/head'
 
 import { getSources, getSkills } from '@/api/catalogApi'
 import { getCountries } from '@/api/locationApi'
@@ -256,6 +262,10 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'submitted'): void
 }>()
+
+useRecaptchaProvider()
+const captchaToken = ref('')
+const captchaError = ref('')
 
 const contextLine = computed(() => props.jobTitle || '')
 type StepKey = 'personal' | 'details' | 'review'
@@ -447,6 +457,12 @@ async function onSubmit(): Promise<void> {
     showAlertError('Resume is required when you apply via LinkedIn')
     return
   }
+  if (!captchaToken.value) {
+    captchaError.value = 'Please verify that you are not a robot'
+    showAlertError('Please verify that you are not a robot')
+    return
+  }
+  captchaError.value = ''
 
   isSubmitting.value = true
 
@@ -462,11 +478,13 @@ async function onSubmit(): Promise<void> {
     hasVehicle: hasVehicle.value,
     resume: resume.value,
     termsAccepted: termsAccepted.value,
+    captchaResponse: captchaToken.value,
   }
 
   try {
     await submitCandidateApplication(payload, props.requestId)
     showAlertSuccess('Your application has been submitted')
+    captchaToken.value = ''
     emit('submitted')
   } catch (err: unknown) {
     showAlertError((err as { data?: string })?.data ?? 'Something went wrong')
@@ -760,6 +778,12 @@ onMounted(async () => {
   font-weight: 600;
   color: var(--c-brand-red);
   margin: 4px 0 0;
+}
+
+.reg-form__captcha {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .reg-form__nav {

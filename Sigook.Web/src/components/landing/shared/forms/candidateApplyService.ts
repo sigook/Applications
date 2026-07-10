@@ -21,6 +21,7 @@ export interface CandidateFormData {
   hasVehicle: boolean
   resume: File | null
   termsAccepted: boolean
+  captchaResponse: string
 }
 
 interface CandidateViewModel {
@@ -35,6 +36,7 @@ interface CandidateViewModel {
   hasVehicle: boolean
   sourceId: string | null
   requestId?: string
+  captchaResponse: string
 }
 
 function generateGuidWithoutDashes(): string {
@@ -77,6 +79,7 @@ export function submitCandidateApplication(
     hasVehicle: data.hasVehicle,
     sourceId: data.sourceId || null,
     requestId,
+    captchaResponse: data.captchaResponse,
   }
 
   formData.append('data', JSON.stringify(viewModel))
