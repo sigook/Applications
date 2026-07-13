@@ -11970,6 +11970,183 @@
             "description": "Forbidden — insufficient permissions"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Creates a company profile. A sales user is always assigned as the sales representative of the client they create.",
+        "requestBody": {
+          "description": "Company profile data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/sales/CompanyProfiles/{id}": {
+      "get": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Gets the detail of a company profile. Sales users can only open the clients where they are the assigned sales representative.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Updates a company profile. Sales users can only update the clients assigned to them, and cannot reassign them.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Updated company profile data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
       }
     },
     "/api/agency/sales/CompanyProfiles/File": {
@@ -18013,6 +18190,183 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyRequestsPagedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Creates a request. A sales user is always assigned as the sales representative of the request they create.",
+        "requestBody": {
+          "description": "Request data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyRequestDetailModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/sales/Requests/{id}": {
+      "get": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Gets the detail of a request. Sales users can only open requests where they are the assigned sales representative.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyRequestDetailModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Updates a request. Sales users can only update requests assigned to them, and cannot reassign them.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Updated request data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyRequestDetailModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
               }
             }

@@ -37,9 +37,8 @@ public class EmailService : IEmailService
             mail.Body = message;
             mail.IsBodyHtml = true;
             mail.Priority = MailPriority.Normal;
-            var password = string.IsNullOrWhiteSpace(_emailSettings.Provider) ? _emailSettings.Password : $"{_emailSettings.Provider}{_emailSettings.Password}";
             using var smtp = new SmtpClient(_emailSettings.PrimaryDomain, _emailSettings.PrimaryPort);
-            smtp.Credentials = new NetworkCredential(_emailSettings.Username, password);
+            smtp.Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password);
             smtp.EnableSsl = true;
             await smtp.SendMailAsync(mail);
             return true;

@@ -224,6 +224,8 @@ public class IdentityServerService : IIdentityServerService
 
     public bool IsAdmin() => httpContextAccessor.HttpContext.User.IsAccountingManager();
 
+    public bool IsSales() => httpContextAccessor.HttpContext.User.IsSales();
+
     public IEnumerable<Guid> GetAgencyIds() => httpContextAccessor.HttpContext.User.GetAgencyIds();
 
     private string RandomPassword()

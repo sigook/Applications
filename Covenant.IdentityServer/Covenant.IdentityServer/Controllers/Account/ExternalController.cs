@@ -23,7 +23,6 @@ namespace Covenant.IdentityServer.Controllers.Account
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
         private readonly UserManager<CovenantUser> _userManager;
-        private readonly IConfiguration _configuration;
         private readonly ILogger<ExternalController> _logger;
 
         public ExternalController(
@@ -31,14 +30,12 @@ namespace Covenant.IdentityServer.Controllers.Account
             IClientStore clientStore,
             IEventService events,
             UserManager<CovenantUser> userManager,
-            IConfiguration configuration,
             ILogger<ExternalController> logger)
         {
             _interaction = interaction;
             _clientStore = clientStore;
             _events = events;
             _userManager = userManager;
-            _configuration = configuration;
             _logger = logger;
         }
 
@@ -212,38 +209,29 @@ namespace Covenant.IdentityServer.Controllers.Account
 
             CovenantUser covenantUser = await _userManager.FindByEmailAsync(externalEmail.Value);
 
-            if (covenantUser == null)
+            if (covenantUser is null)
             {
-                _logger.LogWarning("User not found by email: {Email}. Trying default Covenant email", externalEmail.Value);
-                string defaultEmail = _configuration.GetValue<string>("CovenantEmail");
-                covenantUser = await _userManager.FindByEmailAsync(defaultEmail);
-                _logger.LogInformation("Using default Covenant account: {DefaultEmail}", defaultEmail);
+                _logger.LogWarning("No Covenant user found for email: {Email}", externalEmail.Value);
+                return null;
             }
-            else
+
+            _logger.LogInformation("Covenant user found: UserId={UserId}, UserName={UserName}", covenantUser.Id, covenantUser.UserName);
+
+            IList<string> userRoles = await _userManager.GetRolesAsync(covenantUser);
+            if (userRoles.Count == 0)
             {
-                _logger.LogInformation("Covenant user found: UserId={UserId}, UserName={UserName}", covenantUser.Id, covenantUser.UserName);
+                _logger.LogWarning("Covenant user has no roles assigned: {Email}", externalEmail.Value);
+                return null;
             }
+
+            _logger.LogInformation("Roles resolved from database: {Roles}", string.Join(", ", userRoles));
 
             string providerUserId = userIdClaim.Value;
             var claims = new List<Claim>
             {
-                new Claim(JwtClaimTypes.NickName, externalEmail.Value),
-                new Claim(JwtClaimTypes.Role, "agency.personnel")
+                new(JwtClaimTypes.NickName, externalEmail.Value)
             };
-
-            _logger.LogInformation("Base claims added: NickName={NickName}, Role=agency.personnel", externalEmail.Value);
-
-            List<Claim> roles = externalUser.FindAll(Microsoft365OpenIdConnect.RoleClaimType)?
-                .Select(s => new Claim(JwtClaimTypes.Role, s.Value)).ToList();
-            if (roles != null && roles.Any())
-            {
-                _logger.LogInformation("Microsoft 365 roles found: {Roles}", string.Join(", ", roles.Select(r => r.Value)));
-                claims.AddRange(roles);
-            }
-            else
-            {
-                _logger.LogInformation("No Microsoft 365 roles found");
-            }
+            claims.AddRange(userRoles.Select(role => new Claim(JwtClaimTypes.Role, role)));
 
             return new CovenantUserData(provider, providerUserId, covenantUser.UserName, covenantUser.Id.ToString(), claims);
         }

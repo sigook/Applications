@@ -7,7 +7,6 @@ namespace Covenant.IdentityServer.Configuration
     {
         public const string Scheme = "oidc";
         public const string SchemeMicrosoft365Bearer = "Microsoft365Bearer";
-        public const string RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
         public static void AddMicrosoftAuthentication365(this AuthenticationBuilder authenticationBuilder, IConfiguration configuration)
         {
             authenticationBuilder.AddOpenIdConnect(Scheme, "Microsoft 365", options =>
