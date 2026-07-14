@@ -31,6 +31,12 @@ Markup     = AgencyRate − WorkerRate (Agency's profit)
 - Multipliers are **global configuration**, not per company: the `Rates` object injected everywhere (`Covenant.Common/Configuration/Rates.cs`). Defaults (`Rates.DefaultRates`): `OverTime = 1.5`, `Holiday = 1.5`, `Vacations = 0.04`, `Hst = 0.13`.
 - The invoice snapshots the config rates at creation (`CanadaInvoiceService.CreateInvoiceInternal`): `HolidayRate`, `OverTimeRate`, `VacationsRate`, `HstRate`, `BonusRate`. Of these, **only `OverTimeRate`, `HolidayRate` and `HstRate` participate in the math** — see "Not billed" below.
 
+**No double billing:**
+
+The holidays of an invoice come from the date range of the timesheets being invoiced, so a late-approved timesheet from the holiday's week pulls that holiday back into a later invoice. To keep it from being charged twice, `GetCompanyRegularCharges` excludes any worker that already has an `InvoiceHoliday` row for the same holiday date under that company profile. Scope is **per company**: a worker placed at two companies of the same agency is entitled to holiday pay from each.
+
+> This is the invoice counterpart of `PayStubRepository.GetWorkerRegularWages` → `HolidayWasPaid`, which guards the pay-stub side against the same duplicate (`PayStubPublicHolidays` lookup). Both flows must keep their own guard — see `PAYSTUB_GENERATION.md`.
+
 ---
 
 ## Canadian Invoice Pipeline

@@ -22,5 +22,5 @@ public interface IInvoiceRepository
     Task<PaginatedList<InvoiceListModel>> GetInvoicesForCompanyUSA(Guid companyId, GetCompanyInvoiceFilter filter);
     Task<NextNumberModel> GetNextInvoiceNumber();
     Task<NextNumberModel> GetNextInvoiceUSANumber();
-    Task<List<CompanyRegularChargesByWorker>> GetCompanyRegularCharges(Guid companyProfileId, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays);
+    Task<List<CompanyRegularChargesByWorker>> GetCompanyRegularCharges(Guid companyProfileId, DateTime holiday, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays);
 }

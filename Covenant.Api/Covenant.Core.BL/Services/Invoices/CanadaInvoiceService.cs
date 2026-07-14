@@ -263,7 +263,7 @@ public class CanadaInvoiceService(
             var holidayWeekEnd = holiday.GetEnd();          // last Saturday of the week before the holiday's week
             var lookbackStart = holidayWeekEnd.GetStart();  // four work weeks earlier
             var qualifyingDays = holiday.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay();
-            var workersCharges = await invoiceRepository.GetCompanyRegularCharges(companyProfileId, lookbackStart, holidayWeekEnd, qualifyingDays);
+            var workersCharges = await invoiceRepository.GetCompanyRegularCharges(companyProfileId, holiday, lookbackStart, holidayWeekEnd, qualifyingDays);
 
             foreach (var workerCharge in workersCharges)
             {
