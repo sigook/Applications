@@ -24,9 +24,9 @@ namespace Covenant.Api.CompanyModule.CompanyProfileContactPerson.Controllers
         /// <summary>Gets all contact persons of the current company.</summary>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CompanyProfileContactPersonModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAllContactPersons()
+        public async Task<IActionResult> GetAllContactPeople()
         {
-            var contacts = await companyRepository.GetContactPersons(c => c.CompanyProfile.CompanyId == User.GetCompanyId());
+            var contacts = await companyRepository.GetContactPeople(c => c.CompanyProfile.CompanyId == User.GetCompanyId());
             return Ok(contacts);
         }
 

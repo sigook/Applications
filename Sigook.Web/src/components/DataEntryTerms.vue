@@ -56,10 +56,10 @@ function expandOrColapse() {
 }
 
 const isCompanyProfile = computed(() =>
-  securityStore.userRoles.some((ur) => ur.includes(roles.company))
+  securityStore.userRoles.some((ur) => ur === roles.company || ur === roles.companyUser)
 );
 const isWorkerProfile = computed(() =>
-  securityStore.userRoles.some((ur) => ur.includes(roles.worker))
+  securityStore.userRoles.some((ur) => ur === roles.worker)
 );
 </script>
 <style lang="scss" scoped>

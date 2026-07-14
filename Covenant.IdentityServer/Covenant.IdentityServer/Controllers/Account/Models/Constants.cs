@@ -14,13 +14,7 @@ namespace Covenant.IdentityServer.Controllers.Account.Models
         public const string CompanyId = "companyId";
         public const string AgencyId = "agencyId";
 
-        public static Claim ClaimCompanyId(Guid id) => new Claim(CompanyId, id.ToString());
-        public static Claim ClaimAgencyId(Guid id) => new Claim(AgencyId, id.ToString());
-
-        public static Claim All2JobClaim() => new Claim(All2job, All2job);
-
-        public static Claim AgencyClaim() => new Claim(Agency, Agency);
-
-        public static Claim WorkerClaim() => new Claim(Worker, Worker);
+        public static Claim ClaimCompanyId(Guid id) => new(CompanyId, id.ToString());
+        public static Claim ClaimAgencyId(Guid id) => new(AgencyId, id.ToString());
     }
 }

@@ -59,7 +59,7 @@ const schema = yup.object({
   email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
 });
 
-const props = defineProps<{ companyId?: any }>();
+const props = defineProps<{ profileId?: string }>();
 const emit = defineEmits<{ (e: 'updateUsers'): void }>();
 
 const form = useStickyForm<{ name: string; lastname: string; position: string; email: string }>({
@@ -91,8 +91,8 @@ function onCreateUser() {
     email: email.value,
     mobileNumber: mobileNumber.value,
   };
-  const action = props.companyId ?
-    createCompanyProfileUser(props.companyId, user) :
+  const action = props.profileId ?
+    createCompanyProfileUser(props.profileId, user) :
     createCompanyUser(user);
   action
     .then(() => {

@@ -57,7 +57,7 @@
       </div>
       <div class="item">
         <span class="fw-bold">Vaccination</span>
-        <router-link :to="'/recruiting/companies/' + request.companyProfileId">
+        <router-link :to="companyBase + '/' + request.companyProfileId">
           <p>
             {{ request.vaccinationRequired ? "yes" : "No" }}
             <b-icon icon="needle" class="ms-2"></b-icon>
@@ -114,6 +114,7 @@
 import { ref, watch } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { currency, dateMonth } from '@/utils/filters';
+import { useModuleBase } from '@/composables/useModuleBase';
 import {
   increaseWorkersQuantityByOne,
   reduceWorkersQuantityByOne,
@@ -131,6 +132,8 @@ import AgencyShift from "../agency_request/AgencyShiftDetail.vue";
 
 const props = defineProps<{ request?: any }>();
 const emit = defineEmits<{ (e: 'refreshRequest'): void }>();
+
+const { companyBase } = useModuleBase();
 
 const isLoading = ref(false);
 const localRequest = ref<any>(JSON.parse(JSON.stringify(props.request)));

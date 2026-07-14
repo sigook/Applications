@@ -133,6 +133,7 @@ export interface AgencyLocationDetail {
 export interface AgencyPersonnelCreateModel {
   name: string | null;
   email: string | null;
+  role: string | null;
 }
 
 // Item returned by GET /api/AgencyPersonnel

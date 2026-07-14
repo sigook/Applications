@@ -17,7 +17,7 @@ public enum RequestStatus
 }
 ```
 
-There are exactly **three** explicit states.
+There are exactly **three** explicit states. Value `2` is intentionally skipped — do not add an enum member for it.
 
 ---
 
@@ -148,9 +148,11 @@ Relevant tests in `Covenant.Tests/Request/RequestTest.cs`:
 
 ## Key Endpoints
 
-- `GET    /api/AgencyRequest` — List requests (filterable by `Status`)
-- `GET    /api/AgencyRequest/{id}` — Request detail
-- `POST   /api/AgencyRequest/{requestId}/Worker` — Assign a worker (automatic transition)
-- `PUT    /api/AgencyRequest/{id}/Cancel` — Cancel (only valid when `Open` + no workers)
-- `PUT    /api/AgencyRequest/{id}/Open` — Reopen
-- `GET    /api/CompanyRequest` — Same listing from the company's perspective
+Agency request controllers live in `Covenant.Api/Controllers/Sigook/Agency/Requests/` (shared detail/actions) with role-scoped lists under `Recruiting/` and `Sales/`.
+
+- `GET    /api/agency/recruiting/requests` — List requests (recruiting-scoped; sales users have their own scoped list)
+- `GET    /api/agency/requests/{id}` — Request detail (`Requests/RequestsController`)
+- `POST   /api/agency/requests/{requestId}/Workers/{workerId}/Book` — Assign a worker (automatic transition; `Requests/WorkersController` → `AgencyService.BookWorker`)
+- `PUT    /api/agency/requests/{id}/Cancel` — Cancel (only valid when `Open` + no workers; also `PUT /bulk-cancel`)
+- `PUT    /api/agency/requests/{id:guid}/Open` — Reopen
+- `GET    /api/CompanyRequest` — Same listing from the company's perspective (`CompanyModule/CompanyRequest`)

@@ -18,6 +18,9 @@ public static class PrincipalExtensions
     public static bool IsSales(this IPrincipal user) =>
         user.IsInRole(CovenantConstants.Role.Sales);
 
+    public static bool IsSuperAdmin(this IPrincipal user) =>
+        user.IsInRole(CovenantConstants.Role.SuperAdmin);
+
     public static Guid GetCompanyId(this ClaimsPrincipal user)
     {
         string sub = user.IsCompanyUser()
@@ -36,6 +39,15 @@ public static class PrincipalExtensions
         if (string.IsNullOrEmpty(sub)) return Guid.Empty;
         Guid.TryParse(sub, out Guid id);
         return id;
+    }
+
+    public static Guid GetAgencyPersonnelId(this ClaimsPrincipal user)
+    {
+        if (!user.IsAgencyStaff()) return Guid.Empty;
+        string id = user.FindFirst(CovenantConstants.AgencyPersonnelId)?.Value;
+        if (string.IsNullOrEmpty(id)) return Guid.Empty;
+        Guid.TryParse(id, out Guid personnelId);
+        return personnelId;
     }
 
     public static List<Guid> GetAgencyIds(this ClaimsPrincipal user)

@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <b-field grouped position="is-right">
-        <b-button v-if="billingAdmin.isPayrollManager" type="is-ghost" icon-right="plus-circle"
+        <b-button v-if="isAccountingManager" type="is-ghost" icon-right="plus-circle"
           @click="showModal = true">Add</b-button>
         <b-button v-else type="is-ghost" icon-right="forum" @click="showModalRole = true">Ask for a new
           role</b-button>
@@ -18,7 +18,7 @@
           <b-table-column field="jobPosition" label="Role" v-slot="props">
             {{ props.row.jobPosition }}
           </b-table-column>
-          <b-table-column field="rate" label="Agency Rate" :visible="billingAdmin.isPayrollManager" v-slot="props">
+          <b-table-column field="rate" label="Agency Rate" :visible="isAccountingManager" v-slot="props">
             {{ currency(props.row.rate) }}
           </b-table-column>
           <b-table-column field="workerRate" label="Worker Rate" v-slot="props">
@@ -67,7 +67,7 @@
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { currency, emailName, dateMonth } from "@/utils/filters";
 import { getAgencyCompanyJobPositions, deleteAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
 import PositionForm from "@/components/agency_company/JobPositionForm.vue";
@@ -75,7 +75,7 @@ import RequestPositionForm from "../../components/agency_company/RequestJobPosit
 import RolesShift from "../agency_company/RolesShiftDetail.vue";
 
 const route = useRoute();
-const billingAdmin = useBillingAdmin();
+const { isAccountingManager } = useAccountingAdmin();
 
 const isLoading = ref(true);
 const rows = ref<any[]>([]);

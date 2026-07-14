@@ -120,7 +120,7 @@ public class CovenantContext : DbContext
     public DbSet<WorkerProfileTaxCategory> WorkerProfileTaxCategories { get; set; }
     public DbSet<PayStubHistory> PayStubHistories { get; set; }
     public DbSet<TimesheetHistory> TimesheetHistories { get; set; }
-    public DbSet<CompanyProfileContactPerson> CompanyProfileContactPersons { get; set; }
+    public DbSet<CompanyProfileContactPerson> CompanyProfileContactPeople { get; set; }
     public DbSet<CompanyProfileNote> CompanyProfileNotes { get; set; }
     public DbSet<WorkerProfileOtherDocument> WorkerProfileOtherDocuments { get; set; }
     public DbSet<WorkerProfileCertificate> WorkerProfileCertificates { get; set; }

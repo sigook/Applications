@@ -73,10 +73,6 @@ stages:
             parameters:
               sdkVersion: $(dotnetSdkVersion)
 
-          # Authenticate with Azure Artifacts for Covenant.Common package
-          - task: NuGetAuthenticate@1
-            displayName: 'Authenticate NuGet Feed'
-
           # Publish Azure Functions
           - task: DotNetCoreCLI@2
             displayName: 'Publish Azure Functions'

@@ -47,10 +47,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             requests = requests.Where(r => r.CompanyId == filter.CompanyId.Value);
         else
             requests = requests.Where(r => r.AgencyId == agencyId);
-        if (filter.SalesUserId.HasValue)
+        if (filter.SalesPersonnelId.HasValue)
         {
             requests = requests.Where(r => context.RequestComissions
-                .Any(rc => rc.RequestId == r.Id && rc.AgencyPersonnel.UserId == filter.SalesUserId.Value));
+                .Any(rc => rc.RequestId == r.Id && rc.AgencyPersonnelId == filter.SalesPersonnelId.Value));
         }
         if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
         {
@@ -985,6 +985,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    NumberId = rr.Request.NumberId,
                    CompanyName = cp.BusinessName,
                    JobTitle = rr.Request.JobTitle,
+                   City = rr.Request.JobLocation.City.Value,
+                   ProvinceCode = rr.Request.JobLocation.City.Province.Code,
                    WorkDate = rr.WorkDate.Value,
                    Status = rr.Request.Status,
                    IsAsap = rr.Request.IsAsap,
@@ -1043,6 +1045,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    NumberId = rr.Request.NumberId,
                    CompanyName = cp.BusinessName,
                    JobTitle = rr.Request.JobTitle,
+                   City = rr.Request.JobLocation.City.Value,
+                   ProvinceCode = rr.Request.JobLocation.City.Province.Code,
                    WorkDate = rr.WorkDate.Value,
                    Status = rr.Request.Status,
                    IsAsap = rr.Request.IsAsap,

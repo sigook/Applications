@@ -51,7 +51,7 @@
               @select-footer="() => showRolesModal = true">
               <template #footer>
                 <a>
-                  <span v-if="billingAdmin.isPayrollManager">Add new...</span>
+                  <span v-if="isAccountingManager">Add new...</span>
                   <span v-else>Request new...</span>
                 </a>
               </template>
@@ -73,7 +73,7 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="billingAdmin.isPayrollManager">
+        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAccountingManager">
           <b-field label="Sales Representative">
             <b-autocomplete :data="filteredSalesRepresentative" placeholder="Sales Rep." v-model="salesRepresentative"
               open-on-focus :custom-formatter="(option) => `${option.name} - ${option.email}`"
@@ -215,7 +215,7 @@
     </form>
 
     <b-modal v-model="showRolesModal" @close="showRolesModal = false" width="850px">
-      <position-form v-if="billingAdmin.isPayrollManager" :profile-id="companyProfileId"
+      <position-form v-if="isAccountingManager" :profile-id="companyProfileId"
         @updateContent="onUpdateRolesModal"></position-form>
       <request-position-form v-else :profile-id="companyProfileId" @closeModal="() => showRolesModal = false" />
     </b-modal>
@@ -233,7 +233,8 @@ import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useModuleBase } from '@/composables/useModuleBase';
 import { getAgencyPersonnel } from '@/api/agencyApi';
 import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from '@/api/agencyCompanyApi';
 import { postAgencyRequest, updateAgencyRequest } from '@/api/agencyRequestApi';
@@ -249,7 +250,8 @@ import LocationForm from '@/components/agency_company/LocationForm.vue';
 
 const route = useRoute();
 const router = useRouter();
-const billingAdmin = useBillingAdmin();
+const { requestBase } = useModuleBase();
+const { isAccountingManager } = useAccountingAdmin();
 
 const directHiring = ref(false);
 
@@ -416,7 +418,7 @@ watch(jobTitle, (val) => {
       durationBreak: agencyRequest.breakIsPaid ? dayjs(`${dayjs().format('YYYY-MM-DD')}T${agencyRequest.durationBreak}`).toDate() : dayjs().startOf('day').toDate(),
       jobPositionRateId: agencyRequest.jobPositionId,
       rate: agencyRequest.workerRate,
-      finishAt: new Date(agencyRequest.finishAt || ''),
+      finishAt: agencyRequest.finishAt ? new Date(agencyRequest.finishAt) : null,
     };
     directHiring.value = agencyRequest.workerSalary ? true : false;
     sameBillingTitle.value = agencyRequest.jobTitle === agencyRequest.billingTitle;
@@ -547,7 +549,7 @@ function createRequest(payload: any) {
   postAgencyRequest(payload)
     .then((response: any) => {
       showAlertSuccess('Request created');
-      router.push('/recruiting/requests/' + response.id);
+      router.push(requestBase.value + '/' + response.id);
       isLoading.value = false;
     })
     .catch((error) => {
@@ -572,7 +574,7 @@ function updateRequest(payload: any) {
     .then((response: any) => {
       isLoading.value = false;
       showAlertSuccess('Request updated');
-      router.push('/recruiting/requests/' + response.id);
+      router.push(requestBase.value + '/' + response.id);
     })
     .catch((error) => {
       isLoading.value = false;

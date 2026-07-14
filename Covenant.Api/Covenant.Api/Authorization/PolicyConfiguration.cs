@@ -6,6 +6,7 @@ namespace Covenant.Api.Authorization
     public static class PolicyConfiguration
     {
         public const string Agency = "Agency";
+        public const string Recruiting = "Recruiting";
         public const string Company = "Company";
         public const string Worker = "Worker";
         public const string Request = "Request";
@@ -20,7 +21,8 @@ namespace Covenant.Api.Authorization
         {
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(Agency, b => b.RequireAuthenticatedUser().RequireRole(CovenantConstants.Role.AgencyAccess));
+                options.AddPolicy(Agency, b => b.RequireAuthenticatedUser().RequireRole(CovenantConstants.Role.AgencyStaff));
+                options.AddPolicy(Recruiting, b => b.RequireAuthenticatedUser().RequireRole(CovenantConstants.Role.RecruitingAccess));
                 options.AddPolicy(Sales, b => b.RequireAuthenticatedUser().RequireRole(CovenantConstants.Role.SalesAccess));
                 options.AddPolicy(Company, b => b.RequireAuthenticatedUser().RequireAssertion(a =>
                     a.User.IsInRole(CovenantConstants.Role.Company) ||
@@ -28,9 +30,9 @@ namespace Covenant.Api.Authorization
                 options.AddPolicy(Worker, b => b.RequireAuthenticatedUser().RequireAssertion(a => a.User.IsInRole(CovenantConstants.Role.Worker)));
                 options.AddPolicy(Covenant, b => b.RequireAuthenticatedUser().RequireClaim("all2job", "all2job"));
                 options.AddPolicy(AgencyOrCompany, b => b.RequireAuthenticatedUser().RequireRole(
-                    [.. CovenantConstants.Role.AgencyAccess, CovenantConstants.Role.Company]));
+                    [.. CovenantConstants.Role.RecruitingAccess, CovenantConstants.Role.Company]));
                 options.AddPolicy(AgencyOrWorker, b => b.RequireAuthenticatedUser().RequireRole(
-                    [.. CovenantConstants.Role.AgencyAccess, CovenantConstants.Role.Worker]));
+                    [.. CovenantConstants.Role.RecruitingAccess, CovenantConstants.Role.Worker]));
                 options.AddPolicy(Accounting, b => b.RequireAuthenticatedUser().RequireAssertion(a => a.User.IsAccountingManager()));
                 options.AddPolicy(SuperAdmin, b => b.RequireAuthenticatedUser().RequireRole(CovenantConstants.Role.SuperAdmin));
                 options.AddPolicy(Request, b => b.RequireAuthenticatedUser());

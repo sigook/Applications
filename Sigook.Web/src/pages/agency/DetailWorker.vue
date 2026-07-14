@@ -116,10 +116,10 @@
         </div>
         </div>
       </b-tab-item>
-      <b-tab-item label="Settings" value="workerSettings" v-if="billingAdmin.isPayrollManager">
+      <b-tab-item label="Settings" value="workerSettings" v-if="isAccountingManager">
         <worker-settings v-if="visitedTabs.includes('workerSettings')" v-model:worker="worker" />
       </b-tab-item>
-      <b-tab-item label="PayStubs" value="wageHistory" v-if="billingAdmin.isPayrollManager">
+      <b-tab-item label="PayStubs" value="wageHistory" v-if="isAccountingManager">
         <wage-history v-if="visitedTabs.includes('wageHistory')" :workerId="worker.id" />
       </b-tab-item>
       <b-tab-item label="Timesheet" value="timeSheetHistory">
@@ -137,7 +137,7 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
 import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
@@ -171,7 +171,7 @@ import otherDocuments from '@/components/worker/WorkerOtherDocumentsDetail.vue';
 
 const route = useRoute();
 const router = useRouter();
-const billingAdmin = useBillingAdmin();
+const { isAccountingManager } = useAccountingAdmin();
 
 const currentJobEx = ref(0);
 const isLoading = ref(true);
@@ -186,7 +186,7 @@ const commentsData = ref<any>({});
 const hasDnuPermission = computed(() => {
   if (!worker.value.dnu) {
     return false;
-  } else if (worker.value.dnu && billingAdmin.isPayrollManager) {
+  } else if (worker.value.dnu && isAccountingManager.value) {
     return false;
   }
   return true;

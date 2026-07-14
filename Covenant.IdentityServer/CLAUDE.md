@@ -25,6 +25,11 @@ Email templates:    Covenant.IdentityServer/Templates/Email/
 Background jobs:    Covenant.IdentityServer/BackgroundServices/
 ```
 
+## Gotchas
+
+- **Pinned to .NET 6.** Upgrading to .NET 8 deadlocks (IdentityServer4 + AutoMapper incompatibility). Do not bump the TargetFramework.
+- **No reference to `Covenant.Common`** (neither project nor NuGet). IdentityServer vendors its own copies of shared types (`Entities/CovenantUser.cs`, `Enums/UserType.cs`, etc.) — changes to Covenant.Common do not flow here automatically; keep vendored copies in sync manually. The pipeline still passes a `PatSigookPackages` build-arg that the Dockerfile no longer consumes (leftover).
+
 ## Commands
 
 ```bash

@@ -12,7 +12,7 @@ Migrated from Vue 2 → Vue 3 in PR #108. Stack: Vite + TypeScript + Pinia + Vue
 ```
 Components:      src/components/{domain}/
 Pages:           src/pages/
-Store (Pinia):   src/store/modules/
+Store (Pinia):   src/stores/          (flat: agency.ts, company.ts, worker.ts, security.ts, app.ts)
 Auth:            src/security/
 i18n:            src/lang/
 Composables:     src/composables/

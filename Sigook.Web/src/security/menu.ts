@@ -1,5 +1,4 @@
 import roles from "@/security/roles";
-import { useBillingAdmin } from "@/composables/useBillingAdmin";
 import type { AgencyDetail } from "@/types/agency";
 
 interface MenuLink {
@@ -20,13 +19,17 @@ export default {
     const result: MenuGroup[] = [];
     for (let i = 0; i < userRoles.length; i++) {
       switch (userRoles[i]) {
-        case roles.agencyPersonnel:
-          result.push(...this.agencyMenu(agency));
-          if (
-            userRoles.some((ur: string) => ur === roles.payroll || ur === roles.admin)
-          ) {
-            result.push(this.agencyBillingMenu(agency));
-          }
+        case roles.superAdmin:
+        case roles.admin:
+          result.push(this.recruitingMenu());
+          result.push(this.salesMenu(agency));
+          result.push(this.accountingMenu(agency));
+          break;
+        case roles.recruiting:
+          result.push(this.recruitingMenu());
+          break;
+        case roles.sales:
+          result.push(this.salesMenu(agency));
           break;
         case roles.company:
           result.push(...this.companyMenu());
@@ -42,8 +45,8 @@ export default {
     result.sort((a, b) => (a.label ?? "").localeCompare(b.label ?? ""));
     return result;
   },
-  agencyMenu(agency: AgencyDetail): MenuGroup[] {
-    const recruiting: MenuGroup = {
+  recruitingMenu(): MenuGroup {
+    return {
       label: "Recruiting",
       icon: "account-search",
       items: [
@@ -79,10 +82,17 @@ export default {
         },
       ],
     };
+  },
+  salesMenu(agency: AgencyDetail): MenuGroup {
     const sales: MenuGroup = {
       label: "Sales",
       icon: "cart-outline",
       items: [
+        {
+          to: "/sales/requests",
+          icon: "calendar-month",
+          label: "Requests",
+        },
         {
           to: "/sales/companies",
           icon: "domain",
@@ -97,9 +107,9 @@ export default {
         label: "Agencies",
       });
     }
-    return [recruiting, sales];
+    return sales;
   },
-  agencyBillingMenu(agency: AgencyDetail): MenuGroup {
+  accountingMenu(agency: AgencyDetail): MenuGroup {
     const accounting: MenuGroup = {
       label: "Accounting",
       icon: "finance",
@@ -175,12 +185,15 @@ export default {
     ];
   },
   getDefaultHomePageUrlBaseOnRoles(userRoles: string[]): string {
-    const { isPayrollManager } = useBillingAdmin();
     for (let i = 0; i < userRoles.length; i++) {
       switch (userRoles[i]) {
-        case roles.agencyPersonnel:
-        case roles.agency:
-          return isPayrollManager.value ? "/recruiting/requests" : "/recruiting/weekly-board";
+        case roles.superAdmin:
+        case roles.admin:
+          return "/recruiting/requests";
+        case roles.recruiting:
+          return "/recruiting/weekly-board";
+        case roles.sales:
+          return "/sales/requests";
         case roles.company:
         case roles.companyUser:
           return "/company-requests";

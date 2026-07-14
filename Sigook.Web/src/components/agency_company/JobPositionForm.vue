@@ -2,13 +2,13 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <div :class="billingAdmin.isPayrollManager ? 'col-sm-12 col-md-6 col-lg-6 col-padding' : 'col-sm-12 col-md-12 col-lg-12 col-padding'">
+      <div :class="isAccountingManager ? 'col-sm-12 col-md-6 col-lg-6 col-padding' : 'col-sm-12 col-md-12 col-lg-12 col-padding'">
         <b-field label="Position" :type="formErrors.jobPosition ? 'is-danger' : ''"
           :message="formErrors.jobPosition || ''">
           <b-input placeholder="Position" v-model="jobPosition" name="positions" />
         </b-field>
       </div>
-      <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div v-if="isAccountingManager" class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Overtime Starts After (hours)" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
           :message="formErrors.overtimeStartsAfter || 'Leave empty to inherit from company/province default'">
           <b-numberinput v-model="overtimeStartsAfter" name="overtimeStartsAfter" controls-alignment="right"
@@ -16,7 +16,7 @@
           </b-numberinput>
         </b-field>
       </div>
-      <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div v-if="isAccountingManager" class="col-sm-12 col-md-4 col-lg-4 col-padding">
         <b-field :label="'Agency Rate'" :type="formErrors.rate ? 'is-danger' : ''"
           :message="formErrors.rate || ''">
           <b-numberinput v-model="rate" name="rate" controls-alignment="right" step="0.01" placeholder="10.00">
@@ -24,16 +24,16 @@
         </b-field>
       </div>
       <div
-        :class="billingAdmin.isPayrollManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
+        :class="isAccountingManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
         <b-field :label="'Worker Rate'" :type="formErrors.workerRate ? 'is-danger' : ''"
           :message="formErrors.workerRate || ''">
-          <b-numberinput v-model="workerRate" :disabled="!billingAdmin.isPayrollManager" name="workerRate"
+          <b-numberinput v-model="workerRate" :disabled="!isAccountingManager" name="workerRate"
             controls-alignment="right" step="0.01" placeholder="10.00">
           </b-numberinput>
         </b-field>
       </div>
       <div
-        :class="billingAdmin.isPayrollManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
+        :class="isAccountingManager ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
         <b-field :label="'Worker Rate Max'" :type="formErrors.workerRateMax ? 'is-danger' : ''"
           :message="formErrors.workerRateMax || ''">
           <b-numberinput v-model="workerRateMax" name="workerRateMax" controls-alignment="right"
@@ -69,14 +69,14 @@ import { ref, computed, watch } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { createAgencyCompanyJobPosition, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 import Shift from "../request/ShiftsForm.vue";
 
 const props = defineProps<{ currentPosition?: any; profileId: any }>();
 const emit = defineEmits<{ (e: 'updateContent'): void }>();
 
-const billingAdmin = useBillingAdmin();
+const { isAccountingManager } = useAccountingAdmin();
 
 const rateRef = ref<number | null>(null);
 const workerRateRef = ref<number | null>(null);

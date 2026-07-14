@@ -1,1100 +1,422 @@
 # Entities and Relationships - Covenant/Sigook Platform
 
-> Code samples in this document are simplified projections of the actual entities. They show the most relevant fields, not every property. The source of truth is `Covenant.Api/Covenant.Common/Entities/`.
+Source of truth: `Covenant.Api/Covenant.Common/Entities/` (enums in `Covenant.Common/Enums/`,
+EF mappings in `Covenant.Api/Covenant.Infrastructure/Configurations/`). This document gives
+purpose, key fields, and relationships per entity — read the class for full member lists.
+Rich entities (Request, Runner, WorkerRequest, Candidate) enforce their rules through domain
+methods returning `Result`/`Result<T>` (`Covenant.Common/Functionals/`); don't mutate their
+state from services when a domain method exists.
 
-## 📊 Main Relationship Diagram
+## Core relationship diagram
 
+```mermaid
+erDiagram
+    User ||--o| Agency : "Agency.UserId"
+    User ||--o| CompanyProfile : "CompanyProfile.CompanyId"
+    User ||--o| WorkerProfile : "WorkerProfile.WorkerId"
+    User ||--o{ AgencyPersonnel : "AgencyPersonnel.UserId"
+    Agency ||--o{ CompanyProfile : "AgencyId"
+    Agency ||--o{ WorkerProfile : "AgencyId"
+    Agency ||--o{ Candidate : "AgencyId"
+    Agency ||--o{ Request : "AgencyId"
+    AgencyPersonnel ||--o{ CompanyProfile : "SalesRepresentativeId"
+    CompanyProfile ||--o{ CompanyProfileJobPositionRate : ""
+    User ||--o{ Request : "Request.CompanyId (company-side user)"
+    CompanyProfileJobPositionRate ||--o{ Request : "JobPositionRateId"
+    Request ||--o{ WorkerRequest : ""
+    Request ||--o{ RequestApplicant : ""
+    Request ||--o{ Runner : ""
+    Request ||--o{ RequestRecruiter : ""
+    RequestRecruiter ||--o{ WorkerDispatch : ""
+    User ||--o{ WorkerRequest : "WorkerRequest.WorkerId"
+    WorkerRequest ||--o{ TimeSheet : ""
+    TimeSheet ||--o| TimeSheetTotal : "billing totals"
+    TimeSheet ||--o| TimeSheetTotalPayroll : "payroll totals"
+    WorkerProfile ||--o{ PayStub : ""
+    CompanyProfile ||--o{ Invoice : "Invoice.CompanyId"
+    CompanyProfile ||--o{ InvoiceUSA : "CompanyProfileId"
+    TimeSheetTotal ||--o{ InvoiceTotal : ""
 ```
-                    ┌──────────────────┐
-                    │     AGENCY       │
-                    │ ──────────────── │
-                    │ Id               │
-                    │ FullName         │
-                    │ BusinessNumber   │
-                    │ HstNumber        │
-                    │ AgencyType       │
-                    └────┬─────────┬───┘
-                         │         │
-          ┌──────────────┘         └──────────────┐
-          │ manages                        employs │
-          ▼                                        ▼
-┌──────────────────────┐               ┌──────────────────────┐
-│  COMPANYPROFILE      │               │   WORKERPROFILE      │
-│ ──────────────────── │               │ ──────────────────── │
-│ Id                   │               │ Id                   │
-│ AgencyId (FK)        │               │ AgencyId (FK)        │
-│ BusinessName         │               │ FirstName, LastName  │
-│ CompanyStatus        │               │ SocialInsurance      │
-└────┬─────────────────┘               │ ApprovedToWork       │
-     │                                 │ Dnu, IsContractor    │
-     │ creates                         └──────────┬───────────┘
-     │                                            │
-     │                              ┌─────────────┘
-     │                              │ has user
-     │                              │
-     ▼                              ▼
-┌──────────────────────┐    ┌─────────────────┐
-│      REQUEST         │    │      USER       │
-│ ──────────────────── │    │ ─────────────── │
-│ Id                   │    │ Id              │
-│ CompanyId (FK)       │    │ Email           │
-│ AgencyId (FK)        │    │ Enabled         │
-│ JobTitle             │    └─────────────────┘
-│ WorkersQuantity      │
-│ Status               │
-│ JobLocationId (FK)   │
-└────┬─────────────────┘
-     │
-     │ has many
-     │
-     ▼
-┌──────────────────────────────┐
-│      WORKERREQUEST           │
-│ ──────────────────────────── │
-│ Id                           │
-│ RequestId (FK)               │
-│ WorkerId (FK)                │
-│ WorkerRequestStatus          │
-│ StartWorking                 │
-└────┬─────────────────────────┘
-     │
-     │ has many
-     │
-     ▼
-┌──────────────────────────────┐
-│       TIMESHEET              │
-│ ──────────────────────────── │
-│ Id                           │
-│ WorkerRequestId (FK)         │
-│ Date                         │
-│ TimeIn, TimeOut              │
-│ ClockIn, ClockOut            │
-│ TimeInApproved, TimeOutApproved│
-│ IsHoliday                    │
-└────┬─────────────────────────┘
-     │
-     │ has one
-     │
-     ▼
-┌──────────────────────────────┐
-│     TIMESHEETTOTAL           │
-│ ──────────────────────────── │
-│ Id                           │
-│ TimeSheetId (FK)             │
-│ TotalHours                   │
-│ RegularHours                 │
-│ OvertimeHours                │
-│ NightShiftHours              │
-│ HolidayHours                 │
-│ AccumulateWeekHours          │
-└──────────────────────────────┘
 
-┌──────────────────────────────┐
-│        PAYSTUB               │
-│ ──────────────────────────── │
-│ Id                           │
-│ WorkerProfileId (FK)         │
-│ PayStubNumber                │
-│ RegularWage                  │
-│ GrossPayment                 │
-│ Vacations                    │
-│ Cpp, Ei                      │
-│ FederalTax, ProvincialTax    │
-│ TotalPaid                    │
-└──────────────────────────────┘
+### The `User` anchor (critical gotcha)
 
-┌──────────────────────────────┐
-│        INVOICE               │
-│ ──────────────────────────── │
-│ Id                           │
-│ CompanyProfileId (FK)        │
-│ InvoiceNumber                │
-│ SubTotal                     │
-│ Hst                          │
-│ TotalNet                     │
-└──────────────────────────────┘
-```
+`Covenant.Common/Entities/User.cs` is minimal — `Id`, `Email`, `Enabled`, `LastModified`.
+Credentials and roles live in Covenant.IdentityServer (same user id). Several "obvious" FKs
+point at **User**, not at the profile entity:
+
+| FK | Points to | Not to |
+|---|---|---|
+| `Request.CompanyId` | company-side `User` | `CompanyProfile` |
+| `WorkerRequest.WorkerId` | worker `User` | `WorkerProfile` |
+| `CompanyProfile.CompanyId` | company `User` | — |
+| `WorkerProfile.WorkerId` | worker `User` | — |
+| `CompanyUser.CompanyId` / `.UserId` | company `User` / member `User` | — |
+
+To get from a `Request` to its `CompanyProfile` you join through the user
+(`CompanyProfile.CompanyId == Request.CompanyId`).
+
+`UserType` enum (`Covenant.Common/Enums/UserType.cs`): `Worker=1, Company, CompanyUser,
+AgencyPersonnel, Agency, Candidate`.
 
 ---
 
-## 🏢 AGENCY Module
+## Agency domain — `Entities/Agency/`
 
-### Agency
+### Agency (`Agency.cs`)
 
-**Table:** `Agency`
-**Location:** `Covenant.Common/Entities/Agency/Agency.cs`
+The staffing agency (tenant root). Key fields: `Id`, `NumberId`, `UserId` → User, `FullName`,
+`HstNumber`, `BusinessNumber`, `AgencyType` (`Master=1, Regular=2, BusinessPartner=3` —
+`Enums/AgencyType.cs`), `AgencyParentId` (self-FK for sub-agencies), `RecruitmentEmail`, `Logo`
+(CovenantFile). Children: `Locations` (AgencyLocation), `ContactInformation`, `WsibGroup`.
+Computed `BillingAddress` = first location with `IsBilling`.
 
-```csharp
-public class Agency
-{
-    public Guid Id { get; set; }
-    public string FullName { get; set; }                 // Business name
-    public string BusinessNumber { get; set; }           // Tax registration
-    public string HstNumber { get; set; }                // HST/GST number
-    public AgencyType AgencyType { get; set; }           // Master/Regular/BusinessPartner
-    public string Email { get; set; }
-    public string PhoneNumber { get; set; }
-    public string Website { get; set; }
-    public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
+### AgencyLocation / AgencyContactInformation / AgencyWsibGroup
 
-    // Navigation properties
-    public ICollection<AgencyLocation> Locations { get; set; }
-    public ICollection<AgencyPersonnel> Personnel { get; set; }
-    public ICollection<CompanyProfile> Companies { get; set; }
-    public ICollection<WorkerProfile> Workers { get; set; }
-    public ICollection<Request> Requests { get; set; }
-}
-```
+Join/child tables: `AgencyLocation` links Agency↔Location with `IsBilling`;
+`AgencyWsibGroup` links to `WsibGroup.cs` (WSIB insurance classification).
 
-**AgencyType Enum:**
-```csharp
-public enum AgencyType
-{
-    Master = 1,           // Main agency with sub-agencies
-    Regular = 2,          // Standard independent agency
-    BusinessPartner = 3   // Partner agency with limited access
-}
-```
+### AgencyPersonnel (`AgencyPersonnel.cs`)
+
+Staff member of an agency: `Id`, `AgencyId`, `UserId` → User, `Name`, `IsPrimary`. **There is no
+`PersonnelType` field** — what a person can do is determined by their IdentityServer role
+(recruiting/sales/admin). Referenced by `CompanyProfile.SalesRepresentativeId` (sales portfolio)
+and `RequestRecruiter.RecruiterId` (weekly board). Unique index `(AgencyId, UserId)`.
 
 ---
 
-### AgencyLocation
+## Company domain — `Entities/Company/`
 
-**Table:** `AgencyLocation`
+### CompanyProfile (`CompanyProfile.cs`)
 
-```csharp
-public class AgencyLocation
-{
-    public Guid Id { get; set; }
-    public Guid AgencyId { get; set; }
-    public string Name { get; set; }
-    public Guid LocationId { get; set; }              // FK to Location
-    public bool IsBillingAddress { get; set; }
-    public bool IsActive { get; set; }
+The client company, always owned by an agency. Key fields:
 
-    // Navigation
-    public Agency Agency { get; set; }
-    public Location Location { get; set; }
-}
-```
+- Identity: `Id`, `NumberId`, `CompanyId` → User, `AgencyId`, `FullName`, `BusinessName`
+- Sales: `CompanyStatus` (`Lead=1, Potential, Prospect, Quoted, Client, Blocked, Inactive=7` —
+  `Enums/CompanyStatus.cs`), `SalesRepresentativeId` → AgencyPersonnel
+- Billing/payroll behavior: `PaidHolidays`, `OvertimeStartsAfter` (TimeSpan, default 44h,
+  minimum 40h), `RequiredPaymentMethod`
+- Access: `RequiresPermissionToSeeRequests`, `Active`
+- Misc: `Industry` (CompanyProfileIndustry), `VaccinationRequired(+Comments)`, `About`,
+  `InternalInfo`, audit fields
 
----
+Unique index `(CompanyId, AgencyId)`.
 
-### AgencyPersonnel (Employees)
+### CompanyProfileJobPositionRate (`CompanyProfileJobPositionRate.cs`)
 
-**Table:** `AgencyPersonnel`
+**Drives all pricing.** Fields: `JobPosition` (string), `Rate` (the AgencyRate billed to the
+company), `WorkerRate` (paid to the worker; must be ≤ `Rate`, both 0.01–1000),
+`WorkerRateMin`/`WorkerRateMax`, `OvertimeStartsAfter` (nullable per-position override),
+`ShiftId` → Shift, `Description`, `IsDeleted` (soft delete). Markup = `Rate − WorkerRate`.
+There are **no** night-shift/holiday/overtime multiplier columns and no `Currency` column here —
+multipliers come from global `Covenant.Common/Configuration/Rates.cs` config at
+invoice/pay-stub time.
 
-```csharp
-public class AgencyPersonnel
-{
-    public Guid Id { get; set; }
-    public Guid AgencyId { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Email { get; set; }
-    public string PhoneNumber { get; set; }
-    public PersonnelType Type { get; set; }           // Recruiter, SalesRep, etc.
-    public bool IsActive { get; set; }
+### CompanyProfile children
 
-    // Navigation
-    public Agency Agency { get; set; }
-}
-```
-
-**PersonnelType Enum:**
-```csharp
-public enum PersonnelType
-{
-    Recruiter = 1,
-    SalesRepresentative = 2,
-    AccountManager = 3,
-    Administrator = 4
-}
-```
+| Entity | Purpose / key fields |
+|---|---|
+| `CompanyProfileLocation` | Company↔Location + `IsBilling` |
+| `CompanyProfileContactPerson` | contact: name parts, `Position`, `MobileNumber`, `OfficeNumber(+Ext)`, `Email` |
+| `CompanyProfileDocument` | Company↔CovenantFile + `DocumentType` (`Enums/CompanyProfileDocumentType.cs`), audit |
+| `CompanyProfileHoliday` | per-company stat-holiday billing rate: `HolidayId` → Holiday, `StatPaidCompany` (decimal) |
+| `CompanyProfileIndustry` | `IndustryId` (catalog) or free-text `OtherIndustry` |
+| `CompanyProfileInvoiceNotes` | `HtmlNotes` printed on invoices |
+| `CompanyProfileInvoiceRecipient` | extra invoice email recipients: `Email`, `Name` |
+| `CompanyProfileNote` | Company↔CovenantNote (shared note entity with soft delete) |
+| `CompanyUser` | additional company-side login: `CompanyId` → User (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyId, UserId)` |
 
 ---
 
-## 🏢 COMPANY Module
+## Worker domain — `Entities/Worker/`
 
-### CompanyProfile
+### WorkerProfile (`WorkerProfile.cs`)
 
-**Table:** `CompanyProfile`
-**Location:** `Covenant.Common/Entities/Company/CompanyProfile.cs`
+Registered worker, owned by an agency. Key fields:
 
-```csharp
-public class CompanyProfile
-{
-    public Guid Id { get; set; }
-    public Guid AgencyId { get; set; }
-    public string BusinessName { get; set; }
-    public string DbaName { get; set; }                    // "Doing Business As"
-    public string BusinessNumber { get; set; }
-    public string HstNumber { get; set; }
-    public CompanyStatus CompanyStatus { get; set; }
-    public string Email { get; set; }
-    public string PhoneNumber { get; set; }
-    public string Website { get; set; }
-    public bool RequiresPermissionToSeeRequests { get; set; }
-    public DateTime CreatedAt { get; set; }
+- Identity: `Id`, `NumberId` (sequential — **canonical source for the worker number on pay stubs
+  and reports**), `WorkerId` → User, `AgencyId`; unique index `(WorkerId, AgencyId)`
+- Person: `FirstName`/`MiddleName`/`LastName`/`SecondLastName` (computed `FullName`), `BirthDay`,
+  `GenderId`, `HasVehicle`, `LocationId`
+- SIN: `SocialInsurance` (+ `MaskedSocialInsurance`), `SocialInsuranceExpire`, `DueDate`,
+  `SocialInsuranceFileId`
+- Documents: two identification slots (`IdentificationNumber1/2` + type + file),
+  `PoliceCheckBackGround`, `Resume`, `OtherDocuments`
+- Status flags: `ApprovedToWork` (gate to be assignable), `Dnu` (do not use),
+  `IsSubcontractor`, `IsContractor`, `PunchCardId`, `ExternalId`
+- Emergency/health: `ContactEmergency*`, `HealthProblem` fields
 
-    // Navigation properties
-    public Agency Agency { get; set; }
-    public ICollection<CompanyProfileLocation> Locations { get; set; }
-    public ICollection<CompanyProfileJobPositionRate> JobPositionRates { get; set; }
-    public ICollection<CompanyProfileContactPerson> ContactPersons { get; set; }
-    public ICollection<CompanyUser> CompanyUsers { get; set; }
-    public ICollection<Request> Requests { get; set; }
-    public ICollection<Invoice> Invoices { get; set; }
-}
-```
+Child collections (all `WorkerProfile{X}.cs` in the same folder): Skills, Languages, Licenses,
+Certificates, JobExperiences, Availabilities/AvailabilityDays/AvailabilityTimes,
+LocationPreferences, Notes, OtherDocuments.
 
-**CompanyStatus Enum:**
-```csharp
-public enum CompanyStatus
-{
-    Lead = 1,          // Initial contact
-    Potential = 2,     // Qualified lead
-    Prospect = 3,      // In discussions
-    Quoted = 4,        // Proposal sent
-    Client = 5,        // Active client
-    Blocked = 6,       // Temporarily suspended
-    Inactive = 7       // No longer active
-}
-```
+### WorkerProfileTaxCategory (`WorkerProfileTaxCategory.cs`)
+
+Per-worker tax claim codes (`Enums/TaxCategory.cs`) used by payroll deduction lookups;
+subcontractor categories zero out CPP/EI/tax.
+
+### WorkerProfileHoliday (`WorkerProfileHoliday.cs`)
+
+Links a worker to a public `Holiday` for not-worked stat-holiday pay eligibility. Unique
+`(WorkerProfileId, HolidayId)`.
+
+### WorkerComment (`WorkerComment.cs`)
+
+Comments about a worker visible to agency/company (see Agency/Company WorkerComment controllers).
 
 ---
 
-### CompanyProfileLocation
+## Candidate domain — `Entities/Candidate/`
 
-**Table:** `CompanyProfileLocation`
+Pre-registration prospect managed by recruiters — no `User`, no login, minimal data.
 
-```csharp
-public class CompanyProfileLocation
-{
-    public Guid Id { get; set; }
-    public Guid CompanyProfileId { get; set; }
-    public string Name { get; set; }
-    public Guid LocationId { get; set; }
-    public bool IsActive { get; set; }
+### Candidate (`Candidate.cs`)
 
-    // Navigation
-    public CompanyProfile CompanyProfile { get; set; }
-    public Location Location { get; set; }
-}
-```
+`Id`, `NumberId` (long), `AgencyId`, `Name`, `Email`, `Address`, `PostalCode`, `GenderId`,
+`HasVehicle`, `SourceId` → Source (where the candidate came from), `Recruiter` (string),
+`ResidencyStatus`, `Dnu`, `CreatedAt`. Domain methods `AddSkill`/`AddPhone`/`AddEmail`
+(duplicate-skill guard, phone required).
 
----
+Children:
 
-### CompanyProfileJobPositionRate
+| Entity | Shape |
+|---|---|
+| `CandidatePhone` | `Id`, `CandidateId`, `PhoneNumber` |
+| `CandidateSkill` | `Id`, `CandidateId`, `Skill` (created via `CandidateSkill.Create`) |
+| `CandidateDocument` | join Candidate↔`CovenantFile` (`CandidateId`, `DocumentId`) |
+| `CandidateNote` | join Candidate↔`CovenantNote` (`CandidateId`, `NoteId`) |
 
-**Table:** `CompanyProfileJobPositionRate`
-
-**CRITICAL:** Defines the rates that drive pricing.
-
-```csharp
-public class CompanyProfileJobPositionRate
-{
-    public Guid Id { get; set; }
-    public Guid CompanyProfileId { get; set; }
-    public string JobTitle { get; set; }
-
-    // Rates
-    public decimal WorkerRate { get; set; }            // Paid to the worker
-    public decimal AgencyRate { get; set; }            // Charged to the company
-    // Markup = AgencyRate - WorkerRate (profit)
-
-    // Shift premiums (multipliers)
-    public decimal? NightShiftRate { get; set; }       // e.g., 1.15 (15% extra)
-    public decimal? HolidayRate { get; set; }          // e.g., 1.5 (50% extra)
-    public decimal? OvertimeRate { get; set; }         // e.g., 1.5 (time and a half)
-
-    public string Currency { get; set; }               // CAD, USD
-    public bool IsActive { get; set; }
-
-    // Navigation
-    public CompanyProfile CompanyProfile { get; set; }
-}
-```
+A Candidate reaches a job order through `RequestApplicant` or `Runner` (below), which reference
+the candidate by FK — personal data is never copied.
 
 ---
 
-### CompanyProfileContactPerson
+## Request domain — `Entities/Request/`
 
-**Table:** `CompanyProfileContactPerson`
+### Request (`Request.cs`)
 
-```csharp
-public class CompanyProfileContactPerson
-{
-    public Guid Id { get; set; }
-    public Guid CompanyProfileId { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Email { get; set; }
-    public string PhoneNumber { get; set; }
-    public string Position { get; set; }
-    public bool IsPrimaryContact { get; set; }
+A job order. Key fields:
 
-    // Navigation
-    public CompanyProfile CompanyProfile { get; set; }
-}
-```
+- `Id`, `NumberId`, `AgencyId`, `CompanyId` → **User** (company-side user, not CompanyProfile)
+- Job: `JobTitle`, `BillingTitle`, `Description`, `Requirements`, `InternalRequirements`,
+  `Responsibilities`, `JobLocationId` → Location, `JobIsOnBranchOffice`
+- Rates: `JobPositionRateId` → CompanyProfileJobPositionRate, plus per-request overrides
+  `WorkerRate`/`AgencyRate`/`WorkerSalary`
+- Capacity: `WorkersQuantity` (min 1), `WorkersQuantityWorking` (derived from booked workers)
+- Timing: `StartAt`, `FinishAt`, `IsAsap`, `DurationTerm` (`LongTerm=0, ShortTerm=1`),
+  `EmploymentType` (`FullTime=1, PartTime, Contractor, Temporary`), `ShiftId` → Shift,
+  `DurationBreak` (max 1h), `BreakIsPaid`, `HolidayIsPaid` (default true),
+  `PunchCardOptionEnabled`
+- Extras: `Incentive(+Description)`, `InvitationSentItAt` (resend throttle: 7 days), `CreatedBy`
 
----
+**`Status` (`RequestStatus`: `Open=1, Filled=3, Cancelled=4`) is the single source of truth —
+there is no `IsOpen` flag.** Transitions happen only inside `AddWorker`, `RejectWorker`,
+`Cancel`, `Open`, `IncreaseWorkersQuantityByOne`, `DecreaseWorkersQuantityByOne`. Full rules:
+[REQUEST_STATE_MANAGEMENT.md](../business/REQUEST_STATE_MANAGEMENT.md).
 
-### CompanyUser
+Child/related entities in the same folder: `RequestNote`, `RequestSkill`, `RequestReportTo`,
+`RequestRequestedBy`, `RequestCompanyUser` (which company users may see the request),
+`RequestComission`, `RequestCancellationDetail`, `RequestFinalizationDetail`
+(+ root-level `ReasonCancellationRequest`).
 
-**Table:** `CompanyUser`
+### WorkerRequest (`WorkerRequest.cs`)
 
-**Purpose:** Links a User to a CompanyProfile for access control.
+Assignment of a worker to a request. `Id`, `RequestId`, `WorkerId` → **User**,
+`WorkerRequestStatus` (`Enums/WorkerRequestStatus.cs`: **`Rejected = 2`, `Booked = 3`** — there
+is no value 1), `StartWorking`, `WeekStartWorking` (computed Sunday of the start week),
+`CreatedBy`/`RejectedBy`/`RejectedAt`/`RejectComments`, `LimitDateToAddTimeSheet`
+(= RejectedAt + 1 month). Owns the `TimeSheets` collection and `WorkerRequestNote`s. Rebooking a
+rejected worker reuses the same row (`Book()` clears rejection fields). Unique
+`(RequestId, WorkerId)`.
 
-```csharp
-public class CompanyUser
-{
-    public Guid Id { get; set; }
-    public Guid CompanyProfileId { get; set; }
-    public Guid UserId { get; set; }
-    public bool CanSeeRequests { get; set; }
-    public bool IsActive { get; set; }
+### RequestApplicant (`RequestApplicant.cs`)
 
-    // Navigation
-    public CompanyProfile CompanyProfile { get; set; }
-    public User User { get; set; }
-}
-```
+Someone who applied/was submitted to a request: `RequestId` + **either** `WorkerProfileId`
+**or** `CandidateId` (mutually exclusive — factories `CreateWithWorker` / `CreateWithCandidate`),
+`CreatedBy`, `Comments`. Managed by `Controllers/Sigook/Agency/Requests/ApplicantsController.cs`;
+`RequestApplicantConsumer` reacts to new-applicant bus messages.
 
----
+### RequestSource (`RequestSource.cs`)
 
-## 👷 WORKER Module
+M:N Request↔`Source` (job board posting), composite PK `(RequestId, SourceId)`. Only sources
+with `Source.IsAvailableForRequests = true` are selectable as job boards
+(`GET api/Catalog/source/requests`).
 
-### WorkerProfile
+### RequestRecruiter + WorkerDispatch (weekly board)
 
-**Table:** `WorkerProfile`
-**Location:** `Covenant.Common/Entities/Worker/WorkerProfile.cs`
+`RequestRecruiter.cs`: assigns an `AgencyPersonnel` recruiter to a request, optionally for one
+`WorkDate` (day cell on the recruiting weekly board). Max 10 recruiters per request per day;
+unique `(RequestId, RecruiterId, WorkDate)`. Managed through `Request.AddRecruiter` /
+`RemoveRecruiter` / `MoveRecruiterAssignment` and `WeeklyBoardService` /
+`Controllers/Sigook/Agency/Recruiting/WeeklyBoardController.cs`.
 
-```csharp
-public class WorkerProfile
-{
-    public Guid Id { get; set; }
-    public int NumberId { get; set; }                  // Sequential worker number
-    public Guid AgencyId { get; set; }
-    public Guid? UserId { get; set; }                  // Link to User (authentication)
+`WorkerDispatch.cs`: worker dispatched under a recruiter assignment — `RequestRecruiterId`,
+`WorkerProfileId`, `CreatedBy`; unique `(RequestRecruiterId, WorkerProfileId)`; added via
+`RequestRecruiter.AddDispatch` (duplicate-safe).
 
-    // Personal Info
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public DateTime BirthDay { get; set; }
-    public Guid GenderId { get; set; }
-    public string ProfileImage { get; set; }           // URL to Azure Storage
+### Runner (`Entities/Request/Runners/`)
 
-    // Identification
-    public string SocialInsurance { get; set; }        // SIN (Canada) or SSN (USA)
-    public Guid? SocialInsuranceFileId { get; set; }
-    public DateTime? SocialInsuranceDueDate { get; set; }
-    public string IdentificationNumber1 { get; set; }
-    public Guid? IdentificationType1 { get; set; }
-    public Guid? IdentificationType1FileId { get; set; }
-    public string IdentificationNumber2 { get; set; }
-    public Guid? IdentificationType2 { get; set; }
-    public Guid? IdentificationType2FileId { get; set; }
+Recruiting pipeline for a person actively submitted to one request. `Runner.cs`:
+`Id`, `NumberId` (long), `AgencyId`, `RequestId`, `WorkerProfileId` XOR `CandidateId`,
+`Type` (`RunnerType`: `Active=1` applied on own initiative, `Passive=2` sourced),
+`Status` (`RunnerStatus`, stored as **text** via `EnumToStringConverter`:
+`SentToClient=1, InterviewScheduled, InterviewRescheduled, NoLongerAvailable, NoShow,
+WaitingForInterviewFeedback, WaitingForFinalDecision, Rejected, InOnboardingProcess, Hired=10`),
+`StartDate` (required and set only when hiring), `CreatedBy`/`UpdatedBy` (acting user Guid).
 
-    // Contact Info
-    public string MobileNumber { get; set; }
-    public string Phone { get; set; }
-    public Guid? LocationId { get; set; }
-    public bool HasVehicle { get; set; }
+Entity-enforced constraints:
 
-    // Status Flags
-    public bool ApprovedToWork { get; set; }           // Critical: can the worker work?
-    public bool Dnu { get; set; }                      // Do Not Use
-    public bool IsSubcontractor { get; set; }
-    public bool IsContractor { get; set; }
+- Created as `SentToClient` with an initial `RunnerStatusHistory` row; every status change
+  **appends** a history row (never overwrites).
+- Any→any transitions allowed, **except `Hired` is terminal**; moving to `Hired` requires
+  `StartDate`.
+- Same person cannot be a runner twice on one request (`IRunnerRepository.RunnerExists`).
+- Interviews (`RunnerInterview.cs`: `ScheduledDate`, `InterviewType` Phone/Video/Onsite,
+  `Interviewer`, `InterviewStatus` Scheduled/Rescheduled, `Feedback`, `RescheduleCount`) can be
+  added/rescheduled only in `InterviewScheduled`/`InterviewRescheduled`; rescheduling
+  auto-transitions to `InterviewRescheduled`.
 
-    // Tax Info
-    public Guid? WorkerProfileTaxCategoryId { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-
-    // Navigation properties
-    public Agency Agency { get; set; }
-    public User User { get; set; }
-    public Location Location { get; set; }
-    public WorkerProfileTaxCategory TaxCategory { get; set; }
-    public ICollection<WorkerSkill> Skills { get; set; }
-    public ICollection<WorkerLanguage> Languages { get; set; }
-    public ICollection<WorkerLicense> Licenses { get; set; }
-    public ICollection<WorkerCertificate> Certificates { get; set; }
-    public ICollection<WorkerJobExperience> JobExperiences { get; set; }
-    public ICollection<WorkerAvailability> Availabilities { get; set; }
-    public ICollection<WorkerLocationPreference> LocationPreferences { get; set; }
-    public ICollection<WorkerRequest> WorkerRequests { get; set; }
-    public ICollection<PayStub> PayStubs { get; set; }
-}
-```
-
-> **Note:** `WorkerProfile.NumberId` (not `PayStub`) is the canonical source for the worker's sequential number used in pay stubs and reports.
+API: `Controllers/Sigook/Agency/Requests/RunnersController.cs`
+(`api/agency/requests/{requestId}/Runners`). Business narrative: WORKFLOWS.md §6.
 
 ---
 
-### WorkerProfileTaxCategory
+## Timesheet entities — `Entities/Request/`
 
-**Table:** `WorkerProfileTaxCategory`
+### TimeSheet (`TimeSheet.cs`)
 
-**Purpose:** Tax claim codes for tax calculations.
+One worker-day. `WorkerRequestId` FK; one row per `(WorkerRequest, Date)` (guarded by
+`WorkerRequest.AddTimeSheet`).
 
-```csharp
-public class WorkerProfileTaxCategory
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public int FederalCategory { get; set; }           // Federal claim code (1-10)
-    public int ProvincialCategory { get; set; }        // Provincial claim code (varies)
+- Punch card: `ClockIn`/`ClockOut` + `ClockInRounded`/`ClockOutRounded` (3-min wait to clock
+  out, 5-min re-clock-out window)
+- Normalized: `TimeIn`/`TimeOut` (same-date normalization — see class doc comment)
+- Agency approval: `TimeInApproved`/`TimeOutApproved`
+- Flags/adjustments: `IsHoliday`, `MissingHours`/`MissingHoursOvertime` +
+  `MissingRateWorker`/`MissingRateAgency`, `DeductionsOthers`, `BonusOrOthers`,
+  `Reimbursements` (each with a `*Description`), `Comment`
 
-    // Navigation
-    public WorkerProfile WorkerProfile { get; set; }
-}
-```
+### TimeSheetTotal vs TimeSheetTotalPayroll
 
----
+Two parallel 1:1 hour-breakdown rows per timesheet, same shape (`ITimeSheetTotal`):
+`TotalHours`, `RegularHours`, `OtherRegularHours`, `OvertimeHours`, `NightShiftHours`,
+`HolidayHours`, `AccumulateWeekHours` (weekly OT accumulator).
 
-### WorkerSkill / WorkerLanguage / WorkerLicense / WorkerCertificate / WorkerAvailability / WorkerLocationPreference
+- `TimeSheetTotal` — **billing** hours; consumed by `InvoiceTotal`/`InvoiceUSATimeSheetTotal`.
+- `TimeSheetTotalPayroll` — **payroll** hours; consumed by `PayStubWageDetail`. Unique on
+  `TimeSheetId`.
 
-Standard child tables linking a `WorkerProfile` to its skills, languages, licenses, certificates, available days/hours, and preferred cities. Each follows the same shape: a primary key, a `WorkerProfileId` foreign key, and the relevant attributes (e.g. `LicenseName`, `ExpiryDate`, `Proficiency`, etc.).
+Night shift is deprecated: `NightShiftHours` exists but pay stubs and invoices compute it as 0.
 
-See `Covenant.Common/Entities/Worker/` for the full definitions.
-
----
-
-## 📋 REQUEST Module
-
-### Request
-
-**Table:** `Request`
-**Location:** `Covenant.Common/Entities/Request/Request.cs`
-
-```csharp
-public class Request
-{
-    public Guid Id { get; set; }
-    public int NumberId { get; set; }
-    public Guid AgencyId { get; set; }
-    public Guid CompanyId { get; set; }                // FK to User (the company user)
-
-    // Job Details
-    public string JobTitle { get; set; }
-    public string BillingTitle { get; set; }
-    public string Description { get; set; }
-    public string Requirements { get; set; }
-    public string InternalRequirements { get; set; }
-    public string Responsibilities { get; set; }
-
-    // Workers
-    public int WorkersQuantity { get; set; }           // How many workers needed
-    public int WorkersQuantityWorking { get; private set; } // Currently assigned
-
-    // Timing
-    public DateTime? StartAt { get; set; }
-    public DateTime? FinishAt { get; set; }
-    public bool IsAsap { get; set; }
-    public DurationTerm DurationTerm { get; set; }     // LongTerm, ShortTerm
-
-    // Employment
-    public EmploymentType EmploymentType { get; set; } // FullTime, PartTime, Contractor
-
-    // Location
-    public Guid JobLocationId { get; set; }
-    public Location JobLocation { get; set; }
-    public bool JobIsOnBranchOffice { get; set; }
-
-    // Rates
-    public Guid? JobPositionRateId { get; set; }
-    public CompanyProfileJobPositionRate JobPositionRate { get; set; }
-    public decimal? WorkerRate { get; set; }
-    public decimal? AgencyRate { get; set; }
-    public decimal? WorkerSalary { get; set; }
-
-    // Shift
-    public Guid? ShiftId { get; set; }
-    public Shift Shift { get; set; }
-    public TimeSpan DurationBreak { get; set; }
-    public bool BreakIsPaid { get; set; }
-    public bool HolidayIsPaid { get; set; }
-    public bool PunchCardOptionEnabled { get; set; }
-
-    // Incentive
-    public decimal? Incentive { get; set; }
-    public string IncentiveDescription { get; set; }
-
-    // Status (single source of truth — no IsOpen flag)
-    public RequestStatus Status { get; private set; }
-
-    // Derived
-    public bool CanBeUpdated => Status != RequestStatus.Cancelled;
-    public bool IsAvailableToApply => Status == RequestStatus.Open;
-
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-
-    // Navigation
-    public Agency Agency { get; set; }
-    public User Company { get; set; }                  // The user that owns this request on the company side
-    public IReadOnlyCollection<WorkerRequest> Workers { get; }
-    public IReadOnlyCollection<RequestRecruiter> Recruiters { get; }
-}
-```
-
-> The `Request` entity exposes only `Status` — there is **no** `IsOpen` property. State transitions happen automatically through methods such as `AddWorker`, `RejectWorker`, `Cancel`, `Open`, `IncreaseWorkersQuantityByOne`, and `DecreaseWorkersQuantityByOne`. See `.docs/business/REQUEST_STATE_MANAGEMENT.md` for the full transition rules.
->
-> The link from `Request.CompanyId` is to the company-side `User`, not directly to `CompanyProfile`.
-
-**RequestStatus Enum:**
-```csharp
-public enum RequestStatus
-{
-    Open = 1,        // Active request with available capacity
-    Filled = 3,      // All positions filled
-    Cancelled = 4    // Cancelled
-}
-```
-
-**DurationTerm Enum:**
-```csharp
-public enum DurationTerm
-{
-    LongTerm = 1,       // Permanent or long contract
-    ShortTerm = 2       // Temporary, short contract
-}
-```
-
-**EmploymentType Enum:**
-```csharp
-public enum EmploymentType
-{
-    FullTime = 1,
-    PartTime = 2,
-    Contractor = 3,
-    Temporary = 4
-}
-```
+Also: `TimeSheetPhoto` (punch-card photo evidence), `TimesheetHistory` (keyless read model for
+a worker's timesheet history view).
 
 ---
 
-### WorkerRequest (Assignment)
+## Accounting — `Entities/Accounting/`
 
-**Table:** `WorkerRequest`
+### PayStub (`Accounting/PayStub/PayStub.cs`)
 
-**Purpose:** Links a Worker to a Request (assignment).
+Weekly pay stub for a worker. `WorkerProfileId` FK, `NumberId` (long), `PayStubNumber`
+(**string**), `PayStubNumberId`, `Position`, period (`DateWorkBegins`/`DateWorkEnd`,
+`PaymentDate`, `WeekEnding`), earnings (`RegularWage`, `GrossPayment`, `Vacations` — 4% Canada,
+`TotalEarnings`), deductions (`Cpp`, `Ei`, `FederalTax`, `ProvincialTax`, `TotalDeductions`),
+`TotalPaid`. The worker's display number comes from `WorkerProfile.NumberId`, not from PayStub.
+PDFs are cached in blob storage — regenerate after render changes.
 
-```csharp
-public class WorkerRequest
-{
-    public Guid Id { get; set; }
-    public Guid RequestId { get; set; }
-    public Guid WorkerId { get; set; }
-    public WorkerRequestStatus WorkerRequestStatus { get; set; }
-    public DateTime StartWorking { get; set; }
-    public int WeekStartWorking { get; set; }
-    public string RejectComments { get; set; }
-    public DateTime CreatedAt { get; set; }
+| Child | Purpose |
+|---|---|
+| `PayStubItem` | line item: `Description`, `Quantity`, `UnitPrice`, `Total`, `Type` (`Enums/PayStubItemType.cs`: `Regular=0, OtherRegular, Overtime, StatutoryHoliday, StatutoryWorkedHoliday, NightShift, Missing, MissingOvertime, Vacations, Other, Reimbursement=10`) |
+| `PayStubWageDetail` | per-timesheet wage amounts (`Regular`, `OtherRegular`, `Overtime`, `Holiday`, `Missing`, `MissingOvertime`, `NightShift`, `WorkerRate`), FK `TimeSheetTotalId` → **TimeSheetTotalPayroll** |
+| `PayStubPublicHoliday` | not-worked stat holiday paid on the stub: `Holiday` date + `Amount` (created via `Create`, amount ≥ 0) |
+| `PayStubOtherDeduction` | extra deduction line: `Quantity`, `UnitPrice`, `Total`, `Description` |
 
-    // Navigation properties
-    public Request Request { get; set; }
-    public WorkerProfile WorkerProfile { get; set; }
-    public ICollection<TimeSheet> TimeSheets { get; set; }
+`PayStubHistory` (`PayStubHistory.cs`) is a **keyless entity mapped to the `PayStubHistory`
+view** (`Configurations/Accounting/PayStubHistoryConfiguration.cs`: `HasNoKey().ToView(...)`) —
+a read model for pay-stub listings, not a table.
 
-    public bool IsRejected => WorkerRequestStatus == WorkerRequestStatus.Rejected;
-}
-```
+### Invoice — Canada (`Accounting/Invoice/Invoice.cs`)
 
-**WorkerRequestStatus Enum:**
-```csharp
-public enum WorkerRequestStatus
-{
-    Booked = 1,         // Assigned and active
-    Rejected = 2        // Rejected (can be re-booked)
-}
-```
+Weekly invoice to a company. `CompanyId` FK → CompanyProfile (property `Company`), `NumberId`,
+`InvoiceNumber` (long; displayed as `AI-{number:0000}-{yy}` via `BuildInvoiceNumber`), `Email`,
+`WeekEnding`, totals (`SubTotal`, `Hst`, `TotalNet`), snapshot rates (`NightShiftRate` — always
+written 0, `HolidayRate`, `OverTimeRate`, `VacationsRate`, `HstRate`, `BonusRate`). Note:
+`VacationsRate`/`BonusRate` are stored but never enter invoice totals — vacation pay is a
+pay-stub concept; HST is a single global config rate, not per-province.
 
----
+| Child | Purpose |
+|---|---|
+| `InvoiceTotal` | per-timesheet billing line: FK `TimeSheetTotalId` → TimeSheetTotal, `AgencyRate`, amounts (`Regular`, `OtherRegular`, `Overtime`, `Holiday`, `Missing`, `MissingOvertime`, `NightShift`), `TotalGross`/`TotalNet`/`Total` |
+| `InvoiceHoliday` | not-worked stat holiday billed to the company: `Holiday` date, `Hours`, `Amount`, optional `WorkerProfileId` |
+| `InvoiceDiscount` | discount line (`Quantity`, `UnitPrice`, `Amount`, `Description`) |
+| `InvoiceAdditionalItem` | extra billed item (`Quantity`, `UnitPrice`, computed `Total`) |
+| `InvoiceAdditionalDetail` | `ClientSiteAddress`; shared with USA invoices (`CanadaInvoiceId` XOR `UsaInvoiceId`) |
 
-### RequestSource (Job Board Posting)
+`SkipPayrollNumber.cs` — payroll numbers to skip when generating sequences.
 
-**Table:** `RequestSource`
+### InvoiceUSA (`Accounting/Invoice/InvoiceUSA.cs`)
 
-**Purpose:** Links a Request to a Source (job board / platform) where it is published. Many-to-many between `Request` and `Source`. Only sources flagged with `IsAvailableForRequests = true` are exposed to the agency UI (today: `Indeed`, `Zip Recruiter`, `Social Media`).
+US-company invoice (selected by `InvoiceServiceFactory` when the agency billing location is in
+the USA). `CompanyProfileId` FK (direct, unlike Canada's `CompanyId`), `InvoiceNumber` (string,
+prefix `US`) + `InvoiceNumberId` (both unique-indexed), `SubTotal`, `Tax`, `TotalNet`,
+`HtmlNotes`, bill-to/bill-from address blocks. Children: `InvoiceUSAItem` (same amount breakdown
+as `InvoiceTotal`, optional `TimeSheetTotalId`), `InvoiceUSADiscount`, and
+`InvoiceUSATimeSheetTotal` (join InvoiceUSA↔TimeSheetTotal, since USA items may be free-form).
 
-```csharp
-public class RequestSource
-{
-    public Guid RequestId { get; set; }
-    public Guid SourceId { get; set; }
-    public DateTime? PublishedAt { get; set; }   // optional
-    public string ExternalUrl { get; set; }       // optional
-    public DateTime CreatedAt { get; set; }
+### Subcontractor reports (`Accounting/Subcontractor/`)
 
-    // Navigation properties
-    public Request Request { get; set; }
-    public Source Source { get; set; }
-}
-```
+Pay-stub equivalent for `WorkerProfile.IsSubcontractor` workers (no CPP/EI/tax):
+`ReportSubcontractor` (`WorkerProfileId`, `RegularWage`, `PublicHolidayPay`, `Gross`,
+`Earnings`, `TotalNet`, `DeductionOthers`, period/`WeekEnding`, `NumberId`) with children
+`ReportSubcontractorWageDetail`, `ReportSubcontractorPublicHoliday`,
+`ReportSubContractorOtherDeduction` (only lines with `Total > 0` are kept).
 
-**Primary key:** composite `(RequestId, SourceId)`.
+### Deduction tables (`Entities/Deductions/`)
 
-**Source flag:** `Source.IsAvailableForRequests` (bool, default `false`) decides whether the source is selectable as a job board. The existing candidate-source listing keeps every value; the new `GET api/Catalog/source/requests` endpoint returns only the ones flagged ON.
-
----
-
-### Runner
-
-**Table:** `Runners` (entities under `Entities/Request/Runners/`)
-
-**Purpose:** A Candidate or Worker actively submitted to a specific Request (order), tracked through a recruiting pipeline with full status history and interviews. The same person can be a Runner on multiple requests at once, each with independent status and history. Like `RequestApplicant`, a runner references **either** a `WorkerProfile` **or** a `Candidate` (mutually exclusive) and preserves the link to the original record — no personal data is duplicated.
-
-```csharp
-public class Runner
-{
-    public Guid Id { get; private set; }
-    public long NumberId { get; private set; }
-    public Guid AgencyId { get; private set; }
-    public Guid RequestId { get; private set; }           // the order (OrderId)
-    public Guid? WorkerProfileId { get; private set; }    // worker XOR candidate
-    public Guid? CandidateId { get; private set; }
-    public RunnerType Type { get; private set; }          // Active / Passive
-    public RunnerStatus Status { get; private set; }      // current stage
-    public DateTime? StartDate { get; private set; }      // set only when status = Hired (required to hire)
-    public DateTime CreatedAt { get; private set; }
-    public Guid CreatedBy { get; private set; }           // acting user id
-    public DateTime? UpdatedAt { get; private set; }
-    public Guid? UpdatedBy { get; private set; }          // acting user id of the last status change (set with UpdatedAt)
-
-    // Backing-field collections (append-only history + interviews)
-    public IEnumerable<RunnerStatusHistory> StatusHistory { get; }
-    public IEnumerable<RunnerInterview> Interviews { get; }
-
-    // Domain methods (single source of truth for the rules below)
-    public static Result<Runner> CreateFromWorker(...);
-    public static Result<Runner> CreateFromCandidate(...);
-    public static bool CanAddInterview(RunnerStatus status);
-    public Result ChangeStatus(RunnerStatus next, Guid changedBy, string comments = null, DateTime? startDate = null);
-    public Result<RunnerInterview> AddInterview(...);
-    public Result RescheduleInterview(Guid interviewId, DateTime newDate, string rescheduledBy);
-}
-```
-
-**Business rules (enforced in the domain entity):**
-- Created with `Status = SentToClient` and an initial `RunnerStatusHistory` entry (`PreviousStatus = null`).
-- Status transitions are **unrestricted** (any → any) **except**: a `Hired` runner is terminal — its status cannot change.
-- Every status change **appends** (never overwrites) a `RunnerStatusHistory` row.
-- Moving to `Hired` **requires** a `StartDate`; the transition is rejected without it. `StartDate` is captured only on this transition.
-- `CreatedBy`/`UpdatedBy` on the runner and `ChangedBy` on each history row are all the **acting user's id** (`Guid`, from `IIdentityServerService.GetUserId()`) — resolved inside the service, not passed by callers. Every status change stamps `UpdatedAt` + `UpdatedBy`; because `Hired` is terminal, `UpdatedBy` on a hired runner is the recruiter who hired them — the per-user key for the attendance-review notification (no nickname, no `StatusHistory` scan).
-- A worker/candidate cannot be a Runner **twice on the same request** (`IRunnerRepository.RunnerExists` guard, regardless of current status).
-- Interviews can be **added or rescheduled only** when status is `InterviewScheduled` or `InterviewRescheduled` (`Runner.CanAddInterview`). Rescheduling auto-transitions the runner to `InterviewRescheduled`.
-
-**RunnerType Enum:** `Active = 1` (reached the order on their own initiative), `Passive = 2` (sourced by a recruiter).
-
-**RunnerStatus Enum:** `SentToClient = 1`, `InterviewScheduled = 2`, `InterviewRescheduled = 3`, `NoLongerAvailable = 4`, `NoShow = 5`, `WaitingForInterviewFeedback = 6`, `WaitingForFinalDecision = 7`, `Rejected = 8`, `InOnboardingProcess = 9`, `Hired = 10`. Stored as text via `EnumToStringConverter`.
-
-**Child entities:**
-
-```csharp
-public class RunnerStatusHistory          // Table: RunnerStatusHistories (append-only)
-{
-    public Guid Id { get; }
-    public Guid RunnerId { get; }
-    public RunnerStatus? PreviousStatus { get; }   // null for the initial entry
-    public RunnerStatus NewStatus { get; }
-    public string ChangedBy { get; }
-    public DateTime ChangedAt { get; }
-    public string Comments { get; }
-}
-
-public class RunnerInterview               // Table: RunnerInterviews
-{
-    public Guid Id { get; }
-    public Guid RunnerId { get; }
-    public DateTime ScheduledDate { get; }
-    public InterviewType Type { get; }             // Phone / Video / Onsite
-    public string Interviewer { get; }
-    public InterviewStatus Status { get; }         // Scheduled / Rescheduled
-    public string Feedback { get; }
-    public string Notes { get; }
-    public int RescheduleCount { get; }
-    public DateTime CreatedAt { get; }
-    public string CreatedBy { get; }
-    public DateTime? RescheduledAt { get; }
-    public string RescheduledBy { get; }
-}
-```
-
-**API:** `RunnersController` at `api/agency/requests/{requestId}/Runners` (Agency policy + `AgencyIdFilter`): list/detail, create, `PUT {id}/Status`, `POST {id}/Interview`, `PUT {id}/Interview/{interviewId}/Reschedule`, and `GET {requestId}/Runners/Search?searchTerm=` (workers/candidates that can be added as runners, **excluding those already runners** on the request — backed by `IRequestRepository.SearchRunnerProspects`, which reuses the applicant-search predicates with a runner-based exclusion). Enums are serialized as numbers (no `JsonStringEnumConverter`).
+Row-per-earnings-range lookup tables loaded from CRA data: `Cpp{Weekly,BiWeekly,SemiMonthly,
+Monthly}`, `FederalTax{...}`, `ProvincialTax{...}` (interfaces `ICpp`, `IFederalTax`,
+`IProvincialTax`). Deductions are **range lookups by earnings/year, not formulas**; EI is the
+only computed one.
 
 ---
 
-## ⏱️ TIMESHEET Module
+## Shared entities (root of `Entities/`)
 
-### TimeSheet
-
-**Table:** `TimeSheet`
-**Location:** `Covenant.Common/Entities/Request/TimeSheet.cs`
-
-```csharp
-public class TimeSheet
-{
-    public Guid Id { get; set; }
-    public Guid WorkerRequestId { get; set; }
-    public DateTime Date { get; set; }
-
-    // Punch card times (actual)
-    public DateTime? ClockIn { get; set; }
-    public DateTime? ClockOut { get; set; }
-    public DateTime? ClockInRounded { get; set; }
-    public DateTime? ClockOutRounded { get; set; }
-
-    // Normalized times (for calculations)
-    public DateTime? TimeIn { get; set; }              // Normalized to midnight
-    public DateTime? TimeOut { get; set; }             // Hours from TimeIn
-
-    // Approved times (by agency)
-    public DateTime? TimeInApproved { get; set; }
-    public DateTime? TimeOutApproved { get; set; }
-
-    // Special flags
-    public bool IsHoliday { get; set; }
-
-    // Adjustments
-    public decimal? DeductionsOthers { get; set; }
-    public decimal? BonusOrOthers { get; set; }
-    public decimal? Reimbursements { get; set; }
-    public string Comment { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    // Navigation properties
-    public WorkerRequest WorkerRequest { get; set; }
-    public TimeSheetTotal Total { get; set; }
-}
-```
+| Entity | Purpose |
+|---|---|
+| `Location.cs` | address: `Address`, `CityId` → City, `PostalCode`, `Entrance`, `MainIntersection`, `Latitude`/`Longitude`, `LocationTax`; `IsUSA` computed from country code |
+| `City.cs` / `Province.cs` / `Country.cs` | geo catalogs; `Province.Code` = "ON"/"BC"/…, `Country.Code` = "CA"/"US" (`CovenantConstants.Country`); `ProvinceSetting.cs` holds per-province config |
+| `Holiday.cs` | public holidays: `Date` (unique index), `Description`, `CountryCode` |
+| `CovenantFile.cs` | file metadata for blobs (referenced by all `*Document` join entities) |
+| `CovenantNote.cs` | shared note entity with author/soft-delete (used by Candidate/Company/Request notes) |
+| `Source.cs` | catalog of candidate/job-board sources; `IsAvailableForRequests` gates job-board use; `Value` unique |
+| `Shift.cs` | shift definition attached to job position rates and requests |
+| `Gender.cs`, `Language.cs`, `IdentificationType.cs`, `Lift.cs`, `Day.cs`, `Availability*` | catalogs |
+| `WsibGroup.cs` | WSIB classification catalog |
+| `User.cs` | see [User anchor](#the-user-anchor-critical-gotcha) |
+| `Notification/` | `NotificationType`, `UserNotificationType` (per-user notification prefs) |
 
 ---
 
-### TimeSheetTotal
-
-**Table:** `TimeSheetTotal`
-
-**Purpose:** Calculated hours breakdown.
-
-```csharp
-public class TimeSheetTotal
-{
-    public Guid Id { get; set; }
-    public Guid TimeSheetId { get; set; }
-
-    // Calculated hours
-    public TimeSpan TotalHours { get; set; }
-    public TimeSpan RegularHours { get; set; }
-    public TimeSpan OvertimeHours { get; set; }
-    public TimeSpan NightShiftHours { get; set; }
-    public TimeSpan HolidayHours { get; set; }
-    public TimeSpan OtherRegularHours { get; set; }
-
-    // Weekly accumulation (for overtime calculation)
-    public TimeSpan AccumulateWeekHours { get; set; }
-
-    // Navigation
-    public TimeSheet TimeSheet { get; set; }
-}
-```
-
----
-
-## 💰 ACCOUNTING Module
-
-### PayStub
-
-**Table:** `PayStub`
-**Location:** `Covenant.Common/Entities/Accounting/PayStub.cs`
-
-```csharp
-public class PayStub
-{
-    public Guid Id { get; set; }
-    public Guid WorkerProfileId { get; set; }
-    public int PayStubNumber { get; set; }             // Sequential number
-    public int PayStubNumberId { get; set; }           // Year
-    public string TypeOfWork { get; set; }
-
-    // Period
-    public DateTime DateWorkBegins { get; set; }
-    public DateTime DateWorkEnd { get; set; }
-    public DateTime PaymentDate { get; set; }
-
-    // Earnings
-    public decimal RegularWage { get; set; }
-    public decimal GrossPayment { get; set; }
-    public decimal Vacations { get; set; }             // 4% in Canada
-    public decimal PublicHolidayPay { get; set; }
-    public decimal TotalEarnings { get; set; }
-
-    // Deductions
-    public decimal Cpp { get; set; }                   // Canada Pension Plan
-    public decimal Ei { get; set; }                    // Employment Insurance
-    public decimal FederalTax { get; set; }
-    public decimal ProvincialTax { get; set; }
-    public decimal TotalDeductions { get; set; }
-
-    // Net Pay
-    public decimal TotalPaid { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    // Navigation properties
-    public WorkerProfile WorkerProfile { get; set; }
-    public ICollection<PayStubItem> Items { get; set; }
-    public ICollection<PayStubWageDetail> WageDetails { get; set; }
-}
-```
-
----
-
-### PayStubItem
-
-**Table:** `PayStubItem`
-
-**Purpose:** Daily breakdown for the pay stub.
-
-```csharp
-public class PayStubItem
-{
-    public Guid Id { get; set; }
-    public Guid PayStubId { get; set; }
-    public DateTime Date { get; set; }
-    public TimeSpan Hours { get; set; }
-    public decimal Rate { get; set; }
-    public decimal Amount { get; set; }
-    public string Type { get; set; }               // "Regular", "Overtime", etc.
-
-    // Navigation
-    public PayStub PayStub { get; set; }
-}
-```
-
----
-
-### PayStubWageDetail
-
-**Table:** `PayStubWageDetail`
-
-**Purpose:** Breakdown by wage type.
-
-```csharp
-public class PayStubWageDetail
-{
-    public Guid Id { get; set; }
-    public Guid PayStubId { get; set; }
-    public string Type { get; set; }               // "Regular", "Overtime", "Night Shift"
-    public TimeSpan Hours { get; set; }
-    public decimal Rate { get; set; }
-    public decimal Amount { get; set; }
-
-    // Navigation
-    public PayStub PayStub { get; set; }
-}
-```
-
----
-
-### Invoice
-
-**Table:** `Invoice`
-**Location:** `Covenant.Common/Entities/Accounting/Invoice.cs`
-
-```csharp
-public class Invoice
-{
-    public Guid Id { get; set; }
-    public Guid CompanyProfileId { get; set; }
-    public int InvoiceNumber { get; set; }
-
-    // Rates (multipliers)
-    public decimal NightShiftRate { get; set; }
-    public decimal HolidayRate { get; set; }
-    public decimal OverTimeRate { get; set; }
-    public decimal VacationsRate { get; set; }         // Typically 0.04 (4%)
-    public decimal HstRate { get; set; }               // 0.13 in Ontario
-    public decimal BonusRate { get; set; }
-
-    // Totals
-    public decimal SubTotal { get; set; }
-    public decimal Hst { get; set; }
-    public decimal TotalNet { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    // Navigation properties
-    public CompanyProfile CompanyProfile { get; set; }
-    public ICollection<InvoiceTotal> InvoiceTotals { get; set; }
-    public ICollection<InvoiceHoliday> Holidays { get; set; }
-    public ICollection<InvoiceDiscount> Discounts { get; set; }
-    public ICollection<InvoiceAdditionalItem> AdditionalItems { get; set; }
-}
-```
-
----
-
-### InvoiceTotal
-
-**Table:** `InvoiceTotal`
-
-**Purpose:** Per-worker breakdown in an invoice.
-
-```csharp
-public class InvoiceTotal
-{
-    public Guid Id { get; set; }
-    public Guid InvoiceId { get; set; }
-    public Guid WorkerRequestId { get; set; }
-    public string WorkerName { get; set; }
-
-    // Hours breakdown
-    public TimeSpan RegularHours { get; set; }
-    public TimeSpan OvertimeHours { get; set; }
-    public TimeSpan NightShiftHours { get; set; }
-    public TimeSpan HolidayHours { get; set; }
-
-    // Amounts
-    public decimal RegularAmount { get; set; }
-    public decimal OvertimeAmount { get; set; }
-    public decimal NightShiftAmount { get; set; }
-    public decimal HolidayAmount { get; set; }
-    public decimal Total { get; set; }
-
-    // Navigation
-    public Invoice Invoice { get; set; }
-    public WorkerRequest WorkerRequest { get; set; }
-}
-```
-
----
-
-## 📍 SHARED Entities
-
-### Location
-
-**Table:** `Location`
-
-```csharp
-public class Location
-{
-    public Guid Id { get; set; }
-    public string FullAddress { get; set; }
-    public string StreetNumber { get; set; }
-    public string StreetName { get; set; }
-    public string Unit { get; set; }
-    public Guid CityId { get; set; }
-    public string PostalCode { get; set; }
-    public decimal? Latitude { get; set; }
-    public decimal? Longitude { get; set; }
-
-    // Navigation
-    public City City { get; set; }
-}
-```
-
-### City
-
-**Table:** `City`
-
-```csharp
-public class City
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public Guid ProvinceId { get; set; }
-
-    // Navigation
-    public Province Province { get; set; }
-}
-```
-
-### Province
-
-**Table:** `Province`
-
-```csharp
-public class Province
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string Code { get; set; }               // "ON", "BC", "QC"
-    public Guid CountryId { get; set; }
-
-    // Navigation
-    public Country Country { get; set; }
-}
-```
-
-### Country
-
-**Table:** `Country`
-
-```csharp
-public class Country
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public string Code { get; set; }               // "CA", "US"
-}
-```
-
----
-
-## 🔗 Key Relationships
-
-### 1:N Relationships
-
-```
-Agency → CompanyProfile (1:N)
-Agency → WorkerProfile (1:N)
-Agency → Request (1:N)
-CompanyProfile → Request (1:N)             (via Request.CompanyId → User → CompanyProfile)
-CompanyProfile → CompanyProfileLocation (1:N)
-CompanyProfile → CompanyProfileJobPositionRate (1:N)
-CompanyProfile → Invoice (1:N)
-Request → WorkerRequest (1:N)
-WorkerProfile → WorkerRequest (1:N)
-WorkerProfile → PayStub (1:N)
-WorkerRequest → TimeSheet (1:N)
-```
-
-### 1:1 Relationships
-
-```
-TimeSheet → TimeSheetTotal (1:1)
-WorkerProfile → WorkerProfileTaxCategory (1:1)
-```
-
----
-
-## 🔍 Key Indexes
-
-**Performance-critical indexes:**
-
-```sql
--- Request filtering
-CREATE INDEX idx_request_agency  ON Request(AgencyId);
-CREATE INDEX idx_request_company ON Request(CompanyId);
-CREATE INDEX idx_request_status  ON Request(Status);
-
--- Worker filtering
-CREATE INDEX idx_worker_agency   ON WorkerProfile(AgencyId);
-CREATE INDEX idx_worker_approved ON WorkerProfile(ApprovedToWork, Dnu);
-
--- TimeSheet queries
-CREATE INDEX idx_timesheet_workerrequest ON TimeSheet(WorkerRequestId);
-CREATE INDEX idx_timesheet_date          ON TimeSheet(Date);
-
--- Accounting queries
-CREATE INDEX idx_paystub_worker  ON PayStub(WorkerProfileId);
-CREATE INDEX idx_invoice_company ON Invoice(CompanyProfileId);
-```
+## Verified unique indexes
+
+From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
+
+| Entity | Index |
+|---|---|
+| User | `Email` |
+| Holiday | `Date` |
+| Source | `Value` |
+| CompanyProfile | `(CompanyId, AgencyId)` |
+| WorkerProfile | `(WorkerId, AgencyId)` |
+| AgencyPersonnel | `(AgencyId, UserId)` |
+| CompanyUser | `(CompanyId, UserId)` |
+| WorkerRequest | `(RequestId, WorkerId)` |
+| RequestRecruiter | `(RequestId, RecruiterId, WorkDate)` |
+| WorkerDispatch | `(RequestRecruiterId, WorkerProfileId)` |
+| WorkerProfileHoliday | `(WorkerProfileId, HolidayId)` |
+| TimeSheetTotalPayroll | `TimeSheetId` |
+| InvoiceUSA | `InvoiceNumber`; `InvoiceNumberId` |
+| NotificationType (user link) | `(UserId, NotificationTypeId)` |
+
+Non-unique example: `Runner.RequestId` (`Configurations/Request/Runners/RunnerConfiguration.cs`).
+For anything else, check the entity's configuration class before assuming an index exists.

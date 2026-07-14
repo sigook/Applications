@@ -21,6 +21,8 @@ export interface WeeklyBoardAssignment {
   numberId: number;
   companyName: string;
   jobTitle: string;
+  city: string | null;
+  provinceCode: string | null;
   workDate: string;
   status: RequestStatus;
   isAsap: boolean;

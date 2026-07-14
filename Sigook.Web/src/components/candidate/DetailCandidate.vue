@@ -60,7 +60,7 @@
 import { ref, computed } from 'vue';
 import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { getGenders } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
 import { getAgencyCandidate, updateAgencyCandidate } from "@/api/agencyCandidateApi";
@@ -69,7 +69,7 @@ import { useStickyForm } from '@/composables/useStickyForm';
 const props = defineProps<{ candidateId: number | string }>();
 const emit = defineEmits<{ (e: 'onUpdateWorker', value: boolean): void }>();
 
-const billingAdmin = useBillingAdmin();
+const { isAccountingManager } = useAccountingAdmin();
 
 const schema = yup.object({
   name: yup.string().required('Full Name is required').min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
@@ -93,7 +93,7 @@ const genders = computed(() => genderList.value);
 const hasDnuPermission = computed(() => {
   if (!candidate.value || !candidate.value.dnu) {
     return false;
-  } else if (candidate.value.dnu && billingAdmin.isPayrollManager) {
+  } else if (candidate.value.dnu && isAccountingManager.value) {
     return false;
   } else {
     return true;
