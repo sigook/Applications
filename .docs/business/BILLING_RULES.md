@@ -122,20 +122,27 @@ HolidayRate = 1.5
 **Rule:**
 - Statutory holiday pay owed even when the worker does **not** work the holiday (ESA labour benefit)
 - Only when the company profile has paid holidays enabled (`TimeSheet.PaidHolidays`)
-- Worker must qualify per the ESA "last and first scheduled day" test (`GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`)
+- Worker must qualify per the ESA "last and first scheduled day" test (`GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`), and only **approved** timesheets on those qualifying days count
 - Amount uses a **4-week look-back average** of what was billed to the company, NOT `hours × rate`
+- **Billed once per worker + holiday + company.** A holiday already present on an `InvoiceHoliday` row for that company is never billed again, even if timesheets from the holiday's week are invoiced later in a separate batch
 
 **Calculation:**
 ```
 holidayWeekEnd = end of the week before the holiday's week
 lookbackStart  = four work weeks earlier
-charges        = InvoiceRepository.GetCompanyRegularCharges(companyProfileId, lookbackStart, holidayWeekEnd, qualifyingDays)
+charges        = InvoiceRepository.GetCompanyRegularCharges(companyProfileId, holiday, lookbackStart, holidayWeekEnd, qualifyingDays)
 PublicHolidayPay (per worker) = charges.AmountToPay   // ESA average of company charges
 ```
 
 > This mirrors the pay-stub side (`PayStubService` → `CalculateHolidayPayBase`), but the invoice averages **company charges** (agency rate) while the pay stub averages **worker wages**, so the markup is preserved.
 >
 > Invoice side: `CanadaInvoiceService.GetInvoiceHolidaysAsync` → `InvoiceHoliday` entities → added via `Invoice.AddHolidays`, summed into `holidaysSubtotal`, then HST applies. Only Canadian invoices carry public-holiday-not-worked pay.
+
+**No double billing:**
+
+The holidays of an invoice come from the date range of the timesheets being invoiced, so a late-approved timesheet from the holiday's week pulls that holiday back into a later invoice. To keep it from being charged twice, `GetCompanyRegularCharges` excludes any worker that already has an `InvoiceHoliday` row for the same holiday date under that company profile. Scope is **per company**: a worker placed at two companies of the same agency is entitled to holiday pay from each.
+
+> This is the invoice counterpart of `PayStubRepository.GetWorkerRegularWages` → `HolidayWasPaid`, which guards the pay-stub side against the same duplicate (`PayStubPublicHolidays` lookup). Both flows must keep their own guard — see `PAYSTUB_GENERATION.md`.
 
 ---
 

@@ -292,9 +292,16 @@ public class InvoiceRepository : IInvoiceRepository
         return invoice;
     }
 
-    public async Task<List<CompanyRegularChargesByWorker>> GetCompanyRegularCharges(Guid companyProfileId, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays)
+    public async Task<List<CompanyRegularChargesByWorker>> GetCompanyRegularCharges(Guid companyProfileId, DateTime holiday, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays)
     {
-        var workers = from ts in _context.TimeSheet.Where(ts => qualifyingDays.Contains(ts.Date.Date) && ts.TimeSheetTotal == null)
+        var alreadyBilled = from i in _context.Invoice.Where(i => i.CompanyId == companyProfileId)
+                            from ih in i.Holidays.Where(ih => ih.Holiday.Date == holiday.Date && ih.WorkerProfileId != null)
+                            select ih.WorkerProfileId.Value;
+
+        var workers = from ts in _context.TimeSheet.Where(ts => qualifyingDays.Contains(ts.Date.Date)
+                          && ts.TimeSheetTotal == null
+                          && ts.TimeInApproved != null
+                          && ts.TimeOutApproved != null)
                       join cp in _context.CompanyProfile.Where(cp => cp.Id == companyProfileId) on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
                       group ts by ts.WorkerRequest.WorkerId into g
                       select g.Key;
@@ -305,7 +312,7 @@ public class InvoiceRepository : IInvoiceRepository
                       join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
                       join ts in _context.TimeSheet.Where(s => s.Date.Date >= start && s.Date.Date <= end) on tst.TimeSheetId equals ts.Id
                       join wr in _context.WorkerRequest.Where(wwr => workers.Contains(wwr.WorkerId)) on ts.WorkerRequestId equals wr.Id
-                      join wp in _context.WorkerProfile on wr.WorkerId equals wp.WorkerId
+                      join wp in _context.WorkerProfile.Where(w => !alreadyBilled.Contains(w.Id)) on wr.WorkerId equals wp.WorkerId
                       select new { wr.WorkerId, wp.Id, it.AgencyRate, it.Regular, it.OtherRegular }
                       ).GroupBy(a => new { a.WorkerId, a.Id, a.AgencyRate })
             .Select(g => new CompanyRegularChargesByWorker(g.Key.WorkerId, g.Key.Id, g.Key.AgencyRate,
