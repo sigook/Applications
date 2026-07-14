@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
 import pinia from '@/stores';
 import { useSecurityStore } from '@/stores/security';
 import qs from 'qs';
@@ -12,12 +12,12 @@ const http = axios.create({
     'Content-Type': 'application/json',
     'accept-language': localStorage.getItem('language') && localStorage.getItem('language') !== 'en' ? localStorage.getItem('language') : 'en-US'
   },
-  paramsSerializer: (params: any) => qs.stringify(params, { encodeValuesOnly: true })
+  paramsSerializer: (params: Record<string, unknown>) => qs.stringify(params, { encodeValuesOnly: true })
 });
 
-http.interceptors.request.use(async (config: any) => {
+http.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const securityStore = useSecurityStore(pinia);
-  const user: any = await securityStore.getUser();
+  const user = await securityStore.getUser();
   if (user) {
     config.headers.Authorization = `${user.token_type} ${user.access_token}`;
   }
@@ -29,7 +29,7 @@ http.interceptors.request.use(async (config: any) => {
 
 // Response interceptor
 http.interceptors.response.use(response => response, async (error: AxiosError) => {
-  const originalRequest: any = error.config;
+  const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
   if (error.response?.status === 401 && !originalRequest._retry) {
     originalRequest._retry = true;
@@ -37,7 +37,7 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
     try {
       const securityStore = useSecurityStore(pinia);
       await securityStore.silentSignin();
-      const newUser: any = await securityStore.getUser();
+      const newUser = await securityStore.getUser();
       if (newUser) {
         originalRequest.headers.Authorization = `${newUser.token_type} ${newUser.access_token}`;
       }
@@ -55,7 +55,7 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
         break;
       case 500:
         alert('Oops something was wrong please try again later');
-        if ((error.response?.config as any)?.responseType === 'blob') {
+        if (error.response?.config?.responseType === 'blob') {
           const errorMsg = "An error occurred please try again, if the error persists try later one of our engineers will solve it soon";
           return Promise.reject({ data: errorMsg });
         }
@@ -65,5 +65,18 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
 
   return Promise.reject(error.response ?? { data: error.message });
 });
+
+export const api = {
+  get: <T>(url: string, config?: AxiosRequestConfig): Promise<T> =>
+    http.get<T>(url, config).then(r => r.data),
+  post: <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    http.post<T>(url, body, config).then(r => r.data),
+  put: <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    http.put<T>(url, body, config).then(r => r.data),
+  patch: <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    http.patch<T>(url, body, config).then(r => r.data),
+  del: <T = void>(url: string, config?: AxiosRequestConfig): Promise<T> =>
+    http.delete<T>(url, config).then(r => r.data),
+};
 
 export default http;

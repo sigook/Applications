@@ -1,12 +1,10 @@
 @import './variables';
-@import './mixins.scss';
 
 @import "./base.scss";
 
 @import './profile';
 
 @import "./worker/dialog-new-worker";
-@import "./worker/container-worker";
 @import "./container-request";
 @import "./candidiates";
 @import "./time-sheet";

@@ -1,4 +1,5 @@
 ﻿using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
@@ -115,7 +116,8 @@ public class WorkerService : IWorkerService
             Email = model.Email,
             Password = model.Password,
             ConfirmPassword = model.ConfirmPassword,
-            UserType = UserType.Worker
+            UserType = UserType.Worker,
+            Role = CovenantConstants.Role.Worker
         });
         if (!user) return Result.Fail<Guid>(user.Errors);
 

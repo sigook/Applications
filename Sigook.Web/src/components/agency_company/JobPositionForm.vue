@@ -173,7 +173,7 @@ function createJobPosition(payload: any) {
       isLoading.value = false;
       emit('updateContent');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -186,7 +186,7 @@ function updateJobPosition(payload: any, id: any) {
       isLoading.value = false;
       emit('updateContent');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -207,7 +207,7 @@ function loadJobPositionById(id: any) {
       });
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

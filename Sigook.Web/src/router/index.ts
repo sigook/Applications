@@ -65,6 +65,7 @@ router.beforeEach(async (to, from, next) => {
     const securityStore = useSecurityStore(pinia);
     const user = await securityStore.getUser();
     if (!user) {
+      next(false);
       securityStore.signIn();
     } else {
       next();

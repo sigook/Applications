@@ -34,9 +34,10 @@ import * as yup from 'yup';
 import { showAlertSuccess } from "@/utils/toast";
 import PhoneInput from "@/components/PhoneInput.vue";
 import { updateCompanyUser } from "@/api/companyApi";
+import type { CompanyUserModel } from "@/types/company";
 import { useStickyForm } from '@/composables/useStickyForm';
 
-const props = defineProps<{ user: any }>();
+const props = defineProps<{ user: CompanyUserModel }>();
 const emit = defineEmits<{ (e: 'update:user', payload: any): void }>();
 
 const schema = yup.object({
@@ -77,12 +78,12 @@ async function update() {
   form.markInteracted();
   const { valid } = await form.validate();
   if (!valid) return;
-  const payload = {
-    id: userId.value,
+  const payload: CompanyUserModel = {
+    ...props.user,
     name: name.value,
     lastname: lastname.value,
-    position: position.value || null,
-    mobileNumber: mobileNumber.value,
+    position: position.value || '',
+    mobileNumber: mobileNumber.value || '',
   };
   emit('update:user', payload);
   updateCompanyUser(userId.value, payload)

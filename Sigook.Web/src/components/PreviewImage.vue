@@ -84,7 +84,7 @@ function validateFile(file: File): boolean {
 }
 
 function showCrop(evt: any) {
-  if ((document as any).documentMode || /Edge/.test(navigator.userAgent)) {
+  if ((document as Document & { documentMode?: number }).documentMode || /Edge/.test(navigator.userAgent)) {
     showImage(evt.target.files[0]);
   } else {
     const file = evt.target.files[0];

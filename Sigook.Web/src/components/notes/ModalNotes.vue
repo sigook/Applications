@@ -17,9 +17,9 @@
           </div>
           <div>
             <button v-if="onUpdate" class="btn-icon-sm btn-icon-edit" type="button"
-              @click="showModalUpdateNote(item, index)"></button>
+              @click="showModalUpdateNote(item, Number(index))"></button>
             <button v-if="onDelete" class="btn-icon-sm btn-icon-delete" type="button"
-              @click="deleteNote(item.id, index)"></button>
+              @click="deleteNote(item.id, Number(index))"></button>
           </div>
         </li>
       </ul>

@@ -27,21 +27,6 @@
   h2 {
     margin: 0;
   }
-  .tag-id {
-    background: $green;
-    color: white;
-    display: inline-block;
-    padding: 0 20px;
-    border-radius: 5px;
-    font-size: 16px;
-    &.color-danger {
-      background: #b41900;
-    }
-  }
-
-  .padding-100 {
-    padding: 20px 100px;
-  }
 }
 
 .worker-profile-image .btn-icon-edit {
@@ -196,21 +181,6 @@
     word-break: break-all;
   }
 
-  &.licenses-create {
-    display: inline-block;
-    strong.fw-normal {
-      display: flex;
-      align-items: center;
-      input {
-        border-width: 0 0 1px 0;
-      }
-      & > input,
-      & > div {
-        width: 100%;
-        min-width: auto;
-      }
-    }
-  }
 }
 .worker-profile-image {
   text-align: center;
@@ -239,36 +209,17 @@
 @media(max-width: 970px) {
   .contain-worker {
     padding: 0 50px;
-    .padding-100 {
-      padding: 0;
-    }
   }
-
 }
 @media(max-width: 767px) {
   .contain-worker {
     padding: 15px;
-    .padding-100 {
-      padding: 0;
-    }
 
-    .action-buttons.text-end {
-      position: relative;
-      z-index: 1;
-    }
     section {
       margin-bottom: 10px;
       margin-top: 10px;
       position: relative;
       z-index: 1;
-    }
-
-    .custom-switch {
-      position: relative;
-      margin: 10px -5px 30px;
-      button {
-        font-size: 14px;
-      }
     }
   }
 
@@ -296,24 +247,6 @@
           width: 100%;
           display: block;
           // order: 2;
-        }
-        .icon-img {
-          width: 100%;
-          font-size: 12px;
-          &:before {
-            display: flex;
-            width: 30px;
-            height: 30px;
-            position: absolute;
-            top: 15px;
-          }
-          a {
-            text-overflow: ellipsis;
-            overflow: hidden;
-            width: 100%;
-            display: inline-block;
-            margin: 10px 0 0;
-          }
         }
       }
     }

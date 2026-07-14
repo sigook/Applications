@@ -2,9 +2,6 @@
 .profile {
   display: flex;
   vertical-align: top;
-  .btn-request {
-    margin: 0;
-  }
 
   b {
     font-weight: 600;
@@ -72,11 +69,6 @@
 
 
 .profile-information {
-  button.btn-request {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-  }
   .item {
     margin-bottom: 15px;
     span {
@@ -243,14 +235,6 @@
     border: 0;
     padding: 0 0 40px;
     margin: 0;
-    .outline-btn.auto-btn.orange-button.btn-radius {
-      display: none;
-    }
-  }
-
-  .profile-information button.btn-request {
-    top: 65px;
-    padding: 10px 30px;
   }
 
   .profile-top {

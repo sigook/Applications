@@ -14,7 +14,7 @@
       <export :url="'/api/agency/accounting/Invoices/file'" :params="serverParams" :fileName="'Invoices'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button tag="router-link" to="/accounting/create-invoice" icon-left="plus">
+          <b-button tag="router-link" to="/accounting/invoices/create" icon-left="plus">
             Create
           </b-button>
         </template>

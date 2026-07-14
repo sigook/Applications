@@ -26,14 +26,14 @@ export function useStickyForm<T extends GenericObject>(options: UseStickyFormOpt
   const fields = {} as { [K in keyof T]: Ref<T[K]> };
   for (const name of fieldNames) {
     const { value } = useField<T[typeof name]>(name as string);
-    (fields as any)[name] = value;
+    (fields as Record<string, unknown>)[name] = value;
   }
 
   const interacted = reactive<Record<string, boolean>>({});
   let suppressTracking = false;
 
   for (const name of fieldNames) {
-    watch((fields as any)[name], () => {
+    watch((fields as Record<string, Ref<unknown>>)[name], () => {
       if (!suppressTracking) interacted[name as string] = true;
     });
   }
@@ -41,7 +41,7 @@ export function useStickyForm<T extends GenericObject>(options: UseStickyFormOpt
   const errors = computed(() => {
     const out: Record<string, string> = {};
     for (const key of Object.keys(rawErrors.value)) {
-      out[key] = interacted[key] ? ((rawErrors.value as any)[key] || '') : '';
+      out[key] = interacted[key] ? ((rawErrors.value as Record<string, string>)[key] || '') : '';
     }
     return out;
   });

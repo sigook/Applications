@@ -20,7 +20,7 @@ export function uploadFile(evt: Event | File, type: string, name: string): Promi
         headers: { 'Content-Type': 'multipart/form-data' },
       })
         .then((response: AxiosResponse<UploadedFile[]>) => resolve(response.data[0].path))
-        .catch((error: any) => reject(error));
+        .catch((error: unknown) => reject(error));
     }
   });
 }

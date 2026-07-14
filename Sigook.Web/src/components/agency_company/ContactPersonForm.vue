@@ -165,7 +165,7 @@ function createContactPerson(payload: any) {
       showAlertSuccess('Created');
       emit('updateContent');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -179,7 +179,7 @@ function updateContactPerson(payload: any, id: any) {
       showAlertSuccess('Updated');
       emit('updateContent');
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

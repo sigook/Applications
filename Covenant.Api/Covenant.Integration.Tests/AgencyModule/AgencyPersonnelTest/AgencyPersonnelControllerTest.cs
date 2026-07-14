@@ -177,7 +177,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
                 services.AddTestAuthenticationBuilder()
                     .AddTestAuth(o =>
                     {
-                        o.AddAgencyPersonnelRole(AgencyId);
+                        o.AddAdminRole(AgencyId);
                     });
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
                 services.AddSingleton<ITimeService, TimeService>();

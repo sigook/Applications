@@ -11,7 +11,7 @@
     </div>
     <div>
       <b-field grouped position="is-right">
-        <b-button tag="router-link" to="/create-request" icon-left="plus">Create Request</b-button>
+        <b-button tag="router-link" to="/company-requests/create" icon-left="plus">Create Request</b-button>
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
@@ -27,7 +27,7 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <router-link :to="{ path: '/request/' + props.row.id }">
+              <router-link :to="{ path: '/company-requests/' + props.row.id }">
                 <p>{{ props.row.numberId }}</p>
               </router-link>
               <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
@@ -130,7 +130,7 @@ function getCompanyRequests() {
       totalItems.value = requests.totalItems;
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -163,12 +163,12 @@ function onCellClick(row: any, column: any) {
       break;
     case 'workersQuantityWorking':
       router.push({
-        path: `/request/${row.id}`,
+        path: `/company-requests/${row.id}`,
         query: { tab: 'Workers' },
       });
       break;
     default:
-      router.push(`/request/${row.id}`);
+      router.push(`/company-requests/${row.id}`);
   }
 }
 

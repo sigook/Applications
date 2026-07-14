@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex justify-content-between">
       <h3 class="fw-bold">Requested by</h3>
-      <button @click="showModal = true" v-if="canEdit" class="sm-save-button">Add</button>
+      <b-button v-if="canEdit" type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
     </div>
     <div>
       <ul v-if="data" class="p-1">

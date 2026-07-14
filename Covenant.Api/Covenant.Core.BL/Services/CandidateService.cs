@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Request;
@@ -161,7 +162,8 @@ public class CandidateService : ICandidateService
         var user = await identityServerService.CreateUser(new CreateUserModel
         {
             Email = candidate.Email,
-            UserType = UserType.Worker
+            UserType = UserType.Worker,
+            Role = CovenantConstants.Role.Worker
         });
         if (!user) return Result.Fail(user.Errors);
         profile.Worker = user.Value;

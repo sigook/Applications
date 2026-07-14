@@ -69,7 +69,7 @@ const form = useStickyForm({
   initialValues: {
     fullName: '',
     email: '',
-    agencyType: null as any,
+    agencyType: null as number | null,
     password: '',
   },
 });

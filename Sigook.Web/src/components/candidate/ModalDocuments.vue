@@ -23,10 +23,9 @@
             {{ errors.description }}
           </span>
         </div>
-        <button type="button" class="sm-btn fz-1 background-btn orange-button" :disabled="isDisabled"
-          @click="submitDocument">
+        <b-button type="is-primary" size="is-small" :disabled="isDisabled" @click="submitDocument">
           Add
-        </button>
+        </b-button>
       </div>
       <div class="relative">
         <b-loading v-model="isLoading"></b-loading>
@@ -36,7 +35,7 @@
               {{ document.description }}
             </a>
             <button class="btn-icon-sm btn-icon-delete" type="button"
-              @click="onDeleteDocument(document.id, index)"></button>
+              @click="onDeleteDocument(document.id, Number(index))"></button>
           </li>
         </ul>
         <div class="padding-5 color-gray-light" v-else>
@@ -76,12 +75,12 @@ const newDocument = reactive<{ fileName: string | null }>({ fileName: '' });
 
 function loadDocuments() {
   isLoading.value = true;
-  getCandidateDocuments(props.candidateId)
+  getCandidateDocuments(String(props.candidateId))
     .then((response: any) => {
       isLoading.value = false;
       documents.value = response;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -110,7 +109,7 @@ function submitDocument() {
       return;
     }
     isLoading.value = true;
-    addCandidateDocument(props.candidateId, {
+    addCandidateDocument(String(props.candidateId), {
       fileName: newDocument.fileName,
       description: values.description,
     })
@@ -119,7 +118,7 @@ function submitDocument() {
         loadDocuments();
         cleanInput();
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         isLoading.value = false;
         showAlertError(error);
       });
@@ -128,13 +127,13 @@ function submitDocument() {
 
 function onDeleteDocument(id: number, index: number) {
   isLoading.value = true;
-  deleteCandidateDocument(props.candidateId, id)
+  deleteCandidateDocument(String(props.candidateId), String(id))
     .then(() => {
       isLoading.value = false;
       showAlertSuccess("Deleted");
       documents.value.items.splice(index, 1);
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

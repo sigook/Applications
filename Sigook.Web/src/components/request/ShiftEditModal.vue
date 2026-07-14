@@ -29,7 +29,7 @@ const requestId = route.params.id;
 
 function getRequestShift() {
   isLoading.value = true;
-  fetchRequestShift(requestId as any)
+  fetchRequestShift(requestId as string)
     .then(response => {
       isLoading.value = false;
       shift.value = response;
@@ -42,7 +42,7 @@ function getRequestShift() {
 
 function saveShift(model: any) {
   isLoading.value = true;
-  updateAgencyRequestShift(requestId as any, model)
+  updateAgencyRequestShift(requestId as string, model)
     .then(response => {
       isLoading.value = false;
       emit('onUpdateShift', response.displayShift);

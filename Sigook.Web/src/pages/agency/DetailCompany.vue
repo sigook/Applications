@@ -20,11 +20,11 @@
           <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
         </template>
         <b-dropdown-item v-if="isClient" aria-role="listitem"
-          @click="router.push({ path: `/agency-create-request/${company.id}` })">
+          @click="router.push({ path: `/recruiting/requests/create/${company.id}` })">
           Create Request
         </b-dropdown-item>
         <b-dropdown-item aria-role="listitem"
-          @click="router.push({ path: `/update-company/${company.id}` })">
+          @click="router.push({ path: `${companyBase}/update/${company.id}` })">
           Edit Company
         </b-dropdown-item>
       </b-dropdown>
@@ -79,6 +79,8 @@ import CompanyUpdateLogo from '@/components/agency_company/CompanyUpdateLogo.vue
 
 const route = useRoute();
 const router = useRouter();
+const companyBase = computed(() =>
+  route.path.startsWith('/sales') ? '/sales/companies' : '/recruiting/companies');
 const billingAdmin = useBillingAdmin();
 
 const currentTab = ref<string>('Detail');
@@ -109,13 +111,13 @@ function changeTab(tab: string) {
     visitedTabs.value.push(tab);
   }
   router.push({
-    path: `/agency-companies/company/${route.params.id}`,
+    path: `/recruiting/companies/${route.params.id}`,
     query: { tab: tab },
   });
 }
 
 function loadCompany() {
-  getAgencyCompany(route.params.id as any)
+  getAgencyCompany(route.params.id as string)
     .then((response: any) => {
       company.value = response;
       isLoading.value = false;

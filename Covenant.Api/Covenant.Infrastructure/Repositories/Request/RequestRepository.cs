@@ -47,6 +47,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             requests = requests.Where(r => r.CompanyId == filter.CompanyId.Value);
         else
             requests = requests.Where(r => r.AgencyId == agencyId);
+        if (filter.SalesUserId.HasValue)
+        {
+            requests = requests.Where(r => context.RequestComissions
+                .Any(rc => rc.RequestId == r.Id && rc.AgencyPersonnel.UserId == filter.SalesUserId.Value));
+        }
         if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
         {
             var recruiterTerm = filter.DisplayRecruiters.ToLower();
@@ -995,6 +1000,32 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                        Email = d.WorkerProfile.Worker.Email
                    }).ToList()
                }).ToListAsync();
+
+    public async Task<IEnumerable<WeeklyBoardDispatchModel>> GetOrderDispatches(Guid agencyId, Guid requestId) =>
+        await (from rr in context.RequestRecruiter
+               from d in rr.Dispatches
+               where rr.RequestId == requestId && rr.Request.AgencyId == agencyId
+               orderby d.CreatedAt
+               select new WeeklyBoardDispatchModel
+               {
+                   WorkerProfileId = d.WorkerProfileId,
+                   FullName = d.WorkerProfile.FirstName +
+                       (string.IsNullOrWhiteSpace(d.WorkerProfile.MiddleName) ? string.Empty : " " + d.WorkerProfile.MiddleName) +
+                       " " + d.WorkerProfile.LastName +
+                       (string.IsNullOrWhiteSpace(d.WorkerProfile.SecondLastName) ? string.Empty : " " + d.WorkerProfile.SecondLastName),
+                   Email = d.WorkerProfile.Worker.Email,
+                   SentAt = d.CreatedAt
+               }).ToListAsync();
+
+    public async Task<Dictionary<Guid, string>> GetWorkerProfileNames(IEnumerable<Guid> workerProfileIds) =>
+        await context.WorkerProfile
+            .Where(w => workerProfileIds.Contains(w.Id))
+            .ToDictionaryAsync(
+                w => w.Id,
+                w => w.FirstName +
+                    (string.IsNullOrWhiteSpace(w.MiddleName) ? string.Empty : " " + w.MiddleName) +
+                    " " + w.LastName +
+                    (string.IsNullOrWhiteSpace(w.SecondLastName) ? string.Empty : " " + w.SecondLastName));
 
     public async Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd) =>
         await (from rr in context.RequestRecruiter

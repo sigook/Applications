@@ -1,39 +1,43 @@
 import { getToast, getDialog } from '@/utils/buefyProgrammatic';
 
-export async function getErrorMessage(errorMessage: any): Promise<string> {
+export async function getErrorMessage(errorMessage: unknown): Promise<string> {
+  let value: unknown = errorMessage;
   if (
-    typeof errorMessage === "object" &&
-    errorMessage.data !== null && errorMessage.data !== undefined
+    typeof value === "object" && value !== null &&
+    "data" in value && (value as { data?: unknown }).data != null
   ) {
-    if (errorMessage.data instanceof Blob) {
-      errorMessage = await errorMessage.data.text();
+    const data = (value as { data?: unknown }).data;
+    if (data instanceof Blob) {
+      const text = await data.text();
       try {
-        const parsed = JSON.parse(errorMessage);
+        const parsed = JSON.parse(text) as Record<string, unknown>;
         return Object.values(parsed).flat().join(', ');
       } catch {
-        return errorMessage;
+        return text;
       }
     }
-    errorMessage = errorMessage.data;
+    value = data;
   }
-  if (typeof errorMessage === "object") {
-    const objectMessage = errorMessage;
-    errorMessage = "";
+  if (typeof value === "object" && value !== null) {
+    const objectMessage = value as Record<string, unknown>;
+    let message = "";
     for (const item in objectMessage) {
+      const entry = objectMessage[item];
       if (
-        typeof objectMessage[item] === "object" &&
-        objectMessage[item].message
+        typeof entry === "object" && entry !== null &&
+        (entry as { message?: unknown }).message
       ) {
-        errorMessage += objectMessage[item].message + "<br/>";
+        message += String((entry as { message?: unknown }).message) + "<br/>";
       } else {
-        errorMessage += objectMessage[item] + "<br/>";
+        message += String(entry) + "<br/>";
       }
     }
+    return message;
   }
-  return errorMessage;
+  return typeof value === "string" ? value : String(value ?? "");
 }
 
-export async function showAlertError(errorMessage: any): Promise<void> {
+export async function showAlertError(errorMessage: unknown): Promise<void> {
   const message = await getErrorMessage(errorMessage);
   if (message == null || message === "") return;
   getToast().open({

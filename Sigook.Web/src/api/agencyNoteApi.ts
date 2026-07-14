@@ -1,4 +1,4 @@
-import http from '@/security/apiService';
+import { api } from '@/security/apiService';
 import type { PaginatedList } from '@/types/common';
 import type { NoteModel, NoteItem, NotePagination, CreateNoteResponse } from '@/types/agency';
 
@@ -7,13 +7,13 @@ import type { NoteModel, NoteItem, NotePagination, CreateNoteResponse } from '@/
 // ---------------------------------------------------------------------------
 
 export function getWorkerProfileNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
-  return http
-    .get(`/api/AgencyWorkerProfile/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`)
-    .then(r => r.data);
+  return api.get<PaginatedList<NoteItem>>(
+    `/api/AgencyWorkerProfile/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+  );
 }
 
 export function createWorkerProfileNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return http.post(`/api/AgencyWorkerProfile/${userId}/Note`, model).then(r => r.data);
+  return api.post<CreateNoteResponse>(`/api/AgencyWorkerProfile/${userId}/Note`, model);
 }
 
 // ---------------------------------------------------------------------------
@@ -21,17 +21,17 @@ export function createWorkerProfileNote(userId: string, model: NoteModel): Promi
 // ---------------------------------------------------------------------------
 
 export function getCandidateNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
-  return http
-    .get(`/api/AgencyCandidate/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`)
-    .then(r => r.data);
+  return api.get<PaginatedList<NoteItem>>(
+    `/api/AgencyCandidate/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+  );
 }
 
 export function createCandidateNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return http.post(`/api/AgencyCandidate/${userId}/Note`, model).then(r => r.data);
+  return api.post<CreateNoteResponse>(`/api/AgencyCandidate/${userId}/Note`, model);
 }
 
 export function deleteCandidateNote(userId: string, id: string): Promise<void> {
-  return http.delete(`/api/AgencyCandidate/${userId}/Note/${id}`).then(() => {});
+  return api.del(`/api/AgencyCandidate/${userId}/Note/${id}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -39,21 +39,21 @@ export function deleteCandidateNote(userId: string, id: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export function getAgencyCompanyNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
-  return http
-    .get(`/api/AgencyCompanyProfile/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`)
-    .then(r => r.data);
+  return api.get<PaginatedList<NoteItem>>(
+    `/api/AgencyCompanyProfile/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+  );
 }
 
 export function createAgencyCompanyNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return http.post(`/api/AgencyCompanyProfile/${userId}/Note`, model).then(r => r.data);
+  return api.post<CreateNoteResponse>(`/api/AgencyCompanyProfile/${userId}/Note`, model);
 }
 
 export function updateAgencyCompanyNote(userId: string, id: string, model: NoteModel): Promise<void> {
-  return http.put(`/api/AgencyCompanyProfile/${userId}/Note/${id}`, model).then(() => {});
+  return api.put(`/api/AgencyCompanyProfile/${userId}/Note/${id}`, model);
 }
 
 export function deleteAgencyCompanyNote(userId: string, id: string): Promise<void> {
-  return http.delete(`/api/AgencyCompanyProfile/${userId}/Note/${id}`).then(() => {});
+  return api.del(`/api/AgencyCompanyProfile/${userId}/Note/${id}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -61,21 +61,21 @@ export function deleteAgencyCompanyNote(userId: string, id: string): Promise<voi
 // ---------------------------------------------------------------------------
 
 export function getAgencyRequestNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
-  return http
-    .get(`/api/AgencyRequest/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`)
-    .then(r => r.data);
+  return api.get<PaginatedList<NoteItem>>(
+    `/api/AgencyRequest/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+  );
 }
 
 export function createAgencyRequestNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return http.post(`/api/AgencyRequest/${userId}/Note`, model).then(r => r.data);
+  return api.post<CreateNoteResponse>(`/api/AgencyRequest/${userId}/Note`, model);
 }
 
 export function updateAgencyRequestNote(userId: string, id: string, model: NoteModel): Promise<void> {
-  return http.put(`/api/AgencyRequest/${userId}/Note/${id}`, model).then(() => {});
+  return api.put(`/api/AgencyRequest/${userId}/Note/${id}`, model);
 }
 
 export function deleteAgencyRequestNote(userId: string, id: string): Promise<void> {
-  return http.delete(`/api/AgencyRequest/${userId}/Note/${id}`).then(() => {});
+  return api.del(`/api/AgencyRequest/${userId}/Note/${id}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -87,11 +87,9 @@ export function getAgencyRequestWorkerNotes(
   userId: string,
   pagination: NotePagination,
 ): Promise<PaginatedList<NoteItem>> {
-  return http
-    .get(
-      `/api/AgencyRequest/${requestId}/Worker/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
-    )
-    .then(r => r.data);
+  return api.get<PaginatedList<NoteItem>>(
+    `/api/AgencyRequest/${requestId}/Worker/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+  );
 }
 
 export function createAgencyRequestWorkerNote(
@@ -99,7 +97,7 @@ export function createAgencyRequestWorkerNote(
   userId: string,
   model: NoteModel,
 ): Promise<CreateNoteResponse> {
-  return http.post(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note`, model).then(r => r.data);
+  return api.post<CreateNoteResponse>(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note`, model);
 }
 
 export function updateAgencyRequestWorkerNote(
@@ -108,9 +106,9 @@ export function updateAgencyRequestWorkerNote(
   id: string,
   model: NoteModel,
 ): Promise<void> {
-  return http.put(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note/${id}`, model).then(() => {});
+  return api.put(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note/${id}`, model);
 }
 
 export function deleteAgencyRequestWorkerNote(requestId: string, userId: string, id: string): Promise<void> {
-  return http.delete(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note/${id}`).then(() => {});
+  return api.del(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note/${id}`);
 }

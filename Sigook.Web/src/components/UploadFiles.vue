@@ -53,7 +53,7 @@ function onSelectFile(evt: Event) {
       emit('fileSelected', pathFile.value);
       isLoading.value = false;
     })
-    .catch((e: any) => {
+    .catch((e: unknown) => {
       showAlertError(e);
       cleanInput();
       emit('finishUpload', true);

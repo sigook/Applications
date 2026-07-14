@@ -15,6 +15,7 @@ import mgr from '@/security/securityService';
 import { useSecurityStore } from '@/stores/security';
 import { VueRecaptchaPlugin } from 'vue-recaptcha/head';
 import { recaptchaSiteKey } from '@/utils/recaptcha';
+import type { UserProfile } from '@/types/security';
 
 // import the styles
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -39,15 +40,14 @@ app.use(pinia);
 
 const securityStore = useSecurityStore(pinia);
 mgr.events.addUserLoaded((user) => {
-  securityStore.setUser(user as any);
+  securityStore.setUser(user as unknown as UserProfile);
 });
 mgr.events.addUserUnloaded(() => {
   securityStore.setUser(null);
 });
 mgr.events.addAccessTokenExpired(() => {
-  mgr.signinSilent().catch(() => {
+  securityStore.silentSignin().catch(() => {
     securityStore.setUser(null);
-    securityStore.signIn();
   });
 });
 mgr.events.addSilentRenewError(() => {

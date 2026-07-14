@@ -69,7 +69,7 @@ function bulkUpload() {
       bulkFile.value = null;
       isLoading.value = false;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });

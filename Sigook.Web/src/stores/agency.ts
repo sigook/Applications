@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { appGlobals } from '@/varaibles';
 import type {
-  AgencyProfile,
+  AgencyDetail,
+  PersonnelAgencyItem,
   AgencyListFilter,
   AgencyRequestFilter,
   AgencyWorkerFilter,
@@ -11,8 +12,8 @@ import type { AgencyCandidateFilter } from '@/types/candidate';
 import type { AgencyInvoiceFilter, AgencyPayStubFilter } from '@/types/accounting';
 
 interface AgencyStoreState {
-  agency: AgencyProfile;
-  personnelAgencies: AgencyProfile[];
+  agency: AgencyDetail;
+  personnelAgencies: PersonnelAgencyItem[];
   agencyRequestFilter: AgencyRequestFilter | null;
   agencyCandidateFilter: AgencyCandidateFilter | null;
   agencyWorkerProfileFilter: AgencyWorkerFilter | null;
@@ -27,7 +28,7 @@ export const useAgencyStore = defineStore('agency', {
     // Starts as an empty shell (not null) because multiple callers access
     // `agencyStore.agency.*` directly without null checks. Populated by setAgency
     // once the user's profile loads.
-    agency: {} as AgencyProfile,
+    agency: {} as AgencyDetail,
     personnelAgencies: [],
     agencyRequestFilter: null,
     agencyCandidateFilter: null,
@@ -38,19 +39,20 @@ export const useAgencyStore = defineStore('agency', {
     agencyListFilter: null,
   }),
   actions: {
-    setAgency(data: AgencyProfile) {
+    setAgency(data: AgencyDetail) {
       this.agency = {
         ...data,
         agencies: data.agencies || (this.agency && this.agency.agencies) || [],
         // The backend flattens an `isUSA` flag onto each location in this specific
-        // endpoint's response — not part of the AgencyLocation shape used elsewhere.
-        usaAgency: data.locations.some(
+        // endpoint's response — not part of the AgencyLocationDetail shape used elsewhere.
+        usaAgency: (data.locations ?? []).some(
           (l) => (l as unknown as { isUSA?: boolean }).isUSA === true
         ),
         masterAgency: data.agencyType === appGlobals.$agencyTypeMaster,
       };
     },
-    setPersonnelAgencies(data: AgencyProfile[]) {
+    setPersonnelAgencies(data: PersonnelAgencyItem[]) {
+      this.personnelAgencies = data;
       if (this.agency) {
         this.agency.agencies = data;
       }

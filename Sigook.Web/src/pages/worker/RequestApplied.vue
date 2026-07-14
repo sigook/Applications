@@ -72,7 +72,7 @@ function getTimeSheet() {
 }
 
 function getWorkerRequestFn() {
-  getWorkerRequest(route.params.id)
+  getWorkerRequest(route.params.id as string)
     .then((response: any) => {
       isLoading.value = false;
       request.value = response;

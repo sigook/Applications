@@ -25,7 +25,7 @@ namespace Covenant.Api.Security.Controllers
             var targetAllow = new List<NotificationTarget>();
             if (User.IsInRole(CovenantConstants.Role.Worker))
                 targetAllow.Add(NotificationTarget.Worker);
-            if (User.IsInRole(CovenantConstants.Role.AgencyPersonnel))
+            if (User.IsAgencyStaff())
                 targetAllow.Add(NotificationTarget.Agency);
             if (User.IsInRole(CovenantConstants.Role.Company))
                 targetAllow.Add(NotificationTarget.Company);

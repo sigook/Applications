@@ -72,7 +72,7 @@ function onSearchInput(text: string) {
 
 function searchApplicants(text: string) {
   isLoadingList.value = true;
-  searchAgencyRequestApplicants(requestId, text)
+  searchAgencyRequestApplicants(requestId as string, text)
     .then(response => {
       isLoadingList.value = false;
       applicants.value = response;

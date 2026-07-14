@@ -154,7 +154,7 @@ function getAgencyWorkerTimeSheetByDate() {
       isLoading.value = false;
       data.value = response;
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -186,7 +186,7 @@ function onClockIn() {
       getAgencyWorkerTimeSheetByDate();
       clockInTime.value = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -231,7 +231,7 @@ function reportWorkerTimSheet(item: any) {
     .then(() => {
       isLoading.value = false;
       getAgencyWorkerTimeSheetByDate();
-    }).catch((error: any) => {
+    }).catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -256,7 +256,7 @@ function doDelete(item: any) {
       item.timeIn = null;
       getAgencyWorkerTimeSheetByDate();
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
       showAlertError(error);
     });
@@ -267,11 +267,7 @@ function changeDecimalToHour(time: number) {
 }
 
 function todayTimeZero(time: any) {
-  const d = new Date(time);
-  d.setHours(0);
-  d.setMinutes(0);
-  d.setSeconds(0);
-  return d;
+  return dayjs(time).hour(0).minute(0).second(0).format('YYYY-MM-DDTHH:mm:ss');
 }
 
 function openDetail(item: any) {

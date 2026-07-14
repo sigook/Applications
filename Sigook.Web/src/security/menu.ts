@@ -1,5 +1,6 @@
 import roles from "@/security/roles";
 import { useBillingAdmin } from "@/composables/useBillingAdmin";
+import type { AgencyDetail } from "@/types/agency";
 
 interface MenuLink {
   to: string;
@@ -15,7 +16,7 @@ interface MenuGroup {
 }
 
 export default {
-  getMenu(userRoles: string[], agency: any): MenuGroup[] {
+  getMenu(userRoles: string[], agency: AgencyDetail): MenuGroup[] {
     const result: MenuGroup[] = [];
     for (let i = 0; i < userRoles.length; i++) {
       switch (userRoles[i]) {
@@ -41,7 +42,7 @@ export default {
     result.sort((a, b) => (a.label ?? "").localeCompare(b.label ?? ""));
     return result;
   },
-  agencyMenu(agency: any): MenuGroup[] {
+  agencyMenu(agency: AgencyDetail): MenuGroup[] {
     const recruiting: MenuGroup = {
       label: "Recruiting",
       icon: "account-search",
@@ -92,13 +93,13 @@ export default {
     if (agency.masterAgency) {
       sales.items.push({
         to: "/sales/agencies",
-        icon: "warehouse",
+        icon: "handshake-outline",
         label: "Agencies",
       });
     }
     return [recruiting, sales];
   },
-  agencyBillingMenu(agency: any): MenuGroup {
+  agencyBillingMenu(agency: AgencyDetail): MenuGroup {
     const accounting: MenuGroup = {
       label: "Accounting",
       icon: "finance",

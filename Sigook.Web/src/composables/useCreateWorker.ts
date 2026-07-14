@@ -27,6 +27,9 @@ export interface WorkerDocumentForm {
 
 export interface WorkerLicenseForm {
   license: WorkerDocumentForm;
+  expires?: Date | null;
+  number?: string;
+  issued?: Date | null;
 }
 
 export interface WorkerResumeForm {

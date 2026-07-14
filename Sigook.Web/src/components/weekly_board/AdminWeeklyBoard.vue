@@ -98,7 +98,7 @@
     <b-modal v-model="showDetail" :width="480" scroll="keep">
       <div v-if="detail" class="modal-card detail-card">
         <header class="modal-card-head is-flex-direction-column is-align-items-start">
-          <p class="modal-card-title">Order #{{ detail.numberId }}</p>
+          <p class="modal-card-title">Request #{{ detail.numberId }}</p>
           <p class="has-text-grey is-size-7">{{ detail.companyName }} · {{ detail.jobTitle }}</p>
         </header>
         <section class="modal-card-body">
@@ -111,14 +111,17 @@
           <div class="detail-row">
             <b-tag :type="statusTagType(detail.status)" rounded>{{ statusLabel(detail.status) }}</b-tag>
           </div>
-          <collapse-section v-if="detail.dispatches.length > 0" :key="detail.requestId" class="detail-workers"
+          <collapse-section v-if="!isLoading && detailDispatches.length > 0" :key="detail.requestId" class="detail-workers"
             variant="compact" :model-value="false">
-            <template #title>Workers ({{ detail.dispatches.length }})</template>
+            <template #title>Workers ({{ detailDispatches.length }})</template>
             <ul>
-              <li v-for="worker in detail.dispatches" :key="worker.workerProfileId">
-                <router-link :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">{{
-                  worker.fullName }}</router-link>
-                <span class="detail-worker-email">{{ worker.email }}</span>
+              <li v-for="(worker, index) in detailDispatches" :key="`${worker.workerProfileId}-${index}`">
+                <div class="detail-worker-main">
+                  <router-link :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">{{
+                    worker.fullName }}</router-link>
+                  <span class="detail-worker-email">{{ worker.email }}</span>
+                </div>
+                <span v-if="worker.sentAt" class="detail-worker-sent">{{ formatSentAt(worker.sentAt) }}</span>
               </li>
             </ul>
           </collapse-section>
@@ -140,13 +143,14 @@ import dayjs from 'dayjs';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { getDialog } from '@/utils/buefyProgrammatic';
-import { getWeeklyBoard, assignRecruiters, unassignRecruiter, moveAssignment } from '@/api/weeklyBoardApi';
+import { getWeeklyBoard, assignRecruiters, unassignRecruiter, moveAssignment, getRequestDispatches } from '@/api/weeklyBoardApi';
 import { isDirectHiring } from '@/utils/directHiring';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import type {
   WeeklyBoard,
   WeeklyBoardAssignment,
   WeeklyBoardRecruiterRow,
+  WeeklyBoardDispatch,
   AssignRecruitersPayload,
   WeekDay,
   AssignPreset,
@@ -176,6 +180,7 @@ const assignPreset = ref<AssignPreset | undefined>(undefined);
 
 const showDetail = ref(false);
 const detail = ref<WeeklyBoardAssignment | null>(null);
+const detailDispatches = ref<WeeklyBoardDispatch[]>([]);
 
 const draggedAssignment = ref<WeeklyBoardAssignment | null>(null);
 const dropTarget = ref<{ recruiterId: string; date: string } | null>(null);
@@ -261,7 +266,21 @@ function openAssign(preset?: AssignPreset): void {
 
 function openDetail(assignment: WeeklyBoardAssignment): void {
   detail.value = assignment;
+  detailDispatches.value = [];
   showDetail.value = true;
+  isLoading.value = true;
+  getRequestDispatches(assignment.requestId)
+    .then(response => {
+      detailDispatches.value = response;
+    })
+    .catch(error => showAlertError(error))
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
+
+function formatSentAt(sentAt: string | null | undefined): string {
+  return sentAt ? dayjs(sentAt).format('ddd MMM D') : '';
 }
 
 function onAssign(payload: AssignRecruitersPayload): void {
@@ -571,6 +590,13 @@ watch(range, loadBoard, { immediate: true });
       padding: 0.3rem 0;
       font-size: 0.85rem;
 
+      .detail-worker-main {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+      }
+
       a {
         font-weight: 600;
         color: $grey-font;
@@ -584,6 +610,13 @@ watch(range, loadBoard, { immediate: true });
       .detail-worker-email {
         font-size: 0.75rem;
         color: $grey-light;
+      }
+
+      .detail-worker-sent {
+        flex-shrink: 0;
+        font-size: 0.75rem;
+        color: $grey-light;
+        white-space: nowrap;
       }
     }
   }

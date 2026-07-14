@@ -406,14 +406,14 @@ watch(jobTitle, (val) => {
   const agencyRequest = (route.meta as any).agencyRequest;
   request.value.companyProfileId = companyProfileId.value;
   if (agencyRequest) {
-    companyJobPositions.value = (route.meta as any).companyJobPositions;
-    locations.value = (route.meta as any).companyLocations;
-    salesRepresentatives.value = (route.meta as any).agencyPersonnel;
-    companyUsers.value = (route.meta as any).companyUsers;
+    companyJobPositions.value = route.meta.companyJobPositions as unknown[];
+    locations.value = route.meta.companyLocations as unknown[];
+    salesRepresentatives.value = route.meta.agencyPersonnel as unknown[];
+    companyUsers.value = route.meta.companyUsers as unknown[];
     isUpdate.value = true;
     request.value = {
       ...agencyRequest,
-      durationBreak: agencyRequest.breakIsPaid ? dayjs().add(agencyRequest.durationBreak, 'hours').toDate() : dayjs().startOf('day').toDate(),
+      durationBreak: agencyRequest.breakIsPaid ? dayjs(`${dayjs().format('YYYY-MM-DD')}T${agencyRequest.durationBreak}`).toDate() : dayjs().startOf('day').toDate(),
       jobPositionRateId: agencyRequest.jobPositionId,
       rate: agencyRequest.workerRate,
       finishAt: new Date(agencyRequest.finishAt || ''),
@@ -547,7 +547,7 @@ function createRequest(payload: any) {
   postAgencyRequest(payload)
     .then((response: any) => {
       showAlertSuccess('Request created');
-      router.push('/agency-request/' + response.id);
+      router.push('/recruiting/requests/' + response.id);
       isLoading.value = false;
     })
     .catch((error) => {
@@ -572,7 +572,7 @@ function updateRequest(payload: any) {
     .then((response: any) => {
       isLoading.value = false;
       showAlertSuccess('Request updated');
-      router.push('/agency-request/' + response.id);
+      router.push('/recruiting/requests/' + response.id);
     })
     .catch((error) => {
       isLoading.value = false;

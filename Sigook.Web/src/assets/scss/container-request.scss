@@ -1,31 +1,37 @@
 @import './variables';
 
-.container-requests{
+.container-requests {
   margin-bottom: 20px;
   border: 1px solid $gray-border;
   cursor: pointer;
-  &:hover{
+
+  &:hover {
     box-shadow: 0 0 10px gainsboro;
     transition: .2s all ease;
   }
-  .container-requests-top{
-    display:flex;
+
+  .container-requests-top {
+    display: flex;
     flex-wrap: wrap;
     align-items: center;
     padding: 5px 15px;
   }
-  .container-title{
+
+  .container-title {
     width: calc(81% - 80px);
-    padding:0 10px;
+    padding: 0 10px;
   }
-  .container-right{
+
+  .container-right {
     width: 19%;
   }
-  .subtitle{
+
+  .subtitle {
     font-size: 14px;
     text-transform: capitalize;
     color: #878787;
-    &.icon-before:before{
+
+    &.icon-before:before {
       width: 12px;
       height: 12px;
       position: relative;
@@ -33,35 +39,38 @@
       margin: 0;
     }
   }
-  .request-logo{
+
+  .request-logo {
     border-radius: 50%;
     padding: 10px;
   }
 
-  img{
+  img {
     width: 80px;
     height: 80px;
     object-fit: cover;
   }
 
-  &.disabled{
+  &.disabled {
     opacity: .6;
   }
 }
 
 
-.container-actions{
+.container-actions {
   background-color: $gray-bg;
   padding: 4px 20px 4px 15px;
   font-size: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   span {
     font-size: 14px;
   }
 }
-.container-status{
+
+.container-status {
   display: inline-block;
   padding: 3px 10px;
   margin: 3px 0;
@@ -70,25 +79,26 @@
   color: white;
 }
 
-.light-title{
+.light-title {
   font-weight: normal;
   font-size: 20px;
   text-transform: capitalize;
 }
 
-@media(max-width: 767px){
-  .container-requests{
+@media(max-width: 767px) {
+  .container-requests {
     background-color: white;
     border: 0;
     border-radius: 5px;
     box-shadow: 2px 5px 8px #d8d8d8;
+
     .container-requests-top {
       flex-wrap: wrap;
       padding: 10px;
       width: 100%;
     }
 
-    .container-title{
+    .container-title {
       padding: 0;
       width: 100%;
       margin-bottom: 10px;
@@ -98,9 +108,10 @@
       width: 100%;
       text-align: left;
     }
+
     .container-actions {
       background-color: white;
-      padding:10px 15px;
+      padding: 10px 15px;
       border-top: 1px solid #e2e2e2;
     }
   }

@@ -22,7 +22,21 @@ public static class TestAuthenticationMiddleware
 
     public static void AddAgencyPersonnelRole(this TestAuthenticationOptions options, Guid? agencyId = default)
     {
-        options.Identity.AddClaim(new Claim(ClaimTypes.Role, CovenantConstants.Role.AgencyPersonnel));
+        options.Identity.AddClaim(new Claim(ClaimTypes.Role, CovenantConstants.Role.Recruiting));
+        if (agencyId.HasValue)
+            options.Identity.AddClaim(new Claim(CovenantConstants.AgencyId, agencyId.Value.ToString()));
+    }
+
+    public static void AddSalesRole(this TestAuthenticationOptions options, Guid? agencyId = default)
+    {
+        options.Identity.AddClaim(new Claim(ClaimTypes.Role, CovenantConstants.Role.Sales));
+        if (agencyId.HasValue)
+            options.Identity.AddClaim(new Claim(CovenantConstants.AgencyId, agencyId.Value.ToString()));
+    }
+
+    public static void AddAdminRole(this TestAuthenticationOptions options, Guid? agencyId = default)
+    {
+        options.Identity.AddClaim(new Claim(ClaimTypes.Role, CovenantConstants.Role.Admin));
         if (agencyId.HasValue)
             options.Identity.AddClaim(new Claim(CovenantConstants.AgencyId, agencyId.Value.ToString()));
     }

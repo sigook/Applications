@@ -14,12 +14,22 @@ const securityStore = useSecurityStore();
 const isLoading = ref(true);
 
 (async () => {
-  if (!securityStore.user) {
-    await mgr.signinRedirectCallback();
-    await securityStore.getUser();
+  try {
+    if (!securityStore.user) {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has('code')) {
+        router.push('/');
+        return;
+      }
+      await mgr.signinRedirectCallback();
+      await securityStore.getUser();
+    }
+    const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
+    router.push(homePageUrl);
+  } catch {
+    router.push('/');
+  } finally {
+    isLoading.value = false;
   }
-  const roles = await securityStore.userRoles;
-  const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(roles);
-  router.push(homePageUrl);
 })();
 </script>

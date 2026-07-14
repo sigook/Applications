@@ -1,5 +1,4 @@
 @use "sass:color";
-@import 'mixins';
 @import 'variables';
 @import url("https://fonts.googleapis.com/css?family=Raleway");
 
@@ -83,10 +82,6 @@ p {
   font-size: 14px;
 }
 
-.letter-spacing1 {
-  letter-spacing: 1px;
-}
-
 .word-break {
   word-break: break-word;
 }
@@ -94,13 +89,6 @@ p {
 // titles
 .main-title {
   margin-bottom: 5px;
-}
-
-
-@media(max-width: 767px) {
-  .sm-text-center {
-    text-align: center;
-  }
 }
 
 // icons
@@ -151,169 +139,6 @@ button {
   background-color: transparent;
 }
 
-.sm-btn {
-  padding: 4px 10px;
-  border-radius: 0;
-  border: 1px solid #888888;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.xs-btn {
-  padding: 2px 7px;
-  font-size: 10px;
-  font-weight: 300;
-  border-radius: 5px;
-  text-transform: uppercase;
-}
-
-.md-btn {
-  padding: 10px 35px;
-  border-radius: 0;
-  border: 1px solid #888888;
-  font-weight: 600;
-  text-transform: uppercase;
-  max-width: 230px;
-}
-
-.create-btn {
-  @extend .md-btn;
-  max-width: none;
-  width: 250px;
-  margin: 15px auto;
-  display: block;
-}
-
-.btn-radius {
-  border-radius: 5px;
-}
-
-.background-btn {
-  &.primary-button {
-    background-color: $primary;
-    border: 1px solid $primary;
-    color: #fff;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: #fff;
-      color: $primary;
-    }
-  }
-
-  &.gray-light-button {
-    background-color: #b5b4b4;
-    border: 0;
-    color: #fff;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: #5e5e5e;
-    }
-  }
-
-  &.green-button {
-    background-color: $green;
-    border: 0;
-    color: #fff;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: #218838;
-    }
-  }
-
-  &.orange-button {
-    background-color: $accent;
-    border: 0;
-    color: #fff;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: #e86100;
-    }
-  }
-
-  &.red-button {
-    background-color: $red;
-    border: 0;
-    color: #fff;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: #960202;
-    }
-  }
-}
-
-.outline-btn {
-  &.red-button {
-    border-color: $red;
-    color: $red;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: $red;
-      color: white;
-    }
-  }
-
-  &.orange-button {
-    border-color: $accent;
-    color: $accent;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: $accent;
-      color: white;
-    }
-  }
-
-  &.green-button {
-    border-color: $green;
-    color: $green;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: $green;
-      color: white;
-    }
-  }
-
-  &.primary-button {
-    border-color: $primary;
-    color: $primary;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: $primary;
-      color: white;
-    }
-  }
-
-  &.gray-light-button {
-    border-color: #b5b4b4;
-    color: #b5b4b4;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: #b5b4b4;
-      color: white;
-    }
-  }
-
-  &.white-button {
-    border-color: #ffffff;
-    color: #ffffff;
-    transition: 0.3s all ease;
-
-    &:hover {
-      background-color: #ffffff;
-      color: $primary;
-    }
-  }
-}
-
 .btn-icon-sm {
   width: 20px;
   min-width: 20px;
@@ -350,21 +175,6 @@ button {
   -webkit-background-size: 55%;
   background-size: 55%;
   // background-color: #fbe4e6;
-}
-
-.btn-icon-circle-plus {
-  background: #ffffff url('../images/circle-plus.png') no-repeat 50%;
-  -webkit-background-size: 60%;
-  background-size: 60%;
-}
-
-.btn-icon-circle-minus {
-  background: #ffffff url('../images/circle-minus.png') no-repeat 50%;
-  -webkit-background-size: 60%;
-  background-size: 60%;
-  height: 20px;
-  min-width: 20px;
-  width: 20px;
 }
 
 .btn-icon-worker-plus {
@@ -515,12 +325,6 @@ button {
 
 /* END VUE MODAL */
 
-.bg-primary {
-  background-color: $primary;
-  color: white;
-}
-
-
 // forms
 ::-webkit-input-placeholder {
   /* Chrome/Opera/Safari */
@@ -574,10 +378,6 @@ span.help.is-danger {
 
   &.no-margin {
     margin-left: 10px;
-  }
-
-  &.margin-50 {
-    margin-left: calc(50% + 10px);
   }
 }
 
@@ -636,10 +436,6 @@ input[type="file"] {
   width: 100px;
   border-top: 3px solid $accent;
   margin: 8px auto 30px;
-
-  &.not-center {
-    margin: 8px 0 30px;
-  }
 }
 
 .line-gray {
@@ -707,9 +503,12 @@ input[type="file"] {
 
 // Pulse animation for active states (pending, inqueue, working)
 @keyframes pulse-blue {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
   }
+
   50% {
     box-shadow: 0 0 0 6px rgba(13, 167, 255, 0.4);
   }
@@ -792,14 +591,6 @@ input[type="file"] {
   }
 }
 
-.time-picker.input-auto {
-  width: auto;
-}
-
-.time-picker .clear-btn {
-  z-index: 0;
-}
-
 .only-sm {
   display: none !important;
 }
@@ -866,22 +657,6 @@ input[type="file"] {
   }
 }
 
-.loading.relative-loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-
-  img {
-    position: static;
-    transform: none;
-    width: 40px;
-  }
-}
-
 input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 30px white inset;
 }
@@ -903,10 +678,6 @@ input:-webkit-autofill {
   border-radius: 5px;
 }
 
-
-.md-btn.margin-right {
-  margin-right: 10px !important;
-}
 
 input[type="checkbox"] {
   margin-right: 5px;
@@ -952,11 +723,6 @@ input[type="checkbox"] {
   .modal-container {
     // max-height: none;
     overflow: hidden;
-
-    .modal-workerlist>div:nth-of-type(1):not(.loading) {
-      max-height: calc(80vh - 130px);
-      overflow: auto;
-    }
   }
 }
 
@@ -1011,11 +777,6 @@ input[type="checkbox"] {
   }
 }
 
-.button-top-m8 {
-  position: relative;
-  top: -3px;
-}
-
 .tag_primary_absolute {
   background: #1fb7ff;
   color: white;
@@ -1042,23 +803,6 @@ input[type="checkbox"] {
   padding-right: 0.75em;
   white-space: nowrap;
   transition: 0.4s all linear;
-
-  .delete-tag {
-    width: 1.5em;
-    height: 1.5em;
-    margin-right: -0.50em;
-    margin-left: 0.5em;
-    border: 0;
-    background-image: url("../images/delete-x.png");
-    background-size: 40%;
-    background-repeat: no-repeat;
-    background-position: 50%;
-    opacity: .5;
-
-    &:hover {
-      background-size: 50%;
-    }
-  }
 }
 
 label.filter-status-tag,
@@ -1099,16 +843,6 @@ div.filter-status-tag {
       background-image: url("../images/icon_cross_white.svg");
       background-size: contain;
       margin-left: 10px;
-    }
-  }
-}
-
-label.filter-status-tag.noChecked {
-  span {
-    background-color: transparent;
-
-    &:after {
-      display: none;
     }
   }
 }
@@ -1340,56 +1074,13 @@ Pagination
 * Compound Components
 */
 
-.sm-save-button {
-  font-weight: 700;
-  @extend .fz-1;
-  @extend .sm-btn;
-  @extend .outline-btn;
-  @extend .orange-button;
-  @extend .btn-radius;
-}
 
 
 button[disabled="disabled"] {
   opacity: 0.5;
 }
 
-.main-banner-arrow {
-  opacity: 1 !important;
-  width: auto !important;
-
-  @include desktop {
-    &.left {
-      left: -30px;
-    }
-
-    &.right {
-      right: -30px;
-    }
-  }
-
-  @include smaller-than-desktop {
-    vertical-align: top !important;
-    top: 20px !important;
-    bottom: auto !important;
-    justify-content: end !important;
-
-    &.left {
-      right: 100px;
-    }
-
-    &.right {
-      right: 20px;
-    }
-  }
-}
-
-
 /*#region COLOR */
-
-.color-grey-light {
-  color: $grey-light;
-}
 
 .color-black {
   color: black !important;
@@ -1541,6 +1232,7 @@ body {
 .container-image {
   width: 170px;
 }
+
 .update-image {
   width: 170px;
   height: 170px;
@@ -1603,17 +1295,20 @@ body {
       color: white;
     }
   }
+
   &.is-danger {
     border-color: #da3025;
   }
 }
 
 .is-danger {
+
   input,
   button {
     border-color: #da3025 !important;
   }
-  & + button {
+
+  &+button {
     border-color: #da3025 !important;
   }
 }

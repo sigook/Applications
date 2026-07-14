@@ -187,10 +187,6 @@ export interface TimeSheetHistoryFilter {
   pageSize?: number;
 }
 
-export interface ClockTypeResult {
-  clockType: string;
-}
-
 // ---------------------------------------------------------------------------
 // Worker profile sub-info payloads (POST /api/WorkerProfile/{id}/...)
 // Each mirrors the corresponding backend model in Covenant.Common.Models.Worker.

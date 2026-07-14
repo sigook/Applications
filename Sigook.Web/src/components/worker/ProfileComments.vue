@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <section class="worker-comments">
       <comments v-if="commentsData" :user-id="props.worker.workerId" :data="commentsData" :size-comments="commentSize"
-        only-view="true" @newComment="() => updateComments()" @changePage="page => changePageComments(page)"></comments>
+        :only-view="true" @newComment="() => updateComments()" @changePage="page => changePageComments(page)"></comments>
     </section>
   </div>
 </template>

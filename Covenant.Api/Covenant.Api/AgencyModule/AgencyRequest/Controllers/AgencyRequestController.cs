@@ -47,7 +47,8 @@ public class AgencyRequestController : ControllerBase
         var agencyId = User.GetAgencyId();
         if (pagination.OnlyMine) pagination.Recruiter = User.GetNickname();
         if (pagination.AgencyId.HasValue) agencyId = pagination.AgencyId.Value;
-        pagination.HasPermissionToSeeInternalRequests = User.IsPayrollManager();
+        pagination.HasPermissionToSeeInternalRequests = User.IsAccountingManager();
+        pagination.SalesUserId = null;
         return Ok(await requestService.GetRequestsForAgency(agencyId, pagination));
     }
 
@@ -58,6 +59,7 @@ public class AgencyRequestController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<AgencyRequestListModel>), StatusCodes.Status200OK)]
     public IActionResult GetAll([FromServices] IRequestRepository repository, GetRequestForAgencyFilter pagination)
     {
+        pagination.SalesUserId = null;
         var data = repository.GetAllRequestsForAgency(User.GetAgencyId(), pagination).ToList();
         return Ok(data);
     }
@@ -74,7 +76,8 @@ public class AgencyRequestController : ControllerBase
         {
             pagination.Recruiter = User.GetNickname();
         }
-        pagination.HasPermissionToSeeInternalRequests = User.IsPayrollManager();
+        pagination.HasPermissionToSeeInternalRequests = User.IsAccountingManager();
+        pagination.SalesUserId = null;
         var data = repository.GetAllRequestsForAgency(User.GetAgencyId(), pagination).ToList();
         var file = await mediator.Send(new GenerateAgencyRequestsReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);

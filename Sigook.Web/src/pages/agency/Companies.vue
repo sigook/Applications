@@ -13,7 +13,7 @@
       <export :url="'/api/v2/AgencyCompanyProfile/File'" :params="serverParams" :fileName="'Companies'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
-          <b-button tag="router-link" to="/create-company" icon-left="plus">
+          <b-button tag="router-link" :to="companyDetailBase + '/create'" icon-left="plus">
             {{ 'Create' }}
           </b-button>
         </template>
@@ -42,7 +42,7 @@
                 size="is-small" @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <router-link :to="{ path: '/agency-companies/company/' + props.row.id }">
+              <router-link :to="{ path: companyDetailBase + '/' + props.row.id }">
                 {{ props.row.businessName }}
                 <template v-for="(location, index) in props.row.locations">
                   <p v-if="index < 2" :key="location">
@@ -180,6 +180,8 @@ import BulkData from '@/components/agency/BulkData.vue';
 
 const route = useRoute();
 const router = useRouter();
+const companyDetailBase = computed(() =>
+  route.path.startsWith('/sales') ? '/sales/companies' : '/recruiting/companies');
 const agencyStore = useAgencyStore();
 const appStore = useAppStore();
 const billingAdmin = useBillingAdmin();
@@ -205,7 +207,7 @@ const deleteCompanyNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCo
 
 const isMobile = computed(() => appStore.isMobile);
 
-statuses.value = (route.meta as any).companyStatuses;
+statuses.value = route.meta.companyStatuses as unknown[];
 if (agencyStore.agencyCompanyProfileFilter) {
   serverParams.value = agencyStore.agencyCompanyProfileFilter;
   if (serverParams.value.companyStatuses) {
@@ -284,7 +286,7 @@ function onCellClick(row: any, column: any) {
     case 'email':
       break;
     default:
-      router.push({ path: `/agency-companies/company/${row.id}` });
+      router.push({ path: `${companyDetailBase.value}/${row.id}` });
   }
 }
 

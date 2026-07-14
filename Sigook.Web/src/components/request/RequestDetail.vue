@@ -57,7 +57,7 @@
       </div>
       <div class="item">
         <span class="fw-bold">Vaccination</span>
-        <router-link :to="'/agency-companies/company/' + request.companyProfileId">
+        <router-link :to="'/recruiting/companies/' + request.companyProfileId">
           <p>
             {{ request.vaccinationRequired ? "yes" : "No" }}
             <b-icon icon="needle" class="ms-2"></b-icon>

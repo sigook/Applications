@@ -6,9 +6,7 @@
       {{ successMessage }}
     </p>
     <div>
-      <button v-on:click="redirectToHome" type="button" class="background-btn create-btn primary-button btn-radius">
-        OK
-      </button>
+      <b-button type="is-primary" rounded @click="redirectToHome">OK</b-button>
     </div>
   </div>
 </template>
@@ -52,9 +50,9 @@ function apply() {
       successMessage.value = defaultSuccessMessage;
       window.sessionStorage.setItem(key, '1');
     })
-    .catch((error: any) => {
+    .catch(async (error: unknown) => {
       isLoading.value = false;
-      errorMessage.value = getErrorMessage(error);
+      errorMessage.value = await getErrorMessage(error);
       window.sessionStorage.setItem(key, '1');
     });
 }

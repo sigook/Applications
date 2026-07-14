@@ -88,7 +88,7 @@ const showModalRole = ref(false);
 
 async function loadJobPositions() {
   isLoading.value = true;
-  const data = await getAgencyCompanyJobPositions(profileId);
+  const data = await getAgencyCompanyJobPositions(profileId as string);
   rows.value = data.map((i: any) => ({ ...i, actions: null }));
   isLoading.value = false;
 }
@@ -113,7 +113,7 @@ function onDeleteJobPosition(id: any) {
     .then((response) => {
       if (response) {
         isLoading.value = true;
-        deleteAgencyCompanyJobPosition(profileId, id)
+        deleteAgencyCompanyJobPosition(profileId as string, id)
           .then(async () => {
             isLoading.value = false;
             showAlertSuccess("Deleted");

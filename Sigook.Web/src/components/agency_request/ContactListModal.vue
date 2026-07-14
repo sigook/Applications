@@ -12,9 +12,9 @@
           <span class="d-block fz-1">{{ item.email }}</span>
         </div>
         <div>
-          <button v-if="item.active" class="sm-btn red-button outline-btn btn-radius"
-            @click="removeContactFromActive(item)">Remove</button>
-          <button v-else class="sm-save-button" @click="selectContact(item)">Add</button>
+          <b-button v-if="item.active" type="is-danger" size="is-small" outlined rounded
+            @click="removeContactFromActive(item)">Remove</b-button>
+          <b-button v-else type="is-primary" size="is-small" outlined rounded @click="selectContact(item)">Add</b-button>
         </div>
       </li>
     </ul>

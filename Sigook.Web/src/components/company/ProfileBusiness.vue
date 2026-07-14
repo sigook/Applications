@@ -154,9 +154,9 @@ async function save() {
         isLoading.value = false;
         showAlertSuccess('Profile updated');
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         isLoading.value = false;
-        showAlertError(error.data);
+        showAlertError((error as { data?: unknown }).data);
       });
   })();
 }

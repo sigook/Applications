@@ -24,7 +24,7 @@
               <div class="actions text-end">
                 <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                   <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
-                    @click="onDeleteDocument(document.id, index)">
+                    @click="onDeleteDocument(document.id, Number(index))">
                     {{ "Delete" }}
                   </button>
                 </b-tooltip>
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <button @click="showModal = true" class="sm-save-button">Add</button>
+        <b-button type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
 
         <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="size"
           @changePage="(index) => loadDocuments(index)">
@@ -93,7 +93,7 @@ function onShowDocuments() {
 
 function loadDocuments(index: number) {
   isLoading.value = true;
-  getAgencyCompanyDocument(profileId, { size, page: index })
+  getAgencyCompanyDocument(profileId as string, { size, page: index })
     .then((response) => {
       isLoading.value = false;
       data.value = response;
@@ -114,7 +114,7 @@ function onDeleteDocument(id: any, index: number) {
     .then((response) => {
       if (response) {
         isLoading.value = true;
-        deleteAgencyCompanyDocument(profileId, id)
+        deleteAgencyCompanyDocument(profileId as string, id)
           .then(() => {
             isLoading.value = false;
             showAlertSuccess("Deleted");

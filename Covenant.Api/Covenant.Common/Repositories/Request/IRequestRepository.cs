@@ -47,6 +47,8 @@ public interface IRequestRepository
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignments(Guid agencyId, DateTime weekStart, DateTime weekEnd);
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd);
     Task<RequestRecruiter> GetRequestRecruiter(Guid agencyId, Guid requestId, Guid recruiterId, DateTime workDate);
+    Task<IEnumerable<WeeklyBoardDispatchModel>> GetOrderDispatches(Guid agencyId, Guid requestId);
+    Task<Dictionary<Guid, string>> GetWorkerProfileNames(IEnumerable<Guid> workerProfileIds);
     Task<RequestSkill> GetSkill(Guid requestId, Guid id);
     Task<IEnumerable<SkillModel>> GetSkills(Guid requestId);
     Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression);

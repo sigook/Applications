@@ -29,11 +29,8 @@
             <span>{{ currentHour }}</span>
           </div>
           <div class="text-center" v-if="canBeRegistered">
-            <button class="btn outline-btn white-button md-btn btn-radius" @click="registerEntryHour"
-              v-if="isEntryTime">{{ "START SHIFT" }}</button>
-            <button v-else class="btn outline-btn white-button md-btn btn-radius" @click="registerDepartureHour">
-              {{ "END SHIFT" }}
-            </button>
+            <b-button v-if="isEntryTime" type="is-white" outlined rounded @click="registerEntryHour">START SHIFT</b-button>
+            <b-button v-else type="is-white" outlined rounded @click="registerDepartureHour">END SHIFT</b-button>
           </div>
         </div>
       </div>
@@ -47,6 +44,7 @@ import { useAppStore } from '@/stores/app';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import dayjs from 'dayjs';
 import { workerRegisterTime, getClockType as getClockTypeApi } from '@/api/workerApi';
+import { ClockType } from '@/constants/enums';
 import { date, time } from '@/utils/filters';
 import DataEntryTerms from '../../components/DataEntryTerms.vue';
 
@@ -98,8 +96,8 @@ function registerHour() {
     .then(async () => {
       emit('refreshTimeSheet');
       const clockType = await getClockType();
-      isEntryTime.value = clockType === 1;
-      canBeRegistered.value = clockType !== 0;
+      isEntryTime.value = clockType === ClockType.ClockIn;
+      canBeRegistered.value = clockType !== ClockType.None;
       isLoading.value = false;
       if (isEntryTime.value) {
         showAlertSuccess('Enjoy your shift!');
@@ -107,9 +105,9 @@ function registerHour() {
         showAlertSuccess('Thanks for your job!');
       }
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       isLoading.value = false;
-      showAlertError(error.data);
+      showAlertError((error as { data?: unknown }).data);
     });
 }
 
