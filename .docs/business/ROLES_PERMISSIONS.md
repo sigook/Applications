@@ -51,8 +51,8 @@ Concretely:
   filter by the caller's `AgencyPersonnelId` (`RequestComission.AgencyPersonnelId` for orders,
   `CompanyProfile.SalesRepresentativeId` for clients). Admin and superadmin hit the same endpoints
   **unscoped** — the scoping is per-caller, not per-endpoint.
-- **The unscoped lists are closed to sales.** `GET api/AgencyRequest` and
-  `GET api/v2/AgencyCompanyProfile` (plus their `/all` and `/File` variants) require Policy
+- **The unscoped lists are closed to sales.** `GET api/agency/recruiting/requests` and
+  `GET api/agency/recruiting/companyprofiles` (plus their `/all` and `/File` variants) require Policy
   `Recruiting`. Otherwise a sales user would just call those and see everything.
 - **Details are not scoped.** Policy `Agency` = `AgencyStaff`, so sales reaches the same detail,
   edit, workers, timesheets, applicants and runners endpoints a recruiter reaches. A sales user who
@@ -68,7 +68,7 @@ Any other role leaves the field blank for manual assignment, and can reassign it
 
 This rule lives in `RequestService.CreateRequest` and `AgencyService.CreateCompany` — **not** in a
 sales-only controller. It has to, because sales calls the ordinary create endpoints: a rule enforced
-only in a separate controller would be bypassed by posting to `api/AgencyRequest` directly.
+only in a separate controller would be bypassed by posting to `api/agency/requests` directly.
 
 Updating does **not** re-force the assignment: a sales rep editing an order keeps whatever
 representative it already had.

@@ -23,6 +23,7 @@ Before implementing any feature, read the relevant document from `.docs/`:
 | Timesheets (OT, night, holiday) | `.docs/business/TIMESHEET_RULES.md` |
 | Workflows step-by-step | `.docs/business/WORKFLOWS.md` |
 | Request state management | `.docs/business/REQUEST_STATE_MANAGEMENT.md` |
+| Roles & permissions (7 roles, sales scoping) | `.docs/business/ROLES_PERMISSIONS.md` |
 | Roles & permissions | `.docs/business/ROLES_PERMISSIONS.md` |
 | Architecture & stack | `.docs/technical/ARCHITECTURE.md` |
 | API endpoints | `.docs/technical/openapi.json` (OpenAPI spec, generated on build) |
@@ -61,5 +62,5 @@ If you change business rules, update the corresponding `.docs/` file.
 - Respond always in Spanish
 - Do not auto-commit; only commit when explicitly asked
 - Show the plan before executing large changes (3+ files)
-- Respond always like caverman mode at least I say in normal mode
-- Use the last language features
+- Respond in caveman mode unless I say "normal mode"
+- Use the latest language features (C# file-scoped namespaces, primary constructors, etc.)

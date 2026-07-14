@@ -60,14 +60,12 @@ public class UserAdministrationController : ControllerBase
                 Email = model.Email,
                 UserName = model.Email,
             };
-            if (model.UserType == UserType.Agency)
+            newUser.EmailConfirmed = model.UserType switch
             {
-                newUser.EmailConfirmed = true;
-            }
-            else if (model.UserType == UserType.Company && string.IsNullOrEmpty(model.ConfirmPassword))
-            {
-                newUser.EmailConfirmed = true;
-            }
+                UserType.Agency or UserType.AgencyPersonnel => true,
+                UserType.Company => string.IsNullOrEmpty(model.ConfirmPassword),
+                _ => false
+            };
             var result = await _userManager.CreateAsync(newUser, model.Password);
             if (result.Succeeded)
             {

@@ -11,6 +11,7 @@
 | [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) | Hours calculations (regular, overtime, night shift, holiday), validations |
 | [WORKFLOWS.md](./business/WORKFLOWS.md) | Detailed step-by-step flows (Worker Registration, Job Matching, Payroll, etc.) |
 | [REQUEST_STATE_MANAGEMENT.md](./business/REQUEST_STATE_MANAGEMENT.md) | Request lifecycle and state transitions |
+| [ROLES_PERMISSIONS.md](./business/ROLES_PERMISSIONS.md) | The 7 roles, role groups, sales data scoping, user creation rules |
 | [ROLES_PERMISSIONS.md](./business/ROLES_PERMISSIONS.md) | The 7 roles, what each one reaches, and how sales is scoped |
 
 ## Technical
@@ -22,8 +23,8 @@
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
-| [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 2 agency portal) — every `src/api/*.ts` file mapped to backend endpoints, types, and Vuex modules |
-| [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature, Vuex modules, global plumbing |
+| [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every `src/api/*.ts` file mapped to backend endpoints, types, and Pinia stores |
+| [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature, Pinia stores, global plumbing |
 
 ---
 

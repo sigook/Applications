@@ -2,6 +2,7 @@
 
 Azure Functions project for background and scheduled jobs in the Covenant platform.
 
+Current functions (both Timer triggers, in `Sigook.Functions/Functions/ScheduleTasks.cs`): `NotificationSinExpiration`, `WarnLicensesExpiration`.
 ## Code Navigation
 
 ```

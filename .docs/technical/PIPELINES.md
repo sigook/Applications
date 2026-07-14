@@ -44,6 +44,8 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Note:** All pipelines exclude `**/*.md` from triggers (documentation changes don't trigger builds).
 
+**Warning:** A legacy `Covenant.IdentityServer/azure-pipelines.yml` still exists alongside the documented `.azure-pipelines/covenant-identityserver-pipeline.yml`, with its own `main/master/dev` trigger. It is superseded — do not extend it; candidate for deletion.
+
 ---
 
 ## Pipeline Details
@@ -209,6 +211,13 @@ Installs .NET SDK via `UseDotNet@2` task.
 |-----------|------|---------|-------------|
 | `sdkVersion` | string | required | .NET SDK version (e.g., `8.0.415`) |
 | `includePreviewVersions` | boolean | `false` | Include preview SDK versions |
+
+### node-setup.yml
+Installs Node.js via the official `NodeTool@0` task (no NVM dependency) and verifies the installation. Used by the Sigook.Web and Covenant.Web pipelines.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `nodeVersion` | string | `22.x` | Node.js version spec (e.g. `22.x`, `20.19.0`) |
 
 ### dotnet-build-test.yml
 Builds solution, authenticates NuGet, and optionally runs tests.

@@ -1,6 +1,6 @@
 # Sigook.Web Codebase Structure
 
-Overview of Vue 3 agency/worker portal for Covenant/Sigook staffing platform. Stack: Vite, TypeScript, Pinia, Vue Router 4, `@ntohq/buefy-next`, VeeValidate 4 + Yup, oidc-client-ts.
+Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `@ntohq/buefy-next`, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
 
 ---
 
@@ -9,487 +9,295 @@ Overview of Vue 3 agency/worker portal for Covenant/Sigook staffing platform. St
 ```
 Sigook.Web/
 ├── src/
-│   ├── api/                # Plain function API wrappers
+│   ├── api/                # Plain function API wrappers (see SIGOOK_WEB_API_MAP.md)
 │   ├── assets/             # Images, fonts, SCSS
 │   ├── components/         # Reusable Vue components by domain
 │   ├── composables/        # Composition API utilities
-│   ├── constants/          # Constants
+│   ├── constants/          # Enums and static constants
+│   ├── data/               # Static JSON for landing pages
 │   ├── directives/         # Custom Vue directives
-│   ├── filters/            # Vue filters
-│   ├── lang/               # i18n translations
-│   ├── mixins/             # Vue mixins
-│   ├── pages/              # Page/view components (routable)
+│   ├── filters/            # Formatter functions (imported, not Vue 2 filters)
+│   ├── lang/               # VeeValidate rules + English error messages
+│   ├── pages/              # Routable page components
 │   ├── resolvers/          # Route resolvers (pre-load data)
 │   ├── router/             # Vue Router config
-│   ├── security/           # Auth, API service, roles
-│   ├── store/              # Pinia stores
+│   ├── security/           # Auth (oidc-client-ts), API service, roles, menu
+│   ├── stores/             # Pinia stores (FLAT — no modules/ subfolder)
 │   ├── types/              # TypeScript interfaces
 │   ├── utils/              # Utility functions
-│   ├── App.vue             # Root component
+│   ├── App.vue             # Root component (layout switch)
 │   ├── main.ts             # App entry point
-│   └── varaibles.ts        # Global app config
-├── public/                 # Static assets
-├── node_modules/
-├── CLAUDE.md               # Original notes (to be complemented by this doc)
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── Dockerfile
+│   └── varaibles.ts        # App-wide global constants (note misspelled filename)
+├── public/                 # Static assets (data/, fonts/, images/, robots.txt, sitemap.xml, version.json)
+├── CLAUDE.md
+├── package.json            # pnpm; scripts: dev, build, staging, production, type-check, lint
+├── vite.config.ts          # envPrefix: 'VUE_APP_'
+├── nginx.conf
+└── Dockerfile              # Node 22 + pnpm build → nginx
 ```
 
 ---
 
-## src/api/ — API Layer
+## src/api/ — API Layer (24 files)
 
-**Purpose:** Plain TypeScript functions wrapping HTTP calls to Covenant.Api backend.
+Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `api` wrapper object from `@/security/apiService` (`api.get/post/put/patch/del`), which unwraps `response.data`. Full endpoint tables in `SIGOOK_WEB_API_MAP.md`.
 
-**Pattern:** Direct imports, no service locator. Each function is a dedicated endpoint wrapper.
-
-### File Organization
-
-| File | Entity | Scope |
-|------|--------|-------|
-| **accountApi.ts** | Account | Email, deactivation |
-| **agencyApi.ts** | Agency | Profile, personnel, locations, agency switching |
-| **agencyCandidateApi.ts** | Candidate | CRUD, phone, skills, docs, bulk upload |
-| **agencyCompanyApi.ts** | Company (Agency view) | CRUD, locations, contacts, job positions, docs, settings, users |
-| **agencyInvoiceApi.ts** | Invoice (Agency) | List, create, preview, delete, PDF, verify, email |
-| **agencyNoteApi.ts** | Notes | Worker/Candidate/Company/Request notes (mixed CRUD) |
-| **agencyPayStubApi.ts** | PayStub (Agency) | CRUD, generation, subcontractor report, skip numbers |
-| **agencyReportApi.ts** | Reports | T4, CRA, timesheet, hours, payment, payroll Excel |
-| **agencyRequestApi.ts** | Request | CRUD, workers, applicants, recruiters, skills, shift |
-| **agencyTimeSheetApi.ts** | TimeSheet (Agency) | CRUD, by date range, usages |
-| **agencyWorkerApi.ts** | Worker (Agency view) | List, flags (DNU, contractor), tax, email, holidays |
-| **catalogApi.ts** | Reference data | Enums: gender, ID type, availability, jobs, skills, industries, tax categories |
-| **companyApi.ts** | Company (Company view) | Profile, requests, workers, timesheet, users, contacts, invoices |
-| **downloadApi.ts** | Downloads | Invoice PDF, payroll Excel (various formats) |
-| **locationApi.ts** | Location | Countries, provinces, cities, provincial settings |
-| **requestApi.ts** | Request | Minimal; shift lookup only |
-| **sharedApi.ts** | Email Preferences | Unsubscribe |
-| **userNotificationApi.ts** | Notification | In-app notifications |
-| **websiteApi.ts** | Website (Public) | Job search, contact form, candidate apply, static job positions |
-| **workerApi.ts** | Worker (Worker view) | Profile complete, job apply, timesheet, wage/shift history |
-
-**Key Design:**
-- All functions use `http` instance from `@/security/apiService`
-- Return types are TypeScript (Promise<T>)
-- No store dispatches; components call functions directly
-- Pinia only stores **filters** for pagination/search and auth state
+| File | Scope |
+|------|-------|
+| accountApi.ts | Email change, account deactivation |
+| agencyApi.ts | Agency profile, personnel, locations, agency switching, assignable roles |
+| agencyCandidateApi.ts | Candidate CRUD, phones, skills, docs, bulk upload, convert to worker |
+| agencyCompanyApi.ts | Company (agency view): CRUD, locations, contacts, job positions, docs, settings, users |
+| agencyInvoiceApi.ts | Invoice list/create/preview/delete/PDF/email |
+| agencyNoteApi.ts | Notes on workers, candidates, companies, requests, request-workers |
+| agencyPayStubApi.ts | PayStub CRUD, generation, subcontractor report, skip numbers |
+| agencyReportApi.ts | T4, CRA, timesheet, hours, payment, payroll Excel |
+| agencyRequestApi.ts | Request CRUD, workers, applicants, skills, shift, sources (job boards) |
+| agencyRunnerApi.ts | Runners (recruiting pipeline per request): list, create, status, interviews |
+| agencyTimeSheetApi.ts | TimeSheet CRUD per request/worker, usages |
+| agencyWorkerApi.ts | Worker (agency view): list, flags (DNU, contractor), tax, email, holidays |
+| catalogApi.ts | Enums: gender, ID type, availability, skills, industries, sources, tax categories |
+| companyApi.ts | Company portal: profile, requests, workers, timesheet, users, contacts, invoices |
+| downloadApi.ts | Invoice PDF, payroll Excel (various groupings) |
+| locationApi.ts | Countries, provinces, cities, provincial settings, location tax |
+| notificationApi.ts | Aggregated agency notification bell payload |
+| requestApi.ts | Shift lookup only |
+| salesApi.ts | Sales-scoped request/company lists + Excel export |
+| sharedApi.ts | Email preferences unsubscribe |
+| userNotificationApi.ts | In-app user notifications |
+| websiteApi.ts | Public: job search, contact form, candidate apply |
+| weeklyBoardApi.ts | Recruiting weekly board: assignments, dispatches |
+| workerApi.ts | Worker portal: profile build, job apply, timesheet, wage/shift history |
 
 ---
 
-## src/types/ — TypeScript Interfaces
-
-**Purpose:** Type definitions for API request/response payloads.
+## src/types/ — TypeScript Interfaces (11 files)
 
 | File | Contains |
 |------|----------|
-| **common.ts** | `PaginatedList`, `Country`, `Province`, `City`, `Gender`, `IdentificationType`, `Availability`, `AvailabilityTime`, `Day`, `Lift`, `Language`, `WsibGroup`, `Industry`, `JobPosition`, `Skill`, `CancellationReason`, `CatalogItem`, `CovenantFileModel`, etc. |
-| **agency.ts** | `AgencyProfile`, `AgencyLocation`, `AgencyPersonnel`, `AgencyRequest*`, `AgencyWorker*`, `AgencyCompany*`, `AgencyCandidate*`, `Note*`, `CreateCandidateDocumentPayload`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `CompanyProvinceWithTaxes`, etc. |
-| **accounting.ts** | `PayStub*`, `CreatePayStubPayload`, `AgencyInvoice*`, `CreateAgencyInvoiceModel`, `InvoiceSummaryModel`, `DeleteInvoicePayload`, `PayrollSubContractor*`, `SkipPayrollNumber*`, `WorkerReadyForPayStub*`, `AgencyReportFilter`, `HoursWorkedResume`, `WeeklyPayrollItem` |
-| **company.ts** | `CompanyProfile*`, `CompanyProfileLocation*`, `CompanyProfileJobPosition*`, `CompanyRequest*`, `CompanyRequestWorker*`, `TimeSheet*`, `ClockInModel`, `ClockInResult`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*`, `CommentsModel` |
-| **worker.ts** | `WorkerProfile`, `WorkerBasicInformation*`, `WorkerContactInformation*`, `WorkerEmergencyInformation*`, `WorkerOtherInformation*`, `WorkerJobExperience*`, `WorkerRequest*`, `WorkerTimeSheet*`, `WorkerWageHistory*`, `WorkerCommentList`, `ClockTypeResult` |
-| **candidate.ts** | `Candidate`, `CandidateDocument`, `CreateCandidateDocumentPayload`, `AgencyCandidateFilter`, `CreateCandidateModel`, `CandidatePhoneNumberModel`, `CandidateSkillModel` |
-| **security.ts** | `ChangeEmailRequest`, `GetEmailResponse` |
-| **website.ts** | `JobSearchFilter`, `JobViewModel`, `ContactForm`, `LandingJobPositions` |
-
-**Convention:** Plural names for arrays/lists (e.g., `AgencyPersonnelListItem[]`). Singular for detail objects.
+| common.ts | `PaginatedList`, `Country`, `Province`, `City`, catalog item types, `CovenantFileModel`, `UserNotificationItem`, `UnsubscribeRequest`, `LocationTax` |
+| agency.ts | `AgencyDetail`, `AgencyLocation*`, `AgencyPersonnel*`, `AgencyRequest*`, `AgencyWorker*`, `AgencyCompany*`, `Note*`, invoice notes/recipients models |
+| accounting.ts | `PayStub*`, `AgencyInvoice*`, `CreateAgencyInvoiceModel`, `InvoiceSummaryModel`, `PayrollSubContractor*`, `SkipPayrollNumber*`, `AgencyReportFilter`, `WeeklyPayrollItem` |
+| candidate.ts | `Candidate`, `CandidateDocument`, `AgencyCandidateFilter`, phone/skill models |
+| company.ts | `CompanyProfile*`, `CompanyRequest*`, `TimeSheet*`, `ClockIn*`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*` |
+| notification.ts | `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` |
+| runner.ts | `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, interview models, `RunnerStartingToday` |
+| security.ts | `ChangeEmailRequest`, `GetEmailResponse`, `UserProfile` |
+| website.ts | `JobSearchFilter`, `JobViewModel`, `ContactForm` |
+| weeklyBoard.ts | `WeeklyBoard`, `RecruiterWeeklyBoard`, assignment/dispatch payloads |
+| worker.ts | `WorkerProfile`, worker profile section models, `WorkerRequest*`, `WorkerTimeSheet*`, wage/timesheet history |
 
 ---
 
-## src/router/ — Route Configuration
+## src/stores/ — Pinia (FLAT, 6 files)
 
-**Purpose:** Vue Router setup; lazy-loaded pages by feature area.
+Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold filters + auth + small UI state only; API responses are never cached in stores.
 
-### File Organization
+| Store | File | State |
+|-------|------|-------|
+| `useAgencyStore` | agency.ts | `agency: AgencyDetail` (empty-shell default; `usaAgency`/`masterAgency` derived in `setAgency`), `personnelAgencies`, list filters: `agencyRequestFilter`, `agencyCandidateFilter`, `agencyWorkerProfileFilter`, `agencyCompanyProfileFilter`, `agencyInvoiceFilter`, `agencyPayStubFilter`, `agencyListFilter` |
+| `useCompanyStore` | company.ts | `companyRequestFilter` |
+| `useWorkerStore` | worker.ts | `workerProfile: Partial<WorkerProfile>` |
+| `useSecurityStore` | security.ts | `user`, `userRoles`, `isReady`; actions: `setUser`, `getUser`, `signIn`, `silentSignin` |
+| `useAppStore` | app.ts | `isMobile`, `currentDate` |
 
-| File | Routes | Components |
-|------|--------|-----------|
-| **index.ts** | Root routes, auth guard, scroll behavior | NotFound, SilentRefresh, Unauthorized, EmailPreferences, Callback |
-| **routesAgency.ts** | `/agency-*`, `/accounting/*`, etc. | Agency portal (requests, workers, companies, candidates, invoices, paystubs, reports) |
-| **routesCompany.ts** | `/company-*`, `/request/*` | Company portal (requests, reports, profile, users) |
-| **routesWorker.ts** | `/register-worker`, `/worker-*`, `/punch-card`, `/timesheet` | Worker portal (profile, job search, applications, timesheet, history) |
-| **routesLanding.ts** | `/home`, `/jobSeekers`, `/business`, `/about-us`, `/contact` | Public landing pages |
+---
 
-**Auth Guard:**
-```typescript
-// Requires auth + specific role(s)
-meta: { requiresAuth: true, role: [agency, agencyPersonnel] }
+## src/router/ — Routes
 
-// Public
-meta: { requiresAuth: false, layout: "web" }
-```
+| File | Prefixes | Notes |
+|------|----------|-------|
+| index.ts | `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group), scroll behavior, canonical link, page titles |
+| routesAgency.ts | `/recruiting/*`, `/sales/*`, `/accounting/*`, `/agency-profile` | Legacy `/agency-*` paths kept as redirects |
+| routesCompany.ts | `/company-requests`, `/company-invoices`, `/company-profile`, `/company-user-profile` | |
+| routesWorker.ts | `/register-worker`, `/worker-requests`, `/punch-card`, `/timesheet`, `/worker-history`, `/worker-profile`, `/worker-apply` | |
+| routesLanding.ts | `/`, `/open-positions`, `/industries`, `/about`, `/employers`, `/talents`, `/special-projects`, `/partner`, `/apply`, `/privacy-policy`, `/terms-and-conditions`, `/disclaimer` | `meta: { layout: 'landing', requiresAuth: false }`; old URLs (`/home`, `/jobSeekers`, `/business`, `/about-us`, `/atas`, `/v2/*`, ...) redirect |
 
-**Route Resolvers:** Pre-load data before entering route (e.g., `loadAgencyCompaniesResolver` fetches company list).
+Agency route map (from `routesAgency.ts`):
+- `/recruiting/requests[/create/:companyProfileId | /update/:companyProfileId/:requestId | /:id]`
+- `/recruiting/weekly-board`, `/recruiting/attendance-review`
+- `/recruiting/workers[/register | /:id]`, `/recruiting/candidates`
+- `/recruiting/companies[/create | /update/:companyProfileId | /:id]`
+- `/sales/requests[...]`, `/sales/companies[...]`, `/sales/agencies[/create | /:id]`
+- `/accounting/invoices[/create]`, `/accounting/paystubs[/create]`, `/accounting/reports`
+
+**Auth guard:** routes declare `meta: { requiresAuth: true, role: [...] }` with role groups from `src/security/roles.ts`; guard redirects to `/unauthorized`.
+
+**Route resolvers** (`src/resolvers/agencyResolvers.ts`): `loadAgencyCompaniesResolver`, `loadAgencyRequestToUpdateResolver`, `loadCompanyToUpdateResolver` — pre-fetch data before route entry.
 
 ---
 
 ## src/pages/ — Routable Views
 
-**Organization:** Feature-based folders. Each folder = feature area.
+### Agency (`src/pages/agency/`)
 
-### Agency Portal (`src/pages/agency/`)
+| Page | Purpose |
+|------|---------|
+| Requests.vue / Request.vue / AgencyCreateRequest.vue | Request list, detail (workers, applicants, runners, notes), create/edit |
+| WeeklyBoard.vue | Recruiting weekly board (admin + recruiter views) |
+| AttendanceReview.vue | Workers starting recently — attendance follow-up |
+| Workers.vue / DetailWorker.vue | Worker roster and detail (flags, holidays, history, notes) |
+| Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail |
+| Candidates.vue | Candidate pool; convert to worker, bulk import |
+| Agencies.vue / CreateAgency.vue / DetailAgency.vue | Sub-agencies (sales) |
+| AgencyProfile.vue | Own agency profile, locations, personnel |
+| accounting/Invoices.vue / accounting/CreateInvoice.vue | Invoice list and creation (preview → generate) |
+| accounting/PayStubs.vue / accounting/CreatePayStub.vue | Pay stub list and manual creation |
+| accounting/Reports.vue | T4, CRA, hours worked, payment, payroll export |
 
-**Core Pages:**
-- **Requests.vue** — List job requests; filter, search, pagination
-- **Request.vue** — Request detail; workers, applicants, shift, notes, recruiters
-- **AgencyCreateRequest.vue** — Create/edit request; company, position, shift, workers quantity, requirements
-- **Workers.vue** — Worker roster; list, search, profile access, flags (DNU, contractor)
-- **DetailWorker.vue** — Worker detail; profile, request history, notes, holidays, email
-- **Companies.vue** — Company client list; search, create, bulk import
-- **CreateCompany.vue** — Create/edit company; profile, locations, contacts, job positions, settings
-- **DetailCompany.vue** — Company detail; locations, contacts, job positions, requests, docs, notes
-- **Candidates.vue** — Candidate pool; list, search, convert to worker, bulk import
-- **Agencies.vue** — Sub-agencies (if master agency); list, create, detail
-- **AgencyProfile.vue** — Current agency profile; edit, locations, personnel, email
-- **accounting/Invoices.vue** — Invoice list; filter, create, delete, preview, email, PDF download
-- **accounting/CreateInvoice.vue** — Invoice creation; select timesheets, preview, generate
-- **accounting/PayStubs.vue** — Pay stub list; filter, create, generate, delete, email, PDF, subcontractor report
-- **accounting/CreatePayStub.vue** — Pay stub creation; worker, period, hours, deductions
-- **accounting/Reports.vue** — Report generation; T4, CRA, timesheet, hours worked, payment, payroll export
+### Company (`src/pages/company/`)
 
-### Company Portal (`src/pages/company/`)
+Requests.vue, Request.vue, CreateRequest.vue, CompanyReports.vue (invoices), CompanyProfile.vue, CompanyUserProfile.vue
 
-- **Requests.vue** — Company's job requests; list, search, status
-- **Request.vue** — Request detail from company POV; workers, timesheet, comments
-- **CreateRequest.vue** — Submit new job request
-- **CompanyReports.vue** — Company invoices + reports
-- **CompanyProfile.vue** — Company profile; edit, locations, contact people, users
-- **CompanyUserProfile.vue** — Current user's profile within company
+### Worker (`src/pages/worker/`)
 
-### Worker Portal (`src/pages/worker/`)
+Register.vue, Requests.vue, Request.vue, RequestApplied.vue, PunchCard.vue, TimeSheet.vue, History.vue, WorkerProfile.vue, WorkerApply.vue
 
-- **Register.vue** — Worker registration form; multi-step profile build
-- **Requests.vue** — Job search; list available requests, filter, apply
-- **Request.vue** — Job detail; description, apply
-- **RequestApplied.vue** — Applied job status
-- **PunchCard.vue** — Mobile punch clock-in/out (GPS)
-- **TimeSheet.vue** — Worker's timesheet; view hours, daily breakdown
-- **History.vue** — Past jobs, applications, wage history
-- **WorkerProfile.vue** — Profile view/edit; skills, experience, availability, documents
-- **WorkerApply.vue** — Public job application (pre-registration)
+### Landing (`src/pages/landing/` — subfolder per section)
 
-### Landing Pages (`src/pages/landing/`)
+```
+landing/
+├── About/AboutUs.vue
+├── Apply/Apply.vue
+├── Employers/Employers.vue
+├── Home/Home.vue
+├── Industries/Industries.vue
+├── Legal/TermsAndConditions.vue, PrivacyPolicy.vue, Disclaimer.vue
+├── OpenPositions/OpenPositions.vue
+├── Partner/Partner.vue
+├── SpecialProjects/SpecialProjects.vue
+├── Talents/Talents.vue
+└── ComingSoon.vue
+```
 
-- **Home.vue** — Hero, featured jobs, CTA
-- **JobSeekers.vue** — Job search for workers
-- **JobSeekersJobPosition.vue** — Jobs by position (parameterized)
-- **Business.vue** — Staffing for companies
-- **BusinessJobPosition.vue** — Staffing info by position
-- **DirectHiring.vue** — Direct hire service info
-- **AboutUs.vue** — Company info
-- **Contact.vue** — Contact form
-- **Atas.vue** — Terms/compliance (ATAS = something specific to Sigook)
-- **TermsAndConditions.vue** — T&C
-- **PrivacyPolicy.vue** — Privacy
+### Shared (`src/pages/`)
 
-### Shared Pages
-
-- **Callback.vue** — OAuth callback (redirect from identity provider)
-- **SilentRefresh.vue** — Hidden iframe for token refresh
-- **Unauthorized.vue** — 403 error
-- **NotFound.vue** — 404 error
-- **EmailPreferences.vue** — Unsubscribe from emails (no auth required)
+Callback.vue (OAuth callback), SilentRefresh.vue (hidden iframe token renew), Unauthorized.vue, NotFound.vue, EmailPreferences.vue (unsubscribe, no auth)
 
 ---
 
 ## src/components/ — Reusable Components
 
-**Organization:** Feature-based domain folders + shared root-level components.
+Domain folders + shared root-level components. Components take function refs (e.g., an API function as a prop) rather than store dispatch strings.
 
-### Root-Level (Shared Across App)
-
-- **Address.vue** — Address input form
-- **Comments.vue** — Comment display/interaction
-- **CompanyCreateUserModal.vue** — Modal to add company user
-- **CropImage.vue** — Image cropping tool
-- **DataEntryTerms.vue** — Terms agreement checkbox
-- **DefaultImage.vue** — Placeholder image
-- **DialogWorkerComment.vue** — Modal for worker comments
-- **EmailCard.vue** — Email display card
-- **Export.vue** — Report export (generic)
-
-### `agency/` — Agency-specific Components
-
-**Purpose:** Components for agency portal operations.
-
-- **AgencyCreatePersonnelModal.vue** — Add agency staff
-- **AgencyPersonnel.vue** — Personnel list + management
-- **AgencyPunchCard.vue** — Punch card UI for workers
-- **AgencyRequests.vue** — Request list view
-- **AgencyWorkerRequestHistory.vue** — Worker's past requests (list)
-- **AgencyWorkerRequestHistoryContainer.vue** — Container for history
-- **AgencyWorkers.vue** — Worker list main component
-- **AgencyWorkersList.vue** — Worker list sub-component
-- **BulkData.vue** — Bulk upload/import interface
-- **ConfirmProfileMembership.vue** — Confirm agency access
-- (More specific sub-components for detail views, forms, modals...)
-
-### `agency_accounting/` — Accounting Components
-
-- **CRAPayroll.vue** — CRA payroll report
-- **DeleteInvoice.vue** — Invoice deletion confirmation
-- **GeneratePayStubs.vue** — Pay stub batch generation
-- **HoursWorkedReport.vue** — Hours worked summary
-- **PaymentReport.vue** — Payment history
-- **PreviewInvoice.vue** — Invoice preview before creation
-- **SendInvoiceEmail.vue** — Email invoice modal
-- **SkipPayrollNumber.vue** — Manage skipped payroll numbers
-- **SubcontractorsReport.vue** — Subcontractor payroll
-- **T4.vue** — T4 tax report
-
-### `agency_company/` — Company Management Components
-
-- **CompanyDetailTab.vue** — Company detail tabbed layout
-- **CompanyNotes.vue** — Company notes
-- **CompanyRequests.vue** — Company's requests (from agency view)
-- **CompanySettings.vue** — Company settings (holidays, overtime, permissions)
-- **CompanyUpdateLogo.vue** — Logo upload
-- **CompanyWorkers.vue** — Workers at company
-- **ContactInformation.vue** — Contact info display
-- **ContactInformationForm.vue** — Contact info form
-- **ContactPersonForm.vue** — Individual contact person form
-- **ContactPersonList.vue** — Contact persons list
-- (More location, document, job position components...)
-
-### `agency_request/` — Request Management Components
-
-- **AgencyPunchCardWorkerContainer.vue** — Punch card container for agency context
-- **AgencyRequestDetail.vue** — Request detail main component
-- **AgencyRequestSkills.vue** — Request skills list + management
-- **AgencyRequestTimeSheetDetail.vue** — Timesheet display
-- **AgencyRequestTimeSheetModal.vue** — Timesheet entry modal
-- **AgencyShiftDetail.vue** — Shift info display
-- **Applicants.vue** — Request applicants list
-- **ContactListModal.vue** — Modal to select contacts (RequestedBy/ReportTo)
-- **DatepickerModal.vue** — Date picker
-- (More worker assignment, recruiter, note components...)
-
-### `calendar/` — Calendar Components
-
-- **CalendarPunchCard.vue** — Calendar view for punch card
-
-### `candidate/` — Candidate Components
-
-- **CreateCandidate.vue** — Candidate registration form
-- **DetailAddress.vue** — Candidate address detail
-- **DetailCandidate.vue** — Candidate profile detail
-- **ModalCandidateRequests.vue** — Candidate's job applications modal
-- **ModalDocuments.vue** — Candidate documents modal
-
-### `company/` — Company Portal Components
-
-- **CompanyCancelList.vue** — Cancelled requests
-- **CompanyInvoices.vue** — Company invoice list
-- **CompanyUsers.vue** — Company user management
-- **CompanyUserUpdate.vue** — Update company user
-- **ContainerWorkerCo.vue** — Worker container (company view)
-- **DialogCompanyUpdateEmail.vue** — Company email update modal
-- **DialogReplaceWorker.vue** — Replace worker modal
-- **DialogRequestWorker.vue** — Request replacement worker modal
-- **ProfileBusiness.vue** — Company profile (business info)
-- **ProfileContact.vue** — Company profile (contact info)
-- (More invoicing, timesheet components...)
-
-### `company_request/` — Company Request Components
-
-- **CompanyPunchCardWorkerContainer.vue** — Punch card container (company view)
-- **CompanyRequestDetail.vue** — Request detail (company view)
-- **CompanyRequestPunchCard.vue** — Punch card display
-- **CompanyRequestTimeSheetDetail.vue** — Timesheet (company view)
-- **CompanyRequestTimeSheetModal.vue** — Timesheet modal
-- **CompanyRequestWorkers.vue** — Assigned workers (company view)
-
-### `landing/` — Landing Page Components
-
-- **ApplyNow.vue** — CTA button for applications
-- **Footer.vue** — Site footer
-- **Header.vue** — Site header/nav
-- **JobPosition.vue** — Job position card
-- **JobSearch.vue** — Job search form
-- **NeedStaff.vue** — CTA section for companies
-- **SigookVideo.vue** — Video embed
-- **SubMenu.vue** — Navigation submenu
-
-### `notes/` — Notes Components
-
-- **ColorPicker.vue** — Note color selector
-- **ModalNotes.vue** — Notes display modal
-- **NoteForm.vue** — Note creation/edit form
-
-### `request/` — Generic Request Components
-
-- **ButtonSort.vue** — Sort button
-- **RequestDetail.vue** — Request detail (generic)
-- **RequestLocation.vue** — Request location info
-- **ShiftDetail.vue** — Shift display
-- **ShiftEditModal.vue** — Shift edit modal
-- **ShiftsForm.vue** — Shifts form
-
-### `worker/` — Worker Portal Components
-
-- **Notes.vue** — Worker's notes
-- **ProfileComments.vue** — Comments on worker
-- **ProfileExperience.vue** — Work experience list
-- **ProfilePersonal.vue** — Personal info section
-- **ProfilePreferences.vue** — Availability + location preferences
-- **RequestDetail.vue** — Job detail (worker view)
-- **TimeSheetHistory.vue** — Past timesheets
-- **WorkAvailabilitiesDetail.vue** — Availability display
-- **WorkAvailabilitiesForm.vue** — Availability form
-- **WorkAvailabilityDaysDetail.vue** — Work days display
-- (More skill, language, document components...)
-
-**Pattern:** Components accept `function` refs (e.g., `onSave={agencyCandidateApi.updateAgencyCandidate}`) rather than store dispatch strings. Generic components are reusable across features.
+| Folder | Contents |
+|--------|----------|
+| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, Searcher, SidebarLogged, UploadFiles, UserNotification |
+| agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
+| agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4 |
+| agency_company/ | CompanyDetailTab, CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
+| agency_request/ | AgencyRequestDetail, AgencyRequestSkills, timesheet detail/modal, AgencyShiftDetail, Applicants, ManageApplicantsModal, ContactListModal, DatepickerModal, EditTextarea, JobBoardsModal, MassivePunchCard, punch-card container, ReportTo, RequestedBy, RequestNotes(+Table), Runners, TableRequests, WorkerStatusFilter |
+| calendar/ | CalendarPunchCard |
+| candidate/ | CreateCandidate, DetailAddress, DetailCandidate, ModalCandidateRequests, ModalDocuments |
+| company/ | CompanyCancelList, CompanyInvoices, CompanyUsers(+Update), DialogCompanyUpdateEmail, DialogReplaceWorker, DialogRequestWorker, ProfileBusiness/Contact/Location |
+| company_request/ | CompanyRequestDetail, punch card components, timesheet detail/modal, CompanyRequestWorkers |
+| landing/ | Section components per page (About/, Employers/, Home/, Industries/, OpenPositions/, Partner/, SpecialProjects/, Talents/) + `shared/` (cards, forms incl. CandidateApplyForm/Modal + WorkerRegisterForm, hero, icons, layout Header/Footer/GlobalBackground/AppVersionToast, sections, ui) |
+| notes/ | ColorPicker, ModalNotes, NoteForm, NotesPopover |
+| notifications/ | NotificationBell (agency sidebar bell, uses `useNotifications`) |
+| request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
+| runner/ | CreateRunner, RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
+| weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal, AddWorkersModal |
+| worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 
 ---
 
-## src/store/ — Pinia State Management
-
-**Organization:** One store per domain. Minimal state (mostly filters for pagination). Persistence via `pinia-plugin-persistedstate`.
-
-### Root Setup (`src/store/index.ts`)
-
-Creates the Pinia instance and registers the persisted-state plugin; individual stores self-register via `defineStore`.
-
-### Stores (`src/store/modules/`)
-
-| Store | State | Purpose |
-|-------|-------|---------|
-| **agency.ts** | `agency: AgencyProfile`, `personnelAgencies: []`, `agencyRequestFilter`, `agencyCandidateFilter`, `agencyWorkerProfileFilter`, `agencyCompanyProfileFilter`, `agencyInvoiceFilter`, `agencyPayStubFilter`, `agencyListFilter` | Agency context + list filters |
-| **company.ts** | `companyRequestFilter` | Company context + request filter |
-| **worker.ts** | `workerProfile: Partial<WorkerProfile>` | Worker context + partial profile |
-| **security.ts** | (Auth state) | User, token, roles |
-
-**Design Philosophy:**
-- **Filters only**: Pinia stores UI state (pagination, search filters) so lists don't reset on route changes
-- **No data caching**: API responses stored in component state or computed from live data
-- **Auth as exception**: Security store manages JWT + user roles (app-wide requirement)
-
----
-
-## src/security/ — Authentication & API Config
+## src/security/ — Auth & API Config
 
 ### apiService.ts
 
-**Axios instance** with interceptors:
-- **Request:** Adds `Authorization` header with JWT token
-- **Response:** 
-  - 401 → Silent refresh via the security Pinia store's `silentSignin` action
-  - 403 → Alert "not authorized"
-  - 500 → Alert error + handle blob responses
-  - Adds `accept-language` header from localStorage
+Axios instance (`http`, default export) with `baseURL = import.meta.env.VUE_APP_URL_API`, qs param serializer, and interceptors:
+- **Request:** `Authorization: {token_type} {access_token}` from `useSecurityStore.getUser()`; `accept-language` from localStorage
+- **Response:** 401 → one retry after `securityStore.silentSignin()`, else `signIn()`; 403 → alert; 500 → alert (special rejection for blob responses)
 
-**Key:** Auth is transparent to components; API functions don't manage tokens.
+Exports the **`api` wrapper** (`get`, `post`, `put`, `patch`, `del`) that returns `response.data` directly — all `src/api/*.ts` files use this, not the raw axios instance.
 
 ### roles.ts
 
-The 7 role strings plus the groups used by the route guard (`recruitingAccess`, `agencyStaff`,
-`salesAccess`, `accountingAccess`), mirroring `CovenantConstants.Role` in the backend:
-- `superadmin`, `admin`, `recruiting`, `sales` (agency-side)
-- `company`, `companyUser` (company-side)
-- `worker` (worker-side)
-
-Routes declare `meta.role` with one of the groups; `router/index.ts` enforces it and redirects to
-`/unauthorized`. See `.docs/business/ROLES_PERMISSIONS.md`.
+7 role strings mirroring backend `CovenantConstants.Role` (`superadmin`, `admin`, `recruiting`, `sales`, `company`, `companyUser`, `worker`) plus route-guard groups: `recruitingAccess`, `agencyStaff`, `salesAccess`, `accountingAccess`. See `.docs/business/ROLES_PERMISSIONS.md`.
 
 ### securityService.ts
 
-User/auth service (delegates to store).
+oidc-client-ts `UserManager` configured from `VUE_APP_SECURITY_SERVER` / `VUE_APP_CLIENT`; user loaded/unloaded/token-expired events wired to the security store in `main.ts`.
 
 ### menu.ts
 
-Navigation structure by role. Agency staff menus are built per group: `recruitingMenu`, `salesMenu`
-and `accountingMenu` — admin/superadmin get all three, recruiting and sales get only theirs.
+Sidebar navigation per role group: `recruitingMenu`, `salesMenu`, `accountingMenu` — admin/superadmin get all three; recruiting and sales get only theirs.
 
 ---
 
-## src/utils/ — Utility Functions
+## src/utils/ (15 files)
 
 | File | Purpose |
 |------|---------|
-| **compressFile.ts** | File compression before upload |
-| **confirmationGuard.ts** | Unsaved changes warning |
-| **directHiring.ts** | Direct hire specific logic |
-| **distributeHours.ts** | Timesheet hour distribution logic |
-| **downloadFile.ts** | File download helper |
-| **fileUpload.ts** | File upload helper |
-| **filters.ts** | Vue filters (formatters) |
-| **recaptcha.ts** | reCAPTCHA integration |
-| **timeSheetApprove.ts** | Timesheet approval workflow |
-| **workerStatus.ts** | Worker status helpers |
+| buefyProgrammatic.ts | Registers buefy programmatic components (dialog/toast/etc.) on the app |
+| buildWorkerFormData.ts | Builds multipart FormData for worker registration |
+| compressFile.ts | File compression before upload |
+| directHiring.ts | Direct-hire specific logic |
+| distributeHours.ts | Timesheet hour distribution |
+| downloadFile.ts | Blob download helper |
+| fileUpload.ts | File upload helper |
+| filters.ts | Formatter helpers |
+| locationLabel.ts | Location display label formatting |
+| phoneFormat.ts | Phone number formatting |
+| recaptcha.ts | reCAPTCHA site key (`VUE_APP_RE_CAPTCHA_SITE_KEY`) |
+| timeSheetApprove.ts | Timesheet approval workflow |
+| toast.ts | Toast notification helper (replaces the old toastMixin) |
+| validation.ts | Shared validation helpers |
+| workerStatus.ts | Worker status helpers |
 
 ---
 
-## src/composables/ — Vue Composition Utilities
+## src/composables/ (12 files)
 
 | File | Purpose |
 |------|---------|
-| **useAccountingAdmin.ts** | Accounting manager check (superadmin, admin) |
-| **useRecruitingAccess.ts** | Recruiting access check (superadmin, admin, recruiting) |
-| **useModuleBase.ts** | Resolves `/sales` vs `/recruiting` path prefix for shared pages |
-| **useCreateWorker.ts** | Worker registration composable |
-| **usePubSub.ts** | Pub/sub event system |
+| useAccountingAdmin.ts | `isAccountingManager` check (superadmin, admin) |
+| useBodyScrollLock.ts | `lockScroll`/`unlockScroll` for modals |
+| useCarousel.ts | Generic carousel state (landing) |
+| useCreateWorker.ts | Worker registration flow |
+| useFocusTrap.ts | Focus trap for modal accessibility |
+| useJobs.ts | Public job search state (landing) |
+| useModuleBase.ts | Resolves `/sales` vs `/recruiting` path prefix for shared pages |
+| useNotifications.ts | Loads notification bell payload; maps typed lists → `AppNotification[]` grouped by type |
+| usePubSub.ts | Pub/sub event system |
+| useRecruitingAccess.ts | `hasRecruitingAccess` check (superadmin, admin, recruiting) |
+| useRevealOnScroll.ts | Reveal-on-scroll animation (landing) |
+| useStickyForm.ts | Persists in-progress form state |
 
 ---
 
-## src/lang/ — i18n Localization
+## src/filters/ (19 formatter functions, one per file)
 
-**Files:** `*.json` for each language (en-US, fr-CA, etc.)
-
-**Usage:** `{{ $t('key.path') }}` in templates
-
-**Coverage:** UI labels, error messages, placeholder text
+Plain functions imported where needed (Vue 3 removed template filters):
+- **Dates/time:** dateFilter, dateTimeFilter, dateFromNow, dateHHmm, dateHHmmss, dateMonth, timeFilter, hourMinutes, fixedHoursFilter
+- **Money:** currencyFilter, currencyCadFilter
+- **Text:** capitalizeFilter, breakWord, splitCapital, avatarLetters, emailName, fileNameFilter
+- **Domain:** agencyTypeFilter, sinFilter
 
 ---
 
-## src/assets/ — Static Resources
+## src/directives/, src/constants/, src/lang/, src/data/
+
+- **directives/**: `status-directive.ts` only (registered as `v-status` in main.ts) — status badge rendering.
+- **constants/**: `enums.ts` (6 numeric enums used by agency/company pages, incl. `ClockType`), `catalog.ts` (`maximumHoursPerDay` from `VUE_APP_MAXIMUM_HOURS_DAY`, `residencyList`), `workerFeatures.ts` (worker status feature list).
+- **lang/**: NOT i18n translations — `validator.ts` registers VeeValidate rules (built-in + custom phone via google-libphonenumber), `en_error.ts` holds English validation messages, `utils.ts` has helpers. The app is English-only; no vue-i18n.
+- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json).
+
+---
+
+## src/assets/
 
 ```
 assets/
-├── fonts/
-│   └── open-sans/      # Web fonts
+├── fonts/open-sans/
 ├── images/
-│   ├── banners/        # Hero images
-│   ├── default/        # Placeholders
-│   ├── home_carousel/  # Landing carousel
-│   ├── main_banner/    # Main banner
-│   └── positions/      # Job position icons
-│       ├── business/
-│       └── jobSeekers/
-└── scss/
-    └── worker/         # Worker portal styles
+│   ├── default/         # Placeholders (error.svg, loading.svg for vue-lazyload)
+│   └── landing/         # Landing imagery
+└── scss/                # Global partials: base, buefy-overrides, calendar, candidiates,
+    │                    # company, container-request, detail-worker, fonts, master, notes,
+    │                    # profile, requests, tables, time-sheet, tokens, variables, weekly-board
+    └── worker/          # Worker portal styles
 ```
-
----
-
-## src/directives/ — Custom Vue Directives
-
-- **status-directive.ts** — Status badge rendering (color-coded)
-- **cleave-directive.ts** — Input formatting (phone, dates, etc.)
-
----
-
-## src/mixins/ — Mixins
-
-- **toastMixin.ts** — Toast notification helper (app-wide)
-
----
-
-## src/constants/ — Constants
-
-Global constants, enums, configuration values.
-
----
-
-## src/resolvers/ — Route Resolvers
-
-Pre-load data before route entry (route guard).
-
-**Examples:**
-- `loadAgencyCompaniesResolver` → `getAgencyCompanies(filter)` before `/agency-companies`
-- `loadCompanyToUpdateResolver` → `getAgencyCompany(id)` before `/update-company/:id`
-- `loadAgencyRequestToUpdateResolver` → `getAgencyRequest(id)` before `/agency-update-request/:id`
 
 ---
 
@@ -497,187 +305,32 @@ Pre-load data before route entry (route guard).
 
 | File | Purpose |
 |------|---------|
-| **App.vue** | Root layout (`<script setup>`); main nav, sidebar, router-view |
-| **main.ts** | Vue entry point; installs Pinia, Vue Router 4, `@ntohq/buefy-next`, i18n, VeeValidate, VueRecaptcha, etc. |
-| **varaibles.ts** | Global config (API URLs, app version, feature flags, etc.) |
-| **CLAUDE.md** | Original dev notes |
+| App.vue | Layout switch: callback → bare; logged in → `SidebarLogged` + router-view; else web/landing layout (landing Header/Footer/GlobalBackground when `route.meta.layout === 'landing'`) |
+| main.ts | Registers validation rules, app globals, `v-status` directive, global components (defaultImage, QuillEditor), router, pinia, oidc event wiring, Buefy (+programmatic), VueScrollTo, VueLazyload |
+| varaibles.ts | (misspelled filename, kept) `appGlobals` object — request/worker status strings, sort keys, regexes, user type strings, agency types — registered on `app.config.globalProperties` via `registerAppGlobals` |
+
+**Environment variables:** read as `import.meta.env.VUE_APP_*` — the legacy Vue-CLI prefix is preserved under Vite via `envPrefix: 'VUE_APP_'` in `vite.config.ts` (NOT `VITE_*`). Used: `VUE_APP_URL_API`, `VUE_APP_SECURITY_SERVER`, `VUE_APP_CLIENT`, `VUE_APP_RE_CAPTCHA_SITE_KEY`, `VUE_APP_MAXIMUM_HOURS_DAY`. Files: `.env.development.local`, `.env.staging`, `.env.production`.
 
 ---
 
 ## Global Plumbing
 
-### Authentication Flow
+### Authentication
 
-1. **Login:** Via OAuth (identity provider)
-2. **Silent Refresh:** On 401, refresh JWT silently via `silentSignin` action
-3. **Role-Based Routing:** `meta.role` check in router guard
-4. **Token Storage:** localStorage (handled by store)
+1. Login via IdentityServer (oidc-client-ts); `/callback` completes sign-in, `/silent-refresh` renews tokens in a hidden iframe.
+2. On 401, `apiService` retries once after `silentSignin`; on failure redirects to login.
+3. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAccountingAdmin`.
 
-### API Error Handling
+### Patterns
 
-- **401 Unauthorized:** Auto-refresh; if fails, redirect to login
-- **403 Forbidden:** Alert user + reject promise
-- **500 Server Error:** Alert user; for blob responses, reject with error message
+- **No API data caching in Pinia** — components fetch directly via `src/api` functions; stores keep list filters so pagination/search survive route changes.
+- **Forms:** VeeValidate 4 + Yup schemas; toasts via `src/utils/toast.ts`.
+- **Reusable components take function props** (API functions passed in) instead of dispatch strings.
+- **Styling:** Bootstrap 5 CSS + `@ntohq/buefy-next` (Bulma-based) + global SCSS partials in `src/assets/scss/`.
+- Naming conventions: see `Sigook.Web/CLAUDE.md`.
 
-### Layout System
+### Build & Deploy
 
-- **Layout modes:** `web` (landing), default (portal)
-- **Sidebar:** Only in portal layouts (agency, company, worker)
-- **Header:** Global header with user menu + language selector
-
-### i18n
-
-- **Default:** English (en-US)
-- **Switchable:** Via header language dropdown
-- **Storage:** localStorage `language` key
-- **Validator:** Custom i18n messages for form validation
-
-### Styling
-
-- **Framework:** Bootstrap 4 (CSS)
-- **Component UI:** `@ntohq/buefy-next` (Buefy port for Vue 3, Bulma-based)
-- **Custom SCSS:** `/src/assets/scss/worker/` + component-level styles
-- **BEM Convention:** Class naming (likely)
-
----
-
-## Feature Flows (High-Level)
-
-### Recruitment → Staffing → Payroll
-
-1. **Company** requests workers (CompanyApi.createRequest → Requests.vue)
-2. **Agency** posts job (AgencyRequestApi.postAgencyRequest → AgencyCreateRequest.vue)
-3. **Candidates** apply (WorkerApi.workerRequestApplySelf)
-4. **Agency** books workers (AgencyRequestApi.bookAgencyRequestWorker)
-5. **Workers** track hours (AgencyTimeSheetApi / CompanyApi timesheet endpoints)
-6. **Agency** generates paystubs (AgencyPayStubApi.generatePayStubs)
-7. **Agency** invoices company (AgencyInvoiceApi.createAgencyInvoice)
-8. **Workers** view wage history (WorkerApi.getWorkerProfileWageHistory)
-9. **Companies** view invoices (CompanyApi.getCompanyInvoice)
-
-### Worker Profile Build
-
-1. **Public Register** (WorkerApi.registerWorker → Register.vue)
-2. **Fill Sections:**
-   - Basic info → WorkerApi.createWorkerBasicInformation
-   - Contact → WorkerApi.createWorkerContactInformation
-   - Experience → WorkerApi.createWorkerWorkExperience
-   - Skills → WorkerApi.createWorkerSkills
-   - Availability → WorkerApi.createWorkerAvailabilities
-   - Documents → WorkerApi.createWorkerDocuments
-   - etc.
-3. **View Profile** (WorkerApi.getMyProfile → WorkerProfile.vue)
-
-### Candidate Conversion
-
-1. **Agency imports** candidates (AgencyCandidateApi.bulkAgencyCandidates)
-2. **Agency adds** candidate (AgencyCandidateApi.createAgencyCandidate)
-3. **Agency converts** to worker (AgencyCandidateApi.convertCandidateToWorker)
-4. **Worker** can now apply to jobs
-
----
-
-## Key Decision Points
-
-### No Central Cache for API Data
-
-- Components fetch directly via API functions
-- Filters cached in Pinia (pagination state)
-- Data flows via component `data()` or `computed`
-- **Pro:** Less boilerplate, easier to trace data flow
-- **Con:** Harder to share state across distant components (solved by passing props or event bus)
-
-### Pagination via Query Params
-
-- Routes include `page`, `size`, `sort` in URL
-- Store remembers last filter for UX (e.g., return to page 3 after detail view)
-- List components read from store and re-fetch on param change
-
-### Role-Based UI (Not Just Route Guards)
-
-- `meta.role` restricts route access
-- Components conditionally render via the security Pinia store's `role`
-- E.g., payroll staff see "Generate Pay Stubs" button; recruiter doesn't
-
-### Form Pattern
-
-- Multi-step forms in register workflows
-- Direct API calls on submit (no store dispatch)
-- Toast notifications on success/error (toastMixin)
-- Validation via `vee-validate` 4 + Yup schemas, with i18n messages
-
-### Reusable Components via Function Props
-
-```vue
-<DetailWorker @save="agencyWorkerApi.updateAgencyWorker" />
-```
-
-Rather than:
-```vue
-<DetailWorker @save="store.updateWorker" />
-```
-
-Allows generic components to work across different backends.
-
----
-
-## Testing & Development Notes
-
-- **Build Tool:** Vite (vite.config.ts)
-- **Type Checking:** TypeScript (`pnpm run type-check`, tsconfig.json)
-- **Linting:** ESLint (`pnpm run lint`)
-- **Package Manager:** pnpm (pnpm-lock.yaml, pinned via `packageManager` field). Security hardening: `ignore-scripts=true` in `.npmrc` + explicit `allowBuilds` allowlist in `pnpm-workspace.yaml`.
-- **Docker:** Dockerfile included (multi-stage Node 22 + pnpm build → Nginx)
-- **nginx.conf:** Routing config for SPA (history mode)
-
----
-
-## Deployment
-
-1. **Build:** `pnpm run staging` / `pnpm run production` → `/wwwroot/` (Vite)
-2. **Docker:** `docker build -t sigook-web .`
-3. **Environment:** `.env.staging`, `.env.production` — Vite `VITE_*` vars (e.g. `VITE_URL_API`)
-4. **Server:** nginx; serves `index.html` for all 404s (SPA routing)
-
----
-
-## Known Patterns & Conventions
-
-| Aspect | Pattern | Example |
-|--------|---------|---------|
-| **Component Naming** | PascalCase.vue | DetailWorker.vue, AgencyRequests.vue |
-| **Pinia Store Naming** | camelCase.ts | agency.ts, company.ts, worker.ts |
-| **API Function Naming** | camelCase, verb-first | getAgencyWorkers(), postAgencyRequest(), updateAgencyRequest() |
-| **Route Naming** | kebab-case | `/agency-requests`, `/company-profile` |
-| **Type Naming** | PascalCase, entity + suffix | `AgencyRequestDetail`, `CompanyProfileListItem`, `CreatePayStubPayload` |
-| **i18n Keys** | dot notation | `form.labels.workerName`, `errors.unauthorized` |
-| **Class Names** | BEM or utility-based | TBD (inspect components) |
-
----
-
-## Areas for Future Investigation
-
-1. **Real-time Updates:** WebSocket usage for notifications? (Check `usePubSub.ts`)
-2. **File Upload Progress:** How are large file uploads handled?
-3. **Offline Mode:** Service Worker setup?
-4. **Performance:** Code splitting, lazy loading status?
-5. **Accessibility:** a11y compliance level?
-6. **Testing:** Unit/E2E test coverage?
-7. **Error Tracking:** Sentry or similar?
-8. **Analytics:** GA or custom tracking?
-
----
-
-## Summary
-
-**Sigook.Web** is a Vue 3 SPA for a staffing platform with three portals (Agency, Company, Worker). It follows a functional API layer pattern with minimal Pinia state (filters + auth only), role-based routing, and reusable components. The architecture prioritizes developer ergonomics over strict patterns, with direct API imports and inline callbacks reducing boilerplate. Internationalization, form validation (VeeValidate + Yup), and toast notifications are app-wide; styling is Bootstrap + `@ntohq/buefy-next` with custom SCSS. Built with Vite.
-
-**Key Strengths:**
-- Clear separation of concerns (api, components, types, routes)
-- Type-safe API layer (no `any` types)
-- Flexible, reusable component structure
-
-**Key Challenges:**
-- No centralized data store for API responses (scattered component state)
-- Inconsistent endpoint naming/versioning in backend
-- Limited test coverage (likely)
+- `pnpm run staging` / `pnpm run production` → vue-tsc type-check + Vite build (pipeline gate: 0 vue-tsc errors).
+- pnpm hardening: `ignore-scripts=true` in `.npmrc` + `allowBuilds` allowlist in `pnpm-workspace.yaml`.
+- Docker multi-stage (Node 22 + pnpm → nginx); nginx serves `index.html` for SPA history-mode routing.

@@ -1,784 +1,252 @@
-# Billing Rules - Covenant/Sigook Platform (Canada)
+# Billing Rules — Invoices (Canada + USA)
 
-## 💰 Invoice Generation System
+How the platform bills Companies for staffing services: line-item generation from approved timesheets, holiday charges, totals, and tax.
 
-Covenant's invoicing system charges Companies for staffing services, applying rates, premiums, and taxes appropriately.
+**Source of truth:**
 
-**Code location:**
-- `Covenant.Api/Covenant.Core.BL/Services/Invoices/` — Invoicing logic and orchestration (InvoiceService base, CanadaInvoiceService, UsaInvoiceService, InvoiceServiceFactory)
-- `Covenant.Api/Covenant.Core.BL/Services/AccountingService.cs` — Weekly payroll and subcontractor reports
-- `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/` — Invoice entities
-- `Covenant.Api/Covenant.Documents/` — PDF generation
+| Concern | File |
+|---------|------|
+| Orchestration, timesheet processing, subcontractor reports | `Covenant.Api/Covenant.Core.BL/Services/Invoices/InvoiceService.cs` (abstract base) |
+| Canadian invoice creation, holiday pay, HST | `Covenant.Api/Covenant.Core.BL/Services/Invoices/CanadaInvoiceService.cs` |
+| USA invoice creation, per-location tax | `Covenant.Api/Covenant.Core.BL/Services/Invoices/UsaInvoiceService.cs` |
+| Country routing | `Covenant.Api/Covenant.Core.BL/Services/Invoices/InvoiceServiceFactory.cs` |
+| Hours breakdown + amount math | `Covenant.Api/Covenant.Core.BL/Services/Shared/TimesheetCalculatorService.cs` |
+| Holiday-pay look-back query | `Covenant.Api/Covenant.Infrastructure/Repositories/Accounting/InvoiceRepository.cs` → `GetCompanyRegularCharges` |
+| Global rate multipliers | `Covenant.Api/Covenant.Common/Configuration/Rates.cs` |
+| Invoice entity | `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/Invoice.cs` |
 
----
-
-## 💵 Rate Structure
-
-### Agency Rate vs Worker Rate
-
-**Core concept:**
-```
-AgencyRate = What the Agency charges the Company
-WorkerRate = What the Agency pays the Worker
-Markup    = AgencyRate - WorkerRate (Agency's profit)
-```
-
-**Example:**
-```
-AgencyRate: $25.00/hr
-WorkerRate: $18.50/hr
-Markup:     $6.50/hr (26% profit margin)
-```
-
-**Defined in:**
-- `CompanyProfileJobPositionRate` (table)
-- Per job position, per company
+**Entry points:** `InvoicesController` (`api/agency/accounting/Invoices`) resolves the service through `InvoiceServiceFactory.Resolve()`, which returns `UsaInvoiceService` when the agency's billing location `IsUSA`, otherwise `CanadaInvoiceService`. `POST .../Invoices/Preview` → `PreviewAsync`; `POST .../Invoices` → `CreateAsync`. Both funnel into `CreateInvoiceInternal` in the country-specific service.
 
 ---
 
-### Base Rates
+## Rate Structure
 
-**Regular Hour Rate:**
 ```
-RegularAmount = RegularHours × AgencyRate
+AgencyRate = What the Agency charges the Company (per hour)
+WorkerRate = What the Agency pays the Worker (per hour)
+Markup     = AgencyRate − WorkerRate (Agency's profit)
 ```
 
-**Example:**
-```
-40 hours × $25.00/hr = $1,000.00
-```
+- `AgencyRate` comes per timesheet (`TimeSheetApprovedBillingModel.AgencyRate`), sourced from the company's job position rate.
+- Multipliers are **global configuration**, not per company: the `Rates` object injected everywhere (`Covenant.Common/Configuration/Rates.cs`). Defaults (`Rates.DefaultRates`): `OverTime = 1.5`, `Holiday = 1.5`, `Vacations = 0.04`, `Hst = 0.13`.
+- The invoice snapshots the config rates at creation (`CanadaInvoiceService.CreateInvoiceInternal`): `HolidayRate`, `OverTimeRate`, `VacationsRate`, `HstRate`, `BonusRate`. Of these, **only `OverTimeRate`, `HolidayRate` and `HstRate` participate in the math** — see "Not billed" below.
 
 ---
 
-### Premium Rates
-
-#### 1. Overtime Rate
-
-**Rule:**
-- Typically 1.5x (time and a half)
-- Defined in `CompanyProfileJobPositionRate.OvertimeRate`
-
-**Calculation:**
-```
-OvertimeAmount = OvertimeHours × (AgencyRate × OvertimeRate)
-```
-
-**Example:**
-```
-OvertimeRate = 1.5
-4 hours × ($25.00 × 1.5) = 4 × $37.50 = $150.00
-```
-
----
-
-#### 2. Night Shift Premium
-
-**Rule:**
-- Additional premium for night hours (11 PM - 7 AM)
-- Typically 1.0 - 1.2 (0% - 20% extra)
-- Defined in `CompanyProfileJobPositionRate.NightShiftRate`
-
-**Calculation:**
-```
-NightShiftAmount = NightShiftHours × (AgencyRate × NightShiftRate)
-```
-
-**Example:**
-```
-NightShiftRate = 1.15 (15% premium)
-8 hours × ($25.00 × 1.15) = 8 × $28.75 = $230.00
-```
-
-**Note:**
-- Some companies charge a flat per-hour premium instead of a multiplier
-- Some don't charge a night shift premium at all (NightShiftRate = 1.0)
-
----
-
-#### 3. Holiday Rate (worked holiday)
-
-**Rule:**
-- Applies to hours **actually worked** on a statutory holiday
-- Typically 1.5x - 2.0x
-- Defined in `CompanyProfileJobPositionRate.HolidayRate`
-
-**Calculation:**
-```
-HolidayAmount = HolidayHours × (AgencyRate × HolidayRate)
-```
-
-**Example:**
-```
-HolidayRate = 1.5
-8 hours × ($25.00 × 1.5) = 8 × $37.50 = $300.00
-```
-
-> Source: `HolidayHours` comes from `TimesheetCalculatorService.CalculateHoursBreakdown` (the `isHoliday && holidayIsPaid` branch). If the worker did not clock in on the holiday, `HolidayHours = 0` and this charge is $0 — the not-worked statutory pay is billed separately (see 3b).
-
----
-
-#### 3b. Public Holiday Pay (statutory holiday NOT worked)
-
-**Rule:**
-- Statutory holiday pay owed even when the worker does **not** work the holiday (ESA labour benefit)
-- Only when the company profile has paid holidays enabled (`TimeSheet.PaidHolidays`)
-- Worker must qualify per the ESA "last and first scheduled day" test (`GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`)
-- Amount uses a **4-week look-back average** of what was billed to the company, NOT `hours × rate`
-
-**Calculation:**
-```
-holidayWeekEnd = end of the week before the holiday's week
-lookbackStart  = four work weeks earlier
-charges        = InvoiceRepository.GetCompanyRegularCharges(companyProfileId, lookbackStart, holidayWeekEnd, qualifyingDays)
-PublicHolidayPay (per worker) = charges.AmountToPay   // ESA average of company charges
-```
-
-> This mirrors the pay-stub side (`PayStubService` → `CalculateHolidayPayBase`), but the invoice averages **company charges** (agency rate) while the pay stub averages **worker wages**, so the markup is preserved.
->
-> Invoice side: `CanadaInvoiceService.GetInvoiceHolidaysAsync` → `InvoiceHoliday` entities → added via `Invoice.AddHolidays`, summed into `holidaysSubtotal`, then HST applies. Only Canadian invoices carry public-holiday-not-worked pay.
-
----
-
-#### 4. Missing Hours
-
-**Rule:**
-- Hours not punched but approved by the agency (e.g. forgotten clock in/out, manual adjustments)
-- Stored per-timesheet in `TimeSheet.MissingHours` and `TimeSheet.MissingHoursOvertime`
-- Billed at `TimeSheet.MissingRateAgency`; falls back to `AgencyRate` when missing rate is `<= 0`
-- Missing overtime applies the same `OvertimeRate` multiplier on top of the missing rate
-
-**Calculation:**
-```
-MissingRate         = TimeSheet.MissingRateAgency > 0 ? TimeSheet.MissingRateAgency : AgencyRate
-MissingAmount       = MissingHours × MissingRate
-MissingOvertimeAmt  = MissingOvertimeHours × (MissingRate × OvertimeRate)
-```
-
-**Example:**
-```
-MissingRateAgency = $22.00, OvertimeRate = 1.5
-2h missing                 → 2 × $22.00 = $44.00
-1h missing overtime        → 1 × ($22.00 × 1.5) = $33.00
-```
-
----
-
-### Vacation Rate
-
-**Federal Rule (Canada):**
-- **Mandatory 4%** of total wages
-- Added to invoice
-- Defined in `Invoice.VacationsRate`
-
-**Calculation:**
-```
-Vacations = SubTotal × VacationsRate
-```
-
-**Example:**
-```
-SubTotal:  $4,500.00
-Vacations: $4,500.00 × 0.04 = $180.00
-```
-
----
-
-## 🧾 Invoice Calculation
-
-### Overtime Accumulation Scope
-
-Overtime hours are accumulated **per Worker + Week + Request**, not per worker globally.
-
-A worker assigned to multiple requests in the same week is evaluated independently for each request against the overtime threshold (`OvertimeStartsAfter`). 40h on Request A + 40h on Request B does **not** produce overtime — each request stays under the threshold on its own.
-
-This matches the paystub generation behavior (see `PAYSTUB_GENERATION.md`) and applies to both invoices and subcontractor reports.
-
-### Per-Worker Breakdown
-
-**InvoiceTotal (one per worker):**
-
-```
-1. Regular hours charge:
-   RegularAmount = RegularHours × AgencyRate
-
-2. Overtime charge:
-   OvertimeAmount = OvertimeHours × (AgencyRate × OvertimeRate)
-
-3. Night shift charge:
-   NightShiftAmount = NightShiftHours × (AgencyRate × NightShiftRate)
-
-4. Holiday charge:
-   HolidayAmount = HolidayHours × (AgencyRate × HolidayRate)
-
-5. Missing charge:
-   MissingRate         = TimeSheet.MissingRateAgency > 0 ? TimeSheet.MissingRateAgency : AgencyRate
-   MissingAmount       = MissingHours × MissingRate
-   MissingOvertimeAmt  = MissingOvertimeHours × (MissingRate × OvertimeRate)
-
-6. Worker total:
-   WorkerTotal = RegularAmount + OvertimeAmount + NightShiftAmount + HolidayAmount
-                 + MissingAmount + MissingOvertimeAmt
-```
-
-**Example (Worker: John Doe):**
-```
-Regular:  40h × $25.00 = $1,000.00
-Overtime:  4h × $37.50 = $  150.00
-Night:     0h          = $    0.00
-Holiday:   0h          = $    0.00
-────────────────────────────────
-Worker Total:           $1,150.00
-```
-
----
-
-### Invoice Totals
-
-**Step 1: SubTotal**
-```
-SubTotal = sum of all WorkerTotal
-```
-
-**Step 2: Vacations**
-```
-Vacations = SubTotal × VacationsRate
-```
-
-**Step 3: Bonus (if applicable)**
-```
-BonusAmount = SubTotal × BonusRate
-```
-
-**Step 4: Discounts (if applicable)**
-```
-DiscountAmount = sum of all discounts
-```
-
-**Step 5: Additional Items (if applicable)**
-```
-AdditionalItemsAmount = sum of additional items
-```
-
-**Step 6: Taxable Amount**
-```
-TaxableAmount = SubTotal + Vacations + BonusAmount + AdditionalItemsAmount - DiscountAmount
-```
-
-**Step 7: HST/GST**
-```
-HST = TaxableAmount × HstRate
-```
-
-**Step 8: Total Net**
-```
-TotalNet = TaxableAmount + HST
-```
-
----
-
-### Complete Invoice Example
-
-**Invoice AI-0001-26**
-**Company:** ABC Logistics
-**Week Ending:** February 7, 2026
-
-**Worker Breakdown:**
-
-| Worker      | Regular | Overtime | Night | Holiday | Total      |
-|-------------|---------|----------|-------|---------|------------|
-| John Doe    | 1,000.00| 150.00   | 0.00  | 0.00    | 1,150.00   |
-| Jane Smith  | 1,000.00| 0.00     | 0.00  | 0.00    | 1,000.00   |
-| Bob Johnson | 1,000.00| 0.00     | 230.00| 0.00    | 1,230.00   |
-| Alice Brown | 1,000.00| 120.00   | 0.00  | 0.00    | 1,120.00   |
-
-**Totals:**
-
-```
-SubTotal:                           $4,500.00
-Vacations (4%):                     $  180.00
-Bonus:                              $    0.00
-Additional Items:                   $    0.00
-Discounts:                          $    0.00
-─────────────────────────────────────────────
-Taxable Amount:                     $4,680.00
-HST (13% - Ontario):                $  608.40
-─────────────────────────────────────────────
-TOTAL NET:                          $5,288.40
-═════════════════════════════════════════════
-```
-
----
-
-## 💸 Tax Calculations (HST/GST)
-
-### Provincial Tax Rates (Canada)
-
-| Province              | Tax            | Rate   | Notes                        |
-|-----------------------|----------------|--------|------------------------------|
-| Ontario (ON)          | HST            | 13%    | Harmonized Sales Tax         |
-| British Columbia (BC) | GST + PST      | 12%    | 5% GST + 7% PST              |
-| Alberta (AB)          | GST            | 5%     | No provincial tax            |
-| Quebec (QC)           | GST + QST      | 14.975%| 5% GST + 9.975% QST          |
-| Nova Scotia (NS)      | HST            | 15%    |                              |
-| New Brunswick (NB)    | HST            | 15%    |                              |
-| PEI                   | HST            | 15%    |                              |
-| Newfoundland (NL)     | HST            | 15%    |                              |
-| Manitoba (MB)         | GST + PST      | 12%    | 5% GST + 7% PST              |
-| Saskatchewan (SK)     | GST + PST      | 11%    | 5% GST + 6% PST              |
-
-**Determined by:**
-- Company billing address province
-- Stored in `Invoice.HstRate`
-
-### USA Tax (per location)
-
-USA invoices do not use the fixed Canadian HST rate. Instead, the tax is configured **per company location** in the `LocationTaxes` table (keyed by `LocationId`, stored as a rate, e.g. `0.10`).
-
-- **Configuration:** Admins set the rate from the company **Location** menu ("Configure tax"). The UI accepts a **percentage** (e.g. `10` for 10%); the backend stores it as a rate (divides by 100).
-- **Regular invoices:** the tax is computed **per request while processing its timesheets**, applying the rate of each request's job location. An invoice spanning requests in different locations taxes each request at its own rate. Selecting a Province/State in the front-end filters the timesheets to that province (by job location).
-- **Direct-hiring invoices:** there are no timesheets, so the agent types the tax **percentage** directly in the front-end and it is applied to the manual items (sent as `TaxPercentage`).
-
----
-
-### Tax Exemptions
-
-**Exempt Items:**
-- Basic groceries
-- Prescription drugs
-- Most health services
-- Educational services
-
-**For Staffing Services:**
-- **Not exempt** — Fully taxable at HST/GST rate
-
----
-
-## 💼 Additional Charges
-
-### Bonus Charges
-
-**Purpose:** Special bonuses or incentives
-
-**Calculation:**
-```
-BonusAmount = SubTotal × BonusRate
-```
-
-**Example:**
-```
-SubTotal:    $4,500.00
-BonusRate:   0.05 (5%)
-BonusAmount: $4,500.00 × 0.05 = $225.00
-```
-
----
-
-### Additional Items
-
-**Purpose:** Custom line items (equipment rental, transportation, etc.)
-
-**Structure:**
-```csharp
-public class InvoiceAdditionalItem
-{
-    public string Description { get; set; }
-    public decimal Amount { get; set; }
-}
-```
-
-**Example:**
-```
-Description: "Equipment Rental - Forklift"
-Amount: $500.00
-```
-
-**Added to the Taxable Amount.**
-
----
-
-### Discounts
-
-**Purpose:** Volume discounts, promotions, adjustments
-
-**Structure:**
-```csharp
-public class InvoiceDiscount
-{
-    public string Description { get; set; }
-    public decimal Amount { get; set; }
-}
-```
-
-**Example:**
-```
-Description: "Volume Discount (>100 hours)"
-Amount: -$200.00
-```
-
-**Subtracted from the Taxable Amount.**
-
----
-
-## 📅 Billing Frequency
-
-### Weekly (Most Common)
-- Invoice generated every week
-- Week ending: typically Saturday or Sunday
-- Due date: typically Net 30 days
-
-### Bi-Weekly
-- Every 2 weeks
-
-### Monthly
-- End of month
-- Covers all work in the month
-
-**Defined by:**
-- Agreement between Agency and Company
-- Configurable per company
-
----
-
-## 📄 Invoice Format
-
-### Invoice Number Format
-
-```
-AI-{number:0000}-{year:00}
-
-Examples:
-AI-0001-26  (First invoice of 2026)
-AI-0123-26  (123rd invoice of 2026)
-```
-
-**Sequential numbering:**
-- Per year
-- Cannot skip numbers (audit requirement)
-- `Invoice.InvoiceNumber` (int)
-
----
-
-### Invoice Sections
-
-**1. Header:**
-- Agency info (name, address, business number, HST number)
-- Company info (business name, billing address)
-- Invoice number and date
-- Week ending date
-- Due date
-
-**2. Worker Hours Breakdown:**
-- Table with each worker
-- Regular, Overtime, Night Shift, Holiday hours and amounts
-- Subtotal per worker
-
-**3. Totals:**
-- SubTotal (sum of all workers)
-- Vacations (4%)
-- Bonus (if applicable)
-- Additional items (if any)
-- Discounts (if any)
-- Taxable amount
-- HST/GST
-- **TOTAL NET (amount due)**
-
-**4. Payment Terms:**
-- Payment due date
-- Accepted payment methods
-- Late payment policy
-
-**5. Notes:**
-- Any special notes or comments
-
----
-
-## 🔍 Special Cases
-
-### Multi-Province Invoicing
-
-**Scenario:** Company has locations in multiple provinces
-
-**Rule:**
-- Apply tax rate based on **work location** (where the service was performed)
-- Not the billing address
-
-**Example:**
-```
-Company HQ: Toronto, ON
-Work Location 1: Toronto, ON → 13% HST
-Work Location 2: Calgary, AB → 5% GST
-
-Generate separate invoices or split tax calculations.
-```
-
----
-
-### Zero-Rated Services
-
-**Scenario:** Export of services (international)
-
-**Rule:**
-- 0% GST/HST for services exported outside Canada
-- Requires documentation
-
-**Not applicable for domestic staffing.**
-
----
-
-### Subcontractor Billing
-
-**Scenario:** Worker is a subcontractor (not an employee)
-
-**Differences:**
-- No vacation pay (4%)
-- Different tax treatment
-- May invoice the agency directly
-
-**Invoice structure:**
-- SubTotal only (no vacations)
-- Apply GST/HST
-- Issue to subcontractor
-
----
-
-### Contractors
-
-**Scenario:** Independent contractors
-
-**Similar to subcontractors:**
-- No vacation pay
-- Simplified invoice structure
-
----
-
-## 💳 Payment Processing
-
-### Payment Methods
-
-**Accepted:**
-- Bank transfer (EFT)
-- Credit card
-- Cheque
-
-**Payment Terms:**
-- Net 30 days (standard)
-- Net 15 days (some clients)
-- Net 45 days (negotiated)
-
----
-
-### Late Payment
-
-**Policy:**
-- Interest charged after due date
-- Typically 1.5% - 2% per month
-- Service suspension after 60 days overdue
-
----
-
-### Payment Tracking
-
-**ChargeStatus (Stripe/Payment Gateway):**
-```csharp
-public enum ChargeStatus
-{
-    Pending,
-    Succeeded,
-    Failed
-}
-```
-
-**Invoice.ChargeStatus** tracks the payment status.
-
----
-
-## 📊 Reporting
-
-### Invoice Reports
-
-**Available Reports:**
-
-**1. Invoice Summary Report (Excel):**
-- All invoices for a period
-- Company, Date, Amount, Status
-
-**2. Accounts Receivable Report:**
-- Outstanding invoices
-- Aging (30, 60, 90+ days)
-
-**3. Revenue Report:**
-- Total revenue by period
-- Breakdown by company
-- Breakdown by job position
-
----
-
-## 🧪 Calculation Validation
-
-### Test Cases
+## Canadian Invoice Pipeline
+
+`CanadaInvoiceService.CreateInvoiceInternal` (used by both `PreviewAsync` and `CreateAsync`):
+
+1. Fetch approved timesheets: `ITimesheetRepository.GetTimeSheetForCreatingInvoice`. Fails with "No approved timesheets found for the selected period" unless `model.DirectHiring`.
+2. Fetch statutory holidays in the timesheet date range: `InvoiceService.GetHolidaysForPeriod` → `ICatalogRepository.GetHolidaysInWeek` per week.
+3. Build timesheet line items: `InvoiceService.ProcessTimesheets<InvoiceTotal>` (skipped for DirectHiring).
+4. Build not-worked holiday charges: `GetInvoiceHolidaysAsync` (skipped for DirectHiring).
+5. Map manual `AdditionalItems` and `Discounts` from the request model (quantity × unit price each).
+6. Compute totals (verified source, `CanadaInvoiceService.CreateInvoiceInternal`):
 
 ```csharp
-[Fact]
-public void Calculate_Invoice_Standard()
-{
-    // Arrange
-    var workerRequests = new[]
-    {
-        new WorkerRequest
-        {
-            TimeSheets = CreateTimeSheets(
-                regularHours: 40,
-                overtimeHours: 4
-            )
-        }
-    };
-    var agencyRate = 25m;
-    var overtimeRate = 1.5m;
-    var vacationsRate = 0.04m;
-    var hstRate = 0.13m;
-
-    // Act
-    var invoice = InvoiceService.Calculate(
-        workerRequests,
-        agencyRate,
-        overtimeRate,
-        vacationsRate,
-        hstRate);
-
-    // Assert
-    var expectedSubTotal = (40 * 25) + (4 * 25 * 1.5);  // 1000 + 150 = 1150
-    var expectedVacations = 1150 * 0.04;                 // 46
-    var expectedTaxable = 1150 + 46;                     // 1196
-    var expectedHst = 1196 * 0.13;                       // 155.48
-    var expectedTotal = 1196 + 155.48;                   // 1351.48
-
-    Assert.Equal(expectedSubTotal, invoice.SubTotal);
-    Assert.Equal(expectedVacations, invoice.Vacations, 2);
-    Assert.Equal(expectedHst, invoice.Hst, 2);
-    Assert.Equal(expectedTotal, invoice.TotalNet, 2);
-}
+var subtotal = timesheetsSubtotal + additionalItemsSubtotal + holidaysSubtotal - discountsSubtotal;
+var hst = subtotal * rates.Hst;
+var totalNet = subtotal + hst;
 ```
 
----
+7. Get the next sequential number (`IInvoiceRepository.GetNextInvoiceNumber`) and build the `Invoice` entity with `NightShiftRate = 0` and `WeekEnding = max(timesheet date).GetWeekEndingCurrentWeek()` (`null` for DirectHiring).
+8. `CreateAsync` persists the invoice, then always calls `CreateSubcontractorReportsAsync` (it no-ops when the company has no subcontractor timesheets pending).
 
-## ⚠️ Compliance & Audit
+There is no separate "taxable amount" step: additional items, holiday pay and discounts are all inside the single subtotal, and HST applies to that whole block.
 
-### Record Keeping
+### Worked example
 
-**Requirements:**
-- Keep all invoices for 7 years (CRA requirement)
-- Maintain audit trail of all calculations
-- Store PDFs in Azure Storage
-
-### Invoice Numbering
-
-**Critical:**
-- Must be sequential
-- Cannot skip numbers
-- Cannot reuse numbers
-- Audit requirement for CRA
-
-**Handling Errors:**
-- If an invoice is deleted, mark it as void (don't reuse the number)
-- Use the `SkipInvoiceNumber` flag if needed
-
----
-
-## 🔐 Authorization
-
-### Who Can Generate Invoices
-
-**Agency Users:**
-- Admin role
-- Accounting role
-- Can generate invoices for their agency's companies
-
-**Company Users:**
-- Cannot generate invoices
-- Can only view received invoices
-
-**Workers:**
-- Cannot access invoices
-
----
-
-## 📧 Invoice Delivery
-
-### Email Recipients
-
-**Defined in:**
-- `CompanyProfileInvoiceRecipient` (table)
-- Multiple recipients per company
-
-**Email Content:**
 ```
-Subject: Invoice AI-0001-26 from [Agency Name]
-Body: HTML template with invoice summary
-Attachments: invoice.pdf
+Timesheet items:      40h × $25.00          = $1,000.00
+                       4h × $25.00 × 1.5    = $  150.00   (overtime)
+Not-worked holiday:   1.85h × $25.00        = $   46.25   (look-back average, see below)
+Additional item:      1 × $500.00           = $  500.00
+Discount:             1 × $200.00           = $ (200.00)
+                                              ─────────
+subtotal                                    = $1,496.25
+hst = subtotal × 0.13                       = $  194.51
+totalNet                                    = $1,690.76
 ```
 
-**Sent via:**
-- SendGrid integration
-- `Covenant.Notifications/EmailNotificationService`
+No vacation line, no bonus line, no per-worker tax splits — one subtotal, one HST amount.
 
 ---
 
-## 🎯 Business Rules
+## Invoice Entity Graph
 
-### Critical Validations
+`Invoice` (`Covenant.Common/Entities/Accounting/Invoice/`) aggregates:
 
-**1. Cannot create an invoice if:**
-- No approved timesheets for the period
-- Company status is Blocked
-- No job position rate defined
+| Child | Built by | Feeds |
+|-------|----------|-------|
+| `InvoiceTotal` (one per non-zero hour bucket per timesheet) | `ProcessTimesheets<InvoiceTotal>` | `timesheetsSubtotal` |
+| `InvoiceHoliday` (one per worker per not-worked holiday) | `GetInvoiceHolidaysAsync` | `holidaysSubtotal` |
+| `InvoiceAdditionalItem` | `model.AdditionalItems` (manual) | `additionalItemsSubtotal` |
+| `InvoiceDiscount` | `model.Discounts` (manual) | `discountsSubtotal` (subtracted) |
+| `InvoiceAdditionalDetail` | `model.ClientSiteAddress` | display only |
 
-**2. An invoice must have:**
-- At least one worker with hours
-- Valid HST rate (based on province)
-- Sequential invoice number
-
-**3. Cannot edit an invoice after:**
-- Payment received
-- 30 days elapsed (configurable)
-
-**4. Cannot delete an invoice:**
-- Use the void flag instead
-- Maintain audit trail
+Each `InvoiceTotal` also carries a `TimeSheetTotal` navigation (created via `TimesheetCalculatorService.CreateTimeSheetTotalEntity`, cascade-inserted on save). That link is what marks a timesheet as billed — it drives both the holiday no-double-billing guard and re-billability after invoice deletion.
 
 ---
 
-## 💡 Best Practices
+## Timesheet Line Items — `InvoiceService.ProcessTimesheets<T>`
 
-### For Agencies
+Timesheets are grouped by **`Week + WorkerId + RequestId`** and processed in date order with a running `accumulatedRegularHours` per group. Hours come from `TimesheetCalculatorService.CalculateHoursBreakdown`, called via `InvoiceService.CalculateHoursForItem` with `breakIsPaid: false` and `holidayIsPaid: true` (see holiday asymmetry below). Timesheets without both `TimeInApproved` and `TimeOutApproved` produce an empty breakdown (no charge).
 
-1. **Review timesheets before invoicing**
-   - Ensure all hours are approved
-   - Check for anomalies
+One line item (`InvoiceTotal`) is emitted per non-zero bucket per timesheet, each linked to a `TimeSheetTotal` entity:
 
-2. **Generate invoices promptly**
-   - Weekly schedule
-   - Consistent billing cycle
+| Item | Hours source | Amount |
+|------|-------------|--------|
+| Regular | `RegularHours + OtherRegularHours` | `hours × AgencyRate` |
+| Overtime | `OvertimeHours` | `hours × AgencyRate × rates.OverTime` |
+| Holiday (worked) | `HolidayHours` | `hours × AgencyRate × rates.Holiday` |
+| Missing Hours | `TimeSheet.MissingHours` | `hours × AgencyRate` |
+| Missing Overtime | `TimeSheet.MissingHoursOvertime` | `hours × AgencyRate × rates.OverTime` |
 
-3. **Follow up on overdue invoices**
-   - Automated reminders at 7, 14, 30 days
+Notes:
 
-### For Developers
+- `OtherRegularHours` (hours past `timeLimits.MaxHoursWeek` but under the overtime threshold — the two-threshold system) are billed at the plain regular rate, merged into the Regular line.
+- Missing hours are billed at the timesheet's `AgencyRate`. The `TimeSheet.MissingRateAgency` column exists but the current invoice pipeline does not read it (the pay-stub side has the analogous `MissingRateWorker` fallback).
+- `timesheetsSubtotal = Σ item.TotalGross` across all items.
 
-1. **Always use decimal for money**
-   - Never use float or double
-   - Round to 2 decimal places
+### Hours breakdown algorithm
 
-2. **Validate tax rates**
-   - Ensure correct province
-   - Update rates annually
+`TimesheetCalculatorService.CalculateHoursBreakdown` (shared by invoices, pay stubs and subcontractor reports):
 
-3. **Test edge cases**
-   - Zero hours
-   - Very large hours
-   - Multiple workers
-   - Discounts exceeding subtotal (should fail)
+1. `totalHours = TimeOut − TimeIn`, minus `DurationBreak` when the break is unpaid. Invoices always pass `breakIsPaid: false`, so the break is always subtracted on the billing side.
+2. If `isHoliday && holidayIsPaid`: **all** hours become `HolidayHours`; the day does not feed the overtime accumulator; return.
+3. Otherwise add `totalHours` to the running per-group accumulator.
+4. `OvertimeHours` = the portion of this day's hours past the `OvertimeStartsAfter` threshold (accumulated basis — `CalculateExcessHours`).
+5. `OtherRegularHours` = hours past `timeLimits.MaxHoursWeek` that are not already overtime (the two-threshold system). Billed at the plain regular rate.
+6. `RegularHours = totalHours − OvertimeHours − OtherRegularHours`.
 
-4. **Maintain audit trail**
-   - Log all invoice generations
-   - Track modifications
-   - Record voiding
+`CalculateExcessHours` handles the boundary day: if the accumulator was already past the threshold before this timesheet, the whole day is excess; if the threshold is crossed mid-day, only the hours beyond it are.
+
+### Overtime accumulation scope
+
+Overtime accumulates **per Worker + Week + Request**, not per worker globally. A worker on two requests in the same week is evaluated against `OvertimeStartsAfter` independently per request: 40h on Request A + 40h on Request B produces **no** overtime. Same rule on pay stubs (see `PAYSTUB_GENERATION.md`) and subcontractor reports (where the accumulator resets per request inside the worker-week group).
+
+---
+
+## Holidays — Two Separate Flows
+
+### a) Worked holiday (worker clocked in on the holiday)
+
+`TimesheetCalculatorService.CalculateHoursBreakdown`: when `isHoliday && holidayIsPaid`, **all** of the day's hours go to `HolidayHours`, nothing feeds the overtime accumulator. `ProcessTimesheets` bills them at `AgencyRate × rates.Holiday`.
+
+**Asymmetry with pay stubs:** invoices hardcode `holidayIsPaid: true` (`InvoiceService.CalculateHoursForItem`), so worked-holiday hours are *always* billed at the holiday multiplier regardless of the company's `HolidayIsPaid` setting. Pay stubs honor the timesheet's `ts.HolidayIsPaid` flag (`PayStubService`), so a worker may be paid those hours as regular while the company is still billed at the holiday rate.
+
+### b) Public Holiday Pay (statutory holiday NOT worked)
+
+Charged even though nobody clocked in — the ESA labour benefit passed through to the company. `CanadaInvoiceService.GetInvoiceHolidaysAsync`:
+
+- Only when the company profile has paid holidays enabled (`PaidHolidays` flag, read from the first timesheet) and there are holidays in the invoice period.
+- Per holiday: look-back window = the four work weeks before the holiday's week (`holiday.GetEnd()` / `.GetStart()`); qualifying days from `GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay()` (ESA "last and first scheduled day" test).
+- `InvoiceRepository.GetCompanyRegularCharges(companyProfileId, lookbackStart, holidayWeekEnd, qualifyingDays)` returns one `CompanyRegularChargesByWorker` per qualifying worker:
+  - **Qualifying worker** = has timesheets on the qualifying days with `TimeSheetTotal == null` (not yet billed). This doubles as the **no-double-billing guard**: once those timesheets are invoiced they get a `TimeSheetTotal`, so re-invoicing the same holiday returns no workers.
+  - **Charge base** = `Regular + OtherRegular` amounts from *previously invoiced* `InvoiceTotals` in the look-back window. Overtime, worked-holiday and missing charges are excluded — a **narrower base than the pay-stub side** (`TimesheetCalculatorService.CalculateHolidayPayBase` uses full worker gross plus 4% vacations).
+- Amount math (`CompanyRegularChargesByWorker`, `CovenantConstants.PublicHolidays`):
+
+```
+TotalHours  = Regular / AgencyRate            (capped at 176 = 44 × 4)
+HoursToPay  = TotalHours / 20
+AmountToPay = HoursToPay × AgencyRate         (≈ Regular charges / 20)
+```
+
+- Results become `InvoiceHoliday` entities (`Invoice.AddHolidays`), summed into `holidaysSubtotal`; HST applies. Preview shows them as `"Charge for Holiday {date}"` lines.
+- Only Canadian invoices carry this charge — `UsaInvoiceService` never builds `InvoiceHoliday` items.
+
+**Example:** worker's look-back Regular charges = $925.00 at AgencyRate $25.00 → `TotalHours = 37` (under the 176 cap) → `HoursToPay = 1.85` → `AmountToPay = $46.25` billed for the holiday.
+
+Both flows mirror the dual-guard design on the payroll side — see `PAYSTUB_GENERATION.md`. Summary of the invoice/pay-stub differences for holidays:
+
+| Aspect | Invoice (company charge) | Pay stub (worker pay) |
+|--------|--------------------------|----------------------|
+| Worked holiday honors `HolidayIsPaid`? | No — hardcoded `holidayIsPaid: true` | Yes — uses `ts.HolidayIsPaid` |
+| Not-worked base | `Regular + OtherRegular` **company charges** (AgencyRate) / 20, capped 176h | Full worker gross incl. OT/holiday/missing + 4% vacations, / 20 |
+| Rate preserved | AgencyRate (markup kept) | WorkerRate |
+| Double-billing guard | Qualifying timesheets must have `TimeSheetTotal == null` | Dual guard on payroll side (see `PAYSTUB_GENERATION.md`) |
+
+---
+
+## Not Billed on Invoices
+
+| Concept | Reality in code |
+|---------|-----------------|
+| Vacation pay (4%) | **Never enters invoice totals.** `Invoice.VacationsRate` is stored as a snapshot but no invoice math reads it. Vacation 4% is a pay-stub concept (`rates.Vacations`, `PayStubService`). |
+| Bonus | `Invoice.BonusRate` stored only; no bonus line or multiplier in any total. |
+| Night shift | Deprecated platform-wide. `CanadaInvoiceService` sets `NightShiftRate = 0` and `TimesheetCalculatorService.CalculateHoursBreakdown` explicitly does not support it. Do not add night-shift logic. |
+| Per-province HST | HST is the **single global config rate** `rates.Hst` (default 0.13) applied to every Canadian invoice, regardless of province. There is no provincial tax table in the Canadian path. Per-location tax exists only in the USA path. |
+
+---
+
+## Direct Hiring (Canada)
+
+`model.DirectHiring = true` builds an invoice with **manual items only**:
+
+- No timesheet requirement (the empty-timesheets guard is bypassed), `ProcessTimesheets` and `GetInvoiceHolidaysAsync` are skipped.
+- Subtotal = additional items − discounts; HST applies as usual.
+- `WeekEnding = null`.
+
+---
+
+## Subcontractor Reports
+
+Created by `InvoiceService.CreateSubcontractorReportsAsync`, invoked from `CanadaInvoiceService.CreateAsync` right after saving the invoice. Pulls subcontractor timesheets (`GetTimeSheetForCreatingReportsSubcontractor`) and builds one `ReportSubcontractor` per **Worker + Week**:
+
+- Hours use the same `CalculateHoursForItem` breakdown, with the overtime accumulator reset **per request** inside the worker-week group.
+- Amounts use **WorkerRate** (what the subcontractor is owed), with the same global multipliers: regular, overtime (`rates.OverTime`), worked holiday (`rates.Holiday`). Missing hours and night shift are hardcoded `0` in the wage detail.
+- Totals: `Gross = regular + overtime + holiday`; `PublicHolidayPay = 0` (subcontractors get no statutory holiday pay); `Earnings = TotalNet = Gross`, minus nothing except explicit `DeductionsOthers` rows appended per timesheet.
+
+---
+
+## USA Invoices
+
+`UsaInvoiceService` shares `ProcessTimesheets` (emitting `InvoiceUSAItem`) but taxes differently:
+
+- **Per-location tax, accumulated per timesheet** inside `ProcessTimesheets`: `tax += timesheetGross * timesheet.Tax`, where `timesheet.Tax` is the rate configured for the request's job location (`LocationTaxes` table, managed from the Location "Configure tax" UI — entered as a percentage, stored as a rate). An invoice spanning locations taxes each timesheet at its own rate.
+- **Direct hiring:** no timesheets, so the caller sends `TaxPercentage`; tax = `subTotal × TaxPercentage / 100`.
+- The computed tax is stored in `InvoiceUSA.Tax` and surfaced through the shared summary's `Hst` field.
+- No public-holiday-pay items and no subcontractor reports in the USA `CreateAsync` path.
+
+---
+
+## Invoice Number
+
+- Canada: `AI-{InvoiceNumber:D4}-{yy}` (`Invoice.PrefixInvoiceNumber = "AI"`); USA: prefix `US` (`InvoiceUSA.PrefixInvoiceNumber`). Formatting in `InvoiceRepository` list/summary queries.
+- `InvoiceNumber` is sequential via `IInvoiceRepository.GetNextInvoiceNumber()`.
+
+---
+
+## Invoice Deletion
+
+`InvoiceService.DeleteInvoice` → country-specific `DeleteInvoiceData`. The Canadian implementation deletes the invoice **and its subcontractor reports** (`DeleteInvoiceAndReportsSubcontractor`) and optionally the pay stubs listed in the request; blob PDFs are removed and a Teams warning is posted to the Accounting channel.
+
+Deleting an invoice clears the `TimeSheetTotal` link, which re-qualifies its timesheets for billing — including the not-worked holiday guard above.
+
+---
+
+## PDF & Email
+
+- PDF: rendered from `/Views/Billing/Invoice/Invoice.cshtml` via `IRazorViewToStringRenderer` + `IPdfGeneratorService`, cached in the invoices blob container (`InvoiceService.GetInvoicePdf` / `UploadInvoicePdf`). Regenerate (delete blob) after template fixes.
+- Email: `InvoiceService.SendInvoiceEmail` attaches the PDF plus caller-supplied files and sends through `IEmailService` using the body template `/Views/Billing/Invoice/InvoiceEmail.cshtml`.
+
+---
+
+## Gotchas for Implementers
+
+- **Preview and Create share `CreateInvoiceInternal`** — any billing change automatically affects both; only persistence, subcontractor reports and numbering differ.
+- **Multipliers are global, not per company.** Changing `rates.OverTime` / `rates.Holiday` / `rates.Hst` changes every future invoice; there is no per-company override in the pipeline.
+- **Snapshot fields lie.** `Invoice.VacationsRate`, `BonusRate`, `NightShiftRate` exist on the entity and are populated, but the totals never use them. Do not "fix" totals to include them.
+- **`TimeSheetTotal == null` means "not yet billed".** Creating an invoice attaches `TimeSheetTotal` rows; deleting it detaches them. Both the timesheet fetch and the holiday-pay qualification depend on this marker.
+- **Holiday hours bypass overtime.** A worked holiday's hours never enter the overtime accumulator, so they can't also generate overtime for the week.
+- **`GetInvoiceHolidaysAsync` reads `PaidHolidays` from the first timesheet** of the batch — the flag is a company-profile setting projected onto every timesheet row.
+- **USA vs Canada is decided by the agency's billing location** (`InvoiceServiceFactory`), not by the company being billed.
+
+---
+
+## Related Documents
+
+- `PAYSTUB_GENERATION.md` — worker-side flow; shares the hours breakdown, the per-request overtime scope, and the two-flow holiday design (with a *worker-wage* holiday base instead of company charges).
+- `TIMESHEET_RULES.md` — how approved hours, breaks, missing hours and the two-threshold system are captured.
+- `PAYROLL_RULES.md` — CPP/EI/tax deductions (pay-stub only, never on invoices).

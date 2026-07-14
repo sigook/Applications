@@ -62,7 +62,7 @@ dotnet run --project Covenant.IdentityServer/Covenant.IdentityServer
 dotnet test Covenant.IdentityServer/Covenant.IdentityServer.Tests
 ```
 
-Requires `PatSigookPackages` env var for Azure Artifacts NuGet restore.
+No dependency on `Covenant.Common` — IdentityServer vendors its own copies of shared types.
 
 ## Sigook.Functions (.NET 8 Azure Functions)
 
@@ -71,4 +71,4 @@ dotnet build Sigook.Functions/Sigook.Functions.sln
 cd Sigook.Functions/Sigook.Functions && func start   # Local run (requires Azure Functions Core Tools v4)
 ```
 
-Functions: `SendEmail` (HTTP), `SendInvitationToApply` (Queue), `NotificationSinExpiration` (Timer), `WarnLicensesExpiration` (Timer).
+Functions (both Timer triggers, defined in `Sigook.Functions/Functions/ScheduleTasks.cs`): `NotificationSinExpiration`, `WarnLicensesExpiration`.
