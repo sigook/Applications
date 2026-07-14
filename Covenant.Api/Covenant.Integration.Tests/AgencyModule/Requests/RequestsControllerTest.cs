@@ -1,5 +1,5 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequest.Controllers;
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Entities.Company;
@@ -32,26 +32,28 @@ using System.Net;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest;
+namespace Covenant.Integration.Tests.AgencyModule.Requests;
 
-public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyRequestControllerTest.Startup>>
+public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
     private readonly CustomWebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
 
-    public AgencyRequestControllerTest(CustomWebApplicationFactory<Startup> factory)
+    public RequestsControllerTest(CustomWebApplicationFactory<Startup> factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
     }
 
-    private static string RequestUri() => AgencyRequestController.RouteName;
+    private static string RequestUri() => RequestsController.RouteName;
+
+    private static string ListUri() => Covenant.Api.Controllers.Sigook.Agency.Recruiting.RequestsController.RouteName;
 
     [Fact]
     public async Task Get()
     {
         Request entity = Data.FakeRequest;
-        HttpResponseMessage response = await _client.GetAsync(RequestUri());
+        HttpResponseMessage response = await _client.GetAsync(ListUri());
         response.EnsureSuccessStatusCode();
         var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyRequestListModel>>();
         AgencyRequestListModel model = list.Items.Single(c => c.Id == entity.Id);
@@ -294,7 +296,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
     [Fact]
     public async Task SendInvitation()
     {
-        var url = $"{RequestUri()}/{Data.FakeRequestToSendInvitation.Id}/{nameof(AgencyRequestController.SendInvitation)}";
+        var url = $"{RequestUri()}/{Data.FakeRequestToSendInvitation.Id}/{nameof(RequestsController.SendInvitation)}";
 
         HttpResponseMessage response = await _client.PostAsJsonAsync(url, new { });
 
@@ -304,7 +306,7 @@ public class AgencyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWe
     [Fact]
     public async Task SendInvitationFailsWhenAlreadySentWithinWaitingPeriod()
     {
-        var url = $"{RequestUri()}/{Data.FakeRequestWithRecentInvitation.Id}/{nameof(AgencyRequestController.SendInvitation)}";
+        var url = $"{RequestUri()}/{Data.FakeRequestWithRecentInvitation.Id}/{nameof(RequestsController.SendInvitation)}";
 
         HttpResponseMessage response = await _client.PostAsJsonAsync(url, new { });
 

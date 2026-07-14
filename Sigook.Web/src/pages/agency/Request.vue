@@ -7,7 +7,7 @@
     </div>
     <section class="wrapper-request-top" v-if="request">
       <div>
-        <router-link :to="'/recruiting/companies/' + request.companyProfileId">
+        <router-link :to="companyBase + '/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" alt="logo" />
         </router-link>
         <h2 class="text-capitalize fz1 fw-bold">
@@ -33,7 +33,7 @@
             <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
           </template>
           <b-dropdown-item aria-role="listitem"
-            @click="router.push({ path: `/recruiting/requests/update/${request.companyProfileId}/${request.id}` })">
+            @click="router.push({ path: `${requestBase}/update/${request.companyProfileId}/${request.id}` })">
             Edit Request
           </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" @click="showShiftModal = true">
@@ -69,7 +69,7 @@
       <b-tab-item label="Applicants" value="Applicants">
         <applicants v-if="visitedTabs.includes('Applicants')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
-      <b-tab-item label="Runners" value="Runners">
+      <b-tab-item label="Runners" value="Runners" v-if="hasRecruitingAccess">
         <runners v-if="visitedTabs.includes('Runners')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
       <b-tab-item label="Workers" value="Workers">
@@ -107,6 +107,8 @@ import {
 } from '@/api/agencyRequestApi';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { breakWord, dateFromNow } from '@/utils/filters';
+import { useModuleBase } from '@/composables/useModuleBase';
+import { useRecruitingAccess } from '@/composables/useRecruitingAccess';
 import Detail from '@/components/agency_request/AgencyRequestDetail.vue';
 import Workers from '@/components/agency/AgencyWorkers.vue';
 import PunchCard from '@/components/agency_request/MassivePunchCard.vue';
@@ -118,6 +120,8 @@ import ShiftModal from '@/components/request/ShiftEditModal.vue';
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
+const { requestBase, companyBase } = useModuleBase();
+const { hasRecruitingAccess } = useRecruitingAccess();
 
 const isLoading = ref(true);
 const request = ref<any>(null);
@@ -139,9 +143,11 @@ const billingTitle = computed(() => {
 
 loadRequest();
 if (route.query && route.query.tab) {
-  currentTab.value = route.query.tab as string;
-  if (!visitedTabs.value.includes(route.query.tab as string)) {
-    visitedTabs.value.push(route.query.tab as string);
+  const requestedTab = route.query.tab as string;
+  const tab = requestedTab === 'Runners' && !hasRecruitingAccess.value ? 'Detail' : requestedTab;
+  currentTab.value = tab;
+  if (!visitedTabs.value.includes(tab)) {
+    visitedTabs.value.push(tab);
   }
 }
 
@@ -150,7 +156,7 @@ function changeTab(tab: string) {
     visitedTabs.value.push(tab);
   }
   router.push({
-    path: `/recruiting/requests/${route.params.id}`,
+    path: `${requestBase.value}/${route.params.id}`,
     query: { tab: tab },
   });
 }
@@ -192,7 +198,7 @@ function onCancelRequest(reason: any) {
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Cancelled');
-      router.push('/recruiting/requests');
+      router.push(requestBase.value);
     })
     .catch((error) => {
       isLoading.value = false;

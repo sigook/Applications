@@ -1,5 +1,5 @@
 using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
-using Covenant.Api.AgencyModule.AgencyRequest.Controllers;
+using RecruitingRequestsController = Covenant.Api.Controllers.Sigook.Agency.Recruiting.RequestsController;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -17,7 +17,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest;
+namespace Covenant.Integration.Tests.AgencyModule.Requests;
 
 public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<SalesRequestsControllerTest.Startup>>
 {
@@ -69,7 +69,7 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
 
     [Fact]
     public async Task SalesCannotReachTheAgencyRequestsEndpoint() =>
-        Assert.Equal(HttpStatusCode.Forbidden, (await AsSales().GetAsync(AgencyRequestController.RouteName)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await AsSales().GetAsync(RecruitingRequestsController.RouteName)).StatusCode);
 
     [Fact]
     public async Task RecruitingCannotReachTheSalesEndpoint() =>

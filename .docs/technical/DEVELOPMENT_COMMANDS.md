@@ -11,7 +11,7 @@ dotnet test Covenant.Api/Covenant.Tests/Covenant.Tests.csproj  # Unit only
 dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api
 ```
 
-Key: shared cloud PostgreSQL (no local DB setup), Azure Service Bus for messaging, publishes `Covenant.Common` NuGet package.
+Key: shared cloud PostgreSQL (no local DB setup), Azure Service Bus for messaging.
 
 ## SigookApp (Flutter)
 

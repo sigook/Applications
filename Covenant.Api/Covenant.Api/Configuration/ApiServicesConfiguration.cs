@@ -99,6 +99,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<CompanyIdFilter>();
         services.AddScoped<AgencyIdFilter>();
+        services.AddScoped<AgencyPersonnelIdFilter>();
         services.AddScoped<CaptchaFilter>();
 
         // Shared calculation services

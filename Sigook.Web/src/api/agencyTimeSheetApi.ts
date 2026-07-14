@@ -3,7 +3,7 @@ import type { TimeSheetListItem, TimeSheetModel, TimeSheetUsagesModel } from '@/
 
 // Get all timesheets for a worker on a request
 export function getAgencyWorkerTimeSheet(requestId: string, workerId: string): Promise<TimeSheetListItem[]> {
-  return api.get<TimeSheetListItem[]>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`);
+  return api.get<TimeSheetListItem[]>(`/api/agency/requests/${requestId}/Workers/${workerId}/TimeSheets`);
 }
 
 // Get timesheets filtered by date range
@@ -12,7 +12,7 @@ export function getAgencyWorkerTimeSheetByDate(
   workerId: string,
   date: { startDate: string; endDate: string },
 ): Promise<TimeSheetListItem[]> {
-  return api.get<TimeSheetListItem[]>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`, {
+  return api.get<TimeSheetListItem[]>(`/api/agency/requests/${requestId}/Workers/${workerId}/TimeSheets`, {
     params: { ...date },
   });
 }
@@ -22,7 +22,7 @@ export function postAgencyWorkerTimeSheet(
   workerId: string,
   model: TimeSheetModel,
 ): Promise<{ id: string }> {
-  return api.post<{ id: string }>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet`, model);
+  return api.post<{ id: string }>(`/api/agency/requests/${requestId}/Workers/${workerId}/TimeSheets`, model);
 }
 
 export function updateAgencyWorkerTimeSheet(
@@ -31,13 +31,13 @@ export function updateAgencyWorkerTimeSheet(
   id: string,
   model: TimeSheetModel,
 ): Promise<void> {
-  return api.put(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}`, model);
+  return api.put(`/api/agency/requests/${requestId}/Workers/${workerId}/TimeSheets/${id}`, model);
 }
 
 export function deleteAgencyWorkerTimeSheet(requestId: string, workerId: string, id: string): Promise<void> {
-  return api.del(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}`);
+  return api.del(`/api/agency/requests/${requestId}/Workers/${workerId}/TimeSheets/${id}`);
 }
 
 export function getAgencyTimeSheetUsages(requestId: string, workerId: string, id: string): Promise<TimeSheetUsagesModel> {
-  return api.get<TimeSheetUsagesModel>(`/api/v2/AgencyRequest/${requestId}/Worker/${workerId}/TimeSheet/${id}/Usages`);
+  return api.get<TimeSheetUsagesModel>(`/api/agency/requests/${requestId}/Workers/${workerId}/TimeSheets/${id}/Usages`);
 }

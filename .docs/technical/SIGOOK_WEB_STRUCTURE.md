@@ -384,10 +384,14 @@ Creates the Pinia instance and registers the persisted-state plugin; individual 
 
 ### roles.ts
 
-Enum of role strings for route guards:
-- `agency`, `agencyPersonnel`, `payroll`, `admin` (agency-side)
+The 7 role strings plus the groups used by the route guard (`recruitingAccess`, `agencyStaff`,
+`salesAccess`, `accountingAccess`), mirroring `CovenantConstants.Role` in the backend:
+- `superadmin`, `admin`, `recruiting`, `sales` (agency-side)
 - `company`, `companyUser` (company-side)
 - `worker` (worker-side)
+
+Routes declare `meta.role` with one of the groups; `router/index.ts` enforces it and redirects to
+`/unauthorized`. See `.docs/business/ROLES_PERMISSIONS.md`.
 
 ### securityService.ts
 
@@ -395,7 +399,8 @@ User/auth service (delegates to store).
 
 ### menu.ts
 
-Navigation structure by role (agency, company, worker menus).
+Navigation structure by role. Agency staff menus are built per group: `recruitingMenu`, `salesMenu`
+and `accountingMenu` — admin/superadmin get all three, recruiting and sales get only theirs.
 
 ---
 
@@ -420,7 +425,9 @@ Navigation structure by role (agency, company, worker menus).
 
 | File | Purpose |
 |------|---------|
-| **useBillingAdmin.ts** | Billing admin role check |
+| **useAccountingAdmin.ts** | Accounting manager check (superadmin, admin) |
+| **useRecruitingAccess.ts** | Recruiting access check (superadmin, admin, recruiting) |
+| **useModuleBase.ts** | Resolves `/sales` vs `/recruiting` path prefix for shared pages |
 | **useCreateWorker.ts** | Worker registration composable |
 | **usePubSub.ts** | Pub/sub event system |
 

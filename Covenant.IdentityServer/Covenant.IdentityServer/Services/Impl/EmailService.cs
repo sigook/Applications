@@ -1,5 +1,4 @@
-using Covenant.Common.Configuration;
-using DocumentFormat.OpenXml.Wordprocessing;
+using Covenant.IdentityServer.Configuration;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;

@@ -25,7 +25,7 @@ namespace Covenant.IdentityServer.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Covenant.Common.Entities.CovenantUser", b =>
+            modelBuilder.Entity("Covenant.IdentityServer.Entities.CovenantUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

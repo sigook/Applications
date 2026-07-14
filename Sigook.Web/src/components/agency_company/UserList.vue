@@ -32,7 +32,7 @@
 
     <!-- Create user modal-->
     <b-modal v-model="showModal" @close="showModal = false" width="500px">
-      <create-user :companyId="props.company.companyId" @updateUsers="updateUsers" />
+      <create-user :profileId="props.company.id" @updateUsers="updateUsers" />
     </b-modal>
   </div>
 </template>
@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
-import { getCompanyProfileUsers, deleteCompanyProfileUser } from "@/api/agencyCompanyApi";
+import { getCompanyUsers, deleteCompanyProfileUser } from "@/api/agencyCompanyApi";
 import CreateUser from "@/components/CompanyCreateUserModal.vue";
 
 const props = defineProps<{ company: any }>();
@@ -52,13 +52,13 @@ const pageSize = 30;
 const users = ref<any[]>([]);
 
 async function getUsers() {
-  const response = await getCompanyProfileUsers(props.company.companyId);
+  const response = await getCompanyUsers(props.company.id);
   users.value = response.map((r: any) => ({ ...r, actions: null }));
 }
 
 async function deleteUser(id: any) {
   isLoading.value = true;
-  await deleteCompanyProfileUser(props.company.companyId, id)
+  await deleteCompanyProfileUser(props.company.id, id)
     .catch(error => {
       isLoading.value = false;
       showAlertError(error.data);

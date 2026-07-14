@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCompanyProfile.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
@@ -23,14 +23,14 @@ using Moq;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfile
+namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 {
-    public class AgencyCompanyProfileControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyCompanyProfileControllerEmailTest.Startup>>
+    public class CompanyProfilesControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyProfilesControllerEmailTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
-        private static string RequestUri() => V2AgencyCompanyProfileController.RouteName;
+        private static string RequestUri() => CompanyProfilesController.RouteName;
 
-        public AgencyCompanyProfileControllerEmailTest(CustomWebApplicationFactory<Startup> factory) => _factory = factory;
+        public CompanyProfilesControllerEmailTest(CustomWebApplicationFactory<Startup> factory) => _factory = factory;
 
         [Fact]
         public async Task Email()
@@ -38,7 +38,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfile
             CvnEmail newEmail = CvnEmail.Create("newCoEmail@mail.com").Value;
             HttpClient client = _factory.CreateClient();
             Guid id = Startup.FakeCompany.Id;
-            var url = $"{RequestUri()}/{id}/{nameof(V2AgencyCompanyProfileController.Email)}";
+            var url = $"{RequestUri()}/{id}/{nameof(CompanyProfilesController.Email)}";
             HttpResponseMessage response = await client.PutAsJsonAsync(url, new UpdateEmailModel { NewEmail = newEmail });
             response.EnsureSuccessStatusCode();
 

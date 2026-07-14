@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequestRequestedBy.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -19,20 +19,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public class AgencyRequestRequestedByControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyRequestRequestedByControllerTest.Startup>>
+    public class RequestedByControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestedByControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyRequestRequestedByControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public RequestedByControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyRequestRequestedByController.RouteName.Replace("{requestId}", Startup.FakeRequest.Id.ToString());
+        private static string RequestUri() => RequestedByController.RouteName.Replace("{requestId}", Startup.FakeRequest.Id.ToString());
 
         [Fact]
         public async Task Post()
@@ -160,9 +160,9 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                FakeCompany.ContactPersons.Add(FakeContactPersonPost);
-                FakeCompany.ContactPersons.Add(FakeContactPerson);
-                FakeCompany.ContactPersons.Add(FakeContactPersonDelete);
+                FakeCompany.ContactPeople.Add(FakeContactPersonPost);
+                FakeCompany.ContactPeople.Add(FakeContactPerson);
+                FakeCompany.ContactPeople.Add(FakeContactPersonDelete);
                 context.RequestRequestedBy.Add(new RequestRequestedBy(FakeRequest.Id, FakeContactPerson.Id));
                 context.RequestRequestedBy.Add(new RequestRequestedBy(FakeRequest.Id, FakeContactPersonDelete.Id));
                 context.AddRange(FakeCompany, FakeRequest);

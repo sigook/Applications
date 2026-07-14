@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequestWorkerNote.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
@@ -15,21 +15,21 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorkerNote
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public class AgencyRequestWorkerNoteControllerTest :
-        IClassFixture<CustomWebApplicationFactory<AgencyRequestWorkerNoteControllerTest.Startup>>
+    public class WorkerNotesControllerTest :
+        IClassFixture<CustomWebApplicationFactory<WorkerNotesControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyRequestWorkerNoteControllerTest(CustomWebApplicationFactory<AgencyRequestWorkerNoteControllerTest.Startup> factory)
+        public WorkerNotesControllerTest(CustomWebApplicationFactory<WorkerNotesControllerTest.Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyRequestWorkerNoteController.RouteName
+        private static string RequestUri() => WorkerNotesController.RouteName
             .Replace("{requestId}", Startup.FakeWorkerRequest.RequestId.ToString())
             .Replace("{workerRequestId}", Startup.FakeWorkerRequest.Id.ToString());
 

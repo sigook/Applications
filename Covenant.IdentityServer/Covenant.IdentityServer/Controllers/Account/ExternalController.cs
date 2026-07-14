@@ -1,4 +1,4 @@
-using Covenant.Common.Entities;
+using Covenant.IdentityServer.Entities;
 using Covenant.IdentityServer.Configuration;
 using Covenant.IdentityServer.Controllers.Account.Models;
 using IdentityModel;

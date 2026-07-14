@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyCompanyProfile.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -21,20 +21,20 @@ using Moq;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfile
+namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 {
-    public class V2AgencyCompanyProfileControllerTest : IClassFixture<CustomWebApplicationFactory<V2AgencyCompanyProfileControllerTest.Startup>>
+    public class CompanyProfilesControllerTest : IClassFixture<CustomWebApplicationFactory<CompanyProfilesControllerTest.Startup>>
     {
         private readonly HttpClient _client;
         private readonly CustomWebApplicationFactory<Startup> _factory;
 
-        public V2AgencyCompanyProfileControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public CompanyProfilesControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri(Guid? id = null) => V2AgencyCompanyProfileController.RouteName + (id is null ? "" : $"/{id}");
+        private static string RequestUri(Guid? id = null) => CompanyProfilesController.RouteName + (id is null ? "" : $"/{id}");
 
         [Fact]
         public async Task Post()

@@ -1,6 +1,6 @@
-using Covenant.Common.Constants;
 using Covenant.IdentityServer.Data;
 using Covenant.IdentityServer.Entities;
+using Covenant.IdentityServer.Security;
 using IdentityServer4.EntityFramework.DbContexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,16 +9,16 @@ namespace Covenant.IdentityServer.BackgroundServices;
 
 public class SigookIdentityBackgroundService : BackgroundService
 {
-    private static readonly string[] Roles =
-    [
-        CovenantConstants.Role.SuperAdmin,
-        CovenantConstants.Role.Admin,
-        CovenantConstants.Role.Recruiting,
-        CovenantConstants.Role.Sales,
-        CovenantConstants.Role.Company,
-        CovenantConstants.Role.CompanyUser,
-        CovenantConstants.Role.Worker
-    ];
+    private static readonly string[] Roles = new[]
+    {
+        RoleConstants.SuperAdmin,
+        RoleConstants.Admin,
+        RoleConstants.Recruiting,
+        RoleConstants.Sales,
+        RoleConstants.Company,
+        RoleConstants.CompanyUser,
+        RoleConstants.Worker
+    };
 
     private readonly IServiceProvider serviceProvider;
     private readonly ILogger<SigookIdentityBackgroundService> logger;

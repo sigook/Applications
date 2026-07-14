@@ -10,6 +10,8 @@ namespace Covenant.Common.Models.Request.WeeklyBoard
         public int NumberId { get; set; }
         public string CompanyName { get; set; }
         public string JobTitle { get; set; }
+        public string City { get; set; }
+        public string ProvinceCode { get; set; }
         public DateTime WorkDate { get; set; }
         public RequestStatus Status { get; set; }
         public bool IsAsap { get; set; }

@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyCompanyProfileContactPerson.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -16,20 +16,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileContactPerson
+namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 {
-    public class AgencyCompanyProfileContactPersonControllerTest : IClassFixture<CustomWebApplicationFactory<AgencyCompanyProfileContactPersonControllerTest.Startup>>
+    public class ContactPeopleControllerTest : IClassFixture<CustomWebApplicationFactory<ContactPeopleControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyCompanyProfileContactPersonControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public ContactPeopleControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyCompanyProfileContactPersonController.RouteName.Replace("{profileId}",
+        private static string RequestUri() => ContactPeopleController.RouteName.Replace("{profileId}",
             Startup.FakeCompanyProfile.Id.ToString());
 
         [Fact]
@@ -185,9 +185,9 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileContactPer
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                FakeCompanyProfile.ContactPersons.Add(FakeContactPerson);
-                FakeCompanyProfile.ContactPersons.Add(FakeUpdateContactPerson);
-                FakeCompanyProfile.ContactPersons.Add(FakeDeleteContactPerson);
+                FakeCompanyProfile.ContactPeople.Add(FakeContactPerson);
+                FakeCompanyProfile.ContactPeople.Add(FakeUpdateContactPerson);
+                FakeCompanyProfile.ContactPeople.Add(FakeDeleteContactPerson);
                 context.CompanyProfile.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }

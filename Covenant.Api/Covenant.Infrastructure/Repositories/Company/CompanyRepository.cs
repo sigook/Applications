@@ -159,7 +159,7 @@ namespace Covenant.Infrastructure.Repositories.Company
                 .Include(c => c.Company)
                 .Include(c => c.Logo)
                 .Include(c => c.Locations).ThenInclude(l => l.Location).ThenInclude(c => c.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
-                .Include(c => c.ContactPersons)
+                .Include(c => c.ContactPeople)
                 .Include(c => c.Industry).ThenInclude(i => i.Industry)
                 .SingleOrDefaultAsync();
             if (profile is null) return null;
@@ -184,12 +184,12 @@ namespace Covenant.Infrastructure.Repositories.Company
                 .Include(cp => cp.Company)
                 .Include(cp => cp.Notes)
                 .AsQueryable();
-            if (filter.SalesUserId.HasValue)
-                companies = companies.Where(cp => cp.SalesRepresentative.UserId == filter.SalesUserId.Value);
+            if (filter.SalesPersonnelId.HasValue)
+                companies = companies.Where(cp => cp.SalesRepresentativeId == filter.SalesPersonnelId.Value);
             var query = from cp in companies
                         join cf in _context.CovenantFile on cp.LogoId equals cf.Id into tmp
                         from cfl in tmp.DefaultIfEmpty()
-                        from cpcp in _context.CompanyProfileContactPersons.Where(cpcp => cpcp.CompanyProfileId == cp.Id).Take(1).DefaultIfEmpty()
+                        from cpcp in _context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).Take(1).DefaultIfEmpty()
                         orderby cp.BusinessName
                         select new CompanyProfileListModel
                         {
@@ -228,7 +228,7 @@ namespace Covenant.Infrastructure.Repositories.Company
             var profileIds = companyList.Select(c => c.Id).ToList();
             var companyUserIds = companyList.Select(c => c.CompanyId).Distinct().ToList();
 
-            var contacts = await _context.CompanyProfileContactPersons
+            var contacts = await _context.CompanyProfileContactPeople
                 .Where(cp => profileIds.Contains(cp.CompanyProfileId))
                 .Select(cp => new CompanyProfileContactPersonModel
                 {
@@ -356,7 +356,7 @@ namespace Covenant.Infrastructure.Repositories.Company
         {
             var query = _context.CompanyProfile
                 .Include(cp => cp.Locations)
-                .Include(cp => cp.ContactPersons)
+                .Include(cp => cp.ContactPeople)
                 .Include(cp => cp.JobPositionRates)
                 .Include(cp => cp.Industry).ThenInclude(i => i.Industry)
                 .Include(cp => cp.Logo)
@@ -429,9 +429,9 @@ namespace Covenant.Infrastructure.Repositories.Company
                 .Include(u => u.User)
                 .SingleOrDefaultAsync();
 
-        public async Task<IEnumerable<CompanyProfileContactPersonModel>> GetContactPersons(Expression<Func<CompanyProfileContactPerson, bool>> condition)
+        public async Task<IEnumerable<CompanyProfileContactPersonModel>> GetContactPeople(Expression<Func<CompanyProfileContactPerson, bool>> condition)
         {
-            var query = await _context.CompanyProfileContactPersons
+            var query = await _context.CompanyProfileContactPeople
                 .Where(condition)
                 .Select(CompanyExtensionsMapping.SelectContactPerson)
                 .ToListAsync();
@@ -439,10 +439,10 @@ namespace Covenant.Infrastructure.Repositories.Company
         }
 
         public Task<CompanyProfileContactPersonModel> GetContactPersonDetail(Guid profileId, Guid id) =>
-            _context.CompanyProfileContactPersons.Where(c => c.CompanyProfileId == profileId && c.Id == id)
+            _context.CompanyProfileContactPeople.Where(c => c.CompanyProfileId == profileId && c.Id == id)
                 .Select(CompanyExtensionsMapping.SelectContactPerson).SingleOrDefaultAsync();
 
-        public Task<CompanyProfileContactPerson> GetContactPerson(Guid id) => _context.CompanyProfileContactPersons.SingleOrDefaultAsync(c => c.Id == id);
+        public Task<CompanyProfileContactPerson> GetContactPerson(Guid id) => _context.CompanyProfileContactPeople.SingleOrDefaultAsync(c => c.Id == id);
 
         public Task<CompanyProfileLocationDetailModel> GetLocationDetail(Guid id) =>
             _context.CompanyProfileLocations.Where(c => c.LocationId == id)

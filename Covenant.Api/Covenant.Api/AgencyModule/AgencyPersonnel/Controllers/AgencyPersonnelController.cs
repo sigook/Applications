@@ -41,10 +41,7 @@ namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
         [HttpGet("Roles")]
         [Authorize(Policy = PolicyConfiguration.Accounting)]
         [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
-        public IActionResult GetAssignableRoles() =>
-            Ok(User.IsInRole(CovenantConstants.Role.SuperAdmin)
-                ? CovenantConstants.Role.SuperAdminAssignable
-                : CovenantConstants.Role.AgencyAssignable);
+        public IActionResult GetAssignableRoles() => Ok(agencyService.GetAssignableRoles());
 
         /// <summary>Creates a new personnel record for the current agency.</summary>
         /// <param name="model">Personnel data.</param>

@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequestWorkerTimeSheet.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
@@ -24,20 +24,20 @@ using Moq;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorkerTimeSheet
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public class V2AgencyRequestWorkerTimeSheetControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<V2AgencyRequestWorkerTimeSheetControllerTest.Startup>>
+    public class WorkerTimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public V2AgencyRequestWorkerTimeSheetControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => V2AgencyRequestWorkerTimeSheetController.RouteName.Replace("{requestId}",
+        private static string RequestUri() => WorkerTimeSheetsController.RouteName.Replace("{requestId}",
             Data.Request.Id.ToString()).Replace("{workerId}", Data.Worker.Id.ToString());
 
         [Fact]

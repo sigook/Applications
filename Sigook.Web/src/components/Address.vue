@@ -19,7 +19,7 @@
         </template>
         <template #message>
           <span v-if="errors.province">{{ errors.province }}</span>
-          <a v-if="provinceSelected && isPayrollManager && enableProvinceSettings"
+          <a v-if="provinceSelected && isAccountingManager && enableProvinceSettings"
              @click="openProvinceSettings"
              class="province-configure-link">
             {{ provinceSelected.settings ? 'See Settings' : 'Configure' }}
@@ -73,10 +73,10 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useForm } from 'vee-validate';
 import * as yup from 'yup';
 import { useSecurityStore } from '@/stores/security';
-import roles from "@/security/roles";
+import { agencyStaff } from "@/security/roles";
 import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
 import { getDialog } from '@/utils/buefyProgrammatic';
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import {
   getCountries as fetchCountries,
   getProvinces as fetchProvinces,
@@ -106,7 +106,7 @@ const emit = defineEmits<{
   (e: 'update:model', v: any): void;
 }>();
 
-const { isPayrollManager } = useBillingAdmin();
+const { isAccountingManager } = useAccountingAdmin();
 const securityStore = useSecurityStore();
 
 const { errors: formErrors, defineField, setFieldError, validate } = useForm({
@@ -322,7 +322,7 @@ const filteredCities = computed(() =>
 );
 
 const isAgency = computed(() =>
-  securityStore.userRoles.some(ur => ur === roles.agencyPersonnel)
+  securityStore.userRoles.some(ur => agencyStaff.includes(ur))
 );
 
 defineExpose({ validateAddress });

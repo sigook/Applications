@@ -14,7 +14,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Requests;
 [Route("api/agency/requests/{requestId}/[controller]")]
 [ApiController]
 [Produces("application/json")]
-[Authorize(Policy = PolicyConfiguration.Agency)]
+[Authorize(Policy = PolicyConfiguration.Recruiting)]
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class RunnersController(IRunnerService runnerService, IRunnerRepository runnerRepository, IRequestRepository requestRepository) : ControllerBase
 {

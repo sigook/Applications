@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequestReportTo.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -19,20 +19,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public class AgencyRequestReportToControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyRequestReportToControllerTest.Startup>>
+    public class ReportToControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<ReportToControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyRequestReportToControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public ReportToControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyRequestReportToController.RouteName.Replace("{requestId}", Startup.FakeRequest.Id.ToString());
+        private static string RequestUri() => ReportToController.RouteName.Replace("{requestId}", Startup.FakeRequest.Id.ToString());
 
         [Fact]
         public async Task Post()
@@ -159,9 +159,9 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyRequest
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                FakeCompany.ContactPersons.Add(FakeContactPersonPost);
-                FakeCompany.ContactPersons.Add(FakeContactPerson);
-                FakeCompany.ContactPersons.Add(FakeContactPersonDelete);
+                FakeCompany.ContactPeople.Add(FakeContactPersonPost);
+                FakeCompany.ContactPeople.Add(FakeContactPerson);
+                FakeCompany.ContactPeople.Add(FakeContactPersonDelete);
                 context.RequestReportTo.Add(new RequestReportTo(FakeRequest.Id, FakeContactPerson.Id));
                 context.RequestReportTo.Add(new RequestReportTo(FakeRequest.Id, FakeContactPersonDelete.Id));
                 context.AddRange(FakeCompany, FakeRequest);

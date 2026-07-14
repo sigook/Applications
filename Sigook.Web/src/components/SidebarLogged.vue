@@ -99,7 +99,7 @@ import { useAgencyStore } from '@/stores/agency';
 import { useSecurityStore } from '@/stores/security';
 import { avatarLetters } from '@/utils/filters';
 import menu from '@/security/menu';
-import roles from '@/security/roles';
+import roles, { agencyStaff } from '@/security/roles';
 import { getMyProfile } from '@/api/workerApi';
 import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
 import { getCompanyProfile } from '@/api/companyApi';
@@ -161,7 +161,7 @@ function expandActiveGroup() {
 const currentUser = computed(() => agencyStore.agency);
 
 const isAgency = computed(() =>
-  securityStore.userRoles.some((ur) => ur === roles.agency || ur === roles.agencyPersonnel));
+  securityStore.userRoles.some((ur) => agencyStaff.includes(ur)));
 
 function isActive(to: string): boolean {
   return route.path === to || route.path.startsWith(`${to}/`);
@@ -218,8 +218,10 @@ async function init() {
   const userRoles = securityStore.userRoles;
   for (const role of userRoles) {
     switch (role) {
-      case roles.agencyPersonnel:
-      case roles.agency:
+      case roles.superAdmin:
+      case roles.admin:
+      case roles.recruiting:
+      case roles.sales:
         await getAgencyInfo();
         break;
       case roles.companyUser:

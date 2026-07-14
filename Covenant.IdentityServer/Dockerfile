@@ -1,15 +1,13 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.400 AS build
 WORKDIR /app
 COPY . .
-COPY ["Covenant.IdentityServer/nuget.config", ""]
 
-ARG PAT
-RUN dotnet restore Covenant.IdentityServer/Covenant.IdentityServer.csproj --configfile "./Covenant.IdentityServer/nuget.config"
+RUN dotnet restore Covenant.IdentityServer/Covenant.IdentityServer.csproj
 RUN dotnet build Covenant.IdentityServer/Covenant.IdentityServer.csproj -c Release --no-restore
 RUN dotnet publish Covenant.IdentityServer/Covenant.IdentityServer.csproj -c Release -o out --no-restore
 
 #App image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS="http://+:80"
 EXPOSE 80

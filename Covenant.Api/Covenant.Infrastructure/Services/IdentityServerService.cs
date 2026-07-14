@@ -220,11 +220,15 @@ public class IdentityServerService : IIdentityServerService
 
     public Guid GetAgencyId() => httpContextAccessor.HttpContext.User.GetAgencyId();
 
+    public Guid GetAgencyPersonnelId() => httpContextAccessor.HttpContext.User.GetAgencyPersonnelId();
+
     public Guid GetUserId() => httpContextAccessor.HttpContext.User.GetUserId();
 
     public bool IsAdmin() => httpContextAccessor.HttpContext.User.IsAccountingManager();
 
     public bool IsSales() => httpContextAccessor.HttpContext.User.IsSales();
+
+    public bool IsSuperAdmin() => httpContextAccessor.HttpContext.User.IsSuperAdmin();
 
     public IEnumerable<Guid> GetAgencyIds() => httpContextAccessor.HttpContext.User.GetAgencyIds();
 

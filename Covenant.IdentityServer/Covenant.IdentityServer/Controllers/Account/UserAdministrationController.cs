@@ -1,7 +1,6 @@
-using Covenant.Common.Entities;
-using Covenant.Common.Enums;
-using Covenant.Common.Models;
-using Covenant.Common.Models.Security;
+using Covenant.IdentityServer.Enums;
+using Covenant.IdentityServer.Models;
+using Covenant.IdentityServer.Models.Security;
 using Covenant.IdentityServer.Configuration;
 using Covenant.IdentityServer.Controllers.Account.Models;
 using Covenant.IdentityServer.Data;
@@ -11,7 +10,6 @@ using Covenant.IdentityServer.Views.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Covenant.Common.Utils.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.IdentityServer.Controllers.Account;

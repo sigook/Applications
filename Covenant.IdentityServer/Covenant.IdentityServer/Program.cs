@@ -1,5 +1,3 @@
-﻿using Covenant.Common.Configuration;
-using Covenant.Common.Entities;
 using Covenant.IdentityServer.BackgroundServices;
 using Covenant.IdentityServer.Configuration;
 using Covenant.IdentityServer.Data;

@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyCompanyProfileLocation.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -16,20 +16,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileLocation;
+namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles;
 
-public class AgencyCompanyProfileLocationControllerTest : IClassFixture<CustomWebApplicationFactory<AgencyCompanyProfileLocationControllerTest.Startup>>
+public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory<LocationsControllerTest.Startup>>
 {
     private readonly CustomWebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
 
-    public AgencyCompanyProfileLocationControllerTest(CustomWebApplicationFactory<Startup> factory)
+    public LocationsControllerTest(CustomWebApplicationFactory<Startup> factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
     }
 
-    private static string RequestUri() => AgencyCompanyProfileLocationController.RouteName.Replace("{profileId}",
+    private static string RequestUri() => LocationsController.RouteName.Replace("{profileId}",
         Startup.FakeCompanyProfile.Id.ToString());
 
     [Fact]

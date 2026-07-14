@@ -32,7 +32,6 @@ stages:
               containerRegistry: "acrServiceConnectionSigook"
               repository: "identityserver"
               command: "build"
-              arguments: "--build-arg PAT=$(PatSigookPackages)"
               Dockerfile: "Covenant.IdentityServer/Dockerfile"
               tags: $(tag)
           - task: Docker@2

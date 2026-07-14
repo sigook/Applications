@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyCompanyProfileContactInformation.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -14,20 +14,20 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileContactInformation
+namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 {
-    public class AgencyCompanyProfileContactInformationControllerTest : IClassFixture<CustomWebApplicationFactory<AgencyCompanyProfileContactInformationControllerTest.Startup>>
+    public class ContactInformationControllerTest : IClassFixture<CustomWebApplicationFactory<ContactInformationControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyCompanyProfileContactInformationControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public ContactInformationControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyCompanyProfileContactInformationController.RouteName.Replace("{profileId}",
+        private static string RequestUri() => ContactInformationController.RouteName.Replace("{profileId}",
             Startup.FakeCompanyProfile.Id.ToString());
 
         [Fact]

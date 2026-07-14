@@ -7,9 +7,9 @@ using Covenant.Common.Models.Worker;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Utils;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorker
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public partial class AgencyRequestWorkerControllerTest
+    public partial class WorkersControllerTest
     {
         private static class Data
         {

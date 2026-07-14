@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequestApplicant.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -18,20 +18,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestCandidate
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public class AgencyRequestApplicantControllerTest : IClassFixture<CustomWebApplicationFactory<AgencyRequestApplicantControllerTest.Startup>>
+    public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactory<ApplicantsControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyRequestApplicantControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public ApplicantsControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyRequestApplicantController.RouteName.Replace("{requestId}",
+        private static string RequestUri() => ApplicantsController.RouteName.Replace("{requestId}",
             Startup.FakeRequest.Id.ToString());
 
         [Fact]

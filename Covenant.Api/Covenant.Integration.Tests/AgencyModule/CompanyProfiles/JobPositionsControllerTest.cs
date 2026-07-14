@@ -1,5 +1,5 @@
 ﻿using Covenant.Api;
-using Covenant.Api.AgencyModule.AgencyCompanyProfileJobPosition.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -23,9 +23,9 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPosition
+namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 {
-    public class AgencyCompanyProfileJobPositionControllerTest
+    public class JobPositionsControllerTest
     {
         private readonly WebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
@@ -37,7 +37,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
         private readonly CompanyProfileJobPositionRate FakeUpdatePosition;
         private readonly CompanyProfileJobPositionRate FakeDeletePosition;
 
-        public AgencyCompanyProfileJobPositionControllerTest()
+        public JobPositionsControllerTest()
         {
             _factory = new CustomWebApplicationFactory()
                 .WithWebHostBuilder(builder =>
@@ -71,7 +71,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCompanyProfileJobPositio
             Seed(_factory.Services.GetService<CovenantContext>());
         }
 
-        private string RequestUri() => AgencyCompanyProfileJobPositionController.RouteName.Replace("{profileId}",
+        private string RequestUri() => JobPositionsController.RouteName.Replace("{profileId}",
             FakeCompanyProfile.Id.ToString());
 
         [Fact]

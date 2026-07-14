@@ -41,7 +41,6 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 | SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Build AAB → Google Play → Notify | Google Play (internal/production) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build → Publish+Deploy | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build → Publish+Deploy | `sigook-cognitive-services` (production only) |
-| Covenant.Common | `covenant-common-nuget-pipeline.yml` | Manual only | Build+Test → Pack+Publish | Azure Artifacts feed `sigook/Covenant.Common` |
 
 **Note:** All pipelines exclude `**/*.md` from triggers (documentation changes don't trigger builds).
 
@@ -125,7 +124,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - No integration tests
 
 **Stage 2 - Docker and Deploy** (only on direct push, not PRs):
-- Docker build with `--build-arg PAT=$(PatSigookPackages)` (required for Covenant.Common NuGet package from Azure Artifacts)
+- Docker build (no private feed: IdentityServer has no Covenant.Common dependency)
 - Image: `sigook.azurecr.io/identityserver:<tag>`
 - Staging: `https://sigook-accounts-staging.azurewebsites.net`
 - Production: `https://sigook-accounts.azurewebsites.net`
@@ -179,7 +178,6 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Build solution (no tests - project has none)
 
 **Stage 2 - Deploy to Production** (not on PRs):
-- NuGet authenticate for Covenant.Common package
 - `dotnet publish` with zip
 - Deploy: `AzureFunctionApp@2` to `sigook-functions`
 - Production: `https://sigook-functions.azurewebsites.net`
@@ -199,18 +197,6 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Deploy: `AzureWebApp@1` (Linux) to `sigook-cognitive-services`
 - Production: `https://sigook-cognitive-services.azurewebsites.net`
 
-### Covenant.Common (NuGet Package)
-
-**Build naming:** `CovenantCommon-YYYY.M.D.r`
-
-**Trigger:** Manual only (`trigger: none`, `pr: none`).
-
-**Stage 1 - Build, Test, and Publish:**
-- Quality gate: Build full Covenant.Api solution + unit tests
-- Pack `Covenant.Common.csproj` (version from build number)
-- Push to Azure Artifacts feed: `sigook/Covenant.Common`
-
----
 
 ## Reusable Templates
 
@@ -354,7 +340,6 @@ variables:
 - **`acrServiceConnectionSigook`** - Azure Container Registry (`sigook.azurecr.io`)
 
 ### Pipeline Variables / Variable Groups
-- **`PatSigookPackages`** - Azure Artifacts PAT (used by IdentityServer Dockerfile for NuGet restore)
 - **`SigookApp-Staging`** / **`SigookApp-Production`** - Flutter app env vars + Google Play key
 - **`SigookApp-Android`** - Android keystore signing credentials
 - **`Sigook-Notifications`** - Microsoft Graph API credentials for deployment email notifications:

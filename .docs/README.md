@@ -11,6 +11,7 @@
 | [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) | Hours calculations (regular, overtime, night shift, holiday), validations |
 | [WORKFLOWS.md](./business/WORKFLOWS.md) | Detailed step-by-step flows (Worker Registration, Job Matching, Payroll, etc.) |
 | [REQUEST_STATE_MANAGEMENT.md](./business/REQUEST_STATE_MANAGEMENT.md) | Request lifecycle and state transitions |
+| [ROLES_PERMISSIONS.md](./business/ROLES_PERMISSIONS.md) | The 7 roles, what each one reaches, and how sales is scoped |
 
 ## Technical
 

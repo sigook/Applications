@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequestWorker.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
@@ -16,19 +16,19 @@ using Moq;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestWorker;
+namespace Covenant.Integration.Tests.AgencyModule.Requests;
 
-public partial class AgencyRequestWorkerControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyRequestWorkerControllerTest.Startup>>
+public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerTest.Startup>>
 {
     private readonly CustomWebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
-    public AgencyRequestWorkerControllerTest(CustomWebApplicationFactory<Startup> factory)
+    public WorkersControllerTest(CustomWebApplicationFactory<Startup> factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
     }
 
-    private static string RequestUri() => AgencyRequestWorkerController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString());
+    private static string RequestUri() => WorkersController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString());
 
     [Theory]
     [InlineData("Filter")]

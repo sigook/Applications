@@ -140,7 +140,6 @@ Worker SDK: Microsoft.Azure.Functions.Worker 1.23.0
 - `WarnLicensesExpiration` — Timer trigger, warns about license expirations
 
 **Key Dependencies:**
-- Covenant.Common NuGet package
 - SendGrid 9.29.3
 - IdentityModel 7.0.0
 - Application Insights 2.22.0
@@ -175,7 +174,7 @@ Sigook.CognitiveServices/
 ```
 Covenant.Api/
 ├── Covenant.Api/             # Web API (Controllers, Startup)
-├── Covenant.Common/          # Entities, Interfaces, Models (NuGet package)
+├── Covenant.Common/          # Entities, Interfaces, Models (shared project)
 ├── Covenant.Core.BL/         # Business Logic (Services)
 ├── Covenant.Infrastructure/  # Data Access, EF Core, Repositories, Deductions, Integrations
 ├── Covenant.Documents/       # Excel/PDF generation
@@ -366,7 +365,7 @@ public class CovenantContext : DbContext
 
 #### 4️⃣ DOMAIN LAYER - Common
 
-**Location:** `Covenant.Common/` (shared NuGet package)
+**Location:** `Covenant.Common/` (shared project, referenced by project reference)
 
 **Structure:**
 
@@ -399,9 +398,9 @@ Covenant.Common/
 - ❌ NO external dependencies
 - ❌ NO infrastructure concerns
 
-**Publication:**
-- Built as a NuGet package: `Covenant.Common`
-- Consumed by: Covenant.Api, Covenant.IdentityServer, Sigook.Functions
+**Consumption:**
+- Not a NuGet package (`IsPackable=False`) — consumed only inside the Covenant.Api solution by project reference
+- Covenant.IdentityServer does NOT use it: it targets net6 and vendors the few types it needs (`CovenantUser`, `UserType`, `EmailSettings`, DTOs, role constants). Keep those in sync by hand — the API POSTs those DTOs to IdentityServer over HTTP.
 
 ---
 

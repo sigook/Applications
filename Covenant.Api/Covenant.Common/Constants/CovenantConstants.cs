@@ -6,6 +6,7 @@ public static class CovenantConstants
     public const string CompanyId = "companyId";
     public const string AgencyId = "agencyId";
     public const string AgencyIds = "agencyIds";
+    public const string AgencyPersonnelId = "agencyPersonnelId";
 
     public static class Role
     {
@@ -17,9 +18,9 @@ public static class CovenantConstants
         public const string CompanyUser = "company.user";
         public const string Worker = "worker";
 
-        public static readonly string[] AgencyAccess = [SuperAdmin, Admin, Recruiting];
+        public static readonly string[] RecruitingAccess = [SuperAdmin, Admin, Recruiting];
 
-        public static readonly string[] AgencyStaff = [.. AgencyAccess, Sales];
+        public static readonly string[] AgencyStaff = [.. RecruitingAccess, Sales];
 
         public static readonly string[] SalesAccess = [SuperAdmin, Admin, Sales];
 

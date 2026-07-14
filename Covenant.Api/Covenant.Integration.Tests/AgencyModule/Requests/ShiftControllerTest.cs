@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyRequestShift.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -18,21 +18,21 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestShift
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public class AgencyRequestShiftControllerTest :
-        IClassFixture<CustomWebApplicationFactory<AgencyRequestShiftControllerTest.Startup>>
+    public class ShiftControllerTest :
+        IClassFixture<CustomWebApplicationFactory<ShiftControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyRequestShiftControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public ShiftControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyRequestShiftController.RouteName.Replace("{requestId}",
+        private static string RequestUri() => ShiftController.RouteName.Replace("{requestId}",
             Data.FakeRequest.Id.ToString());
 
         [Fact]

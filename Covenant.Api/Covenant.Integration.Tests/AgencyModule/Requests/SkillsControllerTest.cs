@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyRequestSkill.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
@@ -14,20 +14,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyRequestSkill
+namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
-    public class AgencyRequestSkillControllerTest : IClassFixture<CustomWebApplicationFactory<AgencyRequestSkillControllerTest.Startup>>
+    public class SkillsControllerTest : IClassFixture<CustomWebApplicationFactory<SkillsControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyRequestSkillControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public SkillsControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyRequestSkillController.RouteName.Replace("{requestId}",
+        private static string RequestUri() => SkillsController.RouteName.Replace("{requestId}",
             Startup.FakeRequest.Id.ToString());
 
         [Fact]
