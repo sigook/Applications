@@ -73,7 +73,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useForm } from 'vee-validate';
 import * as yup from 'yup';
 import { useSecurityStore } from '@/stores/security';
-import roles from "@/security/roles";
+import { hasAnyRole, roleGroups } from "@/security/roles";
 import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
 import { getDialog } from '@/utils/buefyProgrammatic';
 import { useBillingAdmin } from '@/composables/useBillingAdmin';
@@ -322,7 +322,7 @@ const filteredCities = computed(() =>
 );
 
 const isAgency = computed(() =>
-  securityStore.userRoles.some(ur => ur === roles.agencyPersonnel)
+  hasAnyRole(securityStore.userRoles, roleGroups.agencyStaff)
 );
 
 defineExpose({ validateAddress });

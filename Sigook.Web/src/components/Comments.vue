@@ -41,7 +41,7 @@
 import { ref } from 'vue';
 import { useSecurityStore } from '@/stores/security';
 import { showAlertError } from "@/utils/toast";
-import roles from "@/security/roles";
+import roles, { hasAnyRole, roleGroups } from "@/security/roles";
 import { agencyCommentWorker } from "@/api/agencyWorkerApi";
 import { companyCommentWorker } from "@/api/companyApi";
 import iconAgency from '@/assets/images/icon_agency.svg';
@@ -83,17 +83,12 @@ function getComment(data: { comment: string; rating: number }) {
 
 function comment() {
   const userRoles = securityStore.userRoles;
-  for (let i = 0; i < userRoles.length; i++) {
-    switch (userRoles[i]) {
-      case roles.agency:
-      case roles.agencyPersonnel:
-        sendComment(agencyCommentWorker);
-        return;
-      case roles.company:
-      case roles.companyUser:
-        sendComment(companyCommentWorker);
-        return;
-    }
+  if (hasAnyRole(userRoles, roleGroups.agencyStaff)) {
+    sendComment(agencyCommentWorker);
+    return;
+  }
+  if (hasAnyRole(userRoles, [roles.company, roles.companyUser])) {
+    sendComment(companyCommentWorker);
   }
 }
 
