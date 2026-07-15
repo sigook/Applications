@@ -6,5 +6,6 @@ namespace Covenant.Common.Models.Agency
         public string Name { get; set; }
         public string Email { get; set; }
         public Guid AgencyId { get; set; }
+        public string Role { get; set; }
     }
 }

@@ -101,6 +101,11 @@ public class AgencyService : IAgencyService
             return companyProfileValidation.ToResultFailure<Guid>();
         }
 
+        if (identityServerService.IsSales())
+        {
+            model.SalesRepresentativeId = identityServerService.GetAgencyPersonnelId();
+        }
+
         var agencyId = identityServerService.GetAgencyId();
 
         var rFullName = CompanyName.Create(model.FullName ?? model.BusinessName);
@@ -584,8 +589,17 @@ public class AgencyService : IAgencyService
         return Result.Ok();
     }
 
+    public string[] GetAssignableRoles() =>
+        identityServerService.IsSuperAdmin()
+            ? CovenantConstants.Role.SuperAdminAssignable
+            : CovenantConstants.Role.AgencyAssignable;
+
     public async Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model, Guid? agencyId = null)
     {
+        if (!GetAssignableRoles().Contains(model.Role))
+        {
+            return Result.Fail("The selected role cannot be assigned");
+        }
         var email = CvnEmail.Create(model.Email);
         if (email)
         {
@@ -599,7 +613,7 @@ public class AgencyService : IAgencyService
                     AgencyId = agencyId,
                     Email = email.Value,
                     UserType = UserType.AgencyPersonnel,
-                    Role = CovenantConstants.Role.Recruiting
+                    Role = model.Role
                 });
                 if (newUser)
                 {

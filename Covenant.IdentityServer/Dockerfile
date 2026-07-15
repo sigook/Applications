@@ -1,10 +1,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0.400 AS build
 WORKDIR /app
 COPY . .
-COPY ["Covenant.IdentityServer/nuget.config", ""]
 
-ARG PAT
-RUN dotnet restore Covenant.IdentityServer/Covenant.IdentityServer.csproj --configfile "./Covenant.IdentityServer/nuget.config"
+RUN dotnet restore Covenant.IdentityServer/Covenant.IdentityServer.csproj
 RUN dotnet build Covenant.IdentityServer/Covenant.IdentityServer.csproj -c Release --no-restore
 RUN dotnet publish Covenant.IdentityServer/Covenant.IdentityServer.csproj -c Release -o out --no-restore
 

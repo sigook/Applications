@@ -8,16 +8,19 @@ const roles = {
   worker: "worker"
 } as const;
 
-// Mirrors Covenant.Common/Constants/CovenantConstants.cs -> Role. Keep both sides in sync.
-export const roleGroups = {
-  agencyAccess: [roles.superAdmin, roles.admin, roles.recruiting],
-  agencyStaff: [roles.superAdmin, roles.admin, roles.recruiting, roles.sales],
-  salesAccess: [roles.superAdmin, roles.admin, roles.sales],
-  accounting: [roles.superAdmin, roles.admin]
-} as const;
+export const recruitingAccess: string[] = [roles.superAdmin, roles.admin, roles.recruiting];
 
-export function hasAnyRole(userRoles: string[], group: readonly string[]): boolean {
-  return group.some((role) => userRoles.includes(role));
-}
+export const agencyStaff: string[] = [...recruitingAccess, roles.sales];
+
+export const salesAccess: string[] = [roles.superAdmin, roles.admin, roles.sales];
+
+export const accountingAccess: string[] = [roles.superAdmin, roles.admin];
+
+export const roleLabels: Record<string, string> = {
+  [roles.superAdmin]: "Super Admin",
+  [roles.admin]: "Admin",
+  [roles.recruiting]: "Recruiting",
+  [roles.sales]: "Sales",
+};
 
 export default roles;

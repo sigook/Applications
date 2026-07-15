@@ -1,5 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
-import { roleGroups } from "@/security/roles";
+import { recruitingAccess, agencyStaff, salesAccess, accountingAccess } from "@/security/roles";
 import {
   loadAgencyCompaniesResolver,
   loadCompanyToUpdateResolver,
@@ -29,11 +29,6 @@ const CreatePayStub = () => import("@/pages/agency/accounting/CreatePayStub.vue"
 const WorkerRegister = () => import("@/pages/worker/Register.vue");
 const Reports = () => import("@/pages/agency/accounting/Reports.vue");
 
-const agencyAccess = [...roleGroups.agencyAccess];
-const salesAccess = [...roleGroups.salesAccess];
-const accounting = [...roleGroups.accounting];
-const agencyStaff = [...roleGroups.agencyStaff];
-
 const routesAgency: RouteRecordRaw[] = [
   {
     path: "/recruiting/requests",
@@ -41,7 +36,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-requests",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   { path: "/agency-requests", redirect: "/recruiting/requests" },
@@ -51,7 +46,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-weekly-board",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   {
@@ -60,7 +55,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-attendance-review",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   {
@@ -69,7 +64,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-create-request",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   {
@@ -78,7 +73,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-update-request",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
     beforeEnter: loadAgencyRequestToUpdateResolver
   },
@@ -88,17 +83,54 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-request",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   { path: "/agency-request/:id", redirect: (to) => `/recruiting/requests/${to.params.id}` },
+  {
+    path: "/sales/requests",
+    component: AgencyRequests,
+    name: "sales-requests",
+    meta: {
+      requiresAuth: true,
+      role: salesAccess,
+    },
+  },
+  {
+    path: "/sales/requests/create/:companyProfileId",
+    component: AgencyCreateRequest,
+    name: "sales-create-request",
+    meta: {
+      requiresAuth: true,
+      role: salesAccess,
+    },
+  },
+  {
+    path: "/sales/requests/update/:companyProfileId/:requestId",
+    component: AgencyCreateRequest,
+    name: "sales-update-request",
+    meta: {
+      requiresAuth: true,
+      role: salesAccess,
+    },
+    beforeEnter: loadAgencyRequestToUpdateResolver
+  },
+  {
+    path: "/sales/requests/:id",
+    component: AgencyRequest,
+    name: "sales-request",
+    meta: {
+      requiresAuth: true,
+      role: salesAccess,
+    },
+  },
   {
     path: "/recruiting/workers",
     component: AgencyWorkers,
     name: "workers",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   { path: "/agency-workers", redirect: "/recruiting/workers" },
@@ -108,7 +140,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: WorkerRegister,
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   {
@@ -117,7 +149,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "workerDetail",
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: agencyStaff,
     },
   },
   { path: "/agency-workers/worker/:id", redirect: (to) => `/recruiting/workers/${to.params.id}` },
@@ -127,7 +159,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: AgencyCompanies,
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
     beforeEnter: loadAgencyCompaniesResolver
   },
@@ -156,7 +188,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: CreateCompany,
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   {
@@ -164,7 +196,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: CreateCompany,
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
     beforeEnter: loadCompanyToUpdateResolver
   },
@@ -173,7 +205,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: AgencyDetailCompany,
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   {
@@ -208,7 +240,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: AgencyProfile,
     meta: {
       requiresAuth: true,
-      role: agencyStaff,
+      role: recruitingAccess,
     },
   },
   {
@@ -216,7 +248,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: AgencyCandidates,
     meta: {
       requiresAuth: true,
-      role: agencyAccess,
+      role: recruitingAccess,
     },
   },
   { path: "/agency-candidates", redirect: "/recruiting/candidates" },
@@ -225,7 +257,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: AgencyAgencies,
     meta: {
       requiresAuth: true,
-      role: salesAccess,
+      role: agencyStaff,
     },
   },
   { path: "/agency-agencies", redirect: "/sales/agencies" },
@@ -234,7 +266,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: CreateAgency,
     meta: {
       requiresAuth: true,
-      role: salesAccess,
+      role: agencyStaff,
     },
   },
   {
@@ -242,7 +274,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: DetailAgency,
     meta: {
       requiresAuth: true,
-      role: salesAccess,
+      role: agencyStaff,
     },
   },
   { path: "/agency-detail/:id", redirect: (to) => `/sales/agencies/${to.params.id}` },
@@ -253,7 +285,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-invoices",
     meta: {
       requiresAuth: true,
-      role: accounting,
+      role: accountingAccess,
     },
   },
   {
@@ -262,7 +294,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "create-invoice",
     meta: {
       requiresAuth: true,
-      role: accounting,
+      role: accountingAccess,
     },
   },
   {
@@ -271,7 +303,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-paystubs",
     meta: {
       requiresAuth: true,
-      role: accounting,
+      role: accountingAccess,
     },
   },
   {
@@ -280,7 +312,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "create-paystub",
     meta: {
       requiresAuth: true,
-      role: accounting,
+      role: accountingAccess,
     },
   },
   {
@@ -289,7 +321,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "reports",
     meta: {
       requiresAuth: true,
-      role: accounting
+      role: accountingAccess
     },
   }
 ];

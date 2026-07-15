@@ -12,10 +12,13 @@ export interface UserClaims {
 }
 
 export enum UserRole {
-  Agency = 'agency',
+  SuperAdmin = 'superadmin',
+  Admin = 'admin',
+  Recruiting = 'recruiting',
+  Sales = 'sales',
   Company = 'company',
-  Worker = 'worker',
   CompanyUser = 'company.user',
+  Worker = 'worker',
 }
 
 export interface ChangeEmailRequest {

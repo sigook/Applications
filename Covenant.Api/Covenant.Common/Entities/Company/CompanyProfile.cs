@@ -51,7 +51,7 @@ namespace Covenant.Common.Entities.Company
         public CompanyStatus CompanyStatus { get; set; }
         public bool RequiresPermissionToSeeRequests { get; set; }
         public ICollection<CompanyProfileLocation> Locations { get; set; } = new List<CompanyProfileLocation>();
-        public ICollection<CompanyProfileContactPerson> ContactPersons { get; set; } = new List<CompanyProfileContactPerson>();
+        public ICollection<CompanyProfileContactPerson> ContactPeople { get; set; } = new List<CompanyProfileContactPerson>();
         public ICollection<CompanyProfileJobPositionRate> JobPositionRates { get; set; } = new List<CompanyProfileJobPositionRate>();
         public ICollection<CompanyProfileDocument> Documents { get; set; } = new List<CompanyProfileDocument>();
         public ICollection<CompanyProfileNote> Notes { get; set; } = new List<CompanyProfileNote>();

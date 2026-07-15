@@ -1,4 +1,4 @@
-using Covenant.Common.Entities;
+using Covenant.IdentityServer.Entities;
 using Covenant.IdentityServer.Controllers.Account.Models;
 using Covenant.IdentityServer.Data;
 using Covenant.IdentityServer.Services;
@@ -387,12 +387,6 @@ namespace Covenant.IdentityServer.Controllers.Account
                 ModelState.AddModelError("", msgError);
                 LoginViewModel vm2 = await BuildLoginViewModelAsync(model);
                 vm2.IsAccountConfirmed = isAccountConfirmed;
-                if (model.Username.EndsWith("@covenantgroupl.com", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    const string errorCovenantEmployee = "It looks like you work for Covenant Group LTD. Please login using the corporate access link.";
-                    _logger.LogInformation("Covenant employee detected - suggesting corporate login");
-                    ModelState.AddModelError("Account", errorCovenantEmployee);
-                }
                 return View(vm2);
             }
         }

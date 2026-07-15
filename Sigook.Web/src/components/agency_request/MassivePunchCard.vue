@@ -156,7 +156,7 @@ function loadRequestWorkers() {
     });
 }
 
-const getTimeSheetUrl = computed(() => `/api/AgencyRequest/${serverParams.requestId}/TimeSheet`);
+const getTimeSheetUrl = computed(() => `/api/agency/requests/${serverParams.requestId}/TimeSheets/File`);
 
 filteredStatuses.value = statuses;
 loadRequestWorkers();

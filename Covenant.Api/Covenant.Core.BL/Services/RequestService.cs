@@ -73,6 +73,8 @@ public class RequestService : IRequestService
             companyId = await companyRepository.GetCompanyId(model.CompanyProfileId);
         if (model.AgencyId == Guid.Empty)
             model.AgencyId = identityServerService.GetAgencyId();
+        if (identityServerService.IsSales())
+            model.SalesRepresentativeId = identityServerService.GetAgencyPersonnelId();
         var rRequest = await MapRequest(model, companyId.Value);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;

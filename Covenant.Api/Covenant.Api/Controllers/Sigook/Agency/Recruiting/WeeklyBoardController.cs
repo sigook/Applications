@@ -10,7 +10,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Recruiting;
 [Route("api/agency/recruiting/[controller]")]
 [ApiController]
 [Produces("application/json")]
-[Authorize(Policy = PolicyConfiguration.Agency)]
+[Authorize(Policy = PolicyConfiguration.Recruiting)]
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : ControllerBase
 {

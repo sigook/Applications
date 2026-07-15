@@ -1,7 +1,6 @@
-using Covenant.Common.Entities;
-using Covenant.Common.Enums;
-using Covenant.Common.Models;
-using Covenant.Common.Models.Security;
+using Covenant.IdentityServer.Enums;
+using Covenant.IdentityServer.Models;
+using Covenant.IdentityServer.Models.Security;
 using Covenant.IdentityServer.Configuration;
 using Covenant.IdentityServer.Controllers.Account.Models;
 using Covenant.IdentityServer.Data;
@@ -11,7 +10,6 @@ using Covenant.IdentityServer.Views.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Covenant.Common.Utils.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.IdentityServer.Controllers.Account;
@@ -22,6 +20,7 @@ namespace Covenant.IdentityServer.Controllers.Account;
 public class UserAdministrationController : ControllerBase
 {
     private readonly UserManager<CovenantUser> _userManager;
+    private readonly RoleManager<CovenantRole> _roleManager;
     private readonly ILogger<UserAdministrationController> _logger;
     private readonly IConfiguration configuration;
     private readonly IRazorViewToStringRenderer renderer;
@@ -29,12 +28,14 @@ public class UserAdministrationController : ControllerBase
 
     public UserAdministrationController(
         UserManager<CovenantUser> userManager,
+        RoleManager<CovenantRole> roleManager,
         ILogger<UserAdministrationController> logger,
         IConfiguration configuration,
         IRazorViewToStringRenderer renderer,
         IEmailService emailService)
     {
         _userManager = userManager;
+        _roleManager = roleManager;
         _logger = logger;
         this.configuration = configuration;
         this.renderer = renderer;
@@ -44,6 +45,12 @@ public class UserAdministrationController : ControllerBase
     [HttpPost("CreateUser")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserModel model)
     {
+        if (!await _roleManager.RoleExistsAsync(model.Role))
+        {
+            ModelState.AddModelError(nameof(model.Role), $"Unknown role '{model.Role}'");
+            return BadRequest(ModelState);
+        }
+
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
@@ -53,24 +60,21 @@ public class UserAdministrationController : ControllerBase
                 Email = model.Email,
                 UserName = model.Email,
             };
-            if (model.UserType == UserType.Agency)
+            newUser.EmailConfirmed = model.UserType switch
             {
-                newUser.EmailConfirmed = true;
-            }
-            else if (model.UserType == UserType.Company && string.IsNullOrEmpty(model.ConfirmPassword))
-            {
-                newUser.EmailConfirmed = true;
-            }
+                UserType.Agency or UserType.AgencyPersonnel => true,
+                UserType.Company => string.IsNullOrEmpty(model.ConfirmPassword),
+                _ => false
+            };
             var result = await _userManager.CreateAsync(newUser, model.Password);
             if (result.Succeeded)
             {
-                var roles = new List<string> { model.UserType.ToCovenantRole() };
+                var roles = new List<string> { model.Role };
                 if (result.Succeeded)
                 {
                     switch (model.UserType)
                     {
                         case UserType.Agency:
-                            roles.Add(UserType.AgencyPersonnel.ToCovenantRole());
                             result = await _userManager.AddClaimAsync(newUser, Constants.ClaimAgencyId(model.AgencyId.Value));
                             break;
                         case UserType.AgencyPersonnel:
@@ -189,7 +193,12 @@ public class UserAdministrationController : ControllerBase
     public async Task<IActionResult> UpdateRole([FromServices] CovenantContext context, [FromBody] UpdateRoleModel model)
     {
         var userRole = await context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == model.Id);
-        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == model.UserType.ToCovenantRole());
+        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == model.Role);
+        if (role is null)
+        {
+            ModelState.AddModelError(nameof(model.Role), $"Unknown role '{model.Role}'");
+            return BadRequest(ModelState);
+        }
         if (userRole != null)
         {
             userRole.RoleId = role.Id;

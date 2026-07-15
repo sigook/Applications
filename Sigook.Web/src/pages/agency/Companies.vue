@@ -10,7 +10,7 @@
       </h2>
     </div>
     <div>
-      <export :url="'/api/v2/AgencyCompanyProfile/File'" :params="serverParams" :fileName="'Companies'"
+      <export :url="exportUrl" :params="serverParams" :fileName="'Companies'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
           <b-button tag="router-link" :to="companyDetailBase + '/create'" icon-left="plus">
@@ -22,7 +22,7 @@
             <b-icon icon="file-plus"></b-icon>
             <span>Bulk Data</span>
           </b-dropdown-item>
-          <b-dropdown-item v-if="billingAdmin.isPayrollManager" aria-role="listitem" @click="exportWithDetails">
+          <b-dropdown-item v-if="isAccountingManager" aria-role="listitem" @click="exportWithDetails">
             <b-icon icon="file-excel"></b-icon>
             <span>Export with details</span>
           </b-dropdown-item>
@@ -168,23 +168,26 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { useAppStore } from '@/stores/app';
 import { downloadFile } from '@/utils/downloadFile';
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { getAgencyCompanies, bulkAgencyCompanies } from '@/api/agencyCompanyApi';
+import { getSalesCompanies } from '@/api/salesApi';
 import { downloadAgencyReport } from '@/api/agencyReportApi';
 import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from '@/api/agencyNoteApi';
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 import { dateMonth } from '@/utils/filters';
+import { useModuleBase } from '@/composables/useModuleBase';
 import Export from '@/components/Export.vue';
 import NotesPopover from '@/components/notes/NotesPopover.vue';
 import BulkData from '@/components/agency/BulkData.vue';
 
 const route = useRoute();
 const router = useRouter();
-const companyDetailBase = computed(() =>
-  route.path.startsWith('/sales') ? '/sales/companies' : '/recruiting/companies');
+const { isSalesView, companyBase: companyDetailBase } = useModuleBase();
+const exportUrl = computed(() =>
+  isSalesView.value ? '/api/agency/sales/companyprofiles/File' : '/api/agency/recruiting/companyprofiles/File');
 const agencyStore = useAgencyStore();
 const appStore = useAppStore();
-const billingAdmin = useBillingAdmin();
+const { isAccountingManager } = useAccountingAdmin();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
@@ -293,7 +296,7 @@ function onCellClick(row: any, column: any) {
 
 function exportWithDetails() {
   isLoading.value = true;
-  downloadAgencyReport('/api/v2/AgencyCompanyProfile/FileWithDetails', serverParams.value)
+  downloadAgencyReport('/api/agency/recruiting/companyprofiles/FileWithDetails', serverParams.value)
     .then((file) => {
       isLoading.value = false;
       downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
@@ -304,7 +307,8 @@ function exportWithDetails() {
 function loadCompanies() {
   isLoading.value = true;
   agencyStore.updateAgencyCompanyProfileFilter(serverParams.value);
-  getAgencyCompanies(serverParams.value)
+  const fetchCompanies = isSalesView.value ? getSalesCompanies : getAgencyCompanies;
+  fetchCompanies(serverParams.value)
     .then((companies: any) => {
       rows.value = companies.items.map((c: any) => ({ ...c }));
       totalItems.value = companies.totalItems;

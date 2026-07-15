@@ -40,20 +40,20 @@ export function deleteCandidateNote(userId: string, id: string): Promise<void> {
 
 export function getAgencyCompanyNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
   return api.get<PaginatedList<NoteItem>>(
-    `/api/AgencyCompanyProfile/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+    `/api/agency/companyprofiles/${userId}/Notes?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
   );
 }
 
 export function createAgencyCompanyNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return api.post<CreateNoteResponse>(`/api/AgencyCompanyProfile/${userId}/Note`, model);
+  return api.post<CreateNoteResponse>(`/api/agency/companyprofiles/${userId}/Notes`, model);
 }
 
 export function updateAgencyCompanyNote(userId: string, id: string, model: NoteModel): Promise<void> {
-  return api.put(`/api/AgencyCompanyProfile/${userId}/Note/${id}`, model);
+  return api.put(`/api/agency/companyprofiles/${userId}/Notes/${id}`, model);
 }
 
 export function deleteAgencyCompanyNote(userId: string, id: string): Promise<void> {
-  return api.del(`/api/AgencyCompanyProfile/${userId}/Note/${id}`);
+  return api.del(`/api/agency/companyprofiles/${userId}/Notes/${id}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -62,20 +62,20 @@ export function deleteAgencyCompanyNote(userId: string, id: string): Promise<voi
 
 export function getAgencyRequestNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
   return api.get<PaginatedList<NoteItem>>(
-    `/api/AgencyRequest/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+    `/api/agency/requests/${userId}/Notes?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
   );
 }
 
 export function createAgencyRequestNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return api.post<CreateNoteResponse>(`/api/AgencyRequest/${userId}/Note`, model);
+  return api.post<CreateNoteResponse>(`/api/agency/requests/${userId}/Notes`, model);
 }
 
 export function updateAgencyRequestNote(userId: string, id: string, model: NoteModel): Promise<void> {
-  return api.put(`/api/AgencyRequest/${userId}/Note/${id}`, model);
+  return api.put(`/api/agency/requests/${userId}/Notes/${id}`, model);
 }
 
 export function deleteAgencyRequestNote(userId: string, id: string): Promise<void> {
-  return api.del(`/api/AgencyRequest/${userId}/Note/${id}`);
+  return api.del(`/api/agency/requests/${userId}/Notes/${id}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ export function getAgencyRequestWorkerNotes(
   pagination: NotePagination,
 ): Promise<PaginatedList<NoteItem>> {
   return api.get<PaginatedList<NoteItem>>(
-    `/api/AgencyRequest/${requestId}/Worker/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+    `/api/agency/requests/${requestId}/Workers/${userId}/Notes?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
   );
 }
 
@@ -97,7 +97,7 @@ export function createAgencyRequestWorkerNote(
   userId: string,
   model: NoteModel,
 ): Promise<CreateNoteResponse> {
-  return api.post<CreateNoteResponse>(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note`, model);
+  return api.post<CreateNoteResponse>(`/api/agency/requests/${requestId}/Workers/${userId}/Notes`, model);
 }
 
 export function updateAgencyRequestWorkerNote(
@@ -106,9 +106,9 @@ export function updateAgencyRequestWorkerNote(
   id: string,
   model: NoteModel,
 ): Promise<void> {
-  return api.put(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note/${id}`, model);
+  return api.put(`/api/agency/requests/${requestId}/Workers/${userId}/Notes/${id}`, model);
 }
 
 export function deleteAgencyRequestWorkerNote(requestId: string, userId: string, id: string): Promise<void> {
-  return api.del(`/api/AgencyRequest/${requestId}/Worker/${userId}/Note/${id}`);
+  return api.del(`/api/agency/requests/${requestId}/Workers/${userId}/Notes/${id}`);
 }

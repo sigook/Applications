@@ -83,12 +83,19 @@ function getComment(data: { comment: string; rating: number }) {
 
 function comment() {
   const userRoles = securityStore.userRoles;
-  if (hasAnyRole(userRoles, roleGroups.agencyStaff)) {
-    sendComment(agencyCommentWorker);
-    return;
-  }
-  if (hasAnyRole(userRoles, [roles.company, roles.companyUser])) {
-    sendComment(companyCommentWorker);
+  for (let i = 0; i < userRoles.length; i++) {
+    switch (userRoles[i]) {
+      case roles.superAdmin:
+      case roles.admin:
+      case roles.recruiting:
+      case roles.sales:
+        sendComment(agencyCommentWorker);
+        return;
+      case roles.company:
+      case roles.companyUser:
+        sendComment(companyCommentWorker);
+        return;
+    }
   }
 }
 

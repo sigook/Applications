@@ -28,7 +28,7 @@ pool:
 variables:
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev', 'refs/heads/development')]
-  dotnetSdkVersion: '6.0.400'
+  dotnetSdkVersion: '8.0.415'
   workingDirectory: 'Covenant.IdentityServer'
   dockerRegistry: 'acrServiceConnectionSigook'
   dockerRepository: 'identityserver'

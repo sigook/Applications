@@ -1,1217 +1,310 @@
 # Workflows - Covenant/Sigook Platform
 
-## 🔄 End-to-End Flows
+The main system workflows, step by step, with the real entry points. Every route below is verified against its controller (controllers declare routes via `public const string RouteName = "api/..."` — grep for `RouteName =` to locate one). Format used throughout:
 
-This document details the main system workflows with each technical step.
+```
+VERB route  →  Controller.Action  →  Service.Method
+```
+
+Controllers live under `Covenant.Api/Covenant.Api/`, services under `Covenant.Api/Covenant.Core.BL/Services/`.
 
 ---
 
-## 1️⃣ Worker Registration Flow
+## 1. Worker Registration Flow
 
-### Overview
-Worker registers from the Flutter app, the Agency approves, and the Worker can start working.
+Worker registers from the Flutter app → Agency reviews → Agency approves → Worker can apply to jobs.
 
-### Actors
-- **Worker** (via Flutter app)
-- **Agency** (via Web app)
-- **System** (backend API, IdentityServer)
+### Step 1: Worker submits registration
 
----
-
-### Step-by-Step
-
-#### STEP 1: Worker starts registration in the app
-
-**Actor:** Worker (Flutter app)
-
-**Action:**
-```dart
-// Navigate to RegistrationScreen
-context.push('/registration');
+```
+POST api/WorkerProfile              (multipart/form-data, [AllowAnonymous])
+→ WorkerProfileController.Post      (WorkerModule/WorkerProfile/Controllers/WorkerProfileController.cs)
+→ WorkerService.CreateWorker(requestId?)
 ```
 
-**App loads catalogs:**
+- The multipart form carries a serialized `WorkerProfileCreateModel` plus document files; `WorkerService.CreateWorker` reads it from `HttpContext.Request.Form` and validates it with `workerProfileValidator` before creating the profile.
+- The optional `requestId` query parameter links the registration to a specific job order (registration-via-invitation).
+- The profile is created with `ApprovedToWork = false`.
+
+The agency can also register a worker on the worker's behalf:
+
 ```
-GET /api/Catalog/Countries
-GET /api/Catalog/Provinces/CA
-GET /api/Catalog/Cities/{provinceId}
-GET /api/Catalog/Genders
-GET /api/Catalog/IdentificationTypes
-GET /api/Catalog/Skills
-GET /api/Catalog/Languages
+POST api/AgencyWorkerProfile        (multipart/form-data)
+→ AgencyWorkerProfileController.CreateWorkerProfile → WorkerService.CreateWorker
 ```
 
-**UI:** Multi-step form with 8 sections
-1. Basic Info
-2. Contact Info
-3. Personal Info (SIN, IDs)
-4. Professional Info (Skills, Languages)
-5. Availability
-6. Preferences (Locations)
-7. Documents (Photos, Files)
-8. Account (Email, Password)
+### Step 2: Agency reviews and approves
 
----
+```
+GET api/AgencyWorkerProfile                     → AgencyWorkerProfileController.Get (paginated list, GetWorkerProfileFilter)
+GET api/AgencyWorkerProfile/{id}                → AgencyWorkerProfileController.GetById
+PUT api/AgencyWorkerProfile/{id}/ApprovedToWork → AgencyWorkerProfileController.UpdateApprovedToWork
+```
 
-#### STEP 2: Worker fills out the form
+Approval calls the domain method `WorkerProfile.UpdateApprovedToWork(now)`, which enforces that required documents are complete. Related toggles on the same controller:
 
-**Actor:** Worker (Flutter app)
+```
+PUT api/AgencyWorkerProfile/{id}/Dnu            (Do Not Use — WorkerProfile.UpdateDnu)
+PUT api/AgencyWorkerProfile/{id}/IsContractor
+```
 
-**Validations (client-side):**
-- Email format (EmailValidator)
-- Phone format (PhoneNumber value object)
-- Password strength (PasswordValidator)
-- Required fields
+### Step 3: Worker uses the app
 
-**State Management:**
-```dart
-// RegistrationViewModel (Riverpod)
-class RegistrationViewModel extends StateNotifier<RegistrationState> {
-  void updateSection(SectionData data) {
-    // Save to local storage (draft)
-    // Update state
-  }
-}
+Once approved, the worker sees their profile(s) and available jobs:
+
+```
+GET api/WorkerProfile               → WorkerProfileController.Get   (profiles across agencies)
+GET api/WorkerProfile/me            → WorkerProfileController.GetMyProfile
 ```
 
 ---
 
-#### STEP 3: Worker submits registration
+## 2. Job Order Creation & Matching Flow
 
-**Actor:** Worker (Flutter app)
+### Step 1: Request is created
 
-**API Call:**
-```http
-POST /api/WorkerProfile
-Content-Type: multipart/form-data
+By the agency:
 
-Form Data:
-- registration_form: {JSON}
-- profile_photo: {file}
-- sin_document: {file}
-- id_document_1: {file}
-- id_document_2: {file}
+```
+POST api/agency/requests            → RequestsController.Post (Controllers/Sigook/Agency/Requests/RequestsController.cs)
+→ RequestService.CreateRequest(RequestCreateModel)
 ```
 
-**registration_form JSON:**
-```json
-{
-  "basicInfo": {
-    "firstName": "John",
-    "lastName": "Doe",
-    "birthDay": "1990-01-01",
-    "genderId": "guid",
-    "hasVehicle": true
-  },
-  "contactInfo": {
-    "mobileNumber": "+14165550100",
-    "phone": null,
-    "location": {
-      "streetNumber": "123",
-      "streetName": "Main St",
-      "unit": "101",
-      "cityId": "guid",
-      "postalCode": "M1A1A1"
-    }
-  },
-  "personalInfo": {
-    "socialInsurance": "123456789",
-    "socialInsuranceDueDate": "2030-01-01",
-    "identificationNumber1": "A1234567",
-    "identificationType1Id": "guid",
-    "identificationNumber2": "D1234567890",
-    "identificationType2Id": "guid"
-  },
-  "professionalInfo": {
-    "skillIds": ["guid1", "guid2"],
-    "languages": [
-      {
-        "languageId": "guid",
-        "proficiency": "Advanced"
-      }
-    ]
-  },
-  "availabilityInfo": {
-    "availabilityType": "FullTime",
-    "availabilities": [
-      {
-        "dayOfWeek": "Monday",
-        "startTime": "07:00:00",
-        "endTime": "15:00:00"
-      }
-    ]
-  },
-  "preferencesInfo": {
-    "cityIds": ["guid1", "guid2"]
-  },
-  "accountInfo": {
-    "email": "john@example.com",
-    "password": "SecurePassword123!"
-  }
-}
+By the company:
+
+```
+POST api/CompanyRequest             → CompanyRequestController.Post (CompanyModule/CompanyRequest/Controllers/CompanyRequestController.cs)
+→ RequestService (company-side create)
+```
+
+Key facts about the `Request` entity (`Covenant.Common/Entities/Request/Request.cs`):
+
+- Rates (`AgencyRate`, `WorkerRate`) come from the selected `CompanyProfileJobPositionRate`.
+- A new request starts as `RequestStatus.Open`. The enum has exactly three values: `Open = 1`, `Filled = 3`, `Cancelled = 4` (value 2 intentionally skipped).
+- `WorkerSalary` (`Request.cs:60`) set = **Direct Hiring** order (permanent placement); changes billing and attendance behavior (see §6).
+- State transitions (fill on capacity, reopen, cancel restrictions) are automatic inside the entity — **do not re-implement them**; the authoritative description is `.docs/business/REQUEST_STATE_MANAGEMENT.md`.
+
+Request management endpoints on the same controller:
+
+```
+PUT api/agency/requests/{id}                              → RequestService.UpdateRequest
+PUT api/agency/requests/{id}/Cancel                       → RequestService.CancelRequest   (only Open + zero workers)
+PUT api/agency/requests/{id}/Open                         → RequestService.OpenRequest     (reopen)
+PUT api/agency/requests/{id}/IncreaseWorkersQuantityByOne → AgencyService.IncreaseWorkersQuantityByOne
+PUT api/agency/requests/{id}/ReduceWorkersQuantityByOne   → RequestService.ReduceWorkerQuantityByOne
+POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers)
+```
+
+Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET api/agency/sales/requests` (sales rep sees only their own companies' orders).
+
+### Step 2A: Worker browses and applies (reactive)
+
+```
+GET  api/WorkerRequest                      → WorkerRequestController.Get (WorkerModule/WorkerRequest/Controllers/WorkerRequestController.cs)
+                                              → IRequestRepository.GetRequestsForWorker
+GET  api/WorkerRequest/{id}                 → WorkerRequestController.GetById
+POST api/WorkerRequest/{requestId}/Apply    → WorkerRequestController.Apply → WorkerService.Apply(requestId, model)
+```
+
+There is no `/Available` suffix — the plain `GET api/WorkerRequest` already returns only requests the authenticated worker can apply to. An anonymous variant `POST api/WorkerRequest/{workerId}/{requestId}/Apply` exists for invitation links.
+
+### Step 2B: Agency tracks applicants
+
+Applicants (workers or candidates who applied / were sourced) are managed per request:
+
+```
+GET    api/agency/requests/{requestId}/Applicants          → ApplicantsController.Get
+POST   api/agency/requests/{requestId}/Applicants          → ApplicantsController.Post   (candidate or worker; duplicate-guarded)
+GET    api/agency/requests/{requestId}/Applicants/Search   → IRequestRepository.SearchApplicants
+DELETE api/agency/requests/{requestId}/Applicants/{id}
 ```
 
 ---
 
-#### STEP 4: Backend processes the registration
+## 3. Worker Assignment (Booking) Flow
 
-**Actor:** System (Covenant.Api)
+### Booking
 
-**Backend Flow:**
-
-**4.1 - Create User (IdentityServer)**
-```csharp
-// 1. Create User in IdentityServer
-var user = new User
-{
-    Email = request.AccountInfo.Email,
-    UserName = request.AccountInfo.Email,
-    Enabled = true
-};
-await _userManager.CreateAsync(user, request.AccountInfo.Password);
-
-// 2. Assign role
-await _userManager.AddToRoleAsync(user, "Worker");
+```
+POST api/agency/requests/{requestId}/Workers/{workerId}/Book
+→ WorkersController.Post (Controllers/Sigook/Agency/Requests/WorkersController.cs)
+→ AgencyService.BookWorker(requestId, workerId, AgencyBookWorkerModel)
 ```
 
-**4.2 - Create Location**
-```csharp
-// Geocode address
-var geocoded = await _geocodeService.GeocodeAsync(
-    request.ContactInfo.Location.FullAddress);
+`BookWorker` validates the worker profile (approved, not DNU) and calls `Request.AddWorker`, which creates the `WorkerRequest` with `WorkerRequestStatus.Booked` and auto-transitions the request to `Filled` when capacity is reached (see `REQUEST_STATE_MANAGEMENT.md`).
 
-var location = new Location
-{
-    StreetNumber = request.ContactInfo.Location.StreetNumber,
-    StreetName = request.ContactInfo.Location.StreetName,
-    Unit = request.ContactInfo.Location.Unit,
-    CityId = request.ContactInfo.Location.CityId,
-    PostalCode = request.ContactInfo.Location.PostalCode,
-    Latitude = geocoded.Latitude,
-    Longitude = geocoded.Longitude
-};
-await _locationRepository.AddAsync(location);
+`WorkerRequestStatus` (`Covenant.Common/Enums/WorkerRequestStatus.cs`) has two values: `Rejected = 2` and `Booked`.
+
+### Managing booked workers
+
+```
+GET api/agency/requests/{requestId}/Workers                        → workers assigned to the request
+GET api/agency/requests/{requestId}/Workers/{id}                   → single worker request
+PUT api/agency/requests/{requestId}/Workers/{id}                   → WorkerRequest.UpdateStartWorking (change start date)
+PUT api/agency/requests/{requestId}/Workers/{workerId}/Reject      → RequestService.RejectWorker (may reopen a Filled request)
 ```
 
-**4.3 - Upload Files to Azure Storage**
-```csharp
-// Upload profile photo
-var profileImageUrl = await _azureStorageService.UploadAsync(
-    container: "worker-photos",
-    file: request.ProfilePhoto,
-    fileName: $"{userId}_profile.jpg"
-);
+The company sees its assigned workers via `api/CompanyRequest/{requestId}/Worker` (`CompanyModule/CompanyRequestWorker/Controllers/CompanyRequestWorkerController.cs`).
 
-// Upload SIN document
-var sinFileId = await _fileService.UploadAsync(
-    file: request.SinDocument,
-    fileType: FileType.SIN
-);
+---
 
-// Upload ID documents
-var id1FileId = await _fileService.UploadAsync(
-    file: request.IdDocument1,
-    fileType: FileType.Identification
-);
+## 4. Time Tracking Flow (Punch Card)
+
+### Step 1: Worker clocks in / out
+
+A single punch endpoint; the service decides whether the punch is a clock-in or a clock-out:
+
+```
+POST api/WorkerRequest/{requestId}/TimeSheet
+→ WorkerRequestTimeSheetController.Post (WorkerModule/WorkerRequestTimeSheet/Controllers/WorkerRequestTimeSheetController.cs)
+→ TimesheetService.Register(requestId, WorkerLocationModel)     (payload = GPS location of the punch)
+
+GET api/WorkerRequest/{requestId}/TimeSheet/clock-type
+→ TimesheetService.GetClockType     (next expected punch: clock-in or clock-out)
+
+GET api/WorkerRequest/{requestId}/TimeSheet
+→ ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list)
 ```
 
-**4.4 - Create WorkerProfile**
-```csharp
-var workerProfile = new WorkerProfile
-{
-    UserId = user.Id,
-    AgencyId = agencyId, // From context
-    FirstName = request.BasicInfo.FirstName,
-    LastName = request.BasicInfo.LastName,
-    BirthDay = request.BasicInfo.BirthDay,
-    GenderId = request.BasicInfo.GenderId,
-    HasVehicle = request.BasicInfo.HasVehicle,
+### Step 2: Agency reviews and edits the punch card
 
-    MobileNumber = request.ContactInfo.MobileNumber,
-    Phone = request.ContactInfo.Phone,
-    LocationId = location.Id,
+```
+GET    api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets
+→ WorkerTimeSheetsController.Get (Controllers/Sigook/Agency/Requests/WorkerTimeSheetsController.cs)
 
-    SocialInsurance = request.PersonalInfo.SocialInsurance,
-    SocialInsuranceDueDate = request.PersonalInfo.SocialInsuranceDueDate,
-    SocialInsuranceFileId = sinFileId,
-    IdentificationNumber1 = request.PersonalInfo.IdentificationNumber1,
-    IdentificationType1 = request.PersonalInfo.IdentificationType1Id,
-    IdentificationType1FileId = id1FileId,
-
-    ProfileImage = profileImageUrl,
-
-    // Important: Not approved yet
-    ApprovedToWork = false,
-    Dnu = false,
-    IsSubcontractor = false,
-    IsContractor = false
-};
-
-await _workerRepository.AddAsync(workerProfile);
+POST   api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets        → TimesheetService.CreateTimesheet   (manual entry, e.g. attendance "0")
+PUT    api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}   → TimesheetService.UpdateTimesheet
+DELETE api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}   → TimesheetService.RemoveTimeSheet
+GET    api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}/Usages  → where the timesheet is used (pay stub/invoice)
 ```
 
-**4.5 - Add Skills, Languages, Availabilities**
-```csharp
-// Skills
-foreach (var skillId in request.ProfessionalInfo.SkillIds)
-{
-    var workerSkill = new WorkerSkill
-    {
-        WorkerProfileId = workerProfile.Id,
-        SkillId = skillId
-    };
-    await _workerSkillRepository.AddAsync(workerSkill);
-}
+A request-wide view exists at `GET api/agency/requests/{requestId}/TimeSheets` (`TimeSheetsController.cs`).
 
-// Languages
-foreach (var lang in request.ProfessionalInfo.Languages)
-{
-    var workerLanguage = new WorkerLanguage
-    {
-        WorkerProfileId = workerProfile.Id,
-        LanguageId = lang.LanguageId,
-        Proficiency = lang.Proficiency
-    };
-    await _workerLanguageRepository.AddAsync(workerLanguage);
-}
+### Step 3: Hours breakdown
 
-// Availabilities
-foreach (var avail in request.AvailabilityInfo.Availabilities)
-{
-    var workerAvailability = new WorkerAvailability
-    {
-        WorkerProfileId = workerProfile.Id,
-        DayOfWeek = avail.DayOfWeek,
-        StartTime = avail.StartTime,
-        EndTime = avail.EndTime
-    };
-    await _workerAvailabilityRepository.AddAsync(workerAvailability);
-}
+Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Shared/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is deprecated — it is never computed anywhere; do not add night-shift logic.
+
+---
+
+## 5. Payroll & Invoicing Flow
+
+Both run from the agency accounting screens. Calculation detail is NOT duplicated here — see `.docs/business/PAYSTUB_GENERATION.md`, `.docs/business/PAYROLL_RULES.md`, and `.docs/business/BILLING_RULES.md`.
+
+### 5.1 Pay stub generation
+
+```
+GET  api/agency/accounting/PayStubs/WorkersReadyForPayStub
+→ PayStubsController (Controllers/Sigook/Agency/Accounting/PayStubsController.cs)
+→ ITimesheetRepository.GetWorkersReadyForPayStub   (workers with unpaid approved timesheets)
+
+POST api/agency/accounting/PayStubs/generate        (body: worker profile ids)
+→ PayStubsController.GeneratePayStubs → PayStubService.Generate(agencyIds, workerIds)
 ```
 
-**4.6 - Send Notifications**
-```csharp
-// Email to worker (welcome)
-await _emailService.SendAsync(
-    to: user.Email,
-    subject: "Welcome to Sigook!",
-    template: "WorkerRegistrationComplete",
-    data: new { FirstName = workerProfile.FirstName }
-);
+`PayStubService.Generate` iterates workers and calls `GeneratePayStubForWorker`, which aggregates the worker's pending timesheets and computes deductions via `TimesheetCalculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, year, workerProfileId)`.
 
-// Notification to agency (new worker pending approval)
-await _teamsWebhookService.SendAsync(
-    message: $"New worker registered: {workerProfile.FirstName} {workerProfile.LastName}",
-    actionUrl: $"/agency/workers/{workerProfile.Id}"
-);
+Deductions are **database table lookups** (CPP, Federal and Provincial tax ranges via `DeductionsRepository`, by earnings and year); EI is the only computed value (`totalEarnings × rates.EmploymentInsurance`). There are no calculator classes. Subcontractor tax-category overrides zero out deductions. Deduction tables are maintained through `api/Accounting/Deduction/Cpp`, `api/Accounting/Deduction/FederalTax`, `api/Accounting/Deduction/ProvincialTax` (`AccountingModule/Deduction/`).
+
+Delivery and management:
+
+```
+GET    api/agency/accounting/PayStubs                    → PayStubService.GetPayStubs (filtered list)
+GET    api/agency/accounting/PayStubs/{payStubId}/pdf    → PayStubService.GetPayStubPdf
+POST   api/agency/accounting/PayStubs/{payStubId}/email  → PayStubService.SendPayStubEmail
+POST   api/agency/accounting/PayStubs/email/bulk         → queues BulkPayStubEmailJob on Azure Service Bus (ISigookBusClient)
+DELETE api/agency/accounting/PayStubs/{id}               → PayStubService.DeletePayStub
+POST   api/agency/accounting/PayStubs                    → PayStubService.CreateManualPayStub (obsolete)
 ```
 
-**Response:**
-```json
-{
-  "id": "worker-profile-guid",
-  "userId": "user-guid",
-  "approvedToWork": false,
-  "message": "Registration successful. Awaiting agency approval."
-}
+### 5.2 Invoicing
+
+```
+POST api/agency/accounting/Invoices/Preview   → IInvoiceService.PreviewInvoice   (no persistence)
+POST api/agency/accounting/Invoices           → IInvoiceService.CreateInvoice
+→ InvoicesController (Controllers/Sigook/Agency/Accounting/InvoicesController.cs)
+```
+
+The controller resolves the service through `InvoiceServiceFactory` (`Covenant.Core.BL/Services/Invoices/`), which picks `CanadaInvoiceService` or `UsaInvoiceService`.
+
+Key facts (full rules in `BILLING_RULES.md`):
+
+- Invoice subtotal = timesheets (at `AgencyRate`) + additional items + holidays − discounts.
+- Vacations and bonus are **not** billed — `VacationsRate`/`BonusRate` exist on the entity but never enter the totals (vacation 4% is a pay-stub concept).
+- HST is a single global configuration rate, not per-province.
+- Worked holidays are always billed at holiday rate on invoices (invoices hardcode `holidayIsPaid: true`), while pay stubs honor the timesheet's `HolidayIsPaid` flag.
+
+Delivery and management:
+
+```
+GET    api/agency/accounting/Invoices                       → IInvoiceService.GetInvoices (list with totals)
+GET    api/agency/accounting/Invoices/{invoiceId}/pdf       → IInvoiceService.GetInvoicePdf
+POST   api/agency/accounting/Invoices/{invoiceId}/email     → IInvoiceService.SendInvoiceEmail (multipart, optional attachments)
+GET    api/agency/accounting/Invoices/{invoiceId}/paystubs  → pay stubs linked to the invoice (delete warnings)
+DELETE api/agency/accounting/Invoices/{id}                  → IInvoiceService.DeleteInvoice (cascades selected pay stubs)
 ```
 
 ---
 
-#### STEP 5: Agency reviews the worker profile
+## 6. Runner Pipeline Flow
 
-**Actor:** Agency (Web app)
+A **Runner** is a Candidate or Worker actively submitted to a specific order (Request). The recruiter creates the runner, advances it through the recruiting pipeline and schedules interviews, until the client hires or rejects it. Runners live in a tab inside the order detail (next to Applicants/Workers).
 
-**Agency navigates to:**
-```
-/agency/workers      → List of all workers
-/agency/workers/{id} → Worker detail
-```
+Controller: `Controllers/Sigook/Agency/Requests/RunnersController.cs` (`[Authorize(Policy = Recruiting)]`) → `RunnerService`. Domain rules live in the `Runner` entity.
 
-**Agency reviews:**
-- Personal information
-- Documents (SIN, IDs)
-- Skills and experience
-- Availability
-- Background check (external)
+### Step 1: Recruiter adds a runner to the order
 
----
-
-#### STEP 6: Agency approves the worker
-
-**Actor:** Agency (Web app)
-
-**API Call:**
-```http
-PUT /api/AgencyWorkerProfile/{id}/ApproveToWork
-{
-  "approvedToWork": true
-}
-```
-
-**Backend:**
-```csharp
-// Update worker profile
-workerProfile.ApprovedToWork = true;
-workerProfile.UpdatedAt = DateTime.UtcNow;
-await _workerRepository.UpdateAsync(workerProfile);
-
-// Send notification to worker
-await _pushNotificationService.SendAsync(
-    userId: workerProfile.UserId,
-    title: "Profile Approved!",
-    body: "You can now apply to jobs",
-    data: { type: "ProfileApproved" }
-);
-
-await _emailService.SendAsync(
-    to: workerProfile.User.Email,
-    subject: "Your Sigook profile has been approved",
-    template: "WorkerApproved",
-    data: new { FirstName = workerProfile.FirstName }
-);
-```
-
----
-
-#### STEP 7: Worker can now apply to jobs
-
-**Actor:** Worker (Flutter app)
-
-**Worker receives push notification:**
-```
-Title: "Profile Approved!"
-Body: "You can now apply to jobs"
-```
-
-**Worker can now:**
-- Browse available jobs
-- Apply to jobs
-- View assigned jobs
-
----
-
-## 2️⃣ Job Creation & Matching Flow
-
-### Overview
-Company creates request → Agency assigns workers or Workers apply → Assignment confirmed.
-
----
-
-### STEP 1: Company creates a Request
-
-**Actor:** Company (Web app)
-
-**UI:** Request creation form
-
-**API Call:**
-```http
-POST /api/CompanyRequest
-{
-  "jobTitle": "Warehouse Worker",
-  "description": "Loading and unloading trucks, inventory management",
-  "requirements": "Forklift license required",
-  "workersQuantity": 5,
-  "startAt": "2026-02-01T00:00:00Z",
-  "finishAt": null,
-  "isAsap": false,
-  "durationTerm": "LongTerm",
-  "employmentType": "FullTime",
-  "jobPositionRateId": "guid",
-  "jobLocationId": "guid",
-  "shiftStart": "07:00:00",
-  "shiftEnd": "15:00:00",
-  "durationBreak": "00:30:00",
-  "incentive": 100,
-  "incentiveDescription": "$100 signing bonus"
-}
-```
-
-**Backend:**
-```csharp
-// Validations
-if (request.WorkersQuantity < 1)
-    throw new ValidationException("Must request at least 1 worker");
-
-if (request.JobTitle.Length > 500)
-    throw new ValidationException("Job title too long");
-
-// Get JobPositionRate (to populate rates)
-var jobPositionRate = await _jobPositionRateRepository
-    .GetByIdAsync(request.JobPositionRateId);
-
-// Create Request (initial Status = Open)
-var jobRequest = new Request
-{
-    AgencyId = company.AgencyId,
-    CompanyId = company.Id,
-    JobTitle = request.JobTitle,
-    Description = request.Description,
-    Requirements = request.Requirements,
-    WorkersQuantity = request.WorkersQuantity,
-    StartAt = request.StartAt,
-    FinishAt = request.FinishAt,
-    IsAsap = request.IsAsap,
-    DurationTerm = request.DurationTerm,
-    EmploymentType = request.EmploymentType,
-    JobLocationId = request.JobLocationId,
-    JobPositionRateId = request.JobPositionRateId,
-    WorkerRate = jobPositionRate.WorkerRate,
-    AgencyRate = jobPositionRate.AgencyRate,
-    Incentive = request.Incentive,
-    IncentiveDescription = request.IncentiveDescription,
-    CreatedAt = DateTime.UtcNow
-};
-// Status defaults to RequestStatus.Open
-
-await _requestRepository.AddAsync(jobRequest);
-
-// Notify agency
-await _teamsWebhookService.SendAsync(
-    message: $"New request: {jobRequest.JobTitle} ({jobRequest.WorkersQuantity} workers needed)",
-    actionUrl: $"/agency/requests/{jobRequest.Id}"
-);
-```
-
----
-
-### STEP 2A: Agency assigns workers (Proactive)
-
-**Actor:** Agency (Web app)
-
-**Agency searches available workers:**
-```http
-GET /api/AgencyWorkerProfile?approvedToWork=true&skillIds=guid1,guid2&cityId=guid
-```
-
-**Agency assigns a worker:**
-```http
-POST /api/AgencyRequest/{requestId}/Worker
-{
-  "workerProfileId": "guid",
-  "startWorking": "2026-02-01T00:00:00Z"
-}
-```
-
-**Backend:**
-```csharp
-// Validations
-if (!worker.ApprovedToWork)
-    throw new BusinessException("Worker not approved to work");
-
-if (worker.Dnu)
-    throw new BusinessException("Worker marked as Do Not Use");
-
-if (request.WorkersQuantityWorking >= request.WorkersQuantity)
-    throw new BusinessException("Request already filled");
-
-// AddWorker handles state transitions automatically
-var result = request.AddWorker(worker.Id, startWorking);
-if (!result.IsSuccess) throw new BusinessException(result.Error);
-
-// If capacity is reached, request.Status becomes Filled
-await _requestRepository.UpdateAsync(request);
-
-// Notify worker
-await _pushNotificationService.SendAsync(
-    userId: worker.UserId,
-    title: "New Job Assignment",
-    body: $"You've been assigned to: {request.JobTitle}",
-    data: { type: "JobAssigned", requestId: request.Id }
-);
-```
-
----
-
-### STEP 2B: Worker applies (Reactive)
-
-**Actor:** Worker (Flutter app)
-
-**Worker browses jobs:**
-```http
-GET /api/WorkerRequest/Available?cityId=guid&page=1&pageSize=20
-```
-
-**Worker applies:**
-```http
-POST /api/WorkerRequest/Apply
-{
-  "requestId": "guid"
-}
-```
-
-**Backend:** (Similar to Agency assign, but the workerId is taken from the authenticated user)
-
----
-
-### STEP 3: Request gets filled
-
-**Backend (automatic in `Request.AddWorker`):**
-```csharp
-// After each worker assignment
-if (WorkersQuantityWorking >= WorkersQuantity)
-{
-    Status = RequestStatus.Filled;
-}
-```
-
-After the request transitions to `Filled`, the company can be notified:
-```csharp
-await _emailService.SendAsync(
-    to: company.Email,
-    subject: $"Request filled: {request.JobTitle}",
-    body: $"All {request.WorkersQuantity} workers have been assigned."
-);
-```
-
----
-
-## 3️⃣ Time Tracking Flow (Punch Card)
-
-### Overview
-Worker clocks in/out daily → Agency approves → System calculates totals.
-
----
-
-### STEP 1: Worker clocks in
-
-**Actor:** Worker (Flutter app)
-
-**Action:** Worker taps "Clock In" button on the job
-
-**API Call:**
-```http
-POST /api/WorkerRequest/{requestId}/TimeSheet
-{
-  "clockIn": "2026-02-01T07:05:23Z",
-  "latitude": 43.6532,
-  "longitude": -79.3832,
-  "isHoliday": false
-}
-```
-
-**Backend:**
-```csharp
-// Validations
-var existingToday = await _timeSheetRepository
-    .GetByWorkerRequestAndDateAsync(workerRequestId, clockIn.Date);
-if (existingToday != null)
-    throw new BusinessException("Already clocked in today");
-
-// Round clock in time
-var clockInRounded = RoundToNearest15Minutes(clockIn);
-
-// Create TimeSheet
-var timeSheet = new TimeSheet
-{
-    WorkerRequestId = workerRequestId,
-    Date = clockIn.Date,
-    ClockIn = clockIn,
-    ClockInRounded = clockInRounded,
-    TimeIn = clockIn.Date, // Midnight
-    TimeOut = null, // Pending clock out
-    IsHoliday = isHoliday,
-    CreatedAt = DateTime.UtcNow
-};
-
-await _timeSheetRepository.AddAsync(timeSheet);
-
-// Store GPS location (optional, for verification)
-await _timeSheetLocationRepository.AddAsync(new TimeSheetLocation
-{
-    TimeSheetId = timeSheet.Id,
-    Type = LocationType.ClockIn,
-    Latitude = latitude,
-    Longitude = longitude
-});
-```
-
-**Response:**
-```json
-{
-  "id": "timesheet-guid",
-  "date": "2026-02-01",
-  "clockIn": "2026-02-01T07:05:23Z",
-  "clockInRounded": "2026-02-01T07:00:00Z",
-  "status": "InProgress"
-}
-```
-
-**UI:** Shows "Clocked In at 7:05 AM" with elapsed time counter
-
----
-
-### STEP 2: Worker clocks out
-
-**Actor:** Worker (Flutter app)
-
-**Action:** Worker taps "Clock Out" button
-
-**API Call:**
-```http
-POST /api/WorkerRequest/{requestId}/TimeSheet
-{
-  "clockOut": "2026-02-01T15:08:12Z",
-  "latitude": 43.6532,
-  "longitude": -79.3832
-}
-```
-
-**Backend:**
-```csharp
-// Find TimeSheet for today
-var timeSheet = await _timeSheetRepository
-    .GetByWorkerRequestAndDateAsync(workerRequestId, clockOut.Date);
-if (timeSheet == null)
-    throw new BusinessException("No clock in found for today");
-
-if (timeSheet.ClockOut != null)
-    throw new BusinessException("Already clocked out");
-
-// Validate minimum time
-var elapsed = clockOut - timeSheet.ClockIn.Value;
-if (elapsed.TotalMinutes < 3)
-    throw new BusinessException("Must work at least 3 minutes");
-
-// Round clock out time
-var clockOutRounded = RoundToNearest15Minutes(clockOut);
-
-// Calculate duration (hours from TimeIn)
-var duration = clockOutRounded - timeSheet.ClockInRounded.Value;
-
-// Update TimeSheet
-timeSheet.ClockOut = clockOut;
-timeSheet.ClockOutRounded = clockOutRounded;
-timeSheet.TimeOut = timeSheet.TimeIn.Add(duration);
-
-await _timeSheetRepository.UpdateAsync(timeSheet);
-
-// Store GPS location
-await _timeSheetLocationRepository.AddAsync(new TimeSheetLocation
-{
-    TimeSheetId = timeSheet.Id,
-    Type = LocationType.ClockOut,
-    Latitude = latitude,
-    Longitude = longitude
-});
-```
-
-**Response:**
-```json
-{
-  "id": "timesheet-guid",
-  "date": "2026-02-01",
-  "clockIn": "2026-02-01T07:05:23Z",
-  "clockOut": "2026-02-01T15:08:12Z",
-  "clockInRounded": "2026-02-01T07:00:00Z",
-  "clockOutRounded": "2026-02-01T15:00:00Z",
-  "duration": "08:00:00",
-  "status": "PendingApproval"
-}
-```
-
----
-
-### STEP 3: Agency approves the timesheet
-
-**Actor:** Agency (Web app)
-
-**Agency reviews timesheets:**
-```http
-GET /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet?date=2026-02-01
-```
-
-**Agency approves:**
-```http
-PUT /api/v2/AgencyRequest/{requestId}/Worker/{workerId}/TimeSheet/{timesheetId}/Approve
-{
-  "timeInApproved": "2026-02-01T07:00:00Z",
-  "timeOutApproved": "2026-02-01T15:00:00Z"
-}
-```
-
-**Backend:**
-```csharp
-// Validations
-if (timeInApproved.Date != timeOutApproved.Date)
-    throw new ValidationException("Times must be same date");
-
-if (timeInApproved > timeOutApproved)
-    throw new ValidationException("Time in must be before time out");
-
-// Update TimeSheet
-timeSheet.TimeInApproved = timeInApproved;
-timeSheet.TimeOutApproved = timeOutApproved;
-await _timeSheetRepository.UpdateAsync(timeSheet);
-
-// Calculate TimeSheetTotal
-await _timeSheetTotalService.CalculateAsync(timeSheet.Id);
-
-// Notify worker
-await _pushNotificationService.SendAsync(
-    userId: timeSheet.WorkerRequest.WorkerProfile.UserId,
-    title: "Timesheet Approved",
-    body: $"Your timesheet for {timeSheet.Date:MMM dd} has been approved",
-    data: { type: "TimesheetApproved", timesheetId: timeSheet.Id }
-);
-```
-
----
-
-### STEP 4: System calculates TimeSheetTotal
-
-**Actor:** System (automatic after approval)
-
-**See:** `.docs/business/TIMESHEET_RULES.md` for the detailed calculation logic
-
-**Summary:**
-```csharp
-var total = new TimeSheetTotal
-{
-    TimeSheetId = timeSheet.Id,
-    TotalHours = timeSheet.TimeOutApproved - timeSheet.TimeInApproved,
-    AccumulateWeekHours = await CalculateWeekHoursAsync(timeSheet),
-    RegularHours = CalculateRegularHours(...),
-    OvertimeHours = CalculateOvertimeHours(...),
-    NightShiftHours = CalculateNightShiftHours(...),
-    HolidayHours = timeSheet.IsHoliday ? TotalHours : TimeSpan.Zero
-};
-
-await _timeSheetTotalRepository.AddAsync(total);
-```
-
----
-
-## 4️⃣ Payroll Processing Flow
-
-### Overview
-Agency generates pay stubs for the period → System calculates deductions → PDF generated → Worker is notified.
-
-**See:** `.docs/business/PAYROLL_RULES.md` and `.docs/business/PAYSTUB_GENERATION.md` for detailed payroll calculations.
-
----
-
-### STEP 1: Agency initiates payroll
-
-**Actor:** Agency (Web app)
-
-**Agency selects workers for payroll:**
-```
-Week ending: Feb 7, 2026
-Workers: [Select from list of workers with approved timesheets]
-```
-
-**API Call (per worker):**
-```http
-POST /api/v4/Accounting/PayStub
-{
-  "workerProfileId": "guid",
-  "paymentDate": "2026-02-07",
-  "weekEnding": "2026-02-07"
-}
-```
-
----
-
-### STEP 2: System calculates earnings
-
-**Backend:**
-```csharp
-// Get all approved timesheets for the period
-var timesheets = await _timeSheetRepository
-    .GetForPayrollAsync(workerProfileId, weekEnding);
-
-decimal regularWage = 0;
-decimal overtimeWage = 0;
-decimal nightShiftWage = 0;
-decimal holidayWage = 0;
-
-foreach (var ts in timesheets)
-{
-    var total = ts.Total;
-    var rate = ts.WorkerRequest.Request.WorkerRate;
-
-    regularWage    += (decimal)total.RegularHours.TotalHours    * rate;
-    overtimeWage   += (decimal)total.OvertimeHours.TotalHours   * (rate * 1.5m);
-    nightShiftWage += (decimal)total.NightShiftHours.TotalHours * (rate * 1.15m);
-    holidayWage    += (decimal)total.HolidayHours.TotalHours    * (rate * 1.5m);
-}
-
-var grossPayment  = regularWage + overtimeWage + nightShiftWage + holidayWage;
-var vacations     = grossPayment * 0.04m; // 4% Canada
-var totalEarnings = grossPayment + vacations;
-```
-
----
-
-### STEP 3: System calculates deductions
-
-**Backend:**
-```csharp
-// Get tax info
-var taxCategory = worker.TaxCategory;
-var province = worker.Location.City.Province.Code;
-
-// Calculate CPP
-var cpp = _cppCalculator.Calculate(
-    grossPayment,
-    PayFrequency.Weekly);
-
-// Calculate EI
-var ei = _eiCalculator.Calculate(
-    grossPayment,
-    PayFrequency.Weekly);
-
-// Calculate Federal Tax
-var federalTax = _federalTaxCalculator.Calculate(
-    grossPayment,
-    PayFrequency.Weekly,
-    taxCategory.FederalCategory);
-
-// Calculate Provincial Tax
-var provincialTax = _provincialTaxCalculator.Calculate(
-    grossPayment,
-    PayFrequency.Weekly,
-    province,
-    taxCategory.ProvincialCategory);
-
-var totalDeductions = cpp + ei + federalTax + provincialTax;
-var totalPaid = totalEarnings - totalDeductions;
-```
-
----
-
-### STEP 4: Create the PayStub entity
-
-**Backend:**
-```csharp
-// Get next pay stub number
-var payStubNumber = await _payStubRepository
-    .GetNextPayStubNumberAsync(DateTime.Now.Year);
-
-var payStub = new PayStub
-{
-    WorkerProfileId = workerProfileId,
-    PayStubNumber = payStubNumber,
-    PayStubNumberId = DateTime.Now.Year,
-    TypeOfWork = "General Labor",
-    DateWorkBegins = timesheets.Min(t => t.Date),
-    DateWorkEnd = timesheets.Max(t => t.Date),
-    PaymentDate = paymentDate,
-
-    RegularWage = regularWage,
-    GrossPayment = grossPayment,
-    Vacations = vacations,
-    PublicHolidayPay = 0,
-    TotalEarnings = totalEarnings,
-
-    Cpp = cpp,
-    Ei = ei,
-    FederalTax = federalTax,
-    ProvincialTax = provincialTax,
-    OtherDeductions = 0,
-    TotalDeductions = totalDeductions,
-
-    TotalPaid = totalPaid,
-    CreatedAt = DateTime.UtcNow
-};
-
-await _payStubRepository.AddAsync(payStub);
-```
-
----
-
-### STEP 5: Generate PDF
-
-**Backend:**
-```csharp
-// Generate PDF
-var pdf = await _payStubPdfGenerator.GenerateAsync(payStub.Id);
-
-// Upload to Azure Storage
-var url = await _azureStorageService.UploadAsync(
-    container: "paystubs",
-    file: pdf,
-    fileName: $"PS-{payStub.PayStubNumber:0000}-{payStub.PayStubNumberId:00}.pdf"
-);
-
-payStub.PdfUrl = url;
-await _payStubRepository.UpdateAsync(payStub);
-```
-
----
-
-### STEP 6: Notify the worker
-
-**Backend:**
-```csharp
-// Email with PDF attached
-await _emailService.SendAsync(
-    to: worker.User.Email,
-    subject: $"Pay Stub PS-{payStub.PayStubNumber:0000}-{payStub.PayStubNumberId:00}",
-    template: "PayStubReady",
-    data: new
-    {
-        WorkerName = $"{worker.FirstName} {worker.LastName}",
-        PayStubNumber = $"PS-{payStub.PayStubNumber:0000}-{payStub.PayStubNumberId:00}",
-        TotalPaid = payStub.TotalPaid,
-        PaymentDate = payStub.PaymentDate
-    },
-    attachments: new[] { pdf }
-);
-
-// Push notification
-await _pushNotificationService.SendAsync(
-    userId: worker.UserId,
-    title: "Pay Stub Available",
-    body: $"Your pay stub for week ending {weekEnding:MMM dd} is ready",
-    data: { type: "PayStubReady", payStubId: payStub.Id }
-);
-```
-
----
-
-## 5️⃣ Invoicing Flow
-
-### Overview
-Agency generates an invoice for a company for the period → System calculates totals with markup → PDF generated → Company is notified.
-
-**See:** `.docs/business/BILLING_RULES.md` for detailed billing calculations.
-
----
-
-### STEP 1: Agency initiates the invoice
-
-**Actor:** Agency (Web app)
-
-**Agency selects:**
-- Company
-- Week ending date
-- Worker requests to include
-
-**API Call:**
-```http
-POST /api/v4/Accounting/Invoice
-{
-  "companyProfileId": "guid",
-  "weekEnding": "2026-02-07",
-  "workerRequestIds": ["guid1", "guid2", "guid3"]
-}
-```
-
----
-
-### STEP 2: System calculates invoice totals
-
-**Backend:**
-```csharp
-var invoiceTotals = new List<InvoiceTotal>();
-
-foreach (var workerRequestId in workerRequestIds)
-{
-    var timesheets = await _timeSheetRepository
-        .GetForInvoiceAsync(workerRequestId, weekEnding);
-
-    var workerRequest = await _workerRequestRepository
-        .GetByIdAsync(workerRequestId);
-
-    var rate = workerRequest.Request.AgencyRate; // Company pays this
-
-    decimal regularAmount = 0;
-    decimal overtimeAmount = 0;
-    decimal nightShiftAmount = 0;
-    decimal holidayAmount = 0;
-    TimeSpan regularHours = TimeSpan.Zero;
-    TimeSpan overtimeHours = TimeSpan.Zero;
-    TimeSpan nightShiftHours = TimeSpan.Zero;
-    TimeSpan holidayHours = TimeSpan.Zero;
-
-    foreach (var ts in timesheets)
-    {
-        var total = ts.Total;
-        regularHours    += total.RegularHours;
-        overtimeHours   += total.OvertimeHours;
-        nightShiftHours += total.NightShiftHours;
-        holidayHours    += total.HolidayHours;
-
-        regularAmount    += (decimal)total.RegularHours.TotalHours    * rate;
-        overtimeAmount   += (decimal)total.OvertimeHours.TotalHours   * (rate * 1.5m);
-        nightShiftAmount += (decimal)total.NightShiftHours.TotalHours * (rate * 1.15m);
-        holidayAmount    += (decimal)total.HolidayHours.TotalHours    * (rate * 1.5m);
-    }
-
-    var invoiceTotal = new InvoiceTotal
-    {
-        WorkerRequestId = workerRequestId,
-        WorkerName = $"{workerRequest.WorkerProfile.FirstName} {workerRequest.WorkerProfile.LastName}",
-        RegularHours = regularHours,
-        RegularAmount = regularAmount,
-        OvertimeHours = overtimeHours,
-        OvertimeAmount = overtimeAmount,
-        NightShiftHours = nightShiftHours,
-        NightShiftAmount = nightShiftAmount,
-        HolidayHours = holidayHours,
-        HolidayAmount = holidayAmount,
-        Total = regularAmount + overtimeAmount + nightShiftAmount + holidayAmount
-    };
-
-    invoiceTotals.Add(invoiceTotal);
-}
-
-// Calculate totals
-var subTotal = invoiceTotals.Sum(t => t.Total);
-var vacations = subTotal * 0.04m; // 4%
-var hstRate = GetHstRateByProvince(company.BillingAddress.Province);
-var hst = (subTotal + vacations) * hstRate;
-var totalNet = subTotal + vacations + hst;
-```
-
----
-
-### STEP 3: Create the Invoice entity
-
-**Backend:**
-```csharp
-// Get next invoice number
-var invoiceNumber = await _invoiceRepository
-    .GetNextInvoiceNumberAsync(DateTime.Now.Year);
-
-var invoice = new Invoice
-{
-    CompanyProfileId = companyProfileId,
-    InvoiceNumber = invoiceNumber,
-    NightShiftRate = 1.15m,
-    HolidayRate = 1.5m,
-    OverTimeRate = 1.5m,
-    VacationsRate = 0.04m,
-    HstRate = hstRate,
-    BonusRate = 0,
-    SubTotal = subTotal,
-    Hst = hst,
-    TotalNet = totalNet,
-    CreatedAt = DateTime.UtcNow
-};
-
-await _invoiceRepository.AddAsync(invoice);
-
-// Add invoice totals
-foreach (var total in invoiceTotals)
-{
-    total.InvoiceId = invoice.Id;
-    await _invoiceTotalRepository.AddAsync(total);
-}
-```
-
----
-
-### STEP 4: Generate PDF and send
-
-**Backend:**
-```csharp
-// Generate PDF
-var pdf = await _invoicePdfGenerator.GenerateAsync(invoice.Id);
-
-// Upload to Azure Storage
-var url = await _azureStorageService.UploadAsync(
-    container: "invoices",
-    file: pdf,
-    fileName: $"AI-{invoice.InvoiceNumber:0000}-{DateTime.Now:yy}.pdf"
-);
-
-invoice.PdfUrl = url;
-await _invoiceRepository.UpdateAsync(invoice);
-
-// Get recipients
-var recipients = await _companyProfileInvoiceRecipientRepository
-    .GetByCompanyAsync(companyProfileId);
-
-// Send email to all recipients
-foreach (var recipient in recipients)
-{
-    await _emailService.SendAsync(
-        to: recipient.Email,
-        subject: $"Invoice AI-{invoice.InvoiceNumber:0000}-{DateTime.Now:yy}",
-        template: "InvoiceReady",
-        data: new
-        {
-            CompanyName = company.BusinessName,
-            InvoiceNumber = $"AI-{invoice.InvoiceNumber:0000}-{DateTime.Now:yy}",
-            TotalNet = invoice.TotalNet,
-            DueDate = invoice.CreatedAt.AddDays(30)
-        },
-        attachments: new[] { pdf }
-    );
-}
-```
-
----
-
-## 6️⃣ Runner Pipeline Flow
-
-### Overview
-A **Runner** is a Candidate or Worker actively submitted to a specific order (Request). The recruiter creates the runner, then advances it through the recruiting pipeline and schedules interviews, until the client hires or rejects it. Runners live in a tab inside the order detail (next to Applicants/Workers).
-
-### Actors
-- **Recruiter / Agency** (via Web app, order detail → Runners tab)
-- **System** (backend API — domain rules live in the `Runner` entity)
-
----
-
-### Step-by-Step
-
-#### STEP 1: Recruiter adds a runner to the order
-
-The recruiter searches a Worker or Candidate and picks **Type** = `Active` (applied on their own) or `Passive` (sourced by a recruiter). The search uses a **dedicated runner-prospect endpoint** that excludes people already runners on this request:
+The recruiter searches a Worker or Candidate and picks **Type** = `Active` (applied on their own) or `Passive` (sourced by a recruiter) — `RunnerType` enum. The search uses a dedicated runner-prospect endpoint that excludes people already runners on this request:
 
 ```
-GET  api/agency/requests/{requestId}/Runners/Search?searchTerm=...
-POST api/agency/requests/{requestId}/Runners
-{ "workerProfileId" | "candidateId", "type": 1 }
+GET  api/agency/requests/{requestId}/Runners/Search?searchTerm=...   → IRequestRepository.SearchRunnerProspects
+POST api/agency/requests/{requestId}/Runners                         → RunnerService.CreateRunner
+     { "workerProfileId" | "candidateId", "type": 1 }
 ```
 
 The runner is created with `Status = SentToClient` and an initial status-history entry (`previousStatus = null`). The same worker/candidate cannot be added twice on the same request (rejected by the `RunnerExists` guard).
 
-#### STEP 2: Recruiter advances the status
+### Step 2: Recruiter advances the status
 
 ```
-PUT api/agency/requests/{requestId}/Runners/{id}/Status
-{ "status": 2, "comments": "Client requested an interview" }
+PUT api/agency/requests/{requestId}/Runners/{id}/Status              → RunnerService.ChangeStatus
+    { "status": 2, "comments": "Client requested an interview" }
 ```
 
 - Any status can move to any other (no fixed order) **except** a `Hired` runner, which is terminal and rejects further changes.
 - Each change appends a row to the status history (previous → new, who, when, comments) — never overwrites.
 - Moving to `Hired` **requires** a `StartDate` (the date the runner would begin working); the transition is rejected without it.
 
-**Pipeline states:** Sent to Client → Interview scheduled → Interview rescheduled → No longer available / No show / Waiting for interview feedback / Waiting for final decision → Rejected / In onboarding process / Hired.
+**Pipeline states** (`Covenant.Common/Enums/RunnerStatus.cs`): `SentToClient(1)`, `InterviewScheduled(2)`, `InterviewRescheduled(3)`, `NoLongerAvailable(4)`, `NoShow(5)`, `WaitingForInterviewFeedback(6)`, `WaitingForFinalDecision(7)`, `Rejected(8)`, `InOnboardingProcess(9)`, `Hired(10)`.
 
-#### STEP 3: Recruiter schedules interviews
+### Step 3: Recruiter schedules interviews
 
-Only allowed while the runner is in `Interview scheduled` or `Interview rescheduled`:
-
-```
-POST api/agency/requests/{requestId}/Runners/{id}/Interview
-{ "scheduledDate", "type": 1, "interviewer", "notes" }
-```
-
-A runner can have multiple interviews over time. Rescheduling an interview updates its date and **auto-transitions** the runner to `Interview rescheduled`:
+Only allowed while the runner is in `InterviewScheduled` or `InterviewRescheduled`:
 
 ```
-PUT api/agency/requests/{requestId}/Runners/{id}/Interview/{interviewId}/Reschedule
-{ "newDate" }
+POST api/agency/requests/{requestId}/Runners/{id}/Interview          → RunnerService.AddInterview
+     { "scheduledDate", "type": 1, "interviewer", "notes" }
 ```
 
-#### STEP 4: View history
+A runner can have multiple interviews over time. Rescheduling an interview updates its date and **auto-transitions** the runner to `InterviewRescheduled`:
 
-The runner detail exposes the full status timeline (latest first) and the list of interviews. The "Add interview" and "Reschedule" actions are hidden/disabled outside the two interview-enabled states, and "Change status" is hidden once the runner is `Hired`.
+```
+PUT api/agency/requests/{requestId}/Runners/{id}/Interview/{interviewId}/Reschedule   → RunnerService.RescheduleInterview
+    { "newDate" }
+```
 
-> All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
+### Step 4: View history
 
-#### STEP 5: Attendance-review notification (first days after hire)
+`GET api/agency/requests/{requestId}/Runners/{id}` returns the runner detail with the full status timeline (latest first) and the list of interviews. The "Add interview" and "Reschedule" actions are hidden/disabled outside the two interview-enabled states, and "Change status" is hidden once the runner is `Hired`.
+
+All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
+
+### Step 5: Attendance-review notification (first days after hire)
 
 Once a runner is `Hired` with a `StartDate`, the recruiter who hired them is reminded to confirm the worker showed up, during the worker's **first 3 days** (Day 1 = the `StartDate`).
 
 ```
-GET api/agency/Notifications     →  { workersToReview: [ { ...worker, dayNumber }, ... ] }
+GET api/agency/Notifications      → NotificationsController → NotificationService.GetNotifications
+                                  → { workersToReview: [ { ...worker, dayNumber }, ... ] }
 ```
 
 - **Per-user:** only the recruiter who performed the hire sees it. The hire stamps `Runner.UpdatedBy` with the acting user's id (`User.GetUserId()`); the query filters by it (`Hired` is terminal, so `UpdatedBy` = the hirer). No nickname/`StatusHistory` involved.
@@ -1219,46 +312,3 @@ GET api/agency/Notifications     →  { workersToReview: [ { ...worker, dayNumbe
 - **3-day window:** the DB does a generous prefilter; `DayNumber = (today − StartDate).Days + 1` is computed in the service and is authoritative (kept only when `1..3`). This avoids a `timestamptz` timezone off-by-one between the window and the day count.
 - **Aggregated, multi-type:** a single endpoint returns `NotificationsModel` (a container with one list per notification kind — today only `WorkersToReview`). The web bell shows a per-type summary + count; clicking opens the **Attendance Review** page (`/recruiting/attendance-review`), and each row links to that order's **Punch Card** tab where the recruiter enters `0` to mark attendance.
 - **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for non admin/payroll/agency users (`useBillingAdmin`); the attendance `0` is entered by whoever may edit.
-
----
-
-## 🎯 Key Takeaways
-
-### Async Processing
-
-Many operations can be done asynchronously:
-- Document generation (PDF)
-- File uploads (Azure Storage)
-- Notifications (email, push, Teams)
-- Use Azure Service Bus for heavy operations
-
-### Error Handling
-
-All workflows should handle:
-- Validation errors → 400 Bad Request
-- Authorization errors → 403 Forbidden
-- Business rule violations → 409 Conflict
-- System errors → 500 Internal Server Error
-
-### Audit Trail
-
-Log all critical operations:
-- Worker registration
-- Approval/rejection
-- Timesheet creation/approval
-- PayStub generation
-- Invoice generation
-
-### Notifications
-
-Keep all parties informed:
-- Workers: Profile approved, Job assigned, Timesheet approved, Pay stub ready
-- Companies: Request filled, Invoice ready
-- Agency: New registrations, New requests, Unusual activity
-
-### Idempotency
-
-Ensure operations are idempotent where possible:
-- Use unique constraints (prevent duplicate timesheets)
-- Check existing records before creating
-- Use sequential numbering (PayStub, Invoice)

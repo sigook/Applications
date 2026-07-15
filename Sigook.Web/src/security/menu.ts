@@ -1,5 +1,4 @@
-import roles, { hasAnyRole, roleGroups } from "@/security/roles";
-import { useBillingAdmin } from "@/composables/useBillingAdmin";
+import roles from "@/security/roles";
 import type { AgencyDetail } from "@/types/agency";
 
 interface MenuLink {
@@ -18,29 +17,36 @@ interface MenuGroup {
 export default {
   getMenu(userRoles: string[], agency: AgencyDetail): MenuGroup[] {
     const result: MenuGroup[] = [];
-    if (hasAnyRole(userRoles, roleGroups.agencyAccess)) {
-      result.push(this.recruitingMenu());
-    }
-    if (hasAnyRole(userRoles, roleGroups.salesAccess)) {
-      result.push(this.salesMenu(agency));
-    }
-    if (hasAnyRole(userRoles, roleGroups.accounting)) {
-      result.push(this.agencyBillingMenu(agency));
-    }
-    if (userRoles.includes(roles.company)) {
-      result.push(...this.companyMenu());
-    }
-    if (userRoles.includes(roles.companyUser)) {
-      result.push(...this.companyUserMenu());
-    }
-    if (userRoles.includes(roles.worker)) {
-      result.push(...this.workerMenu());
+    for (let i = 0; i < userRoles.length; i++) {
+      switch (userRoles[i]) {
+        case roles.superAdmin:
+        case roles.admin:
+          result.push(this.recruitingMenu());
+          result.push(this.salesMenu(agency));
+          result.push(this.accountingMenu(agency));
+          break;
+        case roles.recruiting:
+          result.push(this.recruitingMenu());
+          break;
+        case roles.sales:
+          result.push(this.salesMenu(agency));
+          break;
+        case roles.company:
+          result.push(...this.companyMenu());
+          break;
+        case roles.companyUser:
+          result.push(...this.companyUserMenu());
+          break;
+        case roles.worker:
+          result.push(...this.workerMenu());
+          break;
+      }
     }
     result.sort((a, b) => (a.label ?? "").localeCompare(b.label ?? ""));
     return result;
   },
   recruitingMenu(): MenuGroup {
-    const recruiting: MenuGroup = {
+    return {
       label: "Recruiting",
       icon: "account-search",
       items: [
@@ -76,7 +82,6 @@ export default {
         },
       ],
     };
-    return recruiting;
   },
   salesMenu(agency: AgencyDetail): MenuGroup {
     const sales: MenuGroup = {
@@ -104,7 +109,7 @@ export default {
     }
     return sales;
   },
-  agencyBillingMenu(agency: AgencyDetail): MenuGroup {
+  accountingMenu(agency: AgencyDetail): MenuGroup {
     const accounting: MenuGroup = {
       label: "Accounting",
       icon: "finance",
@@ -180,18 +185,21 @@ export default {
     ];
   },
   getDefaultHomePageUrlBaseOnRoles(userRoles: string[]): string {
-    const { isPayrollManager } = useBillingAdmin();
-    if (hasAnyRole(userRoles, roleGroups.agencyAccess)) {
-      return isPayrollManager.value ? "/recruiting/requests" : "/recruiting/weekly-board";
-    }
-    if (userRoles.includes(roles.sales)) {
-      return "/sales/dashboard";
-    }
-    if (hasAnyRole(userRoles, [roles.company, roles.companyUser])) {
-      return "/company-requests";
-    }
-    if (userRoles.includes(roles.worker)) {
-      return "/worker-requests";
+    for (let i = 0; i < userRoles.length; i++) {
+      switch (userRoles[i]) {
+        case roles.superAdmin:
+        case roles.admin:
+          return "/recruiting/requests";
+        case roles.recruiting:
+          return "/recruiting/weekly-board";
+        case roles.sales:
+          return "/sales/requests";
+        case roles.company:
+        case roles.companyUser:
+          return "/company-requests";
+        case roles.worker:
+          return "/worker-requests";
+      }
     }
     return "/unauthorized";
   },

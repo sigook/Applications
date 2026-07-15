@@ -1,5 +1,6 @@
 ﻿using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
 using Covenant.Api.Authorization;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Interfaces;
@@ -63,7 +64,8 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
             var model = new AgencyPersonnelModel
             {
                 Email = Startup.NewUserEmail,
-                Name = "John Papas"
+                Name = "John Papas",
+                Role = CovenantConstants.Role.Recruiting
             };
             HttpResponseMessage response = await client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
@@ -72,6 +74,22 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
             Assert.Equal(Startup.NewUserId, entity.UserId);
             Assert.Equal(model.Email, entity.User.Email);
             Assert.Equal(model.Name, entity.Name);
+        }
+
+        [Fact]
+        public async Task PostRoleOutsideTheAssignableSet()
+        {
+            var model = new AgencyPersonnelModel
+            {
+                Email = "not.created@sigook.com",
+                Name = "John Papas",
+                Role = CovenantConstants.Role.SuperAdmin
+            };
+            HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            Assert.False(await context.AgencyPersonnel.AnyAsync(ap => ap.User.Email == model.Email));
         }
 
         [Fact]
@@ -98,7 +116,8 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
             var model = new AgencyPersonnelModel
             {
                 Email = Startup.FakePersonnelExisting.User.Email,
-                Name = Startup.FakePersonnelExisting.Name
+                Name = Startup.FakePersonnelExisting.Name,
+                Role = CovenantConstants.Role.Sales
             };
             HttpResponseMessage response = await client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();

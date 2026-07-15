@@ -74,6 +74,10 @@
             <span class="col-12"><b-icon icon="office-building-outline" size="is-small"></b-icon>
               {{ assignment.companyName }}
             </span>
+            <span v-if="locationLabel(assignment)" class="col-12"><b-icon icon="map-marker-outline"
+                size="is-small"></b-icon>
+              {{ locationLabel(assignment) }}
+            </span>
           </div>
 
           <collapse-section v-if="assignment.dispatches.length > 0" class="sent-workers" variant="compact"
@@ -116,6 +120,7 @@ import dayjs from 'dayjs';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { getRecruiterWeeklyBoard, addWorkers, removeWorker } from '@/api/weeklyBoardApi';
 import { isDirectHiring } from '@/utils/directHiring';
+import { locationLabel } from '@/utils/locationLabel';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import type { RecruiterWeeklyBoard, WeeklyBoardAssignment, WeekDay } from '@/types/weeklyBoard';
 import AddWorkersModal from './AddWorkersModal.vue';

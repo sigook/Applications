@@ -99,7 +99,7 @@ import { useAgencyStore } from '@/stores/agency';
 import { useSecurityStore } from '@/stores/security';
 import { avatarLetters } from '@/utils/filters';
 import menu from '@/security/menu';
-import roles, { hasAnyRole, roleGroups } from '@/security/roles';
+import roles, { agencyStaff } from '@/security/roles';
 import { getMyProfile } from '@/api/workerApi';
 import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
 import { getCompanyProfile } from '@/api/companyApi';
@@ -161,7 +161,7 @@ function expandActiveGroup() {
 const currentUser = computed(() => agencyStore.agency);
 
 const isAgency = computed(() =>
-  hasAnyRole(securityStore.userRoles, roleGroups.agencyStaff));
+  securityStore.userRoles.some((ur) => agencyStaff.includes(ur)));
 
 function isActive(to: string): boolean {
   return route.path === to || route.path.startsWith(`${to}/`);
@@ -216,14 +216,24 @@ function switchAgency(agency: { id: string; isPrimary: boolean }) {
 
 async function init() {
   const userRoles = securityStore.userRoles;
-  if (hasAnyRole(userRoles, roleGroups.agencyStaff)) {
-    await getAgencyInfo();
-  } else if (userRoles.includes(roles.companyUser)) {
-    await getCompanyUserInfo();
-  } else if (userRoles.includes(roles.company)) {
-    await getCompanyInfo();
-  } else if (userRoles.includes(roles.worker)) {
-    await getWorkerInfo();
+  for (const role of userRoles) {
+    switch (role) {
+      case roles.superAdmin:
+      case roles.admin:
+      case roles.recruiting:
+      case roles.sales:
+        await getAgencyInfo();
+        break;
+      case roles.companyUser:
+        await getCompanyUserInfo();
+        break;
+      case roles.company:
+        await getCompanyInfo();
+        break;
+      case roles.worker:
+        await getWorkerInfo();
+        break;
+    }
   }
   menuGroups.value = menu.getMenu(userRoles, agencyStore.agency);
   expandedGroups.value = menuGroups.value.map(() => false);

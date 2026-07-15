@@ -67,6 +67,8 @@ router.beforeEach(async (to, from, next) => {
     if (!user) {
       next(false);
       securityStore.signIn();
+    } else if (!isAllowed(to, securityStore.userRoles)) {
+      next("/unauthorized");
     } else {
       next();
     }
@@ -74,6 +76,12 @@ router.beforeEach(async (to, from, next) => {
     next();
   }
 });
+
+function isAllowed(to: RouteLocationNormalized, userRoles: string[]): boolean {
+  const allowedRoles = to.meta?.role as string[] | undefined;
+  if (!allowedRoles?.length) return true;
+  return userRoles.some((ur) => allowedRoles.includes(ur));
+}
 
 const CANONICAL_ORIGIN = "https://www.sigook.com";
 

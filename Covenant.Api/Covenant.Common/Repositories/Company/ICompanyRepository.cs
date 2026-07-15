@@ -28,7 +28,7 @@ namespace Covenant.Common.Repositories.Company
         Task<CompanyProfileInvoiceRecipient> GetInvoiceRecipient(Guid id);
         Task UpdateInvoiceRecipient(Guid id, CompanyProfileInvoiceRecipientModel model);
         Task<Guid> CreateInvoiceRecipient(Guid companyProfileId, CompanyProfileInvoiceRecipientModel model);
-        Task<IEnumerable<CompanyProfileContactPersonModel>> GetContactPersons(Expression<Func<CompanyProfileContactPerson, bool>> condition);
+        Task<IEnumerable<CompanyProfileContactPersonModel>> GetContactPeople(Expression<Func<CompanyProfileContactPerson, bool>> condition);
         Task<CompanyProfileContactPersonModel> GetContactPersonDetail(Guid profileId, Guid id);
         Task<CompanyProfileContactPerson> GetContactPerson(Guid id);
         Task<CompanyProfileLocationDetailModel> GetLocationDetail(Guid id);
