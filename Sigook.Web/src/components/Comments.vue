@@ -41,7 +41,7 @@
 import { ref } from 'vue';
 import { useSecurityStore } from '@/stores/security';
 import { showAlertError } from "@/utils/toast";
-import roles, { hasAnyRole, roleGroups } from "@/security/roles";
+import roles from "@/security/roles";
 import { agencyCommentWorker } from "@/api/agencyWorkerApi";
 import { companyCommentWorker } from "@/api/companyApi";
 import iconAgency from '@/assets/images/icon_agency.svg';
