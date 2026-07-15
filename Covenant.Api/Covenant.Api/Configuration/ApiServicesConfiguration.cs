@@ -69,6 +69,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<ILocationRepository, LocationRepository>();
         services.AddScoped<INotificationDataRepository, NotificationDataRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<ICompanyInteractionRepository, CompanyInteractionRepository>();
         return services;
     }
 
