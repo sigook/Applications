@@ -17084,6 +17084,58 @@
         }
       }
     },
+    "/api/agency/requests/bulk-recruiters": {
+      "put": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Replaces the recruiters of multiple requests in bulk. An empty recruiter list unassigns every recruiter.",
+        "requestBody": {
+          "description": "Bulk recruiter update data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/requests/{id}/Open": {
       "put": {
         "tags": [
@@ -26887,8 +26939,20 @@
             "type": "string",
             "nullable": true
           },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
           "dnu": {
             "type": "boolean"
+          },
+          "phoneNumbers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.PhoneNumberModel"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -29228,6 +29292,28 @@
           "skipped": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.BulkRequestRecruiters": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "recruiterIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false

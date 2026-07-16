@@ -585,6 +585,11 @@ export interface CancelRequestPayload {
 }
 
 // Payload for PUT /api/AgencyRequest/bulk-cancel. Mirrors BulkRequestCancellation.
+export interface BulkUpdateRecruitersPayload {
+  ids: string[];
+  recruiterIds: string[];
+}
+
 export interface BulkCancelRequestsPayload {
   ids: string[];
   cancellationReasonId: string;

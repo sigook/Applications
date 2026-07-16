@@ -435,6 +435,15 @@ public class RequestService : IRequestService
         return Result.Ok();
     }
 
+    public async Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model)
+    {
+        if (model?.Ids is null || !model.Ids.Any()) return Result.Ok();
+        var recruiterIds = model.RecruiterIds?.Distinct().ToList() ?? [];
+        await requestRepository.BulkReplaceRecruiters(model.Ids.Distinct(), recruiterIds, timeService.GetCurrentDateTime());
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
     public async Task<Result> UpdateIsAsapRequests(RequestsQuickUpdate requestsQuickUpdate)
     {
         var requests = await requestRepository.GetRequests(requestsQuickUpdate.Ids);

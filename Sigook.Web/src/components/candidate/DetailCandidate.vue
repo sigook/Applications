@@ -1,6 +1,6 @@
 <template>
   <div class="p-3">
-    <div class="modal-overflow" v-if="candidate">
+    <div v-if="candidate">
       <b-loading v-model="isLoading"></b-loading>
       <h2 class="text-center main-title">{{ candidate.name }}</h2>
       <form @submit.prevent="validateForm">
@@ -11,21 +11,41 @@
             </b-checkbox>
           </div>
           <div class="col-12">
-            <b-field label="Full Name" :type="formErrors.name ? 'is-danger' : ''"
-              :message="formErrors.name">
+            <b-field :type="formErrors.name ? 'is-danger' : ''" :message="formErrors.name">
+              <template #label>
+                Full Name <span class="has-text-danger">*</span>
+              </template>
               <b-input type="text" v-model="name" name="name" />
             </b-field>
           </div>
           <div class="col-12 mb-1">
-            <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
-              :message="formErrors.email">
+            <b-field :type="formErrors.email ? 'is-danger' : ''" :message="formErrors.email">
+              <template #label>
+                Email <span class="has-text-danger">*</span>
+              </template>
               <b-input type="email" v-model="email" name="email" />
             </b-field>
           </div>
+          <div class="col-12">
+            <PhoneInput ref="phoneComponent" model="Phone" :required="true" :defaultValue="phoneNumber"
+              @formattedPhone="(phone: string) => phoneNumber = phone" />
+          </div>
           <div class="col-12 mb-3">
-            <b-field :type="formErrors.address ? 'is-danger' : ''" label="Address"
-              :message="formErrors.address">
+            <b-field :type="formErrors.address ? 'is-danger' : ''" :message="formErrors.address">
+              <template #label>
+                Address <span class="has-text-danger">*</span>
+              </template>
               <b-input type="text" v-model="address" name="address" />
+            </b-field>
+          </div>
+          <div class="col-12">
+            <b-field :type="sourceError ? 'is-danger' : ''" :message="sourceError">
+              <template #label>
+                Source <span class="has-text-danger">*</span>
+              </template>
+              <b-select v-model="candidate.sourceId" expanded placeholder="Select a source">
+                <option v-for="item in sourceList" :key="item.id" :value="item.id">{{ item.value }}</option>
+              </b-select>
             </b-field>
           </div>
           <div class="col-12">
@@ -43,28 +63,32 @@
               </b-select>
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="col-12 mb-3">
             <b-field label="Has Vehicle">
               <b-switch v-model="candidate.hasVehicle" :true-value="true" :false-value="false">
                 {{ candidate.hasVehicle ? "Yes" : "No" }}
               </b-switch>
             </b-field>
           </div>
+          <div class="col-12">
+            <b-button type="is-primary" rounded native-type="submit">Update</b-button>
+          </div>
         </div>
-        <b-button type="is-primary" rounded native-type="submit">Update</b-button>
       </form>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
-import { getGenders } from "@/api/catalogApi";
+import { getGenders, getSources } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
 import { getAgencyCandidate, updateAgencyCandidate } from "@/api/agencyCandidateApi";
 import { useStickyForm } from '@/composables/useStickyForm';
+import PhoneInput from "@/components/PhoneInput.vue";
+import type { Source } from "@/types/common";
 
 const props = defineProps<{ candidateId: number | string }>();
 const emit = defineEmits<{ (e: 'onUpdateWorker', value: boolean): void }>();
@@ -88,6 +112,10 @@ const isLoading = ref(false);
 const candidate = ref<any>(null);
 const showPostalCode = ref(false);
 const genderList = ref<any[]>([]);
+const sourceList = ref<Source[]>([]);
+const sourceError = ref('');
+const phoneNumber = ref('');
+const phoneComponent = ref<any>(null);
 
 const genders = computed(() => genderList.value);
 const hasDnuPermission = computed(() => {
@@ -107,6 +135,7 @@ function loadCandidate() {
       isLoading.value = false;
       candidate.value = response;
       showPostalCode.value = true;
+      phoneNumber.value = response.phoneNumbers?.[0]?.phoneNumber || '';
       form.hydrate({
         name: response.name || '',
         email: response.email || '',
@@ -122,7 +151,9 @@ function loadCandidate() {
 async function validateForm() {
   form.markInteracted();
   const { valid } = await form.validate();
-  if (!valid) {
+  const phoneValid = phoneComponent.value ? await phoneComponent.value.validatePhone() : false;
+  sourceError.value = candidate.value.sourceId ? '' : 'Source is required';
+  if (!valid || !phoneValid || sourceError.value) {
     showAlertError('Please make sure all required fields are filled out correctly');
     return;
   }
@@ -136,6 +167,7 @@ function submitCandidate() {
     name: name.value,
     email: email.value,
     address: address.value,
+    phoneNumbers: [{ phoneNumber: phoneNumber.value }],
   };
   updateAgencyCandidate(String(props.candidateId), payload)
     .then(() => {
@@ -149,9 +181,12 @@ function submitCandidate() {
     });
 }
 
-getGenders()
-  .then((result) => {
-    genderList.value = result;
+watch(() => candidate.value?.sourceId, () => { sourceError.value = ''; });
+
+Promise.all([getGenders(), getSources()])
+  .then(([genderResult, sourceResult]) => {
+    genderList.value = genderResult;
+    sourceList.value = sourceResult;
     loadCandidate();
   })
   .catch(error => {

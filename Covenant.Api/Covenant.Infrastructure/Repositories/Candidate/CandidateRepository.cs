@@ -154,7 +154,9 @@ namespace Covenant.Infrastructure.Repositories.Candidate
                     Gender = c.Gender == null ? null : new BaseModel<Guid> { Id = c.Gender.Id, Value = c.Gender.Value },
                     HasVehicle = c.HasVehicle,
                     ResidencyStatus = c.ResidencyStatus,
-                    Dnu = c.Dnu
+                    SourceId = c.SourceId,
+                    Dnu = c.Dnu,
+                    PhoneNumbers = c.PhoneNumbers.Select(p => new PhoneNumberModel { Id = p.Id, PhoneNumber = p.PhoneNumber })
                 }).SingleOrDefaultAsync();
 
         public Task<PhoneNumberModel> GetPhoneNumberDetail(Guid candidateId, Guid id) =>

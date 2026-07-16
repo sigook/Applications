@@ -284,6 +284,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `updateAgencyRequest(id, model)` | PUT | `/api/agency/requests/{id}` | `CreateAgencyRequestModel` | `AgencyRequestDetail` | |
 | `cancelAgencyRequest(id, payload)` | PUT | `/api/agency/requests/{id}/Cancel` | `CancelRequestPayload` | `void` | Cancel + reason |
 | `bulkCancelRequests(payload)` | PUT | `/api/agency/requests/bulk-cancel` | `BulkCancelRequestsPayload` | `BulkCancelRequestsResult` | Cancel many at once |
+| `bulkUpdateRecruiters(payload)` | PUT | `/api/agency/requests/bulk-recruiters` | `BulkUpdateRecruitersPayload` | `void` | Replace recruiters on many at once; empty list unassigns. Admin/SuperAdmin only |
 | `agencyRequestOpen(id)` | PUT | `/api/agency/requests/{id}/Open` | id (in body) | `void` | Reopen |
 | `agencyRequestSendInvitation(id)` | POST | `/api/agency/requests/{id}/SendInvitation` | — | `void` | 120s timeout |
 | `updateAgencyRequestIsAsap(id)` | PUT | `/api/agency/requests/{id}/IsAsap` | — | `void` | Toggle ASAP |

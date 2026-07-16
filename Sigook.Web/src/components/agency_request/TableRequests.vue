@@ -25,6 +25,10 @@
             @click="onShowBulkCancelModal">
             Cancel requests
           </b-dropdown-item>
+          <b-dropdown-item v-if="isAdministration" aria-role="menuitem" :disabled="checkedRows.length < 1"
+            @click="onShowBulkRecruitersModal">
+            Assign / Unassign recruiters
+          </b-dropdown-item>
         </b-dropdown>
       </template>
     </Export>
@@ -216,6 +220,10 @@
               @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'Workers' } })">
               Workers
             </b-dropdown-item>
+            <b-dropdown-item v-if="!isDirectHiring(props.row)" aria-role="listitem"
+              @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'PunchCard' } })">
+              Punch Card
+            </b-dropdown-item>
           </b-dropdown>
         </b-table-column>
       </template>
@@ -224,6 +232,13 @@
     <!-- bulk cancel -->
     <b-modal v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
       <CancelList @sendReason="onBulkCancelConfirmed" />
+    </b-modal>
+
+    <!-- bulk recruiters -->
+    <b-modal v-model="showBulkRecruitersModal" @close="showBulkRecruitersModal = false" width="500px" :destroy-on-hide="true">
+      <BulkRecruiterModal :request-count="checkedRows.length"
+        @submit="onBulkRecruitersConfirmed"
+        @cancel="showBulkRecruitersModal = false" />
     </b-modal>
 
     <!-- job boards -->
@@ -245,9 +260,11 @@ import { useAgencyStore } from '@/stores/agency';
 import { appGlobals } from '@/varaibles';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, breakWord, currency } from '@/utils/filters';
+import { isDirectHiring } from '@/utils/directHiring';
 import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdministration } from '@/composables/useAdministration';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
-import { getAgencyRequests, bulkCancelRequests } from "@/api/agencyRequestApi";
+import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/api/agencyRequestApi";
 import { getSalesRequests } from "@/api/salesApi";
 import { useModuleBase } from '@/composables/useModuleBase';
 import { getSourcesForRequests } from "@/api/catalogApi";
@@ -263,6 +280,7 @@ import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDe
 import { RequestStatus, RequestStatusLabels } from "@/constants/enums";
 import ModalNotes from '../notes/ModalNotes.vue';
 import JobBoardsModal from '../../components/agency_request/JobBoardsModal.vue';
+import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterModal.vue';
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
 import Export from '@/components/Export.vue';
@@ -276,6 +294,7 @@ const emit = defineEmits<{
 const router = useRouter();
 const agencyStore = useAgencyStore();
 const { isAccountingManager } = useAccountingAdmin();
+const { isAdministration } = useAdministration();
 
 const { isSalesView, requestBase: requestDetailBase, companyBase: companyDetailBase } = useModuleBase();
 const exportUrl = computed(() =>
@@ -289,6 +308,7 @@ const defaultConfig = {
   showNotesColumn: true
 };
 const showBulkCancelModal = ref(false);
+const showBulkRecruitersModal = ref(false);
 const showJobBoardsModal = ref(false);
 const currentJobBoardsRequest = ref<AgencyRequestListItem | null>(null);
 const availableJobBoards = ref<Source[]>([]);
@@ -476,6 +496,29 @@ function bulkUpdateIsAsap() {
 function onShowBulkCancelModal() {
   quickActionsKey.value++;
   showBulkCancelModal.value = true;
+}
+
+function onShowBulkRecruitersModal() {
+  quickActionsKey.value++;
+  showBulkRecruitersModal.value = true;
+}
+
+function onBulkRecruitersConfirmed(recruiterIds: string[]) {
+  emit('onDataLoading', true);
+  bulkUpdateRecruiters({
+    ids: checkedRows.value.map((cr) => cr.id),
+    recruiterIds
+  })
+    .then(() => {
+      showBulkRecruitersModal.value = false;
+      showAlertSuccess(recruiterIds.length === 0 ? 'Recruiters unassigned' : 'Recruiters assigned');
+      loadRequests();
+    })
+    .catch((error) => {
+      showBulkRecruitersModal.value = false;
+      showAlertError(error);
+      emit('onDataLoading', false);
+    });
 }
 
 

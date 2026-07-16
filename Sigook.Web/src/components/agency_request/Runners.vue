@@ -82,6 +82,10 @@
           <b-dropdown-item aria-role="listitem" @click="openAction(props.row, 'history')">
             View history
           </b-dropdown-item>
+          <b-dropdown-item v-if="props.row.candidateId" aria-role="listitem"
+            @click="showCandidateDetail(props.row.candidateId)">
+            Edit Candidate
+          </b-dropdown-item>
           <b-dropdown-item v-if="props.row.candidateId && !props.row.workerProfileId" aria-role="listitem"
             @click="convertToWorker(props.row)">
             Convert to Worker
@@ -109,6 +113,11 @@
       <runner-history-modal v-if="selectedRunner" :request-id="requestId" :runner-id="selectedRunner.id"
         @updated="loadRunners" @close="showHistory = false" />
     </b-modal>
+
+    <b-modal v-model="showCandidateDetailModal" width="500px">
+      <detail-candidate v-if="candidateDetailId" :candidate-id="candidateDetailId"
+        @onUpdateWorker="onCandidateUpdated" />
+    </b-modal>
   </div>
 </template>
 
@@ -134,6 +143,7 @@ import CreateRunner from '@/components/runner/CreateRunner.vue';
 import RunnerStatusModal from '@/components/runner/RunnerStatusModal.vue';
 import RunnerInterviewModal from '@/components/runner/RunnerInterviewModal.vue';
 import RunnerHistoryModal from '@/components/runner/RunnerHistoryModal.vue';
+import DetailCandidate from '@/components/candidate/DetailCandidate.vue';
 
 const route = useRoute();
 const requestId = route.params.id as string;
@@ -148,6 +158,8 @@ const showCreate = ref(false);
 const showStatus = ref(false);
 const showInterview = ref(false);
 const showHistory = ref(false);
+const showCandidateDetailModal = ref(false);
+const candidateDetailId = ref<string | null>(null);
 const selectedRunner = ref<RunnerListItem | null>(null);
 const statusesSelected = ref<CatalogItem<RunnerStatus>[]>([]);
 
@@ -215,6 +227,16 @@ function openAction(row: RunnerListItem, action: 'status' | 'interview' | 'histo
   if (action === 'status') showStatus.value = true;
   else if (action === 'interview') showInterview.value = true;
   else showHistory.value = true;
+}
+
+function showCandidateDetail(candidateId: string) {
+  candidateDetailId.value = candidateId;
+  showCandidateDetailModal.value = true;
+}
+
+function onCandidateUpdated() {
+  showCandidateDetailModal.value = false;
+  loadRunners();
 }
 
 function loadRunners() {

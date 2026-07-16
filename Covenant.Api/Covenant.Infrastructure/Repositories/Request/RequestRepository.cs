@@ -1071,6 +1071,18 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 && rr.WorkDate == workDate.Date
                 && rr.Request.AgencyId == agencyId);
 
+    public async Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt)
+    {
+        var requestIdList = requestIds.ToList();
+        await context.RequestRecruiter.Where(r => requestIdList.Contains(r.RequestId)).ExecuteDeleteAsync();
+        var recruiterIdList = recruiterIds?.ToList() ?? [];
+        if (recruiterIdList.Count == 0) return;
+        var entities = requestIdList
+            .SelectMany(rid => recruiterIdList.Select(recId => new RequestRecruiter(rid, recId, createdAt)))
+            .ToList();
+        await context.RequestRecruiter.AddRangeAsync(entities);
+    }
+
     public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => context.RequestSkill.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
 
     public async Task<IEnumerable<SkillModel>> GetSkills(Guid requestId) =>

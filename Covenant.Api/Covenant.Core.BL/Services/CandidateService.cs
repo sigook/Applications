@@ -140,10 +140,8 @@ public class CandidateService : ICandidateService
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
         if (candidate == null) return Result.Fail("Candidate not found");
-        if (string.IsNullOrWhiteSpace(candidate.Email))
-            return Result.Fail("The candidate must have an email to be converted to a worker");
-        if (candidate.Dnu)
-            return Result.Fail("A candidate marked as Do Not Use cannot be converted to a worker");
+        var canConvert = candidate.CanConvertToWorker();
+        if (!canConvert) return canConvert;
         var worker = await candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
         var agency = await agencyRepository.GetAgencyMasterByLocation(worker.Location.City);
         var profile = new WorkerProfile();
@@ -303,12 +301,20 @@ public class CandidateService : ICandidateService
         candidate.ResidencyStatus = model.ResidencyStatus;
         candidate.GenderId = model.Gender?.Id;
         candidate.HasVehicle = model.HasVehicle;
+        candidate.SourceId = model.SourceId;
         candidate.Dnu = model.Dnu;
         if (!string.IsNullOrEmpty(model.PostalCode))
         {
             var rPostalCode = CvnPostalCode.Create(model.PostalCode);
             if (!rPostalCode) return rPostalCode;
             candidate.AddPostalCode(rPostalCode.Value);
+        }
+        var phone = model.PhoneNumbers?.FirstOrDefault()?.PhoneNumber;
+        if (!string.IsNullOrWhiteSpace(phone))
+        {
+            candidate.PhoneNumbers.Clear();
+            var rPhone = candidate.AddPhone(phone);
+            if (!rPhone) return Result.Fail(rPhone.Errors);
         }
         await candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
