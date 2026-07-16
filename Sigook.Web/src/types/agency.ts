@@ -353,6 +353,10 @@ export interface AgencyCompanyJobPosition {
   displayShift?: string;
 }
 
+export interface AgencyCompanyJobPositionFilter {
+  role?: string;
+}
+
 export interface VaccinationRequiredModel {
   vaccinationRequired: boolean;
   vaccinationRequiredComments?: string;

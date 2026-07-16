@@ -14,6 +14,7 @@ namespace Covenant.Common.Repositories.Company
         void Update<T>(T entity) where T : class;
         Task<CompanyProfileJobPositionRate> GetJobPosition(Guid id);
         Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression);
+        Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter);
         Task<CompanyProfileJobPositionRateModel> GetJobPositionDetail(Guid id);
         Task<Guid> GetCompanyId(Guid companyProfileId);
         Task<List<CompanyProfileAgencyListModel>> GetCompanyProfiles(Guid companyId);

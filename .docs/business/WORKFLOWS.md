@@ -273,6 +273,7 @@ PUT api/agency/requests/{requestId}/Runners/{id}/Status              → RunnerS
 - Any status can move to any other (no fixed order) **except** a `Hired` runner, which is terminal and rejects further changes.
 - Each change appends a row to the status history (previous → new, who, when, comments) — never overwrites.
 - Moving to `Hired` **requires** a `StartDate` (the date the runner would begin working); the transition is rejected without it.
+- Moving to `Hired` **requires the runner to be a worker** (`WorkerProfileId` set); a candidate-only runner is rejected — it must be converted to a worker first (`CandidateService.ConvertToWorker`). Otherwise the hire would never surface in attendance review (which is per worker). The web hides the `Hired` option and shows a warning for candidate runners.
 
 **Pipeline states** (`Covenant.Common/Enums/RunnerStatus.cs`): `SentToClient(1)`, `InterviewScheduled(2)`, `InterviewRescheduled(3)`, `NoLongerAvailable(4)`, `NoShow(5)`, `WaitingForInterviewFeedback(6)`, `WaitingForFinalDecision(7)`, `Rejected(8)`, `InOnboardingProcess(9)`, `Hired(10)`.
 

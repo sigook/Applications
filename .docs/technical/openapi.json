@@ -12230,6 +12230,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "Role",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -30132,6 +30139,10 @@
           "changedBy": {
             "type": "string",
             "format": "uuid"
+          },
+          "changedByEmail": {
+            "type": "string",
+            "nullable": true
           },
           "changedAt": {
             "type": "string",

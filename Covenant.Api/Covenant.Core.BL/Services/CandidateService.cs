@@ -36,6 +36,7 @@ public class CandidateService : ICandidateService
     private readonly IRequestRepository requestRepository;
     private readonly IAgencyRepository agencyRepository;
     private readonly IWorkerRepository workerRepository;
+    private readonly IRunnerRepository runnerRepository;
     private readonly ICandidateAdapter candidateAdapter;
     private readonly IIdentityServerService identityServerService;
     private readonly IDocumentService documentService;
@@ -48,6 +49,7 @@ public class CandidateService : ICandidateService
         IRequestRepository requestRepository,
         IAgencyRepository agencyRepository,
         IWorkerRepository workerRepository,
+        IRunnerRepository runnerRepository,
         ICandidateAdapter candidateAdapter,
         IIdentityServerService identityServerService,
         IDocumentService documentService,
@@ -59,6 +61,7 @@ public class CandidateService : ICandidateService
         this.requestRepository = requestRepository;
         this.agencyRepository = agencyRepository;
         this.workerRepository = workerRepository;
+        this.runnerRepository = runnerRepository;
         this.candidateAdapter = candidateAdapter;
         this.identityServerService = identityServerService;
         this.documentService = documentService;
@@ -136,7 +139,11 @@ public class CandidateService : ICandidateService
     public async Task<Result> ConvertToWorker(Guid id)
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
-        if (candidate == null) return Result.Fail();
+        if (candidate == null) return Result.Fail("Candidate not found");
+        if (string.IsNullOrWhiteSpace(candidate.Email))
+            return Result.Fail("The candidate must have an email to be converted to a worker");
+        if (candidate.Dnu)
+            return Result.Fail("A candidate marked as Do Not Use cannot be converted to a worker");
         var worker = await candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
         var agency = await agencyRepository.GetAgencyMasterByLocation(worker.Location.City);
         var profile = new WorkerProfile();
@@ -193,6 +200,16 @@ public class CandidateService : ICandidateService
                 requestApplicant.WorkerProfileId = profile.Id;
             }
             await workerRepository.SaveChangesAsync();
+        }
+        var runners = await runnerRepository.GetRunners(r => r.CandidateId == id);
+        if (runners.Any())
+        {
+            foreach (var runner in runners)
+            {
+                var convertResult = runner.ConvertCandidateToWorker(profile.Id);
+                if (!convertResult) return Result.Fail(convertResult.Errors);
+            }
+            await runnerRepository.SaveChangesAsync();
         }
         result = await DeleteCandidate(id);
         if (!result) return Result.Fail(result.Errors);

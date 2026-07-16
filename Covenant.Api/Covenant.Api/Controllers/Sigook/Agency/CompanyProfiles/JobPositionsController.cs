@@ -23,10 +23,11 @@ public class JobPositionsController(ICompanyRepository repository, IAgencyServic
 
     /// <summary>Gets all active job positions of the specified company profile.</summary>
     /// <param name="profileId">Identifier of the company profile.</param>
+    /// <param name="filter">Optional filter that matches job positions by name.</param>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<CompanyProfileJobPositionRateModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll([FromRoute] Guid profileId) =>
-        Ok(await repository.GetJobPositions(cpjpr => cpjpr.CompanyProfileId == profileId && !cpjpr.IsDeleted));
+    public async Task<IActionResult> GetAll([FromRoute] Guid profileId, [FromQuery] GetJobPositionsFilter filter) =>
+        Ok(await repository.GetJobPositions(profileId, filter));
 
     /// <summary>Creates a new job position for the specified company profile.</summary>
     /// <param name="profileId">Identifier of the company profile.</param>

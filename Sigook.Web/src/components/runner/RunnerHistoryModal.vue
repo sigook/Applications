@@ -17,7 +17,7 @@
               <span class="status-timeline__dot" :class="statusType(h.newStatus)" />
               <div class="status-timeline__content">
                 <b-tag :type="statusType(h.newStatus)">{{ statusLabel(h.newStatus) }}</b-tag>
-                <span class="fz-2 ml-2 op7">{{ emailName(h.changedBy) }} · {{ dateMonth(h.changedAt) }} {{ dateHHmm(h.changedAt) }}</span>
+                <span class="fz-2 ml-2 op7">{{ h.changedByEmail }} · {{ dateMonth(h.changedAt) }} {{ dateHHmm(h.changedAt) }}</span>
                 <p v-if="h.comments" class="fz-2 mt-1 op7">{{ h.comments }}</p>
               </div>
             </li>
@@ -62,21 +62,6 @@
       <runner-interview-modal :request-id="requestId" :runner-id="runnerId"
         @updated="onInterviewAdded" @close="showAddInterview = false" />
     </b-modal>
-
-    <b-modal v-model="showReschedule" width="460px">
-      <div class="modal-card" style="width: auto">
-        <header class="modal-card-head"><p class="modal-card-title">Reschedule interview</p></header>
-        <section class="modal-card-body" style="min-width: 400px">
-          <b-field label="New date">
-            <b-datetimepicker v-model="rescheduleDate" :mobile-native="false" placeholder="Select date and time" append-to-body />
-          </b-field>
-        </section>
-        <footer class="modal-card-foot">
-          <b-button @click="showReschedule = false">Cancel</b-button>
-          <b-button type="is-primary" :disabled="!rescheduleDate" @click="reschedule">Reschedule</b-button>
-        </footer>
-      </div>
-    </b-modal>
   </div>
 </template>
 
@@ -84,7 +69,8 @@
 import { ref } from 'vue';
 import { getAgencyRunner, rescheduleRunnerInterview } from '@/api/agencyRunnerApi';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import { dateMonth, dateHHmm, emailName } from '@/utils/filters';
+import { getDialog } from '@/utils/buefyProgrammatic';
+import { dateMonth, dateHHmm } from '@/utils/filters';
 import {
   RUNNER_STATUS_LABELS,
   INTERVIEW_TYPE_LABELS,
@@ -108,9 +94,6 @@ const historyOpen = ref(true);
 const interviewsOpen = ref(false);
 
 const showAddInterview = ref(false);
-const showReschedule = ref(false);
-const rescheduleDate = ref<Date | null>(null);
-const rescheduleInterviewId = ref<string | null>(null);
 
 function statusLabel(status: RunnerStatus): string {
   return RUNNER_STATUS_LABELS[status];
@@ -150,27 +133,31 @@ function onInterviewAdded() {
 }
 
 function openReschedule(interviewId: string) {
-  rescheduleInterviewId.value = interviewId;
-  rescheduleDate.value = null;
-  showReschedule.value = true;
-}
-
-function reschedule() {
-  if (!rescheduleDate.value || !rescheduleInterviewId.value) return;
-  isLoading.value = true;
-  rescheduleRunnerInterview(props.requestId, props.runnerId, rescheduleInterviewId.value, {
-    newDate: rescheduleDate.value.toISOString(),
-  })
-    .then(() => {
-      showReschedule.value = false;
-      showAlertSuccess('Interview rescheduled');
-      emit('updated');
-      load();
-    })
-    .catch(err => {
-      isLoading.value = false;
-      showAlertError(err);
-    });
+  getDialog().prompt({
+    title: 'Reschedule interview',
+    message: 'New date and time',
+    inputAttrs: {
+      type: 'datetime-local',
+      required: true,
+    },
+    confirmText: 'Reschedule',
+    onConfirm: (value: string, dialog: { close: () => void }) => {
+      isLoading.value = true;
+      rescheduleRunnerInterview(props.requestId, props.runnerId, interviewId, {
+        newDate: new Date(value).toISOString(),
+      })
+        .then(() => {
+          dialog.close();
+          showAlertSuccess('Interview rescheduled');
+          emit('updated');
+          load();
+        })
+        .catch(err => {
+          isLoading.value = false;
+          showAlertError(err);
+        });
+    },
+  });
 }
 
 load();

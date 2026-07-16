@@ -82,6 +82,10 @@
           <b-dropdown-item aria-role="listitem" @click="openAction(props.row, 'history')">
             View history
           </b-dropdown-item>
+          <b-dropdown-item v-if="props.row.candidateId && !props.row.workerProfileId" aria-role="listitem"
+            @click="convertToWorker(props.row)">
+            Convert to Worker
+          </b-dropdown-item>
         </b-dropdown>
       </b-table-column>
     </b-table>
@@ -92,7 +96,8 @@
 
     <b-modal v-model="showStatus" width="520px">
       <runner-status-modal v-if="selectedRunner" :request-id="requestId" :runner-id="selectedRunner.id"
-        :current-status="selectedRunner.status" @updated="loadRunners" @close="showStatus = false" />
+        :current-status="selectedRunner.status" :is-candidate="!!selectedRunner.candidateId" @updated="loadRunners"
+        @close="showStatus = false" />
     </b-modal>
 
     <b-modal v-model="showInterview" width="540px">
@@ -113,6 +118,7 @@ import { useRoute } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
 import { dateMonth } from '@/utils/filters';
 import { getAgencyRunners, createAgencyRunner } from '@/api/agencyRunnerApi';
+import { convertCandidateToWorker } from '@/api/agencyCandidateApi';
 import {
   RUNNER_STATUSES,
   RUNNER_STATUS_LABELS,
@@ -221,6 +227,17 @@ function loadRunners() {
     .catch(err => showAlertError(err))
     .finally(() => {
       isLoading.value = false;
+    });
+}
+
+function convertToWorker(row: RunnerListItem) {
+  if (!row.candidateId) return;
+  isLoading.value = true;
+  convertCandidateToWorker(row.candidateId)
+    .then(() => loadRunners())
+    .catch(err => {
+      isLoading.value = false;
+      showAlertError(err);
     });
 }
 

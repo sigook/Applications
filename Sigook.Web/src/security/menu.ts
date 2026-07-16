@@ -22,14 +22,14 @@ export default {
         case roles.superAdmin:
         case roles.admin:
           result.push(this.recruitingMenu());
-          result.push(this.salesMenu(agency));
+          result.push(this.salesMenu(agency, true));
           result.push(this.accountingMenu(agency));
           break;
         case roles.recruiting:
           result.push(this.recruitingMenu());
           break;
         case roles.sales:
-          result.push(this.salesMenu(agency));
+          result.push(this.salesMenu(agency, false));
           break;
         case roles.company:
           result.push(...this.companyMenu());
@@ -83,7 +83,7 @@ export default {
       ],
     };
   },
-  salesMenu(agency: AgencyDetail): MenuGroup {
+  salesMenu(agency: AgencyDetail, isAdmin: boolean): MenuGroup {
     const sales: MenuGroup = {
       label: "Sales",
       icon: "cart-outline",
@@ -100,7 +100,7 @@ export default {
         },
       ],
     };
-    if (agency.masterAgency) {
+    if (isAdmin && agency.masterAgency) {
       sales.items.push({
         to: "/sales/agencies",
         icon: "handshake-outline",

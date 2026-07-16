@@ -49,6 +49,18 @@ namespace Covenant.Infrastructure.Repositories.Company
             return locations;
         }
 
+        public Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter)
+        {
+            var predicate = PredicateBuilder.New<CompanyProfileJobPositionRate>(cpjpr =>
+                cpjpr.CompanyProfileId == companyProfileId && !cpjpr.IsDeleted);
+            if (!string.IsNullOrWhiteSpace(filter.Role))
+            {
+                var role = filter.Role.ToLower();
+                predicate = predicate.And(cpjpr => cpjpr.JobPosition.ToLower().Contains(role));
+            }
+            return GetJobPositions(predicate);
+        }
+
         public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression)
         {
             var query = _context.CompanyProfileJobPositionRate.Where(expression)
