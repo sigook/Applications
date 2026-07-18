@@ -4,7 +4,9 @@ How `PayStubService.GeneratePayStubForWorker` builds a pay stub from approved ti
 
 ## Entry Point
 
-`PayStubService.Generate(agencyIds, workerIds)` iterates over each worker and calls `GeneratePayStubForWorker(agencyIds, workerId)` for each one. A `SemaphoreSlim` ensures only one generation runs at a time.
+`PayStubService.Generate(agencyIds, workerIds)` iterates sequentially (plain `foreach`, no locking) over each worker and calls `GeneratePayStubForWorker(agencyIds, workerId)` for each one.
+
+A second, independent entry point exists: `PayStubService.CreateManualPayStub` — builds a pay stub from manually entered items (supports a `PayVacations` flag and an explicit `Vacations` item type) instead of approved timesheets.
 
 **Key file:** `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs`
 

@@ -14,6 +14,7 @@ public class RunnerStatusHistory
     public RunnerStatus? PreviousStatus { get; private set; }
     public RunnerStatus NewStatus { get; private set; }
     public Guid ChangedBy { get; private set; }
+    public User ChangedByUser { get; private set; }
     public DateTime ChangedAt { get; private set; } = DateTime.Now;
     public string Comments { get; private set; }
 

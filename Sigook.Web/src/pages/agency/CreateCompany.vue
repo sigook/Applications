@@ -12,7 +12,7 @@
               @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
           </div>
         </div>
-        <div v-if="billingAdmin.isPayrollManager" class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div v-if="isAccountingManager" class="col-sm-12 col-md-12 col-lg-12 col-padding">
           <b-field>
             <b-checkbox v-model="company.requiresPermissionToSeeRequests">
               Requires permission to see requests?
@@ -144,18 +144,18 @@ import UploadImage from '@/components/PreviewImage.vue';
 import PhoneInput from '@/components/PhoneInput.vue';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { usePubSub } from '@/composables/usePubSub';
 import { getDialog } from '@/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/api/catalogApi';
 import { getAgencyPersonnel } from '@/api/agencyApi';
 import { createAgencyCompany, updateAgencyCompany } from '@/api/agencyCompanyApi';
+import { useModuleBase } from '@/composables/useModuleBase';
 
 const route = useRoute();
 const router = useRouter();
-const companyBase = computed(() =>
-  route.path.startsWith('/sales') ? '/sales/companies' : '/recruiting/companies');
-const billingAdmin = useBillingAdmin();
+const { companyBase } = useModuleBase();
+const { isAccountingManager } = useAccountingAdmin();
 const pubSub = usePubSub();
 
 const numericExt = yup

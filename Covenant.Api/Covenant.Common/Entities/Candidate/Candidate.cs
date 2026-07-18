@@ -43,6 +43,17 @@ namespace Covenant.Common.Entities.Candidate
 
         public void AddEmail(CvnEmail email) => Email = email.Email;
 
+        public Result CanConvertToWorker()
+        {
+            if (string.IsNullOrWhiteSpace(Email))
+                return Result.Fail("The candidate must have an email to be converted to a worker");
+            if (!PhoneNumbers.Any())
+                return Result.Fail("The candidate must have a phone number to be converted to a worker");
+            if (Dnu)
+                return Result.Fail("A candidate marked as Do Not Use cannot be converted to a worker");
+            return Result.Ok();
+        }
+
         public void AddPostalCode(CvnPostalCode postalCode) => PostalCode = postalCode.PostalCode;
 
         public Result<CandidateSkill> AddSkill(string skill)

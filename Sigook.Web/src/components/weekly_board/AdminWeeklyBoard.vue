@@ -80,6 +80,7 @@
                 </div>
                 <div class="card-position">{{ assignment.jobTitle }}</div>
                 <div class="card-company">{{ assignment.companyName }}</div>
+                <div v-if="locationLabel(assignment)" class="card-location">{{ locationLabel(assignment) }}</div>
                 <div class="card-sent">{{ assignment.workersSent }} sent</div>
               </div>
               <b-button class="add-card" type="is-ghost" expanded icon-left="plus"
@@ -107,6 +108,10 @@
               }}</strong></div>
           <div class="detail-row"><b-icon icon="calendar" size="is-small"></b-icon>
             {{ formatDetailDate(detail.workDate) }}
+          </div>
+          <div v-if="locationLabel(detail)" class="detail-row"><b-icon icon="map-marker-outline"
+              size="is-small"></b-icon>
+            {{ locationLabel(detail) }}
           </div>
           <div class="detail-row">
             <b-tag :type="statusTagType(detail.status)" rounded>{{ statusLabel(detail.status) }}</b-tag>
@@ -145,6 +150,7 @@ import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { getDialog } from '@/utils/buefyProgrammatic';
 import { getWeeklyBoard, assignRecruiters, unassignRecruiter, moveAssignment, getRequestDispatches } from '@/api/weeklyBoardApi';
 import { isDirectHiring } from '@/utils/directHiring';
+import { locationLabel } from '@/utils/locationLabel';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import type {
   WeeklyBoard,
@@ -542,6 +548,11 @@ watch(range, loadBoard, { immediate: true });
       font-size: 0.8rem;
       font-weight: 600;
       color: $grey-dark;
+    }
+
+    .card-location {
+      font-size: 0.75rem;
+      color: $grey-light;
     }
 
     .card-sent {

@@ -96,6 +96,7 @@ export interface RunnerStatusHistoryItem {
   previousStatus?: RunnerStatus | null;
   newStatus: RunnerStatus;
   changedBy?: string;
+  changedByEmail?: string;
   changedAt: string;
   comments?: string;
 }

@@ -1,4 +1,5 @@
 ﻿using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Agency;
@@ -100,6 +101,11 @@ public class AgencyService : IAgencyService
             return companyProfileValidation.ToResultFailure<Guid>();
         }
 
+        if (identityServerService.IsSales())
+        {
+            model.SalesRepresentativeId = identityServerService.GetAgencyPersonnelId();
+        }
+
         var agencyId = identityServerService.GetAgencyId();
 
         var rFullName = CompanyName.Create(model.FullName ?? model.BusinessName);
@@ -120,7 +126,8 @@ public class AgencyService : IAgencyService
         {
             Email = model.Email,
             Password = model.Password,
-            UserType = UserType.Company
+            UserType = UserType.Company,
+            Role = CovenantConstants.Role.Company
         });
 
         var createdBy = identityServerService.GetNickname();
@@ -522,7 +529,7 @@ public class AgencyService : IAgencyService
                 var existingUser = await userRepository.GetUserByEmail(email.Value);
                 if (existingUser != null)
                 {
-                    var updateRole = new UpdateRoleModel { Id = currentUserId, UserType = UserType.Company };
+                    var updateRole = new UpdateRoleModel { Id = currentUserId, Role = CovenantConstants.Role.Company };
                     var roleUpdated = await identityServerService.UpdateUserRole(updateRole);
                     if (roleUpdated)
                     {
@@ -582,8 +589,17 @@ public class AgencyService : IAgencyService
         return Result.Ok();
     }
 
+    public string[] GetAssignableRoles() =>
+        identityServerService.IsSuperAdmin()
+            ? CovenantConstants.Role.SuperAdminAssignable
+            : CovenantConstants.Role.AgencyAssignable;
+
     public async Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model, Guid? agencyId = null)
     {
+        if (!GetAssignableRoles().Contains(model.Role))
+        {
+            return Result.Fail("The selected role cannot be assigned");
+        }
         var email = CvnEmail.Create(model.Email);
         if (email)
         {
@@ -596,7 +612,8 @@ public class AgencyService : IAgencyService
                 {
                     AgencyId = agencyId,
                     Email = email.Value,
-                    UserType = UserType.AgencyPersonnel
+                    UserType = UserType.AgencyPersonnel,
+                    Role = model.Role
                 });
                 if (newUser)
                 {
@@ -640,6 +657,7 @@ public class AgencyService : IAgencyService
             {
                 Email = model.Email,
                 UserType = UserType.Agency,
+                Role = CovenantConstants.Role.Admin,
                 AgencyId = agency.Id
             });
             if (user)

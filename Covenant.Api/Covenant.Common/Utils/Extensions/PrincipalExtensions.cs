@@ -9,13 +9,17 @@ public static class PrincipalExtensions
     public static bool IsCompanyUser(this IPrincipal user) =>
         user.IsInRole(CovenantConstants.Role.CompanyUser);
 
-    private static bool IsAgencyPersonnel(this IPrincipal user) =>
-        user.IsInRole(CovenantConstants.Role.AgencyPersonnel);
+    public static bool IsAgencyStaff(this IPrincipal user) =>
+        CovenantConstants.Role.AgencyStaff.Any(user.IsInRole);
 
-    public static bool IsPayrollManager(this IPrincipal user)
-    {
-        return user.IsInRole("payroll") || user.IsInRole("admin");
-    }
+    public static bool IsAccountingManager(this IPrincipal user) =>
+        CovenantConstants.Role.Accounting.Any(user.IsInRole);
+
+    public static bool IsSales(this IPrincipal user) =>
+        user.IsInRole(CovenantConstants.Role.Sales);
+
+    public static bool IsSuperAdmin(this IPrincipal user) =>
+        user.IsInRole(CovenantConstants.Role.SuperAdmin);
 
     public static Guid GetCompanyId(this ClaimsPrincipal user)
     {
@@ -29,7 +33,7 @@ public static class PrincipalExtensions
 
     public static Guid GetAgencyId(this ClaimsPrincipal user)
     {
-        string sub = user.IsAgencyPersonnel()
+        string sub = user.IsAgencyStaff()
             ? user.FindFirst(CovenantConstants.AgencyId)?.Value
             : user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(sub)) return Guid.Empty;
@@ -37,9 +41,18 @@ public static class PrincipalExtensions
         return id;
     }
 
+    public static Guid GetAgencyPersonnelId(this ClaimsPrincipal user)
+    {
+        if (!user.IsAgencyStaff()) return Guid.Empty;
+        string id = user.FindFirst(CovenantConstants.AgencyPersonnelId)?.Value;
+        if (string.IsNullOrEmpty(id)) return Guid.Empty;
+        Guid.TryParse(id, out Guid personnelId);
+        return personnelId;
+    }
+
     public static List<Guid> GetAgencyIds(this ClaimsPrincipal user)
     {
-        if (!user.IsAgencyPersonnel())
+        if (!user.IsAgencyStaff())
         {
             return new List<Guid>();
         }

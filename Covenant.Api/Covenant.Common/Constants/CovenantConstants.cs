@@ -6,14 +6,31 @@ public static class CovenantConstants
     public const string CompanyId = "companyId";
     public const string AgencyId = "agencyId";
     public const string AgencyIds = "agencyIds";
+    public const string AgencyPersonnelId = "agencyPersonnelId";
 
     public static class Role
     {
+        public const string SuperAdmin = "superadmin";
+        public const string Admin = "admin";
+        public const string Recruiting = "recruiting";
+        public const string Sales = "sales";
         public const string Company = "company";
         public const string CompanyUser = "company.user";
-        public const string AgencyPersonnel = "agency.personnel";
         public const string Worker = "worker";
-        public const string Agency = "agency";
+
+        public static readonly string[] RecruitingAccess = [SuperAdmin, Admin, Recruiting];
+
+        public static readonly string[] AgencyStaff = [.. RecruitingAccess, Sales];
+
+        public static readonly string[] SalesAccess = [SuperAdmin, Admin, Sales];
+
+        public static readonly string[] Accounting = [SuperAdmin, Admin];
+
+        public static readonly string[] Administration = [SuperAdmin, Admin];
+
+        public static readonly string[] AgencyAssignable = [Admin, Recruiting, Sales];
+
+        public static readonly string[] SuperAdminAssignable = [SuperAdmin, .. AgencyAssignable];
     }
 
     public static class Validation

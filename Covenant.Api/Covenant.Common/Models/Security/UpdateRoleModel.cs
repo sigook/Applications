@@ -1,8 +1,6 @@
-﻿using Covenant.Common.Enums;
-
-namespace Covenant.Common.Models.Security;
+﻿namespace Covenant.Common.Models.Security;
 
 public class UpdateRoleModel : IdModel
 {
-    public UserType UserType { get; set; }
+    public string Role { get; set; }
 }

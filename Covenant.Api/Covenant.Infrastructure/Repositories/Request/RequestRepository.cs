@@ -47,6 +47,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             requests = requests.Where(r => r.CompanyId == filter.CompanyId.Value);
         else
             requests = requests.Where(r => r.AgencyId == agencyId);
+        if (filter.SalesPersonnelId.HasValue)
+        {
+            requests = requests.Where(r => context.RequestComissions
+                .Any(rc => rc.RequestId == r.Id && rc.AgencyPersonnelId == filter.SalesPersonnelId.Value));
+        }
         if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
         {
             var recruiterTerm = filter.DisplayRecruiters.ToLower();
@@ -980,6 +985,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    NumberId = rr.Request.NumberId,
                    CompanyName = cp.BusinessName,
                    JobTitle = rr.Request.JobTitle,
+                   City = rr.Request.JobLocation.City.Value,
+                   ProvinceCode = rr.Request.JobLocation.City.Province.Code,
                    WorkDate = rr.WorkDate.Value,
                    Status = rr.Request.Status,
                    IsAsap = rr.Request.IsAsap,
@@ -1038,6 +1045,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    NumberId = rr.Request.NumberId,
                    CompanyName = cp.BusinessName,
                    JobTitle = rr.Request.JobTitle,
+                   City = rr.Request.JobLocation.City.Value,
+                   ProvinceCode = rr.Request.JobLocation.City.Province.Code,
                    WorkDate = rr.WorkDate.Value,
                    Status = rr.Request.Status,
                    IsAsap = rr.Request.IsAsap,
@@ -1061,6 +1070,18 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 && rr.RecruiterId == recruiterId
                 && rr.WorkDate == workDate.Date
                 && rr.Request.AgencyId == agencyId);
+
+    public async Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt)
+    {
+        var requestIdList = requestIds.ToList();
+        await context.RequestRecruiter.Where(r => requestIdList.Contains(r.RequestId)).ExecuteDeleteAsync();
+        var recruiterIdList = recruiterIds?.ToList() ?? [];
+        if (recruiterIdList.Count == 0) return;
+        var entities = requestIdList
+            .SelectMany(rid => recruiterIdList.Select(recId => new RequestRecruiter(rid, recId, createdAt)))
+            .ToList();
+        await context.RequestRecruiter.AddRangeAsync(entities);
+    }
 
     public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => context.RequestSkill.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
 

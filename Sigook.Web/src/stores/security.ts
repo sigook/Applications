@@ -8,6 +8,8 @@ interface SecurityState {
   isReady: boolean;
 }
 
+let silentRenewPromise: Promise<UserProfile | null> | null = null;
+
 export const useSecurityStore = defineStore('security', {
   state: (): SecurityState => ({
     userRoles: [],
@@ -30,9 +32,20 @@ export const useSecurityStore = defineStore('security', {
     async getUser(): Promise<UserProfile | null> {
       try {
         const current = await mgr.getUser();
-        if (!current || current.expired) {
+        if (!current) {
           if (this.user) this.setUser(null);
           return null;
+        }
+        if (current.expired) {
+          if (!current.refresh_token) {
+            if (this.user) this.setUser(null);
+            return null;
+          }
+          return await this.silentSignin().catch(async () => {
+            await mgr.removeUser();
+            this.setUser(null);
+            return null;
+          });
         }
         const userProfile = current as unknown as UserProfile;
         if (this.user?.access_token !== userProfile.access_token) {
@@ -54,15 +67,19 @@ export const useSecurityStore = defineStore('security', {
       this.setUser(null);
       await mgr.signoutRedirect();
     },
-    silentSignin(): Promise<void> {
-      return new Promise((resolve, reject) => {
-        mgr.signinSilent()
+    silentSignin(): Promise<UserProfile | null> {
+      if (!silentRenewPromise) {
+        silentRenewPromise = mgr.signinSilent()
           .then((user) => {
-            this.setUser(user as unknown as UserProfile);
-            resolve();
+            const userProfile = user as unknown as UserProfile | null;
+            this.setUser(userProfile);
+            return userProfile;
           })
-          .catch((error: unknown) => reject(error));
-      });
+          .finally(() => {
+            silentRenewPromise = null;
+          });
+      }
+      return silentRenewPromise;
     },
   },
 });

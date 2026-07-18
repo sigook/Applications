@@ -145,6 +145,11 @@ public class AgencyRepository : IAgencyRepository
             .OrderByDescending(o => o.IsPrimary)
             .Select(s => s.AgencyId).FirstOrDefaultAsync();
 
+    public Task<Guid> GetAgencyPersonnelIdForUser(Guid userId) =>
+        _context.AgencyPersonnel.Where(w => w.UserId == userId)
+            .OrderByDescending(o => o.IsPrimary)
+            .Select(s => s.Id).FirstOrDefaultAsync();
+
     public async Task<List<Guid>> GetAgencyIdsForUser(Guid userId)
     {
         // Get the user's primary agency ID

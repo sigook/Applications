@@ -1,383 +1,103 @@
 # Business Model - Covenant/Sigook Platform
 
-## 🎯 Value Proposition
-
-Covenant/Sigook is an **end-to-end staffing and recruitment platform** that connects temporary staffing agencies with companies that need workers, managing the full lifecycle from recruitment to payment.
-
-### Problem It Solves
-
-**Manage the complete temporary/permanent staffing flow including:**
-- ✅ Worker registration and certification
-- ✅ Matching workers with requests
-- ✅ Schedule and timesheet management with punch card
-- ✅ Payroll processing with complex Canadian taxes (CPP, EI, Federal, Provincial)
-- ✅ Automated invoicing for companies
-- ✅ Regulatory compliance (documents, certifications, insurance)
-- ✅ Legal document generation (pay stubs, invoices)
+Covenant/Sigook is a staffing and recruitment platform for the Canadian market. It connects temporary staffing agencies with companies that need workers and manages the full lifecycle: worker recruitment, job matching, time tracking, payroll (CPP, EI, Federal/Provincial taxes), invoicing, and compliance.
 
 ---
 
-## 👥 Main Actors
+## Main Actors
 
 ### 1. AGENCY (Staffing Agency)
 
-**Role:** Intermediary that connects Companies with Workers and manages the entire process.
+Intermediary that connects Companies with Workers and operates the platform: recruits and approves workers, manages client companies, creates and staffs requests, approves timesheets, runs payroll, and bills companies.
 
-**Agency Types:**
-- **Master** — Main agency with sub-agencies
-- **Regular** — Standard independent agency
-- **BusinessPartner** — Business partner with limited access
+**Agency types** (`Covenant.Common/Enums/AgencyType.cs`):
 
-**Responsibilities:**
-- Recruit and approve Workers
-- Manage Companies (clients)
-- Create and assign requests
-- Approve timesheets
-- Process payroll for workers
-- Bill companies
-- Maintain regulatory compliance
+| Type | Value | Meaning |
+|------|-------|---------|
+| `Master` | 1 | Main agency with sub-agencies |
+| `Regular` | 2 | Standard independent agency |
+| `BusinessPartner` | 3 | Business partner with limited access |
 
-**Structure:**
-- Has physical locations (AgencyLocation) with billing address
-- Has internal personnel (AgencyPersonnel):
-  - Recruiters
-  - Sales Representatives
-  - Account Managers
-- Has BusinessNumber, HstNumber (tax registration)
+An Agency has physical locations (`AgencyLocation`, with the billing address), internal personnel (`AgencyPersonnel`), and tax registration data (`BusinessNumber`, `HstNumber`).
 
----
+There is no "agency" role anymore: agency staff authenticate with one of the platform roles below (`admin`, `recruiting`, `sales`), scoped to their agency.
 
 ### 2. COMPANY (Client)
 
-**Role:** Agency client that needs temporary or permanent staff.
+Agency client that needs temporary or permanent staff. Defines job positions with rates, creates requests, and receives invoices.
 
-**Status Pipeline:**
-```
-Lead → Potential → Prospect → Quoted → Client → Blocked/Inactive
-```
-
-**Responsibilities:**
-- Define job positions with rates
-- Create requests
-- Review and approve candidates
-- Review timesheets (optional)
-- Receive billing for services
-
-**Structure:**
-- Has a profile (CompanyProfile) managed by an Agency
-- Multiple locations (CompanyProfileLocation)
-- Job positions with defined rates (CompanyProfileJobPositionRate):
-  - **WorkerRate** — What is paid to the worker
-  - **AgencyRate** — What the agency charges (includes markup)
-- Contacts (CompanyProfileContactPerson)
-- Internal users (CompanyUser) to manage requests
-
-**Key data:**
-- BusinessName, DbaName
-- BusinessNumber, HstNumber
-- Billing address and shipping addresses
-- RequiresPermissionToSeeRequests (access control)
-
----
+- Status pipeline (`Covenant.Common/Enums/CompanyStatus.cs`): `Lead(1) → Potential(2) → Prospect(3) → Quoted(4) → Client(5)`, plus `Blocked(6)` / `Inactive(7)`.
+- Structure: `CompanyProfile` (managed by an Agency) with locations (`CompanyProfileLocation`), contacts (`CompanyProfileContactPerson`), internal users (`CompanyUser`), and job positions with rates (`CompanyProfileJobPositionRate`):
+  - **WorkerRate** — what the worker is paid.
+  - **AgencyRate** — what the agency bills the company (includes markup).
 
 ### 3. WORKER
 
-**Role:** Professional looking for temporary or permanent employment through the platform.
+Job seeker using the Flutter mobile app. Entity: `Covenant.Common/Entities/Worker/WorkerProfile.cs`.
 
-**States and Flags:**
-- `ApprovedToWork` — Approved by the agency to work (requires complete documents)
-- `Dnu` (Do Not Use) — Marked as unavailable
-- `IsSubcontractor` — Works as a subcontractor (different tax rules)
-- `IsContractor` — Works as an independent contractor
+Key flags on `WorkerProfile`:
+- `ApprovedToWork` — set by the agency after reviewing documents; gates applying/booking.
+- `Dnu` (Do Not Use) — blacklisted by the agency.
+- `IsSubcontractor` / `IsContractor` — different tax treatment (subcontractor tax-category overrides zero out deductions).
 
-**Responsibilities:**
-- Complete registration with full information
-- Keep documents current (SIN, IDs, licenses, certificates)
-- Apply to requests
-- Complete timesheets (clock in/out)
-- Receive pay stubs
-
-**Profile Structure (WorkerProfile):**
-
-**Personal Information:**
-- FirstName, LastName, BirthDay, Gender
-- SocialInsurance (SIN) with file and expiration date
-- IdentificationNumber1/2 with files (Passport, Driver License, etc.)
-- ProfileImage
-
-**Contact Information:**
-- MobileNumber, Phone, Email
-- Location (Address, City, Province, PostalCode)
-- HasVehicle
-
-**Professional Information:**
-- Skills (multiple skills)
-- Languages (with proficiency level)
-- Licenses (professional licenses with expiration)
-- Certificates (certifications with expiration)
-- JobExperience (work history)
-
-**Availability:**
-- AvailabilityType (FullTime, PartTime, Flexible)
-- AvailabilityTime (available days and hours)
-- LocationPreferences (preferred cities)
-
-**Tax Information:**
-- TaxCategory (FederalCategory, ProvincialCategory) — Claim codes for tax calculation
-- Province — Determines which provincial tax table to use
-
----
+Profile holds personal data (SIN with file + expiry, IDs), contact/location, professional data (skills, languages, licenses, certificates, experience), availability, and tax data (`TaxCategory` claim codes + province, which drive payroll deductions).
 
 ### 4. CANDIDATE
 
-**Role:** Prospect managed by the agency that does NOT yet have a user account in the system.
-
-**Difference from Worker:**
-- **Candidate** — Only exists in the agency's system, no associated User
-- **Worker** — Has an associated User (email, authentication), can use the app
-
-**Transition:**
-```
-Candidate (managed by agency) → Worker (registers in Flutter app)
-```
-
-**Use:**
-- Agency manually registers Candidates
-- Agency tracks and recruits them
-- When the Candidate registers in the system, they become a Worker
+Prospect managed by the agency that does NOT yet have a user account (`Covenant.Common/Entities/Candidate/`). A Candidate exists only in the agency's system; a Worker has an associated User and can use the app. Candidates can be pushed into the recruiting pipeline as Runners (see `WORKFLOWS.md` section 6) and become Workers when they register.
 
 ---
 
-## 🔄 End-to-End Business Flow
+## Authorization Model — 7 Roles
 
-### PHASE 1: SETUP
+Defined in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role`). Role strings are lowercase; always reference the constants, never literals.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│ 1. AGENCY registers COMPANY                             │
-│    - CompanyProfile with BusinessName, locations        │
-│    - Job Positions with rates (worker rate, agency rate)│
-│    - Contact persons and users                          │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 2. WORKER registers via Flutter app                     │
-│    - Personal info, contact, address                    │
-│    - Documents (SIN, IDs, certificates)                 │
-│    - Skills, languages, experience                      │
-│    - Availability (days, hours, locations)              │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 3. AGENCY approves WORKER                               │
-│    - Reviews documents and profile                      │
-│    - Sets ApprovedToWork = true                         │
-│    - Worker can see and apply to jobs                   │
-└─────────────────────────────────────────────────────────┘
-```
+| Role constant | String | Who |
+|---------------|--------|-----|
+| `Role.SuperAdmin` | `superadmin` | Platform owner |
+| `Role.Admin` | `admin` | Agency administrator |
+| `Role.Recruiting` | `recruiting` | Agency recruiter |
+| `Role.Sales` | `sales` | Agency sales rep (data scoped to own companies/requests) |
+| `Role.Company` | `company` | Company main account |
+| `Role.CompanyUser` | `company.user` | Company internal user |
+| `Role.Worker` | `worker` | Worker (mobile app) |
 
-### PHASE 2: ORDER CREATION
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ COMPANY or AGENCY creates REQUEST                       │
-│                                                          │
-│ Key information:                                         │
-│  - JobTitle, Description, Requirements                   │
-│  - WorkersQuantity (how many needed)                    │
-│  - JobLocation (where the work is performed)            │
-│  - JobPositionRate (defines rates)                      │
-│  - Shift (e.g. 7:00 AM - 3:00 PM)                       │
-│  - DurationTerm (LongTerm/ShortTerm)                    │
-│  - EmploymentType (FullTime/PartTime/Contractor)        │
-│  - StartAt, FinishAt (dates)                            │
-│  - Incentive (optional bonus)                           │
-│                                                          │
-│ Status:                                                  │
-│  - Open: Active request with available capacity         │
-│  - Filled: All positions filled                         │
-│  - Cancelled: Cancelled                                 │
-└─────────────────────────────────────────────────────────┘
-```
-
-### PHASE 3: MATCHING AND ASSIGNMENT
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ 1. WORKERS see Requests in Flutter app                  │
-│    GET /api/WorkerRequest/Available                     │
-│    - Filter by city, job type, rate                     │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 2. WORKER applies or AGENCY assigns                     │
-│    POST /api/WorkerRequest/Apply                        │
-│    POST /api/AgencyRequest/{requestId}/Worker           │
-│                                                          │
-│    Creates WORKERREQUEST:                                │
-│     - Status: Booked                                    │
-│     - StartWorking: Start date                          │
-│     - WeekStartWorking: Start week                      │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 3. REQUEST gets filled                                  │
-│    WorkersQuantityWorking >= WorkersQuantity            │
-│    → Status transitions to Filled                       │
-└─────────────────────────────────────────────────────────┘
-```
-
-### PHASE 4: WORK AND TIME TRACKING
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ 1. WORKER does daily Clock In/Out                       │
-│    POST /api/WorkerRequest/{requestId}/TimeSheet        │
-│    - ClockIn: 2026-02-01T07:05:23Z (real time)          │
-│    - ClockInRounded: 2026-02-01T07:00:00Z (rounded)     │
-│    - ClockOut: 2026-02-01T15:08:12Z                     │
-│    - ClockOutRounded: 2026-02-01T15:00:00Z              │
-│                                                          │
-│    Creates one TIMESHEET per day worked                 │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 2. AGENCY approves TIMESHEET                            │
-│    - TimeInApproved: 2026-02-01T07:00:00Z               │
-│    - TimeOutApproved: 2026-02-01T15:00:00Z              │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 3. SYSTEM calculates TIMESHEETTOTAL                     │
-│    - TotalHours = TimeOutApproved - TimeInApproved      │
-│    - RegularHours (first 44 hrs/week)                   │
-│    - OvertimeHours (after 44 hrs)                       │
-│    - NightShiftHours (11 PM - 7 AM)                     │
-│    - HolidayHours (if IsHoliday = true)                 │
-│    - AccumulateWeekHours (weekly sum)                   │
-└─────────────────────────────────────────────────────────┘
-```
-
-### PHASE 5: PAYROLL
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ 1. AGENCY selects workers for payroll                   │
-│    POST /api/v4/Accounting/PayStub                      │
-│    - Worker, PaymentDate, WeekEnding                    │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 2. SYSTEM calculates EARNINGS                           │
-│    - RegularHours × WorkerRate = RegularWage            │
-│    - OvertimeHours × (Rate × 1.5) = OvertimeWage        │
-│    - NightShiftHours × NightShiftRate                   │
-│    - HolidayHours × HolidayRate                         │
-│    - GrossPayment = sum of all wages                    │
-│    - Vacations = GrossPayment × 4% (mandatory in Canada)│
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 3. SYSTEM calculates DEDUCTIONS (see PAYROLL_RULES.md)  │
-│    - CPP (Canada Pension Plan): 5.95%                   │
-│    - EI (Employment Insurance): 1.66%                   │
-│    - FederalTax (lookup tables)                         │
-│    - ProvincialTax (per province)                       │
-│    - TotalDeductions = sum                              │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 4. PAYSTUB GENERATED                                    │
-│    - PayStubNumber: PS-0001-26                          │
-│    - TotalEarnings = GrossPayment + Vacations           │
-│    - TotalPaid = TotalEarnings - TotalDeductions        │
-│    - Generates PDF and sends to Worker                  │
-└─────────────────────────────────────────────────────────┘
-```
-
-### PHASE 6: BILLING
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ 1. AGENCY generates INVOICE for COMPANY                 │
-│    POST /api/v4/Accounting/Invoice                      │
-│    - CompanyProfile, WeekEnding, WorkerRequests         │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 2. SYSTEM calculates INVOICE TOTALS (see BILLING_RULES) │
-│    Per Worker:                                           │
-│     - RegularHours × AgencyRate                         │
-│     - OvertimeHours × (AgencyRate × 1.5)                │
-│     - NightShiftHours × NightShiftRate                  │
-│     - HolidayHours × HolidayRate                        │
-│    SubTotal = sum of all workers                        │
-│    Vacations = SubTotal × 4%                            │
-│    HST/GST = (SubTotal + Vacations) × TaxRate           │
-│    TotalNet = SubTotal + Vacations + HST                │
-└─────────────────────────────────────────────────────────┘
-                           ↓
-┌─────────────────────────────────────────────────────────┐
-│ 3. INVOICE GENERATED                                    │
-│    - InvoiceNumber: AI-0001-26                          │
-│    - InvoiceTotals (per-worker breakdown)               │
-│    - Generates PDF and sends to Company recipients      │
-└─────────────────────────────────────────────────────────┘
-```
+Composite groups in the same file: `RecruitingAccess`, `SalesAccess`, `AgencyStaff`, `Accounting` (superadmin + admin), `AgencyAssignable`. The old `agency` / `agency.personnel` roles were deleted; there is no "Account Manager" role.
 
 ---
 
-## 💰 Revenue Model (Agency)
+## Revenue Model
 
-### Revenue = Markup on Worker Rates
+Agency profit = markup between the two rates on `CompanyProfileJobPositionRate` (copied onto each `Request` as `AgencyRate` / `WorkerRate`):
 
 ```
-AgencyRate - WorkerRate = Agency Profit (Markup)
-
-Example:
-- AgencyRate: $25/hr (charged to the Company)
-- WorkerRate: $18/hr (paid to the Worker)
-- Markup: $7/hr (28% profit margin)
-
-For 40 hours/week:
-- Agency charges Company: $1,000
-- Agency pays Worker: $720
-- Agency profit: $280/week per worker
+AgencyRate ($25/hr billed to Company) − WorkerRate ($18/hr paid to Worker) = $7/hr markup
 ```
 
-### Agency Costs:
-- Payroll processing (CPP, EI employer contributions)
-- Insurance and liability
-- Overhead (staff, office, software)
-- Marketing and recruitment
+Agency costs against that markup: employer CPP/EI contributions, insurance, overhead.
+
+**Direct Hiring:** a Request with `WorkerSalary` set (`Covenant.Common/Entities/Request/Request.cs:60`) is a permanent-placement order — the company hires the worker directly for a salary. These orders change billing and attendance behavior (no punch-card billing; excluded from attendance-review notifications — see `WORKFLOWS.md` section 6).
 
 ---
 
-## 🎯 Competitive Differentiators
+## Business Lifecycle
 
-### 1. Full Automation
-- From job posting to invoice generation
-- Automatic payroll calculations (complex Canadian taxes)
-- Document generation (PDF pay stubs, invoices)
+Details and verified endpoints in `.docs/business/WORKFLOWS.md`:
 
-### 2. Multi-Jurisdiction
-- Canada (CPP, EI, Federal/Provincial taxes)
-- USA (Federal, State, FICA) — prepared for expansion
-- Up-to-date tax tables
+| Phase | Summary | See |
+|-------|---------|-----|
+| Setup | Agency registers Company + job position rates; Worker registers via app; Agency approves | WORKFLOWS.md §1 |
+| Order creation | Company or Agency creates a Request (job order) | WORKFLOWS.md §2 |
+| Matching & assignment | Worker applies or Agency books; Request fills automatically | WORKFLOWS.md §2–3 |
+| Time tracking | Worker clocks in/out; Agency reviews the punch card | WORKFLOWS.md §4 |
+| Payroll & billing | Pay stubs with deductions; invoices with markup | WORKFLOWS.md §5 |
+| Recruiting pipeline | Runners: sent to client → interviews → hired | WORKFLOWS.md §6 |
 
-### 3. Mobile-First for Workers
-- Native Flutter app for iOS/Android
-- Clock in/out with GPS
-- Real-time job search
-- Document upload
+Request state machine (Open/Filled/Cancelled — `RequestStatus` values 1, 3, 4; value 2 intentionally skipped): `.docs/business/REQUEST_STATE_MANAGEMENT.md`.
 
-### 4. Compliance and Tracking
-- Document expiry tracking
-- License/certificate validation
-- Full audit trail
-- Legal document generation
+## Related Documents
 
-### 5. Cloud-Native
-- Azure Storage for documents
-- Azure Service Bus for async processing
-- Scalable and resilient
+- `.docs/business/BILLING_RULES.md` — invoice composition, HST
+- `.docs/business/PAYROLL_RULES.md` / `.docs/business/PAYSTUB_GENERATION.md` — deductions and pay stub flow
+- `.docs/business/TIMESHEET_RULES.md` — hours breakdown (OT, holiday)
+- `.docs/technical/ENTITIES_RELATIONSHIPS.md` — data model

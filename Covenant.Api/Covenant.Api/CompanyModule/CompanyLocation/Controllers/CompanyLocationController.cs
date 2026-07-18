@@ -11,7 +11,7 @@ namespace Covenant.Api.CompanyModule.CompanyLocation.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Produces("application/json")]
-    [Authorize(Policy = "Company")]
+    [Authorize(Policy = PolicyConfiguration.Company)]
     [ServiceFilter(typeof(CompanyIdFilter))]
     public class CompanyLocationController : ControllerBase
     {

@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Entities;
+﻿using Covenant.Common.Constants;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
@@ -33,7 +34,8 @@ public class CompanyAdapter : ICompanyAdapter
         var user = await identityServerService.CreateUser(new CreateUserModel
         {
             Email = model.ContactEmail,
-            UserType = UserType.Company
+            UserType = UserType.Company,
+            Role = CovenantConstants.Role.Company
         });
 
         var createdBy = identityServerService.GetNickname();

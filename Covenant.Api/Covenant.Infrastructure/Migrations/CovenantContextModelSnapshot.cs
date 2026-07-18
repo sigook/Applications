@@ -2925,6 +2925,8 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ChangedBy");
+
                     b.HasIndex("RunnerId");
 
                     b.ToTable("RunnerStatusHistories");
@@ -4383,7 +4385,7 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileContactPerson", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
-                        .WithMany("ContactPersons")
+                        .WithMany("ContactPeople")
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4878,11 +4880,19 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
                 {
+                    b.HasOne("Covenant.Common.Entities.User", "ChangedByUser")
+                        .WithMany()
+                        .HasForeignKey("ChangedBy")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
                         .WithMany("StatusHistory")
                         .HasForeignKey("RunnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ChangedByUser");
 
                     b.Navigation("Runner");
                 });
@@ -5394,7 +5404,7 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
                 {
-                    b.Navigation("ContactPersons");
+                    b.Navigation("ContactPeople");
 
                     b.Navigation("Documents");
 

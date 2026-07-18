@@ -133,6 +133,7 @@ export interface AgencyLocationDetail {
 export interface AgencyPersonnelCreateModel {
   name: string | null;
   email: string | null;
+  role: string | null;
 }
 
 // Item returned by GET /api/AgencyPersonnel
@@ -350,6 +351,10 @@ export interface AgencyCompanyJobPosition {
   createdAt?: string | null;
   createdBy?: string;
   displayShift?: string;
+}
+
+export interface AgencyCompanyJobPositionFilter {
+  role?: string;
 }
 
 export interface VaccinationRequiredModel {
@@ -580,6 +585,11 @@ export interface CancelRequestPayload {
 }
 
 // Payload for PUT /api/AgencyRequest/bulk-cancel. Mirrors BulkRequestCancellation.
+export interface BulkUpdateRecruitersPayload {
+  ids: string[];
+  recruiterIds: string[];
+}
+
 export interface BulkCancelRequestsPayload {
   ids: string[];
   cancellationReasonId: string;

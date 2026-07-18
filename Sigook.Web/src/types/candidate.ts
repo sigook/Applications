@@ -20,6 +20,7 @@ export interface Candidate {
   notesCount: number;
   dnu: boolean;
   source?: string;
+  sourceId?: string | null;
 }
 
 // Document attached to a candidate. Mirrors backend CovenantFileModel.
@@ -76,7 +77,7 @@ export interface CreateCandidateModel {
   gender?: { id: string; value?: string } | null;
   hasVehicle: boolean;
   residencyStatus?: string;
-  source?: string;
+  sourceId?: string | null;
   dnu?: boolean;
   phoneNumbers?: CandidatePhoneNumberModel[];
   skills?: CandidateSkillModel[];

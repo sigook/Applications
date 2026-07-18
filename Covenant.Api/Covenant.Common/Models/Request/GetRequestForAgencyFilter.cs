@@ -35,5 +35,6 @@ namespace Covenant.Common.Models.Request
         public Guid? CompanyId { get; set; }
         public Guid? AgencyId { get; set; }
         public string Filter { get; set; }
+        public Guid? SalesPersonnelId { get; set; }
     }
 }

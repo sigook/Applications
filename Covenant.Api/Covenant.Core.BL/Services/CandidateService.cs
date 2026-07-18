@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Request;
@@ -35,6 +36,7 @@ public class CandidateService : ICandidateService
     private readonly IRequestRepository requestRepository;
     private readonly IAgencyRepository agencyRepository;
     private readonly IWorkerRepository workerRepository;
+    private readonly IRunnerRepository runnerRepository;
     private readonly ICandidateAdapter candidateAdapter;
     private readonly IIdentityServerService identityServerService;
     private readonly IDocumentService documentService;
@@ -47,6 +49,7 @@ public class CandidateService : ICandidateService
         IRequestRepository requestRepository,
         IAgencyRepository agencyRepository,
         IWorkerRepository workerRepository,
+        IRunnerRepository runnerRepository,
         ICandidateAdapter candidateAdapter,
         IIdentityServerService identityServerService,
         IDocumentService documentService,
@@ -58,6 +61,7 @@ public class CandidateService : ICandidateService
         this.requestRepository = requestRepository;
         this.agencyRepository = agencyRepository;
         this.workerRepository = workerRepository;
+        this.runnerRepository = runnerRepository;
         this.candidateAdapter = candidateAdapter;
         this.identityServerService = identityServerService;
         this.documentService = documentService;
@@ -135,7 +139,9 @@ public class CandidateService : ICandidateService
     public async Task<Result> ConvertToWorker(Guid id)
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
-        if (candidate == null) return Result.Fail();
+        if (candidate == null) return Result.Fail("Candidate not found");
+        var canConvert = candidate.CanConvertToWorker();
+        if (!canConvert) return canConvert;
         var worker = await candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
         var agency = await agencyRepository.GetAgencyMasterByLocation(worker.Location.City);
         var profile = new WorkerProfile();
@@ -161,7 +167,8 @@ public class CandidateService : ICandidateService
         var user = await identityServerService.CreateUser(new CreateUserModel
         {
             Email = candidate.Email,
-            UserType = UserType.Worker
+            UserType = UserType.Worker,
+            Role = CovenantConstants.Role.Worker
         });
         if (!user) return Result.Fail(user.Errors);
         profile.Worker = user.Value;
@@ -191,6 +198,16 @@ public class CandidateService : ICandidateService
                 requestApplicant.WorkerProfileId = profile.Id;
             }
             await workerRepository.SaveChangesAsync();
+        }
+        var runners = await runnerRepository.GetRunners(r => r.CandidateId == id);
+        if (runners.Any())
+        {
+            foreach (var runner in runners)
+            {
+                var convertResult = runner.ConvertCandidateToWorker(profile.Id);
+                if (!convertResult) return Result.Fail(convertResult.Errors);
+            }
+            await runnerRepository.SaveChangesAsync();
         }
         result = await DeleteCandidate(id);
         if (!result) return Result.Fail(result.Errors);
@@ -284,12 +301,20 @@ public class CandidateService : ICandidateService
         candidate.ResidencyStatus = model.ResidencyStatus;
         candidate.GenderId = model.Gender?.Id;
         candidate.HasVehicle = model.HasVehicle;
+        candidate.SourceId = model.SourceId;
         candidate.Dnu = model.Dnu;
         if (!string.IsNullOrEmpty(model.PostalCode))
         {
             var rPostalCode = CvnPostalCode.Create(model.PostalCode);
             if (!rPostalCode) return rPostalCode;
             candidate.AddPostalCode(rPostalCode.Value);
+        }
+        var phone = model.PhoneNumbers?.FirstOrDefault()?.PhoneNumber;
+        if (!string.IsNullOrWhiteSpace(phone))
+        {
+            candidate.PhoneNumbers.Clear();
+            var rPhone = candidate.AddPhone(phone);
+            if (!rPhone) return Result.Fail(rPhone.Errors);
         }
         await candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();

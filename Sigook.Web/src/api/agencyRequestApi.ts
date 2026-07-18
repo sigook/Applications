@@ -9,6 +9,7 @@ import type {
   CancelRequestPayload,
   BulkCancelRequestsPayload,
   BulkCancelRequestsResult,
+  BulkUpdateRecruitersPayload,
   AgencyRequestWorkerFilter,
   AgencyRequestWorker,
   BookWorkerModel,
@@ -25,64 +26,71 @@ import type {
   AgencyRequestsPagedResponse,
 } from '@/types/agency';
 
+const requestsUrl = '/api/agency/requests';
+const recruitingRequestsUrl = '/api/agency/recruiting/requests';
+
 // ---------------------------------------------------------------------------
 // Request CRUD
 // ---------------------------------------------------------------------------
 
 export function postAgencyRequest(model: CreateAgencyRequestModel): Promise<AgencyRequestDetail> {
-  return api.post<AgencyRequestDetail>('api/AgencyRequest', model);
+  return api.post<AgencyRequestDetail>(requestsUrl, model);
 }
 
 export function getAgencyRequests(filter: AgencyRequestFilter): Promise<AgencyRequestsPagedResponse> {
-  return api.get<AgencyRequestsPagedResponse>('/api/AgencyRequest', { params: { ...filter } });
+  return api.get<AgencyRequestsPagedResponse>(recruitingRequestsUrl, { params: { ...filter } });
 }
 
 export function getAllAgencyRequests(filter: AgencyRequestFilter): Promise<AgencyRequestListItem[]> {
-  return api.get<AgencyRequestListItem[]>('/api/AgencyRequest/all', { params: { ...filter } });
+  return api.get<AgencyRequestListItem[]>(`${recruitingRequestsUrl}/all`, { params: { ...filter } });
 }
 
 export function getAgencyRequest(id: string): Promise<AgencyRequestDetail> {
-  return api.get<AgencyRequestDetail>(`/api/AgencyRequest/${id}`);
+  return api.get<AgencyRequestDetail>(`${requestsUrl}/${id}`);
 }
 
 export function updateAgencyRequest(requestId: string, model: CreateAgencyRequestModel): Promise<AgencyRequestDetail> {
-  return api.put<AgencyRequestDetail>(`/api/AgencyRequest/${requestId}`, model);
+  return api.put<AgencyRequestDetail>(`${requestsUrl}/${requestId}`, model);
 }
 
 export function cancelAgencyRequest(id: string, payload: CancelRequestPayload): Promise<void> {
-  return api.put(`/api/AgencyRequest/${id}/Cancel`, payload);
+  return api.put(`${requestsUrl}/${id}/Cancel`, payload);
 }
 
 export function bulkCancelRequests(payload: BulkCancelRequestsPayload): Promise<BulkCancelRequestsResult> {
-  return api.put<BulkCancelRequestsResult>('/api/AgencyRequest/bulk-cancel', payload);
+  return api.put<BulkCancelRequestsResult>(`${requestsUrl}/bulk-cancel`, payload);
+}
+
+export function bulkUpdateRecruiters(payload: BulkUpdateRecruitersPayload): Promise<void> {
+  return api.put(`${requestsUrl}/bulk-recruiters`, payload);
 }
 
 export function agencyRequestOpen(id: string): Promise<void> {
-  return api.put(`/api/AgencyRequest/${id}/Open`, id);
+  return api.put(`${requestsUrl}/${id}/Open`, id);
 }
 
 export function agencyRequestSendInvitation(requestId: string): Promise<void> {
-  return api.post(`/api/AgencyRequest/${requestId}/SendInvitation`, undefined, { timeout: 120_000 });
+  return api.post(`${requestsUrl}/${requestId}/SendInvitation`, undefined, { timeout: 120_000 });
 }
 
 export function updateAgencyRequestIsAsap(requestId: string): Promise<void> {
-  return api.put(`/api/AgencyRequest/${requestId}/IsAsap`);
+  return api.put(`${requestsUrl}/${requestId}/IsAsap`);
 }
 
 export function updateAgencyPunchCardVisibilityStatusInApp(requestId: string): Promise<void> {
-  return api.put(`/api/AgencyRequest/${requestId}/PunchCardVisibilityStatusInApp`);
+  return api.put(`${requestsUrl}/${requestId}/PunchCardVisibilityStatusInApp`);
 }
 
 export function updateAgencyRequestShift(requestId: string, model: RequestShiftModel): Promise<{ id: string; displayShift?: string }> {
-  return api.put<{ id: string; displayShift?: string }>(`/api/AgencyRequest/${requestId}/Shift`, model);
+  return api.put<{ id: string; displayShift?: string }>(`${requestsUrl}/${requestId}/Shift`, model);
 }
 
 export function increaseWorkersQuantityByOne(requestId: string): Promise<void> {
-  return api.put(`/api/AgencyRequest/${requestId}/IncreaseWorkersQuantityByOne`);
+  return api.put(`${requestsUrl}/${requestId}/IncreaseWorkersQuantityByOne`);
 }
 
 export function reduceWorkersQuantityByOne(requestId: string): Promise<void> {
-  return api.put(`api/AgencyRequest/${requestId}/ReduceWorkersQuantityByOne`);
+  return api.put(`${requestsUrl}/${requestId}/ReduceWorkersQuantityByOne`);
 }
 
 // ---------------------------------------------------------------------------
@@ -90,19 +98,19 @@ export function reduceWorkersQuantityByOne(requestId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 
 export function getAgencyRequestsWorkers(filter: AgencyRequestWorkerFilter): Promise<PaginatedList<AgencyRequestWorker>> {
-  return api.get<PaginatedList<AgencyRequestWorker>>(`/api/AgencyRequest/${filter.requestId}/Worker`, { params: { ...filter } });
+  return api.get<PaginatedList<AgencyRequestWorker>>(`${requestsUrl}/${filter.requestId}/Workers`, { params: { ...filter } });
 }
 
 export function bookAgencyRequestWorker(requestId: string, workerId: string, model: BookWorkerModel): Promise<{ id: string }> {
-  return api.post<{ id: string }>(`/api/AgencyRequest/${requestId}/Worker/${workerId}/Book`, model);
+  return api.post<{ id: string }>(`${requestsUrl}/${requestId}/Workers/${workerId}/Book`, model);
 }
 
 export function updateAgencyRequestWorkerStartDate(requestId: string, id: string, model: BookWorkerModel): Promise<void> {
-  return api.put(`api/AgencyRequest/${requestId}/Worker/${id}`, model);
+  return api.put(`${requestsUrl}/${requestId}/Workers/${id}`, model);
 }
 
 export function rejectAgencyRequestWorker(requestId: string, workerId: string, model: RejectWorkerModel): Promise<void> {
-  return api.put(`/api/AgencyRequest/${requestId}/Worker/${workerId}/Reject`, model);
+  return api.put(`${requestsUrl}/${requestId}/Workers/${workerId}/Reject`, model);
 }
 
 // ---------------------------------------------------------------------------
@@ -110,23 +118,23 @@ export function rejectAgencyRequestWorker(requestId: string, workerId: string, m
 // ---------------------------------------------------------------------------
 
 export function searchAgencyRequestApplicants(requestId: string, searchTerm: string): Promise<ApplicantSearchResult[]> {
-  return api.get<ApplicantSearchResult[]>(`/api/AgencyRequest/${requestId}/Applicant/Search`, { params: { searchTerm } });
+  return api.get<ApplicantSearchResult[]>(`${requestsUrl}/${requestId}/Applicants/Search`, { params: { searchTerm } });
 }
 
 export function getAgencyRequestApplicant(filter: AgencyRequestApplicantFilter): Promise<PaginatedList<AgencyRequestApplicant>> {
-  return api.get<PaginatedList<AgencyRequestApplicant>>(`/api/AgencyRequest/${filter.requestId}/Applicant`, { params: { ...filter } });
+  return api.get<PaginatedList<AgencyRequestApplicant>>(`${requestsUrl}/${filter.requestId}/Applicants`, { params: { ...filter } });
 }
 
 export function postAgencyRequestApplicant(requestId: string, model: CreateRequestApplicantModel): Promise<AgencyRequestApplicant> {
-  return api.post<AgencyRequestApplicant>(`/api/AgencyRequest/${requestId}/Applicant`, model);
+  return api.post<AgencyRequestApplicant>(`${requestsUrl}/${requestId}/Applicants`, model);
 }
 
 export function deleteAgencyRequestApplicant(requestId: string, id: string): Promise<void> {
-  return api.del(`/api/AgencyRequest/${requestId}/Applicant/${id}`);
+  return api.del(`${requestsUrl}/${requestId}/Applicants/${id}`);
 }
 
 export function updateAgencyRequestApplicant(requestId: string, id: string, model: UpdateApplicantCommentsPayload): Promise<void> {
-  return api.put(`/api/AgencyRequest/${requestId}/Applicant/${id}`, model);
+  return api.put(`${requestsUrl}/${requestId}/Applicants/${id}`, model);
 }
 
 // ---------------------------------------------------------------------------
@@ -134,27 +142,27 @@ export function updateAgencyRequestApplicant(requestId: string, id: string, mode
 // ---------------------------------------------------------------------------
 
 export function getAgencyRequestRequestedBy(requestId: string): Promise<PaginatedList<AgencyRequestPersonItem>> {
-  return api.get<PaginatedList<AgencyRequestPersonItem>>(`/api/AgencyRequest/${requestId}/RequestedBy`);
+  return api.get<PaginatedList<AgencyRequestPersonItem>>(`${requestsUrl}/${requestId}/RequestedBy`);
 }
 
 export function postAgencyRequestRequestedBy(requestId: string, contactPersonId: string): Promise<void> {
-  return api.post(`/api/AgencyRequest/${requestId}/RequestedBy/${contactPersonId}`);
+  return api.post(`${requestsUrl}/${requestId}/RequestedBy/${contactPersonId}`);
 }
 
 export function deleteAgencyRequestRequestedBy(requestId: string, contactPersonId: string): Promise<void> {
-  return api.del(`/api/AgencyRequest/${requestId}/RequestedBy/${contactPersonId}`);
+  return api.del(`${requestsUrl}/${requestId}/RequestedBy/${contactPersonId}`);
 }
 
 export function getAgencyRequestReportTo(requestId: string): Promise<PaginatedList<AgencyRequestPersonItem>> {
-  return api.get<PaginatedList<AgencyRequestPersonItem>>(`/api/AgencyRequest/${requestId}/ReportTo`);
+  return api.get<PaginatedList<AgencyRequestPersonItem>>(`${requestsUrl}/${requestId}/ReportTo`);
 }
 
 export function postAgencyRequestReportTo(requestId: string, contactPersonId: string): Promise<void> {
-  return api.post(`/api/AgencyRequest/${requestId}/ReportTo/${contactPersonId}`);
+  return api.post(`${requestsUrl}/${requestId}/ReportTo/${contactPersonId}`);
 }
 
 export function deleteAgencyRequestReportTo(requestId: string, contactPersonId: string): Promise<void> {
-  return api.del(`/api/AgencyRequest/${requestId}/ReportTo/${contactPersonId}`);
+  return api.del(`${requestsUrl}/${requestId}/ReportTo/${contactPersonId}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -162,15 +170,15 @@ export function deleteAgencyRequestReportTo(requestId: string, contactPersonId: 
 // ---------------------------------------------------------------------------
 
 export function getAgencyRequestSkill(requestId: string): Promise<{ id: string; skill: string }[]> {
-  return api.get<{ id: string; skill: string }[]>(`/api/AgencyRequest/${requestId}/Skill`);
+  return api.get<{ id: string; skill: string }[]>(`${requestsUrl}/${requestId}/Skills`);
 }
 
 export function postAgencyRequestSkill(requestId: string, model: AgencyRequestSkillModel): Promise<{ id: string }> {
-  return api.post<{ id: string }>(`/api/AgencyRequest/${requestId}/Skill`, model);
+  return api.post<{ id: string }>(`${requestsUrl}/${requestId}/Skills`, model);
 }
 
 export function deleteAgencyRequestSkill(requestId: string, id: string): Promise<void> {
-  return api.del(`/api/AgencyRequest/${requestId}/Skill/${id}`);
+  return api.del(`${requestsUrl}/${requestId}/Skills/${id}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -178,9 +186,9 @@ export function deleteAgencyRequestSkill(requestId: string, id: string): Promise
 // ---------------------------------------------------------------------------
 
 export function getAgencyRequestSources(requestId: string): Promise<RequestJobBoard[]> {
-  return api.get<RequestJobBoard[]>(`/api/AgencyRequest/${requestId}/sources`);
+  return api.get<RequestJobBoard[]>(`${requestsUrl}/${requestId}/sources`);
 }
 
 export function setAgencyRequestSources(requestId: string, items: SetRequestJobBoardItem[]): Promise<void> {
-  return api.put(`/api/AgencyRequest/${requestId}/sources`, items);
+  return api.put(`${requestsUrl}/${requestId}/sources`, items);
 }

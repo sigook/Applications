@@ -85,8 +85,10 @@ function comment() {
   const userRoles = securityStore.userRoles;
   for (let i = 0; i < userRoles.length; i++) {
     switch (userRoles[i]) {
-      case roles.agency:
-      case roles.agencyPersonnel:
+      case roles.superAdmin:
+      case roles.admin:
+      case roles.recruiting:
+      case roles.sales:
         sendComment(agencyCommentWorker);
         return;
       case roles.company:

@@ -20,7 +20,7 @@
           <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
         </template>
         <b-dropdown-item v-if="isClient" aria-role="listitem"
-          @click="router.push({ path: `/recruiting/requests/create/${company.id}` })">
+          @click="router.push({ path: `${requestBase}/create/${company.id}` })">
           Create Request
         </b-dropdown-item>
         <b-dropdown-item aria-role="listitem"
@@ -34,7 +34,7 @@
       <b-tab-item label="Detail" value="Detail">
         <detail v-if="visitedTabs.includes('Detail')" v-model:company="company" class="p-2" />
       </b-tab-item>
-      <b-tab-item label="Settings" value="Settings" v-if="billingAdmin.isPayrollManager">
+      <b-tab-item label="Settings" value="Settings" v-if="isAccountingManager">
         <settings v-if="visitedTabs.includes('Settings')" v-model:company="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Users" value="Users">
@@ -65,7 +65,8 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useModuleBase } from '@/composables/useModuleBase';
 import { getAgencyCompany, updateAgencyCompanyProfileLogo } from '@/api/agencyCompanyApi';
 import { lowercase } from '@/utils/filters';
 import Detail from '@/components/agency_company/CompanyDetailTab.vue';
@@ -79,9 +80,8 @@ import CompanyUpdateLogo from '@/components/agency_company/CompanyUpdateLogo.vue
 
 const route = useRoute();
 const router = useRouter();
-const companyBase = computed(() =>
-  route.path.startsWith('/sales') ? '/sales/companies' : '/recruiting/companies');
-const billingAdmin = useBillingAdmin();
+const { requestBase, companyBase } = useModuleBase();
+const { isAccountingManager } = useAccountingAdmin();
 
 const currentTab = ref<string>('Detail');
 const visitedTabs = ref<string[]>(['Detail']);
@@ -91,7 +91,7 @@ const showUpdateLogo = ref(false);
 
 const requiresPayrollPermission = computed(() => {
   if (company.value && company.value.requiresPermissionToSeeRequests) {
-    return !billingAdmin.isPayrollManager;
+    return !isAccountingManager.value;
   }
   return false;
 });
@@ -111,7 +111,7 @@ function changeTab(tab: string) {
     visitedTabs.value.push(tab);
   }
   router.push({
-    path: `/recruiting/companies/${route.params.id}`,
+    path: `${companyBase.value}/${route.params.id}`,
     query: { tab: tab },
   });
 }

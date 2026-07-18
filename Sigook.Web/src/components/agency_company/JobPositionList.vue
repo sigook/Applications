@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <b-field grouped position="is-right">
-        <b-button v-if="billingAdmin.isPayrollManager" type="is-ghost" icon-right="plus-circle"
+        <b-button v-if="isAccountingManager" type="is-ghost" icon-right="plus-circle"
           @click="showModal = true">Add</b-button>
         <b-button v-else type="is-ghost" icon-right="forum" @click="showModalRole = true">Ask for a new
           role</b-button>
@@ -15,10 +15,16 @@
           <p class="container text-center">No records available</p>
         </template>
         <template>
-          <b-table-column field="jobPosition" label="Role" v-slot="props">
-            {{ props.row.jobPosition }}
+          <b-table-column field="jobPosition" label="Role" searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.role" placeholder="Search..." icon="magnify" size="is-small"
+                @keypress="onInputEntered"></b-input>
+            </template>
+            <template v-slot="props">
+              {{ props.row.jobPosition }}
+            </template>
           </b-table-column>
-          <b-table-column field="rate" label="Agency Rate" :visible="billingAdmin.isPayrollManager" v-slot="props">
+          <b-table-column field="rate" label="Agency Rate" :visible="isAccountingManager" v-slot="props">
             {{ currency(props.row.rate) }}
           </b-table-column>
           <b-table-column field="workerRate" label="Worker Rate" v-slot="props">
@@ -64,18 +70,19 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
-import { useBillingAdmin } from '@/composables/useBillingAdmin';
+import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { currency, emailName, dateMonth } from "@/utils/filters";
 import { getAgencyCompanyJobPositions, deleteAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
+import type { AgencyCompanyJobPositionFilter } from "@/types/agency";
 import PositionForm from "@/components/agency_company/JobPositionForm.vue";
 import RequestPositionForm from "../../components/agency_company/RequestJobPositionForm.vue";
 import RolesShift from "../agency_company/RolesShiftDetail.vue";
 
 const route = useRoute();
-const billingAdmin = useBillingAdmin();
+const { isAccountingManager } = useAccountingAdmin();
 
 const isLoading = ref(true);
 const rows = ref<any[]>([]);
@@ -85,12 +92,19 @@ const profileId = route.params.id;
 const showModal = ref(false);
 const currentPosition = ref<any>(null);
 const showModalRole = ref(false);
+const serverParams = reactive<AgencyCompanyJobPositionFilter>({ role: '' });
 
 async function loadJobPositions() {
   isLoading.value = true;
-  const data = await getAgencyCompanyJobPositions(profileId as string);
+  const data = await getAgencyCompanyJobPositions(profileId as string, serverParams);
   rows.value = data.map((i: any) => ({ ...i, actions: null }));
   isLoading.value = false;
+}
+
+function onInputEntered(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    loadJobPositions();
+  }
 }
 
 function openEditModal(item: any) {

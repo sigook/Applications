@@ -12,5 +12,10 @@ public class RunnerStatusHistoryConfiguration : IEntityTypeConfiguration<RunnerS
     {
         builder.Property(e => e.PreviousStatus).HasConversion(new EnumToStringConverter<RunnerStatus>());
         builder.Property(e => e.NewStatus).HasConversion(new EnumToStringConverter<RunnerStatus>());
+
+        builder.HasOne(e => e.ChangedByUser)
+            .WithMany()
+            .HasForeignKey(e => e.ChangedBy)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

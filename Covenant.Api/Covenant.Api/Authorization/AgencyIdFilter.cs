@@ -1,5 +1,6 @@
 using Covenant.Common.Constants;
 using Covenant.Common.Repositories.Agency;
+using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
@@ -25,7 +26,7 @@ public class AgencyIdFilter : IAsyncActionFilter
     {
         if (context.Controller is ControllerBase controller)
         {
-            if (controller.User.IsInRole(CovenantConstants.Role.AgencyPersonnel))
+            if (controller.User.IsAgencyStaff())
             {
                 string sub = controller.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (Guid.TryParse(sub, out Guid userId))

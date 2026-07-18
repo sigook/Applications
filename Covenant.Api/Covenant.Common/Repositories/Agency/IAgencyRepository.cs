@@ -21,6 +21,7 @@ public interface IAgencyRepository
     Task<AgencyPersonnelModel> GetPersonnel(Guid agencyId, Guid id);
     Task<Guid> GetAgencyIdForUser(Guid userId);
     Task<List<Guid>> GetAgencyIdsForUser(Guid userId);
+    Task<Guid> GetAgencyPersonnelIdForUser(Guid userId);
     Task<List<LocationDetailModel>> GetLocations(Guid agencyId);
     Task<LocationDetailModel> GetLocationDetail(Guid agencyId, Guid id);
     Task DeletePersonnel(AgencyPersonnel entity);

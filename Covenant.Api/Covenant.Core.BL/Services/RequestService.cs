@@ -73,6 +73,8 @@ public class RequestService : IRequestService
             companyId = await companyRepository.GetCompanyId(model.CompanyProfileId);
         if (model.AgencyId == Guid.Empty)
             model.AgencyId = identityServerService.GetAgencyId();
+        if (identityServerService.IsSales())
+            model.SalesRepresentativeId = identityServerService.GetAgencyPersonnelId();
         var rRequest = await MapRequest(model, companyId.Value);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;
@@ -430,6 +432,15 @@ public class RequestService : IRequestService
 
         var job = new SendInvitationJob(requestId, identityServerService.GetNickname());
         await busClient.SendMessageAsync(job, serviceBusConfiguration.InvitationQueue);
+        return Result.Ok();
+    }
+
+    public async Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model)
+    {
+        if (model?.Ids is null || !model.Ids.Any()) return Result.Ok();
+        var recruiterIds = model.RecruiterIds?.Distinct().ToList() ?? [];
+        await requestRepository.BulkReplaceRecruiters(model.Ids.Distinct(), recruiterIds, timeService.GetCurrentDateTime());
+        await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
 

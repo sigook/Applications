@@ -16,8 +16,11 @@ public interface IIdentityServerService
     Task<Result> UpdateUserRole(UpdateRoleModel model);
     Guid GetCompanyId();
     Guid GetAgencyId();
+    Guid GetAgencyPersonnelId();
     string GetNickname();
     Guid GetUserId();
     bool IsAdmin();
+    bool IsSales();
+    bool IsSuperAdmin();
     IEnumerable<Guid> GetAgencyIds();
 }
