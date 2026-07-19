@@ -23,10 +23,6 @@
     <b-field label="Phone">
       <b-input v-model="phone" placeholder="(555) 000-0000"></b-input>
     </b-field>
-
-    <b-field label="Estimated annual value">
-      <b-input v-model="annualValue" type="number" placeholder="$"></b-input>
-    </b-field>
   </form>
 </template>
 
@@ -47,7 +43,6 @@ const industry = ref<string | null>(null);
 const contact = ref('');
 const email = ref('');
 const phone = ref('');
-const annualValue = ref<number | null>(null);
 </script>
 
 <style scoped lang="scss">

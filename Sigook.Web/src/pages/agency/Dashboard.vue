@@ -19,9 +19,9 @@
           tone="primary"
           action-icon="plus"
           action-label="Log interaction"
-          @action="openDrawer('interaction')"
+          @action="startCreateInteraction"
         >
-          <sales-interaction-list :items="data.interactions.items" :as-of="data.period.asOf" />
+          <sales-interaction-list :items="interactions" :as-of="nowIso" @edit="startEditInteraction" />
         </sales-card>
 
         <sales-card
@@ -69,7 +69,7 @@
         </sales-card>
       </div>
 
-      <sales-create-drawer v-model="isDrawerOpen" :kind="drawerKind" :clients="data.clients.items" />
+      <sales-create-drawer v-model="isDrawerOpen" :kind="drawerKind" :interaction="editingInteraction" :clients="data.clients.items" @saved="loadInteractions" />
     </template>
   </div>
 </template>
@@ -86,21 +86,28 @@ import SalesGoalDonut from '@/components/sales_dashboard/SalesGoalDonut.vue';
 import SalesMeterList from '@/components/sales_dashboard/SalesMeterList.vue';
 import SalesCreateDrawer from '@/components/sales_dashboard/SalesCreateDrawer.vue';
 import { getSalesDashboard } from '@/api/salesDashboardApi';
+import { getCompanyInteractions } from '@/api/companyInteractionApi';
 import { compactMoney, shortDate } from '@/utils/salesDashboardFormat';
-import {
-  SALES_ACTIVITY_COLORS,
-  SALES_ACTIVITY_LABELS,
-  SALES_STAGE_COLORS,
-} from '@/types/salesDashboard';
+import { showAlertError } from '@/utils/toast';
+import { SALES_STAGE_COLORS } from '@/types/salesDashboard';
 import type {
   SalesCreateKind,
   SalesDashboardModel,
   SalesMeter,
   SalesRangeKey,
 } from '@/types/salesDashboard';
+import {
+  CompanyInteractionSortBy,
+  INTERACTION_TYPE_COLORS,
+  INTERACTION_TYPE_LABELS,
+} from '@/types/companyInteraction';
+import type { CompanyInteraction } from '@/types/companyInteraction';
 
 const isLoading = ref(false);
 const data = ref<SalesDashboardModel | null>(null);
+const interactions = ref<CompanyInteraction[]>([]);
+const editingInteraction = ref<CompanyInteraction | null>(null);
+const nowIso = new Date().toISOString();
 const range = ref<SalesRangeKey>('week');
 const isDrawerOpen = ref(false);
 const drawerKind = ref<SalesCreateKind | null>(null);
@@ -133,15 +140,35 @@ const pipelineMeters = computed<SalesMeter[]>(() =>
 
 const activityMeters = computed<SalesMeter[]>(() =>
   (data.value?.activity ?? []).map((entry) => ({
-    label: SALES_ACTIVITY_LABELS[entry.type],
+    label: INTERACTION_TYPE_LABELS[entry.type],
     count: entry.count,
-    color: SALES_ACTIVITY_COLORS[entry.type],
+    color: INTERACTION_TYPE_COLORS[entry.type],
   }))
 );
 
 function openDrawer(kind: SalesCreateKind): void {
   drawerKind.value = kind;
   isDrawerOpen.value = true;
+}
+
+function startCreateInteraction(): void {
+  editingInteraction.value = null;
+  drawerKind.value = 'interaction';
+  isDrawerOpen.value = true;
+}
+
+function startEditInteraction(interaction: CompanyInteraction): void {
+  editingInteraction.value = interaction;
+  drawerKind.value = 'interaction';
+  isDrawerOpen.value = true;
+}
+
+function loadInteractions(): void {
+  getCompanyInteractions({ pageSize: 6, isDescending: true, sortBy: CompanyInteractionSortBy.CreatedAt })
+    .then((result) => {
+      interactions.value = result.items;
+    })
+    .catch((error) => showAlertError(error));
 }
 
 onMounted(() => {
@@ -153,6 +180,7 @@ onMounted(() => {
     .finally(() => {
       isLoading.value = false;
     });
+  loadInteractions();
 });
 </script>
 

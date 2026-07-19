@@ -15,8 +15,8 @@
             <b-icon :icon="meta.icon" size="is-small"></b-icon>
           </span>
           <div class="sd-drawer__text">
-            <p class="sd-drawer__title">{{ meta.title }}</p>
-            <p class="sd-drawer__subtitle">{{ meta.subtitle }}</p>
+            <p class="sd-drawer__title">{{ isEditing ? 'Edit interaction' : meta.title }}</p>
+            <p class="sd-drawer__subtitle">{{ isEditing ? 'Update this interaction' : meta.subtitle }}</p>
           </div>
         </div>
         <button type="button" class="sd-drawer__close" aria-label="Close" @click="close">
@@ -25,7 +25,12 @@
       </header>
 
       <div class="sd-drawer__body">
-        <SalesInteractionForm v-if="kind === 'interaction'" :key="kind" :clients="clients" />
+        <SalesInteractionForm
+          v-if="kind === 'interaction'"
+          ref="interactionForm"
+          :key="openToken"
+          :interaction="interaction"
+        />
         <SalesClientForm v-else-if="kind === 'client'" :key="kind" />
         <SalesDealForm v-else-if="kind === 'deal'" :key="kind" :clients="clients" />
       </div>
@@ -33,12 +38,23 @@
       <footer class="sd-drawer__foot">
         <b-button class="sd-drawer__cancel" outlined @click="close">Cancel</b-button>
         <b-button
+          v-if="isEditing"
+          class="sd-drawer__delete"
+          outlined
+          type="is-danger"
+          :loading="isDeleting"
+          @click="onDelete"
+        >
+          <b-icon icon="trash-can-outline" size="is-small"></b-icon>
+        </b-button>
+        <b-button
           class="sd-drawer__cta"
           expanded
+          :loading="isSaving"
           :style="{ backgroundColor: meta.color, borderColor: meta.color }"
-          @click="close"
+          @click="onSubmit"
         >
-          {{ meta.cta }}
+          {{ isEditing ? 'Save changes' : meta.cta }}
         </b-button>
       </footer>
     </div>
@@ -46,8 +62,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { SalesClient, SalesCreateKind } from '@/types/salesDashboard';
+import type { CompanyInteraction } from '@/types/companyInteraction';
+import { deleteCompanyInteraction } from '@/api/companyInteractionApi';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import SalesInteractionForm from './SalesInteractionForm.vue';
 import SalesClientForm from './SalesClientForm.vue';
 import SalesDealForm from './SalesDealForm.vue';
@@ -65,9 +84,27 @@ const props = defineProps<{
   modelValue: boolean;
   kind: SalesCreateKind | null;
   clients: readonly SalesClient[];
+  interaction?: CompanyInteraction | null;
 }>();
 
-const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>();
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void;
+  (e: 'saved'): void;
+}>();
+
+const interactionForm = ref<InstanceType<typeof SalesInteractionForm> | null>(null);
+const isSaving = ref(false);
+const isDeleting = ref(false);
+
+const isEditing = computed(() => props.kind === 'interaction' && !!props.interaction);
+
+const openToken = ref(0);
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) openToken.value += 1;
+  }
+);
 
 const SALES_CREATE_META: Record<SalesCreateKind, SalesCreateMeta> = {
   interaction: {
@@ -101,6 +138,37 @@ const meta = computed<SalesCreateMeta | null>(() =>
 );
 
 const close = (): void => emit('update:modelValue', false);
+
+async function onSubmit(): Promise<void> {
+  if (props.kind === 'interaction') {
+    isSaving.value = true;
+    const saved = await interactionForm.value?.submit();
+    isSaving.value = false;
+    if (saved) {
+      emit('saved');
+      close();
+    }
+    return;
+  }
+  close();
+}
+
+async function onDelete(): Promise<void> {
+  if (!props.interaction) return;
+  const confirmed = await showAlertConfirm('Delete interaction', 'This action cannot be undone.', 'Delete');
+  if (!confirmed) return;
+  isDeleting.value = true;
+  try {
+    await deleteCompanyInteraction(props.interaction.id);
+    showAlertSuccess('Interaction deleted');
+    emit('saved');
+    close();
+  } catch (error) {
+    await showAlertError(error);
+  } finally {
+    isDeleting.value = false;
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -213,6 +281,10 @@ const close = (): void => emit('update:modelValue', false);
   flex: none;
   color: $grey-font;
   border-color: $gray-border;
+}
+
+.sd-drawer__delete {
+  flex: none;
 }
 
 .sd-drawer__cta {

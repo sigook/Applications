@@ -6,9 +6,6 @@
       </template>
       <template #title>{{ item.name }}</template>
       <template #meta>{{ item.industry }}</template>
-      <template #trailing>
-        <span class="sd-client-value">{{ compactMoney(item.annualValue) }}</span>
-      </template>
     </sales-list-row>
   </sales-list>
 </template>
@@ -17,7 +14,7 @@
 import SalesList from './SalesList.vue';
 import SalesListRow from './SalesListRow.vue';
 import type { SalesClient } from '@/types/salesDashboard';
-import { compactMoney, initialsOf } from '@/utils/salesDashboardFormat';
+import { initialsOf } from '@/utils/salesDashboardFormat';
 
 defineProps<{
   items: readonly SalesClient[];
@@ -25,8 +22,6 @@ defineProps<{
 </script>
 
 <style scoped lang="scss">
-@import "../../assets/scss/variables";
-
 .sd-client-avatar {
   display: flex;
   align-items: center;
@@ -38,11 +33,5 @@ defineProps<{
   color: #7a7a7a;
   font-size: 0.69rem;
   font-weight: 700;
-}
-
-.sd-client-value {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: $green-vivid;
 }
 </style>

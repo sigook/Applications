@@ -3,58 +3,152 @@
     <b-field label="Type">
       <div class="sd-choices">
         <button
-          v-for="option in TYPE_OPTIONS"
+          v-for="option in INTERACTION_TYPES"
           :key="option"
           type="button"
           class="sd-choice"
           :class="{ 'is-active': type === option }"
           @click="type = option"
         >
-          {{ option }}
+          {{ INTERACTION_TYPE_LABELS[option] }}
         </button>
       </div>
     </b-field>
 
     <b-field label="Client">
-      <b-select v-model="clientId" expanded placeholder="Select client…">
+      <b-select
+        v-if="!isEditing"
+        v-model="companyProfileId"
+        expanded
+        placeholder="Select client…"
+        :loading="isLoadingClients"
+      >
         <option v-for="client in clients" :key="client.id" :value="client.id">
-          {{ client.name }}
+          {{ client.fullName }}
+        </option>
+      </b-select>
+      <p v-else class="sd-readonly">{{ interaction?.companyName }}</p>
+    </b-field>
+
+    <b-field label="Purpose">
+      <b-select v-model="purpose" expanded>
+        <option v-for="option in INTERACTION_PURPOSES" :key="option" :value="option">
+          {{ INTERACTION_PURPOSE_LABELS[option] }}
         </option>
       </b-select>
     </b-field>
 
-    <b-field label="Subject">
-      <b-input v-model="subject" placeholder="Short summary"></b-input>
+    <b-field label="Status">
+      <b-select v-model="status" expanded>
+        <option v-for="option in INTERACTION_STATUSES" :key="option" :value="option">
+          {{ INTERACTION_STATUS_LABELS[option] }}
+        </option>
+      </b-select>
     </b-field>
 
-    <b-field label="Date & time">
-      <b-datetimepicker v-model="occurredAt" placeholder="Pick a date and time"></b-datetimepicker>
-    </b-field>
-
-    <b-field label="Notes">
-      <b-input v-model="notes" type="textarea" placeholder="What was discussed…"></b-input>
-    </b-field>
-
-    <b-field label="Follow-up date">
-      <b-datepicker v-model="followUpAt" placeholder="Pick a date"></b-datepicker>
+    <b-field label="Description">
+      <b-input v-model="description" type="textarea" placeholder="What was discussed…"></b-input>
     </b-field>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { SalesClient, SalesInteractionType } from '@/types/salesDashboard';
+import { computed, onMounted, ref } from 'vue';
+import { getSalesCompanies } from '@/api/salesApi';
+import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyInteractionApi';
+import {
+  InteractionType,
+  InteractionPurpose,
+  InteractionStatus,
+  INTERACTION_TYPES,
+  INTERACTION_PURPOSES,
+  INTERACTION_STATUSES,
+  INTERACTION_TYPE_LABELS,
+  INTERACTION_PURPOSE_LABELS,
+  INTERACTION_STATUS_LABELS,
+} from '@/types/companyInteraction';
+import type { CompanyInteraction } from '@/types/companyInteraction';
+import type { AgencyCompanyListItem } from '@/types/agency';
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
 
-defineProps<{ clients: readonly SalesClient[] }>();
+const props = defineProps<{ interaction?: CompanyInteraction | null }>();
 
-const TYPE_OPTIONS: readonly SalesInteractionType[] = ['Call', 'Email', 'Meeting'];
+const isEditing = computed(() => !!props.interaction);
 
-const type = ref<SalesInteractionType>('Call');
-const clientId = ref<string | null>(null);
-const subject = ref('');
-const occurredAt = ref<Date | null>(null);
-const notes = ref('');
-const followUpAt = ref<Date | null>(null);
+const clients = ref<AgencyCompanyListItem[]>([]);
+const isLoadingClients = ref(false);
+
+const type = ref<InteractionType>(InteractionType.Call);
+const companyProfileId = ref<string | null>(null);
+const purpose = ref<InteractionPurpose>(InteractionPurpose.Intro);
+const status = ref<InteractionStatus>(InteractionStatus.NotStarted);
+const description = ref('');
+
+onMounted(() => {
+  if (props.interaction) {
+    type.value = props.interaction.interactionType;
+    companyProfileId.value = props.interaction.companyProfileId;
+    purpose.value = props.interaction.interactionPurpose;
+    status.value = props.interaction.interactionStatus;
+    description.value = props.interaction.description;
+    return;
+  }
+  isLoadingClients.value = true;
+  getSalesCompanies({ pageSize: 100 })
+    .then((result) => {
+      clients.value = result.items;
+    })
+    .catch((error) => showAlertError(error))
+    .finally(() => {
+      isLoadingClients.value = false;
+    });
+});
+
+function resetForm(): void {
+  type.value = InteractionType.Call;
+  companyProfileId.value = null;
+  purpose.value = InteractionPurpose.Intro;
+  status.value = InteractionStatus.NotStarted;
+  description.value = '';
+}
+
+async function submit(): Promise<boolean> {
+  if (!companyProfileId.value) {
+    await showAlertError('Please select a client');
+    return false;
+  }
+  if (!description.value.trim()) {
+    await showAlertError('Please enter a description');
+    return false;
+  }
+  try {
+    if (props.interaction) {
+      await updateCompanyInteraction(props.interaction.id, {
+        description: description.value.trim(),
+        interactionPurpose: purpose.value,
+        interactionType: type.value,
+        interactionStatus: status.value,
+      });
+      showAlertSuccess('Interaction updated');
+    } else {
+      await createCompanyInteraction({
+        companyProfileId: companyProfileId.value,
+        description: description.value.trim(),
+        interactionPurpose: purpose.value,
+        interactionType: type.value,
+        interactionStatus: status.value,
+      });
+      showAlertSuccess('Interaction logged');
+      resetForm();
+    }
+    return true;
+  } catch (error) {
+    await showAlertError(error);
+    return false;
+  }
+}
+
+defineExpose({ submit });
 </script>
 
 <style scoped lang="scss">
@@ -92,9 +186,17 @@ const followUpAt = ref<Date | null>(null);
   }
 }
 
+.sd-readonly {
+  font-size: 0.82rem;
+  color: #333;
+  padding: 0.35rem 0;
+  font-weight: 600;
+}
+
 .sd-choices {
   display: flex;
   gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .sd-choice {

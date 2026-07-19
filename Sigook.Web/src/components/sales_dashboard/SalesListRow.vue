@@ -11,7 +11,7 @@
         <slot name="meta"></slot>
       </span>
     </span>
-    <span class="sd-row__trailing">
+    <span v-if="$slots.trailing" class="sd-row__trailing">
       <slot name="trailing"></slot>
     </span>
   </div>

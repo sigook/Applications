@@ -1,4 +1,4 @@
-export type SalesInteractionType = 'Call' | 'Email' | 'Meeting';
+import type { InteractionType } from './companyInteraction';
 
 export type SalesDealStage = 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Won';
 
@@ -16,19 +16,10 @@ export interface SalesPeriod {
   readonly asOf: string;
 }
 
-export interface SalesInteraction {
-  readonly id: string;
-  readonly type: SalesInteractionType;
-  readonly title: string;
-  readonly clientName: string;
-  readonly occurredAt: string;
-}
-
 export interface SalesClient {
   readonly id: string;
   readonly name: string;
   readonly industry: string;
-  readonly annualValue: number;
 }
 
 export interface SalesDeal {
@@ -37,11 +28,6 @@ export interface SalesDeal {
   readonly clientName: string;
   readonly stage: SalesDealStage;
   readonly value: number;
-}
-
-export interface SalesInteractionsBlock {
-  readonly items: readonly SalesInteraction[];
-  readonly totalItems: number;
 }
 
 export interface SalesClientsBlock {
@@ -79,14 +65,13 @@ export interface SalesPipelineStage {
 }
 
 export interface SalesActivity {
-  readonly type: SalesInteractionType;
+  readonly type: InteractionType;
   readonly count: number;
 }
 
 export interface SalesDashboardModel {
   readonly agent: SalesAgent;
   readonly period: SalesPeriod;
-  readonly interactions: SalesInteractionsBlock;
   readonly clients: SalesClientsBlock;
   readonly deals: SalesDealsBlock;
   readonly dealsClosed: SalesClosedSeries;
@@ -100,12 +85,6 @@ export interface SalesMeter {
   readonly count: number;
   readonly color: string;
 }
-
-export const SALES_INTERACTION_ICONS: Record<SalesInteractionType, string> = {
-  Call: 'phone',
-  Email: 'email-outline',
-  Meeting: 'account-group-outline',
-};
 
 export const SALES_RANGE_TABS: readonly { readonly key: SalesRangeKey; readonly label: string }[] = [
   { key: 'week', label: 'Week' },
@@ -127,16 +106,4 @@ export const SALES_STAGE_COLORS: Record<SalesDealStage, string> = {
   Proposal: '#21b7ff',
   Negotiation: '#ff9932',
   Won: '#3eb800',
-};
-
-export const SALES_ACTIVITY_LABELS: Record<SalesInteractionType, string> = {
-  Call: 'Calls',
-  Email: 'Emails',
-  Meeting: 'Meetings',
-};
-
-export const SALES_ACTIVITY_COLORS: Record<SalesInteractionType, string> = {
-  Call: '#21b7ff',
-  Email: '#3eb800',
-  Meeting: '#ff9932',
 };
