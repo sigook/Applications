@@ -1,15 +1,15 @@
-﻿namespace Covenant.Common.Entities.Company;
+namespace Covenant.Common.Entities.Company;
 
 public class CompanyInteraction
 {
     public CompanyInteraction() { }
 
-    public CompanyInteraction(string description, User owner, CompanyProfile company, Purpose purpose, Type type, Status status)
+    public CompanyInteraction(string description, Guid ownerId, Guid companyId, Purpose purpose, Type type, Status status)
     {
         Id = Guid.NewGuid();
         Description = description;
-        Owner = owner;
-        Company = company;
+        OwnerId = ownerId;
+        CompanyId = companyId;
         InteractionPurpose = purpose;
         InteractionType = type;
         InteractionStatus = status;
@@ -17,13 +17,24 @@ public class CompanyInteraction
 
     public Guid Id { get; set; }
     public string Description { get; set; } = string.Empty;
+    public Guid OwnerId { get; set; }
     public User Owner { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set;} = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public Guid CompanyId { get; set; }
     public CompanyProfile Company { get; set; }
     public Purpose InteractionPurpose { get; set; }
     public Type InteractionType { get; set; }
     public Status InteractionStatus { get; set; } = Status.NotStarted;
+
+    public void Update(string description, Purpose purpose, Type type, Status status)
+    {
+        Description = description;
+        InteractionPurpose = purpose;
+        InteractionType = type;
+        InteractionStatus = status;
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     public enum Purpose
     {

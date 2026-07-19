@@ -17,8 +17,7 @@
 			<_GeneratedOpenApiFile>$(OpenApiDocumentsDirectory)\$(MSBuildProjectName).json</_GeneratedOpenApiFile>
 			<_CanonicalOpenApiFile>$(OpenApiDocumentsDirectory)\openapi.json</_CanonicalOpenApiFile>
 		</PropertyGroup>
-		<Move SourceFiles="$(_GeneratedOpenApiFile)" DestinationFiles="$(_CanonicalOpenApiFile)"
-			  Condition="Exists('$(_GeneratedOpenApiFile)')" OverwriteReadOnlyFiles="true" />
+		<Move SourceFiles="$(_GeneratedOpenApiFile)" DestinationFiles="$(_CanonicalOpenApiFile)" Condition="Exists('$(_GeneratedOpenApiFile)')" OverwriteReadOnlyFiles="true" />
 	</Target>
 	<ItemGroup>
 		<PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
