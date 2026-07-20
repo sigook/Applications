@@ -70,6 +70,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<INotificationDataRepository, NotificationDataRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<ICompanyInteractionRepository, CompanyInteractionRepository>();
+        services.AddScoped<IDealRepository, DealRepository>();
         return services;
     }
 
@@ -82,6 +83,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IRunnerService, RunnerService>();
         services.AddScoped<ICompanyInteractionService, CompanyInteractionService>();
+        services.AddScoped<IDealService, DealService>();
         services.AddScoped<IWeeklyBoardService, WeeklyBoardService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ICandidateService, CandidateService>();
