@@ -1,30 +1,28 @@
 <template>
-  <b-sidebar
-    class="sd-drawer"
+  <b-modal
+    class="sd-modal"
     :model-value="modelValue"
-    right
-    overlay
-    fullheight
+    width="500px"
     :can-cancel="['escape', 'outside']"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <div v-if="meta" class="sd-drawer__panel">
-      <header class="sd-drawer__head">
-        <div class="sd-drawer__id">
-          <span class="sd-drawer__chip" :style="{ backgroundColor: meta.tint, color: meta.color }">
+    <div v-if="meta" class="sd-modal__panel">
+      <header class="sd-modal__head">
+        <div class="sd-modal__id">
+          <span class="sd-modal__chip" :style="{ backgroundColor: meta.tint, color: meta.color }">
             <b-icon :icon="meta.icon" size="is-small"></b-icon>
           </span>
-          <div class="sd-drawer__text">
-            <p class="sd-drawer__title">{{ isEditing ? editTitle : meta.title }}</p>
-            <p class="sd-drawer__subtitle">{{ isEditing ? editSubtitle : meta.subtitle }}</p>
+          <div class="sd-modal__text">
+            <p class="sd-modal__title">{{ isEditing ? editTitle : meta.title }}</p>
+            <p class="sd-modal__subtitle">{{ isEditing ? editSubtitle : meta.subtitle }}</p>
           </div>
         </div>
-        <button type="button" class="sd-drawer__close" aria-label="Close" @click="close">
+        <button type="button" class="sd-modal__close" aria-label="Close" @click="close">
           <b-icon icon="close" size="is-small"></b-icon>
         </button>
       </header>
 
-      <div class="sd-drawer__body">
+      <div class="sd-modal__body">
         <SalesInteractionForm
           v-if="kind === 'interaction'"
           ref="interactionForm"
@@ -35,11 +33,11 @@
         <SalesDealForm v-else-if="kind === 'deal'" ref="dealForm" :key="openToken" :deal="deal" />
       </div>
 
-      <footer class="sd-drawer__foot">
-        <b-button class="sd-drawer__cancel" outlined @click="close">Cancel</b-button>
+      <footer class="sd-modal__foot">
+        <b-button class="sd-modal__cancel" outlined @click="close">Cancel</b-button>
         <b-button
           v-if="isEditing"
-          class="sd-drawer__delete"
+          class="sd-modal__delete"
           outlined
           type="is-danger"
           :loading="isDeleting"
@@ -48,7 +46,7 @@
           <b-icon icon="trash-can-outline" size="is-small"></b-icon>
         </b-button>
         <b-button
-          class="sd-drawer__cta"
+          class="sd-modal__cta"
           expanded
           :loading="isSaving"
           :style="{ backgroundColor: meta.color, borderColor: meta.color }"
@@ -58,7 +56,7 @@
         </b-button>
       </footer>
     </div>
-  </b-sidebar>
+  </b-modal>
 </template>
 
 <script setup lang="ts">
@@ -200,24 +198,26 @@ async function onDelete(): Promise<void> {
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
 
-.sd-drawer {
-  :deep(.sidebar-content) {
-    width: 366px;
-    max-width: 100vw;
-    background: $white;
-    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.12);
+.sd-modal {
+  :deep(.animation-content) {
+    overflow: visible;
   }
 }
 
-.sd-drawer__panel {
+.sd-modal__panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  width: 500px;
+  max-width: 100%;
+  max-height: 86vh;
   min-height: 0;
   background: $white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
 }
 
-.sd-drawer__head {
+.sd-modal__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -227,14 +227,14 @@ async function onDelete(): Promise<void> {
   flex: none;
 }
 
-.sd-drawer__id {
+.sd-modal__id {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   min-width: 0;
 }
 
-.sd-drawer__chip {
+.sd-modal__chip {
   width: 34px;
   height: 34px;
   border-radius: 9px;
@@ -244,11 +244,11 @@ async function onDelete(): Promise<void> {
   flex: none;
 }
 
-.sd-drawer__text {
+.sd-modal__text {
   min-width: 0;
 }
 
-.sd-drawer__title {
+.sd-modal__title {
   margin: 0;
   font-size: 0.94rem;
   font-weight: 700;
@@ -256,14 +256,14 @@ async function onDelete(): Promise<void> {
   line-height: 1.3;
 }
 
-.sd-drawer__subtitle {
+.sd-modal__subtitle {
   margin: 0;
   font-size: 0.72rem;
   color: #9aa1ab;
   line-height: 1.4;
 }
 
-.sd-drawer__close {
+.sd-modal__close {
   width: 30px;
   height: 30px;
   border-radius: 8px;
@@ -288,14 +288,14 @@ async function onDelete(): Promise<void> {
   }
 }
 
-.sd-drawer__body {
+.sd-modal__body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding: 1.13rem 1.25rem;
 }
 
-.sd-drawer__foot {
+.sd-modal__foot {
   display: flex;
   gap: 0.56rem;
   padding: 0.875rem 1.25rem;
@@ -303,17 +303,17 @@ async function onDelete(): Promise<void> {
   flex: none;
 }
 
-.sd-drawer__cancel {
+.sd-modal__cancel {
   flex: none;
   color: $grey-font;
   border-color: $gray-border;
 }
 
-.sd-drawer__delete {
+.sd-modal__delete {
   flex: none;
 }
 
-.sd-drawer__cta {
+.sd-modal__cta {
   color: $white;
   font-weight: 600;
 

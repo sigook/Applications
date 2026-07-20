@@ -5,11 +5,7 @@
     </b-field>
 
     <b-field label="Industry">
-      <b-select v-model="industry" expanded placeholder="Select industry…">
-        <option v-for="option in INDUSTRY_OPTIONS" :key="option" :value="option">
-          {{ option }}
-        </option>
-      </b-select>
+      <search-select v-model="industry" :options="industryOptions" clearable placeholder="Search industry…" />
     </b-field>
 
     <b-field label="Primary contact">
@@ -28,6 +24,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import SearchSelect from './SearchSelect.vue';
 
 const INDUSTRY_OPTIONS: readonly string[] = [
   'Logistics',
@@ -37,6 +34,8 @@ const INDUSTRY_OPTIONS: readonly string[] = [
   'Construction',
   'Other',
 ];
+
+const industryOptions = INDUSTRY_OPTIONS.map((o) => ({ value: o, label: o }));
 
 const name = ref('');
 const industry = ref<string | null>(null);

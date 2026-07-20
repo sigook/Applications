@@ -5,17 +5,14 @@
     </b-field>
 
     <b-field label="Client">
-      <b-select
+      <search-select
         v-if="!isEditing"
         v-model="companyProfileId"
-        expanded
-        placeholder="Select client…"
+        :options="clientOptions"
         :loading="isLoadingClients"
-      >
-        <option v-for="client in clients" :key="client.id" :value="client.id">
-          {{ client.fullName }}
-        </option>
-      </b-select>
+        clearable
+        placeholder="Search client…"
+      />
       <p v-else class="sd-readonly">{{ deal?.companyName }}</p>
     </b-field>
 
@@ -25,20 +22,12 @@
       </b-field>
 
       <b-field label="Type" class="sd-form__col">
-        <b-select v-model="type" expanded>
-          <option v-for="option in DEAL_TYPES" :key="option" :value="option">
-            {{ DEAL_TYPE_LABELS[option] }}
-          </option>
-        </b-select>
+        <search-select :model-value="type" :options="typeOptions" placeholder="Search type…" @update:model-value="setType" />
       </b-field>
     </div>
 
     <b-field label="Status">
-      <b-select v-model="status" expanded>
-        <option v-for="option in DEAL_STATUSES" :key="option" :value="option">
-          {{ DEAL_STATUS_LABELS[option] }}
-        </option>
-      </b-select>
+      <search-select :model-value="status" :options="statusOptions" placeholder="Search status…" @update:model-value="setStatus" />
     </b-field>
 
     <b-field label="Date">
@@ -62,10 +51,23 @@ import {
 import type { Deal } from '@/types/deal';
 import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
+import SearchSelect from './SearchSelect.vue';
 
 const props = defineProps<{ deal?: Deal | null }>();
 
 const isEditing = computed(() => !!props.deal);
+
+const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.fullName })));
+const typeOptions = DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }));
+const statusOptions = DEAL_STATUSES.map((s) => ({ value: s, label: DEAL_STATUS_LABELS[s] }));
+
+function setType(value: DealType | null): void {
+  if (value !== null) type.value = value;
+}
+
+function setStatus(value: DealStatus | null): void {
+  if (value !== null) status.value = value;
+}
 
 const clients = ref<AgencyCompanyListItem[]>([]);
 const isLoadingClients = ref(false);

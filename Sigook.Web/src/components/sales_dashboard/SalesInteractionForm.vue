@@ -16,34 +16,23 @@
     </b-field>
 
     <b-field label="Client">
-      <b-select
+      <search-select
         v-if="!isEditing"
         v-model="companyProfileId"
-        expanded
-        placeholder="Select client…"
+        :options="clientOptions"
         :loading="isLoadingClients"
-      >
-        <option v-for="client in clients" :key="client.id" :value="client.id">
-          {{ client.fullName }}
-        </option>
-      </b-select>
+        clearable
+        placeholder="Search client…"
+      />
       <p v-else class="sd-readonly">{{ interaction?.companyName }}</p>
     </b-field>
 
     <b-field label="Purpose">
-      <b-select v-model="purpose" expanded>
-        <option v-for="option in INTERACTION_PURPOSES" :key="option" :value="option">
-          {{ INTERACTION_PURPOSE_LABELS[option] }}
-        </option>
-      </b-select>
+      <search-select :model-value="purpose" :options="purposeOptions" placeholder="Search purpose…" @update:model-value="setPurpose" />
     </b-field>
 
     <b-field label="Status">
-      <b-select v-model="status" expanded>
-        <option v-for="option in INTERACTION_STATUSES" :key="option" :value="option">
-          {{ INTERACTION_STATUS_LABELS[option] }}
-        </option>
-      </b-select>
+      <search-select :model-value="status" :options="statusOptions" placeholder="Search status…" @update:model-value="setStatus" />
     </b-field>
 
     <b-field label="Description">
@@ -70,10 +59,23 @@ import {
 import type { CompanyInteraction } from '@/types/companyInteraction';
 import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
+import SearchSelect from './SearchSelect.vue';
 
 const props = defineProps<{ interaction?: CompanyInteraction | null }>();
 
 const isEditing = computed(() => !!props.interaction);
+
+const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.fullName })));
+const purposeOptions = INTERACTION_PURPOSES.map((p) => ({ value: p, label: INTERACTION_PURPOSE_LABELS[p] }));
+const statusOptions = INTERACTION_STATUSES.map((s) => ({ value: s, label: INTERACTION_STATUS_LABELS[s] }));
+
+function setPurpose(value: InteractionPurpose | null): void {
+  if (value !== null) purpose.value = value;
+}
+
+function setStatus(value: InteractionStatus | null): void {
+  if (value !== null) status.value = value;
+}
 
 const clients = ref<AgencyCompanyListItem[]>([]);
 const isLoadingClients = ref(false);

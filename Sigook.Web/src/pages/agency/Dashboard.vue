@@ -69,7 +69,7 @@
         </sales-card>
       </div>
 
-      <sales-create-drawer v-model="isDrawerOpen" :kind="drawerKind" :interaction="editingInteraction" :deal="editingDeal" @saved="onSaved" />
+      <sales-create-modal v-model="isModalOpen" :kind="modalKind" :interaction="editingInteraction" :deal="editingDeal" @saved="onSaved" />
     </template>
   </div>
 </template>
@@ -84,7 +84,7 @@ import SalesRangeTabs from '@/components/sales_dashboard/SalesRangeTabs.vue';
 import SalesBarChart from '@/components/sales_dashboard/SalesBarChart.vue';
 import SalesGoalDonut from '@/components/sales_dashboard/SalesGoalDonut.vue';
 import SalesMeterList from '@/components/sales_dashboard/SalesMeterList.vue';
-import SalesCreateDrawer from '@/components/sales_dashboard/SalesCreateDrawer.vue';
+import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue';
 import { getSalesDashboard } from '@/api/salesDashboardApi';
 import { getCompanyInteractions } from '@/api/companyInteractionApi';
 import { getDeals } from '@/api/dealApi';
@@ -113,8 +113,8 @@ const deals = ref<Deal[]>([]);
 const editingDeal = ref<Deal | null>(null);
 const nowIso = new Date().toISOString();
 const range = ref<SalesRangeKey>('week');
-const isDrawerOpen = ref(false);
-const drawerKind = ref<SalesCreateKind | null>(null);
+const isModalOpen = ref(false);
+const modalKind = ref<SalesCreateKind | null>(null);
 
 const clientsSubtitle = computed(() => {
   if (!data.value) {
@@ -151,32 +151,32 @@ const activityMeters = computed<SalesMeter[]>(() =>
 );
 
 function openDrawer(kind: SalesCreateKind): void {
-  drawerKind.value = kind;
-  isDrawerOpen.value = true;
+  modalKind.value = kind;
+  isModalOpen.value = true;
 }
 
 function startCreateInteraction(): void {
   editingInteraction.value = null;
-  drawerKind.value = 'interaction';
-  isDrawerOpen.value = true;
+  modalKind.value = 'interaction';
+  isModalOpen.value = true;
 }
 
 function startEditInteraction(interaction: CompanyInteraction): void {
   editingInteraction.value = interaction;
-  drawerKind.value = 'interaction';
-  isDrawerOpen.value = true;
+  modalKind.value = 'interaction';
+  isModalOpen.value = true;
 }
 
 function startCreateDeal(): void {
   editingDeal.value = null;
-  drawerKind.value = 'deal';
-  isDrawerOpen.value = true;
+  modalKind.value = 'deal';
+  isModalOpen.value = true;
 }
 
 function startEditDeal(deal: Deal): void {
   editingDeal.value = deal;
-  drawerKind.value = 'deal';
-  isDrawerOpen.value = true;
+  modalKind.value = 'deal';
+  isModalOpen.value = true;
 }
 
 function loadInteractions(): void {
