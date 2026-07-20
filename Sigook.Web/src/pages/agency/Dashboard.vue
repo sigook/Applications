@@ -43,9 +43,9 @@
           tone="accent"
           action-icon="plus"
           action-label="Create deal"
-          @action="openDrawer('deal')"
+          @action="startCreateDeal"
         >
-          <sales-deal-list :items="data.deals.items" />
+          <sales-deal-list :items="deals" @edit="startEditDeal" />
         </sales-card>
       </div>
 
@@ -63,13 +63,13 @@
         <sales-card title="This quarter">
           <div class="sd-quarter">
             <sales-goal-donut :goal="data.goal" />
-            <sales-meter-list title="Pipeline by stage" :items="pipelineMeters" />
+            <sales-meter-list title="Pipeline by status" :items="pipelineMeters" />
             <sales-meter-list title="Activity this week" :items="activityMeters" />
           </div>
         </sales-card>
       </div>
 
-      <sales-create-drawer v-model="isDrawerOpen" :kind="drawerKind" :interaction="editingInteraction" :clients="data.clients.items" @saved="loadInteractions" />
+      <sales-create-drawer v-model="isDrawerOpen" :kind="drawerKind" :interaction="editingInteraction" :deal="editingDeal" @saved="onSaved" />
     </template>
   </div>
 </template>
@@ -87,9 +87,11 @@ import SalesMeterList from '@/components/sales_dashboard/SalesMeterList.vue';
 import SalesCreateDrawer from '@/components/sales_dashboard/SalesCreateDrawer.vue';
 import { getSalesDashboard } from '@/api/salesDashboardApi';
 import { getCompanyInteractions } from '@/api/companyInteractionApi';
+import { getDeals } from '@/api/dealApi';
 import { compactMoney, shortDate } from '@/utils/salesDashboardFormat';
 import { showAlertError } from '@/utils/toast';
-import { SALES_STAGE_COLORS } from '@/types/salesDashboard';
+import { DealSortBy, DEAL_STATUS_COLORS, DEAL_STATUS_LABELS } from '@/types/deal';
+import type { Deal } from '@/types/deal';
 import type {
   SalesCreateKind,
   SalesDashboardModel,
@@ -107,6 +109,8 @@ const isLoading = ref(false);
 const data = ref<SalesDashboardModel | null>(null);
 const interactions = ref<CompanyInteraction[]>([]);
 const editingInteraction = ref<CompanyInteraction | null>(null);
+const deals = ref<Deal[]>([]);
+const editingDeal = ref<Deal | null>(null);
 const nowIso = new Date().toISOString();
 const range = ref<SalesRangeKey>('week');
 const isDrawerOpen = ref(false);
@@ -132,9 +136,9 @@ const closedTotal = computed(() =>
 
 const pipelineMeters = computed<SalesMeter[]>(() =>
   (data.value?.pipeline ?? []).map((entry) => ({
-    label: entry.stage,
+    label: DEAL_STATUS_LABELS[entry.status],
     count: entry.count,
-    color: SALES_STAGE_COLORS[entry.stage],
+    color: DEAL_STATUS_COLORS[entry.status],
   }))
 );
 
@@ -163,12 +167,37 @@ function startEditInteraction(interaction: CompanyInteraction): void {
   isDrawerOpen.value = true;
 }
 
+function startCreateDeal(): void {
+  editingDeal.value = null;
+  drawerKind.value = 'deal';
+  isDrawerOpen.value = true;
+}
+
+function startEditDeal(deal: Deal): void {
+  editingDeal.value = deal;
+  drawerKind.value = 'deal';
+  isDrawerOpen.value = true;
+}
+
 function loadInteractions(): void {
   getCompanyInteractions({ pageSize: 6, isDescending: true, sortBy: CompanyInteractionSortBy.CreatedAt })
     .then((result) => {
       interactions.value = result.items;
     })
     .catch((error) => showAlertError(error));
+}
+
+function loadDeals(): void {
+  getDeals({ pageSize: 6, isDescending: true, sortBy: DealSortBy.Date })
+    .then((result) => {
+      deals.value = result.items;
+    })
+    .catch((error) => showAlertError(error));
+}
+
+function onSaved(): void {
+  loadInteractions();
+  loadDeals();
 }
 
 onMounted(() => {
@@ -181,6 +210,7 @@ onMounted(() => {
       isLoading.value = false;
     });
   loadInteractions();
+  loadDeals();
 });
 </script>
 

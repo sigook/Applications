@@ -15,8 +15,8 @@
             <b-icon :icon="meta.icon" size="is-small"></b-icon>
           </span>
           <div class="sd-drawer__text">
-            <p class="sd-drawer__title">{{ isEditing ? 'Edit interaction' : meta.title }}</p>
-            <p class="sd-drawer__subtitle">{{ isEditing ? 'Update this interaction' : meta.subtitle }}</p>
+            <p class="sd-drawer__title">{{ isEditing ? editTitle : meta.title }}</p>
+            <p class="sd-drawer__subtitle">{{ isEditing ? editSubtitle : meta.subtitle }}</p>
           </div>
         </div>
         <button type="button" class="sd-drawer__close" aria-label="Close" @click="close">
@@ -32,7 +32,7 @@
           :interaction="interaction"
         />
         <SalesClientForm v-else-if="kind === 'client'" :key="kind" />
-        <SalesDealForm v-else-if="kind === 'deal'" :key="kind" :clients="clients" />
+        <SalesDealForm v-else-if="kind === 'deal'" ref="dealForm" :key="openToken" :deal="deal" />
       </div>
 
       <footer class="sd-drawer__foot">
@@ -63,9 +63,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { SalesClient, SalesCreateKind } from '@/types/salesDashboard';
+import type { SalesCreateKind } from '@/types/salesDashboard';
 import type { CompanyInteraction } from '@/types/companyInteraction';
+import type { Deal } from '@/types/deal';
 import { deleteCompanyInteraction } from '@/api/companyInteractionApi';
+import { deleteDeal } from '@/api/dealApi';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import SalesInteractionForm from './SalesInteractionForm.vue';
 import SalesClientForm from './SalesClientForm.vue';
@@ -83,8 +85,8 @@ interface SalesCreateMeta {
 const props = defineProps<{
   modelValue: boolean;
   kind: SalesCreateKind | null;
-  clients: readonly SalesClient[];
   interaction?: CompanyInteraction | null;
+  deal?: Deal | null;
 }>();
 
 const emit = defineEmits<{
@@ -93,10 +95,16 @@ const emit = defineEmits<{
 }>();
 
 const interactionForm = ref<InstanceType<typeof SalesInteractionForm> | null>(null);
+const dealForm = ref<InstanceType<typeof SalesDealForm> | null>(null);
 const isSaving = ref(false);
 const isDeleting = ref(false);
 
-const isEditing = computed(() => props.kind === 'interaction' && !!props.interaction);
+const isEditing = computed(() =>
+  (props.kind === 'interaction' && !!props.interaction) || (props.kind === 'deal' && !!props.deal)
+);
+
+const editTitle = computed(() => (props.kind === 'deal' ? 'Edit deal' : 'Edit interaction'));
+const editSubtitle = computed(() => (props.kind === 'deal' ? 'Update this deal' : 'Update this interaction'));
 
 const openToken = ref(0);
 watch(
@@ -139,28 +147,46 @@ const meta = computed<SalesCreateMeta | null>(() =>
 
 const close = (): void => emit('update:modelValue', false);
 
+async function runSubmit(action: () => Promise<boolean> | undefined): Promise<void> {
+  isSaving.value = true;
+  const saved = await action();
+  isSaving.value = false;
+  if (saved) {
+    emit('saved');
+    close();
+  }
+}
+
 async function onSubmit(): Promise<void> {
   if (props.kind === 'interaction') {
-    isSaving.value = true;
-    const saved = await interactionForm.value?.submit();
-    isSaving.value = false;
-    if (saved) {
-      emit('saved');
-      close();
-    }
+    await runSubmit(() => interactionForm.value?.submit());
+    return;
+  }
+  if (props.kind === 'deal') {
+    await runSubmit(() => dealForm.value?.submit());
     return;
   }
   close();
 }
 
 async function onDelete(): Promise<void> {
-  if (!props.interaction) return;
-  const confirmed = await showAlertConfirm('Delete interaction', 'This action cannot be undone.', 'Delete');
+  const isDeal = props.kind === 'deal';
+  const target = isDeal ? props.deal : props.interaction;
+  if (!target) return;
+  const confirmed = await showAlertConfirm(
+    isDeal ? 'Delete deal' : 'Delete interaction',
+    'This action cannot be undone.',
+    'Delete'
+  );
   if (!confirmed) return;
   isDeleting.value = true;
   try {
-    await deleteCompanyInteraction(props.interaction.id);
-    showAlertSuccess('Interaction deleted');
+    if (isDeal) {
+      await deleteDeal(target.id);
+    } else {
+      await deleteCompanyInteraction(target.id);
+    }
+    showAlertSuccess(isDeal ? 'Deal deleted' : 'Interaction deleted');
     emit('saved');
     close();
   } catch (error) {

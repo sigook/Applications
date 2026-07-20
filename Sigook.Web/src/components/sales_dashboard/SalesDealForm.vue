@@ -1,54 +1,162 @@
 <template>
   <form class="sd-form" @submit.prevent>
-    <b-field label="Deal name">
-      <b-input v-model="name" placeholder="e.g. Warehouse staffing – 40 FTE"></b-input>
+    <b-field label="Deal title">
+      <b-input v-model="title" placeholder="e.g. Warehouse staffing – 40 FTE"></b-input>
     </b-field>
 
     <b-field label="Client">
-      <b-select v-model="clientId" expanded placeholder="Select client…">
+      <b-select
+        v-if="!isEditing"
+        v-model="companyProfileId"
+        expanded
+        placeholder="Select client…"
+        :loading="isLoadingClients"
+      >
         <option v-for="client in clients" :key="client.id" :value="client.id">
-          {{ client.name }}
+          {{ client.fullName }}
         </option>
       </b-select>
+      <p v-else class="sd-readonly">{{ deal?.companyName }}</p>
     </b-field>
 
     <div class="sd-form__row">
       <b-field label="Value" class="sd-form__col">
-        <b-input v-model="value" type="number" placeholder="$"></b-input>
+        <b-input v-model="value" type="number" step="0.01" placeholder="$"></b-input>
       </b-field>
 
-      <b-field label="Stage" class="sd-form__col">
-        <b-select v-model="stage" expanded placeholder="Select stage…">
-          <option v-for="option in SALES_STAGE_ORDER" :key="option" :value="option">
-            {{ option }}
+      <b-field label="Type" class="sd-form__col">
+        <b-select v-model="type" expanded>
+          <option v-for="option in DEAL_TYPES" :key="option" :value="option">
+            {{ DEAL_TYPE_LABELS[option] }}
           </option>
         </b-select>
       </b-field>
     </div>
 
-    <b-field label="Expected close">
-      <b-datepicker v-model="expectedClose" placeholder="Pick a date"></b-datepicker>
+    <b-field label="Status">
+      <b-select v-model="status" expanded>
+        <option v-for="option in DEAL_STATUSES" :key="option" :value="option">
+          {{ DEAL_STATUS_LABELS[option] }}
+        </option>
+      </b-select>
     </b-field>
 
-    <b-field label="Notes">
-      <b-input v-model="notes" type="textarea" placeholder="Context, next steps…"></b-input>
+    <b-field label="Date">
+      <b-datepicker v-model="date" placeholder="Pick a date"></b-datepicker>
     </b-field>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { SalesClient, SalesDealStage } from '@/types/salesDashboard';
-import { SALES_STAGE_ORDER } from '@/types/salesDashboard';
+import { computed, onMounted, ref } from 'vue';
+import { getSalesCompanies } from '@/api/salesApi';
+import { createDeal, updateDeal } from '@/api/dealApi';
+import {
+  DealType,
+  DealStatus,
+  DEAL_TYPES,
+  DEAL_STATUSES,
+  DEAL_TYPE_LABELS,
+  DEAL_STATUS_LABELS,
+} from '@/types/deal';
+import type { Deal } from '@/types/deal';
+import type { AgencyCompanyListItem } from '@/types/agency';
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
 
-defineProps<{ clients: readonly SalesClient[] }>();
+const props = defineProps<{ deal?: Deal | null }>();
 
-const name = ref('');
-const clientId = ref<string | null>(null);
+const isEditing = computed(() => !!props.deal);
+
+const clients = ref<AgencyCompanyListItem[]>([]);
+const isLoadingClients = ref(false);
+
+const title = ref('');
+const companyProfileId = ref<string | null>(null);
+const date = ref<Date | null>(null);
 const value = ref<number | null>(null);
-const stage = ref<SalesDealStage | null>(null);
-const expectedClose = ref<Date | null>(null);
-const notes = ref('');
+const type = ref<DealType>(DealType.Temporal);
+const status = ref<DealStatus>(DealStatus.ToSend);
+
+onMounted(() => {
+  if (props.deal) {
+    title.value = props.deal.title;
+    companyProfileId.value = props.deal.companyProfileId;
+    date.value = new Date(props.deal.date);
+    value.value = props.deal.value;
+    type.value = props.deal.type;
+    status.value = props.deal.status;
+    return;
+  }
+  isLoadingClients.value = true;
+  getSalesCompanies({ pageSize: 100 })
+    .then((result) => {
+      clients.value = result.items;
+    })
+    .catch((error) => showAlertError(error))
+    .finally(() => {
+      isLoadingClients.value = false;
+    });
+});
+
+function resetForm(): void {
+  title.value = '';
+  companyProfileId.value = null;
+  date.value = null;
+  value.value = null;
+  type.value = DealType.Temporal;
+  status.value = DealStatus.ToSend;
+}
+
+async function submit(): Promise<boolean> {
+  if (!title.value.trim()) {
+    await showAlertError('Please enter a deal title');
+    return false;
+  }
+  if (!companyProfileId.value) {
+    await showAlertError('Please select a client');
+    return false;
+  }
+  if (!date.value) {
+    await showAlertError('Please pick a date');
+    return false;
+  }
+  const amount = Number(value.value);
+  if (!Number.isFinite(amount) || amount < 0) {
+    await showAlertError('Please enter a valid value');
+    return false;
+  }
+  try {
+    if (props.deal) {
+      await updateDeal(props.deal.id, {
+        title: title.value.trim(),
+        date: date.value.toISOString(),
+        value: amount,
+        type: type.value,
+        status: status.value,
+        documentId: props.deal.documentId ?? null,
+      });
+      showAlertSuccess('Deal updated');
+    } else {
+      await createDeal({
+        title: title.value.trim(),
+        companyProfileId: companyProfileId.value,
+        date: date.value.toISOString(),
+        value: amount,
+        type: type.value,
+        status: status.value,
+        documentId: null,
+      });
+      showAlertSuccess('Deal created');
+      resetForm();
+    }
+    return true;
+  } catch (error) {
+    await showAlertError(error);
+    return false;
+  }
+}
+
+defineExpose({ submit });
 </script>
 
 <style scoped lang="scss">
@@ -84,6 +192,13 @@ const notes = ref('');
   :deep(.textarea) {
     min-height: 5.5rem;
   }
+}
+
+.sd-readonly {
+  font-size: 0.82rem;
+  color: #333;
+  padding: 0.35rem 0;
+  font-weight: 600;
 }
 
 .sd-form__row {

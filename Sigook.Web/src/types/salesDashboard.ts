@@ -1,6 +1,5 @@
 import type { InteractionType } from './companyInteraction';
-
-export type SalesDealStage = 'Lead' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Won';
+import type { DealStatus } from './deal';
 
 export type SalesRangeKey = 'week' | 'month' | 'quarter';
 
@@ -22,14 +21,6 @@ export interface SalesClient {
   readonly industry: string;
 }
 
-export interface SalesDeal {
-  readonly id: string;
-  readonly name: string;
-  readonly clientName: string;
-  readonly stage: SalesDealStage;
-  readonly value: number;
-}
-
 export interface SalesClientsBlock {
   readonly items: readonly SalesClient[];
   readonly totalItems: number;
@@ -38,7 +29,6 @@ export interface SalesClientsBlock {
 }
 
 export interface SalesDealsBlock {
-  readonly items: readonly SalesDeal[];
   readonly totalItems: number;
   readonly pipelineValue: number;
 }
@@ -60,7 +50,7 @@ export interface SalesGoal {
 }
 
 export interface SalesPipelineStage {
-  readonly stage: SalesDealStage;
+  readonly status: DealStatus;
   readonly count: number;
 }
 
@@ -91,19 +81,3 @@ export const SALES_RANGE_TABS: readonly { readonly key: SalesRangeKey; readonly 
   { key: 'month', label: 'Month' },
   { key: 'quarter', label: 'Quarter' },
 ];
-
-export const SALES_STAGE_ORDER: readonly SalesDealStage[] = [
-  'Lead',
-  'Qualified',
-  'Proposal',
-  'Negotiation',
-  'Won',
-];
-
-export const SALES_STAGE_COLORS: Record<SalesDealStage, string> = {
-  Lead: '#9ad6ff',
-  Qualified: '#5cc4ff',
-  Proposal: '#21b7ff',
-  Negotiation: '#ff9932',
-  Won: '#3eb800',
-};

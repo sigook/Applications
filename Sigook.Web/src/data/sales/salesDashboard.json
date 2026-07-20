@@ -41,37 +41,7 @@
   },
   "deals": {
     "totalItems": 57,
-    "pipelineValue": 612000,
-    "items": [
-      {
-        "id": "f6a9b4d7-1d38-4352-8b60-8c3f7e1d5a16",
-        "name": "Warehouse staffing – 40 FTE",
-        "clientName": "Acme Logistics",
-        "stage": "Proposal",
-        "value": 86000
-      },
-      {
-        "id": "07b0c5e8-2e49-4463-9c71-9d4a8f2e6b17",
-        "name": "Seasonal ramp-up crew",
-        "clientName": "Harbor Foods",
-        "stage": "Negotiation",
-        "value": 54000
-      },
-      {
-        "id": "18c1d6f9-3f5a-4574-8d82-0e5b9a3f7c18",
-        "name": "Night shift packers",
-        "clientName": "Vertex Manufacturing",
-        "stage": "Qualified",
-        "value": 120000
-      },
-      {
-        "id": "29d2e70a-406b-4685-9e93-1f6c0b4a8d19",
-        "name": "Forklift operators ×6",
-        "clientName": "Northwind Traders",
-        "stage": "Lead",
-        "value": 38000
-      }
-    ]
+    "pipelineValue": 612000
   },
   "dealsClosed": {
     "week": [
@@ -100,11 +70,10 @@
     "target": 850000
   },
   "pipeline": [
-    { "stage": "Lead", "count": 24 },
-    { "stage": "Qualified", "count": 16 },
-    { "stage": "Proposal", "count": 9 },
-    { "stage": "Negotiation", "count": 5 },
-    { "stage": "Won", "count": 3 }
+    { "status": 0, "count": 24 },
+    { "status": 1, "count": 16 },
+    { "status": 2, "count": 5 },
+    { "status": 3, "count": 12 }
   ],
   "activity": [
     { "type": 0, "count": 42 },

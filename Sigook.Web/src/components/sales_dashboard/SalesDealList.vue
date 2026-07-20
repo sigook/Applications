@@ -1,10 +1,18 @@
 <template>
   <sales-list :is-empty="!items.length">
-    <sales-list-row v-for="item in items" :key="item.id">
-      <template #title>{{ item.name }}</template>
+    <sales-list-row
+      v-for="item in items"
+      :key="item.id"
+      class="sd-deal-row"
+      role="button"
+      tabindex="0"
+      @click="emit('edit', item)"
+      @keydown.enter="emit('edit', item)"
+    >
+      <template #title>{{ item.title }}</template>
       <template #meta>
-        <span class="sd-deal-client">{{ item.clientName }}</span>
-        <span class="sd-deal-stage">{{ item.stage }}</span>
+        <span class="sd-deal-client">{{ item.companyName }}</span>
+        <span class="sd-deal-stage">{{ DEAL_STATUS_LABELS[item.status] }}</span>
       </template>
       <template #trailing>
         <span class="sd-deal-value">{{ compactMoney(item.value) }}</span>
@@ -16,15 +24,27 @@
 <script setup lang="ts">
 import SalesList from './SalesList.vue';
 import SalesListRow from './SalesListRow.vue';
-import type { SalesDeal } from '@/types/salesDashboard';
+import { DEAL_STATUS_LABELS } from '@/types/deal';
+import type { Deal } from '@/types/deal';
 import { compactMoney } from '@/utils/salesDashboardFormat';
 
 defineProps<{
-  items: readonly SalesDeal[];
+  items: readonly Deal[];
 }>();
+
+const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
 </script>
 
 <style scoped lang="scss">
+.sd-deal-row {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid rgba(33, 183, 255, 0.5);
+    outline-offset: 1px;
+  }
+}
+
 .sd-deal-client {
   min-width: 0;
   overflow: hidden;
