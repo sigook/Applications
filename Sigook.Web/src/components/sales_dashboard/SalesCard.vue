@@ -6,7 +6,8 @@
           <b-icon :icon="icon" size="is-small"></b-icon>
         </span>
         <div class="sd-card__text">
-          <p class="sd-card__title">{{ title }}</p>
+          <router-link v-if="titleTo" :to="titleTo" class="sd-card__title sd-card__title--link">{{ title }}</router-link>
+          <p v-else class="sd-card__title">{{ title }}</p>
           <p v-if="$slots.subtitle || subtitle" class="sd-card__subtitle">
             <slot name="subtitle">{{ subtitle }}</slot>
           </p>
@@ -42,6 +43,7 @@ type SalesCardTone = 'primary' | 'green' | 'accent';
 const props = withDefaults(
   defineProps<{
     title: string;
+    titleTo?: string;
     subtitle?: string;
     icon?: string;
     tone?: SalesCardTone;
@@ -49,6 +51,7 @@ const props = withDefaults(
     actionLabel?: string;
   }>(),
   {
+    titleTo: '',
     subtitle: '',
     icon: '',
     tone: 'primary',
@@ -129,6 +132,24 @@ const toneClass = computed(() => `is-${props.tone}`);
   color: #333;
   margin: 0;
   line-height: 1.3;
+}
+
+.sd-card__title--link {
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: $primary;
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(33, 183, 255, 0.5);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
 }
 
 .sd-card__subtitle {

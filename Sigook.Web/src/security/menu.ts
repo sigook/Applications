@@ -94,9 +94,19 @@ export default {
           label: "Dashboard",
         },
         {
+          to: "/sales/interactions",
+          icon: "message-text-outline",
+          label: "Interactions",
+        },
+        {
           to: "/sales/companies",
           icon: "domain",
           label: "Clients",
+        },
+        {
+          to: "/sales/deals",
+          icon: "handshake-outline",
+          label: "Deals",
         },
       ],
     };

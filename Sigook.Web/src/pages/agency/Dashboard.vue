@@ -14,6 +14,7 @@
       <div class="sd-grid-top">
         <sales-card
           title="Log Interactions"
+          title-to="/sales/interactions"
           subtitle="Recent activity"
           icon="message-text-outline"
           tone="primary"
@@ -26,6 +27,7 @@
 
         <sales-card
           title="Clients"
+          title-to="/sales/companies"
           :subtitle="clientsSubtitle"
           icon="domain"
           tone="green"
@@ -38,6 +40,7 @@
 
         <sales-card
           title="Deals"
+          title-to="/sales/deals"
           :subtitle="dealsSubtitle"
           icon="handshake-outline"
           tone="accent"

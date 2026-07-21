@@ -19,6 +19,8 @@ const AgencyDetailCompany = () => import("@/pages/agency/DetailCompany.vue");
 const AgencyProfile = () => import("@/pages/agency/AgencyProfile.vue");
 const AgencyCandidates = () => import("@/pages/agency/Candidates.vue");
 const SalesDashboard = () => import("@/pages/agency/Dashboard.vue");
+const SalesInteractions = () => import("@/pages/agency/SalesInteractions.vue");
+const SalesDeals = () => import("@/pages/agency/SalesDeals.vue");
 const AgencyAgencies = () => import("@/pages/agency/Agencies.vue");
 const CreateAgency = () => import("@/pages/agency/CreateAgency.vue");
 const DetailAgency = () => import("@/pages/agency/DetailAgency.vue");
@@ -167,6 +169,24 @@ const routesAgency: RouteRecordRaw[] = [
     path: "/sales/dashboard",
     name: "sales-dashboard",
     component: SalesDashboard,
+    meta: {
+      requiresAuth: true,
+      role: salesAccess,
+    },
+  },
+  {
+    path: "/sales/interactions",
+    name: "sales-interactions",
+    component: SalesInteractions,
+    meta: {
+      requiresAuth: true,
+      role: salesAccess,
+    },
+  },
+  {
+    path: "/sales/deals",
+    name: "sales-deals",
+    component: SalesDeals,
     meta: {
       requiresAuth: true,
       role: salesAccess,
