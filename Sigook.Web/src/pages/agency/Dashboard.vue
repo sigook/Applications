@@ -5,7 +5,7 @@
     <div class="section-top-title container-flex mb-5">
       <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
         Sales Dashboard
-        <span v-if="data" class="fw-light fz-1">· {{ data.agent.fullName }}</span>
+        <span v-if="agentName" class="fw-light fz-1">· {{ agentName }}</span>
       </h2>
       <span v-if="data" class="sd-period">{{ data.period.label }} · {{ shortDate(data.period.asOf) }}</span>
     </div>
@@ -91,6 +91,7 @@ import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue'
 import { getSalesDashboard } from '@/api/salesDashboardApi';
 import { getCompanyInteractions } from '@/api/companyInteractionApi';
 import { getDeals } from '@/api/dealApi';
+import { useCurrentAgent } from '@/composables/useCurrentAgent';
 import { compactMoney, shortDate } from '@/utils/salesDashboardFormat';
 import { showAlertError } from '@/utils/toast';
 import { DealSortBy, DEAL_STATUS_COLORS, DEAL_STATUS_LABELS } from '@/types/deal';
@@ -107,6 +108,8 @@ import {
   INTERACTION_TYPE_LABELS,
 } from '@/types/companyInteraction';
 import type { CompanyInteraction } from '@/types/companyInteraction';
+
+const { agentName, loadAgentName } = useCurrentAgent();
 
 const isLoading = ref(false);
 const data = ref<SalesDashboardModel | null>(null);
@@ -214,6 +217,7 @@ onMounted(() => {
     });
   loadInteractions();
   loadDeals();
+  loadAgentName();
 });
 </script>
 

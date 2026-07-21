@@ -5,11 +5,6 @@ export type SalesRangeKey = 'week' | 'month' | 'quarter';
 
 export type SalesCreateKind = 'interaction' | 'client' | 'deal';
 
-export interface SalesAgent {
-  readonly fullName: string;
-  readonly initials: string;
-}
-
 export interface SalesPeriod {
   readonly label: string;
   readonly asOf: string;
@@ -60,7 +55,6 @@ export interface SalesActivity {
 }
 
 export interface SalesDashboardModel {
-  readonly agent: SalesAgent;
   readonly period: SalesPeriod;
   readonly clients: SalesClientsBlock;
   readonly deals: SalesDealsBlock;
