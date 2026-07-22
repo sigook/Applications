@@ -47,7 +47,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
             response = await _client.GetAsync(response.Headers.Location);
             var detail = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
             Assert.NotNull(detail);
-            Assert.Equal(model.Name, detail.BusinessName);
             Assert.Equal(model.Name, detail.FullName);
             Assert.Equal(model.Email, detail.Email);
             Assert.NotNull(detail.Logo);

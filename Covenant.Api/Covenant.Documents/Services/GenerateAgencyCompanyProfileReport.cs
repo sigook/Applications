@@ -7,7 +7,7 @@ public class GenerateAgencyCompanyProfileReport(IReadOnlyList<CompanyProfileList
 {
     public override IEnumerable<string> Columns =>
     [
-        "Business Name",
+        "Company Name",
         "Industry",
         "Company Status",
         "Phone",
@@ -24,7 +24,7 @@ public class GenerateAgencyCompanyProfileReportHandler : GenerateAgencyReportHan
 {
     public override void SetValue(IXLWorksheet sheet, int row, CompanyProfileListModel data)
     {
-        sheet.Cell($"A{row}").SetValue(data.BusinessName);
+        sheet.Cell($"A{row}").SetValue(data.FullName);
         sheet.Cell($"B{row}").SetValue(data.Industry);
         sheet.Cell($"C{row}").SetValue(data.CompanyStatus.ToString());
         sheet.Cell($"D{row}").SetValue(data.Phone);

@@ -3,12 +3,6 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
       <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-        <b-field label="Company Business Name" :type="formErrors.businessName ? 'is-danger' : ''"
-          :message="formErrors.businessName || ''">
-          <b-input v-model="businessName" name="business name" />
-        </b-field>
-      </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
         <b-field label="Company Full Name" :type="formErrors.fullName ? 'is-danger' : ''"
           :message="formErrors.fullName || ''">
           <b-input v-model="fullName" name="full name" />
@@ -72,7 +66,6 @@ const numericExt = yup
 const urlRegex = /^((https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?)$/i;
 
 const schema = yup.object({
-  businessName: yup.string().required('Business name is required').min(2).max(50, 'Max 50 characters'),
   fullName: yup.string().required('Full name is required').min(2).max(50, 'Max 50 characters'),
   industry: yup.string().nullable(),
   phoneExt: numericExt,
@@ -86,12 +79,11 @@ const schema = yup.object({
 });
 
 const form = useStickyForm<{
-  businessName: string; fullName: string; industry: string;
+  fullName: string; industry: string;
   phoneExt: string; faxExt: string; website: string;
 }>({
   schema,
   initialValues: {
-    businessName: props.companyData?.businessName || '',
     fullName: props.companyData?.fullName || '',
     industry: props.companyData?.industry?.industry?.value || '',
     phoneExt: props.companyData?.phoneExt != null ? String(props.companyData.phoneExt) : '',
@@ -99,7 +91,7 @@ const form = useStickyForm<{
     website: props.companyData?.website || '',
   },
 });
-const { businessName, fullName, industry, phoneExt, faxExt, website } = form.fields;
+const { fullName, industry, phoneExt, faxExt, website } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
@@ -112,7 +104,6 @@ const faxComponent = ref<any>(null);
 watch(() => props.companyData, (newVal) => {
   localCompanyData.value = JSON.parse(JSON.stringify(newVal));
   form.hydrate({
-    businessName: newVal?.businessName || '',
     fullName: newVal?.fullName || '',
     industry: newVal?.industry?.industry?.value || '',
     phoneExt: newVal?.phoneExt != null ? String(newVal.phoneExt) : '',
@@ -139,7 +130,6 @@ async function save() {
     isLoading.value = true;
     const updated = {
       ...localCompanyData.value,
-      businessName: values.businessName,
       fullName: values.fullName,
       phoneExt: values.phoneExt ? parseInt(values.phoneExt, 10) : null,
       faxExt: values.faxExt ? parseInt(values.faxExt, 10) : null,

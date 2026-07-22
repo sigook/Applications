@@ -286,7 +286,8 @@ public class WorkerRepository : IWorkerRepository
                     ProvincialTaxCategory = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.ProvincialCategory : null,
                     Cpp = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.Cpp : null,
                     Ei = wp.WorkerProfileTaxCategory != null ? wp.WorkerProfileTaxCategory.Ei : null,
-                    ExternalId = wp.ExternalId
+                    ExternalId = wp.ExternalId,
+                    WcCode = wp.WcCode
                 })
             .SingleOrDefaultAsync();
     }

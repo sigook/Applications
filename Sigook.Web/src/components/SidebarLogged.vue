@@ -186,7 +186,7 @@ async function getAgencyInfo() {
 
 async function getCompanyInfo() {
   const response = await getCompanyProfile();
-  currentUser.value.fullName = response.businessName;
+  currentUser.value.fullName = response.fullName;
   currentUser.value.profileImage = response.logo?.pathFile ?? null;
   profileUrl.value = '/company-profile';
 }

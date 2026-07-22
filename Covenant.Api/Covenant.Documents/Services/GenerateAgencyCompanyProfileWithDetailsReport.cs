@@ -32,13 +32,13 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
     private static void BuildCompaniesSheet(XLWorkbook workbook, IReadOnlyList<CompanyProfileWithDetailsModel> companies)
     {
         var sheet = workbook.Worksheets.Add("Companies");
-        sheet.SetupHeaders(["Business Name", "Industry", "Company Status", "Phone", "Email", "Website", "Created By", "Created At", "Updated By", "Updated At"]);
+        sheet.SetupHeaders(["Company Name", "Industry", "Company Status", "Phone", "Email", "Website", "Created By", "Created At", "Updated By", "Updated At"]);
 
         var row = 2;
         foreach (var company in companies)
         {
             var c = company.Company;
-            sheet.Cell($"A{row}").SetValue(c.BusinessName);
+            sheet.Cell($"A{row}").SetValue(c.FullName);
             sheet.Cell($"B{row}").SetValue(c.Industry);
             sheet.Cell($"C{row}").SetValue(c.CompanyStatus.ToString());
             sheet.Cell($"D{row}").SetValue(c.Phone);
@@ -62,7 +62,7 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
         {
             foreach (var user in company.Users)
             {
-                sheet.Cell($"A{row}").SetValue(company.Company.BusinessName);
+                sheet.Cell($"A{row}").SetValue(company.Company.FullName);
                 sheet.Cell($"B{row}").SetValue(user.Name);
                 sheet.Cell($"C{row}").SetValue(user.Lastname);
                 sheet.Cell($"D{row}").SetValue(user.Email);
@@ -84,7 +84,7 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
         {
             foreach (var contact in company.Contacts)
             {
-                sheet.Cell($"A{row}").SetValue(company.Company.BusinessName);
+                sheet.Cell($"A{row}").SetValue(company.Company.FullName);
                 sheet.Cell($"B{row}").SetValue(contact.Title);
                 sheet.Cell($"C{row}").SetValue(contact.FirstName);
                 sheet.Cell($"D{row}").SetValue(contact.MiddleName);
@@ -109,7 +109,7 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
         {
             foreach (var jp in company.JobPositions)
             {
-                sheet.Cell($"A{row}").SetValue(company.Company.BusinessName);
+                sheet.Cell($"A{row}").SetValue(company.Company.FullName);
                 sheet.Cell($"B{row}").SetValue(jp.JobPosition);
                 sheet.Cell($"C{row}").SetValue(jp.Rate).SetMoneyType();
                 sheet.Cell($"D{row}").SetValue(jp.WorkerRate).SetMoneyType();

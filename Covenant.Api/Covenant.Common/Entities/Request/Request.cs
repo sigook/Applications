@@ -10,18 +10,12 @@ namespace Covenant.Common.Entities.Request
     {
         private const int MaximumNumberOfRecruiters = 10;
         private const int MinimumWorkersQuantity = 1;
-        private const int MaximumLengthJobTitle = 500;
-        private const int MaximumIncentive = 720;
-        public const int MaximumLengthIncentiveDescription = 5000;
         public const int DaysToWaitToResendInvitation = 7;
 
         private int _workersQuantityWorking;
         private int _workersQuantity = MinimumWorkersQuantity;
         private readonly List<WorkerRequest> _workers = new List<WorkerRequest>();
         private readonly List<RequestRecruiter> _recruiters = new List<RequestRecruiter>();
-
-        private static readonly TimeSpan MinimumDurationBreak = TimeSpan.Zero;
-        private static readonly TimeSpan MaximumDurationBreak = TimeSpan.FromHours(1);
 
         private Request()
         {
@@ -42,6 +36,7 @@ namespace Covenant.Common.Entities.Request
         public int NumberId { get; set; }
         public string JobTitle { get; set; }
         public string BillingTitle { get; set; }
+        public string JobCosting { get; set; }
         public Guid? JobPositionRateId { get; set; }
         public CompanyProfileJobPositionRate JobPositionRate { get; set; }
         public string Description { get; set; }
@@ -211,9 +206,6 @@ namespace Covenant.Common.Entities.Request
 
         public Result UpdateDurationBreak(TimeSpan durationBreak)
         {
-            if (durationBreak < MinimumDurationBreak) durationBreak = MinimumDurationBreak;
-            if (durationBreak > MaximumDurationBreak)
-                return Result.Fail(ValidationMessages.GreaterThanOrEqualMsg(ApiResources.DurationBreak, MaximumDurationBreak));
             DurationBreak = durationBreak;
             UpdatedAt = DateTime.Now;
             return Result.Ok();
@@ -222,8 +214,6 @@ namespace Covenant.Common.Entities.Request
         public Result UpdateJobTitle(string jobTitle)
         {
             if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
-            if (string.IsNullOrEmpty(jobTitle)) return Result.Fail(ValidationMessages.RequiredMsg(ApiResources.JobTitle));
-            if (jobTitle.Length > MaximumLengthJobTitle) return Result.Fail(ValidationMessages.LessThanOrEqualMsg(ApiResources.JobTitle, MaximumLengthJobTitle));
             JobTitle = jobTitle;
             UpdatedAt = DateTime.Now;
             return Result.Ok();
@@ -232,8 +222,15 @@ namespace Covenant.Common.Entities.Request
         public Result UpdateBillingTitle(string title)
         {
             if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
-            if (title?.Length > MaximumLengthJobTitle) return Result.Fail(ValidationMessages.LessThanOrEqualMsg(nameof(BillingTitle), MaximumLengthJobTitle));
             BillingTitle = title;
+            UpdatedAt = DateTime.Now;
+            return Result.Ok();
+        }
+
+        public Result UpdateJobCosting(string jobCosting)
+        {
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
+            JobCosting = jobCosting;
             UpdatedAt = DateTime.Now;
             return Result.Ok();
         }
@@ -254,15 +251,12 @@ namespace Covenant.Common.Entities.Request
                 Incentive = null;
                 return Result.Ok();
             }
-            if (newIncentive > MaximumIncentive) return Result.Fail(ValidationMessages.LessThanOrEqualMsg(ApiResources.Incentive, MaximumIncentive));
             Incentive = newIncentive;
             if (string.IsNullOrEmpty(description))
             {
                 IncentiveDescription = null;
                 return Result.Ok();
             }
-            if (description.Length > MaximumLengthIncentiveDescription)
-                return Result.Fail(ValidationMessages.LessThanOrEqualMsg(ApiResources.IncentiveDescription, MaximumLengthIncentiveDescription));
             IncentiveDescription = description;
             UpdatedAt = DateTime.Now;
             return Result.Ok();

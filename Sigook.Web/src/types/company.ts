@@ -14,7 +14,6 @@ export enum CompanyStatus {
 export interface CompanyProfile {
   id: string;
   agencyId: string;
-  businessName: string;
   dbaName: string;
   businessNumber: string;
   hstNumber: string;
@@ -91,7 +90,6 @@ export interface CompanyProfileDetail {
   numberId: number;
   companyId: string;
   fullName: string;
-  businessName: string;
   phone: string;
   phoneExt: number | null;
   fax: string;
@@ -130,7 +128,6 @@ export interface CompanyProfileListItem {
   id: string;
   logo: string;
   fullName: string;
-  businessName: string;
   numberId: number;
   locations: string[];
   active: boolean;

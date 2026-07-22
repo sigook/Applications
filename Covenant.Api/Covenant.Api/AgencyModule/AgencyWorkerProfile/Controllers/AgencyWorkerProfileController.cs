@@ -198,6 +198,22 @@ public class AgencyWorkerProfileController : Controller
         return Ok();
     }
 
+    /// <summary>Updates the WC code of a worker profile.</summary>
+    /// <param name="id">Identifier of the worker profile.</param>
+    /// <param name="model">Model containing the new WC code.</param>
+    [HttpPut("{id:guid}/WcCode")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateWcCode(Guid id, [FromBody] WorkerProfileDetailModel model)
+    {
+        var entity = await _workerRepository.GetProfile(w => w.Id == id);
+        if (entity is null) return NotFound();
+        entity.WcCode = model?.WcCode;
+        await _workerRepository.UpdateProfile(entity);
+        await _workerRepository.SaveChangesAsync();
+        return Ok();
+    }
+
     /// <summary>Updates the tax category of a worker profile.</summary>
     /// <param name="id">Identifier of the worker profile.</param>
     /// <param name="model">Model containing the new tax category.</param>

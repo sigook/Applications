@@ -128,7 +128,6 @@ public class CompanyService : ICompanyService
         var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
         if (entity is null) return Result.Fail();
         entity.FullName = model.FullName;
-        entity.BusinessName = model.BusinessName;
         entity.Phone = model.Phone;
         entity.PhoneExt = model.PhoneExt;
         entity.Fax = model.Fax;

@@ -3,6 +3,7 @@ using System;
 using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Covenant.Infrastructure.Migrations
 {
     [DbContext(typeof(CovenantContext))]
-    partial class CovenantContextModelSnapshot : ModelSnapshot
+    [Migration("20260722144552_AddWcCodeToWorkerProfileAndJobCostingToRequest")]
+    partial class AddWcCodeToWorkerProfileAndJobCostingToRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1198,6 +1201,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<Guid>("AgencyId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("BusinessName")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");

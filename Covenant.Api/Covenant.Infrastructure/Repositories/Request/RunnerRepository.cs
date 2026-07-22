@@ -121,7 +121,7 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
              RequestId = r.RequestId,
              RequestNumberId = r.Request.NumberId,
              JobTitle = r.Request.JobTitle,
-             CompanyName = cp.BusinessName,
+             CompanyName = cp.FullName,
              WorkerProfileId = r.WorkerProfileId.Value,
              WorkerName = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
              StartDate = r.StartDate.Value

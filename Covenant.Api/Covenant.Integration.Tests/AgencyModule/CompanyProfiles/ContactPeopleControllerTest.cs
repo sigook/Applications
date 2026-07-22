@@ -155,7 +155,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 
             private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
             public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
-                "", "", "", new CompanyProfileIndustry("Company Industry"));
+                "", "", new CompanyProfileIndustry("Company Industry"));
 
             public static readonly CompanyProfileContactPerson FakeContactPerson = new CompanyProfileContactPerson(FakeCompanyProfile.Id)
             {

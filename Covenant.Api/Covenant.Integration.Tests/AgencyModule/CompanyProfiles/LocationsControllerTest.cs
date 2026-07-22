@@ -153,7 +153,7 @@ public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory
 
         private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
         public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
-            "", "", "", new CompanyProfileIndustry("Company Industry"));
+            "", "", new CompanyProfileIndustry("Company Industry"));
 
         public static readonly CompanyProfileLocation FakeLocation = new CompanyProfileLocation(FakeCompanyProfile.Id,
             Location.Create(York.Id, "567 Dundas", "A2A2A2", "Back Door", "Dundas & bloor").Value)

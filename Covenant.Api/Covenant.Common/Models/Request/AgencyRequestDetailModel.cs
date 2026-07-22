@@ -9,6 +9,7 @@ namespace Covenant.Common.Models.Request
         public int NumberId { get; set; }
         public string JobTitle { get; set; }
         public string BillingTitle { get; set; }
+        public string JobCosting { get; set; }
         public string CompanyLogo { get; set; }
         public string FullName { get; set; }
         public Guid CompanyProfileId { get; set; }

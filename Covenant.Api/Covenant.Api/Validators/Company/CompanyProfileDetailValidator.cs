@@ -12,11 +12,8 @@ namespace Covenant.Api.Validators.Company
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
 
-            RuleFor(c => c.BusinessName);
-
-            RuleFor(c => c)
-                .Must(c => !string.IsNullOrWhiteSpace(c.BusinessName) || !string.IsNullOrWhiteSpace(c.FullName))
-                .WithMessage("Either BusinessName or FullName must be provided.");
+            RuleFor(c => c.FullName)
+                .NotEmpty();
 
             RuleFor(c => c.Email)
                 .NotEmpty()
