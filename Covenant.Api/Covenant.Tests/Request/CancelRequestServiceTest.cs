@@ -1,3 +1,4 @@
+using Covenant.Api.Validators.Request;
 using Covenant.Common.Configuration;
 using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
@@ -43,7 +44,9 @@ namespace Covenant.Tests.Request
                 Mock.Of<IEmailService>(),
                 Mock.Of<ISigookBusClient>(),
                 Options.Create(new ServiceBusConfiguration()),
-                Mock.Of<ILogger<RequestService>>());
+                Mock.Of<ILogger<RequestService>>(),
+                new RequestCreateModelValidator(),
+                new RequestUpdateRequirementsModelValidator());
             Result result = await service.CancelRequest(request.Id, new RequestCancellationDetailModel());
             Assert.True(result);
             Assert.Equal(RequestStatus.Cancelled, request.Status);

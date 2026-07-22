@@ -202,13 +202,12 @@ public class CompanyRepository : ICompanyRepository
                     join cf in _context.CovenantFile on cp.LogoId equals cf.Id into tmp
                     from cfl in tmp.DefaultIfEmpty()
                     from cpcp in _context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).Take(1).DefaultIfEmpty()
-                    orderby cp.BusinessName
+                    orderby cp.FullName
                     select new CompanyProfileListModel
                     {
                         AgencyId = cp.AgencyId,
                         Id = cp.Id,
                         CompanyId = cp.CompanyId,
-                        BusinessName = cp.BusinessName,
                         FullName = cp.FullName,
                         NumberId = cp.NumberId,
                         Active = cp.Active,
@@ -304,7 +303,7 @@ public class CompanyRepository : ICompanyRepository
         {
             var businessInfo = filter.BusinessInfo.ToLower();
             predicate = predicate.And(c =>
-                c.BusinessName.ToLower().Contains(businessInfo) ||
+                c.FullName.ToLower().Contains(businessInfo) ||
                 c.Locations.Any(l => l.Replace(" ", string.Empty).ToLower().Contains(businessInfo)));
         }
         if (!string.IsNullOrWhiteSpace(filter.ContactInfo))
@@ -379,7 +378,6 @@ public class CompanyRepository : ICompanyRepository
                 NumberId = cp.NumberId,
                 CompanyId = cp.CompanyId,
                 FullName = cp.FullName,
-                BusinessName = cp.BusinessName,
                 Phone = cp.Phone,
                 PhoneExt = cp.PhoneExt,
                 Fax = cp.Fax,

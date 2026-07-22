@@ -377,7 +377,7 @@ public class TimesheetRepository : ITimesheetRepository
         return await (from ts in timeSheet
                       join wp in _context.WorkerProfile.Where(wp => !wp.IsSubcontractor) on ts.WorkerRequest.WorkerId equals wp.WorkerId
                       join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
-                      group new { wp } by new { wp.WorkerId, wp.FirstName, wp.MiddleName, wp.LastName, wp.SecondLastName, cp.BusinessName }
+                      group new { wp } by new { wp.WorkerId, wp.FirstName, wp.MiddleName, wp.LastName, wp.SecondLastName, cp.FullName }
                       into result
                       select new WorkerReadyForPayStubModel
                       {
@@ -386,7 +386,7 @@ public class TimesheetRepository : ITimesheetRepository
                           MiddleName = result.Key.MiddleName,
                           LastName = result.Key.LastName,
                           SecondLastName = result.Key.SecondLastName,
-                          BusinessName = result.Key.BusinessName
+                          BusinessName = result.Key.FullName
                       }
             ).ToListAsync();
     }

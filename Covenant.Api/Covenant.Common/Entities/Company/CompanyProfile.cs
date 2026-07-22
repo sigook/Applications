@@ -18,13 +18,12 @@ namespace Covenant.Common.Entities.Company
         {
         }
 
-        public CompanyProfile(User company, Agency.Agency agency, string fullName, string businessName, string phone, CompanyProfileIndustry industry)
+        public CompanyProfile(User company, Agency.Agency agency, string fullName, string phone, CompanyProfileIndustry industry)
         {
             Company = company ?? throw new ArgumentNullException(nameof(company));
             CompanyId = company.Id;
             Agency = agency;
             FullName = fullName;
-            BusinessName = businessName;
             Phone = phone;
             Industry = industry;
         }
@@ -38,7 +37,6 @@ namespace Covenant.Common.Entities.Company
         public Guid? LogoId { get; set; }
         public CovenantFile Logo { get; set; } = new CovenantFile(DefaultImageLogo);
         public string FullName { get; set; }
-        public string BusinessName { get; set; }
         public string Phone { get; set; }
         public int? PhoneExt { get; set; }
         public string Fax { get; set; }
@@ -113,7 +111,6 @@ namespace Covenant.Common.Entities.Company
         {
             if (string.IsNullOrEmpty(name))
                 return Result.Fail(ValidationMessages.RequiredMsg(ApiResources.BusinessName));
-            BusinessName = name;
             FullName = name;
             return Result.Ok();
         }
@@ -151,7 +148,6 @@ namespace Covenant.Common.Entities.Company
                 Company = user ?? throw new ArgumentNullException(nameof(user)),
                 CompanyId = user.Id,
                 AgencyId = agencyId,
-                BusinessName = name,
                 FullName = name,
                 Logo = new CovenantFile(logoName),
                 Industry = new CompanyProfileIndustry("Other."),
@@ -172,7 +168,6 @@ namespace Covenant.Common.Entities.Company
             User user,
             Guid agencyId,
             CompanyName fullName,
-            CompanyName businessName,
             string phone,
             int? phoneExt,
             string fax,
@@ -193,7 +188,6 @@ namespace Covenant.Common.Entities.Company
                 CompanyId = user.Id,
                 AgencyId = agencyId,
                 FullName = fullName,
-                BusinessName = businessName,
                 Phone = phone,
                 PhoneExt = phoneExt,
                 Fax = fax,

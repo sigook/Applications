@@ -235,6 +235,7 @@ export interface UpdateWorkerEmailModel {
 export interface UpdateWorkerProfileFieldsPayload {
   id: string;
   externalId?: string | null;
+  wcCode?: string | null;
   workerProfileTaxCategoryId?: string | null;
   taxRate?: number | null;
 }
@@ -482,6 +483,7 @@ export interface AgencyRequestDetail {
   numberId: number;
   jobTitle: string;
   billingTitle?: string;
+  jobCosting?: string;
   companyLogo?: string;
   fullName?: string;
   companyProfileId: string;
@@ -525,6 +527,7 @@ export interface AgencyRequestDetail {
 export interface CreateAgencyRequestModel {
   jobTitle: string;
   billingTitle?: string;
+  jobCosting?: string;
   workersQuantity: number;
   description?: string;
   durationBreak: string;

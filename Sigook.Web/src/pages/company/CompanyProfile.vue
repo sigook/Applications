@@ -10,7 +10,7 @@
         </UploadImage>
         <div v-if="companyProfile">
           <h1 class="text-capitalize fz2">
-            {{ lowercase(companyProfile.businessName) }}
+            {{ lowercase(companyProfile.fullName) }}
           </h1>
         </div>
       </div>

@@ -18,6 +18,7 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Infrastructure.Services;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -38,6 +39,8 @@ public class RequestService : IRequestService
     private readonly ISigookBusClient busClient;
     private readonly ServiceBusConfiguration serviceBusConfiguration;
     private readonly ILogger<RequestService> logger;
+    private readonly IValidator<RequestCreateModel> requestCreateValidator;
+    private readonly IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator;
 
     public RequestService(
         ICompanyRepository companyRepository,
@@ -51,8 +54,12 @@ public class RequestService : IRequestService
         IEmailService emailService,
         ISigookBusClient busClient,
         IOptions<ServiceBusConfiguration> serviceBusOptions,
-        ILogger<RequestService> logger)
+        ILogger<RequestService> logger,
+        IValidator<RequestCreateModel> requestCreateValidator,
+        IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator)
     {
+        this.requestCreateValidator = requestCreateValidator;
+        this.requestUpdateRequirementsValidator = requestUpdateRequirementsValidator;
         this.companyRepository = companyRepository;
         this.locationRepository = locationRepository;
         this.timeService = timeService;
@@ -164,10 +171,8 @@ public class RequestService : IRequestService
         {
             return Result.Fail("Request not found");
         }
-        var description = RequestDescriptionModel.Create(model.Description);
-        if (!description) return description;
-        var requirements = RequestRequirementsModel.Create(model.Requirements);
-        if (!requirements) return requirements;
+        var validationResult = await requestCreateValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure();
         if (model.WorkerSalary.HasValue)
         {
             request.WorkerSalary = model.WorkerSalary.Value;
@@ -185,10 +190,11 @@ public class RequestService : IRequestService
         }
         request.UpdateJobTitle(model.JobTitle);
         request.UpdateBillingTitle(model.BillingTitle);
+        request.UpdateJobCosting(model.JobCosting);
         var location = await locationRepository.GetLocationById(model.LocationId.Value);
         request.UpdateJobLocation(location, false);
-        request.UpdateDescription(description.Value.Value);
-        request.UpdateRequirements(requirements.Value.Value);
+        request.UpdateDescription(model.Description);
+        request.UpdateRequirements(model.Requirements);
         request.InternalRequirements = model.InternalRequirements;
         request.Responsibilities = model.Responsibilities;
         request.UpdateIncentive(model.Incentive, model.IncentiveDescription);
@@ -241,10 +247,10 @@ public class RequestService : IRequestService
 
     public async Task<Result> UpdateRequirements(Guid id, RequestUpdateRequirementsModel model)
     {
-        var requirements = RequestRequirementsModel.Create(model.Requirements);
-        if (!requirements) return requirements;
+        var validationResult = await requestUpdateRequirementsValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure();
         var request = await requestRepository.GetRequest(r => r.Id == id);
-        var update = request.UpdateRequirements(requirements.Value.Value);
+        var update = request.UpdateRequirements(model.Requirements);
         if (!update) return update;
         await requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
@@ -371,6 +377,8 @@ public class RequestService : IRequestService
             return Result.Fail<Request>(ValidationMessages.RequiredMsg(ApiResources.Agency));
         if (!model.WorkerSalary.HasValue && !model.JobPositionRateId.HasValue)
             return Result.Fail<Request>(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
+        var validationResult = await requestCreateValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure<Request>();
         var rRequest = Request.AgencyCreateRequest(
             model.AgencyId,
             companyId,
@@ -396,20 +404,13 @@ public class RequestService : IRequestService
             entity.AgencyRate = positionRate.Rate;
             entity.WorkerRate = positionRate.WorkerRate;
         }
-        var rJobTitle = entity.UpdateJobTitle(model.JobTitle);
-        if (!rJobTitle) return Result.Fail<Request>(rJobTitle.Errors);
-        var rBillingTitle = entity.UpdateBillingTitle(model.BillingTitle);
-        if (!rBillingTitle) return Result.Fail<Request>(rBillingTitle.Errors);
-        var rRequirements = RequestRequirementsModel.Create(model.Requirements);
-        if (!rRequirements) return Result.Fail<Request>(rRequirements.Errors);
-        entity.UpdateRequirements(rRequirements.Value.Value);
-        var rDescription = RequestDescriptionModel.Create(model.Description);
-        if (!rDescription) return Result.Fail<Request>(rDescription.Errors);
-        entity.UpdateDescription(rDescription.Value.Value);
-        Result rDurationBreak = entity.UpdateDurationBreak(model.DurationBreak);
-        if (!rDurationBreak) return Result.Fail<Request>(rDurationBreak.Errors);
-        Result rIncentive = entity.UpdateIncentive(model.Incentive, model.IncentiveDescription);
-        if (!rIncentive) return Result.Fail<Request>(rIncentive.Errors);
+        entity.UpdateJobTitle(model.JobTitle);
+        entity.UpdateBillingTitle(model.BillingTitle);
+        entity.UpdateJobCosting(model.JobCosting);
+        entity.UpdateRequirements(model.Requirements);
+        entity.UpdateDescription(model.Description);
+        entity.UpdateDurationBreak(model.DurationBreak);
+        entity.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         if (model.Shift != null)
         {
             var rShift = entity.UpdateShift(model.Shift.ToShift());

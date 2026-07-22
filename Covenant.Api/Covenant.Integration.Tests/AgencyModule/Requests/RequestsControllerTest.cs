@@ -416,7 +416,6 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             new User(CvnEmail.Create("CompanyProfile@mail.com").Value),
             AgencyId,
             FakeCompanyName,
-            FakeCompanyName,
             "647897654",
             default,
             default,

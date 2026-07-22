@@ -12,6 +12,7 @@ using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
+using Covenant.Api.Validators.Request;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Tests.Utils;
@@ -77,7 +78,9 @@ namespace Covenant.Tests.Accounting
                 Mock.Of<IEmailService>(),
                 Mock.Of<ISigookBusClient>(),
                 Options.Create(new ServiceBusConfiguration()),
-                Mock.Of<ILogger<RequestService>>());
+                Mock.Of<ILogger<RequestService>>(),
+                new RequestCreateModelValidator(),
+                new RequestUpdateRequirementsModelValidator());
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel
             {

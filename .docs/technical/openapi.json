@@ -3726,6 +3726,63 @@
         }
       }
     },
+    "/api/AgencyWorkerProfile/{id}/WcCode": {
+      "put": {
+        "tags": [
+          "AgencyWorkerProfile"
+        ],
+        "summary": "Updates the WC code of a worker profile.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the worker profile.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Model containing the new WC code.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileDetailModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileDetailModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileDetailModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/AgencyWorkerProfile/{id}/tax-category": {
       "put": {
         "tags": [
@@ -27133,10 +27190,6 @@
             "type": "string",
             "nullable": true
           },
-          "businessName": {
-            "type": "string",
-            "nullable": true
-          },
           "phone": {
             "type": "string",
             "nullable": true
@@ -27359,10 +27412,6 @@
             "nullable": true
           },
           "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "businessName": {
             "type": "string",
             "nullable": true
           },
@@ -28812,6 +28861,10 @@
             "type": "string",
             "nullable": true
           },
+          "jobCosting": {
+            "type": "string",
+            "nullable": true
+          },
           "companyLogo": {
             "type": "string",
             "nullable": true
@@ -29639,6 +29692,10 @@
             "nullable": true
           },
           "billingTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobCosting": {
             "type": "string",
             "nullable": true
           },
@@ -31458,6 +31515,10 @@
             "nullable": true
           },
           "externalId": {
+            "type": "string",
+            "nullable": true
+          },
+          "wcCode": {
             "type": "string",
             "nullable": true
           }

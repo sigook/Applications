@@ -133,7 +133,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 new User(CvnEmail.Create("c@m.com").Value),
                 AgencyId,
                 CompanyName.Create("ABX").Value,
-                CompanyName.Create("ABX").Value,
                 default,
                 default,
                 default,

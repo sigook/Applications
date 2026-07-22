@@ -108,8 +108,7 @@ public class AgencyService : IAgencyService
 
         var agencyId = identityServerService.GetAgencyId();
 
-        var rFullName = CompanyName.Create(model.FullName ?? model.BusinessName);
-        var rBusinessName = CompanyName.Create(model.BusinessName ?? model.FullName);
+        var rFullName = CompanyName.Create(model.FullName);
 
         CovenantFile logo = null;
         if (!string.IsNullOrEmpty(model.Logo?.FileName))
@@ -135,7 +134,6 @@ public class AgencyService : IAgencyService
             user.Value,
             agencyId,
             rFullName.Value,
-            rBusinessName.Value,
             model.Phone,
             model.PhoneExt,
             model.Fax,
@@ -163,9 +161,7 @@ public class AgencyService : IAgencyService
     public async Task<Result> UpdateCompany(Guid companyProfileId, CompanyProfileDetailModel model)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var businessName = CompanyName.Create(model.BusinessName ?? model.FullName);
-        if (!businessName) return Result.Fail(businessName.Errors);
-        var fullName = CompanyName.Create(model.FullName ?? model.BusinessName);
+        var fullName = CompanyName.Create(model.FullName);
         if (!fullName) return Result.Fail(fullName.Errors);
         var company = await companyRepository.GetCompanyProfile(cp => cp.Id == companyProfileId);
         if (!string.IsNullOrEmpty(model.Website))
@@ -185,7 +181,6 @@ public class AgencyService : IAgencyService
             company.LogoId = logo.Id;
         }
         company.FullName = model.FullName;
-        company.BusinessName = model.BusinessName;
         if (model.Industry.Industry != null)
         {
             company.Industry.IndustryId = model.Industry.Industry.Id;

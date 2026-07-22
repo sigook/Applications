@@ -394,6 +394,7 @@ Worker profile management from the agency's perspective.
 | `updateWorkerProfileTaxCategory(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/tax-category` | `UpdateWorkerProfileFieldsPayload` | `void` | |
 | `updateWorkerProfileTaxRate(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/tax-rate` | `UpdateWorkerProfileFieldsPayload` | `void` | |
 | `updateWorkerProfileExternalId(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/ExternalId` | `UpdateWorkerProfileFieldsPayload` | `void` | |
+| `updateWorkerProfileWcCode(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/WcCode` | `UpdateWorkerProfileFieldsPayload` | `void` | |
 | `updateAgencyWorkerEmail(id, model)` | PUT | `/api/AgencyWorkerProfile/{id}/Email` | `UpdateWorkerEmailModel` | `void` | |
 | `agencyCommentWorker(id, comment)` | POST | `/api/AgencyWorker/{id}/Comment` | `AgencyWorkerCommentModel` | `void` | |
 | `getAgencyWorkerProfileRequestHistory(id, pagination)` | GET | `/api/AgencyWorkerProfile/{id}/RequestHistory?PageSize={size}&PageIndex={page}` | — | `PaginatedList<AgencyWorkerRequestHistoryItem>` | Past assignments |

@@ -153,17 +153,16 @@ public class CandidateService : ICandidateService
         if (!result) return Result.Fail(result.Errors);
         result = profile.AddOtherDocuments(candidate.Documents.Select(d => d.Document).ToList());
         if (!result) return Result.Fail(result.Errors);
-        if (!string.IsNullOrWhiteSpace(candidate.Email))
+
+        var existingUser = await userRepository.GetUserByEmail(candidate.Email);
+        if (existingUser != null)
         {
-            var existingUser = await userRepository.GetUserByEmail(candidate.Email);
-            if (existingUser != null)
-            {
-                if (await userRepository.UserIsWorker(existingUser.Id))
-                    return Result.Fail("This email is already associated with a worker");
-                var deleteResult = await identityServerService.DeleteUserOrClaim(existingUser.Id, new IdModel(existingUser.Id));
-                if (!deleteResult) return Result.Fail(deleteResult.Errors);
-            }
+            if (await userRepository.UserIsWorker(existingUser.Id))
+                return Result.Fail("This email is already associated with a worker");
+            var deleteResult = await identityServerService.DeleteUserOrClaim(existingUser.Id, new IdModel(existingUser.Id));
+            if (!deleteResult) return Result.Fail(deleteResult.Errors);
         }
+
         var user = await identityServerService.CreateUser(new CreateUserModel
         {
             Email = candidate.Email,
@@ -171,11 +170,15 @@ public class CandidateService : ICandidateService
             Role = CovenantConstants.Role.Worker
         });
         if (!user) return Result.Fail(user.Errors);
+
         profile.Worker = user.Value;
         profile.AgencyId = agency.Id;
+
         candidateRepository.Delete<CandidateDocument>(candidate.Documents);
+
         await workerRepository.Create(profile);
         await workerRepository.SaveChangesAsync();
+
         if (candidate.Notes.Any())
         {
             foreach (var note in candidate.Notes)
@@ -189,6 +192,7 @@ public class CandidateService : ICandidateService
             }
             await workerRepository.SaveChangesAsync();
         }
+
         var requestApplicants = await requestRepository.GetRequestApplicants(c => c.CandidateId == id);
         if (requestApplicants.Any())
         {
@@ -199,8 +203,9 @@ public class CandidateService : ICandidateService
             }
             await workerRepository.SaveChangesAsync();
         }
+
         var runners = await runnerRepository.GetRunners(r => r.CandidateId == id);
-        if (runners.Any())
+        if (runners.Count != 0)
         {
             foreach (var runner in runners)
             {
@@ -209,8 +214,10 @@ public class CandidateService : ICandidateService
             }
             await runnerRepository.SaveChangesAsync();
         }
+
         result = await DeleteCandidate(id);
         if (!result) return Result.Fail(result.Errors);
+
         return Result.Ok();
     }
 

@@ -10,6 +10,29 @@
             margin: 0 auto;
         }
         }
+
+        table {
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        td {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
         </style>
 </head>
 <body style="font-family: 'Open Sans', 'Helvetica Neue', sans-serif; box-sizing: border-box" class="payroll2">

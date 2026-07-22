@@ -112,7 +112,7 @@ public class JobPositionsController(ICompanyRepository repository, IAgencyServic
         foreach (string email in emails)
         {
             await emailService.SendEmail(new EmailParams(email, subject,
-                $"Client:{profile.NumberId} {profile.BusinessName} <br/> {model.Message} <br/> Please notify {nickname} after create the role")
+                $"Client:{profile.NumberId} {profile.FullName} <br/> {model.Message} <br/> Please notify {nickname} after create the role")
             {
                 EmailSettingName = EmailSettingName.Notification
             });

@@ -7,7 +7,6 @@ namespace Covenant.Common.Models.Company
         public Guid Id { get; set; }
         public string Logo { get; set; }
         public string FullName { get; set; }
-        public string BusinessName { get; set; }
         public int NumberId { get; set; }
         public IEnumerable<string> Locations { get; set; }
         public bool Active { get; set; }

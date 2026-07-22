@@ -69,7 +69,6 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 new User(CvnEmail.Create("c@c.us").Value),
                 FakeAgency.Id,
                 CompanyName.Create("ABC USA").Value,
-                CompanyName.Create("ABC USA").Value,
                 "6479087654",
                 303,
                 "6488087654",

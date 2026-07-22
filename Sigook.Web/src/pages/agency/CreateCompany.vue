@@ -27,13 +27,6 @@
           </b-field>
         </div>
         <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-          <b-field :type="formErrors.businessName ? 'is-danger' : ''"
-            :message="formErrors.businessName || ''">
-            <template #label>Business Name <span class="has-text-danger">*</span></template>
-            <b-input type="text" v-model="businessName" name="business name" />
-          </b-field>
-        </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
           <b-field :type="formErrors.industry ? 'is-danger' : ''"
             :message="formErrors.industry || ''">
             <template #label>Type of industry <span class="has-text-danger">*</span></template>
@@ -47,7 +40,7 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-field :type="formErrors.companyStatus ? 'is-danger' : ''"
             :message="formErrors.companyStatus || ''">
             <template #label>Status <span class="has-text-danger">*</span></template>
@@ -56,7 +49,7 @@
             </b-select>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
           <b-field :type="formErrors.salesRepresentative ? 'is-danger' : ''"
             :message="formErrors.salesRepresentative || ''">
             <template #label>Sales Representative <span class="has-text-danger">*</span></template>
@@ -172,8 +165,7 @@ const displayPassword = computed(() => !isUpdate.value && companyStatusValue.val
 
 const validationSchema = computed(() => {
   const shape: Record<string, any> = {
-    fullName: yup.string().required('Full name is required').min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
-    businessName: yup.string().required('Business name is required').min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
+    fullName: yup.string().required('Full name is required').min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
     industry: yup.string().required('Industry is required'),
     companyStatus: yup.mixed().required('Status is required'),
     salesRepresentative: yup.string().required('Sales representative is required'),
@@ -200,7 +192,6 @@ const form = useStickyForm({
   schema: validationSchema,
   initialValues: {
     fullName: '',
-    businessName: '',
     industry: '',
     companyStatus: null as number | null,
     salesRepresentative: '',
@@ -213,7 +204,7 @@ const form = useStickyForm({
   },
 });
 const {
-  fullName, businessName, industry, companyStatus, salesRepresentative,
+  fullName, industry, companyStatus, salesRepresentative,
   about, phoneExt, faxExt, email, password, website,
 } = form.fields;
 const formErrors = form.errors;
@@ -265,7 +256,6 @@ async function init() {
 
     form.hydrate({
       fullName: existing.fullName || '',
-      businessName: existing.businessName || '',
       industry: industryValue || '',
       companyStatus: existing.companyStatus ?? null,
       salesRepresentative: record ? `${record.name} - ${record.email}` : '',
@@ -307,7 +297,6 @@ function validateForm() {
     const payload: any = {
       ...company.value,
       fullName: values.fullName,
-      businessName: values.businessName,
       companyStatus: values.companyStatus,
       about: values.about,
       phoneExt: values.phoneExt ? parseInt(values.phoneExt, 10) : null,

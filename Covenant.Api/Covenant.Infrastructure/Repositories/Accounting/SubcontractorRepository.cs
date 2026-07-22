@@ -38,7 +38,7 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
                       select new ReportSubcontractorItemModel
                       {
                           WorkerRate = rsw.WorkerRate,
-                          Company = cp.BusinessName,
+                          Company = cp.FullName,
                           Regular = rsw.Regular,
                           OtherRegular = rsw.OtherRegular,
                           RegularHours = tst.RegularHours.TotalHours,

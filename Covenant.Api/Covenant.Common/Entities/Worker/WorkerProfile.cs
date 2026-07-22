@@ -74,6 +74,7 @@ public class WorkerProfile :
     public string PunchCardId { get; set; }
     public bool IsContractor { get; set; } = false;
     public string ExternalId { get; set; }
+    public string WcCode { get; set; }
     public WorkerProfileTaxCategory WorkerProfileTaxCategory { get; set; }
     public Gender Gender { get; set; }
     public User Worker { get; set; }

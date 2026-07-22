@@ -68,5 +68,6 @@ namespace Covenant.Common.Models.Worker
         public string CreatedBy { get; set; }
         public string PunchCardId { get; set; }
         public string ExternalId { get; set; }
+        public string WcCode { get; set; }
     }
 }

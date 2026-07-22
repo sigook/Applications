@@ -90,7 +90,7 @@ and `RequestRecruiter.RecruiterId` (weekly board). Unique index `(AgencyId, User
 
 The client company, always owned by an agency. Key fields:
 
-- Identity: `Id`, `NumberId`, `CompanyId` → User, `AgencyId`, `FullName`, `BusinessName`
+- Identity: `Id`, `NumberId`, `CompanyId` → User, `AgencyId`, `FullName`
 - Sales: `CompanyStatus` (`Lead=1, Potential, Prospect, Quoted, Client, Blocked, Inactive=7` —
   `Enums/CompanyStatus.cs`), `SalesRepresentativeId` → AgencyPersonnel
 - Billing/payroll behavior: `PaidHolidays`, `OvertimeStartsAfter` (TimeSpan, default 44h,
@@ -142,7 +142,7 @@ Registered worker, owned by an agency. Key fields:
 - Documents: two identification slots (`IdentificationNumber1/2` + type + file),
   `PoliceCheckBackGround`, `Resume`, `OtherDocuments`
 - Status flags: `ApprovedToWork` (gate to be assignable), `Dnu` (do not use),
-  `IsSubcontractor`, `IsContractor`, `PunchCardId`, `ExternalId`
+  `IsSubcontractor`, `IsContractor`, `PunchCardId`, `ExternalId`, `WcCode`
 - Emergency/health: `ContactEmergency*`, `HealthProblem` fields
 
 Child collections (all `WorkerProfile{X}.cs` in the same folder): Skills, Languages, Licenses,
@@ -197,8 +197,9 @@ the candidate by FK — personal data is never copied.
 A job order. Key fields:
 
 - `Id`, `NumberId`, `AgencyId`, `CompanyId` → **User** (company-side user, not CompanyProfile)
-- Job: `JobTitle`, `BillingTitle`, `Description`, `Requirements`, `InternalRequirements`,
-  `Responsibilities`, `JobLocationId` → Location, `JobIsOnBranchOffice`
+- Job: `JobTitle`, `BillingTitle`, `JobCosting` (admin/superadmin only in the UI), `Description`,
+  `Requirements`, `InternalRequirements`, `Responsibilities`, `JobLocationId` → Location,
+  `JobIsOnBranchOffice`
 - Rates: `JobPositionRateId` → CompanyProfileJobPositionRate, plus per-request overrides
   `WorkerRate`/`AgencyRate`/`WorkerSalary`
 - Capacity: `WorkersQuantity` (min 1), `WorkersQuantityWorking` (derived from booked workers)
