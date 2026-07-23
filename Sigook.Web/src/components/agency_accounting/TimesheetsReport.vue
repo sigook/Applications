@@ -1,0 +1,63 @@
+<template>
+  <div>
+    <div class="container-flex">
+      <div class="col-3 col-padding">
+        <b-field label="Dates (From - To)" :type="formErrors.dates ? 'is-danger' : ''"
+          :message="formErrors.dates">
+          <b-datepicker v-model="dates" name="dates" range
+            @update:modelValue="onDatesSelected" />
+        </b-field>
+      </div>
+      <div class="col-12 col-padding">
+        <b-button type="is-primary" @click="getReport" :loading="isLoading">Generate</b-button>
+      </div>
+    </div>
+  </div>
+</template>
+<script setup lang="ts">
+import { ref } from 'vue';
+import * as yup from 'yup';
+import { showAlertError } from "@/utils/toast";
+import dayjs from "dayjs";
+import { downloadFile } from "@/utils/downloadFile";
+import { getTimesheetsReport } from "@/api/agencyReportApi";
+import { useStickyForm } from '@/composables/useStickyForm';
+import type { AgencyReportFilter } from '@/types/agency';
+
+const schema = yup.object({
+  dates: yup.array().of(yup.date()).min(2, 'Dates are required').required('Dates are required'),
+});
+
+const form = useStickyForm<{ dates: Date[] }>({
+  schema,
+  initialValues: { dates: [] },
+});
+const { dates } = form.fields;
+const formErrors = form.errors;
+
+const isLoading = ref(false);
+const serverParams = ref<AgencyReportFilter>({});
+
+function onDatesSelected() {
+  if (dates.value && dates.value.length === 2) {
+    serverParams.value.startDate = dayjs(dates.value[0]).format('YYYY-MM-DD');
+    serverParams.value.endDate = dayjs(dates.value[1]).format('YYYY-MM-DD');
+  }
+}
+
+async function getReport() {
+  form.markInteracted();
+  const { valid } = await form.validate();
+  if (!valid) return;
+  isLoading.value = true;
+  getTimesheetsReport(serverParams.value)
+    .then(response => {
+      isLoading.value = false;
+      downloadFile(response, `Timesheets_Report_${serverParams.value.startDate}_${serverParams.value.endDate}`);
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+</script>

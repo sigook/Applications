@@ -16,6 +16,9 @@
       <b-tab-item value="4" label="Hours Worked">
         <hours-worked-report></hours-worked-report>
       </b-tab-item>
+      <b-tab-item value="5" label="Timesheets Report" :visible="isUsaAgency">
+        <timesheets-report></timesheets-report>
+      </b-tab-item>
     </b-tabs>
   </div>
 </template>
@@ -28,6 +31,7 @@ import HoursWorkedReport from '@/components/agency_accounting/HoursWorkedReport.
 import T4Report from '@/components/agency_accounting/T4.vue';
 import CraPayrollReport from '@/components/agency_accounting/CRAPayroll.vue';
 import PaymentReport from '@/components/agency_accounting/PaymentReport.vue';
+import TimesheetsReport from '@/components/agency_accounting/TimesheetsReport.vue';
 
 const route = useRoute();
 const router = useRouter();

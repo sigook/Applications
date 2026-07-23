@@ -15182,6 +15182,54 @@
         }
       }
     },
+    "/api/agency/accounting/Reports/timesheets/file": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Exports the timesheets report to an Excel file for the given date range (USA agencies).",
+        "parameters": [
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/accounting/Reports/{companyId}/job-positions": {
       "get": {
         "tags": [

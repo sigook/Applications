@@ -17,6 +17,7 @@ public interface ITimesheetService
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyId, DateTime startDate, DateTime endDate);
     Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter);
     Task<ResultGenerateDocument<MemoryStream>> GetHoursWorkedFile(HoursWorkedFilter filter);
+    Task<ResultGenerateDocument<MemoryStream>> GetTimesheetsReportFile(TimesheetsReportFilter filter);
     Task<Result<ClockType>> GetClockType(Guid requestId, DateTime? date);
     Task<Result> RemoveTimeSheet(Guid id);
     Task<ResultGenerateDocument<MemoryStream>> GetRequestTimesheetFile(Guid requestId);

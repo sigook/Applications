@@ -470,6 +470,58 @@ public class TimesheetRepository : ITimesheetRepository
         return result;
     }
 
+    public async Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(Guid agencyId, TimesheetsReportFilter filter)
+    {
+        var timeSheets = _context.TimeSheet
+            .AsNoTracking()
+            .Include(ts => ts.WorkerRequest)
+            .ThenInclude(wr => wr.Request)
+            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.AgencyId == agencyId);
+        var query = from ts in timeSheets
+                    join wp in _context.WorkerProfile on ts.WorkerRequest.WorkerId equals wp.WorkerId
+                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
+                    select new
+                    {
+                        wp.WorkerId,
+                        wp.NumberId,
+                        FullName = wp.LastName + ", " + wp.FirstName,
+                        wp.SocialInsurance,
+                        wp.WcCode,
+                        Client = cp.FullName,
+                        JobName = ts.WorkerRequest.Request.JobCosting,
+                        PayRate = ts.WorkerRequest.Request.WorkerRate,
+                        RegularHours = ts.TimeSheetTotal.RegularHours.TotalHours + ts.TimeSheetTotal.OtherRegularHours.TotalHours,
+                        OvertimeHours = ts.TimeSheetTotal.OvertimeHours.TotalHours
+                    };
+        var report = from q in query
+                     group q by new
+                     {
+                         q.WorkerId,
+                         q.NumberId,
+                         q.FullName,
+                         q.SocialInsurance,
+                         q.WcCode,
+                         q.Client,
+                         q.JobName,
+                         q.PayRate
+                     } into g
+                     orderby g.Key.FullName
+                     select new TimesheetsReportResponse
+                     {
+                         EmployeeId = g.Key.NumberId,
+                         FullName = g.Key.FullName,
+                         SocialInsurance = g.Key.SocialInsurance,
+                         WcCode = g.Key.WcCode,
+                         Client = g.Key.Client,
+                         JobName = g.Key.JobName,
+                         PayRate = g.Key.PayRate ?? 0,
+                         RegularHours = g.Sum(a => a.RegularHours),
+                         OvertimeHours = g.Sum(a => a.OvertimeHours)
+                     };
+        var result = await report.ToListAsync();
+        return result;
+    }
+
     public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyId, DateTime startDate, DateTime endDate)
     {
         var agencyCompanyProfileJobPositionRate = _context.TimeSheet

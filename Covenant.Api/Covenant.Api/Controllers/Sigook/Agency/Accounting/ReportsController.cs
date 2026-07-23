@@ -46,6 +46,17 @@ public class ReportsController(
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }
 
+    /// <summary>Exports the timesheets report to an Excel file for the given date range (USA agencies).</summary>
+    /// <param name="filter">Filter criteria for the report.</param>
+    [HttpGet("timesheets/file")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTimesheetsReportFile([FromQuery] TimesheetsReportFilter filter)
+    {
+        var file = await timeSheetService.GetTimesheetsReportFile(filter);
+        return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
     /// <summary>Gets the job positions worked for a company within a date range.</summary>
     /// <param name="companyId">Company identifier.</param>
     /// <param name="startDate">Start of the date range.</param>

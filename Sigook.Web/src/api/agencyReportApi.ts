@@ -45,6 +45,11 @@ export function getCraPayrollReport(filter: AgencyReportFilter): Promise<Blob> {
   return api.get<Blob>('/api/agency/accounting/reports/cra-payroll', { params: { ...filter }, responseType: 'blob' });
 }
 
+// Timesheets report (blob, USA agencies)
+export function getTimesheetsReport(filter: AgencyReportFilter): Promise<Blob> {
+  return api.get<Blob>('/api/agency/accounting/reports/timesheets/file', { params: { ...filter }, responseType: 'blob' });
+}
+
 // Payment report (data, not blob)
 export function getPaymentReport(filter: AgencyReportFilter): Promise<PaginatedList<WeeklyPayrollItem>> {
   return api.get<PaginatedList<WeeklyPayrollItem>>('/api/agency/accounting/reports/payments', { params: { ...filter } });

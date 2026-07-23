@@ -243,6 +243,14 @@ public class TimesheetService : ITimesheetService
         return request;
     }
 
+    public async Task<ResultGenerateDocument<MemoryStream>> GetTimesheetsReportFile(TimesheetsReportFilter filter)
+    {
+        var agencyId = identityServerService.GetAgencyId();
+        var result = await timeSheetRepository.GetTimesheetsReport(agencyId, filter);
+        var request = await mediator.Send(new GenerateTimesheetsReport(result.ToList()));
+        return request;
+    }
+
     private async Task<Result<RegisterTimeSheetResultModel>> ClockIn(DateTimeOffset now, WorkerRequestInfoModel info)
     {
         var isHoliday = await catalogRepository.IsHoliday(now.DateTime, info.CountryCode);

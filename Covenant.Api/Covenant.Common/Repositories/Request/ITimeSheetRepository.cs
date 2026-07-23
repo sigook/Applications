@@ -26,6 +26,7 @@ public interface ITimesheetRepository
     Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds);
     Task<TimeSheetUsagesModel> GetTimeSheetUsages(Guid requestId, Guid workerId, Guid id);
     Task<IEnumerable<HoursWorkedResponse>> GetHoursWorked(Guid agencyId, HoursWorkedFilter filter);
+    Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(Guid agencyId, TimesheetsReportFilter filter);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyId, DateTime startDate, DateTime endDate);
     Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition);
     Task<TimeSheet> GetLatestTimesheet(Guid workerId, Guid requestId, DateTime from);
