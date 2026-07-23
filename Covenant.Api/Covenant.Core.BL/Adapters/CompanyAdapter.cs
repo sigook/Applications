@@ -46,7 +46,6 @@ public class CompanyAdapter : ICompanyAdapter
             agencyId: agencyId,
             user: user.Value,
             fullName: CompanyName.Create(model.CompanyName).Value,
-            businessName: CompanyName.Create(model.CompanyName).Value,
             phone: model.CompanyHQPhone,
             phoneExt: null,
             fax: model.Fax,

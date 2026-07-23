@@ -284,6 +284,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `updateAgencyRequest(id, model)` | PUT | `/api/agency/requests/{id}` | `CreateAgencyRequestModel` | `AgencyRequestDetail` | |
 | `cancelAgencyRequest(id, payload)` | PUT | `/api/agency/requests/{id}/Cancel` | `CancelRequestPayload` | `void` | Cancel + reason |
 | `bulkCancelRequests(payload)` | PUT | `/api/agency/requests/bulk-cancel` | `BulkCancelRequestsPayload` | `BulkCancelRequestsResult` | Cancel many at once |
+| `bulkUpdateRecruiters(payload)` | PUT | `/api/agency/requests/bulk-recruiters` | `BulkUpdateRecruitersPayload` | `void` | Replace recruiters on many at once; empty list unassigns. Admin/SuperAdmin only |
 | `agencyRequestOpen(id)` | PUT | `/api/agency/requests/{id}/Open` | id (in body) | `void` | Reopen |
 | `agencyRequestSendInvitation(id)` | POST | `/api/agency/requests/{id}/SendInvitation` | — | `void` | 120s timeout |
 | `updateAgencyRequestIsAsap(id)` | PUT | `/api/agency/requests/{id}/IsAsap` | — | `void` | Toggle ASAP |
@@ -393,6 +394,7 @@ Worker profile management from the agency's perspective.
 | `updateWorkerProfileTaxCategory(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/tax-category` | `UpdateWorkerProfileFieldsPayload` | `void` | |
 | `updateWorkerProfileTaxRate(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/tax-rate` | `UpdateWorkerProfileFieldsPayload` | `void` | |
 | `updateWorkerProfileExternalId(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/ExternalId` | `UpdateWorkerProfileFieldsPayload` | `void` | |
+| `updateWorkerProfileWcCode(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/WcCode` | `UpdateWorkerProfileFieldsPayload` | `void` | |
 | `updateAgencyWorkerEmail(id, model)` | PUT | `/api/AgencyWorkerProfile/{id}/Email` | `UpdateWorkerEmailModel` | `void` | |
 | `agencyCommentWorker(id, comment)` | POST | `/api/AgencyWorker/{id}/Comment` | `AgencyWorkerCommentModel` | `void` | |
 | `getAgencyWorkerProfileRequestHistory(id, pagination)` | GET | `/api/AgencyWorkerProfile/{id}/RequestHistory?PageSize={size}&PageIndex={page}` | — | `PaginatedList<AgencyWorkerRequestHistoryItem>` | Past assignments |

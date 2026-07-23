@@ -63,7 +63,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                 });
             FakeAgency = new Covenant.Common.Entities.Agency.Agency();
             FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
-                "", "", "", new CompanyProfileIndustry("Company Industry"));
+                "", "", new CompanyProfileIndustry("Company Industry"));
             FakePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "Forklift List", 2, 1, default, "tst@mail.com").Value;
             FakeUpdatePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "General Labour", 2, 1, default, "tst@mail.com").Value;
             FakeDeletePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "Assistance", 2, 1, default, "tst@mail.com").Value;

@@ -116,7 +116,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 new User(CvnEmail.Create("CompanyProfile@mail.com").Value),
                 AgencyId,
                 FakeCompanyName,
-                FakeCompanyName,
                 "647897654",
                 default,
                 default,

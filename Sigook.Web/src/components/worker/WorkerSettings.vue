@@ -2,20 +2,34 @@
   <div class="mt-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="container-flex">
-      <div class="col-2">
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
         <b-field label="External ID">
           <b-input v-model="localWorker.externalId" placeholder="External ID" @keypress.enter="updateExternalId">
           </b-input>
         </b-field>
       </div>
-      <b-checkbox class="col-2" v-model="localWorker.isContractor" @update:modelValue="updateIsContractor">
-        Is Contractor
-      </b-checkbox>
-      <b-checkbox class="col-2" v-model="localWorker.isSubcontractor" @update:modelValue="updateIsSubContractor">
-        Is Subcontractor
-      </b-checkbox>
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <b-field label="WC Code">
+          <b-input v-model="localWorker.wcCode" placeholder="WC Code" @keypress.enter="updateWcCode">
+          </b-input>
+        </b-field>
+      </div>
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <b-field label="&nbsp;" class="checkbox-field">
+          <b-checkbox v-model="localWorker.isContractor" @update:modelValue="updateIsContractor">
+            Is Contractor
+          </b-checkbox>
+        </b-field>
+      </div>
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <b-field label="&nbsp;" class="checkbox-field">
+          <b-checkbox v-model="localWorker.isSubcontractor" @update:modelValue="updateIsSubContractor">
+            Is Subcontractor
+          </b-checkbox>
+        </b-field>
+      </div>
       <span class="line-gray"></span>
-      <div class="col-2">
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
         <b-field label="Federal Category">
           <b-select v-model="localWorker.federalTaxCategory" @update:modelValue="updateTaxCategory" expanded>
             <option :value="null">Select</option>
@@ -25,8 +39,8 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-2">
-        <b-field label="Provincial Category" class="me-5">
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <b-field label="Provincial Category">
           <b-select v-model="localWorker.provincialTaxCategory" @update:modelValue="updateTaxCategory" expanded>
             <option :value="null">Select</option>
             <option v-for="taxCategory in taxCategories" :key="taxCategory.id" :value="taxCategory.id">
@@ -35,7 +49,7 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-2">
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
         <b-field label="CPP" :type="formErrors.cpp ? 'is-danger' : ''"
           :message="formErrors.cpp || ''">
           <b-numberinput v-model="cpp" name="cpp" :step="0.01" :controls="false" expanded
@@ -43,7 +57,7 @@
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-2">
+      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
         <b-field label="EI" :type="formErrors.ei ? 'is-danger' : ''"
           :message="formErrors.ei || ''">
           <b-numberinput v-model="ei" name="ei" :step="0.01" :controls="false" expanded
@@ -52,18 +66,21 @@
         </b-field>
       </div>
       <span class="line-gray"></span>
-      <div class="col-12">
+      <div class="col-12 col-padding d-flex align-items-center justify-content-between">
+        <span class="fw-bold">Holidays</span>
         <b-button type="is-ghost" icon-left="plus" @click="addHoliday">Add Holiday</b-button>
-        <b-field grouped>
-          <b-field label="Holidays">
-            <b-datepicker inline :selectable-dates="selectableDates" @update:modelValue="onHolidaySelected"
-              :unselectable-days-of-week="[0, 1, 2, 3, 4, 5, 6]">
-            </b-datepicker>
-          </b-field>
-          <b-field v-if="workerHolidaySelected" label="Amount to pay">
-            <b-input v-model="workerHolidaySelected.statPaidWorker"></b-input>
+      </div>
+      <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+        <b-datepicker inline :selectable-dates="selectableDates" @update:modelValue="onHolidaySelected"
+          :unselectable-days-of-week="[0, 1, 2, 3, 4, 5, 6]">
+        </b-datepicker>
+      </div>
+      <div v-if="workerHolidaySelected" class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <b-field label="Amount to pay">
+          <b-input v-model="workerHolidaySelected.statPaidWorker" expanded></b-input>
+          <p class="control">
             <b-button type="is-primary is-light" @click="addUpdateWorkerHoliday">Save</b-button>
-          </b-field>
+          </p>
         </b-field>
       </div>
     </div>
@@ -78,6 +95,7 @@ import { getDialog } from '@/utils/buefyProgrammatic';
 import { getTaxCategories } from "@/api/catalogApi";
 import {
   updateWorkerProfileExternalId,
+  updateWorkerProfileWcCode,
   updateAgencyWorkerContractor,
   updateAgencyWorkerSubContractor,
   updateWorkerProfileTaxCategory,
@@ -124,6 +142,18 @@ watch(() => props.worker, (newVal) => {
 function updateExternalId() {
   isLoading.value = true;
   updateWorkerProfileExternalId(localWorker.value)
+    .then(() => {
+      isLoading.value = false;
+      emit('update:worker', localWorker.value);
+    }).catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function updateWcCode() {
+  isLoading.value = true;
+  updateWorkerProfileWcCode(localWorker.value)
     .then(() => {
       isLoading.value = false;
       emit('update:worker', localWorker.value);
@@ -230,3 +260,11 @@ const selectableDates = computed(() => {
   });
 })();
 </script>
+
+<style scoped lang="scss">
+.checkbox-field :deep(.control) {
+  display: flex;
+  align-items: center;
+  min-height: 2.5em;
+}
+</style>

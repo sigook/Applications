@@ -235,6 +235,7 @@ export interface UpdateWorkerEmailModel {
 export interface UpdateWorkerProfileFieldsPayload {
   id: string;
   externalId?: string | null;
+  wcCode?: string | null;
   workerProfileTaxCategoryId?: string | null;
   taxRate?: number | null;
 }
@@ -351,6 +352,10 @@ export interface AgencyCompanyJobPosition {
   createdAt?: string | null;
   createdBy?: string;
   displayShift?: string;
+}
+
+export interface AgencyCompanyJobPositionFilter {
+  role?: string;
 }
 
 export interface VaccinationRequiredModel {
@@ -478,6 +483,7 @@ export interface AgencyRequestDetail {
   numberId: number;
   jobTitle: string;
   billingTitle?: string;
+  jobCosting?: string;
   companyLogo?: string;
   fullName?: string;
   companyProfileId: string;
@@ -521,6 +527,7 @@ export interface AgencyRequestDetail {
 export interface CreateAgencyRequestModel {
   jobTitle: string;
   billingTitle?: string;
+  jobCosting?: string;
   workersQuantity: number;
   description?: string;
   durationBreak: string;
@@ -581,6 +588,11 @@ export interface CancelRequestPayload {
 }
 
 // Payload for PUT /api/AgencyRequest/bulk-cancel. Mirrors BulkRequestCancellation.
+export interface BulkUpdateRecruitersPayload {
+  ids: string[];
+  recruiterIds: string[];
+}
+
 export interface BulkCancelRequestsPayload {
   ids: string[];
   cancellationReasonId: string;

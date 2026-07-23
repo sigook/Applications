@@ -8,7 +8,6 @@ public class CompanyProfileDetailModel
     public int NumberId { get; set; }
     public Guid CompanyId { get; set; }
     public string FullName { get; set; }
-    public string BusinessName { get; set; }
     public string Phone { get; set; }
     public int? PhoneExt { get; set; }
     public string Fax { get; set; }

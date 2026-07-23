@@ -77,7 +77,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         ProvinceName = r.JobLocation.City.Province.Value,
                         PostalCode = r.JobLocation.PostalCode,
                         Entrance = r.JobLocation.Entrance,
-                        CompanyFullName = cp.BusinessName,
+                        CompanyFullName = cp.FullName,
                         CompanyProfileId = cp.Id,
                         RequestStatus = r.Status,
                         IsAsap = r.IsAsap,
@@ -285,6 +285,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         NumberId = r.NumberId,
                         JobTitle = r.JobTitle,
                         BillingTitle = string.IsNullOrWhiteSpace(r.BillingTitle) ? r.JobTitle : r.BillingTitle,
+                        JobCosting = r.JobCosting,
                         Status = r.Status,
                         CancellationDetail = rcd == null ? null : rcd.OtherReasonCancellationRequest,
                         CompanyLogo = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
@@ -983,7 +984,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    RecruiterName = rr.Recruiter.Name,
                    RequestId = rr.RequestId,
                    NumberId = rr.Request.NumberId,
-                   CompanyName = cp.BusinessName,
+                   CompanyName = cp.FullName,
                    JobTitle = rr.Request.JobTitle,
                    City = rr.Request.JobLocation.City.Value,
                    ProvinceCode = rr.Request.JobLocation.City.Province.Code,
@@ -1043,7 +1044,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    RecruiterName = rr.Recruiter.Name,
                    RequestId = rr.RequestId,
                    NumberId = rr.Request.NumberId,
-                   CompanyName = cp.BusinessName,
+                   CompanyName = cp.FullName,
                    JobTitle = rr.Request.JobTitle,
                    City = rr.Request.JobLocation.City.Value,
                    ProvinceCode = rr.Request.JobLocation.City.Province.Code,
@@ -1070,6 +1071,18 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 && rr.RecruiterId == recruiterId
                 && rr.WorkDate == workDate.Date
                 && rr.Request.AgencyId == agencyId);
+
+    public async Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt)
+    {
+        var requestIdList = requestIds.ToList();
+        await context.RequestRecruiter.Where(r => requestIdList.Contains(r.RequestId)).ExecuteDeleteAsync();
+        var recruiterIdList = recruiterIds?.ToList() ?? [];
+        if (recruiterIdList.Count == 0) return;
+        var entities = requestIdList
+            .SelectMany(rid => recruiterIdList.Select(recId => new RequestRecruiter(rid, recId, createdAt)))
+            .ToList();
+        await context.RequestRecruiter.AddRangeAsync(entities);
+    }
 
     public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => context.RequestSkill.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
 

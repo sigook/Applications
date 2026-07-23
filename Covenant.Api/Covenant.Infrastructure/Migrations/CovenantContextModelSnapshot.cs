@@ -1238,9 +1238,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid>("AgencyId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BusinessName")
-                        .HasColumnType("text");
-
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uuid");
 
@@ -2568,6 +2565,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<bool>("IsAsap")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("JobCosting")
+                        .HasColumnType("text");
+
                     b.Property<bool>("JobIsOnBranchOffice")
                         .HasColumnType("boolean");
 
@@ -3004,6 +3004,8 @@ namespace Covenant.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChangedBy");
 
                     b.HasIndex("RunnerId");
 
@@ -3641,6 +3643,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<Guid?>("SocialInsuranceFileId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("WcCode")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("WorkerId")
                         .HasColumnType("uuid");
@@ -5003,11 +5008,19 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
                 {
+                    b.HasOne("Covenant.Common.Entities.User", "ChangedByUser")
+                        .WithMany()
+                        .HasForeignKey("ChangedBy")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
                         .WithMany("StatusHistory")
                         .HasForeignKey("RunnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ChangedByUser");
 
                     b.Navigation("Runner");
                 });

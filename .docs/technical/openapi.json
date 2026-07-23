@@ -3726,6 +3726,63 @@
         }
       }
     },
+    "/api/AgencyWorkerProfile/{id}/WcCode": {
+      "put": {
+        "tags": [
+          "AgencyWorkerProfile"
+        ],
+        "summary": "Updates the WC code of a worker profile.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the worker profile.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Model containing the new WC code.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileDetailModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileDetailModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileDetailModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/AgencyWorkerProfile/{id}/tax-category": {
       "put": {
         "tags": [
@@ -12785,6 +12842,13 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "Role",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -17609,6 +17673,58 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/requests/bulk-recruiters": {
+      "put": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Replaces the recruiters of multiple requests in bulk. An empty recruiter list unassigns every recruiter.",
+        "requestBody": {
+          "description": "Bulk recruiter update data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.BulkRequestRecruiters"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request",
@@ -27484,8 +27600,20 @@
             "type": "string",
             "nullable": true
           },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
           "dnu": {
             "type": "boolean"
+          },
+          "phoneNumbers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.PhoneNumberModel"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -27713,10 +27841,6 @@
             "type": "string",
             "nullable": true
           },
-          "businessName": {
-            "type": "string",
-            "nullable": true
-          },
           "phone": {
             "type": "string",
             "nullable": true
@@ -27939,10 +28063,6 @@
             "nullable": true
           },
           "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "businessName": {
             "type": "string",
             "nullable": true
           },
@@ -29618,6 +29738,10 @@
             "type": "string",
             "nullable": true
           },
+          "jobCosting": {
+            "type": "string",
+            "nullable": true
+          },
           "companyLogo": {
             "type": "string",
             "nullable": true
@@ -30102,6 +30226,28 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.BulkRequestRecruiters": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "recruiterIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Request.CompanyRequestDetailModel": {
         "type": "object",
         "properties": {
@@ -30423,6 +30569,10 @@
             "nullable": true
           },
           "billingTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobCosting": {
             "type": "string",
             "nullable": true
           },
@@ -31009,6 +31159,10 @@
           "changedBy": {
             "type": "string",
             "format": "uuid"
+          },
+          "changedByEmail": {
+            "type": "string",
+            "nullable": true
           },
           "changedAt": {
             "type": "string",
@@ -32238,6 +32392,10 @@
             "nullable": true
           },
           "externalId": {
+            "type": "string",
+            "nullable": true
+          },
+          "wcCode": {
             "type": "string",
             "nullable": true
           }

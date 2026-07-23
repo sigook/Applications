@@ -8,6 +8,7 @@ namespace Covenant.Common.Repositories.Request;
 public interface IRunnerRepository
 {
     Task<Runner> GetRunner(Expression<Func<Runner, bool>> expression);
+    Task<List<Runner>> GetRunners(Expression<Func<Runner, bool>> expression);
     Task<bool> RunnerExists(Guid requestId, Guid? workerProfileId, Guid? candidateId);
     Task<PaginatedList<RunnerListModel>> GetRunners(Guid agencyId, GetRunnersFilter filter);
     Task<RunnerDetailModel> GetRunnerDetail(Guid id);

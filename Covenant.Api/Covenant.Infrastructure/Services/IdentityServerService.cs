@@ -63,13 +63,41 @@ public class IdentityServerService : IIdentityServerService
                 return Result.Ok(newUser);
             }
             var error = await response.Content.ReadAsStringAsync();
-            return Result.Fail<User>(error);
+            return Result.Fail<User>(ParseIdentityError(error));
         }
         catch (Exception ex)
         {
             _logger.LogError("Error creating worker: {Error}", ex.Message);
             return Result.Fail<User>("There was an error creating the user please try again later");
         }
+    }
+
+    private static string ParseIdentityError(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return "There was an error creating the user please try again later";
+        try
+        {
+            using var document = JsonDocument.Parse(content);
+            if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Object)
+            {
+                var messages = errors.EnumerateObject()
+                    .SelectMany(property => property.Value.ValueKind == JsonValueKind.Array
+                        ? property.Value.EnumerateArray().Select(item => item.GetString())
+                        : [property.Value.GetString()])
+                    .Where(message => !string.IsNullOrWhiteSpace(message));
+                var joined = string.Join(" ", messages);
+                if (!string.IsNullOrWhiteSpace(joined)) return joined;
+            }
+            if (document.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String)
+                return detail.GetString();
+            if (document.RootElement.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String)
+                return title.GetString();
+        }
+        catch (JsonException)
+        {
+            return content;
+        }
+        return content;
     }
 
     public async Task<Result> UpdateAgencyUser(Guid userId, IdModel agency)

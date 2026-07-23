@@ -31,6 +31,12 @@
             <b-input v-model="billingTitle" name="billingTitle" :disabled="sameBillingTitle"></b-input>
           </b-field>
         </div>
+        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAdministration">
+          <b-field :type="errors.jobCosting ? 'is-danger' : ''" label="Job Costing"
+            :message="errors.jobCosting || ''">
+            <b-input v-model="jobCosting" name="jobCosting"></b-input>
+          </b-field>
+        </div>
         <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="directHiring">
           <b-field :type="errors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
             :message="errors.workerSalary || ''">
@@ -235,6 +241,7 @@ import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
 import { useModuleBase } from '@/composables/useModuleBase';
+import { useAdministration } from '@/composables/useAdministration';
 import { getAgencyPersonnel } from '@/api/agencyApi';
 import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from '@/api/agencyCompanyApi';
 import { postAgencyRequest, updateAgencyRequest } from '@/api/agencyRequestApi';
@@ -252,6 +259,7 @@ const route = useRoute();
 const router = useRouter();
 const { requestBase } = useModuleBase();
 const { isAccountingManager } = useAccountingAdmin();
+const { isAdministration } = useAdministration();
 
 const directHiring = ref(false);
 
@@ -259,6 +267,7 @@ const validationSchema = computed(() => {
   const shape: Record<string, any> = {
     jobTitle: yup.string().required('Job title is required').min(1).max(100, 'Max 100 characters'),
     billingTitle: yup.string().required('Billing title is required').min(1).max(100, 'Max 100 characters'),
+    jobCosting: yup.string().nullable().max(100, 'Max 100 characters'),
     workersQuantity: yup
       .number()
       .typeError('Workers quantity is required')
@@ -291,6 +300,7 @@ const form = useStickyForm({
   initialValues: {
     jobTitle: '',
     billingTitle: '',
+    jobCosting: '',
     workersQuantity: 1,
     workerSalary: null as number | null,
     jobPosition: '',
@@ -304,7 +314,7 @@ const form = useStickyForm({
 });
 
 const {
-  jobTitle, billingTitle, workersQuantity, workerSalary, jobPosition,
+  jobTitle, billingTitle, jobCosting, workersQuantity, workerSalary, jobPosition,
   branchOffice, description, requirements, incentive, incentiveDescription, startAt,
 } = form.fields;
 const errors = form.errors;
@@ -447,6 +457,7 @@ watch(jobTitle, (val) => {
     form.hydrate({
       jobTitle: agencyRequest.jobTitle,
       billingTitle: agencyRequest.billingTitle,
+      jobCosting: agencyRequest.jobCosting,
       workersQuantity: agencyRequest.workersQuantity,
       workerSalary: agencyRequest.workerSalary,
       jobPosition: jobPosition.value,
@@ -512,7 +523,7 @@ function validateAutocompleteSelections(): boolean {
 
 function onSubmit() {
   form.markInteracted([
-    'jobTitle', 'billingTitle', 'workersQuantity', 'workerSalary',
+    'jobTitle', 'billingTitle', 'jobCosting', 'workersQuantity', 'workerSalary',
     'jobPosition', 'branchOffice', 'description', 'requirements',
     'incentive', 'incentiveDescription', 'startAt',
   ]);
@@ -525,6 +536,7 @@ function onSubmit() {
       ...request.value,
       jobTitle: values.jobTitle,
       billingTitle: values.billingTitle,
+      jobCosting: isAdministration.value ? values.jobCosting : request.value.jobCosting,
       workersQuantity: values.workersQuantity,
       workerSalary: directHiring.value ? values.workerSalary : null,
       description: values.description,

@@ -70,7 +70,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHist
                 });
 
                 var cp = new CompanyProfile(new User(CvnEmail.Create("c@maol.com").Value),
-                    FakeAgency, "A", "B", "6479807865", new CompanyProfileIndustry());
+                    FakeAgency, "A", "6479807865", new CompanyProfileIndustry());
                 var request = new Request(cp.Company, FakeAgency, new CompanyProfileJobPositionRate()) 
                 { 
                     JobLocation = new Location { City = new City { Province = new Province { Country = new Country() } } } 

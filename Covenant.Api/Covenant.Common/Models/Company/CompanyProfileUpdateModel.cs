@@ -3,7 +3,6 @@ namespace Covenant.Common.Models.Company
     public class CompanyProfileUpdateModel
     {
         public string FullName { get; set; }
-        public string BusinessName { get; set; }
         public string Phone { get; set; }
         public int? PhoneExt { get; set; }
         public string Fax { get; set; }

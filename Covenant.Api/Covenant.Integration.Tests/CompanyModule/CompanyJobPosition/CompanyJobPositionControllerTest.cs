@@ -98,7 +98,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
             public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
 
             private static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
-                "", "", "", new CompanyProfileIndustry("Company Industry"));
+                "", "", new CompanyProfileIndustry("Company Industry"));
 
             public static readonly CompanyProfileJobPositionRate FakePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "Forklift List", 2, 1, default, "tst@mail.com").Value;
 

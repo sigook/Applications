@@ -60,6 +60,10 @@ export function updateWorkerProfileExternalId(payload: UpdateWorkerProfileFields
   return api.put(`/api/AgencyWorkerProfile/${payload.id}/ExternalId`, payload);
 }
 
+export function updateWorkerProfileWcCode(payload: UpdateWorkerProfileFieldsPayload): Promise<void> {
+  return api.put(`/api/AgencyWorkerProfile/${payload.id}/WcCode`, payload);
+}
+
 // Worker email
 export function updateAgencyWorkerEmail(workerProfileId: string, model: UpdateWorkerEmailModel): Promise<void> {
   return api.put(`/api/AgencyWorkerProfile/${workerProfileId}/Email`, model);

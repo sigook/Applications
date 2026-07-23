@@ -7,6 +7,7 @@ namespace Covenant.Common.Models.Request
     {
         public string JobTitle { get; set; }
         public string BillingTitle { get; set; }
+        public string JobCosting { get; set; }
         public int WorkersQuantity { get; set; }
         public string Description { get; set; }
         public TimeSpan DurationBreak { get; set; }

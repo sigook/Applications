@@ -8,6 +8,7 @@ public class RunnerStatusHistoryModel
     public RunnerStatus? PreviousStatus { get; set; }
     public RunnerStatus NewStatus { get; set; }
     public Guid ChangedBy { get; set; }
+    public string ChangedByEmail { get; set; }
     public DateTime ChangedAt { get; set; }
     public string Comments { get; set; }
 }

@@ -16,6 +16,7 @@ namespace Covenant.Api.Authorization
         public const string Accounting = "Accounting";
         public const string SuperAdmin = "SuperAdmin";
         public const string Sales = "Sales";
+        public const string Administration = "Administration";
 
         public static IServiceCollection AddPolices(this IServiceCollection services)
         {
@@ -35,6 +36,7 @@ namespace Covenant.Api.Authorization
                     [.. CovenantConstants.Role.RecruitingAccess, CovenantConstants.Role.Worker]));
                 options.AddPolicy(Accounting, b => b.RequireAuthenticatedUser().RequireAssertion(a => a.User.IsAccountingManager()));
                 options.AddPolicy(SuperAdmin, b => b.RequireAuthenticatedUser().RequireRole(CovenantConstants.Role.SuperAdmin));
+                options.AddPolicy(Administration, b => b.RequireAuthenticatedUser().RequireRole(CovenantConstants.Role.Administration));
                 options.AddPolicy(Request, b => b.RequireAuthenticatedUser());
             });
             return services;

@@ -16,6 +16,8 @@ export const salesAccess: string[] = [roles.superAdmin, roles.admin, roles.sales
 
 export const accountingAccess: string[] = [roles.superAdmin, roles.admin];
 
+export const administrationAccess: string[] = [roles.superAdmin, roles.admin];
+
 export const roleLabels: Record<string, string> = {
   [roles.superAdmin]: "Super Admin",
   [roles.admin]: "Admin",

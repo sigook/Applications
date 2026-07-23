@@ -61,6 +61,16 @@ public class Runner
         return Result.Ok(runner);
     }
 
+    public Result ConvertCandidateToWorker(Guid workerProfileId)
+    {
+        if (CandidateId is null)
+            return Result.Fail("This runner is not linked to a candidate");
+        CandidateId = null;
+        WorkerProfileId = workerProfileId;
+        UpdatedAt = DateTime.Now;
+        return Result.Ok();
+    }
+
     public static bool CanAddInterview(RunnerStatus status) =>
         status is RunnerStatus.InterviewScheduled or RunnerStatus.InterviewRescheduled;
 
@@ -70,6 +80,8 @@ public class Runner
             return Result.Fail("A hired runner's status cannot be changed");
         if (next == RunnerStatus.Hired && startDate is null)
             return Result.Fail("A start date is required to hire a runner");
+        if (next == RunnerStatus.Hired && WorkerProfileId is null)
+            return Result.Fail("A candidate must be converted to a worker before being hired");
         var previous = Status;
         Status = next;
         UpdatedAt = DateTime.Now;

@@ -79,8 +79,16 @@
                 <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
               </template>
               <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
+                @click="showCandidateDetail(props.row.candidateId)">
+                Edit Candidate
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
                 @click="convertToWorker(props.row.candidateId)">
                 Convert to Worker
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId || props.row.candidateId"
+                @click="showAddRunner(props.row)">
+                Add Runner
               </b-dropdown-item>
               <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
                 Delete
@@ -95,6 +103,16 @@
       <ManageTabs @updateApplicants="(args) => addApplicant(args.model)" />
     </b-modal>
 
+    <b-modal v-model="modalCandidateDetail" width="500px">
+      <detail-candidate v-if="candidateDetailId" :candidate-id="candidateDetailId"
+        @onUpdateWorker="onCandidateUpdated"></detail-candidate>
+    </b-modal>
+
+    <b-modal v-model="modalAddRunner" width="420px">
+      <select-runner-type-modal v-if="runnerApplicant" :name="runnerApplicant.name" @select="addRunner"
+        @close="modalAddRunner = false" />
+    </b-modal>
+
     <b-modal v-model="modalComment" width="500px">
       <EditTextarea v-if="currentItem" :title="'Comments'" subtitle="Comments" :min-length="0" :data="currentItem.comments"
         @updateContent="(data) => saveApplicantComment(data)"></EditTextarea>
@@ -104,7 +122,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { showAlertError } from "@/utils/toast";
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { emailName, dateMonth } from '@/utils/filters';
 import { formatPhone } from '@/utils/phoneFormat';
 import {
@@ -114,8 +132,12 @@ import {
   updateAgencyRequestApplicant
 } from "@/api/agencyRequestApi";
 import { convertCandidateToWorker } from "@/api/agencyCandidateApi";
+import { createAgencyRunner } from "@/api/agencyRunnerApi";
+import type { RunnerType } from '@/types/runner';
 import ManageTabs from './ManageApplicantsModal.vue';
+import SelectRunnerTypeModal from '@/components/runner/SelectRunnerTypeModal.vue';
 import EditTextarea from '@/components/agency_request/EditTextarea.vue';
+import DetailCandidate from '@/components/candidate/DetailCandidate.vue';
 
 defineProps<{ request?: any }>();
 
@@ -127,6 +149,10 @@ const currentItem = ref<any>(null);
 const createdAtDatesSelected = ref<any[]>([]);
 const modalManageWorkers = ref(false);
 const modalComment = ref(false);
+const modalCandidateDetail = ref(false);
+const modalAddRunner = ref(false);
+const runnerApplicant = ref<any>(null);
+const candidateDetailId = ref<string | null>(null);
 const totalItems = ref(0);
 const rows = ref<any[]>([]);
 const serverParams = reactive<any>({
@@ -233,6 +259,39 @@ function saveApplicantComment(comment: string) {
     .then(() => {
       isLoading.value = false;
       loadApplicants();
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function showCandidateDetail(candidateId: string) {
+  candidateDetailId.value = candidateId;
+  modalCandidateDetail.value = true;
+}
+
+function onCandidateUpdated() {
+  modalCandidateDetail.value = false;
+  loadApplicants();
+}
+
+function showAddRunner(item: any) {
+  runnerApplicant.value = item;
+  modalAddRunner.value = true;
+}
+
+function addRunner(type: RunnerType) {
+  modalAddRunner.value = false;
+  isLoading.value = true;
+  createAgencyRunner(serverParams.requestId, {
+    workerProfileId: runnerApplicant.value.workerProfileId ?? null,
+    candidateId: runnerApplicant.value.workerProfileId ? null : runnerApplicant.value.candidateId ?? null,
+    type
+  })
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Runner added');
     })
     .catch((error) => {
       isLoading.value = false;

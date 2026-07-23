@@ -26,6 +26,8 @@ public static class CovenantConstants
 
         public static readonly string[] Accounting = [SuperAdmin, Admin];
 
+        public static readonly string[] Administration = [SuperAdmin, Admin];
+
         public static readonly string[] AgencyAssignable = [Admin, Recruiting, Sales];
 
         public static readonly string[] SuperAdminAssignable = [SuperAdmin, .. AgencyAssignable];
@@ -68,6 +70,12 @@ public static class CovenantConstants
         public const int MaximumLengthRequirements = 50000;
         public const int MinimumLengthDescription = 5;
         public const int MaximumLengthDescription = 5000;
+        public const int MaximumLengthJobTitle = 500;
+        public const int MaximumLengthJobCosting = 100;
+        public const int MaximumIncentive = 720;
+        public const int MaximumLengthIncentiveDescription = 5000;
+        public const int MinimumDurationBreakMinutes = 0;
+        public const int MaximumDurationBreakMinutes = 60;
         public const int MinimumHourPrice = 1;
         public const int MaximumHourPrice = 9999999;
         public const double MaximumFirstDay = 365;

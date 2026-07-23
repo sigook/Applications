@@ -19,6 +19,9 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
             .Include(r => r.Interviews)
             .FirstOrDefaultAsync(expression);
 
+    public Task<List<Runner>> GetRunners(Expression<Func<Runner, bool>> expression) =>
+        context.Runners.Where(expression).ToListAsync();
+
     public Task<bool> RunnerExists(Guid requestId, Guid? workerProfileId, Guid? candidateId) =>
         context.Runners.AnyAsync(r => r.RequestId == requestId &&
             ((workerProfileId != null && r.WorkerProfileId == workerProfileId) ||
@@ -77,6 +80,7 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
                         PreviousStatus = h.PreviousStatus,
                         NewStatus = h.NewStatus,
                         ChangedBy = h.ChangedBy,
+                        ChangedByEmail = h.ChangedByUser.Email,
                         ChangedAt = h.ChangedAt,
                         Comments = h.Comments
                     }),
@@ -117,7 +121,7 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
              RequestId = r.RequestId,
              RequestNumberId = r.Request.NumberId,
              JobTitle = r.Request.JobTitle,
-             CompanyName = cp.BusinessName,
+             CompanyName = cp.FullName,
              WorkerProfileId = r.WorkerProfileId.Value,
              WorkerName = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
              StartDate = r.StartDate.Value

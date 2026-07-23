@@ -85,7 +85,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 
             private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
             public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
-                "", "", "", new CompanyProfileIndustry("Company Industry"));
+                "", "", new CompanyProfileIndustry("Company Industry"));
 
             public static readonly CompanyProfileDocument FakeDocument = new CompanyProfileDocument(FakeCompanyProfile.Id, CovenantFile.Create("doc.pdf").Value, "u@mail.com");
             public static readonly CompanyProfileDocument FakeDeleteDocument = new CompanyProfileDocument(FakeCompanyProfile.Id, CovenantFile.Create("delete.pdf").Value, "u@mail.com");

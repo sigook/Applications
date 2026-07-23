@@ -99,17 +99,8 @@ public class WorkerService : IWorkerService
         var validationResult = await workerProfileValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return Result.Fail<Guid>(validationResult.Errors.Select(e => new ResultError(e.PropertyName, e.ErrorMessage)));
 
-        var agencyId = identityServerService.GetAgencyId();
-        Common.Entities.Agency.Agency agency;
-        if (agencyId == Guid.Empty)
-        {
-            agency = await agencyRepository.GetAgencyMasterByLocation(model.Location.City);
-            if (agency is null) return Result.Fail<Guid>(ApiResources.AgencyNotFound);
-        }
-        else
-        {
-            agency = await agencyRepository.GetAgency(agencyId);
-        }
+        var agency = await agencyRepository.GetAgencyMasterByLocation(model.Location.City);
+        if (agency is null) return Result.Fail<Guid>(ApiResources.AgencyNotFound);
 
         var user = await identityServerService.CreateUser(new CreateUserModel
         {

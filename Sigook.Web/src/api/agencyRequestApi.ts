@@ -9,6 +9,7 @@ import type {
   CancelRequestPayload,
   BulkCancelRequestsPayload,
   BulkCancelRequestsResult,
+  BulkUpdateRecruitersPayload,
   AgencyRequestWorkerFilter,
   AgencyRequestWorker,
   BookWorkerModel,
@@ -58,6 +59,10 @@ export function cancelAgencyRequest(id: string, payload: CancelRequestPayload): 
 
 export function bulkCancelRequests(payload: BulkCancelRequestsPayload): Promise<BulkCancelRequestsResult> {
   return api.put<BulkCancelRequestsResult>(`${requestsUrl}/bulk-cancel`, payload);
+}
+
+export function bulkUpdateRecruiters(payload: BulkUpdateRecruitersPayload): Promise<void> {
+  return api.put(`${requestsUrl}/bulk-recruiters`, payload);
 }
 
 export function agencyRequestOpen(id: string): Promise<void> {

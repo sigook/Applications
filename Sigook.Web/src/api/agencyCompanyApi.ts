@@ -6,6 +6,7 @@ import type {
   AgencyCompanyContactPerson,
   AgencyCompanyLocationModel,
   AgencyCompanyJobPosition,
+  AgencyCompanyJobPositionFilter,
   VaccinationRequiredModel,
   InvoiceNotesModel,
   InvoiceRecipientModel,
@@ -119,8 +120,8 @@ export function updateAgencyCompanyContactInformation(profileId: string, model: 
 // Company job positions
 // ---------------------------------------------------------------------------
 
-export function getAgencyCompanyJobPositions(companyProfileId: string): Promise<AgencyCompanyJobPosition[]> {
-  return api.get<AgencyCompanyJobPosition[]>(`${companyProfilesUrl}/${companyProfileId}/JobPositions`);
+export function getAgencyCompanyJobPositions(companyProfileId: string, filter?: AgencyCompanyJobPositionFilter): Promise<AgencyCompanyJobPosition[]> {
+  return api.get<AgencyCompanyJobPosition[]>(`${companyProfilesUrl}/${companyProfileId}/JobPositions`, { params: { ...filter } });
 }
 
 export function getAgencyCompanyJobPositionById(profileId: string, id: string): Promise<AgencyCompanyJobPosition> {

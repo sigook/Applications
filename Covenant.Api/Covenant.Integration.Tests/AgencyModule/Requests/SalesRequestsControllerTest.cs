@@ -140,7 +140,7 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
         private static readonly CompanyName Name = CompanyName.Create("ACME").Value;
 
         public static readonly CompanyProfile FakeCompany = CompanyProfile.AgencyCreateCompany(
-            new User(CvnEmail.Create("client@mail.com").Value), AgencyId, Name, Name, "6478976541",
+            new User(CvnEmail.Create("client@mail.com").Value), AgencyId, Name, "6478976541",
             default, default, default, default,
             CompanyProfileIndustry.Create("Labour").Value,
             default, default, default, default,

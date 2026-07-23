@@ -11,7 +11,7 @@
         <h2 class="text-capitalize fz1 fw-bold">
           <span class="fw-normal fz-1" v-if="company.numberId">{{ company.numberId }} |
           </span>
-          {{ lowercase(company.businessName) }}
+          {{ lowercase(company.fullName) }}
         </h2>
       </div>
 

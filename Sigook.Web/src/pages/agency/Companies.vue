@@ -36,14 +36,14 @@
           <p class="container text-center">No records available</p>
         </template>
         <template>
-          <b-table-column field="businessName" label="Name" sortable searchable>
+          <b-table-column field="fullName" label="Name" sortable searchable>
             <template v-slot:searchable>
               <b-input v-model="serverParams.businessInfo" placeholder="Search..." :icon="isMobile ? '' : 'magnify'"
                 size="is-small" @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
               <router-link :to="{ path: companyDetailBase + '/' + props.row.id }">
-                {{ props.row.businessName }}
+                {{ props.row.fullName }}
                 <template v-for="(location, index) in props.row.locations">
                   <p v-if="index < 2" :key="location">
                     <i class="fz-2 block">{{ location }}</i>
@@ -230,7 +230,7 @@ function onPageChange(params: number) {
 
 function onSortChange(field: string, order: string) {
   switch (field) {
-    case 'businessName':
+    case 'fullName':
       serverParams.value.sortBy = 0;
       break;
     case 'industry':

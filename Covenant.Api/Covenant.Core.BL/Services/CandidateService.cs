@@ -36,6 +36,7 @@ public class CandidateService : ICandidateService
     private readonly IRequestRepository requestRepository;
     private readonly IAgencyRepository agencyRepository;
     private readonly IWorkerRepository workerRepository;
+    private readonly IRunnerRepository runnerRepository;
     private readonly ICandidateAdapter candidateAdapter;
     private readonly IIdentityServerService identityServerService;
     private readonly IDocumentService documentService;
@@ -48,6 +49,7 @@ public class CandidateService : ICandidateService
         IRequestRepository requestRepository,
         IAgencyRepository agencyRepository,
         IWorkerRepository workerRepository,
+        IRunnerRepository runnerRepository,
         ICandidateAdapter candidateAdapter,
         IIdentityServerService identityServerService,
         IDocumentService documentService,
@@ -59,6 +61,7 @@ public class CandidateService : ICandidateService
         this.requestRepository = requestRepository;
         this.agencyRepository = agencyRepository;
         this.workerRepository = workerRepository;
+        this.runnerRepository = runnerRepository;
         this.candidateAdapter = candidateAdapter;
         this.identityServerService = identityServerService;
         this.documentService = documentService;
@@ -136,7 +139,9 @@ public class CandidateService : ICandidateService
     public async Task<Result> ConvertToWorker(Guid id)
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
-        if (candidate == null) return Result.Fail();
+        if (candidate == null) return Result.Fail("Candidate not found");
+        var canConvert = candidate.CanConvertToWorker();
+        if (!canConvert) return canConvert;
         var worker = await candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
         var agency = await agencyRepository.GetAgencyMasterByLocation(worker.Location.City);
         var profile = new WorkerProfile();
@@ -148,17 +153,16 @@ public class CandidateService : ICandidateService
         if (!result) return Result.Fail(result.Errors);
         result = profile.AddOtherDocuments(candidate.Documents.Select(d => d.Document).ToList());
         if (!result) return Result.Fail(result.Errors);
-        if (!string.IsNullOrWhiteSpace(candidate.Email))
+
+        var existingUser = await userRepository.GetUserByEmail(candidate.Email);
+        if (existingUser != null)
         {
-            var existingUser = await userRepository.GetUserByEmail(candidate.Email);
-            if (existingUser != null)
-            {
-                if (await userRepository.UserIsWorker(existingUser.Id))
-                    return Result.Fail("This email is already associated with a worker");
-                var deleteResult = await identityServerService.DeleteUserOrClaim(existingUser.Id, new IdModel(existingUser.Id));
-                if (!deleteResult) return Result.Fail(deleteResult.Errors);
-            }
+            if (await userRepository.UserIsWorker(existingUser.Id))
+                return Result.Fail("This email is already associated with a worker");
+            var deleteResult = await identityServerService.DeleteUserOrClaim(existingUser.Id, new IdModel(existingUser.Id));
+            if (!deleteResult) return Result.Fail(deleteResult.Errors);
         }
+
         var user = await identityServerService.CreateUser(new CreateUserModel
         {
             Email = candidate.Email,
@@ -166,11 +170,15 @@ public class CandidateService : ICandidateService
             Role = CovenantConstants.Role.Worker
         });
         if (!user) return Result.Fail(user.Errors);
+
         profile.Worker = user.Value;
         profile.AgencyId = agency.Id;
+
         candidateRepository.Delete<CandidateDocument>(candidate.Documents);
+
         await workerRepository.Create(profile);
         await workerRepository.SaveChangesAsync();
+
         if (candidate.Notes.Any())
         {
             foreach (var note in candidate.Notes)
@@ -184,6 +192,7 @@ public class CandidateService : ICandidateService
             }
             await workerRepository.SaveChangesAsync();
         }
+
         var requestApplicants = await requestRepository.GetRequestApplicants(c => c.CandidateId == id);
         if (requestApplicants.Any())
         {
@@ -194,8 +203,21 @@ public class CandidateService : ICandidateService
             }
             await workerRepository.SaveChangesAsync();
         }
+
+        var runners = await runnerRepository.GetRunners(r => r.CandidateId == id);
+        if (runners.Count != 0)
+        {
+            foreach (var runner in runners)
+            {
+                var convertResult = runner.ConvertCandidateToWorker(profile.Id);
+                if (!convertResult) return Result.Fail(convertResult.Errors);
+            }
+            await runnerRepository.SaveChangesAsync();
+        }
+
         result = await DeleteCandidate(id);
         if (!result) return Result.Fail(result.Errors);
+
         return Result.Ok();
     }
 
@@ -286,12 +308,20 @@ public class CandidateService : ICandidateService
         candidate.ResidencyStatus = model.ResidencyStatus;
         candidate.GenderId = model.Gender?.Id;
         candidate.HasVehicle = model.HasVehicle;
+        candidate.SourceId = model.SourceId;
         candidate.Dnu = model.Dnu;
         if (!string.IsNullOrEmpty(model.PostalCode))
         {
             var rPostalCode = CvnPostalCode.Create(model.PostalCode);
             if (!rPostalCode) return rPostalCode;
             candidate.AddPostalCode(rPostalCode.Value);
+        }
+        var phone = model.PhoneNumbers?.FirstOrDefault()?.PhoneNumber;
+        if (!string.IsNullOrWhiteSpace(phone))
+        {
+            candidate.PhoneNumbers.Clear();
+            var rPhone = candidate.AddPhone(phone);
+            if (!rPhone) return Result.Fail(rPhone.Errors);
         }
         await candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
