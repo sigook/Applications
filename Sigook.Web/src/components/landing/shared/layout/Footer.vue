@@ -33,7 +33,7 @@
           <div class="footer__col">
             <span class="footer__col-eyebrow">Contact</span>
             <a href="mailto:info@sigook.com" class="footer__link">info@sigook.com</a>
-            <a href="tel:+13055550123"       class="footer__link">+1 (305) 555-0123</a>
+            <a href="tel:+19549320477"       class="footer__link">+1 (954) 932-0477</a>
             <span class="footer__link footer__link--plain">Florida, USA</span>
           </div>
         </div>
