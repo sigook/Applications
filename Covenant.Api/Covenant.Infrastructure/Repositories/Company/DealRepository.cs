@@ -22,7 +22,7 @@ public class DealRepository(CovenantContext context) : IDealRepository
                 Id = d.Id,
                 Title = d.Title,
                 CompanyProfileId = d.CompanyId,
-                CompanyName = d.Company.BusinessName,
+                CompanyName = d.Company.FullName,
                 OwnerId = d.OwnerId,
                 OwnerName = context.AgencyPersonnel.Where(p => p.UserId == d.OwnerId).Select(p => p.Name).FirstOrDefault(),
                 Date = d.Date,

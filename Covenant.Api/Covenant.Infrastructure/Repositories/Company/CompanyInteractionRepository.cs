@@ -21,7 +21,7 @@ public class CompanyInteractionRepository(CovenantContext context) : ICompanyInt
             {
                 Id = i.Id,
                 CompanyProfileId = i.CompanyId,
-                CompanyName = i.Company.BusinessName,
+                CompanyName = i.Company.FullName,
                 OwnerId = i.OwnerId,
                 OwnerName = context.AgencyPersonnel.Where(p => p.UserId == i.OwnerId).Select(p => p.Name).FirstOrDefault(),
                 Description = i.Description,
