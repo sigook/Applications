@@ -29,7 +29,7 @@
           :key="openToken"
           :interaction="interaction"
         />
-        <SalesClientForm v-else-if="kind === 'client'" :key="kind" />
+        <SalesClientForm v-else-if="kind === 'client'" ref="clientForm" :key="openToken" />
         <SalesDealForm v-else-if="kind === 'deal'" ref="dealForm" :key="openToken" :deal="deal" />
       </div>
 
@@ -94,6 +94,7 @@ const emit = defineEmits<{
 
 const interactionForm = ref<InstanceType<typeof SalesInteractionForm> | null>(null);
 const dealForm = ref<InstanceType<typeof SalesDealForm> | null>(null);
+const clientForm = ref<InstanceType<typeof SalesClientForm> | null>(null);
 const isSaving = ref(false);
 const isDeleting = ref(false);
 
@@ -123,8 +124,8 @@ const SALES_CREATE_META: Record<SalesCreateKind, SalesCreateMeta> = {
   },
   client: {
     icon: 'domain',
-    color: '#3eb800',
-    tint: 'rgba(62, 184, 0, 0.13)',
+    color: '#21b7ff',
+    tint: 'rgba(33, 183, 255, 0.13)',
     title: 'New client',
     subtitle: 'Add a business to your book',
     cta: 'Create client',
@@ -162,6 +163,10 @@ async function onSubmit(): Promise<void> {
   }
   if (props.kind === 'deal') {
     await runSubmit(() => dealForm.value?.submit());
+    return;
+  }
+  if (props.kind === 'client') {
+    await runSubmit(() => clientForm.value?.submit());
     return;
   }
   close();
