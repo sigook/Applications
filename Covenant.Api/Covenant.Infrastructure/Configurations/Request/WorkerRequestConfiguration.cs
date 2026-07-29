@@ -10,7 +10,13 @@ namespace Covenant.Infrastructure.Configurations.Request
         {
             builder.ToTable("WorkerRequest");
             builder.HasKey(k => k.Id);
-            builder.HasIndex(r => new { r.RequestId, r.WorkerId }).IsUnique();
+            builder.HasIndex(r => new { r.RequestId, r.WorkerProfileId }).IsUnique();
+
+            builder.HasOne(e => e.WorkerProfile)
+                .WithMany()
+                .HasForeignKey(e => e.WorkerProfileId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

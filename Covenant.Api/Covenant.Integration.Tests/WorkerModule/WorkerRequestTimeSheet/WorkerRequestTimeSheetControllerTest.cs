@@ -157,7 +157,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
             public static readonly Request Request = Request.AgencyCreateRequest(AgencyId, Guid.NewGuid(), FakeLocation, Now, Guid.NewGuid()).Value;
             internal static readonly double HoursDay2 = 2;
 
-            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeUser.Id, Request.Id);
+            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorker.Id, Request.Id);
             public static readonly TimeSheet Day1 = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, Now.AddDays(-2).Date).Value;
             public static readonly TimeSheet Day2 = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, Now.AddDays(-1).Date).Value;
 

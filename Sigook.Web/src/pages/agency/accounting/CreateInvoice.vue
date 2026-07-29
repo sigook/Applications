@@ -270,10 +270,10 @@ const filteredRequests = computed(() => {
   await loadCompanies();
 })();
 
-async function loadCompanyRequests(companyId: string) {
+async function loadCompanyRequests(companyProfileId: string) {
   isLoadingRequests.value = true;
   try {
-    requests.value = await getAllAgencyRequests({ companyId, statuses: [1, 3], pageSize: 1000, pageIndex: 0 });
+    requests.value = await getAllAgencyRequests({ companyProfileId, statuses: [1, 3], pageSize: 1000, pageIndex: 0 });
   } finally {
     isLoadingRequests.value = false;
   }
@@ -297,9 +297,8 @@ async function loadCompanies() {
 function selectCompany(c: any) {
   resetRequests();
   if (c) {
-    invoice.value.companyId = c.companyId;
     invoice.value.companyProfileId = c.id;
-    loadCompanyRequests(c.companyId);
+    loadCompanyRequests(c.id);
   } else {
     invoice.value = {};
     requests.value = [];

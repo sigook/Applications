@@ -2,7 +2,7 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <div class="mt-3">
-      <table-requests @onDataLoading="(value) => isLoading = value" :companyId="company.companyId" />
+      <table-requests @onDataLoading="(value) => isLoading = value" :companyProfileId="company.id" />
     </div>
   </div>
 </template>

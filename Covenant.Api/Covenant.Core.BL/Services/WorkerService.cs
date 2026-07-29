@@ -194,7 +194,7 @@ public class WorkerService : IWorkerService
         if (request is null || !request.IsAvailableToApply) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
         var worker = await workerRepository.GetProfile(p => p.WorkerId == workerId);
         if (worker is null) return Result.Fail<RequestApplicantDetailModel>(ApiResources.WorkerNotFound);
-        if (await workerRequestRepository.WorkerRequestExists(worker.WorkerId, requestId)) return Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
+        if (await workerRequestRepository.WorkerRequestExists(worker.Id, requestId)) return Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
         var requestCandidate = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == worker.Id);
         if (requestCandidate != null) return Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
         var result = await NotifyApplicant(request, worker, model.Comments);

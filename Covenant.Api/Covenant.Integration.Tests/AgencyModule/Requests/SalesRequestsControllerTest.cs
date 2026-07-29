@@ -163,9 +163,9 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
         {
             FakeCompany.AddJobPositionRate(Rate);
             Guid rateId = FakeCompany.JobPositionRates.First().Id;
-            OwnRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, rateId, FakeLocation);
-            OtherSalesRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, rateId, FakeLocation);
-            UnassignedRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, rateId, FakeLocation);
+            OwnRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId, FakeLocation);
+            OtherSalesRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId, FakeLocation);
+            UnassignedRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId, FakeLocation);
         }
 
         public static void Seed(CovenantContext context)

@@ -23,20 +23,7 @@ namespace Covenant.Common.Entities.Request
         public Guid RecruiterId { get; private set; }
         public DateTime? WorkDate { get; private set; }
         public DateTime CreatedAt { get; private set; }
-        public ICollection<WorkerDispatch> Dispatches { get; private set; } = new List<WorkerDispatch>();
-
-        public bool AddDispatch(Guid workerProfileId, DateTime createdAt, Guid? createdBy = null)
-        {
-            if (Dispatches.Any(d => d.WorkerProfileId == workerProfileId)) return false;
-            Dispatches.Add(new WorkerDispatch(Id, workerProfileId, createdAt, createdBy));
-            return true;
-        }
-
-        public void RemoveDispatch(Guid workerProfileId)
-        {
-            var dispatch = Dispatches.FirstOrDefault(d => d.WorkerProfileId == workerProfileId);
-            if (dispatch is not null) Dispatches.Remove(dispatch);
-        }
+        public ICollection<Runners.Runner> Runners { get; private set; } = new List<Runners.Runner>();
 
         public void MoveTo(Guid recruiterId, DateTime? workDate)
         {

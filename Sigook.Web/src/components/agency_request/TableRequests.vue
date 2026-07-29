@@ -64,7 +64,7 @@
             </div>
           </template>
         </b-table-column>
-        <b-table-column field="companyFullName" label="Client" :visible="!companyId" sortable searchable>
+        <b-table-column field="companyFullName" label="Client" :visible="!companyProfileId" sortable searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"
               @keypress="onInputEntered"></b-input>
@@ -285,7 +285,7 @@ import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
 import Export from '@/components/Export.vue';
 
-const props = defineProps<{ totalItems?: number; companyId?: any; agencyId?: any; config?: any }>();
+const props = defineProps<{ totalItems?: number; companyProfileId?: any; agencyId?: any; config?: any }>();
 const emit = defineEmits<{
   (e: 'onDataLoading', value: boolean): void;
   (e: 'update:totalItems', value: number): void;
@@ -463,7 +463,7 @@ function getStatusClass(row: any) {
 function loadRequests() {
   checkedRows.value = [];
   emit('onDataLoading', true);
-  if (!props.companyId && !props.agencyId) {
+  if (!props.companyProfileId && !props.agencyId) {
     agencyStore.updateAgencyRequestFilter(serverParams);
   }
   const fetchRequests = isSalesView.value ? getSalesRequests : getAgencyRequests;
@@ -549,7 +549,7 @@ watch(checkedRows, (rows) => {
   quickActions.isAsap = rows.length > 0 && rows.every((r: any) => r.isAsap);
 });
 
-if (!props.companyId && !props.agencyId) {
+if (!props.companyProfileId && !props.agencyId) {
   if (agencyStore.agencyRequestFilter) {
     Object.assign(serverParams, agencyStore.agencyRequestFilter);
     if (serverParams.statuses) {
@@ -564,8 +564,8 @@ if (!props.companyId && !props.agencyId) {
   }
 } else {
   serverParams.onlyMine = false;
-  if (props.companyId) {
-    serverParams.companyId = props.companyId;
+  if (props.companyProfileId) {
+    serverParams.companyProfileId = props.companyProfileId;
   }
   if (props.agencyId) {
     serverParams.agencyId = props.agencyId;

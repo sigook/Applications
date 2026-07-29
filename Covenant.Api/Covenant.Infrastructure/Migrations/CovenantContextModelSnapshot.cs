@@ -2441,7 +2441,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<bool>("BreakIsPaid")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -2528,6 +2528,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("UsesRunners")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal?>("WorkerRate")
                         .HasColumnType("numeric");
 
@@ -2544,7 +2547,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AgencyId");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("CompanyProfileId");
 
                     b.HasIndex("JobLocationId");
 
@@ -2796,9 +2799,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid>("AgencyId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("CandidateId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -2812,6 +2812,9 @@ namespace Covenant.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
 
                     b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RequestRecruiterId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("StartDate")
@@ -2831,16 +2834,16 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("WorkerProfileId")
+                    b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AgencyId");
 
-                    b.HasIndex("CandidateId");
-
                     b.HasIndex("RequestId");
+
+                    b.HasIndex("RequestRecruiterId");
 
                     b.HasIndex("WorkerProfileId");
 
@@ -3148,36 +3151,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToView("TimesheetHistory", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RequestRecruiterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WorkerProfileId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("WorkerProfileId");
-
-                    b.HasIndex("RequestRecruiterId", "WorkerProfileId")
-                        .IsUnique();
-
-                    b.ToTable("WorkerDispatch", (string)null);
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3208,7 +3181,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime?>("WeekStartWorking")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("WorkerId")
+                    b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("WorkerRequestStatus")
@@ -3216,9 +3189,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerProfileId");
 
-                    b.HasIndex("RequestId", "WorkerId")
+                    b.HasIndex("RequestId", "WorkerProfileId")
                         .IsUnique();
 
                     b.ToTable("WorkerRequest", (string)null);
@@ -4619,10 +4592,10 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.User", "Company")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("CompanyProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Covenant.Common.Entities.Location", "JobLocation")
@@ -4641,7 +4614,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Navigation("Agency");
 
-                    b.Navigation("Company");
+                    b.Navigation("CompanyProfile");
 
                     b.Navigation("JobLocation");
 
@@ -4845,27 +4818,28 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
-                        .WithMany()
-                        .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
+                        .WithMany("Runners")
+                        .HasForeignKey("RequestRecruiterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Agency");
 
-                    b.Navigation("Candidate");
-
                     b.Navigation("Request");
+
+                    b.Navigation("RequestRecruiter");
 
                     b.Navigation("WorkerProfile");
                 });
@@ -4952,16 +4926,11 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheet");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
-                        .WithMany("Dispatches")
-                        .HasForeignKey("RequestRecruiterId")
+                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                        .WithMany("Workers")
+                        .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4971,28 +4940,9 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("RequestRecruiter");
-
-                    b.Navigation("WorkerProfile");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany("Workers")
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.User", "Worker")
-                        .WithMany()
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Request");
 
-                    b.Navigation("Worker");
+                    b.Navigation("WorkerProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequestNote", b =>
@@ -5455,7 +5405,7 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
                 {
-                    b.Navigation("Dispatches");
+                    b.Navigation("Runners");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>

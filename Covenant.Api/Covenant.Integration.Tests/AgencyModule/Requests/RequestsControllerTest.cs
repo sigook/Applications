@@ -459,7 +459,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         {
             FakeCompany.AddJobPositionRate(FakeCompanyProfileJobPositionRate);
             FakeCompany.UpdateVaccinationInfo(true, "require vaccine certificate");
-            FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, FakeLocation);
+            FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, FakeLocation);
             FakeRequest.NumberId = 99;
             FakeRequest.CreatedAt = new DateTime(2021, 01, 01);
             FakeRequest.CreatedBy = "recruiter@mail.com";
@@ -472,17 +472,17 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             newShift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
             FakeRequest.UpdateShift(newShift);
 
-            FakeUpdateRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id);
-            FakeIsAsapRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id);
-            FakeRequestIncreaseQuantity = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
-            FakeRequestReduceQuantity = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
-            FakeRequestToCancel = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
-            FakeRequestUpdateLocation = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
-            FakeRequestToOpen = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeUpdateRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
+            FakeIsAsapRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
+            FakeRequestIncreaseQuantity = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeRequestReduceQuantity = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeRequestToCancel = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeRequestUpdateLocation = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeRequestToOpen = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
             FakeRequestToOpen.Cancel(FakeNow);
-            FakeRequestToSendInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeRequestToSendInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
             FakeRequestToSendInvitation.WorkerSalary = 50_000m;
-            FakeRequestWithRecentInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
+            FakeRequestWithRecentInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
             FakeRequestWithRecentInvitation.WorkerSalary = 50_000m;
             FakeRequestWithRecentInvitation.InvitationSentItAt = DateTime.Now;
             var sinInfo = new Mock<ISinInformation<CovenantFile>>();

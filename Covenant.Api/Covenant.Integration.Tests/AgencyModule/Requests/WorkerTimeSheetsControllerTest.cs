@@ -3,6 +3,7 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
@@ -38,7 +39,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
         }
 
         private static string RequestUri() => WorkerTimeSheetsController.RouteName.Replace("{requestId}",
-            Data.Request.Id.ToString()).Replace("{workerId}", Data.Worker.Id.ToString());
+            Data.Request.Id.ToString()).Replace("{workerProfileId}", Data.WorkerProfile.Id.ToString());
 
         [Fact]
         public async Task Post()
@@ -161,7 +162,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
             public static readonly Request Request = Request.AgencyCreateRequest(AgencyId, Guid.NewGuid(), FakeData.FakeLocation(), FakeNow, Guid.NewGuid()).Value;
             public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
-            private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(Worker.Id, Request.Id);
+            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = AgencyId };
+            private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
             public static readonly TimeSheet FakeTimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
             public static readonly TimeSheet TimeSheetReportedByWorker = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id,
                 FakeNow.AddDays(1), false, FakeNow.AddDays(1)).Value;
@@ -171,6 +173,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             {
                 TimeSheetReportedByWorker.AddClockOut(TimeSheetReportedByWorker.ClockIn.GetValueOrDefault().AddHours(1), TimeSheetReportedByWorker.ClockIn.GetValueOrDefault().AddHours(1));
                 context.User.Add(Worker);
+                context.WorkerProfile.Add(WorkerProfile);
                 context.Request.Add(Request);
                 context.WorkerRequest.Add(FakeWorkerRequest);
                 context.AddRange(FakeTimeSheet, TimeSheetReportedByWorker);

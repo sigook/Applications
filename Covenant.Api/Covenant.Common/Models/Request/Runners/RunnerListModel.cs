@@ -8,8 +8,7 @@ public class RunnerListModel
     public long NumberId { get; set; }
     public Guid AgencyId { get; set; }
     public Guid RequestId { get; set; }
-    public Guid? WorkerProfileId { get; set; }
-    public Guid? CandidateId { get; set; }
+    public Guid WorkerProfileId { get; set; }
     public string Name { get; set; }
     public string Email { get; set; }
     public RunnerType Type { get; set; }

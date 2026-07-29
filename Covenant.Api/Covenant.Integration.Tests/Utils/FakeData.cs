@@ -26,17 +26,17 @@ namespace Covenant.Integration.Tests.Utils
         }
 
         public static Request FakeRequest(Guid agencyId = default,
-            Guid companyId = default, Guid jobPositionRateId = default,
+            Guid companyProfileId = default, Guid jobPositionRateId = default,
             Location location = default, DateTime startAt = default,
             int workersQuantity = 1,
             DurationTerm durationTerm = DurationTerm.LongTerm)
         {
             agencyId = agencyId == default ? Guid.NewGuid() : agencyId;
-            companyId = companyId == default ? Guid.NewGuid() : companyId;
+            companyProfileId = companyProfileId == default ? Guid.NewGuid() : companyProfileId;
             jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
             location = location ?? FakeLocation();
             startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-            return Request.AgencyCreateRequest(agencyId, companyId, location, startAt, jobPositionRateId, workersQuantity: workersQuantity,
+            return Request.AgencyCreateRequest(agencyId, companyProfileId, location, startAt, jobPositionRateId, workersQuantity: workersQuantity,
                 durationTerm: durationTerm).Value;
         }
 

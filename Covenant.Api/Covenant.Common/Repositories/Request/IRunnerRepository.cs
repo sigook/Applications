@@ -9,7 +9,7 @@ public interface IRunnerRepository
 {
     Task<Runner> GetRunner(Expression<Func<Runner, bool>> expression);
     Task<List<Runner>> GetRunners(Expression<Func<Runner, bool>> expression);
-    Task<bool> RunnerExists(Guid requestId, Guid? workerProfileId, Guid? candidateId);
+    Task<bool> RunnerExists(Guid requestId, Guid workerProfileId);
     Task<PaginatedList<RunnerListModel>> GetRunners(Guid agencyId, GetRunnersFilter filter);
     Task<RunnerDetailModel> GetRunnerDetail(Guid id);
     Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday(Guid agencyId, Guid updatedBy, DateTime windowStart, DateTime windowEnd);

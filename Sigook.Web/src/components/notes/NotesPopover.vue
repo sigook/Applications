@@ -15,19 +15,26 @@
 </template>
 <script setup lang="ts">
 import { ref, nextTick, onBeforeUnmount } from 'vue';
+import type { PaginatedList } from '@/types/common';
+import type {
+  NoteItem,
+  CreateNoteResponse,
+  RequestNotesFetchPayload,
+  RequestNotesCreatePayload,
+  RequestNotesUpdatePayload,
+  RequestNotesDeletePayload
+} from '@/types/agency';
 import ModalNotes from './ModalNotes.vue';
 
-type NotesHandler = (payload: any) => Promise<any>;
-
 const props = defineProps<{
-  userId: string | number;
-  requestId?: string | number;
+  userId: string;
+  requestId?: string;
   notesCount?: number;
   canCreate?: boolean;
-  onGet: NotesHandler;
-  onCreate?: NotesHandler;
-  onUpdate?: NotesHandler;
-  onDelete?: NotesHandler;
+  onGet: (payload: RequestNotesFetchPayload) => Promise<PaginatedList<NoteItem>>;
+  onCreate?: (payload: RequestNotesCreatePayload) => Promise<CreateNoteResponse>;
+  onUpdate?: (payload: RequestNotesUpdatePayload) => Promise<void>;
+  onDelete?: (payload: RequestNotesDeletePayload) => Promise<void>;
 }>();
 
 const emit = defineEmits<{ (e: 'update:count', size: number): void }>();

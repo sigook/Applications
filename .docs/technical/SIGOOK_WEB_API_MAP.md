@@ -348,9 +348,10 @@ Runners — recruiting pipeline of prospects per request (list, status transitio
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getAgencyRunners(requestId, filter)` | GET | `/api/agency/requests/{requestId}/Runners` | `AgencyRunnerFilter` (params) | `PaginatedList<RunnerListItem>` | |
-| `searchAgencyRunnerProspects(requestId, searchTerm)` | GET | `/api/agency/requests/{requestId}/Runners/Search` | `searchTerm` (param) | `ApplicantSearchResult[]` | Search workers/candidates to add |
+| `searchAgencyRunnerProspects(requestId, searchTerm)` | GET | `/api/agency/requests/{requestId}/Runners/Search` | `searchTerm` (param) | `ApplicantSearchResult[]` | Search workers to add (workers only) |
 | `getAgencyRunner(requestId, id)` | GET | `/api/agency/requests/{requestId}/Runners/{id}` | — | `RunnerDetail` | |
 | `createAgencyRunner(requestId, model)` | POST | `/api/agency/requests/{requestId}/Runners` | `CreateRunnerModel` | `string` (id) | |
+| `deleteAgencyRunner(requestId, id)` | DELETE | `/api/agency/requests/{requestId}/Runners/{id}` | — | `void` | Deletes the runner with its history and interviews; used by the Runners tab **and** the weekly board |
 | `changeRunnerStatus(requestId, id, model)` | PUT | `/api/agency/requests/{requestId}/Runners/{id}/Status` | `ChangeRunnerStatusModel` | `void` | Pipeline transition |
 | `createRunnerInterview(requestId, id, model)` | POST | `/api/agency/requests/{requestId}/Runners/{id}/Interview` | `CreateRunnerInterviewModel` | `string` (id) | Schedule interview |
 | `rescheduleRunnerInterview(requestId, id, interviewId, model)` | PUT | `/api/agency/requests/{requestId}/Runners/{id}/Interview/{interviewId}/Reschedule` | `RescheduleRunnerInterviewModel` | `void` | |
@@ -592,18 +593,17 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyReques
 
 ## 21. weeklyBoardApi.ts — Recruiting Weekly Board
 
-Board where the agency assigns orders to recruiters per work day, and each recruiter records the workers they sent. Replaces the old per-request recruiter assignment. Admin board (`getWeeklyBoard`) shows all recruiters with counts; recruiter board (`getRecruiterWeeklyBoard`) is scoped to the recruiter from the token and includes dispatched workers. Base: `/api/agency/recruiting/WeeklyBoard`.
+Board where the agency assigns orders to recruiters per work day, and each recruiter records the runners they sent. Replaces the old per-request recruiter assignment. Admin board (`getWeeklyBoard`) shows all recruiters with counts; recruiter board (`getRecruiterWeeklyBoard`) is scoped to the recruiter from the token and includes the runners sent. Base: `/api/agency/recruiting/WeeklyBoard`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getWeeklyBoard(filter)` | GET | `/api/agency/recruiting/WeeklyBoard` | `WeeklyBoardFilter` (params) | `WeeklyBoard` | Admin board grouped by recruiter |
 | `getRecruiterWeeklyBoard(filter)` | GET | `/api/agency/recruiting/WeeklyBoard/mine` | `WeeklyBoardFilter` (params) | `RecruiterWeeklyBoard` | Current recruiter's board + sent workers |
-| `getRequestDispatches(requestId)` | GET | `/api/agency/recruiting/WeeklyBoard/{requestId}/dispatches` | — | `WeeklyBoardDispatch[]` | All workers sent to an order across every recruiter/day (whole history) |
+| `getRequestRunners(requestId)` | GET | `/api/agency/recruiting/WeeklyBoard/{requestId}/runners` | — | `WeeklyBoardRunner[]` | All runners sent to an order across every recruiter/day (whole history) |
 | `assignRecruiters(payload)` | POST | `/api/agency/recruiting/WeeklyBoard` | `AssignRecruitersPayload` | `void` | Assign recruiter(s) to an order per day |
 | `unassignRecruiter(payload)` | DELETE | `/api/agency/recruiting/WeeklyBoard` | `UnassignRecruiterPayload` (params) | `void` | Remove a day assignment |
-| `moveAssignment(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/move` | `MoveAssignmentPayload` | `void` | Move assignment to another recruiter/day (keeps dispatches; drag & drop) |
-| `addWorkers(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/dispatch` | `DispatchWorkersPayload` | `void` | Recruiter sends workers; adds a request note `"{workerName} was sent"` per new worker |
-| `removeWorker(payload)` | DELETE | `/api/agency/recruiting/WeeklyBoard/dispatch` | `RemoveWorkerPayload` (params) | `void` | Remove a sent worker |
+| `moveAssignment(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/move` | `MoveAssignmentPayload` | `void` | Move assignment to another recruiter/day (keeps its runners; drag & drop) |
+| `addRunner(payload)` | POST | `/api/agency/recruiting/WeeklyBoard/runner` | `AddRunnerPayload` | `void` | Recruiter sends a runner (delegates to `IRunnerService.CreateRunner`); adds a request note `"{workerName} was sent"` |
 
 **Types:** `WeeklyBoard`, `RecruiterWeeklyBoard`, `WeeklyBoardRecruiterRow`, `WeeklyBoardAssignment`, `WeeklyBoardDispatch`, `WeeklyBoardFilter`, `AssignRecruitersPayload`, `UnassignRecruiterPayload`, `MoveAssignmentPayload`, `DispatchWorkersPayload`, `RemoveWorkerPayload` (`src/types/weeklyBoard`)
 
@@ -739,7 +739,7 @@ Public landing site endpoints (no auth).
 | **Company** (self) | companyApi.ts | Requests, workers, timesheet validation, users, invoices |
 | **Request** | agencyRequestApi.ts | Workers, applicants, skills, shift, sources, bulk cancel |
 | **Runner** | agencyRunnerApi.ts | Recruiting pipeline per request: status, interviews |
-| **WeeklyBoard** | weeklyBoardApi.ts | Recruiter day assignments + worker dispatches |
+| **WeeklyBoard** | weeklyBoardApi.ts | Recruiter day assignments + runners sent |
 | **Sales** | salesApi.ts | Sales-scoped request/company lists + Excel export |
 | **Worker** (agency view) | agencyWorkerApi.ts | Flags (DNU, contractor), tax, holidays, request history |
 | **Worker** (self) | workerApi.ts | Profile build, applications, timesheet, wage history |

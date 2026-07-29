@@ -29,6 +29,10 @@ export function createAgencyRunner(requestId: string, model: CreateRunnerModel):
   return api.post<string>(base(requestId), model);
 }
 
+export function deleteAgencyRunner(requestId: string, id: string): Promise<void> {
+  return api.del(`${base(requestId)}/${id}`);
+}
+
 export function changeRunnerStatus(requestId: string, id: string, model: ChangeRunnerStatusModel): Promise<void> {
   return api.put(`${base(requestId)}/${id}/Status`, model);
 }

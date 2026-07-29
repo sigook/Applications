@@ -24,7 +24,7 @@ namespace Covenant.Tests.Company
 
         public CompanyAddClockInTest()
         {
-            var user = new User(CvnEmail.Create("test@test.com").Value, Guid.NewGuid());
+            var companyProfile = new CompanyProfile { FullName = "Test Company" };
             var agency = new Covenant.Common.Entities.Agency.Agency();
             var jobPositionRate = new CompanyProfileJobPositionRate();
             var location = new Location
@@ -37,13 +37,13 @@ namespace Covenant.Tests.Company
                     }
                 }
             };
-            var request = new Covenant.Common.Entities.Request.Request(user, agency, jobPositionRate);
+            var request = new Covenant.Common.Entities.Request.Request(companyProfile, agency, jobPositionRate);
             request.UpdateJobLocation(location, false);
             _workerRequest.Request = request;
             var timService = new Mock<ITimeService>();
             timService.Setup(t => t.GetCurrentDateTime()).Returns(_fakeNow);
             var workerRequestRepository = new Mock<IWorkerRequestRepository>();
-            workerRequestRepository.Setup(w => w.GetWorkerRequest(_workerRequest.WorkerId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
+            workerRequestRepository.Setup(w => w.GetWorkerRequestByWorkerProfileId(_workerRequest.WorkerProfileId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
 
             _timeSheetRepository = new Mock<ITimesheetRepository>();
             var catalogRepository = new Mock<ICatalogRepository>();
@@ -62,7 +62,7 @@ namespace Covenant.Tests.Company
         public async Task AddClockIn()
         {
             TimeSpan clockIn = TimeSpan.Parse("08:00");
-            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerId, clockIn);
+            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerProfileId, clockIn);
             Assert.True(result);
 
             _timeSheetRepository.Verify(v => v.Create(It.IsAny<TimeSheet>()), Times.Once);
@@ -73,7 +73,7 @@ namespace Covenant.Tests.Company
         public async Task AddClockIn_TimeMustBeLessOrEqualThanNow()
         {
             TimeSpan clockIn = _fakeNow.TimeOfDay.Add(TimeSpan.FromMinutes(1));
-            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerId, clockIn);
+            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerProfileId, clockIn);
             Assert.False(result);
             Assert.StartsWith("Clock in must be less than", result.Errors.First().Message);
             _timeSheetRepository.Verify(v => v.Create(It.IsAny<TimeSheet>()), Times.Never);
@@ -88,10 +88,10 @@ namespace Covenant.Tests.Company
                 .Returns(Task.CompletedTask);
 
             TimeSpan clockIn = _fakeNow.TimeOfDay;
-            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerId, clockIn);
+            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerProfileId, clockIn);
             Assert.True(result);
 
-            result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerId, clockIn);
+            result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerProfileId, clockIn);
             Assert.False(result);
 
             Assert.Equal("Worker already clock in", result.Errors.First().Message);
@@ -102,7 +102,7 @@ namespace Covenant.Tests.Company
         {
             _workerRequest.Reject();
             TimeSpan clockIn = _fakeNow.TimeOfDay;
-            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerId, clockIn);
+            var result = await _sut.AddClockIn(_workerRequest.RequestId, _workerRequest.WorkerProfileId, clockIn);
             Assert.False(result);
 
             Assert.Equal("Worker is rejected", result.Errors.First().Message);

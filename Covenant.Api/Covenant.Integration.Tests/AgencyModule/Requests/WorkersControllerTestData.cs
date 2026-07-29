@@ -71,13 +71,13 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             };
 
             public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestList =
-                 Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerForList.WorkerId, FakeRequest.Id, "recruiter@mail.com");
+                 Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerForList.Id, FakeRequest.Id, "recruiter@mail.com");
 
             public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestReject =
-                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerToReject.WorkerId, FakeRequest.Id, "recruiter@mail.com");
+                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerToReject.Id, FakeRequest.Id, "recruiter@mail.com");
 
             public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestRejectObsolete =
-                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerToRejectObsolete.WorkerId, FakeRequest.Id, "recruiter@mail.com");
+                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerToRejectObsolete.Id, FakeRequest.Id, "recruiter@mail.com");
 
             public static readonly IEnumerable<WorkerProfile> FakeWorkers = new[] { FakeWorkerForList, FakeWorkerToBook, FakeWorkerToReject, FakeWorkerToRejectObsolete };
 

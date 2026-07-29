@@ -58,15 +58,15 @@ public class ReportsController(
     }
 
     /// <summary>Gets the job positions worked for a company within a date range.</summary>
-    /// <param name="companyId">Company identifier.</param>
+    /// <param name="companyProfileId">Company profile identifier.</param>
     /// <param name="startDate">Start of the date range.</param>
     /// <param name="endDate">End of the date range.</param>
-    [HttpGet("{companyId}/job-positions")]
+    [HttpGet("{companyProfileId}/job-positions")]
     [ProducesResponseType(typeof(IEnumerable<CompanyProfileJobPositionRateModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetJobPositions([FromRoute] Guid companyId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+    public async Task<IActionResult> GetJobPositions([FromRoute] Guid companyProfileId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
     {
-        var model = await timeSheetService.GetJobPositions(companyId, startDate, endDate);
+        var model = await timeSheetService.GetJobPositions(companyProfileId, startDate, endDate);
         if (model is null) return NotFound();
         return Ok(model);
     }

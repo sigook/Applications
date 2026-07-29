@@ -13,7 +13,7 @@
         </b-navbar-item>
         <b-navbar-item tag="div" class="stat">
           <span class="stat-value">{{ board?.totalWorkersSent ?? 0 }}</span>
-          <span class="stat-label">Workers sent</span>
+          <span class="stat-label">Runners sent</span>
         </b-navbar-item>
       </template>
     </b-navbar>
@@ -67,9 +67,8 @@
                 @dragstart="onDragStart(assignment)" @dragend="onDragEnd" @click="openDetail(assignment)">
                 <div class="card-top">
                   <div class="card-head-left">
-                    <router-link class="card-num"
-                      :to="{ name: 'agency-request', params: { id: assignment.requestId } }" target="_blank"
-                      @click.stop>#{{ assignment.numberId }}</router-link>
+                    <router-link class="card-num" :to="{ name: 'agency-request', params: { id: assignment.requestId } }"
+                      target="_blank" @click.stop>#{{ assignment.numberId }}</router-link>
                     <span v-if="assignment.isAsap || isDirectHiring(assignment)" class="request-flags">
                       <span v-if="assignment.isAsap" class="request-flag request-flag--asap">Asap</span>
                       <span v-if="isDirectHiring(assignment)" class="request-flag request-flag--dh">DH</span>
@@ -81,7 +80,7 @@
                 <div class="card-position">{{ assignment.jobTitle }}</div>
                 <div class="card-company">{{ assignment.companyName }}</div>
                 <div v-if="locationLabel(assignment)" class="card-location">{{ locationLabel(assignment) }}</div>
-                <div class="card-sent">{{ assignment.workersSent }} sent</div>
+                <div class="card-sent">{{ assignment.runnersSent }} sent</div>
               </div>
               <b-button class="add-card" type="is-ghost" expanded icon-left="plus"
                 @click="openAssign({ recruiterId: row.recruiterId, workDate: day.date })"></b-button>
@@ -103,9 +102,10 @@
           <p class="has-text-grey is-size-7">{{ detail.companyName }} · {{ detail.jobTitle }}</p>
         </header>
         <section class="modal-card-body">
-          <div class="detail-row"><b-icon icon="account" size="is-small"></b-icon> Recruiter <strong>{{
-            detail.recruiterName
-              }}</strong></div>
+          <div class="detail-row"><b-icon icon="account" size="is-small"></b-icon> Recruiter <strong>
+              {{ detail.recruiterName }}
+            </strong>
+          </div>
           <div class="detail-row"><b-icon icon="calendar" size="is-small"></b-icon>
             {{ formatDetailDate(detail.workDate) }}
           </div>
@@ -116,17 +116,32 @@
           <div class="detail-row">
             <b-tag :type="statusTagType(detail.status)" rounded>{{ statusLabel(detail.status) }}</b-tag>
           </div>
-          <collapse-section v-if="!isLoading && detailDispatches.length > 0" :key="detail.requestId" class="detail-workers"
+          <collapse-section v-if="!isLoading && detailRunners.length > 0" :key="detail.requestId" class="detail-workers"
             variant="compact" :model-value="false">
-            <template #title>Workers ({{ detailDispatches.length }})</template>
+            <template #title>Runners ({{ detailRunners.length }})</template>
             <ul>
-              <li v-for="(worker, index) in detailDispatches" :key="`${worker.workerProfileId}-${index}`">
+              <li v-for="(worker, index) in detailRunners" :key="`${worker.runnerId}-${index}`">
                 <div class="detail-worker-main">
-                  <router-link :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">{{
-                    worker.fullName }}</router-link>
-                  <span class="detail-worker-email">{{ worker.email }}</span>
+                  <span class="runner-title">
+                    <b-tag :type="runnerStatusTagType(worker.status)" size="is-small">
+                      {{ runnerStatusLabel(worker.status) }}
+                    </b-tag>
+                    <span class="detail-worker-name">{{ worker.fullName }}</span>
+                  </span>
                 </div>
-                <span v-if="worker.sentAt" class="detail-worker-sent">{{ formatSentAt(worker.sentAt) }}</span>
+                <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+                  <template #trigger>
+                    <b-button class="detail-worker-actions" type="is-ghost" icon-right="dots-vertical"></b-button>
+                  </template>
+                  <b-dropdown-item aria-role="listitem" @click="openRunnerHistory(worker)">
+                    View History
+                  </b-dropdown-item>
+                  <b-dropdown-item aria-role="listitem" has-link>
+                    <router-link :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">
+                      View Profile
+                    </router-link>
+                  </b-dropdown-item>
+                </b-dropdown>
               </li>
             </ul>
           </collapse-section>
@@ -139,6 +154,11 @@
         </footer>
       </div>
     </b-modal>
+
+    <b-modal v-model="showRunnerHistory" width="680px" scroll="keep" :destroy-on-hide="true">
+      <runner-history-modal v-if="historyRunner && detail" :request-id="detail.requestId"
+        :runner-id="historyRunner.runnerId" @close="showRunnerHistory = false" />
+    </b-modal>
   </div>
 </template>
 
@@ -148,21 +168,23 @@ import dayjs from 'dayjs';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { getDialog } from '@/utils/buefyProgrammatic';
-import { getWeeklyBoard, assignRecruiters, unassignRecruiter, moveAssignment, getRequestDispatches } from '@/api/weeklyBoardApi';
+import { getWeeklyBoard, assignRecruiters, unassignRecruiter, moveAssignment, getRequestRunners } from '@/api/weeklyBoardApi';
 import { isDirectHiring } from '@/utils/directHiring';
 import { locationLabel } from '@/utils/locationLabel';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
+import { runnerStatusLabel, runnerStatusTagType } from '@/types/runner';
 import type {
   WeeklyBoard,
   WeeklyBoardAssignment,
   WeeklyBoardRecruiterRow,
-  WeeklyBoardDispatch,
+  WeeklyBoardRunner,
   AssignRecruitersPayload,
   WeekDay,
   AssignPreset,
 } from '@/types/weeklyBoard';
 import AssignRecruiterModal from './AssignRecruiterModal.vue';
 import CollapseSection from '@/components/CollapseSection.vue';
+import RunnerHistoryModal from '@/components/runner/RunnerHistoryModal.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 
@@ -186,7 +208,10 @@ const assignPreset = ref<AssignPreset | undefined>(undefined);
 
 const showDetail = ref(false);
 const detail = ref<WeeklyBoardAssignment | null>(null);
-const detailDispatches = ref<WeeklyBoardDispatch[]>([]);
+const detailRunners = ref<WeeklyBoardRunner[]>([]);
+
+const showRunnerHistory = ref(false);
+const historyRunner = ref<WeeklyBoardRunner | null>(null);
 
 const draggedAssignment = ref<WeeklyBoardAssignment | null>(null);
 const dropTarget = ref<{ recruiterId: string; date: string } | null>(null);
@@ -272,12 +297,12 @@ function openAssign(preset?: AssignPreset): void {
 
 function openDetail(assignment: WeeklyBoardAssignment): void {
   detail.value = assignment;
-  detailDispatches.value = [];
+  detailRunners.value = [];
   showDetail.value = true;
   isLoading.value = true;
-  getRequestDispatches(assignment.requestId)
+  getRequestRunners(assignment.requestId)
     .then(response => {
-      detailDispatches.value = response;
+      detailRunners.value = response;
     })
     .catch(error => showAlertError(error))
     .finally(() => {
@@ -285,8 +310,9 @@ function openDetail(assignment: WeeklyBoardAssignment): void {
     });
 }
 
-function formatSentAt(sentAt: string | null | undefined): string {
-  return sentAt ? dayjs(sentAt).format('ddd MMM D') : '';
+function openRunnerHistory(worker: WeeklyBoardRunner): void {
+  historyRunner.value = worker;
+  showRunnerHistory.value = true;
 }
 
 function onAssign(payload: AssignRecruitersPayload): void {
@@ -608,26 +634,22 @@ watch(range, loadBoard, { immediate: true });
         min-width: 0;
       }
 
-      a {
+      .detail-worker-name {
         font-weight: 600;
         color: $grey-font;
+      }
+
+      .detail-worker-actions.button {
+        flex-shrink: 0;
+        height: auto;
+        padding: 0;
+        color: $grey-light;
+        text-decoration: none;
 
         &:hover {
           color: $primary;
-          text-decoration: underline;
+          background: transparent;
         }
-      }
-
-      .detail-worker-email {
-        font-size: 0.75rem;
-        color: $grey-light;
-      }
-
-      .detail-worker-sent {
-        flex-shrink: 0;
-        font-size: 0.75rem;
-        color: $grey-light;
-        white-space: nowrap;
       }
     }
   }

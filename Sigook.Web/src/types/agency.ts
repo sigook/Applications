@@ -277,7 +277,7 @@ export interface AgencyWorkerRequestHistoryItem {
   isDirectHiring: boolean;
   workerApprovedToWork?: string;
   status: string;
-  companyId: string;
+  companyProfileId: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -406,7 +406,7 @@ export interface AgencyRequestFilter {
   createdAtTo?: string | null;
   rateFrom?: number | string | null;
   rateTo?: number | string | null;
-  companyId?: string;
+  companyProfileId?: string;
   agencyId?: string;
   filter?: string;
   jobBoardIds?: string[];
@@ -515,6 +515,7 @@ export interface AgencyRequestDetail {
   displayRecruiters?: string;
   displayShift?: string;
   isAsap: boolean;
+  usesRunners: boolean;
   vaccinationRequired?: boolean | null;
   punchCardOptionEnabled: boolean;
   internalRequirements?: string;
@@ -538,6 +539,7 @@ export interface CreateAgencyRequestModel {
   internalRequirements?: string;
   responsibilities?: string;
   isAsap: boolean;
+  usesRunners: boolean;
   jobIsOnBranchOffice: boolean;
   anotherLocation?: LocationDetailModel | null;
   locationId?: string | null;
@@ -776,6 +778,11 @@ export interface NotePagination {
 // Response returned by POST /api/.../Note. Same shape as NoteModel / NoteItem.
 export type CreateNoteResponse = NoteItem;
 
+export interface NoteFormModel extends NoteModel {
+  createdAt?: string;
+  createdBy?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Notes callback payloads — used by ModalNotes and similar note-manager widgets
 // that receive CRUD callbacks as props. Two variants:
@@ -841,7 +848,7 @@ export interface AgencyReportFilter {
   isDescending?: boolean;
   startDate?: string;
   endDate?: string;
-  companyId?: string;
+  companyProfileId?: string;
   jobPositionRateId?: string;
   weekEnding?: string;
 }

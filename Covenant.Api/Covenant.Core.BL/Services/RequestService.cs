@@ -74,15 +74,13 @@ public class RequestService : IRequestService
         this.logger = logger;
     }
 
-    public async Task<Result<Guid>> CreateRequest(RequestCreateModel model, Guid? companyId = null)
+    public async Task<Result<Guid>> CreateRequest(RequestCreateModel model)
     {
-        if (!companyId.HasValue)
-            companyId = await companyRepository.GetCompanyId(model.CompanyProfileId);
         if (model.AgencyId == Guid.Empty)
             model.AgencyId = identityServerService.GetAgencyId();
         if (identityServerService.IsSales())
             model.SalesRepresentativeId = identityServerService.GetAgencyPersonnelId();
-        var rRequest = await MapRequest(model, companyId.Value);
+        var rRequest = await MapRequest(model);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;
         await requestRepository.Create(request);
@@ -129,7 +127,8 @@ public class RequestService : IRequestService
             model.LocationId = location.Value.Id;
         }
         model.AgencyId = companyProfile.AgencyId;
-        var requestId = await CreateRequest(model, companyId);
+        model.CompanyProfileId = companyProfile.Id;
+        var requestId = await CreateRequest(model);
         var data = await notificationDataRepository.GetAgencyData(requestId.Value, NotificationType.NewRequest.Id);
         if (data != null && data.EmailNotification)
         {
@@ -371,7 +370,7 @@ public class RequestService : IRequestService
         return Result.Ok();
     }
 
-    private async Task<Result<Request>> MapRequest(RequestCreateModel model, Guid companyId)
+    private async Task<Result<Request>> MapRequest(RequestCreateModel model)
     {
         if (model.AgencyId == Guid.Empty)
             return Result.Fail<Request>(ValidationMessages.RequiredMsg(ApiResources.Agency));
@@ -381,7 +380,7 @@ public class RequestService : IRequestService
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Request>();
         var rRequest = Request.AgencyCreateRequest(
             model.AgencyId,
-            companyId,
+            model.CompanyProfileId,
             model.LocationId.Value,
             model.StartAt,
             model.JobPositionRateId,
@@ -418,6 +417,8 @@ public class RequestService : IRequestService
         }
         var rIsAsap = entity.UpdateIsAsap(model.IsAsap);
         if (!rIsAsap) return Result.Fail<Request>(rIsAsap.Errors);
+        var rUsesRunners = entity.UpdateUsesRunners(model.UsesRunners);
+        if (!rUsesRunners) return Result.Fail<Request>(rUsesRunners.Errors);
         entity.CreatedBy = identityServerService.GetNickname();
         return Result.Ok(entity);
     }
@@ -456,16 +457,16 @@ public class RequestService : IRequestService
         return Result.Ok();
     }
 
-    public async Task<Result> RejectWorker(Guid requestId, Guid workerId, CommentsModel model)
+    public async Task<Result> RejectWorker(Guid requestId, Guid workerProfileId, CommentsModel model)
     {
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
         var rejectedBy = identityServerService.GetNickname();
-        var result = request.RejectWorker(workerId, model.Comments, rejectedBy);
+        var result = request.RejectWorker(workerProfileId, model.Comments, rejectedBy);
         if (!result) return result;
         await requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
-        var data = await notificationDataRepository.GetWorkerData(requestId, workerId, NotificationType.WorkerHasBeenRejected.Id);
+        var data = await notificationDataRepository.GetWorkerData(requestId, workerProfileId, NotificationType.WorkerHasBeenRejected.Id);
         if (data != null && data.EmailNotification)
         {
             var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnWorkerReject/WorkerTemplate.cshtml", data.JobTitle);

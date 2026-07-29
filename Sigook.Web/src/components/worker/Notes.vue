@@ -19,23 +19,18 @@
             </ul>
         </div>
 
-        <!-- NOTES custom modal -->
-        <transition name="modal">
-            <div v-if="showModalNotes" class="vue-modal min-width-0">
-                <div class="modal-mask">
-                    <div class="modal-wrapper">
-                        <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
-                            <button @click="onCloseModalNotes()" type="button" class="cross-icon">close</button>
-                            <modal-notes :user-id="workerId"
-                                         :on-get="getNotes"
-                                         :on-create="createNote"
-                                         @onUpdateNote="() => loadNotes(pageIndex)">
-                            </modal-notes>
-                        </div>
-                    </div>
-                </div>
+        <b-modal v-model="showModalNotes" width="500px" :destroy-on-hide="true" @close="onCloseModalNotes">
+            <div class="modal-card" style="width: 100%">
+                <section class="modal-card-body">
+                    <modal-notes :user-id="workerId"
+                                 :show-close="false"
+                                 :on-get="getNotes"
+                                 :on-create="createNote"
+                                 @onUpdateNote="() => loadNotes(pageIndex)">
+                    </modal-notes>
+                </section>
             </div>
-        </transition>
+        </b-modal>
     </div>
 </template>
 <script setup lang="ts">

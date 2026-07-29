@@ -8050,7 +8050,7 @@
         }
       }
     },
-    "/api/CompanyRequest/{requestId}/Worker/{workerId}": {
+    "/api/CompanyRequest/{requestId}/Worker/{workerProfileId}": {
       "get": {
         "tags": [
           "CompanyRequestWorker"
@@ -8068,9 +8068,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Worker profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8175,7 +8175,7 @@
         }
       }
     },
-    "/api/CompanyRequest/{requestId}/Worker/{workerId}/Reject": {
+    "/api/CompanyRequest/{requestId}/Worker/{workerProfileId}/Reject": {
       "put": {
         "tags": [
           "CompanyRequestWorker"
@@ -8193,9 +8193,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Worker profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -15023,7 +15023,7 @@
             }
           },
           {
-            "name": "CompanyId",
+            "name": "CompanyProfileId",
             "in": "query",
             "schema": {
               "type": "string",
@@ -15119,7 +15119,7 @@
             }
           },
           {
-            "name": "CompanyId",
+            "name": "CompanyProfileId",
             "in": "query",
             "schema": {
               "type": "string",
@@ -15230,7 +15230,7 @@
         }
       }
     },
-    "/api/agency/accounting/Reports/{companyId}/job-positions": {
+    "/api/agency/accounting/Reports/{companyProfileId}/job-positions": {
       "get": {
         "tags": [
           "Reports"
@@ -15238,9 +15238,9 @@
         "summary": "Gets the job positions worked for a company within a date range.",
         "parameters": [
           {
-            "name": "companyId",
+            "name": "companyProfileId",
             "in": "path",
-            "description": "Company identifier.",
+            "description": "Company profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -16366,7 +16366,7 @@
             }
           },
           {
-            "name": "CompanyId",
+            "name": "CompanyProfileId",
             "in": "query",
             "schema": {
               "type": "string",
@@ -16575,7 +16575,7 @@
             }
           },
           {
-            "name": "CompanyId",
+            "name": "CompanyProfileId",
             "in": "query",
             "schema": {
               "type": "string",
@@ -17586,7 +17586,7 @@
             }
           },
           {
-            "name": "CompanyId",
+            "name": "CompanyProfileId",
             "in": "query",
             "schema": {
               "type": "string",
@@ -17795,7 +17795,7 @@
             }
           },
           {
-            "name": "CompanyId",
+            "name": "CompanyProfileId",
             "in": "query",
             "schema": {
               "type": "string",
@@ -18007,7 +18007,7 @@
             }
           },
           {
-            "name": "CompanyId",
+            "name": "CompanyProfileId",
             "in": "query",
             "schema": {
               "type": "string",
@@ -18167,7 +18167,7 @@
         "tags": [
           "Runners"
         ],
-        "summary": "Searches workers and candidates that can be added as runners for the request, excluding those already runners.",
+        "summary": "Searches workers that can be added as runners for the request, excluding those already runners.",
         "parameters": [
           {
             "name": "requestId",
@@ -18336,7 +18336,7 @@
         "tags": [
           "Runners"
         ],
-        "summary": "Creates a runner (from a candidate or a worker) for the specified request.",
+        "summary": "Creates a runner from a worker for the specified request.",
         "parameters": [
           {
             "name": "requestId",
@@ -18350,7 +18350,7 @@
           }
         ],
         "requestBody": {
-          "description": "Runner data identifying a candidate or a worker profile and its type.",
+          "description": "Runner data identifying a worker profile and its type.",
           "content": {
             "application/json": {
               "schema": {
@@ -18442,6 +18442,56 @@
           },
           "404": {
             "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Runners"
+        ],
+        "summary": "Deletes a runner along with its status history and interviews.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the runner.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
             "content": {
               "application/json": {
                 "schema": {
@@ -19433,7 +19483,7 @@
         }
       }
     },
-    "/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet": {
+    "/api/v2/CompanyRequest/{requestId}/Worker/{workerProfileId}/TimeSheet": {
       "post": {
         "tags": [
           "V2CompanyRequestWorkerTimeSheet"
@@ -19451,9 +19501,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Worker profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19550,9 +19600,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Worker profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19612,9 +19662,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Worker profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19682,7 +19732,7 @@
         }
       }
     },
-    "/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet/{id}": {
+    "/api/v2/CompanyRequest/{requestId}/Worker/{workerProfileId}/TimeSheet/{id}": {
       "put": {
         "tags": [
           "V2CompanyRequestWorkerTimeSheet"
@@ -19708,7 +19758,7 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
             "required": true,
             "schema": {
@@ -19788,9 +19838,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Worker profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -19844,7 +19894,7 @@
         }
       }
     },
-    "/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet/ClockIn": {
+    "/api/v2/CompanyRequest/{requestId}/Worker/{workerProfileId}/TimeSheet/ClockIn": {
       "post": {
         "tags": [
           "V2CompanyRequestWorkerTimeSheet"
@@ -19862,9 +19912,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Worker profile identifier.",
             "required": true,
             "schema": {
               "type": "string",
@@ -20293,12 +20343,12 @@
         }
       }
     },
-    "/api/agency/recruiting/WeeklyBoard/{requestId}/dispatches": {
+    "/api/agency/recruiting/WeeklyBoard/{requestId}/runners": {
       "get": {
         "tags": [
           "WeeklyBoard"
         ],
-        "summary": "Gets every worker dispatched to an order across all recruiters and work days.",
+        "summary": "Gets every runner sent to an order across all recruiters and work days.",
         "parameters": [
           {
             "name": "requestId",
@@ -20319,7 +20369,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardDispatchModel"
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardRunnerModel"
                   }
                 }
               }
@@ -20389,91 +20439,32 @@
         }
       }
     },
-    "/api/agency/recruiting/WeeklyBoard/dispatch": {
+    "/api/agency/recruiting/WeeklyBoard/runner": {
       "post": {
         "tags": [
           "WeeklyBoard"
         ],
-        "summary": "Adds one or more workers sent by the current recruiter to an order for a specific work day.",
+        "summary": "Adds a runner sent by the current recruiter to an order for a specific work day.",
         "requestBody": {
-          "description": "Dispatch data: order, work day and worker profiles.",
+          "description": "Runner data: order, work day, worker profile and runner type.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.AddRunnerModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.AddRunnerModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.AddRunnerModel"
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "WeeklyBoard"
-        ],
-        "summary": "Removes a worker sent by the current recruiter from an order for a specific work day.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "query",
-            "description": "Identifier of the order.",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "workDate",
-            "in": "query",
-            "description": "Work day of the dispatch.",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          {
-            "name": "workerProfileId",
-            "in": "query",
-            "description": "Identifier of the worker profile to remove.",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -24254,7 +24245,7 @@
         }
       }
     },
-    "/api/agency/requests/{requestId}/Workers/{workerId}/Book": {
+    "/api/agency/requests/{requestId}/Workers/{workerProfileId}/Book": {
       "post": {
         "tags": [
           "Workers"
@@ -24272,9 +24263,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Identifier of the worker to book.",
+            "description": "Identifier of the worker profile to book.",
             "required": true,
             "schema": {
               "type": "string",
@@ -24355,7 +24346,7 @@
         }
       }
     },
-    "/api/agency/requests/{requestId}/Workers/{workerId}/Reject": {
+    "/api/agency/requests/{requestId}/Workers/{workerProfileId}/Reject": {
       "put": {
         "tags": [
           "Workers"
@@ -24373,9 +24364,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Identifier of the worker to reject.",
+            "description": "Identifier of the worker profile to reject.",
             "required": true,
             "schema": {
               "type": "string",
@@ -24481,7 +24472,7 @@
         }
       }
     },
-    "/api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets": {
+    "/api/agency/requests/{requestId}/Workers/{workerProfileId}/TimeSheets": {
       "get": {
         "tags": [
           "WorkerTimeSheets"
@@ -24499,9 +24490,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Identifier of the worker.",
+            "description": "Identifier of the worker profile.",
             "required": true,
             "schema": {
               "type": "string",
@@ -24585,9 +24576,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Identifier of the worker.",
+            "description": "Identifier of the worker profile.",
             "required": true,
             "schema": {
               "type": "string",
@@ -24668,7 +24659,7 @@
         }
       }
     },
-    "/api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}": {
+    "/api/agency/requests/{requestId}/Workers/{workerProfileId}/TimeSheets/{id}": {
       "put": {
         "tags": [
           "WorkerTimeSheets"
@@ -24694,7 +24685,7 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
             "required": true,
             "schema": {
@@ -24774,9 +24765,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Identifier of the worker.",
+            "description": "Identifier of the worker profile.",
             "required": true,
             "schema": {
               "type": "string",
@@ -24830,7 +24821,7 @@
         }
       }
     },
-    "/api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}/Usages": {
+    "/api/agency/requests/{requestId}/Workers/{workerProfileId}/TimeSheets/{id}/Usages": {
       "get": {
         "tags": [
           "WorkerTimeSheets"
@@ -24848,9 +24839,9 @@
             }
           },
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Identifier of the worker.",
+            "description": "Identifier of the worker profile.",
             "required": true,
             "schema": {
               "type": "string",
@@ -25823,10 +25814,6 @@
         "type": "object",
         "properties": {
           "companyProfileId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "companyId": {
             "type": "string",
             "format": "uuid"
           },
@@ -29038,6 +29025,9 @@
           "isAsap": {
             "type": "boolean"
           },
+          "usesRunners": {
+            "type": "boolean"
+          },
           "vaccinationRequired": {
             "type": "boolean",
             "nullable": true
@@ -29786,6 +29776,9 @@
           "isAsap": {
             "type": "boolean"
           },
+          "usesRunners": {
+            "type": "boolean"
+          },
           "jobIsOnBranchOffice": {
             "type": "boolean"
           },
@@ -29933,7 +29926,7 @@
           "isDirectHiring": {
             "type": "boolean"
           },
-          "companyId": {
+          "companyProfileId": {
             "type": "string",
             "format": "uuid"
           }
@@ -30041,13 +30034,7 @@
         "properties": {
           "workerProfileId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "candidateId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "type": {
             "$ref": "#/components/schemas/Covenant.Common.Enums.RunnerType"
@@ -30072,13 +30059,7 @@
           },
           "workerProfileId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "candidateId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "name": {
             "type": "string",
@@ -30230,13 +30211,7 @@
           },
           "workerProfileId": {
             "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "candidateId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "name": {
             "type": "string",
@@ -30551,6 +30526,27 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.WeeklyBoard.AddRunnerModel": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "workerProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RunnerType"
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Request.WeeklyBoard.AssignRecruitersModel": {
         "type": "object",
         "properties": {
@@ -30567,28 +30563,6 @@
             "nullable": true
           },
           "recruiterIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Request.WeeklyBoard.DispatchWorkersModel": {
-        "type": "object",
-        "properties": {
-          "requestId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "workDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "workerProfileIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -30708,38 +30682,18 @@
             "format": "double",
             "nullable": true
           },
-          "workersSent": {
+          "usesRunners": {
+            "type": "boolean"
+          },
+          "runnersSent": {
             "type": "integer",
             "format": "int32"
           },
-          "dispatches": {
+          "runners": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardDispatchModel"
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardRunnerModel"
             },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardDispatchModel": {
-        "type": "object",
-        "properties": {
-          "workerProfileId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "sentAt": {
-            "type": "string",
-            "format": "date-time",
             "nullable": true
           }
         },
@@ -30798,6 +30752,39 @@
             "items": {
               "$ref": "#/components/schemas/Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardAssignmentModel"
             },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.WeeklyBoard.WeeklyBoardRunnerModel": {
+        "type": "object",
+        "properties": {
+          "runnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workerProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RunnerType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RunnerStatus"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },

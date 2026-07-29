@@ -20,7 +20,7 @@ namespace Covenant.Infrastructure.Repositories.Request
 
         public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid id) => GetWorkerRequest(w => w.Id == id);
 
-        public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid workerId, Guid requestId) => GetWorkerRequest(c => c.WorkerId == workerId && c.RequestId == requestId);
+        public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid workerId, Guid requestId) => GetWorkerRequest(c => c.WorkerProfile.WorkerId == workerId && c.RequestId == requestId);
 
         private Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Expression<Func<Common.Entities.Request.WorkerRequest, bool>> condition) =>
             _context.WorkerRequest.Where(condition)
@@ -33,24 +33,23 @@ namespace Covenant.Infrastructure.Repositories.Request
                 .FirstOrDefaultAsync();
 
         public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequestByWorkerProfileId(Guid workerProfileId, Guid requestId) =>
-            (from workerProfile in _context.WorkerProfile.Where(wW => wW.Id == workerProfileId)
-             join workerRequest in _context.WorkerRequest.Where(rW => rW.RequestId == requestId) on workerProfile.WorkerId equals workerRequest.WorkerId
-             select workerRequest).Include(i => i.TimeSheets).SingleOrDefaultAsync();
+            _context.WorkerRequest.Where(wr => wr.WorkerProfileId == workerProfileId && wr.RequestId == requestId)
+                .Include(i => i.TimeSheets).SingleOrDefaultAsync();
 
-        public async Task<IEnumerable<Common.Entities.Request.WorkerRequest>> GetWorkerRequestsByWorkerId(Guid workerId)
+        public async Task<IEnumerable<Common.Entities.Request.WorkerRequest>> GetWorkerRequestsByWorkerProfileId(Guid workerProfileId)
         {
             var workerRequest = await _context.WorkerRequest.Include(wr => wr.Request).ThenInclude(r => r.Shift)
-                .Where(wp => wp.WorkerId == workerId && wp.WorkerRequestStatus == WorkerRequestStatus.Booked)
+                .Where(wr => wr.WorkerProfileId == workerProfileId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked)
                 .ToListAsync();
             return workerRequest;
         }
 
-        public Task<bool> WorkerRequestExists(Guid workerId, Guid requestId) =>
-            _context.WorkerRequest.AnyAsync(a => a.WorkerId == workerId && a.RequestId == requestId);
+        public Task<bool> WorkerRequestExists(Guid workerProfileId, Guid requestId) =>
+            _context.WorkerRequest.AnyAsync(a => a.WorkerProfileId == workerProfileId && a.RequestId == requestId);
 
         public async Task<bool> CanClockIn(Expression<Func<WorkerProfile, bool>> condition, DateTime now) =>
             await (from wp in _context.WorkerProfile.Where(condition)
-                   join wr in _context.WorkerRequest.Where(w => w.WorkerRequestStatus == WorkerRequestStatus.Booked && w.StartWorking <= now) on wp.WorkerId equals wr.WorkerId
+                   join wr in _context.WorkerRequest.Where(w => w.WorkerRequestStatus == WorkerRequestStatus.Booked && w.StartWorking <= now) on wp.Id equals wr.WorkerProfileId
                    join r in _context.Request.Where(wR => wR.Status == RequestStatus.Open) on wr.RequestId equals r.Id
                    select wr.Id).AnyAsync();
 
@@ -60,12 +59,11 @@ namespace Covenant.Infrastructure.Repositories.Request
                 .Include(wr => wr.Request)
                 .ThenInclude(r => r.JobLocation)
                 .Where(wr => wr.RequestId == requestId && wr.StartWorking <= now);
-            var query = from wp in _context.WorkerProfile.Where(wp => wp.WorkerId == workerId)
-                        join wr in workerRequest on wp.WorkerId equals wr.WorkerId
+            var query = from wr in workerRequest.Where(wr => wr.WorkerProfile.WorkerId == workerId)
                         orderby wr.StartWorking
                         select new WorkerRequestInfoModel
                         {
-                            WorkerFullName = wp.FirstName + " " + wp.MiddleName + " " + wp.LastName + " " + wp.SecondLastName,
+                            WorkerFullName = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
                             WorkerRequestId = wr.Id,
                             Shift = wr.Request.Shift,
                             StartWorking = wr.StartWorking,

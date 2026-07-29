@@ -22,7 +22,7 @@
           <div class="modal-wrapper">
             <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
               <button @click="showModal = false" type="button" class="cross-icon">close</button>
-              <contact-list :requestId="requestId" :companyId="companyId" :activeUsers="data.items"
+              <contact-list :requestId="requestId" :companyProfileId="companyProfileId" :activeUsers="data.items"
                 @removeContact="(item) => removeReportTo(item)"
                 @selectContact="(item) => addReportTo(item)" />
             </div>
@@ -43,7 +43,7 @@ import {
 } from "@/api/agencyRequestApi";
 import ContactList from './ContactListModal.vue';
 
-const props = defineProps<{ requestId: any; companyId: any; canEdit?: boolean }>();
+const props = defineProps<{ requestId: any; companyProfileId: any; canEdit?: boolean }>();
 
 const showModal = ref(false);
 const isLoading = ref(false);

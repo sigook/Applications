@@ -380,8 +380,8 @@ public class WorkerRepository : IWorkerRepository
         if (filter.CompanyProfileId.HasValue)
         {
             workers = from wp in workers
-                      from wr in workerRequest.Where(wr => wr.WorkerId == wp.WorkerId).Take(1)
-                      join c in _context.CompanyProfile.Where(cp => cp.Id == filter.CompanyProfileId) on wr.Request.CompanyId equals c.CompanyId
+                      from wr in workerRequest.Where(wr => wr.WorkerProfileId == wp.Id).Take(1)
+                      where wr.Request.CompanyProfileId == filter.CompanyProfileId
                       select wp;
         }
         if (!string.IsNullOrWhiteSpace(filter.Skills))
@@ -408,8 +408,8 @@ public class WorkerRepository : IWorkerRepository
                         IsSubcontractor = wp.IsSubcontractor,
                         ProfileImage = cft == null ? null : $"{filesConfiguration.FilesPath}{cft.FileName}",
                         Skills = wp.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Skill)).OrderBy(s => s.Skill).Select(s => s.Skill),
-                        IsCurrentlyWorking = workerRequest.Any(wr => wr.WorkerId == wp.WorkerId),
-                        Requests = workerRequest.Where(wr => wr.WorkerId == wp.WorkerId).Select(wr => new BaseModel<Guid> { Id = wr.RequestId, Value = wr.Request.NumberId.ToString() }),
+                        IsCurrentlyWorking = workerRequest.Any(wr => wr.WorkerProfileId == wp.Id),
+                        Requests = workerRequest.Where(wr => wr.WorkerProfileId == wp.Id).Select(wr => new BaseModel<Guid> { Id = wr.RequestId, Value = wr.Request.NumberId.ToString() }),
                         Dnu = wp.Dnu,
                         CreatedAt = wp.CreatedAt,
                         SinNumber = wp.SocialInsurance,
@@ -591,8 +591,7 @@ public class WorkerRepository : IWorkerRepository
                                    join ts in _context.TimeSheet on tst.TimeSheetId equals ts.Id
                                    join wr in _context.WorkerRequest on ts.WorkerRequestId equals wr.Id
                                    join r in _context.Request on wr.RequestId equals r.Id
-                                   join cp in _context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                                   select new { psw.PayStubId, cp.FullName }).Distinct().ToListAsync();
+                                   select new { psw.PayStubId, r.CompanyProfile.FullName }).Distinct().ToListAsync();
             var payStubItem = await _context.PayStubItem.Where(psi => guids.Contains(psi.PayStubId)).ToListAsync();
             foreach (var stub in payStubs.Items)
             {
@@ -642,14 +641,14 @@ public class WorkerRepository : IWorkerRepository
             .Where(unt => unt.EmailNotification)
             .Select(unt => unt.UserId);
 
-        var bookedWorkerIds = _context.WorkerRequest
+        var bookedWorkerProfileIds = _context.WorkerRequest
             .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked)
-            .Select(wr => wr.WorkerId);
+            .Select(wr => wr.WorkerProfileId);
 
         return eligibleProfiles
             .Join(contactableUsers, wp => wp.WorkerId, u => u.Id, (wp, u) => new { wp, u })
             .Where(x => subscribedUserIds.Contains(x.u.Id))
-            .Where(x => !bookedWorkerIds.Contains(x.wp.WorkerId))
+            .Where(x => !bookedWorkerProfileIds.Contains(x.wp.Id))
             .OrderBy(x => x.wp.NumberId)
             .Select(x => new WorkerContactInfoModel
             {

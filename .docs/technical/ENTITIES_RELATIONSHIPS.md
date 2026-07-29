@@ -21,14 +21,14 @@ erDiagram
     Agency ||--o{ Request : "AgencyId"
     AgencyPersonnel ||--o{ CompanyProfile : "SalesRepresentativeId"
     CompanyProfile ||--o{ CompanyProfileJobPositionRate : ""
-    User ||--o{ Request : "Request.CompanyId (company-side user)"
+    CompanyProfile ||--o{ Request : "Request.CompanyProfileId"
     CompanyProfileJobPositionRate ||--o{ Request : "JobPositionRateId"
     Request ||--o{ WorkerRequest : ""
     Request ||--o{ RequestApplicant : ""
     Request ||--o{ Runner : ""
     Request ||--o{ RequestRecruiter : ""
-    RequestRecruiter ||--o{ WorkerDispatch : ""
-    User ||--o{ WorkerRequest : "WorkerRequest.WorkerId"
+    RequestRecruiter ||--o{ Runner : ""
+    WorkerProfile ||--o{ WorkerRequest : "WorkerRequest.WorkerProfileId"
     WorkerRequest ||--o{ TimeSheet : ""
     TimeSheet ||--o| TimeSheetTotal : "billing totals"
     TimeSheet ||--o| TimeSheetTotalPayroll : "payroll totals"
@@ -46,14 +46,23 @@ point at **User**, not at the profile entity:
 
 | FK | Points to | Not to |
 |---|---|---|
-| `Request.CompanyId` | company-side `User` | `CompanyProfile` |
-| `WorkerRequest.WorkerId` | worker `User` | `WorkerProfile` |
 | `CompanyProfile.CompanyId` | company `User` | — |
 | `WorkerProfile.WorkerId` | worker `User` | — |
 | `CompanyUser.CompanyId` / `.UserId` | company `User` / member `User` | — |
 
-To get from a `Request` to its `CompanyProfile` you join through the user
-(`CompanyProfile.CompanyId == Request.CompanyId`).
+`Request` and `WorkerRequest` are the exceptions — both point at the profile, not the user:
+`Request.CompanyProfileId` → `CompanyProfile` (navigation `Request.CompanyProfile`) and
+`WorkerRequest.WorkerProfileId` → `WorkerProfile` (navigation `WorkerRequest.WorkerProfile`).
+They used to point at the `User`, which forced every query to join the profile on
+`(CompanyId, AgencyId)` / `(WorkerId, AgencyId)` — and most joined on the user id alone,
+duplicating rows for people or companies with a profile in more than one agency. Reach profile
+data through the navigation property; when a query genuinely needs the login user (notification
+emails, JWT scoping), go through `Request.CompanyProfile.CompanyId` /
+`WorkerRequest.WorkerProfile.WorkerId`.
+
+The `companyId` claim in the JWT (`User.GetCompanyId()`) and the worker's `sub`
+(`User.GetUserId()`) are still `User.Id`, not profile ids — one user may own profiles in several
+agencies.
 
 `UserType` enum (`Covenant.Common/Enums/UserType.cs`): `Worker=1, Company, CompanyUser,
 AgencyPersonnel, Agency, Candidate`.
@@ -185,8 +194,9 @@ Children:
 | `CandidateDocument` | join Candidate↔`CovenantFile` (`CandidateId`, `DocumentId`) |
 | `CandidateNote` | join Candidate↔`CovenantNote` (`CandidateId`, `NoteId`) |
 
-A Candidate reaches a job order through `RequestApplicant` or `Runner` (below), which reference
-the candidate by FK — personal data is never copied.
+A Candidate reaches a job order through `RequestApplicant`, which references the candidate by FK —
+personal data is never copied. Runners are worker-only: a candidate must be converted to a worker
+(`CandidateService.ConvertToWorker`) before entering the recruiting pipeline.
 
 ---
 
@@ -196,7 +206,7 @@ the candidate by FK — personal data is never copied.
 
 A job order. Key fields:
 
-- `Id`, `NumberId`, `AgencyId`, `CompanyId` → **User** (company-side user, not CompanyProfile)
+- `Id`, `NumberId`, `AgencyId`, `CompanyProfileId` → CompanyProfile (navigation `CompanyProfile`)
 - Job: `JobTitle`, `BillingTitle`, `JobCosting` (admin/superadmin only in the UI), `Description`,
   `Requirements`, `InternalRequirements`, `Responsibilities`, `JobLocationId` → Location,
   `JobIsOnBranchOffice`
@@ -221,7 +231,7 @@ Child/related entities in the same folder: `RequestNote`, `RequestSkill`, `Reque
 
 ### WorkerRequest (`WorkerRequest.cs`)
 
-Assignment of a worker to a request. `Id`, `RequestId`, `WorkerId` → **User**,
+Assignment of a worker to a request. `Id`, `RequestId`, `WorkerProfileId` → **WorkerProfile**,
 `WorkerRequestStatus` (`Enums/WorkerRequestStatus.cs`: **`Rejected = 2`, `Booked = 3`** — there
 is no value 1), `StartWorking`, `WeekStartWorking` (computed Sunday of the start week),
 `CreatedBy`/`RejectedBy`/`RejectedAt`/`RejectComments`, `LimitDateToAddTimeSheet`
@@ -242,7 +252,7 @@ M:N Request↔`Source` (job board posting), composite PK `(RequestId, SourceId)`
 with `Source.IsAvailableForRequests = true` are selectable as job boards
 (`GET api/Catalog/source/requests`).
 
-### RequestRecruiter + WorkerDispatch (weekly board)
+### RequestRecruiter (weekly board)
 
 `RequestRecruiter.cs`: assigns an `AgencyPersonnel` recruiter to a request, optionally for one
 `WorkDate` (day cell on the recruiting weekly board). Max 10 recruiters per request per day;
@@ -250,14 +260,16 @@ unique `(RequestId, RecruiterId, WorkDate)`. Managed through `Request.AddRecruit
 `RemoveRecruiter` / `MoveRecruiterAssignment` and `WeeklyBoardService` /
 `Controllers/Sigook/Agency/Recruiting/WeeklyBoardController.cs`.
 
-`WorkerDispatch.cs`: worker dispatched under a recruiter assignment — `RequestRecruiterId`,
-`WorkerProfileId`, `CreatedBy`; unique `(RequestRecruiterId, WorkerProfileId)`; added via
-`RequestRecruiter.AddDispatch` (duplicate-safe).
+The people a recruiter sends under an assignment are **Runners** (`RequestRecruiter.Runners`,
+FK `Runner.RequestRecruiterId`, `ON DELETE SET NULL`). The old `WorkerDispatch` entity was
+replaced by `Runner` in migration `RunnersWorkerOnlyAndBoardRunners`.
 
 ### Runner (`Entities/Request/Runners/`)
 
-Recruiting pipeline for a person actively submitted to one request. `Runner.cs`:
-`Id`, `NumberId` (long), `AgencyId`, `RequestId`, `WorkerProfileId` XOR `CandidateId`,
+Recruiting pipeline for a worker actively submitted to one request. `Runner.cs`:
+`Id`, `NumberId` (long), `AgencyId`, `RequestId`, `WorkerProfileId` (required — runners are
+worker-only; candidates cannot be runners), `RequestRecruiterId` (nullable — set when the runner
+is sent from the weekly board, null when created from the order's Runners tab),
 `Type` (`RunnerType`: `Active=1` applied on own initiative, `Passive=2` sourced),
 `Status` (`RunnerStatus`, stored as **text** via `EnumToStringConverter`:
 `SentToClient=1, InterviewScheduled, InterviewRescheduled, NoLongerAvailable, NoShow,
@@ -270,7 +282,7 @@ Entity-enforced constraints:
   **appends** a history row (never overwrites).
 - Any→any transitions allowed, **except `Hired` is terminal**; moving to `Hired` requires
   `StartDate`.
-- Same person cannot be a runner twice on one request (`IRunnerRepository.RunnerExists`).
+- Same worker cannot be a runner twice on one request (`IRunnerRepository.RunnerExists`).
 - Interviews (`RunnerInterview.cs`: `ScheduledDate`, `InterviewType` Phone/Video/Onsite,
   `Interviewer`, `InterviewStatus` Scheduled/Rescheduled, `Feedback`, `RescheduleCount`) can be
   added/rescheduled only in `InterviewScheduled`/`InterviewRescheduled`; rescheduling
@@ -411,9 +423,8 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | WorkerProfile | `(WorkerId, AgencyId)` |
 | AgencyPersonnel | `(AgencyId, UserId)` |
 | CompanyUser | `(CompanyId, UserId)` |
-| WorkerRequest | `(RequestId, WorkerId)` |
+| WorkerRequest | `(RequestId, WorkerProfileId)` |
 | RequestRecruiter | `(RequestId, RecruiterId, WorkDate)` |
-| WorkerDispatch | `(RequestRecruiterId, WorkerProfileId)` |
 | WorkerProfileHoliday | `(WorkerProfileId, HolidayId)` |
 | TimeSheetTotalPayroll | `TimeSheetId` |
 | InvoiceUSA | `InvoiceNumber`; `InvoiceNumberId` |

@@ -105,7 +105,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
         };
         public static readonly Invoice Invoice = new Invoice
         {
-            CompanyId = CompanyProfile.Id,
+            CompanyProfileId = CompanyProfile.Id,
             InvoiceNumber = 1,
             NightShiftRate = 1,
             HolidayRate = 1,

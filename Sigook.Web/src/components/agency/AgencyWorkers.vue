@@ -345,7 +345,7 @@ function confirmDelete(worker: any) {
 function rejectWorker(comments: string) {
   modalRejectWorker.value = false;
   isLoading.value = true;
-  rejectAgencyRequestWorker(serverParams.requestId, currentWorker.value.workerId, { comments }).then(() => {
+  rejectAgencyRequestWorker(serverParams.requestId, currentWorker.value.workerProfileId, { comments }).then(() => {
     isLoading.value = false;
     loadRequestWorkers();
     emit('refreshRequest');

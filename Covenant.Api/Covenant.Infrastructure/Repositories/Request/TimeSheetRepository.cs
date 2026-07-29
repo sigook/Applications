@@ -41,16 +41,16 @@ public class TimesheetRepository : ITimesheetRepository
 
     public Task<TimeSheet> GetTimeSheet(Guid id) => _context.TimeSheet.SingleOrDefaultAsync(s => s.Id == id);
 
-    public async Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerId, Guid requestId, Expression<Func<Common.Entities.Request.Request, bool>> requestCondition)
+    public async Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerProfileId, Guid requestId, Expression<Func<Common.Entities.Request.Request, bool>> requestCondition)
     {
-        var query = from wr in _context.WorkerRequest.Where(c => c.WorkerId == workerId && c.RequestId == requestId)
+        var query = from wr in _context.WorkerRequest.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
                     join r in _context.Request.Where(requestCondition) on wr.RequestId equals r.Id
                     join ts in _context.TimeSheet on wr.Id equals ts.WorkerRequestId
                     select ts;
         return await query.ToListAsync();
     }
 
-    public async Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerId, Guid requestId, DateTime? startDate, DateTime? endDate)
+    public async Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerProfileId, Guid requestId, DateTime? startDate, DateTime? endDate)
     {
         var timeSheet = _context.TimeSheet.AsQueryable();
         if (startDate.HasValue)
@@ -61,7 +61,7 @@ public class TimesheetRepository : ITimesheetRepository
         {
             timeSheet = timeSheet.Where(ts => ts.Date <= endDate.Value);
         }
-        var query = from wr in _context.WorkerRequest.Where(c => c.WorkerId == workerId && c.RequestId == requestId)
+        var query = from wr in _context.WorkerRequest.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
                     join ts in timeSheet on wr.Id equals ts.WorkerRequestId
                     join tst in _context.TimeSheetTotal on ts.Id equals tst.TimeSheetId into tmp
                     from tst in tmp.DefaultIfEmpty()
@@ -142,7 +142,7 @@ public class TimesheetRepository : ITimesheetRepository
     {
         var query = (from workerRequest in _context.WorkerRequest
                      join timeSheet in _context.TimeSheet on workerRequest.Id equals timeSheet.WorkerRequestId
-                     where workerRequest.WorkerId == workerId && workerRequest.RequestId == requestId
+                     where workerRequest.WorkerProfile.WorkerId == workerId && workerRequest.RequestId == requestId
                      select new TimeSheetListModel
                      {
                          Id = timeSheet.Id,
@@ -168,7 +168,7 @@ public class TimesheetRepository : ITimesheetRepository
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(ts => ts.Request)
             .ThenInclude(ts => ts.Agency)
-            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId) && ts.WorkerRequest.Request.CompanyId == model.CompanyId)
+            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId) && ts.WorkerRequest.Request.CompanyProfileId == model.CompanyProfileId)
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotal == null);
         if (model.RequestIds != null && model.RequestIds.Any())
         {
@@ -179,23 +179,22 @@ public class TimesheetRepository : ITimesheetRepository
             timeSheet = timeSheet.Where(ts => ts.Date.Date >= model.From.Value && ts.Date.Date <= model.To.Value);
         }
         var query = from ts in timeSheet
-                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
                     select new TimeSheetApprovedBillingModel
                     {
-                        PaidHolidays = cp.PaidHolidays,
+                        PaidHolidays = ts.WorkerRequest.Request.CompanyProfile.PaidHolidays,
                         OvertimeStartsAfter = ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
                             ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
                             : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null &&
                                 ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
                                 ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                                : cp.OvertimeStartsAfter),
+                                : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         RequestId = ts.WorkerRequest.RequestId,
                         JobTitle = string.IsNullOrWhiteSpace(ts.WorkerRequest.Request.BillingTitle) ? ts.WorkerRequest.Request.JobTitle : ts.WorkerRequest.Request.BillingTitle,
                         AgencyRate = ts.WorkerRequest.Request.AgencyRate.Value,
                         BreakIsPaid = ts.WorkerRequest.Request.BreakIsPaid,
                         DurationBreak = ts.WorkerRequest.Request.DurationBreak,
                         HolidayIsPaid = ts.WorkerRequest.Request.HolidayIsPaid,
-                        WorkerId = ts.WorkerRequest.Worker.Id,
+                        WorkerId = ts.WorkerRequest.WorkerProfile.WorkerId,
                         TimeSheetId = ts.Id,
                         Week = PostgresFunctions.get_week_start_sunday(ts.Date),
                         Date = ts.Date,
@@ -218,33 +217,31 @@ public class TimesheetRepository : ITimesheetRepository
         return result;
     }
 
-    public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyId)
+    public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyProfileId)
     {
         var timeSheets = _context.TimeSheet
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
             .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId))
-            .Where(ts => ts.WorkerRequest.Request.CompanyId == companyId);
+            .Where(ts => ts.WorkerRequest.Request.CompanyProfileId == companyProfileId);
 
         var query = from ts in timeSheets
-                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
-                    join wp in _context.WorkerProfile on ts.WorkerRequest.WorkerId equals wp.WorkerId
-                    where wp.IsSubcontractor
+                    where ts.WorkerRequest.WorkerProfile.IsSubcontractor
                     orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
                         ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
                             ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
                             : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
                                 ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                                : cp.OvertimeStartsAfter),
+                                : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
                         ts.WorkerRequest.Request.WorkerRate.Value,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
                         ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
                             ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
-                            : cp.PaidHolidays,
-                        ts.WorkerRequest.WorkerId,
-                        wp.Id,
+                            : ts.WorkerRequest.Request.CompanyProfile.PaidHolidays,
+                        ts.WorkerRequest.WorkerProfile.WorkerId,
+                        ts.WorkerRequest.WorkerProfileId,
                         ts.Id,
                         PostgresFunctions.get_week_start_sunday(ts.Date),
                         ts.Date,
@@ -274,28 +271,25 @@ public class TimesheetRepository : ITimesheetRepository
         var timeSheets = _context.TimeSheet
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
             .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId))
-            .Where(ts => ts.WorkerRequest.WorkerId == workerId);
+            .Where(ts => ts.WorkerRequest.WorkerProfile.WorkerId == workerId);
 
         var query = from ts in timeSheets
-                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
-                    join wp in _context.WorkerProfile
-                        on new { ts.WorkerRequest.WorkerId, ts.WorkerRequest.Request.AgencyId } equals new { wp.WorkerId, wp.AgencyId }
                     orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
                         ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
                             ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
                             : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
                                 ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                                : cp.OvertimeStartsAfter),
+                                : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
                         ts.WorkerRequest.Request.WorkerRate.Value,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
                         ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
                             ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
-                            : cp.PaidHolidays,
-                        ts.WorkerRequest.WorkerId,
-                        wp.Id,
+                            : ts.WorkerRequest.Request.CompanyProfile.PaidHolidays,
+                        ts.WorkerRequest.WorkerProfile.WorkerId,
+                        ts.WorkerRequest.WorkerProfileId,
                         ts.Id,
                         PostgresFunctions.get_week_start_sunday(ts.Date),
                         ts.Date,
@@ -326,26 +320,25 @@ public class TimesheetRepository : ITimesheetRepository
             .Where(ts => ts.Date.Date >= start.Date && ts.Date.Date <= end.Date);
 
         var query = from ts in timeSheets
-                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
-                    join wp in _context.WorkerProfile.Where(w => w.Id == workerProfileId && !w.IsSubcontractor)
-                        on new { ts.WorkerRequest.WorkerId, ts.WorkerRequest.Request.AgencyId } equals new { wp.WorkerId, wp.AgencyId }
-                    where ts.WorkerRequest.Request.WorkerRate != null && !ts.WorkerRequest.Request.WorkerSalary.HasValue
+                    where ts.WorkerRequest.WorkerProfileId == workerProfileId
+                          && !ts.WorkerRequest.WorkerProfile.IsSubcontractor
+                          && ts.WorkerRequest.Request.WorkerRate != null && !ts.WorkerRequest.Request.WorkerSalary.HasValue
                     orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
                         ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
                             ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
                             : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
                                 ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
-                                : cp.OvertimeStartsAfter),
+                                : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
                         ts.WorkerRequest.Request.WorkerRate.Value,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
                         ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
                             ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
-                            : cp.PaidHolidays,
-                        ts.WorkerRequest.WorkerId,
-                        ts.WorkerRequest.Id,
+                            : ts.WorkerRequest.Request.CompanyProfile.PaidHolidays,
+                        ts.WorkerRequest.WorkerProfile.WorkerId,
+                        ts.WorkerRequest.WorkerProfileId,
                         ts.Id,
                         PostgresFunctions.get_week_start_sunday(ts.Date),
                         ts.Date,
@@ -375,9 +368,16 @@ public class TimesheetRepository : ITimesheetRepository
                         where tstP == null
                         select ts;
         return await (from ts in timeSheet
-                      join wp in _context.WorkerProfile.Where(wp => !wp.IsSubcontractor) on ts.WorkerRequest.WorkerId equals wp.WorkerId
-                      join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
-                      group new { wp } by new { wp.WorkerId, wp.FirstName, wp.MiddleName, wp.LastName, wp.SecondLastName, cp.FullName }
+                      where !ts.WorkerRequest.WorkerProfile.IsSubcontractor
+                      group ts by new
+                      {
+                          ts.WorkerRequest.WorkerProfile.WorkerId,
+                          ts.WorkerRequest.WorkerProfile.FirstName,
+                          ts.WorkerRequest.WorkerProfile.MiddleName,
+                          ts.WorkerRequest.WorkerProfile.LastName,
+                          ts.WorkerRequest.WorkerProfile.SecondLastName,
+                          ts.WorkerRequest.Request.CompanyProfile.FullName
+                      }
                       into result
                       select new WorkerReadyForPayStubModel
                       {
@@ -391,7 +391,7 @@ public class TimesheetRepository : ITimesheetRepository
             ).ToListAsync();
     }
 
-    public async Task<TimeSheetUsagesModel> GetTimeSheetUsages(Guid requestId, Guid workerId, Guid id)
+    public async Task<TimeSheetUsagesModel> GetTimeSheetUsages(Guid requestId, Guid workerProfileId, Guid id)
     {
         var request = await requestRepository.GetRequestDetailForAgency(requestId);
         var timesheetTotal = _context.TimeSheetTotal.Where(ts => ts.TimeSheetId == id);
@@ -426,16 +426,15 @@ public class TimesheetRepository : ITimesheetRepository
             .ThenInclude(wr => wr.Request)
             .ThenInclude(r => r.JobPositionRate)
             .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.AgencyId == agencyId);
-        if (filter.CompanyId.HasValue)
-            timeSheets = timeSheets.Where(qb => qb.WorkerRequest.Request.CompanyId == filter.CompanyId);
+        if (filter.CompanyProfileId.HasValue)
+            timeSheets = timeSheets.Where(qb => qb.WorkerRequest.Request.CompanyProfileId == filter.CompanyProfileId);
         if (filter.JobPositionRateId.HasValue)
             timeSheets = timeSheets.Where(qb => qb.WorkerRequest.Request.JobPositionRateId == filter.JobPositionRateId);
         var query = from ts in timeSheets
-                    join wp in _context.WorkerProfile on ts.WorkerRequest.WorkerId equals wp.WorkerId
                     select new
                     {
-                        wp.WorkerId,
-                        WorkerName = wp.FirstName + " " + wp.LastName,
+                        ts.WorkerRequest.WorkerProfile.WorkerId,
+                        WorkerName = ts.WorkerRequest.WorkerProfile.FirstName + " " + ts.WorkerRequest.WorkerProfile.LastName,
                         JobPosition = ts.WorkerRequest.Request.JobPositionRate.JobPosition,
                         BillRate = ts.WorkerRequest.Request.AgencyRate,
                         RegularHoursWorked = ts.TimeSheetTotal.RegularHours.TotalHours + ts.TimeSheetTotal.OtherRegularHours.TotalHours,
@@ -478,16 +477,14 @@ public class TimesheetRepository : ITimesheetRepository
             .ThenInclude(wr => wr.Request)
             .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.AgencyId == agencyId);
         var query = from ts in timeSheets
-                    join wp in _context.WorkerProfile on ts.WorkerRequest.WorkerId equals wp.WorkerId
-                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
                     select new
                     {
-                        wp.WorkerId,
-                        wp.NumberId,
-                        FullName = wp.LastName + ", " + wp.FirstName,
-                        wp.SocialInsurance,
-                        wp.WcCode,
-                        Client = cp.FullName,
+                        ts.WorkerRequest.WorkerProfile.WorkerId,
+                        ts.WorkerRequest.WorkerProfile.NumberId,
+                        FullName = ts.WorkerRequest.WorkerProfile.LastName + ", " + ts.WorkerRequest.WorkerProfile.FirstName,
+                        ts.WorkerRequest.WorkerProfile.SocialInsurance,
+                        ts.WorkerRequest.WorkerProfile.WcCode,
+                        Client = ts.WorkerRequest.Request.CompanyProfile.FullName,
                         JobName = ts.WorkerRequest.Request.JobCosting,
                         PayRate = ts.WorkerRequest.Request.WorkerRate,
                         RegularHours = ts.TimeSheetTotal.RegularHours.TotalHours + ts.TimeSheetTotal.OtherRegularHours.TotalHours,
@@ -522,13 +519,13 @@ public class TimesheetRepository : ITimesheetRepository
         return result;
     }
 
-    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyId, DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, DateTime startDate, DateTime endDate)
     {
         var agencyCompanyProfileJobPositionRate = _context.TimeSheet
             .AsNoTracking()
             .Include(ts => ts.WorkerRequest).ThenInclude(wr => wr.Request).ThenInclude(r => r.JobPositionRate)
             .Where(ts => ts.Date.Date >= startDate && ts.Date.Date <= endDate)
-            .Where(ts => ts.WorkerRequest.Request.CompanyId == companyId)
+            .Where(ts => ts.WorkerRequest.Request.CompanyProfileId == companyProfileId)
             .Select(lj => new
             {
                 lj.WorkerRequest.Request.JobPositionRate.Id,
@@ -551,9 +548,9 @@ public class TimesheetRepository : ITimesheetRepository
             .ThenInclude(r => r.JobLocation)
             .Where(ts => ts.Date.Date == from.Date);
 
-        var query = from wp in _context.WorkerProfile.Where(wp => wp.WorkerId == workerId)
-                    join wr in _context.WorkerRequest.Where(wr => wr.RequestId == requestId) on wp.WorkerId equals wr.WorkerId
-                    join ts in timeSheet on wr.Id equals ts.WorkerRequestId
+        var query = from ts in timeSheet
+                    where ts.WorkerRequest.RequestId == requestId
+                          && ts.WorkerRequest.WorkerProfile.WorkerId == workerId
                     orderby ts.Date descending
                     select ts;
         return await query.FirstOrDefaultAsync();
@@ -561,7 +558,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition) =>
         (from wp in _context.WorkerProfile.Where(condition)
-         join wr in _context.WorkerRequest.Where(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked) on wp.WorkerId equals wr.WorkerId
+         join wr in _context.WorkerRequest.Where(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked) on wp.Id equals wr.WorkerProfileId
          join ts in _context.TimeSheet on wr.Id equals ts.WorkerRequestId
          select ts).OrderByDescending(c => c.Date).FirstOrDefaultAsync();
 
@@ -570,9 +567,9 @@ public class TimesheetRepository : ITimesheetRepository
         var last14Hours = now.AddHours(-TimeLimits.DefaultTimeLimits.MaximumHoursDay);
         var timeSheet = _context.TimeSheet
             .Where(ts => ts.ClockIn.HasValue && (ts.ClockIn.Value.Date == now.Date || ts.ClockIn.Value.Date == last14Hours.Date));
-        var query = from wp in _context.WorkerProfile.Where(wp => wp.WorkerId == workerId)
-                    join wr in _context.WorkerRequest.Where(wr => wr.RequestId == requestId) on wp.WorkerId equals wr.WorkerId
-                    join ts in timeSheet on wr.Id equals ts.WorkerRequestId
+        var query = from ts in timeSheet
+                    where ts.WorkerRequest.RequestId == requestId
+                          && ts.WorkerRequest.WorkerProfile.WorkerId == workerId
                     orderby ts.Date descending
                     select ts;
         return await query.FirstOrDefaultAsync();
@@ -588,13 +585,11 @@ public class TimesheetRepository : ITimesheetRepository
     public Task<List<RequestTimeSheetModel>> GetRequestTimeSheet(Guid requestId)
     {
         var query = from ts in _context.TimeSheet.Where(ts => ts.WorkerRequest.Request.Id == requestId)
-                    join cp in _context.CompanyProfile on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
-                    join wp in _context.WorkerProfile on ts.WorkerRequest.WorkerId equals wp.WorkerId
                     select new RequestTimeSheetModel
                     {
-                        CompanyFullName = cp.FullName,
+                        CompanyFullName = ts.WorkerRequest.Request.CompanyProfile.FullName,
                         AgencyFullName = ts.WorkerRequest.Request.Agency.FullName,
-                        WorkerFullName = $"{wp.FirstName} {wp.MiddleName} {wp.LastName} {wp.SecondLastName}",
+                        WorkerFullName = $"{ts.WorkerRequest.WorkerProfile.FirstName} {ts.WorkerRequest.WorkerProfile.MiddleName} {ts.WorkerRequest.WorkerProfile.LastName} {ts.WorkerRequest.WorkerProfile.SecondLastName}",
                         Date = ts.Date,
                         TimeInApproved = ts.TimeInApproved,
                         TimeOutApproved = ts.TimeOutApproved,

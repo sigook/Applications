@@ -71,7 +71,7 @@ namespace Covenant.Tests.Request
         [Fact]
         public async Task Book()
         {
-            var result = await _sut.BookWorker(request.Id, _worker.WorkerId, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
+            var result = await _sut.BookWorker(request.Id, _worker.Id, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
             Assert.True(result);
             requestRepository.Verify(c => c.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>()), Times.Once);
             requestRepository.Verify(c => c.Update(request), Times.Once);
@@ -84,7 +84,7 @@ namespace Covenant.Tests.Request
             var requestApplicant = RequestApplicant.CreateWithWorker(request.Id, _worker.Id, default, default).Value;
             requestRepository.Setup(r => r.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>())).ReturnsAsync(requestApplicant);
 
-            Result result = await _sut.BookWorker(request.Id, _worker.WorkerId, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
+            Result result = await _sut.BookWorker(request.Id, _worker.Id, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
             Assert.True(result);
 
             requestRepository.Verify(c => c.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>()), Times.Once);
@@ -96,7 +96,7 @@ namespace Covenant.Tests.Request
         [Fact]
         public async Task BookRejectedWorker()
         {
-            var workerRequest = WorkerRequest.AgencyBook(_worker.WorkerId, request.Id, default);
+            var workerRequest = WorkerRequest.AgencyBook(_worker.Id, request.Id, default);
             workerRequest.Reject();
             _workerRequestRepository.Setup(r => r.GetWorkerRequest(_worker.WorkerId, request.Id)).ReturnsAsync(workerRequest);
 
@@ -122,8 +122,8 @@ namespace Covenant.Tests.Request
             request.UpdateShift(shift);
             var workerRequest = WorkerRequest.AgencyBook(_worker.Id, _worker.AgencyId);
             workerRequest.Request = request;
-            _workerRequestRepository.Setup(r => r.GetWorkerRequestsByWorkerId(_worker.WorkerId)).ReturnsAsync(new List<WorkerRequest> { workerRequest });
-            Result result = await _sut.BookWorker(request.Id, _worker.WorkerId, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
+            _workerRequestRepository.Setup(r => r.GetWorkerRequestsByWorkerProfileId(_worker.Id)).ReturnsAsync(new List<WorkerRequest> { workerRequest });
+            Result result = await _sut.BookWorker(request.Id, _worker.Id, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
             Assert.False(result);
             Assert.Equal("The worker is associated in other request with the same schedule", result.Errors.Single().Message);
         }

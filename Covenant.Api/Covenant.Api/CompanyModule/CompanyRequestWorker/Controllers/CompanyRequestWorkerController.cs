@@ -46,13 +46,13 @@ namespace Covenant.Api.CompanyModule.CompanyRequestWorker.Controllers
 
         /// <summary>Gets the detail of a specific worker assigned to a request.</summary>
         /// <param name="requestId">Request identifier.</param>
-        /// <param name="workerId">Worker identifier.</param>
-        [HttpGet("{workerId}")]
+        /// <param name="workerProfileId">Worker profile identifier.</param>
+        [HttpGet("{workerProfileId}")]
         [ProducesResponseType(typeof(AgencyWorkerRequestModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(Guid requestId, Guid workerId)
+        public async Task<IActionResult> GetById(Guid requestId, Guid workerProfileId)
         {
-            AgencyWorkerRequestModel model = await _requestRepository.GetRequestWorkerByCompanyId(User.GetCompanyId(), requestId, workerId);
+            AgencyWorkerRequestModel model = await _requestRepository.GetRequestWorkerByCompanyId(User.GetCompanyId(), requestId, workerProfileId);
             if (model is null) return NotFound();
             return Ok(model);
         }
@@ -74,14 +74,14 @@ namespace Covenant.Api.CompanyModule.CompanyRequestWorker.Controllers
 
         /// <summary>Rejects a worker assigned to the specified request.</summary>
         /// <param name="requestId">Request identifier.</param>
-        /// <param name="workerId">Worker identifier.</param>
+        /// <param name="workerProfileId">Worker profile identifier.</param>
         /// <param name="model">Comment explaining the rejection.</param>
-        [HttpPut("{workerId}/Reject")]
+        [HttpPut("{workerProfileId}/Reject")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Reject([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromBody] CommentsModel model)
+        public async Task<ActionResult> Reject([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] CommentsModel model)
         {
-            var result = await requestService.RejectWorker(requestId, workerId, model);
+            var result = await requestService.RejectWorker(requestId, workerProfileId, model);
             if (result) return Ok();
             return BadRequest(ModelState.AddErrors(result.Errors));
         }

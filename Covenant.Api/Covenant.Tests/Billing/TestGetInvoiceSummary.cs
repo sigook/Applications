@@ -29,7 +29,7 @@ namespace Covenant.Tests.Billing
             CompanyProfile = FakeProfile
         };
 
-        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(FakeProfile.Agency.Id, FakeProfile.CompanyId, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
+        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(FakeProfile.Agency.Id, FakeProfile.Id, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
 
         public TestGetInvoiceSummary()
         {
@@ -60,7 +60,7 @@ namespace Covenant.Tests.Billing
             Assert.Equal(invoice.NumberId, summaryModel.NumberId);
             Assert.Equal(Invoice.BuildInvoiceNumber(invoice.InvoiceNumber, invoice.CreatedAt), summaryModel.InvoiceNumber);
             Assert.Equal(new DateOnly(invoice.CreatedAt.Year, invoice.CreatedAt.Month, invoice.CreatedAt.Day), summaryModel.CreatedAt);
-            Assert.Equal(invoice.CompanyId, summaryModel.CompanyProfileId);
+            Assert.Equal(invoice.CompanyProfileId, summaryModel.CompanyProfileId);
             Assert.Equal(FakeProfile.FullName, summaryModel.CompanyFullName);
             Assert.Equal(FakeProfile.Company.Email, summaryModel.Email);
             Assert.Equal(FakeProfile.Locations.First().Location.FormattedAddress, summaryModel.Address);
@@ -144,7 +144,7 @@ namespace Covenant.Tests.Billing
         {
             var invoice = new Invoice
             {
-                CompanyId = FakeProfile.Id,
+                CompanyProfileId = FakeProfile.Id,
                 InvoiceNumber = 1,
                 NightShiftRate = 1,
                 HolidayRate = 1,

@@ -160,7 +160,7 @@ namespace Covenant.Tests.Request
             Assert.Contains("workers assigned", result.Errors.Single().Message);
 
             // Remove all workers
-            var worker2 = request.Workers.First(w => w.WorkerRequestStatus == WorkerRequestStatus.Booked).WorkerId;
+            var worker2 = request.Workers.First(w => w.WorkerRequestStatus == WorkerRequestStatus.Booked).WorkerProfileId;
             request.RejectWorker(worker2, default);
 
             // Now can cancel (Open status, no workers)

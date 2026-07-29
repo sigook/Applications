@@ -45,7 +45,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Custom
         AgencyWorkerRequestModel model = list.Items.Single(w => w.Id == workerRequest.Id);
         Assert.Equal(model.Id, workerRequest.Id);
         Assert.Equal(model.NumberId, Data.FakeWorkerForList.NumberId);
-        Assert.Equal(model.WorkerId, workerRequest.WorkerId);
+        Assert.Equal(model.WorkerId, Data.FakeWorkerForList.WorkerId);
         Assert.Equal(model.WorkerProfileId, Data.FakeWorkerForList.Id);
         Assert.Equal(model.Name, Data.FakeWorkerForList.FullName);
         Assert.Equal(model.WorkerRequestStatus, workerRequest.WorkerRequestStatus);
@@ -75,12 +75,12 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Custom
     public async Task Book()
     {
         WorkerProfile worker = Data.FakeWorkerToBook;
-        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/{worker.WorkerId}/Book", new { });
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/{worker.Id}/Book", new { });
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         var entity = await context.WorkerRequest.SingleAsync(s => s.Id == detail.Id);
-        Assert.Equal(worker.WorkerId, entity.WorkerId);
+        Assert.Equal(worker.Id, entity.WorkerProfileId);
         Assert.Equal(WorkerRequestStatus.Booked, entity.WorkerRequestStatus);
     }
 
@@ -89,7 +89,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Custom
     {
         var worker = Data.FakeWorkerRequestReject;
         var model = new CommentsModel { Comments = "Worker was hired by the company" };
-        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerId}/Reject", model);
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerProfileId}/Reject", model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         var entity = await context.WorkerRequest.SingleAsync(s => s.Id == worker.Id);

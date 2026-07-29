@@ -153,16 +153,16 @@ async function onDatesSelected() {
 
 async function selectCompany(company: any) {
   if (company) {
-    serverParams.value.companyId = company.companyId;
+    serverParams.value.companyProfileId = company.id;
     await loadJobPositions();
   } else {
-    serverParams.value.companyId = null;
+    serverParams.value.companyProfileId = null;
     jobPositions.value = [];
   }
 }
 
 async function loadJobPositions() {
-  if (serverParams.value.companyId && dates.value && dates.value.length === 2) {
+  if (serverParams.value.companyProfileId && dates.value && dates.value.length === 2) {
     isLoadingJobPositions.value = true;
     jobPositions.value = await getJobPositionsHoursWorked(serverParams.value);
     isLoadingJobPositions.value = false;

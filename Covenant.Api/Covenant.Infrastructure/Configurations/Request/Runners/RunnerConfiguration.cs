@@ -21,13 +21,13 @@ public class RunnerConfiguration : IEntityTypeConfiguration<Runner>
 
         builder.HasOne(r => r.WorkerProfile)
             .WithMany()
-            .HasForeignKey(r => r.WorkerProfileId)
+            .HasForeignKey(r => r.WorkerProfileId).IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne(r => r.Candidate)
-            .WithMany()
-            .HasForeignKey(r => r.CandidateId)
-            .OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne(r => r.RequestRecruiter)
+            .WithMany(rr => rr.Runners)
+            .HasForeignKey(r => r.RequestRecruiterId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasMany(m => m.StatusHistory)
             .WithOne(o => o.Runner)

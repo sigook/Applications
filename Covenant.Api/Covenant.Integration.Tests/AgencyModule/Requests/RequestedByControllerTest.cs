@@ -131,7 +131,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 null).Value;
 
             private static readonly Guid JobPositionRateId = Guid.NewGuid();
-            public static readonly Request FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, JobPositionRateId);
+            public static readonly Request FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, JobPositionRateId);
             public static readonly CompanyProfileContactPerson FakeContactPersonPost = new CompanyProfileContactPerson(FakeCompany.Id) { Title = "Sr.", FirstName = "Post" };
             public static readonly CompanyProfileContactPerson FakeContactPersonDelete = new CompanyProfileContactPerson(FakeCompany.Id) { Title = "Sr.", FirstName = "Delete" };
             public static readonly CompanyProfileContactPerson FakeContactPerson = new CompanyProfileContactPerson(FakeCompany.Id)

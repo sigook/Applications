@@ -15,6 +15,7 @@
           <b-field>
             <b-checkbox v-model="directHiring">Direct Hiring?</b-checkbox>
             <b-checkbox v-model="request.isAsap" :disabled="isUpdate">Is Asap?</b-checkbox>
+            <b-checkbox v-model="request.usesRunners">Uses Runners?</b-checkbox>
             <b-checkbox v-model="sameBillingTitle" @update:modelValue="onSameBillingChecked">Job title same for billing
               title?</b-checkbox>
           </b-field>
@@ -341,6 +342,7 @@ const request = ref<any>({
   durationBreak: dayjs().startOf('day').toDate(),
   durationTerm: DurationTerm.LongTerm,
   employmentType: EmploymentType.FullTime,
+  usesRunners: true,
 });
 const sameBillingTitle = ref(true);
 const errorMessage = 'Please make sure all required fields are filled out correctly';

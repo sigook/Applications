@@ -21,12 +21,12 @@ namespace Covenant.Common.Entities.Request
         {
         }
 
-        public Request(User company, Agency.Agency agency, CompanyProfileJobPositionRate jobPositionRate, int workersQuantity = MinimumWorkersQuantity)
+        public Request(CompanyProfile companyProfile, Agency.Agency agency, CompanyProfileJobPositionRate jobPositionRate, int workersQuantity = MinimumWorkersQuantity)
         {
-            Company = company;
+            CompanyProfile = companyProfile;
             Agency = agency;
             JobPositionRate = jobPositionRate;
-            CompanyId = company.Id;
+            CompanyProfileId = companyProfile.Id;
             AgencyId = agency.Id;
             JobPositionRateId = jobPositionRate.Id;
             WorkersQuantity = workersQuantity;
@@ -55,11 +55,12 @@ namespace Covenant.Common.Entities.Request
         public decimal? WorkerSalary { get; set; }
         public bool PunchCardOptionEnabled { get; set; }
         public bool HolidayIsPaid { get; set; } = true;
-        public User Company { get; set; }
-        public Guid CompanyId { get; set; }
+        public CompanyProfile CompanyProfile { get; set; }
+        public Guid CompanyProfileId { get; set; }
         public Agency.Agency Agency { get; set; }
         public Guid AgencyId { get; set; }
         public bool IsAsap { get; set; }
+        public bool UsesRunners { get; set; } = true;
         public DurationTerm DurationTerm { get; set; } = DurationTerm.LongTerm;
         public EmploymentType EmploymentType { get; set; } = EmploymentType.FullTime;
         public Shift Shift { get; set; }
@@ -94,11 +95,11 @@ namespace Covenant.Common.Entities.Request
 
         public event EventHandler OnNewShift;
 
-        public Result<Guid> AddWorker(Guid workerId, DateTime startWorking, string createdBy = null)
+        public Result<Guid> AddWorker(Guid workerProfileId, DateTime startWorking, string createdBy = null)
         {
             if (CountWorkersWorking >= WorkersQuantity) return Result.Fail<Guid>("The Request is complete");
             if (!IsAvailableToApply) return Result.Fail<Guid>(TheRequestCanNotBeChanged);
-            WorkerRequest workerRequest = _workers.SingleOrDefault(s => s.WorkerId == workerId);
+            WorkerRequest workerRequest = _workers.SingleOrDefault(s => s.WorkerProfileId == workerProfileId);
             switch (workerRequest?.WorkerRequestStatus)
             {
                 case WorkerRequestStatus.Booked: return Result.Ok(workerRequest.Id);
@@ -109,7 +110,7 @@ namespace Covenant.Common.Entities.Request
                     }
                 case null:
                     {
-                        workerRequest = WorkerRequest.AgencyBook(workerId, Id, createdBy);
+                        workerRequest = WorkerRequest.AgencyBook(workerProfileId, Id, createdBy);
                         _workers.Add(workerRequest);
                         break;
                     }
@@ -125,10 +126,10 @@ namespace Covenant.Common.Entities.Request
             return Result.Ok(workerRequest.Id);
         }
 
-        public Result RejectWorker(Guid workerId, string detail, string rejectedBy = null)
+        public Result RejectWorker(Guid workerProfileId, string detail, string rejectedBy = null)
         {
             if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
-            WorkerRequest workerRequest = _workers.SingleOrDefault(a => a.WorkerId == workerId);
+            WorkerRequest workerRequest = _workers.SingleOrDefault(a => a.WorkerProfileId == workerProfileId);
             if (workerRequest is null) return Result.Fail("Worker isn't in the request");
             if (workerRequest.IsRejected) return Result.Fail("Worker is already rejected");
             workerRequest.Reject(detail, null, rejectedBy);
@@ -231,6 +232,14 @@ namespace Covenant.Common.Entities.Request
         {
             if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
             JobCosting = jobCosting;
+            UpdatedAt = DateTime.Now;
+            return Result.Ok();
+        }
+
+        public Result UpdateUsesRunners(bool usesRunners)
+        {
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
+            UsesRunners = usesRunners;
             UpdatedAt = DateTime.Now;
             return Result.Ok();
         }
@@ -372,7 +381,7 @@ namespace Covenant.Common.Entities.Request
 
         public static Result<Request> AgencyCreateRequest(
             Guid agencyId,
-            Guid companyId,
+            Guid companyProfileId,
             Location location,
             DateTime startAt,
             Guid? jobPositionRateId = null,
@@ -396,7 +405,7 @@ namespace Covenant.Common.Entities.Request
             return Result.Ok(new Request
             {
                 AgencyId = agencyId,
-                CompanyId = companyId,
+                CompanyProfileId = companyProfileId,
                 JobTitle = jobTitle,
                 WorkersQuantity = workersQuantity,
                 JobPositionRateId = jobPositionRateId,
@@ -421,7 +430,7 @@ namespace Covenant.Common.Entities.Request
 
         public static Result<Request> AgencyCreateRequest(
             Guid agencyId,
-            Guid companyId,
+            Guid companyProfileId,
             Guid locationId,
             DateTime startAt,
             Guid? jobPositionRateId = null,
@@ -445,7 +454,7 @@ namespace Covenant.Common.Entities.Request
             return Result.Ok(new Request
             {
                 AgencyId = agencyId,
-                CompanyId = companyId,
+                CompanyProfileId = companyProfileId,
                 JobTitle = jobTitle,
                 WorkersQuantity = workersQuantity,
                 JobPositionRateId = jobPositionRateId,

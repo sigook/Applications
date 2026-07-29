@@ -274,7 +274,7 @@ function sendValidation(values: any) {
     reimbursements: values.reimbursements || 0,
     reimbursementsDescription: values.reimbursementsDes || '',
   };
-  updateAgencyWorkerTimeSheet(route.params.id as string, props.worker.workerId, localEditableDay.value.id, model)
+  updateAgencyWorkerTimeSheet(route.params.id as string, props.worker.workerProfileId, localEditableDay.value.id, model)
     .then(() => {
       isLoading.value = false;
       const updated = {

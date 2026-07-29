@@ -152,7 +152,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             static Data()
             {
                 FakeCompany.AddJobPositionRate(CompanyProfileJobPositionRate.Create(FakeCompany.Id, "Labor", 1, 1).Value);
-                FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.CompanyId, FakeCompany.JobPositionRates.First().Id);
+                FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
             }
         }
     }

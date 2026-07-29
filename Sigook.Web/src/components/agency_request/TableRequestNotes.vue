@@ -11,26 +11,20 @@
 
         <span v-if="canEdit" @click="showModalNotes = true" class="color-primary pointer fw-normal fz-2 text-decoration-underline">See more + </span>
 
-        <!-- NOTES custom modal -->
-        <transition name="modal">
-            <div v-if="showModalNotes" class="vue-modal min-width-0">
-                <div class="modal-mask">
-                    <div class="modal-wrapper">
-                        <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
-                            <button @click="onCloseModalNotes()" type="button" class="cross-icon">close</button>
-                            <modal-notes :user-id="profileId"
-                                         :on-get="getNotes"
-                                         :on-create="createNote"
-                                         :on-update="updateNote"
-                                         :on-delete="deleteNote"
-                                         @onUpdateNote="() => loadFirstNotes()">
-                            </modal-notes>
-                        </div>
-                    </div>
-                </div>
+        <b-modal v-model="showModalNotes" width="500px" :destroy-on-hide="true" @close="onCloseModalNotes">
+            <div class="modal-card" style="width: 100%">
+                <section class="modal-card-body">
+                    <modal-notes :user-id="profileId"
+                                 :show-close="false"
+                                 :on-get="getNotes"
+                                 :on-create="createNote"
+                                 :on-update="updateNote"
+                                 :on-delete="deleteNote"
+                                 @onUpdateNote="() => loadFirstNotes()">
+                    </modal-notes>
+                </section>
             </div>
-        </transition>
-        <!-- end CREATE custom modal -->
+        </b-modal>
     </div>
 </template>
 <script setup lang="ts">

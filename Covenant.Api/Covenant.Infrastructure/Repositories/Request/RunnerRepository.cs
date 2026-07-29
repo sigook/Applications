@@ -22,10 +22,8 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
     public Task<List<Runner>> GetRunners(Expression<Func<Runner, bool>> expression) =>
         context.Runners.Where(expression).ToListAsync();
 
-    public Task<bool> RunnerExists(Guid requestId, Guid? workerProfileId, Guid? candidateId) =>
-        context.Runners.AnyAsync(r => r.RequestId == requestId &&
-            ((workerProfileId != null && r.WorkerProfileId == workerProfileId) ||
-             (candidateId != null && r.CandidateId == candidateId)));
+    public Task<bool> RunnerExists(Guid requestId, Guid workerProfileId) =>
+        context.Runners.AnyAsync(r => r.RequestId == requestId && r.WorkerProfileId == workerProfileId);
 
     public async Task<PaginatedList<RunnerListModel>> GetRunners(Guid agencyId, GetRunnersFilter filter)
     {
@@ -38,9 +36,8 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
                 AgencyId = r.AgencyId,
                 RequestId = r.RequestId,
                 WorkerProfileId = r.WorkerProfileId,
-                CandidateId = r.CandidateId,
-                Name = r.WorkerProfileId != null ? r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName : r.Candidate.Name,
-                Email = r.WorkerProfileId != null ? r.WorkerProfile.Worker.Email : r.Candidate.Email,
+                Name = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
+                Email = r.WorkerProfile.Worker.Email,
                 Type = r.Type,
                 Status = r.Status,
                 StartDate = r.StartDate,
@@ -63,9 +60,8 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
                 NumberId = r.NumberId,
                 RequestId = r.RequestId,
                 WorkerProfileId = r.WorkerProfileId,
-                CandidateId = r.CandidateId,
-                Name = r.WorkerProfileId != null ? r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName : r.Candidate.Name,
-                Email = r.WorkerProfileId != null ? r.WorkerProfile.Worker.Email : r.Candidate.Email,
+                Name = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
+                Email = r.WorkerProfile.Worker.Email,
                 Type = r.Type,
                 Status = r.Status,
                 StartDate = r.StartDate,
@@ -105,12 +101,9 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
 
     public Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday(Guid agencyId, Guid updatedBy, DateTime windowStart, DateTime windowEnd) =>
         (from r in context.Runners.AsNoTracking()
-         join cp in context.CompanyProfile
-            on new { r.Request.CompanyId, r.AgencyId } equals new { cp.CompanyId, cp.AgencyId }
          where r.AgencyId == agencyId
                && r.Status == RunnerStatus.Hired
                && r.UpdatedBy == updatedBy
-               && r.WorkerProfileId != null
                && (r.Request.WorkerSalary == null || r.Request.WorkerSalary == 0)
                && r.StartDate != null
                && r.StartDate.Value.Date >= windowStart.Date
@@ -121,8 +114,8 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
              RequestId = r.RequestId,
              RequestNumberId = r.Request.NumberId,
              JobTitle = r.Request.JobTitle,
-             CompanyName = cp.FullName,
-             WorkerProfileId = r.WorkerProfileId.Value,
+             CompanyName = r.Request.CompanyProfile.FullName,
+             WorkerProfileId = r.WorkerProfileId,
              WorkerName = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
              StartDate = r.StartDate.Value
          }).Distinct().ToListAsync();

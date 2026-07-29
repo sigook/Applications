@@ -42,7 +42,7 @@
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
             <roles-shift v-if="props.row.displayShift" :displayShift="props.row.displayShift" :roleId="props.row.id"
-              :companyId="profileId" />
+              :companyProfileId="profileId" />
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
             <b-button type="is-info" outlined rounded icon-right="pencil" class="me-2"

@@ -80,7 +80,7 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("companyProfile@mail.com").Value), Agency = Agency };
         public static readonly Invoice Invoice = new Invoice
         {
-            CompanyId = CompanyProfile.Id,
+            CompanyProfileId = CompanyProfile.Id,
             InvoiceNumber = 1,
             NightShiftRate = 1,
             HolidayRate = 1,

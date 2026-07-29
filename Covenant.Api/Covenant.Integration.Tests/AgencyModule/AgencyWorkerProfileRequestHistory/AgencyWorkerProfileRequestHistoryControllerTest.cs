@@ -71,7 +71,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHist
 
                 var cp = new CompanyProfile(new User(CvnEmail.Create("c@maol.com").Value),
                     FakeAgency, "A", "6479807865", new CompanyProfileIndustry());
-                var request = new Request(cp.Company, FakeAgency, new CompanyProfileJobPositionRate()) 
+                var request = new Request(cp, FakeAgency, new CompanyProfileJobPositionRate()) 
                 { 
                     JobLocation = new Location { City = new City { Province = new Province { Country = new Country() } } } 
                 };
@@ -79,7 +79,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHist
                 context.CompanyProfile.Add(cp);
                 context.WorkerProfile.Add(FakeWorkerProfile);
                 context.Request.Add(request);
-                context.WorkerRequest.Add(Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerProfile.WorkerId, request.Id));
+                context.WorkerRequest.Add(Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerProfile.Id, request.Id));
                 context.SaveChanges();
             }
         }

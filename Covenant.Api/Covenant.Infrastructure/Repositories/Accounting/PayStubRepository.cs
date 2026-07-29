@@ -39,30 +39,25 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
     public Task<PayStubDetailModel> GetPayStubDetail(Guid payStubId)
     {
         return (from ps in context.PayStub.Where(s => s.Id == payStubId)
-                join wp in context.WorkerProfile on ps.WorkerProfileId equals wp.Id
-                join wpu in context.User on wp.WorkerId equals wpu.Id
-                join a in context.Agencies on wp.AgencyId equals a.Id
-                join cfa in context.CovenantFile on a.LogoId equals cfa.Id into tmp1
-                from cfa in tmp1.DefaultIfEmpty()
                 select new PayStubDetailModel
                 {
                     Id = ps.Id,
                     NumberId = ps.NumberId,
                     PayrollNumberId = ps.PayStubNumberId,
                     PayrollNumber = ps.PayStubNumber,
-                    AgencyFullName = a.FullName,
-                    AgencyPhone = a.PhonePrincipal,
-                    AgencyPhoneExt = a.PhonePrincipalExt,
-                    AgencyLogoFileName = cfa == null ? null : cfa.FileName,
-                    AgencyLocation = (from al in a.Locations
+                    AgencyFullName = ps.WorkerProfile.Agency.FullName,
+                    AgencyPhone = ps.WorkerProfile.Agency.PhonePrincipal,
+                    AgencyPhoneExt = ps.WorkerProfile.Agency.PhonePrincipalExt,
+                    AgencyLogoFileName = ps.WorkerProfile.Agency.Logo == null ? null : ps.WorkerProfile.Agency.Logo.FileName,
+                    AgencyLocation = (from al in ps.WorkerProfile.Agency.Locations
                                       join l in context.Location on al.LocationId equals l.Id
                                       join c in context.City on l.CityId equals c.Id
                                       join province in context.Province on c.ProvinceId equals province.Id
                                       select $"{l.Address} {c.Value} {province.Code} {l.PostalCode}").FirstOrDefault(),
-                    WorkerFullName = wp.FirstName + " " + wp.MiddleName + " " + wp.LastName + " " + wp.SecondLastName,
-                    SinNumber = wp.SocialInsurance,
-                    EmployeeId = wp.NumberId,
-                    WorkerEmail = wpu.Email,
+                    WorkerFullName = ps.WorkerProfile.FirstName + " " + ps.WorkerProfile.MiddleName + " " + ps.WorkerProfile.LastName + " " + ps.WorkerProfile.SecondLastName,
+                    SinNumber = ps.WorkerProfile.SocialInsurance,
+                    EmployeeId = ps.WorkerProfile.NumberId,
+                    WorkerEmail = ps.WorkerProfile.Worker.Email,
                     CreatedAt = ps.CreatedAt,
                     PaymentDate = ps.PaymentDate,
                     StartDate = ps.DateWorkBegins,
@@ -83,8 +78,8 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
                         Total = d.Total,
                         Description = d.Description
                     }).ToList(),
-                    FederalCategory = wp.WorkerProfileTaxCategory != null && wp.WorkerProfileTaxCategory.FederalCategory.HasValue ? wp.WorkerProfileTaxCategory.FederalCategory.Value : TaxCategory.Cc1,
-                    ProvincialCategory = wp.WorkerProfileTaxCategory != null && wp.WorkerProfileTaxCategory.ProvincialCategory.HasValue ? wp.WorkerProfileTaxCategory.ProvincialCategory.Value : TaxCategory.Cc1,
+                    FederalCategory = ps.WorkerProfile.WorkerProfileTaxCategory != null && ps.WorkerProfile.WorkerProfileTaxCategory.FederalCategory.HasValue ? ps.WorkerProfile.WorkerProfileTaxCategory.FederalCategory.Value : TaxCategory.Cc1,
+                    ProvincialCategory = ps.WorkerProfile.WorkerProfileTaxCategory != null && ps.WorkerProfile.WorkerProfileTaxCategory.ProvincialCategory.HasValue ? ps.WorkerProfile.WorkerProfileTaxCategory.ProvincialCategory.Value : TaxCategory.Cc1,
                     WorkerProfileId = ps.WorkerProfileId
                 }).SingleOrDefaultAsync();
     }
@@ -113,11 +108,8 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     public async Task<RegularWageWorker> GetWorkerRegularWages(Guid workerProfileId, DateTime holiday, IEnumerable<DateTime> qualifyingDays)
     {
-        var workerId = await context.WorkerProfile
-            .Where(wp => wp.Id == workerProfileId)
-            .Select(wp => (Guid?)wp.WorkerId)
-            .FirstOrDefaultAsync();
-        if (workerId is null) return null;
+        var workerProfileExists = await context.WorkerProfile.AnyAsync(wp => wp.Id == workerProfileId);
+        if (!workerProfileExists) return null;
 
         var holidayWasPaid = await context.PayStubPublicHolidays
             .AnyAsync(psh => psh.Holiday == holiday && psh.PayStub.WorkerProfileId == workerProfileId);
@@ -128,7 +120,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
             .FirstOrDefaultAsync();
 
         var isEntitledToReceiveHolidayPay = await context.TimeSheet
-            .AnyAsync(ts => ts.WorkerRequest.WorkerId == workerId
+            .AnyAsync(ts => ts.WorkerRequest.WorkerProfileId == workerProfileId
                 && qualifyingDays.Contains(ts.Date.Date));
 
         return new RegularWageWorker
@@ -159,8 +151,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
     public Task<PaginatedList<WeeklyPayrollModel>> GetWeeklyPayrollGroupByPaymentDate(IEnumerable<Guid> agencyIds, Pagination pagination)
     {
         var query = from ps in context.PayStub
-                    join wp in context.WorkerProfile on ps.WorkerProfileId equals wp.Id
-                    where agencyIds.Contains(wp.AgencyId)
+                    where agencyIds.Contains(ps.WorkerProfile.AgencyId)
                     group new { ps.PaymentDate, ps.TotalPaid } by ps.PaymentDate.Date into temp
                     orderby temp.Key descending
                     select new WeeklyPayrollModel
@@ -175,15 +166,13 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
     public Task<List<WeeklyPayStubModel>> GetWeeklyPayrollDetailByPaymentDate(DateTime paymentDate)
     {
         return (from ps in context.PayStub.Where(s => s.PaymentDate.Date == paymentDate.Date)
-                join wp in context.WorkerProfile on ps.WorkerProfileId equals wp.Id
-                join wpu in context.User on wp.WorkerId equals wpu.Id
                 orderby ps.PayStubNumberId
                 select new WeeklyPayStubModel
                 {
                     PayStubNumber = ps.PayStubNumber,
-                    Email = wpu.Email,
-                    FullName = wp.FirstName + " " + wp.MiddleName + " " + wp.LastName + " " + wp.SecondLastName,
-                    NumberId = wp.NumberId,
+                    Email = ps.WorkerProfile.Worker.Email,
+                    FullName = ps.WorkerProfile.FirstName + " " + ps.WorkerProfile.MiddleName + " " + ps.WorkerProfile.LastName + " " + ps.WorkerProfile.SecondLastName,
+                    NumberId = ps.WorkerProfile.NumberId,
                     GrossPayment = ps.GrossPayment,
                     Vacations = ps.Vacations,
                     TotalEarnings = ps.TotalEarnings,
@@ -209,8 +198,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
                                  join ts in context.TimeSheet on tst.TimeSheetId equals ts.Id
                                  join wr in context.WorkerRequest on ts.WorkerRequestId equals wr.Id
                                  join r in context.Request on wr.RequestId equals r.Id
-                                 join cp in context.CompanyProfile on new { cpId = r.CompanyId, aId = r.AgencyId } equals new { cpId = cp.CompanyId, aId = cp.AgencyId }
-                                 select cp.FullName).Distinct().ToList()
+                                 select r.CompanyProfile.FullName).Distinct().ToList()
                 }).ToListAsync();
     }
 

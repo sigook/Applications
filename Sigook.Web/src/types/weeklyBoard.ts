@@ -2,13 +2,17 @@
 // Mirror the backend models in
 // Covenant.Common.Models.Request.WeeklyBoard.
 import type { RequestStatus } from '@/constants/enums';
+import type { RunnerStatus, RunnerType } from '@/types/runner';
 
-// Mirrors WeeklyBoardDispatchModel — a worker sent by the recruiter to an
+// Mirrors WeeklyBoardRunnerModel — a runner sent by the recruiter to an
 // order on a given work day.
-export interface WeeklyBoardDispatch {
+export interface WeeklyBoardRunner {
+  runnerId: string;
   workerProfileId: string;
   fullName: string;
   email: string;
+  type: RunnerType;
+  status: RunnerStatus;
   sentAt?: string | null;
 }
 
@@ -27,8 +31,9 @@ export interface WeeklyBoardAssignment {
   status: RequestStatus;
   isAsap: boolean;
   workerSalary: number | null;
-  workersSent: number;
-  dispatches: WeeklyBoardDispatch[];
+  usesRunners: boolean;
+  runnersSent: number;
+  runners: WeeklyBoardRunner[];
 }
 
 // Mirrors WeeklyBoardRecruiterRowModel — one recruiter row with its cards.
@@ -96,7 +101,7 @@ export interface UnassignRecruiterPayload {
   workDate: string;
 }
 
-// Body for POST — move an assignment (with its dispatched workers) to another
+// Body for POST — move an assignment (with its runners) to another
 // recruiter and/or work day. Mirrors MoveAssignmentModel.
 export interface MoveAssignmentPayload {
   requestId: string;
@@ -106,17 +111,14 @@ export interface MoveAssignmentPayload {
   toWorkDate: string;
 }
 
-// Body for POST — the current recruiter sends one or more workers to an order
-// on a work day. Mirrors DispatchWorkersModel.
-export interface DispatchWorkersPayload {
-  requestId: string;
-  workDate: string;
-  workerProfileIds: string[];
-}
-
-// Query for DELETE — remove a single worker the recruiter sent to an order.
-export interface RemoveWorkerPayload {
+// Body for POST — the current recruiter sends a runner to an order on a work
+// day. Mirrors AddRunnerModel.
+export interface AddRunnerPayload {
   requestId: string;
   workDate: string;
   workerProfileId: string;
+  type: RunnerType;
 }
+
+// Deleting a runner goes through agencyRunnerApi.deleteAgencyRunner — the board
+// and the order's Runners tab share the same endpoint.

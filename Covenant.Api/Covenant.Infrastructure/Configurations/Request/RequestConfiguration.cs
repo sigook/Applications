@@ -16,6 +16,12 @@ namespace Covenant.Infrastructure.Configurations.Request
             builder.Property(e => e.Status).HasConversion(new EnumToStringConverter<RequestStatus>());
             builder.Property(e => e.DurationTerm).HasConversion(new EnumToStringConverter<DurationTerm>());
 
+            builder.HasOne(e => e.CompanyProfile)
+                .WithMany()
+                .HasForeignKey(e => e.CompanyProfileId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasMany(m => m.Recruiters)
                 .WithOne(o => o.Request)
                 .HasForeignKey(f => f.RequestId).IsRequired()

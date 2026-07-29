@@ -155,7 +155,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             public static readonly WorkerProfile WorkerProfile;
             public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;
 
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(FakeAgency.Id, CompanyProfile.Company.Id, new Location
+            public static readonly Request FakeRequest = Request.AgencyCreateRequest(FakeAgency.Id, CompanyProfile.Id, new Location
             {
                 Address = "4917 Dundas",
                 Entrance = "Back Door",
@@ -195,7 +195,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                 WorkerProfile.PatchSinInformation(new FakeSinInfo());
                 WorkerProfile.PatchDocuments(new FakeDocuments());
                 CompanyProfile.UpdateName("Microsoft");
-                FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.WorkerId, FakeRequest.Id);
+                FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);
             }
 
             private class FakeSinInfo : ISinInformation<CovenantFile>

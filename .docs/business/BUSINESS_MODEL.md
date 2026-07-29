@@ -44,7 +44,7 @@ Profile holds personal data (SIN with file + expiry, IDs), contact/location, pro
 
 ### 4. CANDIDATE
 
-Prospect managed by the agency that does NOT yet have a user account (`Covenant.Common/Entities/Candidate/`). A Candidate exists only in the agency's system; a Worker has an associated User and can use the app. Candidates can be pushed into the recruiting pipeline as Runners (see `WORKFLOWS.md` section 6) and become Workers when they register.
+Prospect managed by the agency that does NOT yet have a user account (`Covenant.Common/Entities/Candidate/`). A Candidate exists only in the agency's system; a Worker has an associated User and can use the app. Candidates can be applicants on a Request, but **not** Runners: they must be converted to a Worker first to enter the recruiting pipeline (see `WORKFLOWS.md` section 6).
 
 ---
 
