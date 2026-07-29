@@ -28,11 +28,15 @@
     </b-field>
 
     <b-field label="Purpose">
-      <search-select :model-value="purpose" :options="purposeOptions" placeholder="Search purpose…" @update:model-value="setPurpose" />
+      <b-select v-model="purpose" expanded>
+        <option v-for="opt in purposeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+      </b-select>
     </b-field>
 
     <b-field label="Status">
-      <search-select :model-value="status" :options="statusOptions" placeholder="Search status…" @update:model-value="setStatus" />
+      <b-select v-model="status" expanded>
+        <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+      </b-select>
     </b-field>
 
     <b-field label="Description">
@@ -68,14 +72,6 @@ const isEditing = computed(() => !!props.interaction);
 const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.fullName })));
 const purposeOptions = INTERACTION_PURPOSES.map((p) => ({ value: p, label: INTERACTION_PURPOSE_LABELS[p] }));
 const statusOptions = INTERACTION_STATUSES.map((s) => ({ value: s, label: INTERACTION_STATUS_LABELS[s] }));
-
-function setPurpose(value: InteractionPurpose | null): void {
-  if (value !== null) purpose.value = value;
-}
-
-function setStatus(value: InteractionStatus | null): void {
-  if (value !== null) status.value = value;
-}
 
 const clients = ref<AgencyCompanyListItem[]>([]);
 const isLoadingClients = ref(false);

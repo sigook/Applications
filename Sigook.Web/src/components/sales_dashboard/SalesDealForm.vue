@@ -22,12 +22,16 @@
       </b-field>
 
       <b-field label="Type" class="sd-form__col">
-        <search-select :model-value="type" :options="typeOptions" placeholder="Search type…" @update:model-value="setType" />
+        <b-select v-model="type" expanded>
+          <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+        </b-select>
       </b-field>
     </div>
 
     <b-field label="Status">
-      <search-select :model-value="status" :options="statusOptions" placeholder="Search status…" @update:model-value="setStatus" />
+      <b-select v-model="status" expanded>
+        <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+      </b-select>
     </b-field>
 
     <b-field label="Date">
@@ -60,14 +64,6 @@ const isEditing = computed(() => !!props.deal);
 const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.fullName })));
 const typeOptions = DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }));
 const statusOptions = DEAL_STATUSES.map((s) => ({ value: s, label: DEAL_STATUS_LABELS[s] }));
-
-function setType(value: DealType | null): void {
-  if (value !== null) type.value = value;
-}
-
-function setStatus(value: DealStatus | null): void {
-  if (value !== null) status.value = value;
-}
 
 const clients = ref<AgencyCompanyListItem[]>([]);
 const isLoadingClients = ref(false);

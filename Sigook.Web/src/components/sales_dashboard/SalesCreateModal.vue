@@ -49,7 +49,6 @@
           class="sd-modal__cta"
           expanded
           :loading="isSaving"
-          :style="{ backgroundColor: meta.color, borderColor: meta.color }"
           @click="onSubmit"
         >
           {{ isEditing ? 'Save changes' : meta.cta }}
@@ -132,8 +131,8 @@ const SALES_CREATE_META: Record<SalesCreateKind, SalesCreateMeta> = {
   },
   deal: {
     icon: 'handshake-outline',
-    color: '#ff9932',
-    tint: 'rgba(255, 153, 50, 0.13)',
+    color: '#21b7ff',
+    tint: 'rgba(33, 183, 255, 0.13)',
     title: 'New deal',
     subtitle: 'Add an opportunity to the pipeline',
     cta: 'Create deal',
@@ -321,10 +320,14 @@ async function onDelete(): Promise<void> {
 .sd-modal__cta {
   color: $white;
   font-weight: 600;
+  background-color: $primary;
+  border-color: $primary;
 
   &:hover,
   &:focus {
     color: $white;
+    background-color: $primary;
+    border-color: $primary;
     filter: brightness(0.95);
   }
 }
