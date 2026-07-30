@@ -103,15 +103,12 @@ public class InvoiceRepository : IInvoiceRepository
             return default;
         }
         var reports = await (from i in _context.Invoice.Where(c => c.Id == invoiceId)
-                             join it in _context.InvoiceTotals on i.Id equals it.InvoiceId
-                             join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
-                             join tstP in _context.TimeSheetTotalPayroll on tst.TimeSheetId equals tstP.TimeSheetId
+                             from it in i.InvoiceTotals
+                             join tstP in _context.TimeSheetTotalPayroll on it.TimeSheetTotal.TimeSheetId equals tstP.TimeSheetId
                              join rsw in _context.ReportSubcontractorWageDetail on tstP.Id equals rsw.TimeSheetTotalId
-                             join rs in _context.ReportSubcontractor on rsw.ReportSubcontractorId equals rs.Id
-                             select rs).Distinct().ToListAsync();
+                             select rsw.ReportSubcontractor).Distinct().ToListAsync();
         var totalsPayroll = await (from it in _context.InvoiceTotals.Where(c => c.InvoiceId == invoiceId)
-                                   join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
-                                   join tstP in _context.TimeSheetTotalPayroll on tst.TimeSheetId equals tstP.TimeSheetId
+                                   join tstP in _context.TimeSheetTotalPayroll on it.TimeSheetTotal.TimeSheetId equals tstP.TimeSheetId
                                    join rsw in _context.ReportSubcontractorWageDetail on tstP.Id equals rsw.TimeSheetTotalId
                                    select tstP).ToListAsync();
         _context.Invoice.Remove(invoice);
@@ -171,19 +168,13 @@ public class InvoiceRepository : IInvoiceRepository
                     FaxExt = i.CompanyProfile.FaxExt,
                     Email = i.Email != null ? i.Email : i.CompanyProfile.Company.Email,
                     Address = (from cpl in i.CompanyProfile.Locations.Where(c => c.IsBilling)
-                               join l in _context.Location on cpl.LocationId equals l.Id
-                               join city in _context.City on l.CityId equals city.Id
-                               join p in _context.Province on city.ProvinceId equals p.Id
-                               select $"{l.Address} {city.Value} {p.Code} {l.PostalCode}").FirstOrDefault(),
+                               select $"{cpl.Location.Address} {cpl.Location.City.Value} {cpl.Location.City.Province.Code} {cpl.Location.PostalCode}").FirstOrDefault(),
                     HstNumber = i.CompanyProfile.Agency.HstNumber,
                     HtmlNotes = cn == null ? string.Empty : cn.HtmlNotes,
                     AgencyFullName = i.CompanyProfile.Agency.FullName,
                     AgencyLogoFileName = i.CompanyProfile.Agency.Logo == null ? null : i.CompanyProfile.Agency.Logo.FileName,
                     AgencyAddress = (from al in i.CompanyProfile.Agency.Locations.Where(lW => lW.IsBilling)
-                                     join l in _context.Location on al.LocationId equals l.Id
-                                     join city in _context.City on l.CityId equals city.Id
-                                     join p in _context.Province on city.ProvinceId equals p.Id
-                                     select $"{l.Address} {city.Value} {p.Code} {l.PostalCode}").FirstOrDefault(),
+                                     select $"{al.Location.Address} {al.Location.City.Value} {al.Location.City.Province.Code} {al.Location.PostalCode}").FirstOrDefault(),
                     AgencyPhone = i.CompanyProfile.Agency.PhonePrincipal,
                     AgencyPhoneExt = i.CompanyProfile.Agency.PhonePrincipalExt,
                     AgencyWebSite = i.CompanyProfile.Agency.WebPage,
@@ -297,12 +288,19 @@ public class InvoiceRepository : IInvoiceRepository
                       select g.Key;
 
         return await (from i in _context.Invoice.Where(i => i.CompanyProfileId == companyProfileId)
-                      join it in _context.InvoiceTotals on i.Id equals it.InvoiceId
-                      join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
-                      join ts in _context.TimeSheet.Where(s => s.Date.Date >= start && s.Date.Date <= end) on tst.TimeSheetId equals ts.Id
-                      join wr in _context.WorkerRequest.Where(wwr => workers.Contains(wwr.WorkerProfileId)) on ts.WorkerRequestId equals wr.Id
-                      where !alreadyBilled.Contains(wr.WorkerProfileId)
-                      select new { wr.WorkerProfile.WorkerId, Id = wr.WorkerProfileId, it.AgencyRate, it.Regular, it.OtherRegular }
+                      from it in i.InvoiceTotals
+                      where it.TimeSheetTotal.TimeSheet.Date.Date >= start
+                            && it.TimeSheetTotal.TimeSheet.Date.Date <= end
+                            && workers.Contains(it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfileId)
+                            && !alreadyBilled.Contains(it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfileId)
+                      select new
+                      {
+                          it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfile.WorkerId,
+                          Id = it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfileId,
+                          it.AgencyRate,
+                          it.Regular,
+                          it.OtherRegular
+                      }
                       ).GroupBy(a => new { a.WorkerId, a.Id, a.AgencyRate })
             .Select(g => new CompanyRegularChargesByWorker(g.Key.WorkerId, g.Key.Id, g.Key.AgencyRate,
                 g.Sum(r => r.Regular), g.Sum(or => or.OtherRegular)))

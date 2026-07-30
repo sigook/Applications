@@ -45,7 +45,7 @@ public class TimesheetRepository : ITimesheetRepository
     {
         var query = from wr in _context.WorkerRequest.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
                     join r in _context.Request.Where(requestCondition) on wr.RequestId equals r.Id
-                    join ts in _context.TimeSheet on wr.Id equals ts.WorkerRequestId
+                    from ts in wr.TimeSheets
                     select ts;
         return await query.ToListAsync();
     }
@@ -63,10 +63,6 @@ public class TimesheetRepository : ITimesheetRepository
         }
         var query = from wr in _context.WorkerRequest.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
                     join ts in timeSheet on wr.Id equals ts.WorkerRequestId
-                    join tst in _context.TimeSheetTotal on ts.Id equals tst.TimeSheetId into tmp
-                    from tst in tmp.DefaultIfEmpty()
-                    join tstP in _context.TimeSheetTotalPayroll on ts.Id equals tstP.TimeSheetId into tmp2
-                    from tstP in tmp2.DefaultIfEmpty()
                     orderby ts.Date
                     select new TimeSheetListModel
                     {
@@ -87,7 +83,7 @@ public class TimesheetRepository : ITimesheetRepository
                         DeductionsOthers = ts.DeductionsOthers,
                         DeductionsOthersDescription = ts.DeductionsOthersDescription,
                         Comment = ts.Comment,
-                        CanUpdate = tst == null && tstP == null,
+                        CanUpdate = ts.TimeSheetTotal == null && ts.TimeSheetTotalPayroll == null,
                         WasApproved = ts.TimeInApproved != null && ts.TimeOutApproved != null,
                         Week = PostgresFunctions.get_week_start_sunday(ts.Date),
                         BonusOrOthers = ts.BonusOrOthers,
@@ -141,7 +137,7 @@ public class TimesheetRepository : ITimesheetRepository
     public async Task<PaginatedList<TimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination)
     {
         var query = (from workerRequest in _context.WorkerRequest
-                     join timeSheet in _context.TimeSheet on workerRequest.Id equals timeSheet.WorkerRequestId
+                     from timeSheet in workerRequest.TimeSheets
                      where workerRequest.WorkerProfile.WorkerId == workerId && workerRequest.RequestId == requestId
                      select new TimeSheetListModel
                      {
@@ -362,11 +358,10 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds)
     {
-        var timeSheet = from ts in _context.TimeSheet.Where(c => c.TimeInApproved != null && c.TimeOutApproved != null && agencyIds.Contains(c.WorkerRequest.Request.CompanyProfile.AgencyId))
-                        join tstP in _context.TimeSheetTotalPayroll on ts.Id equals tstP.TimeSheetId into tmp0
-                        from tstP in tmp0.DefaultIfEmpty()
-                        where tstP == null
-                        select ts;
+        var timeSheet = _context.TimeSheet.Where(c => c.TimeInApproved != null
+                                                      && c.TimeOutApproved != null
+                                                      && agencyIds.Contains(c.WorkerRequest.Request.CompanyProfile.AgencyId)
+                                                      && c.TimeSheetTotalPayroll == null);
         return await (from ts in timeSheet
                       where !ts.WorkerRequest.WorkerProfile.IsSubcontractor
                       group ts by new
@@ -559,7 +554,7 @@ public class TimesheetRepository : ITimesheetRepository
     public Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition) =>
         (from wp in _context.WorkerProfile.Where(condition)
          join wr in _context.WorkerRequest.Where(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked) on wp.Id equals wr.WorkerProfileId
-         join ts in _context.TimeSheet on wr.Id equals ts.WorkerRequestId
+         from ts in wr.TimeSheets
          select ts).OrderByDescending(c => c.Date).FirstOrDefaultAsync();
 
     public async Task<TimeSheet> GetTimeSheeFromTheLast14Hours(Guid workerId, Guid requestId, DateTime now)

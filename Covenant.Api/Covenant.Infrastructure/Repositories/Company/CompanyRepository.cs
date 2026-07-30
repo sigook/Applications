@@ -186,8 +186,6 @@ public class CompanyRepository : ICompanyRepository
         if (filter.SalesPersonnelId.HasValue)
             companies = companies.Where(cp => cp.SalesRepresentativeId == filter.SalesPersonnelId.Value);
         var query = from cp in companies
-                    join cf in _context.CovenantFile on cp.LogoId equals cf.Id into tmp
-                    from cfl in tmp.DefaultIfEmpty()
                     from cpcp in _context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).Take(1).DefaultIfEmpty()
                     orderby cp.FullName
                     select new CompanyProfileListModel

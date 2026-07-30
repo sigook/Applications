@@ -27,25 +27,23 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
              TotalNet = rs.TotalNet,
              PublicHoliday = rs.PublicHolidayPay,
              Items = (from rsw in rs.WageDetails
-                      join tst in _context.TimeSheetTotalPayroll on rsw.TimeSheetTotalId equals tst.Id
-                      join ts in _context.TimeSheet on tst.TimeSheetId equals ts.Id
                       select new ReportSubcontractorItemModel
                       {
                           WorkerRate = rsw.WorkerRate,
-                          Company = ts.WorkerRequest.Request.CompanyProfile.FullName,
+                          Company = rsw.TimeSheetTotal.TimeSheet.WorkerRequest.Request.CompanyProfile.FullName,
                           Regular = rsw.Regular,
                           OtherRegular = rsw.OtherRegular,
-                          RegularHours = tst.RegularHours.TotalHours,
-                          OtherRegularHours = tst.OtherRegularHours.TotalHours,
+                          RegularHours = rsw.TimeSheetTotal.RegularHours.TotalHours,
+                          OtherRegularHours = rsw.TimeSheetTotal.OtherRegularHours.TotalHours,
                           Overtime = rsw.Overtime,
-                          OvertimeHours = tst.OvertimeHours.TotalHours,
+                          OvertimeHours = rsw.TimeSheetTotal.OvertimeHours.TotalHours,
                           Holiday = rsw.Holiday,
-                          HolidayHours = tst.HolidayHours.TotalHours,
+                          HolidayHours = rsw.TimeSheetTotal.HolidayHours.TotalHours,
                           Missing = rsw.Missing,
-                          MissingHours = ts.MissingHours.TotalHours,
+                          MissingHours = rsw.TimeSheetTotal.TimeSheet.MissingHours.TotalHours,
                           MissingOvertime = rsw.MissingOvertime,
-                          MissingOvertimeHours = ts.MissingHoursOvertime.TotalHours,
-                          Others = ts.BonusOrOthers
+                          MissingOvertimeHours = rsw.TimeSheetTotal.TimeSheet.MissingHoursOvertime.TotalHours,
+                          Others = rsw.TimeSheetTotal.TimeSheet.BonusOrOthers
                       }).ToList()
          }).ToListAsync();
 

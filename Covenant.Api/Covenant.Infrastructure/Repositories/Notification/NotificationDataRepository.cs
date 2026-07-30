@@ -13,17 +13,14 @@ namespace Covenant.Infrastructure.Repositories.Notification
         public Task<NotificationAgencyModel> GetAgencyData(Guid requestId, Guid workerProfileId, int notificationTypeId)
         {
             return (from wr in _context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
-                    join r in _context.Request.Where(c => c.Id == requestId) on wr.RequestId equals r.Id
-                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
-                    join au in _context.User on a.UserId equals au.Id
-                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on au.Id equals unt.UserId
+                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wr.Request.CompanyProfile.Agency.UserId equals unt.UserId
                         into tmp1
                     from unt in tmp1.DefaultIfEmpty()
                     select new NotificationAgencyModel
                     {
-                        JobTitle = r.JobTitle,
-                        AgencyEmail = au.Email,
-                        CompanyFullName = r.CompanyProfile.FullName,
+                        JobTitle = wr.Request.JobTitle,
+                        AgencyEmail = wr.Request.CompanyProfile.Agency.User.Email,
+                        CompanyFullName = wr.Request.CompanyProfile.FullName,
                         WorkerFullName = $"{wr.WorkerProfile.FirstName} {wr.WorkerProfile.MiddleName} {wr.WorkerProfile.LastName} {wr.WorkerProfile.SecondLastName}",
                         EmailNotification = unt != null && unt.EmailNotification
                     }).SingleOrDefaultAsync();
@@ -32,15 +29,13 @@ namespace Covenant.Infrastructure.Repositories.Notification
         public Task<NotificationAgencyModel> GetAgencyData(Guid requestId, int notificationTypeId)
         {
             return (from r in _context.Request.Where(c => c.Id == requestId)
-                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
-                    join au in _context.User on a.UserId equals au.Id
-                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on au.Id equals unt.UserId
+                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on r.CompanyProfile.Agency.UserId equals unt.UserId
                         into tmp1
                     from unt in tmp1.DefaultIfEmpty()
                     select new NotificationAgencyModel
                     {
                         JobTitle = r.JobTitle,
-                        AgencyEmail = au.Email,
+                        AgencyEmail = r.CompanyProfile.Agency.User.Email,
                         CompanyFullName = r.CompanyProfile.FullName,
                         EmailNotification = unt != null && unt.EmailNotification
                     }).SingleOrDefaultAsync();
@@ -62,27 +57,23 @@ namespace Covenant.Infrastructure.Repositories.Notification
         public Task<NotificationAgencyModel> GetAgencyData(Guid agencyId)
         {
             return (from a in _context.Agencies.Where(a => a.Id == agencyId)
-                    join au in _context.User on a.UserId equals au.Id
                     select new NotificationAgencyModel
                     {
-                        AgencyEmail = au.Email,
+                        AgencyEmail = a.User.Email,
                     }).SingleOrDefaultAsync();
         }
 
         public Task<NotificationCompanyModel> GetCompanyData(Guid requestId, Guid workerProfileId, int notificationTypeId)
         {
             return (from wr in _context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
-                    join r in _context.Request.Where(c => c.Id == requestId) on wr.RequestId equals r.Id
-                    join cu in _context.User on r.CompanyProfile.CompanyId equals cu.Id
-                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on cu.Id equals unt.UserId
+                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wr.Request.CompanyProfile.CompanyId equals unt.UserId
                         into tmp1
                     from unt in tmp1.DefaultIfEmpty()
-                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
                     select new NotificationCompanyModel
                     {
-                        JobTitle = r.JobTitle,
-                        CompanyEmail = cu.Email,
-                        AgencyFullName = a.FullName,
+                        JobTitle = wr.Request.JobTitle,
+                        CompanyEmail = wr.Request.CompanyProfile.Company.Email,
+                        AgencyFullName = wr.Request.CompanyProfile.Agency.FullName,
                         WorkerFullName = $"{wr.WorkerProfile.FirstName} {wr.WorkerProfile.MiddleName} {wr.WorkerProfile.LastName} {wr.WorkerProfile.SecondLastName}",
                         EmailNotification = unt != null && unt.EmailNotification
                     }).SingleOrDefaultAsync();
@@ -91,18 +82,15 @@ namespace Covenant.Infrastructure.Repositories.Notification
         public Task<NotificationWorkerModel> GetWorkerData(Guid requestId, Guid workerProfileId, int notificationTypeId)
         {
             return (from wr in _context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
-                    join r in _context.Request on wr.RequestId equals r.Id
-                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
-                    join wu in _context.User on wr.WorkerProfile.WorkerId equals wu.Id
-                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wu.Id equals unt.UserId
+                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wr.WorkerProfile.WorkerId equals unt.UserId
                         into tmp1
                     from unt in tmp1.DefaultIfEmpty()
                     select new NotificationWorkerModel
                     {
-                        JobTitle = r.JobTitle,
-                        AgencyFullName = a.FullName,
-                        CompanyFullName = r.CompanyProfile.FullName,
-                        WorkerEmail = wu.Email,
+                        JobTitle = wr.Request.JobTitle,
+                        AgencyFullName = wr.Request.CompanyProfile.Agency.FullName,
+                        CompanyFullName = wr.Request.CompanyProfile.FullName,
+                        WorkerEmail = wr.WorkerProfile.Worker.Email,
                         EmailNotification = unt != null && unt.EmailNotification
                     }).SingleOrDefaultAsync();
         }
@@ -110,18 +98,15 @@ namespace Covenant.Infrastructure.Repositories.Notification
         public Task<NotificationWorkerModel> GetWorkerData(Guid workerRequestId, int notificationTypeId)
         {
             return (from wr in _context.WorkerRequest.Where(c => c.Id == workerRequestId)
-                    join r in _context.Request on wr.RequestId equals r.Id
-                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
-                    join wu in _context.User on wr.WorkerProfile.WorkerId equals wu.Id
-                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wu.Id equals unt.UserId
+                    join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wr.WorkerProfile.WorkerId equals unt.UserId
                         into tmp1
                     from unt in tmp1.DefaultIfEmpty()
                     select new NotificationWorkerModel
                     {
-                        JobTitle = r.JobTitle,
-                        AgencyFullName = a.FullName,
-                        CompanyFullName = r.CompanyProfile.FullName,
-                        WorkerEmail = wu.Email,
+                        JobTitle = wr.Request.JobTitle,
+                        AgencyFullName = wr.Request.CompanyProfile.Agency.FullName,
+                        CompanyFullName = wr.Request.CompanyProfile.FullName,
+                        WorkerEmail = wr.WorkerProfile.Worker.Email,
                         EmailNotification = unt != null && unt.EmailNotification
                     }).SingleOrDefaultAsync();
         }
