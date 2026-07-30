@@ -18,7 +18,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             public static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
 
             private static readonly CompanyProfileJobPositionRate JobPositionRate = new CompanyProfileJobPositionRate { JobPosition = "General Labour" };
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(AgencyId, Guid.NewGuid(), FakeData.FakeLocation(), FakeNow, JobPositionRate.Id, workersQuantity: 5).Value;
+            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { AgencyId = AgencyId, FullName = "Test Company" };
+            public static readonly Request FakeRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, JobPositionRate.Id, workersQuantity: 5).Value;
 
             public static readonly WorkerProfile FakeWorkerForList = new WorkerProfile(new User(CvnEmail.Create("w_profile@mail.com").Value))
             {
@@ -85,6 +86,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             {
                 context.Agencies.Add(Utils.FakeData.FakeAgency(AgencyId));
                 context.Availability.Add(FakeAvailability);
+                context.CompanyProfile.Add(CompanyProfile);
                 context.CompanyProfileJobPositionRate.Add(JobPositionRate);
                 context.WorkerProfile.AddRange(FakeWorkers);
                 context.Request.Add(FakeRequest);

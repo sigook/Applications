@@ -1,6 +1,7 @@
 ﻿using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyUser.Controllers;
 using Covenant.Common.Entities;
+using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
@@ -167,10 +168,10 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
 
         public class Startup
         {
-            private static readonly Guid CompanyId = Guid.NewGuid();
+            private static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("company@company.com").Value) };
             public static readonly CvnEmail NewUserEmail = CvnEmail.Create("pepe.supervisor@company.com").Value;
             public static readonly Guid NewUserId = Guid.NewGuid();
-            public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUser = new Covenant.Common.Entities.Company.CompanyUser(CompanyId, new User(CvnEmail.Create("get@mail.com").Value))
+            public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUser = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("get@mail.com").Value))
             {
                 Name = "George",
                 Lastname = "Perez",
@@ -179,8 +180,8 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
                 CreatedAt = new DateTime(2019, 01, 01),
                 CreatedBy = "abc@mail.com"
             };
-            public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUserToUpdate = new Covenant.Common.Entities.Company.CompanyUser(CompanyId, new User(CvnEmail.Create("update@sigook.com").Value));
-            public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUserToDelete = new Covenant.Common.Entities.Company.CompanyUser(CompanyId, new User(CvnEmail.Create("delete@sigook.com").Value));
+            public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUserToUpdate = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("update@sigook.com").Value));
+            public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUserToDelete = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("delete@sigook.com").Value));
 
             public void ConfigureServices(IServiceCollection services)
             {
@@ -209,6 +210,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
+                context.CompanyProfile.Add(CompanyProfile);
                 context.CompanyUser.AddRange(FakeCompanyUser,
                     FakeCompanyUserToUpdate, FakeCompanyUserToDelete);
                 context.SaveChanges();

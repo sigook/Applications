@@ -22,7 +22,7 @@ public class RunnerService(
     {
         var agencyId = identityServerService.GetAgencyId();
         var createdBy = identityServerService.GetUserId();
-        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail<Guid>("Request not found");
         if (!request.UsesRunners) return Result.Fail<Guid>(RunnersNotAllowed);
 
@@ -31,7 +31,7 @@ public class RunnerService(
         if (await runnerRepository.RunnerExists(requestId, model.WorkerProfileId))
             return Result.Fail<Guid>("This worker is already a runner on this request");
 
-        var runnerResult = Runner.CreateFromWorker(agencyId, requestId, model.WorkerProfileId, model.Type, createdBy, requestRecruiterId);
+        var runnerResult = Runner.CreateFromWorker(requestId, model.WorkerProfileId, model.Type, createdBy, requestRecruiterId);
         if (!runnerResult) return Result.Fail<Guid>(runnerResult.Errors);
         await runnerRepository.Create(runnerResult.Value);
         await runnerRepository.SaveChangesAsync();
@@ -41,7 +41,7 @@ public class RunnerService(
     public async Task<Result> DeleteRunner(Guid runnerId)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var runner = await runnerRepository.GetRunner(r => r.Id == runnerId && r.AgencyId == agencyId);
+        var runner = await runnerRepository.GetRunner(r => r.Id == runnerId && r.Request.CompanyProfile.AgencyId == agencyId);
         if (runner is null) return Result.Fail("Runner not found");
         runnerRepository.Delete(runner);
         await runnerRepository.SaveChangesAsync();

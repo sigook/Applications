@@ -18,7 +18,6 @@ erDiagram
     Agency ||--o{ CompanyProfile : "AgencyId"
     Agency ||--o{ WorkerProfile : "AgencyId"
     Agency ||--o{ Candidate : "AgencyId"
-    Agency ||--o{ Request : "AgencyId"
     AgencyPersonnel ||--o{ CompanyProfile : "SalesRepresentativeId"
     CompanyProfile ||--o{ CompanyProfileJobPositionRate : ""
     CompanyProfile ||--o{ Request : "Request.CompanyProfileId"
@@ -33,7 +32,7 @@ erDiagram
     TimeSheet ||--o| TimeSheetTotal : "billing totals"
     TimeSheet ||--o| TimeSheetTotalPayroll : "payroll totals"
     WorkerProfile ||--o{ PayStub : ""
-    CompanyProfile ||--o{ Invoice : "Invoice.CompanyId"
+    CompanyProfile ||--o{ Invoice : "Invoice.CompanyProfileId"
     CompanyProfile ||--o{ InvoiceUSA : "CompanyProfileId"
     TimeSheetTotal ||--o{ InvoiceTotal : ""
 ```
@@ -48,21 +47,26 @@ point at **User**, not at the profile entity:
 |---|---|---|
 | `CompanyProfile.CompanyId` | company `User` | — |
 | `WorkerProfile.WorkerId` | worker `User` | — |
-| `CompanyUser.CompanyId` / `.UserId` | company `User` / member `User` | — |
+| `CompanyUser.UserId` | member `User` | — |
 
-`Request` and `WorkerRequest` are the exceptions — both point at the profile, not the user:
-`Request.CompanyProfileId` → `CompanyProfile` (navigation `Request.CompanyProfile`) and
-`WorkerRequest.WorkerProfileId` → `WorkerProfile` (navigation `WorkerRequest.WorkerProfile`).
-They used to point at the `User`, which forced every query to join the profile on
-`(CompanyId, AgencyId)` / `(WorkerId, AgencyId)` — and most joined on the user id alone,
-duplicating rows for people or companies with a profile in more than one agency. Reach profile
-data through the navigation property; when a query genuinely needs the login user (notification
-emails, JWT scoping), go through `Request.CompanyProfile.CompanyId` /
-`WorkerRequest.WorkerProfile.WorkerId`.
+Those three are the anchors that tie a profile to its login. **Every other FK points at the
+profile, never at the `User`**: `Request.CompanyProfileId`, `WorkerRequest.WorkerProfileId`,
+`PayStub.WorkerProfileId`, `Invoice.CompanyProfileId`, `WorkerComment.WorkerProfileId` /
+`.CompanyProfileId`, `CompanyUser.CompanyProfileId`. Reach profile data through the navigation
+property; when a query genuinely needs the login user (notification emails, JWT scoping), go
+through `Request.CompanyProfile.CompanyId` / `WorkerRequest.WorkerProfile.WorkerId`.
+
+`Request` and `Runner` have **no** `AgencyId` of their own — the agency comes from
+`Request.CompanyProfile.AgencyId`. Scope agency queries through that navigation.
+
+**One profile per user.** A worker belongs to exactly one agency, and so does a company:
+`WorkerProfile.WorkerId` and `CompanyProfile.CompanyId` are each uniquely indexed on their own.
+Never assume a user can hold profiles in several agencies — filtering by `User.Id` instead of the
+profile id does not leak data across agencies, it is simply the wrong key.
 
 The `companyId` claim in the JWT (`User.GetCompanyId()`) and the worker's `sub`
-(`User.GetUserId()`) are still `User.Id`, not profile ids — one user may own profiles in several
-agencies.
+(`User.GetUserId()`) are still `User.Id`, not profile ids. Translate between the two with
+`ICompanyRepository.GetCompanyProfileId(condition)`, which returns both ids in either direction.
 
 `UserType` enum (`Covenant.Common/Enums/UserType.cs`): `Worker=1, Company, CompanyUser,
 AgencyPersonnel, Agency, Candidate`.
@@ -108,7 +112,7 @@ The client company, always owned by an agency. Key fields:
 - Misc: `Industry` (CompanyProfileIndustry), `VaccinationRequired(+Comments)`, `About`,
   `InternalInfo`, audit fields
 
-Unique index `(CompanyId, AgencyId)`.
+Unique index on `CompanyId` — one profile per company.
 
 ### CompanyProfileJobPositionRate (`CompanyProfileJobPositionRate.cs`)
 
@@ -132,7 +136,7 @@ invoice/pay-stub time.
 | `CompanyProfileInvoiceNotes` | `HtmlNotes` printed on invoices |
 | `CompanyProfileInvoiceRecipient` | extra invoice email recipients: `Email`, `Name` |
 | `CompanyProfileNote` | Company↔CovenantNote (shared note entity with soft delete) |
-| `CompanyUser` | additional company-side login: `CompanyId` → User (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyId, UserId)` |
+| `CompanyUser` | additional company-side login: `CompanyProfileId` → CompanyProfile (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyProfileId, UserId)` |
 
 ---
 
@@ -143,7 +147,7 @@ invoice/pay-stub time.
 Registered worker, owned by an agency. Key fields:
 
 - Identity: `Id`, `NumberId` (sequential — **canonical source for the worker number on pay stubs
-  and reports**), `WorkerId` → User, `AgencyId`; unique index `(WorkerId, AgencyId)`
+  and reports**), `WorkerId` → User, `AgencyId`; unique index on `WorkerId` — one profile per worker
 - Person: `FirstName`/`MiddleName`/`LastName`/`SecondLastName` (computed `FullName`), `BirthDay`,
   `GenderId`, `HasVehicle`, `LocationId`
 - SIN: `SocialInsurance` (+ `MaskedSocialInsurance`), `SocialInsuranceExpire`, `DueDate`,
@@ -206,7 +210,8 @@ personal data is never copied. Runners are worker-only: a candidate must be conv
 
 A job order. Key fields:
 
-- `Id`, `NumberId`, `AgencyId`, `CompanyProfileId` → CompanyProfile (navigation `CompanyProfile`)
+- `Id`, `NumberId`, `CompanyProfileId` → CompanyProfile (navigation `CompanyProfile`; the agency
+  comes from `CompanyProfile.AgencyId` — `Request` has no `AgencyId`)
 - Job: `JobTitle`, `BillingTitle`, `JobCosting` (admin/superadmin only in the UI), `Description`,
   `Requirements`, `InternalRequirements`, `Responsibilities`, `JobLocationId` → Location,
   `JobIsOnBranchOffice`
@@ -267,7 +272,7 @@ replaced by `Runner` in migration `RunnersWorkerOnlyAndBoardRunners`.
 ### Runner (`Entities/Request/Runners/`)
 
 Recruiting pipeline for a worker actively submitted to one request. `Runner.cs`:
-`Id`, `NumberId` (long), `AgencyId`, `RequestId`, `WorkerProfileId` (required — runners are
+`Id`, `NumberId` (long), `RequestId`, `WorkerProfileId` (required — runners are
 worker-only; candidates cannot be runners), `RequestRecruiterId` (nullable — set when the runner
 is sent from the weekly board, null when created from the order's Runners tab),
 `Type` (`RunnerType`: `Active=1` applied on own initiative, `Passive=2` sourced),
@@ -419,10 +424,10 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | User | `Email` |
 | Holiday | `Date` |
 | Source | `Value` |
-| CompanyProfile | `(CompanyId, AgencyId)` |
-| WorkerProfile | `(WorkerId, AgencyId)` |
+| CompanyProfile | `CompanyId` |
+| WorkerProfile | `WorkerId` |
 | AgencyPersonnel | `(AgencyId, UserId)` |
-| CompanyUser | `(CompanyId, UserId)` |
+| CompanyUser | `(CompanyProfileId, UserId)` |
 | WorkerRequest | `(RequestId, WorkerProfileId)` |
 | RequestRecruiter | `(RequestId, RecruiterId, WorkDate)` |
 | WorkerProfileHoliday | `(WorkerProfileId, HolidayId)` |

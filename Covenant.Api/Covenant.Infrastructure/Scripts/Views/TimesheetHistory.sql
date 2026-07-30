@@ -13,9 +13,9 @@ SELECT
     ts."MissingHoursOvertime",
     wp."Id" AS "WorkerProfileId"
 FROM "WorkerProfile" wp
-JOIN "WorkerRequest" wr ON wp."WorkerId" = wr."WorkerId"
+JOIN "WorkerRequest" wr ON wp."Id" = wr."WorkerProfileId"
 JOIN "TimeSheet" ts ON wr."Id" = ts."WorkerRequestId"
 LEFT JOIN "TimeSheetTotal" tst ON ts."Id" = tst."TimeSheetId"
 JOIN "Request" r ON wr."RequestId" = r."Id"
-JOIN "CompanyProfile" cp ON r."CompanyId" = cp."CompanyId"
+JOIN "CompanyProfile" cp ON r."CompanyProfileId" = cp."Id"
 ORDER BY ts."Date" DESC;

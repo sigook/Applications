@@ -71,7 +71,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHist
 
                 var cp = new CompanyProfile(new User(CvnEmail.Create("c@maol.com").Value),
                     FakeAgency, "A", "6479807865", new CompanyProfileIndustry());
-                var request = new Request(cp, FakeAgency, new CompanyProfileJobPositionRate()) 
+                var request = new Request(cp, new CompanyProfileJobPositionRate()) 
                 { 
                     JobLocation = new Location { City = new City { Province = new Province { Country = new Country() } } } 
                 };

@@ -12,7 +12,7 @@ namespace Covenant.Tests.Request
         public void CancelRequest()
         {
             var now = new DateTime(2019, 01, 01);
-            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), Guid.NewGuid(), new Location(), now, Guid.NewGuid()).Value;
+            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), now, Guid.NewGuid()).Value;
 
             // Verify initial status is Open
             Assert.Equal(RequestStatus.Open, request.Status);

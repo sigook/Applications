@@ -230,7 +230,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                     WednesdayFinish = TimeSpan.Parse("16:00")
                 }
             };
-            public static readonly Request OldRequest = new Request(CompanyProfile, Agency, FakeCompanyProfileJobPositionRate)
+            public static readonly Request OldRequest = new Request(CompanyProfile, FakeCompanyProfileJobPositionRate)
             {
                 JobLocationId = CompanyLocation.Id,
             };

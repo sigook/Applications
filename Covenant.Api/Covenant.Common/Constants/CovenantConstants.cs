@@ -24,9 +24,7 @@ public static class CovenantConstants
 
         public static readonly string[] SalesAccess = [SuperAdmin, Admin, Sales];
 
-        public static readonly string[] Accounting = [SuperAdmin, Admin];
-
-        public static readonly string[] Administration = [SuperAdmin, Admin];
+        public static readonly string[] AdminAccess = [SuperAdmin, Admin];
 
         public static readonly string[] AgencyAssignable = [Admin, Recruiting, Sales];
 

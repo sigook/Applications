@@ -154,7 +154,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
             public static readonly User FakeUser = new User(CvnEmail.Create("user_user@mail.com").Value);
             internal static readonly WorkerProfile FakeWorker = new WorkerProfile(FakeUser, AgencyId);
             public static Location FakeLocation = FakeData.FakeLocation();
-            public static readonly Request Request = Request.AgencyCreateRequest(AgencyId, Guid.NewGuid(), FakeLocation, Now, Guid.NewGuid()).Value;
+            public static readonly Request Request = Request.AgencyCreateRequest(Guid.NewGuid(), FakeLocation, Now, Guid.NewGuid()).Value;
             internal static readonly double HoursDay2 = 2;
 
             public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorker.Id, Request.Id);

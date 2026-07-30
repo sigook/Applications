@@ -56,7 +56,6 @@ public static class ApiServicesConfiguration
         services.AddScoped<IPayStubRepository, PayStubRepository>();
         services.AddScoped<IAgencyRepository, AgencyRepository>();
         services.AddScoped<IWorkerRepository, WorkerRepository>();
-        services.AddScoped<IWorkerCommentsRepository, WorkerCommentsRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IRequestRepository, RequestRepository>();
         services.AddScoped<IRunnerRepository, RunnerRepository>();

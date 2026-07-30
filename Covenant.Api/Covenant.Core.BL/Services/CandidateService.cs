@@ -91,7 +91,7 @@ public class CandidateService : ICandidateService
                 var request = default(Request);
                 if (bulkValidation.IsValid && int.TryParse(record.RequestID, out var requestId))
                 {
-                    request = await requestRepository.GetRequest(r => r.AgencyId == agencyId && r.NumberId == requestId);
+                    request = await requestRepository.GetRequest(r => r.CompanyProfile.AgencyId == agencyId && r.NumberId == requestId);
                     if (request == null)
                     {
                         bulkValidation.Errors.Add(new ValidationFailure("RequestID", "The request number doesn't belong to agency selected"));

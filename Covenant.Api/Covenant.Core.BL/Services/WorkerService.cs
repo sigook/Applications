@@ -16,6 +16,7 @@ using Covenant.Common.Models.Request;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Agency;
+using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
@@ -26,6 +27,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Linq.Expressions;
 
 namespace Covenant.Core.BL.Services;
 
@@ -49,10 +51,12 @@ public class WorkerService : IWorkerService
     private readonly IFilesContainer filesContainer;
     private readonly IDocumentService documentService;
     private readonly ICandidateService candidateService;
+    private readonly ICompanyRepository companyRepository;
 
     public WorkerService(
         IWorkerRepository workerRepository,
         IAgencyRepository agencyRepository,
+        ICompanyRepository companyRepository,
         IUserRepository userRepository,
         INotificationRepository notificationRepository,
         IRequestRepository requestRepository,
@@ -74,6 +78,7 @@ public class WorkerService : IWorkerService
     {
         this.workerRepository = workerRepository;
         this.agencyRepository = agencyRepository;
+        this.companyRepository = companyRepository;
         this.notificationRepository = notificationRepository;
         this.requestRepository = requestRepository;
         this.workerRequestRepository = workerRequestRepository;
@@ -257,6 +262,47 @@ public class WorkerService : IWorkerService
 
         await UploadFormFiles(form.Files, handlerResult.Value);
         await workerRepository.UpdateProfile(entity);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result<PaginatedList<WorkerCommentModel>>> GetComments(Guid workerId, Pagination pagination)
+    {
+        var condition = await CommentsScope(workerId);
+        if (condition is null) return Result.Fail<PaginatedList<WorkerCommentModel>>("Not allowed to read these comments");
+        return Result.Ok(await workerRepository.GetComments(condition, pagination));
+    }
+
+    private async Task<Expression<Func<WorkerComment, bool>>> CommentsScope(Guid workerId)
+    {
+        if (identityServerService.IsAgencyStaff())
+        {
+            var agencyId = identityServerService.GetAgencyId();
+            return c => c.WorkerProfile.WorkerId == workerId && c.WorkerProfile.AgencyId == agencyId;
+        }
+        if (identityServerService.GetUserId() == workerId)
+            return c => c.WorkerProfile.WorkerId == workerId;
+        var companyId = identityServerService.GetCompanyId();
+        var companyProfile = await companyRepository.GetCompanyProfileId(p => p.CompanyId == companyId);
+        if (companyProfile is null) return null;
+        var companyProfileId = companyProfile.Id;
+        return c => c.WorkerProfile.WorkerId == workerId && c.CompanyProfileId == companyProfileId;
+    }
+
+    public Task<Result> AddAgencyComment(Guid workerProfileId, string comment, decimal rate) =>
+        CreateComment(WorkerComment.CommentPostByAgency(workerProfileId, comment, rate));
+
+    public async Task<Result> AddCompanyComment(Guid workerProfileId, string comment, decimal rate)
+    {
+        var companyId = identityServerService.GetCompanyId();
+        var companyProfile = await companyRepository.GetCompanyProfileId(p => p.CompanyId == companyId);
+        if (companyProfile is null) return Result.Fail("Company profile not found");
+        return await CreateComment(WorkerComment.CommentPostByCompany(workerProfileId, companyProfile.Id, comment, rate));
+    }
+
+    private async Task<Result> CreateComment(WorkerComment entity)
+    {
+        await workerRepository.Create(entity);
         await workerRepository.SaveChangesAsync();
         return Result.Ok();
     }

@@ -33,7 +33,7 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
             {
                 Id = r.Id,
                 NumberId = r.NumberId,
-                AgencyId = r.AgencyId,
+                AgencyId = r.Request.CompanyProfile.AgencyId,
                 RequestId = r.RequestId,
                 WorkerProfileId = r.WorkerProfileId,
                 Name = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
@@ -101,7 +101,7 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
 
     public Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday(Guid agencyId, Guid updatedBy, DateTime windowStart, DateTime windowEnd) =>
         (from r in context.Runners.AsNoTracking()
-         where r.AgencyId == agencyId
+         where r.Request.CompanyProfile.AgencyId == agencyId
                && r.Status == RunnerStatus.Hired
                && r.UpdatedBy == updatedBy
                && (r.Request.WorkerSalary == null || r.Request.WorkerSalary == 0)

@@ -1,10 +1,10 @@
 import { api } from '@/security/apiService';
 import type { PaginatedList } from '@/types/common';
+import type { WorkerCommentCreateModel } from '@/types/worker';
 import type {
   AgencyWorkerFilter,
   AgencyWorkerListItem,
   AgencyWorkerDropdownItem,
-  AgencyWorkerCommentModel,
   UpdateWorkerEmailModel,
   UpdateWorkerProfileFieldsPayload,
   AgencyWorkerHoliday,
@@ -70,8 +70,8 @@ export function updateAgencyWorkerEmail(workerProfileId: string, model: UpdateWo
 }
 
 // Worker comment from agency side (used by shared Comments component)
-export function agencyCommentWorker(id: string, comment: AgencyWorkerCommentModel): Promise<void> {
-  return api.post(`/api/AgencyWorker/${id}/Comment`, comment);
+export function agencyCommentWorker(workerProfileId: string, comment: WorkerCommentCreateModel): Promise<void> {
+  return api.post(`/api/AgencyWorker/${workerProfileId}/Comment`, comment);
 }
 
 // Request history for a worker

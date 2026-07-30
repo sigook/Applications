@@ -1,4 +1,5 @@
 using Covenant.Common.Entities;
+using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 
@@ -32,12 +33,16 @@ namespace Covenant.Integration.Tests.Utils
             DurationTerm durationTerm = DurationTerm.LongTerm)
         {
             agencyId = agencyId == default ? Guid.NewGuid() : agencyId;
-            companyProfileId = companyProfileId == default ? Guid.NewGuid() : companyProfileId;
+            bool ownsCompanyProfile = companyProfileId == default;
+            companyProfileId = ownsCompanyProfile ? Guid.NewGuid() : companyProfileId;
             jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
             location = location ?? FakeLocation();
             startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-            return Request.AgencyCreateRequest(agencyId, companyProfileId, location, startAt, jobPositionRateId, workersQuantity: workersQuantity,
+            var request = Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, workersQuantity: workersQuantity,
                 durationTerm: durationTerm).Value;
+            if (ownsCompanyProfile)
+                request.CompanyProfile = new CompanyProfile { Id = companyProfileId, AgencyId = agencyId };
+            return request;
         }
 
         public static Covenant.Common.Entities.Agency.Agency FakeAgency(Guid id) =>

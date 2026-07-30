@@ -157,7 +157,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                 Industry = new CompanyProfileIndustry("Company Industry")
             };
             public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(Agency.Id, CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
+            public static readonly Request FakeRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
             public static readonly Availability FakeAvailability = new Availability();
             private static WorkerProfile _workerProfile;
             public static WorkerProfile WorkerProfile

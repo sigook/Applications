@@ -80,8 +80,13 @@ namespace Covenant.Api.CompanyModule.CompanyUser.Controllers
         /// <summary>Gets all users belonging to the current company.</summary>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CompanyUserModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Get() =>
-            Ok(await companyRepository.GetAllCompanyUsers(User.GetCompanyId()));
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Get()
+        {
+            var profile = await companyRepository.GetCompanyProfileId(p => p.CompanyId == User.GetCompanyId());
+            if (profile is null) return NotFound();
+            return Ok(await companyRepository.GetAllCompanyUsers(profile.Id));
+        }
 
         /// <summary>Gets the detail of the currently authenticated company user.</summary>
         [HttpGet("detail")]

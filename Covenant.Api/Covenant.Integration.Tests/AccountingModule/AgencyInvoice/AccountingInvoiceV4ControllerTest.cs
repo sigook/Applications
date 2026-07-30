@@ -140,7 +140,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             Industry = new CompanyProfileIndustry("Test"),
         };
 
-        private static readonly Request FakeRequest = new Request(FakeCompany, FakeAgency, new CompanyProfileJobPositionRate { CompanyProfile = FakeCompany })
+        private static readonly Request FakeRequest = new Request(FakeCompany, new CompanyProfileJobPositionRate { CompanyProfile = FakeCompany })
         {
             AgencyRate = 2,
             WorkerRate = 1

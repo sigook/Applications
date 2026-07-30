@@ -379,7 +379,6 @@ public class RequestService : IRequestService
         var validationResult = await requestCreateValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Request>();
         var rRequest = Request.AgencyCreateRequest(
-            model.AgencyId,
             model.CompanyProfileId,
             model.LocationId.Value,
             model.StartAt,

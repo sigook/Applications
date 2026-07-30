@@ -41,7 +41,7 @@ namespace Covenant.Tests.Request
             sinInfo.SetupGet(g => g.SocialInsurance).Returns("980-897-987");
             sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(new CovenantFile("sin.pdf"));
             _worker.PatchSinInformation(sinInfo.Object);
-            request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(_worker.AgencyId, Guid.NewGuid(), new Location(), _fakeNow, default, workersQuantity: 1).Value;
+            request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), _fakeNow, default, workersQuantity: 1).Value;
             _workerRepository = new Mock<IWorkerRepository>();
             _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(_worker);
             _timeService = new Mock<ITimeService>();

@@ -84,7 +84,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
 
         var sentCount = 0;
         var provinceId = request.JobLocation.City.ProvinceId;
-        var workers = await workerRepository.GetWorkersAvailableToInvite(request.AgencyId, provinceId);
+        var workers = await workerRepository.GetWorkersAvailableToInvite(request.CompanyProfile.AgencyId, provinceId);
         if (workers.Count > 0)
         {
             var jobTitle = request.JobTitle;
@@ -117,7 +117,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
             }
             if (recipients.Count > 0)
             {
-                await sendGridService.SendTemplateBatch(request.Agency.RecruitmentEmail, recipients);
+                await sendGridService.SendTemplateBatch(request.CompanyProfile.Agency.RecruitmentEmail, recipients);
                 request.InvitationSentItAt = now;
                 await requestRepository.Update(request);
                 await requestRepository.SaveChangesAsync();

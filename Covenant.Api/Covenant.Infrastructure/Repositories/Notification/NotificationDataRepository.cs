@@ -14,7 +14,7 @@ namespace Covenant.Infrastructure.Repositories.Notification
         {
             return (from wr in _context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
                     join r in _context.Request.Where(c => c.Id == requestId) on wr.RequestId equals r.Id
-                    join a in _context.Agencies on r.AgencyId equals a.Id
+                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
                     join au in _context.User on a.UserId equals au.Id
                     join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on au.Id equals unt.UserId
                         into tmp1
@@ -32,7 +32,7 @@ namespace Covenant.Infrastructure.Repositories.Notification
         public Task<NotificationAgencyModel> GetAgencyData(Guid requestId, int notificationTypeId)
         {
             return (from r in _context.Request.Where(c => c.Id == requestId)
-                    join a in _context.Agencies on r.AgencyId equals a.Id
+                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
                     join au in _context.User on a.UserId equals au.Id
                     join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on au.Id equals unt.UserId
                         into tmp1
@@ -77,7 +77,7 @@ namespace Covenant.Infrastructure.Repositories.Notification
                     join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on cu.Id equals unt.UserId
                         into tmp1
                     from unt in tmp1.DefaultIfEmpty()
-                    join a in _context.Agencies on r.AgencyId equals a.Id
+                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
                     select new NotificationCompanyModel
                     {
                         JobTitle = r.JobTitle,
@@ -92,7 +92,7 @@ namespace Covenant.Infrastructure.Repositories.Notification
         {
             return (from wr in _context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
                     join r in _context.Request on wr.RequestId equals r.Id
-                    join a in _context.Agencies on r.AgencyId equals a.Id
+                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
                     join wu in _context.User on wr.WorkerProfile.WorkerId equals wu.Id
                     join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wu.Id equals unt.UserId
                         into tmp1
@@ -111,7 +111,7 @@ namespace Covenant.Infrastructure.Repositories.Notification
         {
             return (from wr in _context.WorkerRequest.Where(c => c.Id == workerRequestId)
                     join r in _context.Request on wr.RequestId equals r.Id
-                    join a in _context.Agencies on r.AgencyId equals a.Id
+                    join a in _context.Agencies on r.CompanyProfile.AgencyId equals a.Id
                     join wu in _context.User on wr.WorkerProfile.WorkerId equals wu.Id
                     join unt in _context.UserNotificationType.Where(t => t.NotificationTypeId == notificationTypeId) on wu.Id equals unt.UserId
                         into tmp1

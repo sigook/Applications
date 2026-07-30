@@ -21,6 +21,7 @@ import type {
   CompanyInvoiceListItem,
   CommentsModel,
 } from '@/types/company';
+import type { WorkerCommentCreateModel } from '@/types/worker';
 
 // Profile
 export function getCompanyProfile(): Promise<CompanyProfileDetail> {
@@ -138,8 +139,8 @@ export function companyTimeSheetClockIn(requestId: string, workerProfileId: stri
 }
 
 // Comment worker (called dynamically)
-export function companyCommentWorker(id: string, comment: CommentsModel): Promise<void> {
-  return api.post(`/api/CompanyWorker/${id}/Comment`, comment);
+export function companyCommentWorker(workerProfileId: string, comment: WorkerCommentCreateModel): Promise<void> {
+  return api.post(`/api/CompanyWorker/${workerProfileId}/Comment`, comment);
 }
 
 // Company Users

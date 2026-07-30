@@ -62,7 +62,7 @@ namespace Covenant.Integration.Tests.Shared.RequestShift
 
         private static class Data
         {
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(Guid.NewGuid(), Guid.NewGuid(), FakeData.FakeLocation(), new DateTime(2019, 01, 01), Guid.NewGuid()).Value;
+            public static readonly Request FakeRequest = Request.AgencyCreateRequest(Guid.NewGuid(), FakeData.FakeLocation(), new DateTime(2019, 01, 01), Guid.NewGuid()).Value;
             public static void Seed(CovenantContext context)
             {
                 var newShift = new Shift();

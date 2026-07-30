@@ -42,7 +42,7 @@ namespace Covenant.Tests.Worker
                     }
                 }
             };
-            var request = new Covenant.Common.Entities.Request.Request(companyProfile, agency, jobPositionRate);
+            var request = new Covenant.Common.Entities.Request.Request(companyProfile, jobPositionRate);
             request.UpdateJobLocation(location, false);
             _workerRequest.Request = request;
             _timeService = new Mock<ITimeService>();

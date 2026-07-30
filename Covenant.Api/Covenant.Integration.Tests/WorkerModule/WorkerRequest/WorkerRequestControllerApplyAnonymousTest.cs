@@ -106,8 +106,7 @@ public class WorkerRequestControllerApplyAnonymousTest : BaseTestOrder, IClassFi
         ).Value;
 
         public static readonly Request FakeRequest = Request.AgencyCreateRequest(
-            FakeAgency.Id,
-            CompanyProfile.Company.Id,
+            CompanyProfile.Id,
             new Location
             {
                 Address = "4917 Dundas",

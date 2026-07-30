@@ -219,11 +219,6 @@ export interface AgencyWorkerDropdownItem {
 }
 
 // Worker comment payload (POST /api/AgencyWorker/{id}/Comment)
-export interface AgencyWorkerCommentModel {
-  comment: string;
-  rate: number;
-}
-
 // Worker email update payload
 export interface UpdateWorkerEmailModel {
   newEmail: string;

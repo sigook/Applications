@@ -41,6 +41,16 @@ public class RunnerConfiguration : IEntityTypeConfiguration<Runner>
             .OnDelete(DeleteBehavior.Cascade)
             .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
 
+        builder.HasOne(r => r.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(r => r.CreatedBy)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(r => r.UpdatedByUser)
+            .WithMany()
+            .HasForeignKey(r => r.UpdatedBy)
+            .OnDelete(DeleteBehavior.NoAction);
+
         builder.HasIndex(r => r.RequestId);
     }
 }

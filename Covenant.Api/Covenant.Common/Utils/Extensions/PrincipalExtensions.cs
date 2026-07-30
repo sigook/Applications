@@ -12,8 +12,8 @@ public static class PrincipalExtensions
     public static bool IsAgencyStaff(this IPrincipal user) =>
         CovenantConstants.Role.AgencyStaff.Any(user.IsInRole);
 
-    public static bool IsAccountingManager(this IPrincipal user) =>
-        CovenantConstants.Role.Accounting.Any(user.IsInRole);
+    public static bool IsAdmin(this IPrincipal user) =>
+        CovenantConstants.Role.AdminAccess.Any(user.IsInRole);
 
     public static bool IsSales(this IPrincipal user) =>
         user.IsInRole(CovenantConstants.Role.Sales);

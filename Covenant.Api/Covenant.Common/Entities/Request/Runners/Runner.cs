@@ -13,8 +13,6 @@ public class Runner
     public Guid Id { get; private set; } = Guid.NewGuid();
     public long NumberId { get; private set; }
 
-    public Guid AgencyId { get; private set; }
-    public Agency.Agency Agency { get; private set; }
 
     public Guid RequestId { get; private set; }
     public Request Request { get; private set; }
@@ -31,8 +29,10 @@ public class Runner
 
     public DateTime CreatedAt { get; private set; } = DateTime.Now;
     public Guid CreatedBy { get; private set; }
+    public User CreatedByUser { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
+    public User UpdatedByUser { get; private set; }
 
     private readonly List<RunnerStatusHistory> _statusHistory = new();
     public IEnumerable<RunnerStatusHistory> StatusHistory => _statusHistory;
@@ -40,11 +40,10 @@ public class Runner
     private readonly List<RunnerInterview> _interviews = new();
     public IEnumerable<RunnerInterview> Interviews => _interviews;
 
-    public static Result<Runner> CreateFromWorker(Guid agencyId, Guid requestId, Guid workerProfileId, RunnerType type, Guid createdBy, Guid? requestRecruiterId = null)
+    public static Result<Runner> CreateFromWorker(Guid requestId, Guid workerProfileId, RunnerType type, Guid createdBy, Guid? requestRecruiterId = null)
     {
         var runner = new Runner
         {
-            AgencyId = agencyId,
             RequestId = requestId,
             WorkerProfileId = workerProfileId,
             RequestRecruiterId = requestRecruiterId,

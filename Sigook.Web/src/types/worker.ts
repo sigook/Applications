@@ -162,6 +162,11 @@ export interface WorkerCommentFilter {
   pageIndex: number;
 }
 
+export interface WorkerCommentCreateModel {
+  comment: string;
+  rate: number;
+}
+
 export interface WorkerCommentList {
   items: WorkerComment[];
   totalItems: number;

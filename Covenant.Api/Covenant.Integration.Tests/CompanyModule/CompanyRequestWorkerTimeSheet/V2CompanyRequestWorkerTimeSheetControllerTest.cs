@@ -211,9 +211,9 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
             public static readonly DateTime FakeNow = new DateTime(2019, 01, 01, 08, 00, 00);
             public static readonly Guid CompanyId = Guid.NewGuid();
             public static readonly CompanyProfile CompanyProfile = new CompanyProfile { CompanyId = CompanyId, FullName = "Test Company" };
-            public static readonly Request Request = Request.AgencyCreateRequest(Guid.NewGuid(), CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, Guid.NewGuid()).Value;
+            public static readonly Request Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, Guid.NewGuid()).Value;
             public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
-            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = Request.AgencyId };
+            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = CompanyProfile.AgencyId };
 
             private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest =
                 Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);

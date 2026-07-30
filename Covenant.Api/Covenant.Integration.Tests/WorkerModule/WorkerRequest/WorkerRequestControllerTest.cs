@@ -155,7 +155,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             public static readonly WorkerProfile WorkerProfile;
             public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;
 
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(FakeAgency.Id, CompanyProfile.Id, new Location
+            public static readonly Request FakeRequest = Request.AgencyCreateRequest(CompanyProfile.Id, new Location
             {
                 Address = "4917 Dundas",
                 Entrance = "Back Door",

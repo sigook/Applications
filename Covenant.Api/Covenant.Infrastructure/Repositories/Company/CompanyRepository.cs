@@ -31,9 +31,10 @@ public class CompanyRepository : ICompanyRepository
 
     public void Update<T>(T entity) where T : class => _context.Set<T>().Update(entity);
 
-    public async Task<Guid> GetCompanyId(Guid companyProfileId) =>
-        await _context.CompanyProfile.Where(p => p.Id == companyProfileId)
-            .Select(p => p.CompanyId).SingleOrDefaultAsync();
+    public Task<CompanyProfileIdsModel> GetCompanyProfileId(Expression<Func<CompanyProfile, bool>> condition) =>
+        _context.CompanyProfile.Where(condition)
+            .Select(p => new CompanyProfileIdsModel { Id = p.Id, CompanyId = p.CompanyId })
+            .SingleOrDefaultAsync();
 
     public async Task<IEnumerable<LocationDetailModel>> GetCompanyLocations(Expression<Func<CompanyProfileLocation, bool>> condition)
     {
@@ -150,20 +151,6 @@ public class CompanyRepository : ICompanyRepository
                 }
             }).SingleOrDefaultAsync();
 
-    public Task<List<CompanyProfileAgencyListModel>> GetCompanyProfiles(Guid companyId) =>
-        (from cp in _context.CompanyProfile.Where(c => c.CompanyId == companyId)
-         join a in _context.Agencies on cp.AgencyId equals a.Id
-         join cf in _context.CovenantFile on a.LogoId equals cf.Id into tmp
-         from cfl in tmp.DefaultIfEmpty()
-         select new CompanyProfileAgencyListModel
-         {
-             Id = cp.Id,
-             AgencyId = a.Id,
-             AgencyFullName = a.FullName,
-             AgencyLogo = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
-             Active = cp.Active
-         }).AsNoTracking().ToListAsync();
-
     public async Task<CompanyProfile> GetCompanyProfile(Expression<Func<CompanyProfile, bool>> expression)
     {
         var profile = await _context.CompanyProfile.Where(expression)
@@ -237,7 +224,6 @@ public class CompanyRepository : ICompanyRepository
     {
         var companyList = GetAllCompaniesProfileForAgency(agencyId, filter).ToList();
         var profileIds = companyList.Select(c => c.Id).ToList();
-        var companyUserIds = companyList.Select(c => c.CompanyId).Distinct().ToList();
 
         var contacts = await _context.CompanyProfileContactPeople
             .Where(cp => profileIds.Contains(cp.CompanyProfileId))
@@ -273,11 +259,11 @@ public class CompanyRepository : ICompanyRepository
             }).ToListAsync();
 
         var users = await _context.CompanyUser
-            .Where(cu => companyUserIds.Contains(cu.CompanyId))
+            .Where(cu => profileIds.Contains(cu.CompanyProfileId))
             .Select(cu => new CompanyUserModel
             {
                 Id = cu.Id,
-                CompanyId = cu.CompanyId,
+                CompanyProfileId = cu.CompanyProfileId,
                 Name = cu.Name,
                 Lastname = cu.Lastname,
                 Position = cu.Position,
@@ -291,7 +277,7 @@ public class CompanyRepository : ICompanyRepository
             Company = c,
             Contacts = contacts.Where(cp => cp.CompanyProfileId == c.Id),
             JobPositions = jobPositions.Where(jp => jp.CompanyProfileId == c.Id),
-            Users = users.Where(u => u.CompanyId == c.CompanyId)
+            Users = users.Where(u => u.CompanyProfileId == c.Id)
         }).ToList();
         return result;
     }
@@ -417,18 +403,9 @@ public class CompanyRepository : ICompanyRepository
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();
 
-    public async Task<IEnumerable<CompanyUserModel>> GetCompanyUsers(Guid companyId)
-    {
-        var companyUsers = await _context.CompanyUser
-            .Where(uW => uW.CompanyId == companyId)
-            .Select(CompanyExtensionsMapping.SelectCompanyUser)
-            .ToListAsync();
-        return companyUsers;
-    }
-
     public Task<Guid> GetCompanyIdForUser(Guid userId) =>
         _context.CompanyUser.Where(w => w.UserId == userId)
-            .Select(s => s.CompanyId).SingleOrDefaultAsync();
+            .Select(s => s.CompanyProfile.CompanyId).SingleOrDefaultAsync();
 
     public Task<CompanyUserModel> GetCompanyUserDetail(Guid id) =>
         _context.CompanyUser.Where(uw => uw.UserId == id)
@@ -552,10 +529,10 @@ public class CompanyRepository : ICompanyRepository
         return entity.Id;
     }
 
-    public async Task<IEnumerable<CompanyUserModel>> GetAllCompanyUsers(Guid companyId)
+    public async Task<IEnumerable<CompanyUserModel>> GetAllCompanyUsers(Guid companyProfileId)
     {
         var companyUsers = await _context.CompanyUser
-            .Where(cu => cu.CompanyId == companyId)
+            .Where(cu => cu.CompanyProfileId == companyProfileId)
             .OrderBy(cu => cu.Name).ThenBy(cu => cu.Lastname)
             .Select(CompanyExtensionsMapping.SelectCompanyUser).ToListAsync();
         return companyUsers;

@@ -25,7 +25,7 @@
             @click="onShowBulkCancelModal">
             Cancel requests
           </b-dropdown-item>
-          <b-dropdown-item v-if="isAdministration" aria-role="menuitem" :disabled="checkedRows.length < 1"
+          <b-dropdown-item v-if="isAdmin" aria-role="menuitem" :disabled="checkedRows.length < 1"
             @click="onShowBulkRecruitersModal">
             Assign / Unassign recruiters
           </b-dropdown-item>
@@ -261,8 +261,7 @@ import { appGlobals } from '@/varaibles';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, breakWord, currency } from '@/utils/filters';
 import { isDirectHiring } from '@/utils/directHiring';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
-import { useAdministration } from '@/composables/useAdministration';
+import { useAdmin } from '@/composables/useAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
 import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/api/agencyRequestApi";
 import { getSalesRequests } from "@/api/salesApi";
@@ -293,8 +292,7 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const agencyStore = useAgencyStore();
-const { isAccountingManager } = useAccountingAdmin();
-const { isAdministration } = useAdministration();
+const { isAdmin } = useAdmin();
 
 const { isSalesView, requestBase: requestDetailBase, companyBase: companyDetailBase } = useModuleBase();
 const exportUrl = computed(() =>
@@ -560,7 +558,7 @@ if (!props.companyProfileId && !props.agencyId) {
       createdAtDatesSelected.value[1] = serverParams.createdAtTo;
     }
   } else {
-    serverParams.onlyMine = !isAccountingManager.value;
+    serverParams.onlyMine = !isAdmin.value;
   }
 } else {
   serverParams.onlyMine = false;

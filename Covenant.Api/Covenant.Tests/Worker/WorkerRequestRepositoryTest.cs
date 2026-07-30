@@ -23,7 +23,7 @@ namespace Covenant.Tests.Worker
         private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { Id = UserAgency.Id, User = UserAgency };
         private static readonly User UserWorker = new User(CvnEmail.Create("uWorker@com.com").Value);
         private static readonly WorkerProfile Wp = new WorkerProfile(UserWorker) { Agency = FakeAgency, PunchCardId = "ABC" };
-        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = new Covenant.Common.Entities.Request.Request(new CompanyProfile { FullName = "Fake Company" }, FakeAgency, new CompanyProfileJobPositionRate());
+        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = new Covenant.Common.Entities.Request.Request(new CompanyProfile { FullName = "Fake Company" }, new CompanyProfileJobPositionRate());
         private static readonly WorkerRequest Wr = WorkerRequest.AgencyBook(Wp.Id, FakeRequest.Id);
 
         public WorkerRequestRepositoryTest()

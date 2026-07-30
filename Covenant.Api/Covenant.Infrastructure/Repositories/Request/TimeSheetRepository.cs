@@ -167,8 +167,8 @@ public class TimesheetRepository : ITimesheetRepository
         var timeSheet = _context.TimeSheet
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(ts => ts.Request)
-            .ThenInclude(ts => ts.Agency)
-            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId) && ts.WorkerRequest.Request.CompanyProfileId == model.CompanyProfileId)
+            .ThenInclude(ts => ts.CompanyProfile).ThenInclude(cp => cp.Agency)
+            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId) && ts.WorkerRequest.Request.CompanyProfileId == model.CompanyProfileId)
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotal == null);
         if (model.RequestIds != null && model.RequestIds.Any())
         {
@@ -221,7 +221,7 @@ public class TimesheetRepository : ITimesheetRepository
     {
         var timeSheets = _context.TimeSheet
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
-            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId))
+            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId))
             .Where(ts => ts.WorkerRequest.Request.CompanyProfileId == companyProfileId);
 
         var query = from ts in timeSheets
@@ -270,7 +270,7 @@ public class TimesheetRepository : ITimesheetRepository
     {
         var timeSheets = _context.TimeSheet
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
-            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.AgencyId))
+            .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId))
             .Where(ts => ts.WorkerRequest.WorkerProfile.WorkerId == workerId);
 
         var query = from ts in timeSheets
@@ -362,7 +362,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds)
     {
-        var timeSheet = from ts in _context.TimeSheet.Where(c => c.TimeInApproved != null && c.TimeOutApproved != null && agencyIds.Contains(c.WorkerRequest.Request.AgencyId))
+        var timeSheet = from ts in _context.TimeSheet.Where(c => c.TimeInApproved != null && c.TimeOutApproved != null && agencyIds.Contains(c.WorkerRequest.Request.CompanyProfile.AgencyId))
                         join tstP in _context.TimeSheetTotalPayroll on ts.Id equals tstP.TimeSheetId into tmp0
                         from tstP in tmp0.DefaultIfEmpty()
                         where tstP == null
@@ -425,7 +425,7 @@ public class TimesheetRepository : ITimesheetRepository
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
             .ThenInclude(r => r.JobPositionRate)
-            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.AgencyId == agencyId);
+            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.CompanyProfile.AgencyId == agencyId);
         if (filter.CompanyProfileId.HasValue)
             timeSheets = timeSheets.Where(qb => qb.WorkerRequest.Request.CompanyProfileId == filter.CompanyProfileId);
         if (filter.JobPositionRateId.HasValue)
@@ -475,7 +475,7 @@ public class TimesheetRepository : ITimesheetRepository
             .AsNoTracking()
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
-            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.AgencyId == agencyId);
+            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.CompanyProfile.AgencyId == agencyId);
         var query = from ts in timeSheets
                     select new
                     {
@@ -588,7 +588,7 @@ public class TimesheetRepository : ITimesheetRepository
                     select new RequestTimeSheetModel
                     {
                         CompanyFullName = ts.WorkerRequest.Request.CompanyProfile.FullName,
-                        AgencyFullName = ts.WorkerRequest.Request.Agency.FullName,
+                        AgencyFullName = ts.WorkerRequest.Request.CompanyProfile.Agency.FullName,
                         WorkerFullName = $"{ts.WorkerRequest.WorkerProfile.FirstName} {ts.WorkerRequest.WorkerProfile.MiddleName} {ts.WorkerRequest.WorkerProfile.LastName} {ts.WorkerRequest.WorkerProfile.SecondLastName}",
                         Date = ts.Date,
                         TimeInApproved = ts.TimeInApproved,

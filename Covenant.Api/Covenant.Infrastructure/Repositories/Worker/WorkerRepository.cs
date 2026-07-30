@@ -30,20 +30,6 @@ public class WorkerRepository : IWorkerRepository
 
     public Task UpdateProfile(WorkerProfile entity) => Task.FromResult(_context.WorkerProfile.Update(entity));
 
-    public Task<List<WorkerProfileAgencyListModel>> GetProfiles(Guid workerId)
-    {
-        return (from wp in _context.WorkerProfile.Where(c => c.WorkerId == workerId)
-                join a in _context.Agencies on wp.AgencyId equals a.Id
-                join cf in _context.CovenantFile on a.LogoId equals cf.Id into tmp
-                from cfl in tmp.DefaultIfEmpty()
-                select new WorkerProfileAgencyListModel
-                {
-                    Id = wp.Id,
-                    AgencyFullName = a.FullName,
-                    AgencyLogo = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}"
-                }).AsNoTracking().ToListAsync();
-    }
-
     public Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition) =>
         _context.WorkerProfile.Where(condition)
             .Include(e => e.Worker)
@@ -515,6 +501,19 @@ public class WorkerRepository : IWorkerRepository
                 CreatedBy = e.CreatedBy,
                 CreatedAt = e.CreatedAt
             }).OrderByDescending(o => o.CreatedAt)
+            .AsNoTracking().ToPaginatedList(pagination);
+
+    public Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination) =>
+        _context.WorkerComment.Where(condition)
+            .Select(c => new WorkerCommentModel
+            {
+                Id = c.Id,
+                Comment = c.Comment,
+                Rate = c.Rate,
+                NumberId = c.NumberId,
+                CreatedAt = c.CreatedAt
+            })
+            .OrderByDescending(c => c.CreatedAt)
             .AsNoTracking().ToPaginatedList(pagination);
 
     public async Task Create<T>(T entity) where T : class => await _context.AddAsync(entity);

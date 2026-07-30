@@ -39,14 +39,14 @@ namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
 
         /// <summary>Gets the roles that the current user is allowed to assign to a personnel of the current agency.</summary>
         [HttpGet("Roles")]
-        [Authorize(Policy = PolicyConfiguration.Accounting)]
+        [Authorize(Policy = PolicyConfiguration.Admin)]
         [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
         public IActionResult GetAssignableRoles() => Ok(agencyService.GetAssignableRoles());
 
         /// <summary>Creates a new personnel record for the current agency.</summary>
         /// <param name="model">Personnel data.</param>
         [HttpPost]
-        [Authorize(Policy = PolicyConfiguration.Accounting)]
+        [Authorize(Policy = PolicyConfiguration.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Post([FromBody] AgencyPersonnelModel model)
@@ -72,7 +72,7 @@ namespace Covenant.Api.AgencyModule.AgencyPersonnel.Controllers
         /// <param name="service">Identity server service used to remove the associated user or claim.</param>
         /// <param name="id">Identifier of the personnel record to delete.</param>
         [HttpDelete("{id:guid}")]
-        [Authorize(Policy = PolicyConfiguration.Accounting)]
+        [Authorize(Policy = PolicyConfiguration.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

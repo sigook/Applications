@@ -72,7 +72,7 @@ public class WeeklyBoardService(
     public async Task<Result> AssignRecruiters(AssignRecruitersModel model)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
         var recruiterIds = model.RecruiterIds.Distinct().ToList();
@@ -95,7 +95,7 @@ public class WeeklyBoardService(
     public async Task<Result> UnassignRecruiter(Guid requestId, Guid recruiterId, DateTime workDate)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
         Result result = request.RemoveRecruiter(recruiterId, timeService.GetCurrentDateTime(), workDate);
@@ -109,7 +109,7 @@ public class WeeklyBoardService(
     public async Task<Result> MoveAssignment(MoveAssignmentModel model)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
         if (model.FromRecruiterId != model.ToRecruiterId)

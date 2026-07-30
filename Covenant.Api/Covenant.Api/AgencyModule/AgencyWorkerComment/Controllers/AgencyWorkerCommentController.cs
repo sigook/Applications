@@ -1,9 +1,7 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Shared.WorkerComment.Models;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Repositories;
-using Covenant.Common.Repositories.Worker;
-using Covenant.Common.Utils.Extensions;
+using Covenant.Api.Utils.Extensions;
+using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,27 +14,23 @@ namespace Covenant.Api.AgencyModule.AgencyWorkerComment.Controllers
     [ServiceFilter(typeof(AgencyIdFilter))]
     public class AgencyWorkerCommentController : ControllerBase
     {
-        public const string RouteName = "api/AgencyWorker/{workerId:guid}/Comment";
+        public const string RouteName = "api/AgencyWorker/{workerProfileId:guid}/Comment";
 
         /// <summary>Posts a comment about a worker on behalf of the current agency.</summary>
-        /// <param name="workerId">Identifier of the worker the comment is about.</param>
-        /// <param name="commentsRepository">Worker comments repository.</param>
-        /// <param name="userRepository">User repository used to validate the worker.</param>
+        /// <param name="workerProfileId">Identifier of the worker profile the comment is about.</param>
+        /// <param name="workerService">Worker service.</param>
         /// <param name="model">Comment content and rating.</param>
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Post(Guid workerId,
-            [FromServices] IWorkerCommentsRepository commentsRepository,
-            [FromServices] IUserRepository userRepository,
+        public async Task<IActionResult> Post(Guid workerProfileId,
+            [FromServices] IWorkerService workerService,
             [FromBody] CreateCommentModel model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            if (!await userRepository.UserIsWorker(workerId)) return BadRequest("Worker not found");
-            Guid agencyId = User.GetAgencyId();
-            var entity = WorkerComment.CommentPostByAgency(workerId, agencyId, model.Comment, model.Rate);
-            await commentsRepository.CreateComment(entity);
-            return CreatedAtAction("GetById", "WorkerComment", new { workerId, entity.Id }, new { });
+            var result = await workerService.AddAgencyComment(workerProfileId, model.Comment, model.Rate);
+            if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+            return Ok();
         }
     }
 }

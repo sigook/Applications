@@ -38,7 +38,7 @@ namespace Covenant.Tests.Utils
             jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
             location = location ?? FakeLocation();
             startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-            return Covenant.Common.Entities.Request.Request.AgencyCreateRequest(agencyId, companyProfileId, location, startAt, jobPositionRateId, finishAt,
+            return Covenant.Common.Entities.Request.Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
                 workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
         }
     }

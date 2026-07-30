@@ -118,7 +118,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Agencies.Add(FakeData.FakeAgency(Data.FakeRequest.AgencyId));
+                context.Agencies.Add(FakeData.FakeAgency(Data.FakeCompany.AgencyId));
                 context.CompanyProfile.Add(Data.FakeCompany);
                 context.Request.Add(Data.FakeRequest);
                 context.SaveChanges();

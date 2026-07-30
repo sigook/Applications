@@ -25,14 +25,6 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
         }
 
         /// <summary>
-        /// Lists the worker profiles of the authenticated user across agencies.
-        /// </summary>
-        /// <param name="repository">Worker repository service.</param>
-        [HttpGet]
-        [ProducesResponseType(typeof(List<WorkerProfileAgencyListModel>), StatusCodes.Status200OK)]
-        public async Task<ActionResult> Get([FromServices] IWorkerRepository repository) => Ok(await repository.GetProfiles(User.GetUserId()));
-
-        /// <summary>
         /// Registers a new worker profile from a multipart/form-data payload.
         /// </summary>
         /// <param name="requestId">Optional request identifier the worker is registering against.</param>

@@ -11,7 +11,7 @@ namespace Covenant.Tests.Request
         private static readonly Guid Actor = Guid.NewGuid();
 
         private static Runner NewRunner() =>
-            Runner.CreateFromWorker(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), RunnerType.Active, Actor).Value;
+            Runner.CreateFromWorker(Guid.NewGuid(), Guid.NewGuid(), RunnerType.Active, Actor).Value;
 
         [Fact]
         public void Create_StartsAtSentToClient_WithInitialHistory()

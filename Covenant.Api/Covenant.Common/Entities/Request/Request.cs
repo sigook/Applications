@@ -21,13 +21,11 @@ namespace Covenant.Common.Entities.Request
         {
         }
 
-        public Request(CompanyProfile companyProfile, Agency.Agency agency, CompanyProfileJobPositionRate jobPositionRate, int workersQuantity = MinimumWorkersQuantity)
+        public Request(CompanyProfile companyProfile, CompanyProfileJobPositionRate jobPositionRate, int workersQuantity = MinimumWorkersQuantity)
         {
             CompanyProfile = companyProfile;
-            Agency = agency;
             JobPositionRate = jobPositionRate;
             CompanyProfileId = companyProfile.Id;
-            AgencyId = agency.Id;
             JobPositionRateId = jobPositionRate.Id;
             WorkersQuantity = workersQuantity;
         }
@@ -57,8 +55,6 @@ namespace Covenant.Common.Entities.Request
         public bool HolidayIsPaid { get; set; } = true;
         public CompanyProfile CompanyProfile { get; set; }
         public Guid CompanyProfileId { get; set; }
-        public Agency.Agency Agency { get; set; }
-        public Guid AgencyId { get; set; }
         public bool IsAsap { get; set; }
         public bool UsesRunners { get; set; } = true;
         public DurationTerm DurationTerm { get; set; } = DurationTerm.LongTerm;
@@ -380,7 +376,6 @@ namespace Covenant.Common.Entities.Request
         }
 
         public static Result<Request> AgencyCreateRequest(
-            Guid agencyId,
             Guid companyProfileId,
             Location location,
             DateTime startAt,
@@ -404,7 +399,6 @@ namespace Covenant.Common.Entities.Request
         {
             return Result.Ok(new Request
             {
-                AgencyId = agencyId,
                 CompanyProfileId = companyProfileId,
                 JobTitle = jobTitle,
                 WorkersQuantity = workersQuantity,
@@ -429,7 +423,6 @@ namespace Covenant.Common.Entities.Request
         }
 
         public static Result<Request> AgencyCreateRequest(
-            Guid agencyId,
             Guid companyProfileId,
             Guid locationId,
             DateTime startAt,
@@ -453,7 +446,6 @@ namespace Covenant.Common.Entities.Request
         {
             return Result.Ok(new Request
             {
-                AgencyId = agencyId,
                 CompanyProfileId = companyProfileId,
                 JobTitle = jobTitle,
                 WorkersQuantity = workersQuantity,

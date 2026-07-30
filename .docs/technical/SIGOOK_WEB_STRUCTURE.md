@@ -213,7 +213,7 @@ Exports the **`api` wrapper** (`get`, `post`, `put`, `patch`, `del`) that return
 
 ### roles.ts
 
-7 role strings mirroring backend `CovenantConstants.Role` (`superadmin`, `admin`, `recruiting`, `sales`, `company`, `companyUser`, `worker`) plus route-guard groups: `recruitingAccess`, `agencyStaff`, `salesAccess`, `accountingAccess`. See `.docs/business/ROLES_PERMISSIONS.md`.
+7 role strings mirroring backend `CovenantConstants.Role` (`superadmin`, `admin`, `recruiting`, `sales`, `company`, `companyUser`, `worker`) plus route-guard groups: `recruitingAccess`, `agencyStaff`, `salesAccess`, `adminAccess`. See `.docs/business/ROLES_PERMISSIONS.md`.
 
 ### securityService.ts
 
@@ -247,11 +247,11 @@ Sidebar navigation per role group: `recruitingMenu`, `salesMenu`, `accountingMen
 
 ---
 
-## src/composables/ (12 files)
+## src/composables/ (13 files)
 
 | File | Purpose |
 |------|---------|
-| useAccountingAdmin.ts | `isAccountingManager` check (superadmin, admin) |
+| useAdmin.ts | `isAdmin` check (superadmin, admin) |
 | useBodyScrollLock.ts | `lockScroll`/`unlockScroll` for modals |
 | useCarousel.ts | Generic carousel state (landing) |
 | useCreateWorker.ts | Worker registration flow |
@@ -320,7 +320,7 @@ assets/
 
 1. Login via IdentityServer (oidc-client-ts); `/callback` completes sign-in, `/silent-refresh` renews tokens in a hidden iframe.
 2. On 401, `apiService` retries once after `silentSignin`; on failure redirects to login.
-3. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAccountingAdmin`.
+3. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
 
 ### Patterns
 

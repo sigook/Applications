@@ -4,10 +4,8 @@ using Covenant.Api.Shared.WorkerComment.Models;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
@@ -31,8 +29,8 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyWorkerComment
         [Fact]
         public async Task Post()
         {
-            Guid workerId = Startup.FakeWorker.Worker.Id;
-            string url = Url.Replace("{workerId:guid}", workerId.ToString());
+            Guid workerProfileId = Startup.FakeWorker.Id;
+            string url = Url.Replace("{workerProfileId:guid}", workerProfileId.ToString());
             var model = new CreateCommentModel { Comment = "Bad worker", Rate = 5 };
             HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
             response.EnsureSuccessStatusCode();
@@ -40,11 +38,8 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyWorkerComment
             WorkerComment entity = await context.WorkerComment.SingleAsync();
             Assert.Equal(model.Comment, entity.Comment);
             Assert.Equal(model.Rate, entity.Rate);
-            Assert.Equal(workerId, entity.WorkerId);
-            Assert.Equal(Startup.FakeAgency.Id, entity.AgencyId);
-            Assert.Null(entity.CompanyId);
-            response = await _client.GetAsync(response.Headers.Location);
-            response.EnsureSuccessStatusCode();
+            Assert.Equal(workerProfileId, entity.WorkerProfileId);
+            Assert.Null(entity.CompanyProfileId);
         }
 
         public class Startup
@@ -60,7 +55,6 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyWorkerComment
                     o.AddAgencyPersonnelRole(FakeAgency.Id);
                 });
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
-                services.AddSingleton<IWorkerCommentsRepository, WorkerCommentsRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }

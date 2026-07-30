@@ -29,7 +29,7 @@ namespace Covenant.Tests.Billing
             CompanyProfile = FakeProfile
         };
 
-        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(FakeProfile.Agency.Id, FakeProfile.Id, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
+        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(FakeProfile.Id, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
 
         public TestGetInvoiceSummary()
         {

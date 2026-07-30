@@ -2893,7 +2893,7 @@
         }
       }
     },
-    "/api/AgencyWorker/{workerId}/Comment": {
+    "/api/AgencyWorker/{workerProfileId}/Comment": {
       "post": {
         "tags": [
           "AgencyWorkerComment"
@@ -2901,9 +2901,9 @@
         "summary": "Posts a comment about a worker on behalf of the current agency.",
         "parameters": [
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Identifier of the worker the comment is about.",
+            "description": "Identifier of the worker profile the comment is about.",
             "required": true,
             "schema": {
               "type": "string",
@@ -2932,8 +2932,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": {
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request",
@@ -8344,6 +8344,26 @@
               }
             }
           },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error"
           },
@@ -8541,7 +8561,7 @@
         }
       }
     },
-    "/api/CompanyWorker/{workerId}/Comment": {
+    "/api/CompanyWorker/{workerProfileId}/Comment": {
       "post": {
         "tags": [
           "CompanyWorkerComment"
@@ -8549,9 +8569,9 @@
         "summary": "Creates a comment and rating for a worker on behalf of the current company.",
         "parameters": [
           {
-            "name": "workerId",
+            "name": "workerProfileId",
             "in": "path",
-            "description": "Worker identifier.",
+            "description": "Identifier of the worker profile the comment is about.",
             "required": true,
             "schema": {
               "type": "string",
@@ -8580,8 +8600,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": {
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request",
@@ -19275,26 +19295,6 @@
               }
             }
           },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error"
           },
@@ -19367,26 +19367,6 @@
               }
             }
           },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error"
           },
@@ -19433,26 +19413,6 @@
           },
           "400": {
             "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
             "content": {
               "text/plain": {
                 "schema": {
@@ -20496,7 +20456,7 @@
         "tags": [
           "WorkerComment"
         ],
-        "summary": "Gets the paginated comments for a worker.",
+        "summary": "Gets the paginated comments for a worker, scoped to the caller.",
         "parameters": [
           {
             "name": "workerId",
@@ -20543,119 +20503,8 @@
               }
             }
           },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/worker/{workerId}/comment/{id}": {
-      "get": {
-        "tags": [
-          "WorkerComment"
-        ],
-        "summary": "Gets a single worker comment by id.",
-        "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Worker identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Comment identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerCommentModel"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "WorkerComment"
-        ],
-        "summary": "Updates an existing worker comment.",
-        "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Worker identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Comment identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Updated comment data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
+          "403": {
+            "description": "Forbidden",
             "content": {
               "application/json": {
                 "schema": {
@@ -20669,141 +20518,8 @@
           },
           "401": {
             "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
           }
         }
-      }
-    },
-    "/api/worker/{workerId}/comment/Agency": {
-      "post": {
-        "tags": [
-          "WorkerComment"
-        ],
-        "summary": "Creates a worker comment posted by the current agency.",
-        "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Worker identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Comment data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        },
-        "deprecated": true
-      }
-    },
-    "/api/worker/{workerId}/comment/Company": {
-      "post": {
-        "tags": [
-          "WorkerComment"
-        ],
-        "summary": "Creates a worker comment posted by the current company.",
-        "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Worker identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Comment data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        },
-        "deprecated": true
       }
     },
     "/api/agency/requests/{requestId}/Workers/{workerRequestId}/Notes": {
@@ -21163,36 +20879,6 @@
       }
     },
     "/api/WorkerProfile": {
-      "get": {
-        "tags": [
-          "WorkerProfile"
-        ],
-        "summary": "Lists the worker profiles of the authenticated user across agencies.",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileAgencyListModel"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
       "post": {
         "tags": [
           "WorkerProfile"
@@ -27644,7 +27330,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "companyId": {
+          "companyProfileId": {
             "type": "string",
             "format": "uuid",
             "nullable": true
@@ -31206,10 +30892,6 @@
             "type": "number",
             "format": "double"
           },
-          "logo": {
-            "type": "string",
-            "nullable": true
-          },
           "numberId": {
             "type": "integer",
             "format": "int32"
@@ -31232,24 +30914,6 @@
           "longitude": {
             "type": "number",
             "format": "double",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Worker.WorkerProfileAgencyListModel": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "agencyFullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "agencyLogo": {
-            "type": "string",
             "nullable": true
           }
         },
