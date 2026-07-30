@@ -9,8 +9,8 @@ namespace Covenant.IdentityServer.BackgroundServices;
 
 public class SigookIdentityBackgroundService : BackgroundService
 {
-    private static readonly string[] Roles =
-    [
+    private static readonly string[] Roles = new[]
+    {
         RoleConstants.SuperAdmin,
         RoleConstants.Admin,
         RoleConstants.Recruiting,
@@ -18,7 +18,7 @@ public class SigookIdentityBackgroundService : BackgroundService
         RoleConstants.Company,
         RoleConstants.CompanyUser,
         RoleConstants.Worker
-    ];
+    };
 
     private readonly IServiceProvider serviceProvider;
     private readonly ILogger<SigookIdentityBackgroundService> logger;
