@@ -79,7 +79,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Custom
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        var entity = await context.WorkerRequest.SingleAsync(s => s.Id == detail.Id);
+        var entity = await context.WorkerRequests.SingleAsync(s => s.Id == detail.Id);
         Assert.Equal(worker.Id, entity.WorkerProfileId);
         Assert.Equal(WorkerRequestStatus.Booked, entity.WorkerRequestStatus);
     }
@@ -92,7 +92,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Custom
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerProfileId}/Reject", model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        var entity = await context.WorkerRequest.SingleAsync(s => s.Id == worker.Id);
+        var entity = await context.WorkerRequests.SingleAsync(s => s.Id == worker.Id);
         Assert.Equal(WorkerRequestStatus.Rejected, entity.WorkerRequestStatus);
         Assert.Equal(model.Comments, entity.RejectComments);
         Assert.NotNull(entity.RejectedAt);
@@ -112,7 +112,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Custom
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.Id}", model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        var entity = await context.WorkerRequest.SingleAsync(s => s.Id == worker.Id);
+        var entity = await context.WorkerRequests.SingleAsync(s => s.Id == worker.Id);
         Assert.Equal(model.StartWorking, entity.StartWorking);
     }
 

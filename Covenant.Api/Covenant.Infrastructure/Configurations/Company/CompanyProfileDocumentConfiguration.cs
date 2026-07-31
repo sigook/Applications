@@ -8,7 +8,7 @@ public class CompanyProfileDocumentConfiguration : IEntityTypeConfiguration<Comp
 {
     public void Configure(EntityTypeBuilder<CompanyProfileDocument> builder)
     {
-        builder.ToTable("CompanyProfileDocument");
+        builder.ToTable("CompanyProfileDocuments");
         builder.HasKey(cpd => new { cpd.DocumentId, cpd.CompanyProfileId });
     }
 }

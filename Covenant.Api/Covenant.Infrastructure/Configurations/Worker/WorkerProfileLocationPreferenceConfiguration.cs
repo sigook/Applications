@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Worker
     {
         public void Configure(EntityTypeBuilder<WorkerProfileLocationPreference> builder)
         {
-            builder.ToTable("WorkerProfileLocationPreference");
+            builder.ToTable("WorkerProfileLocationPreferences");
             builder.HasKey(a => new { a.WorkerProfileId, a.CityId });
         }
     }

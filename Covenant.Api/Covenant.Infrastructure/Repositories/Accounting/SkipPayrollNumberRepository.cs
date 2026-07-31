@@ -27,7 +27,7 @@ public class SkipPayrollNumberRepository : ISkipPayrollNumberRepository
 
     public async Task<Result> Create(BaseModel<Guid> model)
     {
-        if (await _context.PayStub.AnyAsync(p => p.PayStubNumberId.ToString() == model.Value) ||
+        if (await _context.PayStubs.AnyAsync(p => p.PayStubNumberId.ToString() == model.Value) ||
             await _context.SkipPayrollNumbers.AnyAsync(p => p.PayrollNumber == model.Value))
         {
             return Result.Fail("The number is in a pay stub or in the list");

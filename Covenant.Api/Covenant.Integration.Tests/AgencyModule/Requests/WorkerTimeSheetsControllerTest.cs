@@ -61,7 +61,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<TimeSheetListModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            TimeSheet entity = await context.TimeSheet.SingleAsync(c => c.Id == detail.Id);
+            TimeSheet entity = await context.TimeSheets.SingleAsync(c => c.Id == detail.Id);
             var totalHours = model.Hours;
             Assert.Equal(detail.Id, entity.Id);
             Assert.Equal(model.TimeIn, entity.TimeIn);
@@ -172,10 +172,10 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             public static void Seed(CovenantContext context)
             {
                 TimeSheetReportedByWorker.AddClockOut(TimeSheetReportedByWorker.ClockIn.GetValueOrDefault().AddHours(1), TimeSheetReportedByWorker.ClockIn.GetValueOrDefault().AddHours(1));
-                context.User.Add(Worker);
-                context.WorkerProfile.Add(WorkerProfile);
-                context.Request.Add(Request);
-                context.WorkerRequest.Add(FakeWorkerRequest);
+                context.Users.Add(Worker);
+                context.WorkerProfiles.Add(WorkerProfile);
+                context.Requests.Add(Request);
+                context.WorkerRequests.Add(FakeWorkerRequest);
                 context.AddRange(FakeTimeSheet, TimeSheetReportedByWorker);
                 context.SaveChanges();
             }

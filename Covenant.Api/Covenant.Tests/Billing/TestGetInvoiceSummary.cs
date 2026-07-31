@@ -46,10 +46,10 @@ namespace Covenant.Tests.Billing
         public async Task GetInvoiceSummaryById()
         {
             var invoice = FakeInvoice();
-            await _context.CompanyProfile.AddAsync(FakeProfile);
-            await _context.CompanyProfileJobPositionRate.AddAsync(PositionRate);
+            await _context.CompanyProfiles.AddAsync(FakeProfile);
+            await _context.CompanyProfileJobPositionRates.AddAsync(PositionRate);
             await _context.CompanyProfileInvoiceNotes.AddAsync(InvoiceNotes);
-            await _context.Invoice.AddAsync(invoice);
+            await _context.Invoices.AddAsync(invoice);
             await _context.SaveChangesAsync();
 
             var sub = new InvoiceRepository(_context);
@@ -301,15 +301,15 @@ namespace Covenant.Tests.Billing
                 TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero,
                 TimeSpan.FromHours(8), TimeSpan.Zero);
 
-            context.Request.Add(FakeRequest);
-            context.User.Add(worker);
-            context.WorkerRequest.Add(workerRequest);
-            context.TimeSheet.AddRange(tRegular, tOtherRegular, tOvertime, tHoliday, tMissing,
+            context.Requests.Add(FakeRequest);
+            context.Users.Add(worker);
+            context.WorkerRequests.Add(workerRequest);
+            context.TimeSheets.AddRange(tRegular, tOtherRegular, tOvertime, tHoliday, tMissing,
                 tMissingOvertime, tMissingDifferentRate, tMissingOvertimeDifferentRate, tNightShift);
-            context.TimeSheetTotal.AddRange(tstRegular, tstOtherRegular, tstOvertime, tstHoliday, tstMissing,
+            context.TimeSheetTotals.AddRange(tstRegular, tstOtherRegular, tstOvertime, tstHoliday, tstMissing,
                 tstMissingOvertime, tstMissingDifferentRate, tstMissingOvertimeDifferentRate, tstNightShift);
             context.SaveChanges();
-            return context.TimeSheetTotal.Include(ts => ts.TimeSheet).ToList();
+            return context.TimeSheetTotals.Include(ts => ts.TimeSheet).ToList();
         }
 
         private static TimeSheet FakeTimeSheet(Guid workerRequestId) =>

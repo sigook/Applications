@@ -8,7 +8,7 @@ public class WorkerCommentConfiguration : IEntityTypeConfiguration<WorkerComment
 {
     public void Configure(EntityTypeBuilder<WorkerComment> builder)
     {
-        builder.ToTable("WorkerComment");
+        builder.ToTable("WorkerComments");
         builder.HasKey(k => k.Id);
         builder.Property(c => c.NumberId).ValueGeneratedOnAdd();
 

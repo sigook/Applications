@@ -42,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await _client.PostAsJsonAsync(requestUri, new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            RequestReportTo entity = await context.RequestReportTo.SingleAsync(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == id);
+            RequestReportTo entity = await context.RequestReportTos.SingleAsync(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == id);
             Assert.NotNull(entity);
         }
 
@@ -90,7 +90,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await _client.DeleteAsync(requestUri);
             response.EnsureSuccessStatusCode();
             Assert.False(_factory.Server.Host.Services.GetRequiredService<CovenantContext>()
-                .RequestReportTo.Any(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == entity.Id));
+                .RequestReportTos.Any(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == entity.Id));
         }
 
         public class Startup
@@ -161,8 +161,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 FakeCompany.ContactPeople.Add(FakeContactPersonPost);
                 FakeCompany.ContactPeople.Add(FakeContactPerson);
                 FakeCompany.ContactPeople.Add(FakeContactPersonDelete);
-                context.RequestReportTo.Add(new RequestReportTo(FakeRequest.Id, FakeContactPerson.Id));
-                context.RequestReportTo.Add(new RequestReportTo(FakeRequest.Id, FakeContactPersonDelete.Id));
+                context.RequestReportTos.Add(new RequestReportTo(FakeRequest.Id, FakeContactPerson.Id));
+                context.RequestReportTos.Add(new RequestReportTo(FakeRequest.Id, FakeContactPersonDelete.Id));
                 context.AddRange(FakeCompany, FakeRequest);
                 context.SaveChanges();
             }

@@ -51,7 +51,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
             response.EnsureSuccessStatusCode();
             var model = await response.Content.ReadFromJsonAsync<RegisterTimeSheetResultModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Assert.NotNull(context.TimeSheet.Single(s => s.Id == model.TimeSheetId).ClockIn);
+            Assert.NotNull(context.TimeSheets.Single(s => s.Id == model.TimeSheetId).ClockIn);
         }
 
         [Fact]
@@ -138,11 +138,11 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.User.Add(Data.FakeUser);
-                context.WorkerProfile.Add(Data.FakeWorker);
-                context.Location.Add(Data.FakeLocation);
-                context.Request.Add(Data.Request);
-                context.WorkerRequest.Add(Data.FakeWorkerRequest);
+                context.Users.Add(Data.FakeUser);
+                context.WorkerProfiles.Add(Data.FakeWorker);
+                context.Locations.Add(Data.FakeLocation);
+                context.Requests.Add(Data.Request);
+                context.WorkerRequests.Add(Data.FakeWorkerRequest);
                 context.SaveChanges();
             }
         }

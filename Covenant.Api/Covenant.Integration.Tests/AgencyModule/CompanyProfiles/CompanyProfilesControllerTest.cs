@@ -44,7 +44,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            CompanyProfile entity = await context.CompanyProfile.SingleAsync(c => c.Id == detail.Id);
+            CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.FullName, entity.FullName);
             Assert.Equal(model.Phone, entity.Phone);
             Assert.Equal(model.PhoneExt, entity.PhoneExt);
@@ -84,7 +84,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             var model = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
             Assert.NotNull(model);
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            CompanyProfile entity = await context.CompanyProfile.SingleAsync(c => c.Id == id);
+            CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.Equal(entity.Id, model.Id);
             Assert.Equal(entity.NumberId, model.NumberId);
             Assert.Equal(entity.FullName, model.FullName);
@@ -116,7 +116,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri(id)}/VaccinationRequired", model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            CompanyProfile entity = await context.CompanyProfile.SingleAsync(s => s.Id == id);
+            CompanyProfile entity = await context.CompanyProfiles.SingleAsync(s => s.Id == id);
             Assert.Equal(model.Required, entity.VaccinationRequired);
             Assert.Equal(model.Comments, entity.VaccinationRequiredComments);
         }
@@ -167,10 +167,10 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 FakeAgency.User = new User(CvnEmail.Create("c@mail.com").Value);
-                context.Industry.Add(Drivers);
+                context.Industries.Add(Drivers);
                 FakeCompanyProfile.Logo = new CovenantFile("logo.pdf", "Logo");
                 FakeCompanyProfile.UpdateVaccinationInfo(false, "some comment");
-                context.CompanyProfile.Add(FakeCompanyProfile);
+                context.CompanyProfiles.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }
         }

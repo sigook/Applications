@@ -8,8 +8,13 @@ namespace Covenant.Infrastructure.Configurations.Accounting
     {
         public void Configure(EntityTypeBuilder<ReportSubcontractorPublicHoliday> builder)
         {
-            builder.ToTable("ReportSubcontractorPublicHoliday");
+            builder.ToTable("ReportSubcontractorPublicHolidays");
             builder.HasKey(k => k.Id);
+
+            builder.HasOne(x => x.ReportSubcontractor)
+                .WithMany(x => x.Holidays)
+                .HasForeignKey(x => x.ReportSubcontractorId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

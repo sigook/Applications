@@ -42,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            RequestApplicant entity = await context.RequestApplicant.SingleAsync(c => c.Id == detail.Id);
+            RequestApplicant entity = await context.RequestApplicants.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.CandidateId, entity.CandidateId);
             Assert.Equal(model.Comments, entity.Comments);
             Assert.Null(entity.WorkerProfileId);
@@ -59,7 +59,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            RequestApplicant entity = await context.RequestApplicant.SingleAsync(c => c.Id == detail.Id);
+            RequestApplicant entity = await context.RequestApplicants.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.WorkerProfileId, entity.WorkerProfileId);
             Assert.Equal(model.Comments, entity.Comments);
             Assert.Null(entity.CandidateId);
@@ -102,7 +102,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var model = new CommentsModel { Comments = "Worker didn't show up" };
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
-            RequestApplicant entity = await _factory.Server.Host.Services.GetRequiredService<CovenantContext>().RequestApplicant.SingleAsync(s => s.Id == id);
+            RequestApplicant entity = await _factory.Server.Host.Services.GetRequiredService<CovenantContext>().RequestApplicants.SingleAsync(s => s.Id == id);
             Assert.Equal(model.Comments, entity.Comments);
         }
 
@@ -111,10 +111,10 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
         {
             Guid id = Startup.FakeRequestApplicantDelete.Id;
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Assert.True(await context.RequestApplicant.AnyAsync(c => c.Id == id));
+            Assert.True(await context.RequestApplicants.AnyAsync(c => c.Id == id));
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
-            Assert.False(await context.RequestApplicant.AnyAsync(c => c.Id == id));
+            Assert.False(await context.RequestApplicants.AnyAsync(c => c.Id == id));
         }
 
         public class Startup
@@ -164,10 +164,10 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 context.Agencies.Add(FakeData.FakeAgency(FakeRequest.CompanyProfile.AgencyId));
-                context.Request.Add(FakeRequest);
+                context.Requests.Add(FakeRequest);
                 context.Candidates.AddRange(FakeCandidatePost, FakeCandidateDelete, FakeCandidateList, FakeCandidateUpdate);
-                context.WorkerProfile.AddRange(FakeWorkerPost, FakeWorkerList);
-                context.RequestApplicant.AddRange(FakeRequestApplicantDelete, FakeRequestApplicantList1, FakeRequestApplicantList2, FakeRequestApplicantUpdate);
+                context.WorkerProfiles.AddRange(FakeWorkerPost, FakeWorkerList);
+                context.RequestApplicants.AddRange(FakeRequestApplicantDelete, FakeRequestApplicantList1, FakeRequestApplicantList2, FakeRequestApplicantUpdate);
                 context.SaveChanges();
             }
         }

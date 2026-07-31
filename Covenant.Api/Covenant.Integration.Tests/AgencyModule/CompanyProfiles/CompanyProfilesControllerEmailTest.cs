@@ -43,7 +43,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             response.EnsureSuccessStatusCode();
 
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            User updatedUser = await context.User.FirstAsync(f => f.Id == Startup.FakeCompany.CompanyId);
+            User updatedUser = await context.Users.FirstAsync(f => f.Id == Startup.FakeCompany.CompanyId);
             Assert.Equal(newEmail.Email, updatedUser.Email);
         }
 
@@ -106,8 +106,8 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 context.Agencies.Add(FakeAgency);
-                context.CompanyProfile.AddRange(FakeCompany);
-                context.User.AddRange(new User(OtherUserEmail));
+                context.CompanyProfiles.AddRange(FakeCompany);
+                context.Users.AddRange(new User(OtherUserEmail));
                 context.SaveChanges();
             }
         }

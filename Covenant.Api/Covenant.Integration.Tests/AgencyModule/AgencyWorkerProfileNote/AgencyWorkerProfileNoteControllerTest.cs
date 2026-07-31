@@ -76,7 +76,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileNote
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.WorkerProfileNote.Add(
+                context.WorkerProfileNotes.Add(
                     WorkerProfileNote.Create(WorkerProfileId, "Worker doesn't have documents", "Recruiter").Value);
                 context.SaveChanges();
             }

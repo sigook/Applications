@@ -35,7 +35,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyWorkerComment
             HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            WorkerComment entity = await context.WorkerComment.SingleAsync();
+            WorkerComment entity = await context.WorkerComments.SingleAsync();
             Assert.Equal(model.Comment, entity.Comment);
             Assert.Equal(model.Rate, entity.Rate);
             Assert.Equal(workerProfileId, entity.WorkerProfileId);
@@ -72,7 +72,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyWorkerComment
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 context.Agencies.Add(FakeAgency);
-                context.WorkerProfile.Add(FakeWorker);
+                context.WorkerProfiles.Add(FakeWorker);
                 context.SaveChanges();
             }
         }

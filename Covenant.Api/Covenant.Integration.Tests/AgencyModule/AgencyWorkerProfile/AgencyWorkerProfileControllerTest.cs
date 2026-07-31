@@ -203,13 +203,13 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             sinInfo.SetupGet(s => s.SocialInsurance).Returns("987-654-321");
             sinInfo.SetupGet(s => s.SocialInsuranceExpire).Returns(false);
             sinInfo.SetupGet(s => s.SocialInsuranceFile).Returns(new CovenantFileModel("sin.pdf", "sin"));
-            worker.OnNewDocumentAdded += async (sender, args) => await context.CovenantFile.AddAsync(args);
+            worker.OnNewDocumentAdded += async (sender, args) => await context.CovenantFiles.AddAsync(args);
             worker.PatchSinInformation(sinInfo.Object);
             worker.PatchProfileImage(new CovenantFile("worker.png", "profile"));
 
             response = await _client.PutAsync(requestUri, new StringContent(string.Empty));
             response.EnsureSuccessStatusCode();
-            Assert.True((await context.WorkerProfile.SingleAsync(c => c.Id == worker.Id)).ApprovedToWork);
+            Assert.True((await context.WorkerProfiles.SingleAsync(c => c.Id == worker.Id)).ApprovedToWork);
         }
 
         [Fact]
@@ -219,7 +219,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             var response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}/Dnu", new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
-            WorkerProfile entity = await context.WorkerProfile.SingleAsync(s => s.Id == id);
+            WorkerProfile entity = await context.WorkerProfiles.SingleAsync(s => s.Id == id);
             Assert.True(entity.Dnu);
         }
 
@@ -231,7 +231,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             var response = await _client.PutAsJsonAsync(url, new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.WorkerProfile.SingleAsync(s => s.Id == id);
+            var entity = await context.WorkerProfiles.SingleAsync(s => s.Id == id);
             Assert.True(entity.IsContractor);
             response = await _client.PutAsJsonAsync(url, new { });
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -241,12 +241,12 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             sinInfo.SetupGet(g => g.SocialInsuranceExpire).Returns(false);
             sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(CovenantFile.Create("sin.pdf").Value);
             entity.PatchSinInformation(sinInfo.Object);
-            context.WorkerProfile.Update(entity);
+            context.WorkerProfiles.Update(entity);
             await context.SaveChangesAsync();
 
             response = await _client.PutAsJsonAsync(url, new { });
             response.EnsureSuccessStatusCode();
-            entity = await context.WorkerProfile.SingleAsync(s => s.Id == id);
+            entity = await context.WorkerProfiles.SingleAsync(s => s.Id == id);
             Assert.False(entity.IsContractor);
         }
 
@@ -258,7 +258,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             var response = await _client.PutAsJsonAsync(url, new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.WorkerProfile.SingleAsync(s => s.Id == id);
+            var entity = await context.WorkerProfiles.SingleAsync(s => s.Id == id);
             Assert.True(entity.IsSubcontractor);
             response = await _client.PutAsJsonAsync(url, new { });
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -268,12 +268,12 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             sinInfo.SetupGet(g => g.SocialInsuranceExpire).Returns(false);
             sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(CovenantFile.Create("sin.pdf").Value);
             entity.PatchSinInformation(sinInfo.Object);
-            context.WorkerProfile.Update(entity);
+            context.WorkerProfiles.Update(entity);
             await context.SaveChangesAsync();
 
             response = await _client.PutAsJsonAsync(url, new { });
             response.EnsureSuccessStatusCode();
-            entity = await context.WorkerProfile.SingleAsync(s => s.Id == id);
+            entity = await context.WorkerProfiles.SingleAsync(s => s.Id == id);
             Assert.False(entity.IsSubcontractor);
         }
 
@@ -339,17 +339,17 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         private void Seed(CovenantContext context)
         {
             context.Agencies.Add(FakeAgency);
-            context.WorkerProfile.AddRange(FakeWorkerProfileToFilter, FakeWorkerToDelete, FakeWorkerToDnu, FakeWorkerIsContractor, FakeWorkerIsSubcontractor, FakeWorkerToUpdateEmail);
-            context.NotificationType.Add(NotificationType.NewRequestNotifyWorker);
-            context.UserNotificationType.Add(new UserNotificationType(FakeWorkerProfileToFilter.WorkerId, NotificationType.NewRequestNotifyWorker.Id) { EmailNotification = true });
-            context.City.Add(FakeCity);
-            context.Gender.Add(FakeGender);
-            context.IdentificationType.AddRange(FakeIdentificationType1, FakeIdentificationType2);
-            context.Availability.AddRange(FakeAvailabilityNew, FakeAvailabilityRemove, FakeAvailabilityDontChange, FakeAvailabilityPartTime);
-            context.AvailabilityTime.Add(FakeAvailabilityTimeNew);
-            context.Day.Add(FakeDayNew);
-            context.Lift.Add(FakeLift);
-            context.Language.Add(FakeLanguage);
+            context.WorkerProfiles.AddRange(FakeWorkerProfileToFilter, FakeWorkerToDelete, FakeWorkerToDnu, FakeWorkerIsContractor, FakeWorkerIsSubcontractor, FakeWorkerToUpdateEmail);
+            context.NotificationTypes.Add(NotificationType.NewRequestNotifyWorker);
+            context.UserNotificationTypes.Add(new UserNotificationType(FakeWorkerProfileToFilter.WorkerId, NotificationType.NewRequestNotifyWorker.Id) { EmailNotification = true });
+            context.Cities.Add(FakeCity);
+            context.Genders.Add(FakeGender);
+            context.IdentificationTypes.AddRange(FakeIdentificationType1, FakeIdentificationType2);
+            context.Availabilities.AddRange(FakeAvailabilityNew, FakeAvailabilityRemove, FakeAvailabilityDontChange, FakeAvailabilityPartTime);
+            context.AvailabilityTimes.Add(FakeAvailabilityTimeNew);
+            context.Days.Add(FakeDayNew);
+            context.Lifts.Add(FakeLift);
+            context.Languages.Add(FakeLanguage);
             context.SaveChanges();
         }
     }

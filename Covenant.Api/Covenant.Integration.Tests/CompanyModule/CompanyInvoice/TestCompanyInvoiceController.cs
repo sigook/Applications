@@ -120,7 +120,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
 
         public static void Seed(this CovenantContext context)
         {
-            context.CompanyProfile.Add(CompanyProfile);
+            context.CompanyProfiles.Add(CompanyProfile);
             context.AddRange(Invoice);
             context.SaveChanges();
         }

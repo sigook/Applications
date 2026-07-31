@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Accounting
     {
         public void Configure(EntityTypeBuilder<InvoiceAdditionalDetail> builder)
         {
-            builder.ToTable("InvoiceAdditionalDetail");
+            builder.ToTable("InvoiceAdditionalDetails");
             builder.HasKey(k => k.Id);
 
             builder.HasOne(d => d.CanadaInvoice)

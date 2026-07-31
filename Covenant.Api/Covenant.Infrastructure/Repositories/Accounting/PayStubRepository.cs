@@ -20,7 +20,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
         context.NextNumber.FromSqlRaw(SqlQueries.GetNextPayStubNumbers, new NpgsqlParameter("limit", limit)).ToListAsync();
 
     public Task<bool> IsPayStubNumberTaken(long payStubNumber) =>
-        context.PayStub.AnyAsync(s => s.PayStubNumberId == payStubNumber);
+        context.PayStubs.AnyAsync(s => s.PayStubNumberId == payStubNumber);
 
     public Task<PaginatedList<PayStubListModel>> GetPayStubs(IEnumerable<Guid> agencyIds, GetPayStubsFilter filter)
     {
@@ -38,7 +38,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     public Task<PayStubDetailModel> GetPayStubDetail(Guid payStubId)
     {
-        return (from ps in context.PayStub.Where(s => s.Id == payStubId)
+        return (from ps in context.PayStubs.Where(s => s.Id == payStubId)
                 select new PayStubDetailModel
                 {
                     Id = ps.Id,
@@ -83,7 +83,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     public async Task<PayStubYtdModel> GetYtdSummary(Guid workerProfileId, int year)
     {
-        var result = await context.PayStub
+        var result = await context.PayStubs
             .Where(ps => ps.WorkerProfileId == workerProfileId && ps.DateWorkEnd.Year == year)
             .GroupBy(ps => ps.WorkerProfileId)
             .Select(g => new PayStubYtdModel
@@ -105,18 +105,18 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     public async Task<RegularWageWorker> GetWorkerRegularWages(Guid workerProfileId, DateTime holiday, IEnumerable<DateTime> qualifyingDays)
     {
-        var workerProfileExists = await context.WorkerProfile.AnyAsync(wp => wp.Id == workerProfileId);
+        var workerProfileExists = await context.WorkerProfiles.AnyAsync(wp => wp.Id == workerProfileId);
         if (!workerProfileExists) return null;
 
         var holidayWasPaid = await context.PayStubPublicHolidays
             .AnyAsync(psh => psh.Holiday == holiday && psh.PayStub.WorkerProfileId == workerProfileId);
 
-        var customPublicHolidayValue = await context.WorkerProfileHoliday
+        var customPublicHolidayValue = await context.WorkerProfileHolidays
             .Where(wph => wph.WorkerProfileId == workerProfileId && wph.Holiday.Date.Date == holiday.Date)
             .Select(wph => wph.StatPaidWorker)
             .FirstOrDefaultAsync();
 
-        var isEntitledToReceiveHolidayPay = await context.TimeSheet
+        var isEntitledToReceiveHolidayPay = await context.TimeSheets
             .AnyAsync(ts => ts.WorkerRequest.WorkerProfileId == workerProfileId
                 && qualifyingDays.Contains(ts.Date.Date));
 
@@ -129,10 +129,10 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
     }
 
     public Task<List<PayStubDeleteWarningListModel>> GetPayStubs(Guid invoiceId) =>
-        (from i in context.Invoice.Where(i => i.Id == invoiceId)
+        (from i in context.Invoices.Where(i => i.Id == invoiceId)
          from it in i.InvoiceTotals
-         join tstP in context.TimeSheetTotalPayroll on it.TimeSheetTotal.TimeSheetId equals tstP.TimeSheetId
-         join psw in context.PayStubWageDetail on tstP.Id equals psw.TimeSheetTotalId
+         join tstP in context.TimeSheetTotalPayrolls on it.TimeSheetTotal.TimeSheetId equals tstP.TimeSheetId
+         join psw in context.PayStubWageDetails on tstP.Id equals psw.TimeSheetTotalId
          group psw by new { psw.PayStub.Id, psw.PayStub.PayStubNumber }
             into result
          select new { result.Key.PayStubNumber, PayStubId = result.Key.Id })
@@ -145,7 +145,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     public Task<PaginatedList<WeeklyPayrollModel>> GetWeeklyPayrollGroupByPaymentDate(IEnumerable<Guid> agencyIds, Pagination pagination)
     {
-        var query = from ps in context.PayStub
+        var query = from ps in context.PayStubs
                     where agencyIds.Contains(ps.WorkerProfile.AgencyId)
                     group new { ps.PaymentDate, ps.TotalPaid } by ps.PaymentDate.Date into temp
                     orderby temp.Key descending
@@ -160,7 +160,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     public Task<List<WeeklyPayStubModel>> GetWeeklyPayrollDetailByPaymentDate(DateTime paymentDate)
     {
-        return (from ps in context.PayStub.Where(s => s.PaymentDate.Date == paymentDate.Date)
+        return (from ps in context.PayStubs.Where(s => s.PaymentDate.Date == paymentDate.Date)
                 orderby ps.PayStubNumberId
                 select new WeeklyPayStubModel
                 {
@@ -196,18 +196,18 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
     public async Task<IReadOnlyList<string>> Delete(IEnumerable<Guid> payStubsId)
     {
         if (payStubsId is null || !payStubsId.Any()) return [];
-        var payStubs = await context.PayStub.Where(s => payStubsId.Contains(s.Id))
+        var payStubs = await context.PayStubs.Where(s => payStubsId.Contains(s.Id))
             .Include(i => i.WageDetails)
             .ToListAsync();
         if (payStubs?.Count == 0) return [];
 
-        var timeSheetTotal = await (from ps in context.PayStub.Where(psW => payStubsId.Contains(psW.Id))
+        var timeSheetTotal = await (from ps in context.PayStubs.Where(psW => payStubsId.Contains(psW.Id))
                                     from psw in ps.WageDetails
                                     select psw.TimeSheetTotal).ToListAsync();
 
-        context.PayStub.RemoveRange(payStubs);
-        foreach (PayStub ps in payStubs) context.PayStubWageDetail.RemoveRange(ps.WageDetails);
-        context.TimeSheetTotalPayroll.RemoveRange(timeSheetTotal);
+        context.PayStubs.RemoveRange(payStubs);
+        foreach (PayStub ps in payStubs) context.PayStubWageDetails.RemoveRange(ps.WageDetails);
+        context.TimeSheetTotalPayrolls.RemoveRange(timeSheetTotal);
         return [.. payStubs.Select(c => c.PayStubNumber)];
     }
 
@@ -215,7 +215,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     public async Task<IEnumerable<PayStubT4Model>> GetPayStubsByDates(DateTime startDate, DateTime endDate)
     {
-        var query = context.PayStub
+        var query = context.PayStubs
             .Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate)
             .Select(p => new
             {
@@ -282,7 +282,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
 
     private IQueryable<PayStubListModel> GetPayStubsQuery(IEnumerable<Guid> agencyIds, GetPayStubsFilter filter)
     {
-        var query = from ps in context.PayStub.Where(p => agencyIds.Contains(p.WorkerProfile.AgencyId))
+        var query = from ps in context.PayStubs.Where(p => agencyIds.Contains(p.WorkerProfile.AgencyId))
                     select new PayStubListModel
                     {
                         Id = ps.Id,

@@ -157,7 +157,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                 FakeCompanyProfile.Notes.Add(FakeUpdateNote);
                 FakeCompanyProfile.Notes.Add(FakeNote);
                 FakeCompanyProfile.Notes.Add(FakeDeleteNote);
-                context.CompanyProfile.Add(FakeCompanyProfile);
+                context.CompanyProfiles.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }
         }

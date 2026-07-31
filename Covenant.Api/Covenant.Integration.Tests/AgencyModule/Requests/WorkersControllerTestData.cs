@@ -85,12 +85,12 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             public static void Seed(CovenantContext context)
             {
                 context.Agencies.Add(Utils.FakeData.FakeAgency(AgencyId));
-                context.Availability.Add(FakeAvailability);
-                context.CompanyProfile.Add(CompanyProfile);
-                context.CompanyProfileJobPositionRate.Add(JobPositionRate);
-                context.WorkerProfile.AddRange(FakeWorkers);
-                context.Request.Add(FakeRequest);
-                context.WorkerRequest.AddRange(FakeWorkerRequestList, FakeWorkerRequestReject, FakeWorkerRequestRejectObsolete);
+                context.Availabilities.Add(FakeAvailability);
+                context.CompanyProfiles.Add(CompanyProfile);
+                context.CompanyProfileJobPositionRates.Add(JobPositionRate);
+                context.WorkerProfiles.AddRange(FakeWorkers);
+                context.Requests.Add(FakeRequest);
+                context.WorkerRequests.AddRange(FakeWorkerRequestList, FakeWorkerRequestReject, FakeWorkerRequestRejectObsolete);
                 context.SaveChanges();
             }
 

@@ -181,7 +181,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
             response.EnsureSuccessStatusCode();
             var ctx = factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             Assert.False(await ctx.AgencyPersonnel.AnyAsync(a => a.Id == id));
-            Assert.False(await ctx.User.AnyAsync(a => a.Id == Startup.FakePersonnelToDelete.UserId));
+            Assert.False(await ctx.Users.AnyAsync(a => a.Id == Startup.FakePersonnelToDelete.UserId));
         }
 
         public class Startup

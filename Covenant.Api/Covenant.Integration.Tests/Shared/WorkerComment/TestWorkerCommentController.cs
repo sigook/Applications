@@ -68,9 +68,9 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.WorkerProfile.Add(Data.WorkerProfile);
-                context.CompanyProfile.Add(Data.CompanyProfile);
-                context.WorkerComment.AddRange(Data.Comment, Data.CompanyComment);
+                context.WorkerProfiles.Add(Data.WorkerProfile);
+                context.CompanyProfiles.Add(Data.CompanyProfile);
+                context.WorkerComments.AddRange(Data.Comment, Data.CompanyComment);
                 context.SaveChanges();
             }
         }

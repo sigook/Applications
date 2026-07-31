@@ -171,7 +171,7 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
         public static void Seed(CovenantContext context)
         {
             context.Agencies.Add(FakeAgency);
-            context.User.AddRange(SalesUser, OtherSalesUser, AdminUser, RecruiterUser);
+            context.Users.AddRange(SalesUser, OtherSalesUser, AdminUser, RecruiterUser);
             context.AgencyPersonnel.AddRange(SalesPersonnel, OtherSalesPersonnel, AdminPersonnel, RecruiterPersonnel);
             context.AddRange(FakeCompany, OwnRequest, OtherSalesRequest, UnassignedRequest);
             context.RequestComissions.AddRange(

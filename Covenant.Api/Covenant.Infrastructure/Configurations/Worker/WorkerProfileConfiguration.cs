@@ -8,6 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Worker
     {
         public void Configure(EntityTypeBuilder<WorkerProfile> builder)
         {
+            builder.ToTable("WorkerProfiles");
             builder.Property(c => c.NumberId).ValueGeneratedOnAdd();
             builder.HasIndex(p => p.WorkerId).IsUnique();
 

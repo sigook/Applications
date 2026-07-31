@@ -68,7 +68,7 @@ namespace Covenant.Integration.Tests.Shared.RequestShift
                 var newShift = new Shift();
                 newShift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
                 FakeRequest.UpdateShift(newShift);
-                context.Request.AddAsync(FakeRequest);
+                context.Requests.AddAsync(FakeRequest);
                 context.SaveChanges();
             }
         }

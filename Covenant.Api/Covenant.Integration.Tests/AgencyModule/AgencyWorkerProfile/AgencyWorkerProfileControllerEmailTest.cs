@@ -45,7 +45,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             response.EnsureSuccessStatusCode();
 
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            User updatedUser = await context.User.FirstAsync(f => f.Id == Startup.FakeWorker.WorkerId);
+            User updatedUser = await context.Users.FirstAsync(f => f.Id == Startup.FakeWorker.WorkerId);
             Assert.Equal(newEmail.Email, updatedUser.Email);
         }
 
@@ -119,8 +119,8 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.WorkerProfile.AddRange(FakeWorker, FakeWorkerInStaging);
-                context.User.AddRange(new User(OtherUserEmail), UserInStagingEnvironment);
+                context.WorkerProfiles.AddRange(FakeWorker, FakeWorkerInStaging);
+                context.Users.AddRange(new User(OtherUserEmail), UserInStagingEnvironment);
                 context.SaveChanges();
             }
         }

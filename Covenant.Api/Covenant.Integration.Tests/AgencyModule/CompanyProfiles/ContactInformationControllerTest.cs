@@ -45,7 +45,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             response.EnsureSuccessStatusCode();
             Guid id = Startup.FakeCompanyProfile.Id;
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            CompanyProfile entity = await context.CompanyProfile.SingleAsync(c => c.Id == id);
+            CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.Equal(model.Phone, entity.Phone);
             Assert.Equal(model.PhoneExt, entity.PhoneExt);
             Assert.Equal(model.Fax, entity.Fax);
@@ -87,7 +87,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 FakeAgency.User = new User(CvnEmail.Create("c@mail.com").Value);
-                context.CompanyProfile.Add(FakeCompanyProfile);
+                context.CompanyProfiles.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }
         }

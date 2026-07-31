@@ -140,7 +140,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<AgencyRequestDetailModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        var entity = await context.Request.SingleAsync(c => c.Id == detail.Id);
+        var entity = await context.Requests.SingleAsync(c => c.Id == detail.Id);
         AssertModelAndEntity(model, entity);
         Assert.Equal(model.StartAt, entity.StartAt);
         Assert.Equal(model.FinishAt, entity.FinishAt);
@@ -191,7 +191,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<AgencyRequestDetailModel>();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        var entity = await context.Request.SingleAsync(c => c.Id == detail.Id);
+        var entity = await context.Requests.SingleAsync(c => c.Id == detail.Id);
         AssertModelAndEntity(model, entity);
         Assert.Equal(model.StartAt, entity.StartAt);
         Assert.Equal(model.FinishAt, entity.FinishAt);
@@ -215,7 +215,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        var entity = await context.Request.SingleAsync(s => s.Id == request.Id);
+        var entity = await context.Requests.SingleAsync(s => s.Id == request.Id);
         Assert.Equal(model.JobTitle, entity.JobTitle);
         Assert.Equal(model.Description, entity.Description);
         Assert.Equal(model.Requirements, entity.Requirements);
@@ -232,11 +232,11 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, new { });
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        Assert.True((await context.Request.SingleAsync(s => s.Id == request.Id)).IsAsap);
+        Assert.True((await context.Requests.SingleAsync(s => s.Id == request.Id)).IsAsap);
 
         response = await _client.PutAsJsonAsync(updateUrl, new { });
         response.EnsureSuccessStatusCode();
-        Assert.False((await context.Request.SingleAsync(s => s.Id == request.Id)).IsAsap);
+        Assert.False((await context.Requests.SingleAsync(s => s.Id == request.Id)).IsAsap);
     }
 
     [Fact]
@@ -248,7 +248,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, new { });
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        Assert.Equal(expected, (await context.Request.SingleAsync(s => s.Id == request.Id)).WorkersQuantity);
+        Assert.Equal(expected, (await context.Requests.SingleAsync(s => s.Id == request.Id)).WorkersQuantity);
     }
 
     [Fact]
@@ -260,7 +260,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, new { });
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        Assert.Equal(expected, (await context.Request.SingleAsync(s => s.Id == request.Id)).WorkersQuantity);
+        Assert.Equal(expected, (await context.Requests.SingleAsync(s => s.Id == request.Id)).WorkersQuantity);
         response = await _client.PutAsJsonAsync(updateUrl, new { });
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -275,8 +275,8 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         response.EnsureSuccessStatusCode();
         Assert.Equal(model.OtherCancellationReason, (await (await _client.GetAsync(updateUrl)).Content.ReadFromJsonAsync<AgencyRequestDetailModel>()).CancellationDetail);
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        Assert.Equal(RequestStatus.Cancelled, (await context.Request.SingleAsync(r => r.Id == request.Id)).Status);
-        var detail = await context.RequestCancellationDetail.SingleAsync(c => c.RequestId == request.Id);
+        Assert.Equal(RequestStatus.Cancelled, (await context.Requests.SingleAsync(r => r.Id == request.Id)).Status);
+        var detail = await context.RequestCancellationDetails.SingleAsync(c => c.RequestId == request.Id);
         Assert.Equal(model.OtherCancellationReason, detail.OtherReasonCancellationRequest);
         Assert.NotNull(detail.CancelBy);
         Assert.NotNull(detail.CancelAt);
@@ -289,7 +289,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{request.Id}/Open", new { });
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        Assert.Equal(RequestStatus.Open, (await context.Request.SingleAsync(r => r.Id == request.Id)).Status);
+        Assert.Equal(RequestStatus.Open, (await context.Requests.SingleAsync(r => r.Id == request.Id)).Status);
         Assert.True(await context.RequestNotes.AnyAsync(a => a.RequestId == request.Id));
     }
 
@@ -392,7 +392,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                     pattern: "{controller}/{action=Index}/{id?}");
             });
             context.Agencies.Add(Data.FakeAgency);
-            context.User.Add(Data.FakeUserRecruiter);
+            context.Users.Add(Data.FakeUserRecruiter);
             context.AgencyPersonnel.Add(Data.FakeRecruiter);
             context.AddRange(Data.FakeCompany, Data.FakeRequest,
                 Data.FakeUpdateRequest, Data.FakeRequestIncreaseQuantity,

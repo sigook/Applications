@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Entities.Accounting.Subcontractor;
@@ -26,65 +26,63 @@ public class CovenantContext : DbContext
     }
 
     public DbSet<Agency> Agencies { get; set; }
-    public DbSet<WorkerProfile> WorkerProfile { get; set; }
-    public DbSet<WorkerComment> WorkerComment { get; set; }
-    public DbSet<WorkerRequest> WorkerRequest { get; set; }
-    public DbSet<WorkerRequestNote> WorkerRequestNote { get; set; }
-    public DbSet<TimeSheet> TimeSheet { get; set; }
-    public DbSet<TimeSheetPhoto> TimeSheetPhoto { get; set; }
-    public DbSet<WorkerProfileHoliday> WorkerProfileHoliday { get; set; }
-    public DbSet<WorkerProfileNote> WorkerProfileNote { get; set; }
+    public DbSet<WorkerProfile> WorkerProfiles { get; set; }
+    public DbSet<WorkerComment> WorkerComments { get; set; }
+    public DbSet<WorkerRequest> WorkerRequests { get; set; }
+    public DbSet<WorkerRequestNote> WorkerRequestNotes { get; set; }
+    public DbSet<TimeSheet> TimeSheets { get; set; }
+    public DbSet<WorkerProfileHoliday> WorkerProfileHolidays { get; set; }
+    public DbSet<WorkerProfileNote> WorkerProfileNotes { get; set; }
     public DbSet<WorkerProfileLicense> WorkerProfileLicenses { get; set; }
-    public DbSet<Common.Entities.Request.TimeSheetTotal> TimeSheetTotal { get; set; }
-    public DbSet<TimeSheetTotalPayroll> TimeSheetTotalPayroll { get; set; }
-    public DbSet<User> User { get; set; }
-    public DbSet<CompanyProfile> CompanyProfile { get; set; }
+    public DbSet<TimeSheetTotal> TimeSheetTotals { get; set; }
+    public DbSet<TimeSheetTotalPayroll> TimeSheetTotalPayrolls { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<CompanyProfile> CompanyProfiles { get; set; }
     public DbSet<CompanyProfileLocation> CompanyProfileLocations { get; set; }
-    public DbSet<CompanyProfileJobPositionRate> CompanyProfileJobPositionRate { get; set; }
+    public DbSet<CompanyProfileJobPositionRate> CompanyProfileJobPositionRates { get; set; }
     public DbSet<CompanyProfileInvoiceNotes> CompanyProfileInvoiceNotes { get; set; }
-    public DbSet<CompanyProfileHoliday> CompanyProfileHoliday { get; set; }
-    public DbSet<CompanyUser> CompanyUser { get; set; }
+    public DbSet<CompanyUser> CompanyUsers { get; set; }
     public DbSet<CompanyProfileDocument> CompanyProfileDocuments { get; set; }
-    public DbSet<Request> Request { get; set; }
-    public DbSet<RequestCancellationDetail> RequestCancellationDetail { get; set; }
-    public DbSet<RequestFinalizationDetail> RequestFinalizationDetail { get; set; }
-    public DbSet<RequestRequestedBy> RequestRequestedBy { get; set; }
-    public DbSet<RequestReportTo> RequestReportTo { get; set; }
+    public DbSet<Request> Requests { get; set; }
+    public DbSet<RequestCancellationDetail> RequestCancellationDetails { get; set; }
+    public DbSet<RequestFinalizationDetail> RequestFinalizationDetails { get; set; }
+    public DbSet<RequestRequestedBy> RequestRequestedBys { get; set; }
+    public DbSet<RequestReportTo> RequestReportTos { get; set; }
     public DbSet<RequestNote> RequestNotes { get; set; }
-    public DbSet<RequestRecruiter> RequestRecruiter { get; set; }
-    public DbSet<RequestSource> RequestSource { get; set; }
-    public DbSet<RequestSkill> RequestSkill { get; set; }
-    public DbSet<RequestApplicant> RequestApplicant { get; set; }
+    public DbSet<RequestRecruiter> RequestRecruiters { get; set; }
+    public DbSet<RequestSource> RequestSources { get; set; }
+    public DbSet<RequestSkill> RequestSkills { get; set; }
+    public DbSet<RequestApplicant> RequestApplicants { get; set; }
     public DbSet<RequestComission> RequestComissions { get; set; }
     public DbSet<RequestCompanyUser> RequestCompanyUsers { get; set; }
-    public DbSet<Location> Location { get; set; }
-    public DbSet<Invoice> Invoice { get; set; }
-    public DbSet<InvoiceUSA> InvoiceUSA { get; set; }
+    public DbSet<Location> Locations { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<InvoiceUSA> InvoicesUSA { get; set; }
     public DbSet<InvoiceUSAItem> InvoiceUSAItems { get; set; }
     public DbSet<InvoiceUSATimeSheetTotal> InvoiceUSATimeSheetTotals { get; set; }
     public DbSet<InvoiceTotal> InvoiceTotals { get; set; }
     public DbSet<InvoiceAdditionalDetail> InvoiceAdditionalDetails { get; set; }
-    public DbSet<CompanyProfileInvoiceRecipient> CompanyProfileInvoiceRecipient { get; set; }
+    public DbSet<CompanyProfileInvoiceRecipient> CompanyProfileInvoiceRecipients { get; set; }
     public DbSet<SkipPayrollNumber> SkipPayrollNumbers { get; set; }
     public DbSet<NextNumberModel> NextNumber { get; set; }
-    public DbSet<Availability> Availability { get; set; }
-    public DbSet<AvailabilityTime> AvailabilityTime { get; set; }
-    public DbSet<City> City { get; set; }
-    public DbSet<Country> Country { get; set; }
-    public DbSet<Day> Day { get; set; }
-    public DbSet<Gender> Gender { get; set; }
-    public DbSet<IdentificationType> IdentificationType { get; set; }
-    public DbSet<Language> Language { get; set; }
-    public DbSet<Lift> Lift { get; set; }
-    public DbSet<Province> Province { get; set; }
+    public DbSet<Availability> Availabilities { get; set; }
+    public DbSet<AvailabilityTime> AvailabilityTimes { get; set; }
+    public DbSet<City> Cities { get; set; }
+    public DbSet<Country> Countries { get; set; }
+    public DbSet<Day> Days { get; set; }
+    public DbSet<Gender> Genders { get; set; }
+    public DbSet<IdentificationType> IdentificationTypes { get; set; }
+    public DbSet<Language> Languages { get; set; }
+    public DbSet<Lift> Lifts { get; set; }
+    public DbSet<Province> Provinces { get; set; }
     public DbSet<LocationTax> LocationTaxes { get; set; }
     public DbSet<ProvinceSetting> ProvinceSettings { get; set; }
-    public DbSet<WsibGroup> WsibGroup { get; set; }
-    public DbSet<Industry> Industry { get; set; }
-    public DbSet<Source> Source { get; set; }
-    public DbSet<ReasonCancellationRequest> ReasonCancellationRequest { get; set; }
-    public DbSet<Holiday> Holiday { get; set; }
-    public DbSet<CovenantFile> CovenantFile { get; set; }
+    public DbSet<WsibGroup> WsibGroups { get; set; }
+    public DbSet<Industry> Industries { get; set; }
+    public DbSet<Source> Sources { get; set; }
+    public DbSet<ReasonCancellationRequest> ReasonCancellationRequests { get; set; }
+    public DbSet<Holiday> Holidays { get; set; }
+    public DbSet<CovenantFile> CovenantFiles { get; set; }
     public DbSet<CppWeekly> CppWeekly { get; set; }
     public DbSet<CppBiWeekly> CppBiWeekly { get; set; }
     public DbSet<CppMonthly> CppMonthly { get; set; }
@@ -97,15 +95,15 @@ public class CovenantContext : DbContext
     public DbSet<ProvincialTaxBiWeekly> ProvincialTaxBiWeekly { get; set; }
     public DbSet<ProvincialTaxSemiMonthly> ProvincialTaxSemiMonthly { get; set; }
     public DbSet<ProvincialTaxMonthly> ProvincialTaxMonthly { get; set; }
-    public DbSet<NotificationType> NotificationType { get; set; }
-    public DbSet<UserNotificationType> UserNotificationType { get; set; }
-    public DbSet<PayStub> PayStub { get; set; }
-    public DbSet<PayStubItem> PayStubItem { get; set; }
-    public DbSet<PayStubWageDetail> PayStubWageDetail { get; set; }
-    public DbSet<PayStubOtherDeduction> PayStubOtherDeduction { get; set; }
-    public DbSet<ReportSubcontractor> ReportSubcontractor { get; set; }
-    public DbSet<ReportSubContractorOtherDeduction> ReportSubContractorOtherDeduction { get; set; }
-    public DbSet<ReportSubcontractorWageDetail> ReportSubcontractorWageDetail { get; set; }
+    public DbSet<NotificationType> NotificationTypes { get; set; }
+    public DbSet<UserNotificationType> UserNotificationTypes { get; set; }
+    public DbSet<PayStub> PayStubs { get; set; }
+    public DbSet<PayStubItem> PayStubItems { get; set; }
+    public DbSet<PayStubWageDetail> PayStubWageDetails { get; set; }
+    public DbSet<PayStubOtherDeduction> PayStubOtherDeductions { get; set; }
+    public DbSet<ReportSubcontractor> ReportSubcontractors { get; set; }
+    public DbSet<ReportSubContractorOtherDeduction> ReportSubContractorOtherDeductions { get; set; }
+    public DbSet<ReportSubcontractorWageDetail> ReportSubcontractorWageDetails { get; set; }
     public DbSet<Candidate> Candidates { get; set; }
     public DbSet<Runner> Runners { get; set; }
     public DbSet<RunnerStatusHistory> RunnerStatusHistories { get; set; }

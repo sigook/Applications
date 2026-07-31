@@ -12,10 +12,10 @@ SELECT
     ts."MissingHours",
     ts."MissingHoursOvertime",
     wp."Id" AS "WorkerProfileId"
-FROM "WorkerProfile" wp
-JOIN "WorkerRequest" wr ON wp."Id" = wr."WorkerProfileId"
-JOIN "TimeSheet" ts ON wr."Id" = ts."WorkerRequestId"
-LEFT JOIN "TimeSheetTotal" tst ON ts."Id" = tst."TimeSheetId"
-JOIN "Request" r ON wr."RequestId" = r."Id"
-JOIN "CompanyProfile" cp ON r."CompanyProfileId" = cp."Id"
+FROM "WorkerProfiles" wp
+JOIN "WorkerRequests" wr ON wp."Id" = wr."WorkerProfileId"
+JOIN "TimeSheets" ts ON wr."Id" = ts."WorkerRequestId"
+LEFT JOIN "TimeSheetTotals" tst ON ts."Id" = tst."TimeSheetId"
+JOIN "Requests" r ON wr."RequestId" = r."Id"
+JOIN "CompanyProfiles" cp ON r."CompanyProfileId" = cp."Id"
 ORDER BY ts."Date" DESC;

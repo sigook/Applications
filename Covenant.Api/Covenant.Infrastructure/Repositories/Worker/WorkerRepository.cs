@@ -28,10 +28,10 @@ public class WorkerRepository : IWorkerRepository
         filesConfiguration = options.Value;
     }
 
-    public Task UpdateProfile(WorkerProfile entity) => Task.FromResult(_context.WorkerProfile.Update(entity));
+    public Task UpdateProfile(WorkerProfile entity) => Task.FromResult(_context.WorkerProfiles.Update(entity));
 
     public Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition) =>
-        _context.WorkerProfile.Where(condition)
+        _context.WorkerProfiles.Where(condition)
             .Include(e => e.Worker)
             .Include(c => c.ProfileImage)
             .Include(c => c.SocialInsuranceFile)
@@ -59,7 +59,7 @@ public class WorkerRepository : IWorkerRepository
 
     public Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition)
     {
-        return (from wp in _context.WorkerProfile.Where(condition)
+        return (from wp in _context.WorkerProfiles.Where(condition)
                 select new WorkerProfileDetailModel
                 {
                     Id = wp.Id,
@@ -267,7 +267,7 @@ public class WorkerRepository : IWorkerRepository
             }).ToListAsync();
 
     public Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId) =>
-        (from wp in _context.WorkerProfile.Where(p => p.Id == workerProfileId)
+        (from wp in _context.WorkerProfiles.Where(p => p.Id == workerProfileId)
          select new WorkerProfileBasicInfoModel
          {
              NumberId = wp.NumberId,
@@ -295,7 +295,7 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task<List<AgencyWorkerDropdownModel>> GetWorkerProfilesDropdown(IEnumerable<Guid> agencyIds, string searchTerm)
     {
-        var workerProfiles = _context.WorkerProfile.Where(wp => agencyIds.Contains(wp.AgencyId));
+        var workerProfiles = _context.WorkerProfiles.Where(wp => agencyIds.Contains(wp.AgencyId));
         var query = workerProfiles
             .Select(wp => new AgencyWorkerDropdownModel
             {
@@ -330,12 +330,12 @@ public class WorkerRepository : IWorkerRepository
 
     public IEnumerable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
     {
-        var workers = _context.WorkerProfile
+        var workers = _context.WorkerProfiles
             .Include(wp => wp.Skills)
             .Include(wp => wp.Worker)
             .Include(wp => wp.Notes)
             .AsQueryable();
-        var workerRequest = _context.WorkerRequest.Include(wr => wr.Request)
+        var workerRequest = _context.WorkerRequests.Include(wr => wr.Request)
             .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status != RequestStatus.Cancelled);
         if (filter.SortBy == GetWorkersProfileSortBy.RequestId)
             workerRequest = workerRequest.AddOrderBy(filter, wr => wr.Request.NumberId);
@@ -462,12 +462,12 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression)
     {
-        var result = await _context.WorkerProfile.AnyAsync(expression);
+        var result = await _context.WorkerProfiles.AnyAsync(expression);
         return result;
     }
 
     public Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination) =>
-        _context.WorkerProfileNote.Where(e => e.WorkerProfileId == workerProfileId)
+        _context.WorkerProfileNotes.Where(e => e.WorkerProfileId == workerProfileId)
             .Select(e => new WorkerProfileNoteListModel
             {
                 Note = e.Note,
@@ -477,7 +477,7 @@ public class WorkerRepository : IWorkerRepository
             .AsNoTracking().ToPaginatedList(pagination);
 
     public Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination) =>
-        _context.WorkerComment.Where(condition)
+        _context.WorkerComments.Where(condition)
             .Select(c => new WorkerCommentModel
             {
                 Id = c.Id,
@@ -497,7 +497,7 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task CreateWorkerProfileHoliday(WorkerProfileHoliday entity)
     {
-        var workerProfileHoliday = await _context.WorkerProfileHoliday
+        var workerProfileHoliday = await _context.WorkerProfileHolidays
             .SingleOrDefaultAsync(h => h.WorkerProfileId == entity.WorkerProfileId && h.HolidayId == entity.HolidayId);
         if (workerProfileHoliday is null)
         {
@@ -511,10 +511,10 @@ public class WorkerRepository : IWorkerRepository
     public async Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId)
     {
         var previousMonth = DateTime.Now.AddMonths(-1);
-        var query = (from h in _context.Holiday.Where(h => h.Date >= previousMonth)
-                     join wp in _context.WorkerProfileHoliday.Where(w => w.WorkerProfileId == workerProfileId) on h.Id equals wp.HolidayId into tmp
+        var query = (from h in _context.Holidays.Where(h => h.Date >= previousMonth)
+                     join wp in _context.WorkerProfileHolidays.Where(w => w.WorkerProfileId == workerProfileId) on h.Id equals wp.HolidayId into tmp
                      from wp in tmp.DefaultIfEmpty()
-                     where _context.WorkerProfile.Any(w => w.Location.City.Province.Country.Code == h.CountryCode && w.Id == workerProfileId)
+                     where _context.WorkerProfiles.Any(w => w.Location.City.Province.Country.Code == h.CountryCode && w.Id == workerProfileId)
                      orderby h.Date descending
                      select new WorkerProfileHolidayModel
                      {
@@ -532,7 +532,7 @@ public class WorkerRepository : IWorkerRepository
         GetWorkerProfilePunchCarId(wp => wp.Id == profileId);
 
     private Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(Expression<Func<WorkerProfile, bool>> condition) =>
-        _context.WorkerProfile.Where(condition)
+        _context.WorkerProfiles.Where(condition)
             .Select(wp => new WorkerProfilePunchCardIdModel { Id = wp.Id, PunchCardId = wp.PunchCardId, WorkerFullName = $"{wp.FirstName} {wp.MiddleName} {wp.LastName} {wp.SecondLastName}" })
             .AsNoTracking()
             .SingleOrDefaultAsync();
@@ -558,13 +558,13 @@ public class WorkerRepository : IWorkerRepository
         if (payStubs.Items.Any())
         {
             var guids = payStubs.Items.Select(arg => arg.Id).ToList();
-            var companies = await (from psw in _context.PayStubWageDetail.Where(d => guids.Any(psId => d.PayStubId == psId))
+            var companies = await (from psw in _context.PayStubWageDetails.Where(d => guids.Any(psId => d.PayStubId == psId))
                                    select new
                                    {
                                        psw.PayStubId,
                                        psw.TimeSheetTotal.TimeSheet.WorkerRequest.Request.CompanyProfile.FullName
                                    }).Distinct().ToListAsync();
-            var payStubItem = await _context.PayStubItem.Where(psi => guids.Contains(psi.PayStubId)).ToListAsync();
+            var payStubItem = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).ToListAsync();
             foreach (var stub in payStubs.Items)
             {
                 stub.Companies = companies.Where(p => p.PayStubId == stub.Id).Select(p => p.FullName).ToList();
@@ -591,29 +591,29 @@ public class WorkerRepository : IWorkerRepository
             TotalPaid = payStubs.Sum(ps => ps.TotalPaid)
         };
         var guids = payStubs.Select(arg => arg.Id).ToList();
-        result.Quantity = await _context.PayStubItem.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Quantity);
-        result.Total = await _context.PayStubItem.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Total);
+        result.Quantity = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Quantity);
+        result.Total = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Total);
         return result;
     }
 
     public Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId)
     {
-        var eligibleProfiles = _context.WorkerProfile
+        var eligibleProfiles = _context.WorkerProfiles
             .Where(wp => !wp.Dnu)
             .Where(wp => wp.AgencyId == agencyId)
             .Where(wp => wp.Location.City.ProvinceId == provinceId)
             .Where(wp => !string.IsNullOrEmpty(wp.FirstName));
 
-        var contactableUsers = _context.User
+        var contactableUsers = _context.Users
             .Where(u => !string.IsNullOrEmpty(u.Email))
             .Where(u => u.Email.Contains("@"));
 
-        var subscribedUserIds = _context.UserNotificationType
+        var subscribedUserIds = _context.UserNotificationTypes
             .Where(unt => unt.NotificationTypeId == NotificationType.NewRequestNotifyWorker.Id)
             .Where(unt => unt.EmailNotification)
             .Select(unt => unt.UserId);
 
-        var bookedWorkerProfileIds = _context.WorkerRequest
+        var bookedWorkerProfileIds = _context.WorkerRequests
             .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked)
             .Select(wr => wr.WorkerProfileId);
 
@@ -640,7 +640,7 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date)
     {
-        var query = from wp in _context.WorkerProfile.Where(p => p.ApprovedToWork && p.SocialInsuranceExpire && p.DueDate < date)
+        var query = from wp in _context.WorkerProfiles.Where(p => p.ApprovedToWork && p.SocialInsuranceExpire && p.DueDate < date)
                     orderby wp.DueDate
                     select new WorkerSINExpiredModel
                     {

@@ -10,6 +10,7 @@ public class RunnerConfiguration : IEntityTypeConfiguration<Runner>
 {
     public void Configure(EntityTypeBuilder<Runner> builder)
     {
+        builder.ToTable("Runners");
         builder.Property(e => e.NumberId).ValueGeneratedOnAdd();
         builder.Property(e => e.Type).HasConversion(new EnumToStringConverter<RunnerType>());
         builder.Property(e => e.Status).HasConversion(new EnumToStringConverter<RunnerStatus>());

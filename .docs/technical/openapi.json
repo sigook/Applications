@@ -5122,7 +5122,7 @@
         "tags": [
           "Catalog"
         ],
-        "summary": "Gets the cancellation reasons localized to the current culture.",
+        "summary": "Gets the cancellation reasons.",
         "responses": {
           "200": {
             "description": "OK",

@@ -37,7 +37,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
         public async Task Get()
         {
             var context = _factory.Services.GetService<CovenantContext>();
-            context.WorkerRequest.Add(Data.FakeWorkerRequest);
+            context.WorkerRequests.Add(Data.FakeWorkerRequest);
             context.SaveChanges();
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
@@ -98,7 +98,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            RequestApplicant entity = await context.RequestApplicant.SingleAsync(s => s.Id == detail.Id);
+            RequestApplicant entity = await context.RequestApplicants.SingleAsync(s => s.Id == detail.Id);
             Assert.Equal(detail.WorkerProfileId, entity.WorkerProfileId);
             Assert.Equal(model.Comments, entity.Comments);
             Assert.Null(entity.CandidateId);
@@ -135,10 +135,10 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Request.Add(Data.FakeRequest);
-                context.CompanyProfile.Add(Data.CompanyProfile);
-                context.CompanyProfileJobPositionRate.Add(Data.FakeRate);
-                context.WorkerProfile.Add(Data.WorkerProfile);
+                context.Requests.Add(Data.FakeRequest);
+                context.CompanyProfiles.Add(Data.CompanyProfile);
+                context.CompanyProfileJobPositionRates.Add(Data.FakeRate);
+                context.WorkerProfiles.Add(Data.WorkerProfile);
                 context.SaveChanges();
             }
         }

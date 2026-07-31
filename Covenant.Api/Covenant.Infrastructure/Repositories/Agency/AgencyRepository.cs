@@ -109,11 +109,11 @@ public class AgencyRepository : IAgencyRepository
     }
 
     public async Task<bool> PersonnelHasRequests(Guid personnelId) =>
-        await _context.RequestRecruiter.AnyAsync(r => r.RecruiterId == personnelId)
+        await _context.RequestRecruiters.AnyAsync(r => r.RecruiterId == personnelId)
         || await _context.RequestComissions.AnyAsync(c => c.AgencyPersonnelId == personnelId);
 
     public Task<bool> PersonnelHasCompanies(Guid personnelId) =>
-        _context.CompanyProfile.AnyAsync(c => c.SalesRepresentativeId == personnelId);
+        _context.CompanyProfiles.AnyAsync(c => c.SalesRepresentativeId == personnelId);
 
     public async Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId)
     {
@@ -191,7 +191,7 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city)
     {
-        var country = await _context.City.AsNoTracking()
+        var country = await _context.Cities.AsNoTracking()
             .Include(c => c.Province).ThenInclude(p => p.Country)
             .Where(c => c.Id == city.Id)
             .Select(c => c.Province.Country)

@@ -30,7 +30,7 @@ namespace Covenant.Tests.Worker
         [InlineData("987654321", "false")]
         public async Task IdentificationNumberIsAlreadyTaken(string identificationNumber, string taken)
         {
-            _context.WorkerProfile.Add(new WorkerProfile(new User(CvnEmail.Create("other@gmail.com").Value)) { IdentificationNumber1 = "123456789" });
+            _context.WorkerProfiles.Add(new WorkerProfile(new User(CvnEmail.Create("other@gmail.com").Value)) { IdentificationNumber1 = "123456789" });
             await _context.SaveChangesAsync();
 
             bool result = await _sut.InfoIsAlreadyTaken(x => x.IdentificationNumber1 == identificationNumber || x.IdentificationNumber2 == identificationNumber);
@@ -48,7 +48,7 @@ namespace Covenant.Tests.Worker
             sinInfo.SetupGet(i => i.SocialInsuranceFile).Returns(new CovenantFile("soc.pdf"));
             var workerProfile = new WorkerProfile(new User(CvnEmail.Create("other@gmail.com").Value));
             workerProfile.PatchSinInformation(sinInfo.Object);
-            _context.WorkerProfile.Add(workerProfile);
+            _context.WorkerProfiles.Add(workerProfile);
             await _context.SaveChangesAsync();
 
             bool result = await _sut.InfoIsAlreadyTaken(x => x.SocialInsurance == socialInsurance);

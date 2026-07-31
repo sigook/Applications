@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Request
     {
         public void Configure(EntityTypeBuilder<RequestCancellationDetail> builder)
         {
-            builder.ToTable("RequestCancellationDetail");
+            builder.ToTable("RequestCancellationDetails");
             builder.HasKey(d => d.RequestId);
         }
     }

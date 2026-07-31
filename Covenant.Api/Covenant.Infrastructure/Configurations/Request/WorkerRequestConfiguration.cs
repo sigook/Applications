@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Request
     {
         public void Configure(EntityTypeBuilder<WorkerRequest> builder)
         {
-            builder.ToTable("WorkerRequest");
+            builder.ToTable("WorkerRequests");
             builder.HasKey(k => k.Id);
             builder.HasIndex(r => new { r.RequestId, r.WorkerProfileId }).IsUnique();
 

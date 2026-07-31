@@ -94,7 +94,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.City.Add(FakeCity);
+                context.Cities.Add(FakeCity);
                 context.SaveChanges();
             }
         }

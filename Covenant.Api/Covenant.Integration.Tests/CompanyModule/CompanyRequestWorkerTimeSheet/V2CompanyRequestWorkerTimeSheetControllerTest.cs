@@ -96,7 +96,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<TimeSheetListModel>();
             var context = _factory.Server.Host.Services.GetService<CovenantContext>();
-            TimeSheet entity = await context.TimeSheet.SingleAsync(s => s.Id == detail.Id);
+            TimeSheet entity = await context.TimeSheets.SingleAsync(s => s.Id == detail.Id);
             Assert.Equal(model.TimeIn.Date, entity.Date);
             Assert.Equal(model.TimeIn.Date, entity.TimeIn);
             Assert.Equal(model.TimeIn.Date.AddHours(model.Hours.TotalHours), entity.TimeOut);
@@ -122,7 +122,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{_requestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetService<CovenantContext>();
-            TimeSheet entity = await context.TimeSheet.SingleAsync(s => s.Id == id);
+            TimeSheet entity = await context.TimeSheets.SingleAsync(s => s.Id == id);
             Assert.Equal(model.TimeIn, entity.Date);
             Assert.Equal(model.TimeIn, entity.TimeIn);
             Assert.Equal(model.Hours.TotalHours, entity.TotalHoursApproved);
@@ -148,7 +148,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<RegisterTimeSheetResultModel>();
             var context = _factory.Server.Host.Services.GetService<CovenantContext>();
-            TimeSheet entity = await context.TimeSheet.SingleAsync(s => s.Id == detail.TimeSheetId);
+            TimeSheet entity = await context.TimeSheets.SingleAsync(s => s.Id == detail.TimeSheetId);
             Assert.Equal(model.ClockIn, entity.ClockIn.GetValueOrDefault().TimeOfDay);
         }
 
@@ -157,10 +157,10 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
         {
             var context = _factory.Server.Host.Services.GetService<CovenantContext>();
             TimeSheet timeSheet = Data.TimeSheetForDelete;
-            Assert.True(await context.TimeSheet.AnyAsync(s => s.Id == timeSheet.Id));
+            Assert.True(await context.TimeSheets.AnyAsync(s => s.Id == timeSheet.Id));
             HttpResponseMessage response = await _client.DeleteAsync($"{_requestUri()}/{timeSheet.Id}");
             response.EnsureSuccessStatusCode();
-            Assert.False(await context.TimeSheet.AnyAsync(s => s.Id == timeSheet.Id));
+            Assert.False(await context.TimeSheets.AnyAsync(s => s.Id == timeSheet.Id));
         }
 
         public class Startup

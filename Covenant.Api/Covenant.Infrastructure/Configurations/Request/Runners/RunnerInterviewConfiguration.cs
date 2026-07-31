@@ -10,6 +10,7 @@ public class RunnerInterviewConfiguration : IEntityTypeConfiguration<RunnerInter
 {
     public void Configure(EntityTypeBuilder<RunnerInterview> builder)
     {
+        builder.ToTable("RunnerInterviews");
         builder.Property(e => e.Type).HasConversion(new EnumToStringConverter<InterviewType>());
         builder.Property(e => e.Status).HasConversion(new EnumToStringConverter<InterviewStatus>());
 

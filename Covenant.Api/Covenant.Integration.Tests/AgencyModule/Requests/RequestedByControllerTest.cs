@@ -42,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await _client.PostAsJsonAsync(requestUri, new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            RequestRequestedBy entity = await context.RequestRequestedBy.SingleAsync(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == id);
+            RequestRequestedBy entity = await context.RequestRequestedBys.SingleAsync(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == id);
             Assert.NotNull(entity);
         }
 
@@ -90,7 +90,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await _client.DeleteAsync(requestUri);
             response.EnsureSuccessStatusCode();
             Assert.False(_factory.Server.Host.Services.GetRequiredService<CovenantContext>()
-                .RequestRequestedBy.Any(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == entity.Id));
+                .RequestRequestedBys.Any(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == entity.Id));
         }
 
         public class Startup
@@ -162,8 +162,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 FakeCompany.ContactPeople.Add(FakeContactPersonPost);
                 FakeCompany.ContactPeople.Add(FakeContactPerson);
                 FakeCompany.ContactPeople.Add(FakeContactPersonDelete);
-                context.RequestRequestedBy.Add(new RequestRequestedBy(FakeRequest.Id, FakeContactPerson.Id));
-                context.RequestRequestedBy.Add(new RequestRequestedBy(FakeRequest.Id, FakeContactPersonDelete.Id));
+                context.RequestRequestedBys.Add(new RequestRequestedBy(FakeRequest.Id, FakeContactPerson.Id));
+                context.RequestRequestedBys.Add(new RequestRequestedBy(FakeRequest.Id, FakeContactPersonDelete.Id));
                 context.AddRange(FakeCompany, FakeRequest);
                 context.SaveChanges();
             }

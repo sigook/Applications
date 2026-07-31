@@ -9,6 +9,7 @@ namespace Covenant.Infrastructure.Configurations.Request
     {
         public void Configure(EntityTypeBuilder<Covenant.Common.Entities.Request.Request> builder)
         {
+            builder.ToTable("Requests");
             builder.Property(e => e.NumberId).ValueGeneratedOnAdd();
             builder.Property(e => e.CreatedAt)
                 .ValueGeneratedOnAdd();

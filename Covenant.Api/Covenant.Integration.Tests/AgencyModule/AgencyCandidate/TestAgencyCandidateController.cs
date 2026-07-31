@@ -226,8 +226,8 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Gender.AddRange(Male, Female);
-                context.Source.Add(WebPageSource);
+                context.Genders.AddRange(Male, Female);
+                context.Sources.Add(WebPageSource);
                 context.Agencies.Add(FakeAgency);
                 context.Candidates.Add(FakeCandidate);
                 context.Candidates.Add(FakeCandidateEmpty);

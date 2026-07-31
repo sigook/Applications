@@ -59,6 +59,28 @@ through `Request.CompanyProfile.CompanyId` / `WorkerRequest.WorkerProfile.Worker
 `Request` and `Runner` have **no** `AgencyId` of their own — the agency comes from
 `Request.CompanyProfile.AgencyId`. Scope agency queries through that navigation.
 
+### Table naming and EF configuration
+
+**Table names are plural; entity class names are singular.** `WorkerProfile` → `WorkerProfiles`,
+`Request` → `Requests`, `User` → `Users`. The `DbSet` properties on `CovenantContext` match the
+table name, so `_context.Requests`, not `_context.Request`.
+
+Deliberate exceptions — leave them alone:
+
+| Table | Why |
+|---|---|
+| `CppWeekly`, `CppBiWeekly`, `CppSemiMonthly`, `CppMonthly`, `TaxWeekly`, `FederalTax*`, `ProvincialTax*` | deduction rate-range tables; the plural reads as `CppWeeklies`. Their `DbSet` stays singular too, to match |
+| `AgencyPersonnel`, `AgencyContactInformation` | collective / uncountable |
+| `PayStubHistory`, `TimesheetHistory` | views, not tables |
+| `InvoicesUSA`, `CompanyProfileContactPeople` | natural plural, not the mechanical `InvoiceUSAs` / `...Persons` |
+
+Every mapped entity has its own `IEntityTypeConfiguration<T>` in **one file per entity**
+(`Configurations/{Domain}/{Entity}Configuration.cs`), and that file declares `ToTable` explicitly
+— never relying on the `DbSet`-name convention — plus `HasKey` and the entity's relationships.
+Relationships are configured from the **dependent** side (`HasOne(...).WithMany(...)
+.HasForeignKey(...)`), not with `HasMany` from the aggregate root, so each FK is declared exactly
+once and in the config of the entity that owns the column.
+
 **One profile per user.** A worker belongs to exactly one agency, and so does a company:
 `WorkerProfile.WorkerId` and `CompanyProfile.CompanyId` are each uniquely indexed on their own.
 Never assume a user can hold profiles in several agencies — filtering by `User.Id` instead of the
@@ -131,7 +153,6 @@ invoice/pay-stub time.
 | `CompanyProfileLocation` | Company↔Location + `IsBilling` |
 | `CompanyProfileContactPerson` | contact: name parts, `Position`, `MobileNumber`, `OfficeNumber(+Ext)`, `Email` |
 | `CompanyProfileDocument` | Company↔CovenantFile + `DocumentType` (`Enums/CompanyProfileDocumentType.cs`), audit |
-| `CompanyProfileHoliday` | per-company stat-holiday billing rate: `HolidayId` → Holiday, `StatPaidCompany` (decimal) |
 | `CompanyProfileIndustry` | `IndustryId` (catalog) or free-text `OtherIndustry` |
 | `CompanyProfileInvoiceNotes` | `HtmlNotes` printed on invoices |
 | `CompanyProfileInvoiceRecipient` | extra invoice email recipients: `Email`, `Name` |
@@ -232,7 +253,8 @@ there is no `IsOpen` flag.** Transitions happen only inside `AddWorker`, `Reject
 Child/related entities in the same folder: `RequestNote`, `RequestSkill`, `RequestReportTo`,
 `RequestRequestedBy`, `RequestCompanyUser` (which company users may see the request),
 `RequestComission`, `RequestCancellationDetail`, `RequestFinalizationDetail`
-(+ root-level `ReasonCancellationRequest`).
+(+ root-level `ReasonCancellationRequest`, whose `Value` is a plain English `string` — it used
+to point at a multi-language `StringResource` row, now deleted).
 
 ### WorkerRequest (`WorkerRequest.cs`)
 
@@ -325,8 +347,7 @@ Two parallel 1:1 hour-breakdown rows per timesheet, same shape (`ITimeSheetTotal
 
 Night shift is deprecated: `NightShiftHours` exists but pay stubs and invoices compute it as 0.
 
-Also: `TimeSheetPhoto` (punch-card photo evidence), `TimesheetHistory` (keyless read model for
-a worker's timesheet history view).
+Also: `TimesheetHistory` (keyless read model for a worker's timesheet history view).
 
 ---
 

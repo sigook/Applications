@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Company
     {
         public void Configure(EntityTypeBuilder<CompanyUser> builder)
         {
-            builder.ToTable("CompanyUser");
+            builder.ToTable("CompanyUsers");
             builder.HasIndex(a => new { a.CompanyProfileId, a.UserId }).IsUnique();
 
             builder.HasOne(c => c.CompanyProfile)

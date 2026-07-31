@@ -42,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var detail = await response.Content.ReadFromJsonAsync<NoteModel>();
             Assert.NotNull(detail.CreatedBy);
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.WorkerRequestNote.SingleAsync(c => c.NoteId == detail.Id);
+            var entity = await context.WorkerRequestNotes.SingleAsync(c => c.NoteId == detail.Id);
             Assert.Equal(model.Note, entity.Note.Note);
             Assert.Equal(model.Color, entity.Note.Color);
             Assert.NotNull(entity.Note.CreatedBy);
@@ -58,7 +58,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var response = await HttpClientJsonExtensions.PutAsJsonAsync(_client, $"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.WorkerRequestNote.SingleAsync(c => c.NoteId == id);
+            var entity = await context.WorkerRequestNotes.SingleAsync(c => c.NoteId == id);
             Assert.Equal(model.Note, entity.Note.Note);
             Assert.Equal(model.Color, entity.Note.Color);
             Assert.NotNull(entity.Note.UpdatedBy);
@@ -104,7 +104,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.WorkerRequestNote.SingleAsync(c => c.NoteId == id);
+            var entity = await context.WorkerRequestNotes.SingleAsync(c => c.NoteId == id);
             Assert.True(entity.Note.IsDeleted);
             Assert.NotNull(entity.Note.UpdatedBy);
             Assert.True(entity.Note.UpdatedAt <= DateTime.Now);
@@ -152,8 +152,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.WorkerRequest.Add(FakeWorkerRequest);
-                context.WorkerRequestNote.AddRange(FakeNote, FakeUpdateNote, FakeDeleteNote);
+                context.WorkerRequests.Add(FakeWorkerRequest);
+                context.WorkerRequestNotes.AddRange(FakeNote, FakeUpdateNote, FakeDeleteNote);
                 context.SaveChanges();
             }
         }

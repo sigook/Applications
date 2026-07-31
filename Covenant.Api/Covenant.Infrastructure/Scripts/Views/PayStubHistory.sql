@@ -11,4 +11,4 @@ SELECT
     "TotalPaid",
     "DateWorkBegins",
     "DateWorkEnd"
-FROM "PayStub"
+FROM "PayStubs"

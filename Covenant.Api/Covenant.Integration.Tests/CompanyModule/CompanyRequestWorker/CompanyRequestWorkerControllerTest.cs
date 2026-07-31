@@ -85,7 +85,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerProfileId}/Reject", model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.WorkerRequest.SingleAsync(s => s.Id == worker.Id);
+            var entity = await context.WorkerRequests.SingleAsync(s => s.Id == worker.Id);
             Assert.Equal(WorkerRequestStatus.Rejected, entity.WorkerRequestStatus);
             Assert.Equal(model.Comments, entity.RejectComments);
 
@@ -132,12 +132,12 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Availability.Add(Data.FakeAvailability);
-                context.Request.Add(Data.FakeRequest);
-                context.WorkerRequest.AddRange(Data.FakeWorkerRequest, Data.FakeWorkerRequestReject);
-                context.WorkerProfile.AddRange(Data.WorkerProfile, Data.FakeWorkerReject);
-                context.CompanyProfile.Add(Data.CompanyProfile);
-                context.CompanyProfileJobPositionRate.Add(Data.FakeRate);
+                context.Availabilities.Add(Data.FakeAvailability);
+                context.Requests.Add(Data.FakeRequest);
+                context.WorkerRequests.AddRange(Data.FakeWorkerRequest, Data.FakeWorkerRequestReject);
+                context.WorkerProfiles.AddRange(Data.WorkerProfile, Data.FakeWorkerReject);
+                context.CompanyProfiles.Add(Data.CompanyProfile);
+                context.CompanyProfileJobPositionRates.Add(Data.FakeRate);
                 context.SaveChanges();
             }
         }

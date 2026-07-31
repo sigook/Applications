@@ -107,34 +107,18 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
         return Ok(industries);
     }
 
-    /// <summary>Gets the cancellation reasons localized to the current culture.</summary>
+    /// <summary>Gets the cancellation reasons.</summary>
     [HttpGet("reasonCancellationRequest")]
     [ResponseCache(Duration = 3600)]
     [ProducesResponseType(typeof(IEnumerable<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ReasonCancellationRequest()
     {
-        var jobPositions = await _repository.GetReasonCancellationRequest();
-        switch (CultureInfo.CurrentCulture.Name)
+        var reasons = await _repository.GetReasonCancellationRequest();
+        return Ok(reasons.Select(c => new BaseModel<Guid>
         {
-            case ApiServicesConfiguration.FrCulture:
-                return Ok(jobPositions.Select(c => new BaseModel<Guid>
-                {
-                    Id = c.Id,
-                    Value = c.Value.Fr ?? c.Value.En
-                }));
-            case ApiServicesConfiguration.EsCulture:
-                return Ok(jobPositions.Select(c => new BaseModel<Guid>
-                {
-                    Id = c.Id,
-                    Value = c.Value.Es ?? c.Value.En
-                }));
-            default:
-                return Ok(jobPositions.Select(c => new BaseModel<Guid>
-                {
-                    Id = c.Id,
-                    Value = c.Value.En
-                }));
-        }
+            Id = c.Id,
+            Value = c.Value
+        }));
     }
 
     /// <summary>Gets the available company status values.</summary>

@@ -76,10 +76,10 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHist
                     JobLocation = new Location { City = new City { Province = new Province { Country = new Country() } } } 
                 };
                 context.Agencies.Add(FakeAgency);
-                context.CompanyProfile.Add(cp);
-                context.WorkerProfile.Add(FakeWorkerProfile);
-                context.Request.Add(request);
-                context.WorkerRequest.Add(Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerProfile.Id, request.Id));
+                context.CompanyProfiles.Add(cp);
+                context.WorkerProfiles.Add(FakeWorkerProfile);
+                context.Requests.Add(request);
+                context.WorkerRequests.Add(Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerProfile.Id, request.Id));
                 context.SaveChanges();
             }
         }

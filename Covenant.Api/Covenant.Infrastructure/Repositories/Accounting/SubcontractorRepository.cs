@@ -16,7 +16,7 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
     public SubcontractorRepository(CovenantContext context) : base(context) => _context = context;
 
     public Task<List<ReportSubcontractorModel>> GetReportsSubcontractorSummary(DateTime weekEnding) =>
-        (from rs in _context.ReportSubcontractor.Where(s => s.WeekEnding.Date == weekEnding.Date)
+        (from rs in _context.ReportSubcontractors.Where(s => s.WeekEnding.Date == weekEnding.Date)
          orderby rs.WorkerProfile.FirstName
          select new ReportSubcontractorModel
          {
@@ -49,7 +49,7 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
 
     public async Task<PaginatedList<PayrollSubContractorListModel>> GetPayrollsSubcontractor(Guid agencyId, Pagination pagination)
     {
-        var query = from ps in _context.ReportSubcontractor.Where(rs => rs.WorkerProfile.AgencyId == agencyId)
+        var query = from ps in _context.ReportSubcontractors.Where(rs => rs.WorkerProfile.AgencyId == agencyId)
                     select new { ps.WeekEnding, ps.TotalNet };
         var data = query
             .GroupBy(a => a.WeekEnding.Date)
@@ -64,7 +64,7 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
 
     public async Task<RegularWageWorker> GetSubcontractorRegularWages(Guid workerProfileId, DateTime holiday, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays)
     {
-        var queryable = from ps1 in _context.ReportSubcontractor.Where(s => s.WorkerProfileId == workerProfileId && s.DateWorkEnd.Date >= start && s.DateWorkEnd.Date <= end)
+        var queryable = from ps1 in _context.ReportSubcontractors.Where(s => s.WorkerProfileId == workerProfileId && s.DateWorkEnd.Date >= start && s.DateWorkEnd.Date <= end)
                         group ps1 by ps1.WorkerProfileId
                         into result
                         select new
@@ -76,11 +76,11 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
             RegularWage = w.RegularWage,
             HolidayWasPaid = _context.ReportSubcontractorPublicHolidays
                 .Any(psh => psh.Holiday == holiday && psh.ReportSubcontractor.WorkerProfileId == workerProfileId),
-            CustomPublicHolidayValue = _context.WorkerProfileHoliday
+            CustomPublicHolidayValue = _context.WorkerProfileHolidays
                 .Where(wph => wph.WorkerProfileId == workerProfileId && wph.Holiday.Date.Date == holiday.Date)
                 .Select(wph => wph.StatPaidWorker)
                 .FirstOrDefault(),
-            IsEntitledToReceiveHolidayPay = _context.TimeSheet
+            IsEntitledToReceiveHolidayPay = _context.TimeSheets
                 .Any(ts => ts.WorkerRequest.WorkerProfileId == workerProfileId
                     && qualifyingDays.Contains(ts.Date.Date))
         });
