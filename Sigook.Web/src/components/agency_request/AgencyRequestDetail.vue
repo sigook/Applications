@@ -7,8 +7,8 @@
       <notes :canEdit="request.canEdit" />
       <location :jobLocation="request.jobLocation" />
       <requested-by class="mt-4" :canEdit="request.canEdit" :requestId="request.id"
-        :companyId="request.companyProfileId" />
-      <report-to class="mt-3" :canEdit="request.canEdit" :requestId="request.id" :companyId="request.companyProfileId" />
+        :companyProfileId="request.companyProfileId" />
+      <report-to class="mt-3" :canEdit="request.canEdit" :requestId="request.id" :companyProfileId="request.companyProfileId" />
       <div class="mt-3">
         <h3 class="fw-bold">Created by</h3>
         <span class="d-inline-block valign-middle">

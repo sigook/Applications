@@ -1,7 +1,9 @@
 ﻿using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
+using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Company;
@@ -22,7 +24,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
     public class CompanyRequestWorkerTimeSheetControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyRequestWorkerTimeSheetControllerTest.Startup>>
     {
         private readonly HttpClient _client;
-        private readonly string _requestUri = $"api/v2/CompanyRequest/{Data.Request.Id}/Worker/{Data.Worker.Id}/TimeSheet";
+        private readonly string _requestUri = $"api/v2/CompanyRequest/{Data.Request.Id}/Worker/{Data.WorkerProfile.Id}/TimeSheet";
 
         public CompanyRequestWorkerTimeSheetControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
@@ -106,17 +108,19 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
         {
             private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
             public static readonly Guid CompanyId = Guid.NewGuid();
-            public static readonly Request Request = Request.AgencyCreateRequest(Guid.NewGuid(), CompanyId, FakeData.FakeLocation(), FakeNow, Guid.NewGuid()).Value;
+            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { CompanyId = CompanyId, FullName = "Test Company" };
+            public static readonly Request Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, Guid.NewGuid()).Value;
             public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
+            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = CompanyProfile.AgencyId };
 
             private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest =
-                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(Worker.Id, Request.Id);
+                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
 
             public static readonly TimeSheet TimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
 
             public static void Seed(CovenantContext context)
             {
-                context.AddRange(Worker, Request, FakeWorkerRequest, TimeSheet);
+                context.AddRange(Worker, WorkerProfile, CompanyProfile, Request, FakeWorkerRequest, TimeSheet);
                 context.SaveChanges();
             }
         }

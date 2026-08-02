@@ -29,7 +29,7 @@ namespace Covenant.Tests.Worker
 
         public CreateTimeSheetTest()
         {
-            var user = new User(CvnEmail.Create("test@test.com").Value, Guid.NewGuid());
+            var companyProfile = new CompanyProfile { FullName = "Test Company" };
             var agency = new Covenant.Common.Entities.Agency.Agency();
             var jobPositionRate = new CompanyProfileJobPositionRate();
             var location = new Location
@@ -42,7 +42,7 @@ namespace Covenant.Tests.Worker
                     }
                 }
             };
-            var request = new Covenant.Common.Entities.Request.Request(user, agency, jobPositionRate);
+            var request = new Covenant.Common.Entities.Request.Request(companyProfile, jobPositionRate);
             request.UpdateJobLocation(location, false);
             _workerRequest.Request = request;
             _timeService = new Mock<ITimeService>();
@@ -59,7 +59,7 @@ namespace Covenant.Tests.Worker
                 identityServerService.Object,
                 Mock.Of<IMediator>(),
                 new TelemetryClient(new TelemetryConfiguration()));
-            workerRequestRepository.Setup(r => r.GetWorkerRequest(_workerRequest.WorkerId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
+            workerRequestRepository.Setup(r => r.GetWorkerRequestByWorkerProfileId(_workerRequest.WorkerProfileId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
             identityServerService.Setup(iss => iss.GetNickname()).Returns(createdBy);
         }
 
@@ -76,7 +76,7 @@ namespace Covenant.Tests.Worker
                 TimeIn = now,
                 Hours = TimeSpan.FromHours(8)
             };
-            Result<Guid> result = await _sut.CreateTimesheet(_workerRequest.WorkerId, _workerRequest.RequestId, model);
+            Result<Guid> result = await _sut.CreateTimesheet(_workerRequest.WorkerProfileId, _workerRequest.RequestId, model);
             Assert.True(result);
             Assert.NotEqual(Guid.Empty, result.Value);
             Assert.Equal(model.TimeIn, timeSheet.TimeIn);
@@ -101,7 +101,7 @@ namespace Covenant.Tests.Worker
                 TimeIn = new DateTime(2021, 01, 01),
                 Hours = TimeSpan.FromHours(8)
             };
-            Result<Guid> result = await _sut.CreateTimesheet(_workerRequest.WorkerId, _workerRequest.RequestId, model);
+            Result<Guid> result = await _sut.CreateTimesheet(_workerRequest.WorkerProfileId, _workerRequest.RequestId, model);
             Assert.True(result);
             _timeSheetRepository.Verify(r => r.Create(It.IsAny<TimeSheet>()), Times.Once);
             _timeSheetRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
@@ -114,7 +114,7 @@ namespace Covenant.Tests.Worker
             _timeService.Setup(r => r.GetCurrentDateTime()).Returns(now);
             _workerRequest.Reject("No longer required", now.AddMonths(-1).AddDays(-1));
             var model = new TimeSheetModel();
-            Result<Guid> result = await _sut.CreateTimesheet(_workerRequest.WorkerId, _workerRequest.RequestId, model);
+            Result<Guid> result = await _sut.CreateTimesheet(_workerRequest.WorkerProfileId, _workerRequest.RequestId, model);
             Assert.False(result);
             _timeSheetRepository.Verify(r => r.Create(It.IsAny<TimeSheet>()), Times.Never);
             _timeSheetRepository.Verify(r => r.SaveChangesAsync(), Times.Never);

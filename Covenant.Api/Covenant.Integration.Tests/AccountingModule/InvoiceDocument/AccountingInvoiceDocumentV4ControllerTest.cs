@@ -157,10 +157,10 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.City.Add(Miami);
+                context.Cities.Add(Miami);
                 context.Agencies.Add(FakeAgency);
-                context.CompanyProfile.Add(FakeCompany);
-                context.InvoiceUSA.Add(FakeInvoice);
+                context.CompanyProfiles.Add(FakeCompany);
+                context.InvoicesUSA.Add(FakeInvoice);
                 context.SaveChanges();
             }
         }

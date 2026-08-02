@@ -12,8 +12,8 @@ public interface IWorkerRepository
     void Delete<T>(T entity) where T : class;
     Task CreateWorkerProfileHoliday(WorkerProfileHoliday entity);
     Task UpdateProfile(WorkerProfile entity);
-    Task<List<WorkerProfileAgencyListModel>> GetProfiles(Guid workerId);
     Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition);
+    Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination);
     Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId);
     Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition);
     Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter);

@@ -9,8 +9,8 @@ public class Invoice
     public Guid Id { get; set; } = Guid.NewGuid();
     public long NumberId { get; set; }
     public long InvoiceNumber { get; set; }
-    public Guid CompanyId { get; set; }
-    public CompanyProfile Company { get; set; }
+    public Guid CompanyProfileId { get; set; }
+    public CompanyProfile CompanyProfile { get; set; }
     public string Email { get; set; }
     public decimal NightShiftRate { get; set; }
     public decimal HolidayRate { get; set; }

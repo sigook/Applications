@@ -8,11 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Accounting
     {
         public void Configure(EntityTypeBuilder<Invoice> builder)
         {
-            builder
-                .HasMany(e => e.InvoiceTotals)
-                .WithOne(t => t.Invoice)
-                .OnDelete(DeleteBehavior.Cascade);
-
+            builder.ToTable("Invoices");
             builder.Property(i => i.NumberId).ValueGeneratedOnAdd();
         }
     }

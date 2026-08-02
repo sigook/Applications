@@ -30,7 +30,7 @@ public class RequestsController(IMediator mediator, IRequestService requestServi
         var agencyId = User.GetAgencyId();
         if (pagination.OnlyMine) pagination.Recruiter = User.GetNickname();
         if (pagination.AgencyId.HasValue) agencyId = pagination.AgencyId.Value;
-        pagination.HasPermissionToSeeInternalRequests = User.IsAccountingManager();
+        pagination.HasPermissionToSeeInternalRequests = User.IsAdmin();
         pagination.SalesPersonnelId = null;
         return Ok(await requestService.GetRequestsForAgency(agencyId, pagination));
     }
@@ -57,7 +57,7 @@ public class RequestsController(IMediator mediator, IRequestService requestServi
         {
             pagination.Recruiter = User.GetNickname();
         }
-        pagination.HasPermissionToSeeInternalRequests = User.IsAccountingManager();
+        pagination.HasPermissionToSeeInternalRequests = User.IsAdmin();
         pagination.SalesPersonnelId = null;
         var data = requestRepository.GetAllRequestsForAgency(User.GetAgencyId(), pagination).ToList();
         var file = await mediator.Send(new GenerateAgencyRequestsReport(data));

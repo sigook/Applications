@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Agency
     {
         public void Configure(EntityTypeBuilder<AgencyLocation> builder)
         {
-            builder.ToTable("AgencyLocation");
+            builder.ToTable("AgencyLocations");
             builder.HasKey(a => new { a.AgencyId, a.LocationId });
         }
     }

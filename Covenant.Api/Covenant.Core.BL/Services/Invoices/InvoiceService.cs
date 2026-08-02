@@ -475,9 +475,9 @@ public abstract class InvoiceService(
     /// <summary>
     /// Creates subcontractor reports for the given agency and company
     /// </summary>
-    protected async Task CreateSubcontractorReportsAsync(IEnumerable<Guid> agencyIds, Guid companyId)
+    protected async Task CreateSubcontractorReportsAsync(IEnumerable<Guid> agencyIds, Guid companyProfileId)
     {
-        var timesheets = await timeSheetRepository.GetTimeSheetForCreatingReportsSubcontractor(agencyIds, companyId);
+        var timesheets = await timeSheetRepository.GetTimeSheetForCreatingReportsSubcontractor(agencyIds, companyProfileId);
         if (timesheets.Count == 0) return;
 
         // Group by worker and week — overtime accumulator resets per request inside

@@ -41,7 +41,6 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         {
             AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
             Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
-            CompanyId = Data.FakeCompany.Company.Id,
             CompanyProfileId = Data.FakeCompany.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync($"api/agency/accounting/Invoices/Preview", model);
@@ -51,7 +50,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         Assert.NotEmpty(preview.Items);
         Assert.NotEmpty(preview.Discounts);
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        Assert.Empty(await context.InvoiceUSA.ToListAsync());
+        Assert.Empty(await context.InvoicesUSA.ToListAsync());
     }
 
     [Fact, TestOrder(2)]
@@ -61,16 +60,15 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         {
             AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
             Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
-            CompanyId = Data.FakeCompany.Company.Id,
             CompanyProfileId = Data.FakeCompany.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync("api/agency/accounting/Invoices", model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-        Assert.Single(await context.InvoiceUSA.ToListAsync());
-        Assert.Equal(Data.TimeSheets.Length, await context.TimeSheetTotal.CountAsync());
-        Assert.Equal(3, (await context.InvoiceUSA.SingleAsync()).Items.Count());
-        Assert.Equal(model.Discounts.Count(), (await context.InvoiceUSA.SingleAsync()).Discounts.Count());
+        Assert.Single(await context.InvoicesUSA.ToListAsync());
+        Assert.Equal(Data.TimeSheets.Length, await context.TimeSheetTotals.CountAsync());
+        Assert.Equal(3, (await context.InvoicesUSA.SingleAsync()).Items.Count());
+        Assert.Equal(model.Discounts.Count(), (await context.InvoicesUSA.SingleAsync()).Discounts.Count());
     }
 
     public class Startup
@@ -142,13 +140,13 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             Industry = new CompanyProfileIndustry("Test"),
         };
 
-        private static readonly Request FakeRequest = new Request(FakeCompany.Company, FakeAgency, new CompanyProfileJobPositionRate { CompanyProfile = FakeCompany })
+        private static readonly Request FakeRequest = new Request(FakeCompany, new CompanyProfileJobPositionRate { CompanyProfile = FakeCompany })
         {
             AgencyRate = 2,
             WorkerRate = 1
         };
 
-        public static readonly WorkerRequest FakeWorkerRequest = WorkerRequest.AgencyBook(FakeWorker.WorkerId, FakeRequest.Id);
+        public static readonly WorkerRequest FakeWorkerRequest = WorkerRequest.AgencyBook(FakeWorker.Id, FakeRequest.Id);
         public static readonly TimeSheet TimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
         public static readonly TimeSheet TimeSheet1 = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow.AddDays(1), TimeSpan.FromHours(8), now: FakeNow).Value;
         public static readonly TimeSheet[] TimeSheets = { TimeSheet, TimeSheet1 };
@@ -163,11 +161,11 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             TimeSheet.AddApprovedTime(FakeNow.AddHours(8), FakeNow.AddHours(16));
             TimeSheet1.AddApprovedTime(FakeNow.AddDays(1).AddHours(8), FakeNow.AddDays(1).AddHours(16));
 
-            context.City.Add(Toronto);
+            context.Cities.Add(Toronto);
             context.LocationTaxes.Add(LocationTax);
-            context.Request.Add(FakeRequest);
-            context.TimeSheet.AddRange(TimeSheets);
-            context.WorkerProfile.Add(FakeWorker);
+            context.Requests.Add(FakeRequest);
+            context.TimeSheets.AddRange(TimeSheets);
+            context.WorkerProfiles.Add(FakeWorker);
             context.SaveChanges();
         }
     }

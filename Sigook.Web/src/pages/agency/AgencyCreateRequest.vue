@@ -15,6 +15,7 @@
           <b-field>
             <b-checkbox v-model="directHiring">Direct Hiring?</b-checkbox>
             <b-checkbox v-model="request.isAsap" :disabled="isUpdate">Is Asap?</b-checkbox>
+            <b-checkbox v-model="request.usesRunners">Uses Runners?</b-checkbox>
             <b-checkbox v-model="sameBillingTitle" @update:modelValue="onSameBillingChecked">Job title same for billing
               title?</b-checkbox>
           </b-field>
@@ -31,7 +32,7 @@
             <b-input v-model="billingTitle" name="billingTitle" :disabled="sameBillingTitle"></b-input>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAdministration">
+        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAdmin">
           <b-field :type="errors.jobCosting ? 'is-danger' : ''" label="Job Costing"
             :message="errors.jobCosting || ''">
             <b-input v-model="jobCosting" name="jobCosting"></b-input>
@@ -57,7 +58,7 @@
               @select-footer="() => showRolesModal = true">
               <template #footer>
                 <a>
-                  <span v-if="isAccountingManager">Add new...</span>
+                  <span v-if="isAdmin">Add new...</span>
                   <span v-else>Request new...</span>
                 </a>
               </template>
@@ -79,7 +80,7 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAccountingManager">
+        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAdmin">
           <b-field label="Sales Representative">
             <b-autocomplete :data="filteredSalesRepresentative" placeholder="Sales Rep." v-model="salesRepresentative"
               open-on-focus :custom-formatter="(option) => `${option.name} - ${option.email}`"
@@ -221,7 +222,7 @@
     </form>
 
     <b-modal v-model="showRolesModal" @close="showRolesModal = false" width="850px">
-      <position-form v-if="isAccountingManager" :profile-id="companyProfileId"
+      <position-form v-if="isAdmin" :profile-id="companyProfileId"
         @updateContent="onUpdateRolesModal"></position-form>
       <request-position-form v-else :profile-id="companyProfileId" @closeModal="() => showRolesModal = false" />
     </b-modal>
@@ -239,9 +240,8 @@ import * as yup from 'yup';
 import dayjs from 'dayjs';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { useModuleBase } from '@/composables/useModuleBase';
-import { useAdministration } from '@/composables/useAdministration';
 import { getAgencyPersonnel } from '@/api/agencyApi';
 import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from '@/api/agencyCompanyApi';
 import { postAgencyRequest, updateAgencyRequest } from '@/api/agencyRequestApi';
@@ -258,8 +258,7 @@ import LocationForm from '@/components/agency_company/LocationForm.vue';
 const route = useRoute();
 const router = useRouter();
 const { requestBase } = useModuleBase();
-const { isAccountingManager } = useAccountingAdmin();
-const { isAdministration } = useAdministration();
+const { isAdmin } = useAdmin();
 
 const directHiring = ref(false);
 
@@ -341,6 +340,7 @@ const request = ref<any>({
   durationBreak: dayjs().startOf('day').toDate(),
   durationTerm: DurationTerm.LongTerm,
   employmentType: EmploymentType.FullTime,
+  usesRunners: true,
 });
 const sameBillingTitle = ref(true);
 const errorMessage = 'Please make sure all required fields are filled out correctly';
@@ -536,7 +536,7 @@ function onSubmit() {
       ...request.value,
       jobTitle: values.jobTitle,
       billingTitle: values.billingTitle,
-      jobCosting: isAdministration.value ? values.jobCosting : request.value.jobCosting,
+      jobCosting: isAdmin.value ? values.jobCosting : request.value.jobCosting,
       workersQuantity: values.workersQuantity,
       workerSalary: directHiring.value ? values.workerSalary : null,
       description: values.description,

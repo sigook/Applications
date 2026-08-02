@@ -20,7 +20,7 @@ namespace Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Controllers
     [ServiceFilter(typeof(CompanyIdFilter))]
     public class V2CompanyRequestWorkerTimeSheetController : ControllerBase
     {
-        public const string RouteName = "api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet";
+        public const string RouteName = "api/v2/CompanyRequest/{requestId}/Worker/{workerProfileId}/TimeSheet";
         private readonly ITimesheetService timeSheetService;
         private readonly ITimesheetRepository timeSheetRepository;
 
@@ -32,15 +32,15 @@ namespace Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Controllers
 
         /// <summary>Creates a timesheet for a worker on the specified request.</summary>
         /// <param name="requestId">Request identifier.</param>
-        /// <param name="workerId">Worker identifier.</param>
+        /// <param name="workerProfileId">Worker profile identifier.</param>
         /// <param name="model">Timesheet data.</param>
         [HttpPost]
         [ProducesResponseType(typeof(TimeSheetListModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromBody] TimeSheetModel model)
+        public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] TimeSheetModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-            var result = await timeSheetService.CreateTimesheet(workerId, requestId, model);
+            var result = await timeSheetService.CreateTimesheet(workerProfileId, requestId, model);
             if (result) return Ok(new TimeSheetListModel { Id = result.Value });
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
@@ -61,13 +61,13 @@ namespace Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Controllers
 
         /// <summary>Approves all completed timesheets for a worker on the specified request.</summary>
         /// <param name="requestId">Request identifier.</param>
-        /// <param name="workerId">Worker identifier.</param>
+        /// <param name="workerProfileId">Worker profile identifier.</param>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Put([FromRoute] Guid requestId, [FromRoute] Guid workerId)
+        public async Task<IActionResult> Put([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId)
         {
-            var timeSheets = await timeSheetRepository.GetTimeSheets(workerId, requestId, r => r.CompanyId == User.GetCompanyId());
+            var timeSheets = await timeSheetRepository.GetTimeSheets(workerProfileId, requestId, r => r.CompanyProfile.CompanyId == User.GetCompanyId());
             foreach (var timeSheet in timeSheets)
             {
                 if (timeSheet.TimeOut.HasValue)
@@ -83,41 +83,41 @@ namespace Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Controllers
 
         /// <summary>Registers a clock-in entry for a worker on the specified request.</summary>
         /// <param name="requestId">Request identifier.</param>
-        /// <param name="workerId">Worker identifier.</param>
+        /// <param name="workerProfileId">Worker profile identifier.</param>
         /// <param name="model">Clock-in data.</param>
         [HttpPost("ClockIn")]
         [ProducesResponseType(typeof(RegisterTimeSheetResultModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ClockIn([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromBody] CompanyClockInModel model)
+        public async Task<IActionResult> ClockIn([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] CompanyClockInModel model)
         {
             if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-            Result<RegisterTimeSheetResultModel> result = await timeSheetService.AddClockIn(requestId, workerId, model.ClockIn);
+            Result<RegisterTimeSheetResultModel> result = await timeSheetService.AddClockIn(requestId, workerProfileId, model.ClockIn);
             if (result) return Ok(result.Value);
             return BadRequest(ModelState.AddErrors(result.Errors));
         }
 
         /// <summary>Gets the timesheets of a worker on a request within an optional date range.</summary>
         /// <param name="requestId">Request identifier.</param>
-        /// <param name="workerId">Worker identifier.</param>
+        /// <param name="workerProfileId">Worker profile identifier.</param>
         /// <param name="startDate">Optional range start date.</param>
         /// <param name="endDate">Optional range end date.</param>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<TimeSheetListModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(
             [FromRoute] Guid requestId,
-            [FromRoute] Guid workerId,
+            [FromRoute] Guid workerProfileId,
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate) =>
-            Ok(await timeSheetRepository.GetTimeSheetsListModel(workerId, requestId, startDate, endDate));
+            Ok(await timeSheetRepository.GetTimeSheetsListModel(workerProfileId, requestId, startDate, endDate));
 
         /// <summary>Deletes a timesheet by its identifier.</summary>
         /// <param name="requestId">Request identifier.</param>
-        /// <param name="workerId">Worker identifier.</param>
+        /// <param name="workerProfileId">Worker profile identifier.</param>
         /// <param name="id">Timesheet identifier.</param>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromRoute] Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromRoute] Guid id)
         {
             var result = await timeSheetService.RemoveTimeSheet(id);
             if (result)

@@ -107,7 +107,7 @@
             </section>
 
             <span class="line-gray" id="comments" />
-            <comments v-if="commentsData" :user-id="worker.workerId" :data="commentsData" :size-comments="commentSize"
+            <comments v-if="commentsData" :worker-profile-id="worker.id" :data="commentsData" :size-comments="commentSize"
               @newComment="() => updateComments()" @changePage="(page) => changePageComments(page)" />
           </section>
           <aside class="col-md-3 col-sm-12 section-right">
@@ -116,10 +116,10 @@
         </div>
         </div>
       </b-tab-item>
-      <b-tab-item label="Settings" value="workerSettings" v-if="isAccountingManager">
+      <b-tab-item label="Settings" value="workerSettings" v-if="isAdmin">
         <worker-settings v-if="visitedTabs.includes('workerSettings')" v-model:worker="worker" />
       </b-tab-item>
-      <b-tab-item label="PayStubs" value="wageHistory" v-if="isAccountingManager">
+      <b-tab-item label="PayStubs" value="wageHistory" v-if="isAdmin">
         <wage-history v-if="visitedTabs.includes('wageHistory')" :workerId="worker.id" />
       </b-tab-item>
       <b-tab-item label="Timesheet" value="timeSheetHistory">
@@ -137,7 +137,7 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
 import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
@@ -171,7 +171,7 @@ import otherDocuments from '@/components/worker/WorkerOtherDocumentsDetail.vue';
 
 const route = useRoute();
 const router = useRouter();
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const currentJobEx = ref(0);
 const isLoading = ref(true);
@@ -186,7 +186,7 @@ const commentsData = ref<any>({});
 const hasDnuPermission = computed(() => {
   if (!worker.value.dnu) {
     return false;
-  } else if (worker.value.dnu && isAccountingManager.value) {
+  } else if (worker.value.dnu && isAdmin.value) {
     return false;
   }
   return true;

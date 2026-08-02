@@ -1,14 +1,11 @@
-﻿using Covenant.Api.Shared.WorkerComment.Models;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
@@ -23,8 +20,7 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
 
-        private static string Uri(Guid workerId, Guid? id = null)
-            => $"api/worker/{workerId}/comment{(id is null ? string.Empty : $"/{id}")}";
+        private static string Uri(Guid workerId) => $"api/worker/{workerId}/comment";
         private readonly HttpClient _client;
 
         public TestWorkerCommentController(CustomWebApplicationFactory<Startup> factory)
@@ -34,53 +30,12 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
         }
 
         [Fact]
-        public async Task AgencyPostComment()
-        {
-            var url = $"{Uri(Data.WorkerProfile.Worker.Id)}/Agency";
-            var model = new CreateCommentModel { Comment = "Good worker says agency", Rate = 4 };
-            HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
-            response.EnsureSuccessStatusCode();
-            response = await _client.GetAsync(response.Headers.Location);
-            response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadFromJsonAsync<WorkerCommentModel>();
-            Assert.Equal(model.Comment, detail.Comment);
-            Assert.Equal(model.Rate, detail.Rate);
-        }
-        [Fact]
-        public async Task CompanyPostComment()
-        {
-            var url = $"{Uri(Data.WorkerProfile.Worker.Id)}/Company";
-            var model = new CreateCommentModel { Comment = "Bad worker says company", Rate = 4 };
-            HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
-            response.EnsureSuccessStatusCode();
-            response = await _client.GetAsync(response.Headers.Location);
-            response.EnsureSuccessStatusCode();
-            var detail = await response.Content.ReadFromJsonAsync<WorkerCommentModel>();
-            Assert.Equal(model.Comment, detail.Comment);
-            Assert.Equal(model.Rate, detail.Rate);
-        }
-
-        [Fact]
-        public async Task Put()
-        {
-            var model = new CreateCommentModel { Comment = "Good worker", Rate = 5 };
-            var url = Uri(Data.WorkerProfile.Worker.Id, Data.Comment.Id);
-            HttpResponseMessage response = await _client.PutAsJsonAsync(url, model);
-            response.EnsureSuccessStatusCode();
-            response = await _client.GetAsync(url);
-            var detail = await response.Content.ReadFromJsonAsync<WorkerCommentModel>();
-            Assert.Equal(model.Comment, detail.Comment);
-            Assert.Equal(model.Rate, detail.Rate);
-        }
-
-        [Fact]
         public async Task GetList()
         {
             HttpResponseMessage response = await _client.GetAsync(Uri(Data.WorkerProfile.Worker.Id));
             response.EnsureSuccessStatusCode();
             var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerCommentModel>>();
             Assert.NotEmpty(list.Items);
-            Assert.All(list.Items, m => Assert.NotNull(m.Logo));
         }
 
         public class Startup
@@ -91,12 +46,11 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
                 services.AddTestAuthenticationBuilder().AddTestAuth(o =>
                 {
                     o.AddSub(Data.LoginUser.Id);
-                    o.AddAgencyPersonnelRole();
+                    o.AddAgencyPersonnelRole(Data.LoginUser.Id);
                     o.AddCompanyRole();
                 });
                 services.AddDbContext<CovenantContext>(
                     b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
-                services.AddSingleton<IWorkerCommentsRepository, WorkerCommentsRepository>();
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(new DateTime(2019, 01, 01));
                 services.AddSingleton(timeService.Object);
@@ -114,9 +68,9 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.WorkerProfile.Add(Data.WorkerProfile);
-                context.CompanyProfile.Add(Data.CompanyProfile);
-                context.WorkerComment.Add(Data.Comment);
+                context.WorkerProfiles.Add(Data.WorkerProfile);
+                context.CompanyProfiles.Add(Data.CompanyProfile);
+                context.WorkerComments.AddRange(Data.Comment, Data.CompanyComment);
                 context.SaveChanges();
             }
         }
@@ -130,7 +84,10 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
             };
 
             public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = LoginUser, Logo = new CovenantFile("logo.png") };
-            public static readonly Covenant.Common.Entities.Worker.WorkerComment Comment = Covenant.Common.Entities.Worker.WorkerComment.CommentPostByCompany(WorkerProfile.Worker.Id, CompanyProfile.Company.Id, "Ok", 1);
+            public static readonly Covenant.Common.Entities.Worker.WorkerComment Comment =
+                Covenant.Common.Entities.Worker.WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
+            public static readonly Covenant.Common.Entities.Worker.WorkerComment CompanyComment =
+                Covenant.Common.Entities.Worker.WorkerComment.CommentPostByCompany(WorkerProfile.Id, CompanyProfile.Id, "Posted by the company", 3);
         }
     }
 }

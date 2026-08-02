@@ -98,7 +98,7 @@ public class CanadaInvoiceService(
         await invoiceRepository.SaveChangesAsync();
 
         // Create subcontractor reports for Canadian invoices
-        await CreateSubcontractorReportsAsync(agencyIds, model.CompanyId);
+        await CreateSubcontractorReportsAsync(agencyIds, model.CompanyProfileId);
 
         return Result.Ok(invoice.Id);
     }
@@ -181,7 +181,7 @@ public class CanadaInvoiceService(
         // 8. Create invoice
         var invoice = new Invoice
         {
-            CompanyId = model.CompanyProfileId,
+            CompanyProfileId = model.CompanyProfileId,
             InvoiceNumber = nextInvoiceNumber.NextNumber,
             NightShiftRate = 0, // Not using night shift
             HolidayRate = rates.Holiday,

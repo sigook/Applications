@@ -1,8 +1,9 @@
-using Covenant.Common.Entities.Deductions;
+﻿using Covenant.Common.Enums;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Deductions;
+using Covenant.Common.Models.Accounting.Deductions;
 using Covenant.Common.Repositories;
-using Covenant.Infrastructure.Deductions;
+using Covenant.Common.Repositories.Accounting;
+using Covenant.Infrastructure.Accounting.Deductions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,32 +22,32 @@ namespace Covenant.Api.AccountingModule.Deduction.Tax
 		/// </summary>
 		/// <param name="pagination">Year and paging parameters.</param>
 		[HttpGet("Weekly")]
-		[ProducesResponseType(typeof(PaginatedList<ProvincialTaxWeekly>), StatusCodes.Status200OK)]
-		public async Task<IActionResult> GetWeekly(DeductionPagination pagination) => Ok(await _repository.GetProvincialTaxWeekly(pagination));
+		[ProducesResponseType(typeof(PaginatedList<TaxModel>), StatusCodes.Status200OK)]
+		public async Task<IActionResult> GetWeekly(DeductionPagination pagination) => Ok(await _repository.GetTax(pagination, PayPeriod.Weekly, TaxType.Provincial));
 
 		/// <summary>
 		/// Gets the bi-weekly provincial tax deduction table for the requested year.
 		/// </summary>
 		/// <param name="pagination">Year and paging parameters.</param>
 		[HttpGet("BiWeekly")]
-		[ProducesResponseType(typeof(PaginatedList<ProvincialTaxBiWeekly>), StatusCodes.Status200OK)]
-		public async Task<IActionResult> GetBiWeekly(DeductionPagination pagination) => Ok(await _repository.GetProvincialTaxBiWeekly(pagination));
+		[ProducesResponseType(typeof(PaginatedList<TaxModel>), StatusCodes.Status200OK)]
+		public async Task<IActionResult> GetBiWeekly(DeductionPagination pagination) => Ok(await _repository.GetTax(pagination, PayPeriod.BiWeekly, TaxType.Provincial));
 
 		/// <summary>
 		/// Gets the semi-monthly provincial tax deduction table for the requested year.
 		/// </summary>
 		/// <param name="pagination">Year and paging parameters.</param>
 		[HttpGet("SemiMonthly")]
-		[ProducesResponseType(typeof(PaginatedList<ProvincialTaxSemiMonthly>), StatusCodes.Status200OK)]
-		public async Task<IActionResult> GetSemiMonthly(DeductionPagination pagination) => Ok(await _repository.GetProvincialTaxSemiMonthly(pagination));
+		[ProducesResponseType(typeof(PaginatedList<TaxModel>), StatusCodes.Status200OK)]
+		public async Task<IActionResult> GetSemiMonthly(DeductionPagination pagination) => Ok(await _repository.GetTax(pagination, PayPeriod.SemiMonthly, TaxType.Provincial));
 
 		/// <summary>
 		/// Gets the monthly provincial tax deduction table for the requested year.
 		/// </summary>
 		/// <param name="pagination">Year and paging parameters.</param>
 		[HttpGet("Monthly")]
-		[ProducesResponseType(typeof(PaginatedList<ProvincialTaxMonthly>), StatusCodes.Status200OK)]
-		public async Task<IActionResult> GetMonthly(DeductionPagination pagination) => Ok(await _repository.GetProvincialTaxMonthly(pagination));
+		[ProducesResponseType(typeof(PaginatedList<TaxModel>), StatusCodes.Status200OK)]
+		public async Task<IActionResult> GetMonthly(DeductionPagination pagination) => Ok(await _repository.GetTax(pagination, PayPeriod.Monthly, TaxType.Provincial));
 
 		/// <summary>
 		/// Loads the weekly provincial tax deduction table from an uploaded Excel file.

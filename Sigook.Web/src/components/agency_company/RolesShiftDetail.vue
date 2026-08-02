@@ -14,7 +14,7 @@ import { showAlertError } from "@/utils/toast";
 import { getAgencyCompanyJobPositionById } from "@/api/agencyCompanyApi";
 import ShiftDetail from "../request/ShiftDetail.vue";
 
-const props = defineProps<{ displayShift?: any; roleId: any; companyId: any }>();
+const props = defineProps<{ displayShift?: any; roleId: any; companyProfileId: any }>();
 
 const shift = ref<any>(null);
 const showDetail = ref(false);
@@ -24,7 +24,7 @@ function getShift() {
     if (!showDetail.value) {
         isLoading.value = true;
         showDetail.value = true;
-        getAgencyCompanyJobPositionById(props.companyId, props.roleId)
+        getAgencyCompanyJobPositionById(props.companyProfileId, props.roleId)
             .then(response => {
                 isLoading.value = false;
                 shift.value = response.shift;

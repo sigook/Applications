@@ -22,6 +22,95 @@ namespace Covenant.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Deductions.CppDeduction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Cpp")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<byte>("PayPeriod")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Year", "PayPeriod", "From", "To");
+
+                    b.ToTable("CppDeductions", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Deductions.TaxDeduction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cc0")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc1")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc10")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc2")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc3")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc4")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc5")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc6")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc7")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc8")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cc9")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("From")
+                        .HasColumnType("numeric");
+
+                    b.Property<byte>("PayPeriod")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte>("TaxType")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("To")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Year", "PayPeriod", "TaxType", "From", "To");
+
+                    b.ToTable("TaxDeductions", (string)null);
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -31,7 +120,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("BonusRate")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -78,9 +167,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("Invoice");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
@@ -106,7 +195,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("UsaInvoiceId")
                         .IsUnique();
 
-                    b.ToTable("InvoiceAdditionalDetail", (string)null);
+                    b.ToTable("InvoiceAdditionalDetails", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalItem", b =>
@@ -131,7 +220,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceAdditionalItem");
+                    b.ToTable("InvoiceAdditionalItems", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceDiscount", b =>
@@ -159,7 +248,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceDiscount");
+                    b.ToTable("InvoiceDiscounts", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceHoliday", b =>
@@ -189,7 +278,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("InvoiceHoliday");
+                    b.ToTable("InvoiceHolidays", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceTotal", b =>
@@ -252,7 +341,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("InvoiceTotal", (string)null);
+                    b.ToTable("InvoiceTotals", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
@@ -326,7 +415,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("InvoiceNumberId")
                         .IsUnique();
 
-                    b.ToTable("InvoiceUSA");
+                    b.ToTable("InvoicesUSA", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSADiscount", b =>
@@ -354,7 +443,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceUSAId");
 
-                    b.ToTable("InvoiceUSADiscount");
+                    b.ToTable("InvoiceUSADiscounts", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSAItem", b =>
@@ -417,7 +506,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("InvoiceUSAItem", (string)null);
+                    b.ToTable("InvoiceUSAItems", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSATimeSheetTotal", b =>
@@ -432,7 +521,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("InvoiceUSATimeSheetTotal", (string)null);
+                    b.ToTable("InvoiceUSATimeSheetTotals", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.SkipPayrollNumber", b =>
@@ -446,7 +535,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SkipPayrollNumber", (string)null);
+                    b.ToTable("SkipPayrollNumbers", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStub", b =>
@@ -522,7 +611,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("PayStub");
+                    b.ToTable("PayStubs", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubHistory", b =>
@@ -593,7 +682,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("PayStubId");
 
-                    b.ToTable("PayStubItem");
+                    b.ToTable("PayStubItems", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubOtherDeduction", b =>
@@ -621,7 +710,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("PayStubId");
 
-                    b.ToTable("PayStubOtherDeduction");
+                    b.ToTable("PayStubOtherDeductions", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubPublicHoliday", b =>
@@ -646,7 +735,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("PayStubId");
 
-                    b.ToTable("PayStubPublicHoliday", (string)null);
+                    b.ToTable("PayStubPublicHolidays", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubWageDetail", b =>
@@ -691,7 +780,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("PayStubWageDetail");
+                    b.ToTable("PayStubWageDetails", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
@@ -719,7 +808,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ReportSubcontractorId");
 
-                    b.ToTable("ReportSubContractorOtherDeduction");
+                    b.ToTable("ReportSubContractorOtherDeductions", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
@@ -768,7 +857,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("ReportSubcontractor");
+                    b.ToTable("ReportSubcontractors", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>
@@ -793,7 +882,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ReportSubcontractorId");
 
-                    b.ToTable("ReportSubcontractorPublicHoliday", (string)null);
+                    b.ToTable("ReportSubcontractorPublicHolidays", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorWageDetail", b =>
@@ -838,7 +927,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("TimeSheetTotalId");
 
-                    b.ToTable("ReportSubcontractorWageDetail");
+                    b.ToTable("ReportSubcontractorWageDetails", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
@@ -897,7 +986,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Agency", (string)null);
+                    b.ToTable("Agencies", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyContactInformation", b =>
@@ -940,7 +1029,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AgencyId");
 
-                    b.ToTable("AgencyContactInformation");
+                    b.ToTable("AgencyContactInformation", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyLocation", b =>
@@ -958,7 +1047,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("AgencyLocation", (string)null);
+                    b.ToTable("AgencyLocations", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyPersonnel", b =>
@@ -1004,7 +1093,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WsibGroupId");
 
-                    b.ToTable("AgencyWsibGroup");
+                    b.ToTable("AgencyWsibGroups", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Availability", b =>
@@ -1018,7 +1107,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Availability");
+                    b.ToTable("Availabilities", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.AvailabilityTime", b =>
@@ -1032,7 +1121,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AvailabilityTime");
+                    b.ToTable("AvailabilityTimes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
@@ -1106,7 +1195,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("DocumentId");
 
-                    b.ToTable("CandidateDocument", (string)null);
+                    b.ToTable("CandidateDocuments", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateNote", b =>
@@ -1121,7 +1210,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("CandidateNote", (string)null);
+                    b.ToTable("CandidateNotes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidatePhone", b =>
@@ -1181,7 +1270,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ProvinceId");
 
-                    b.ToTable("City");
+                    b.ToTable("Cities", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
@@ -1281,16 +1370,16 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AgencyId");
 
+                    b.HasIndex("CompanyId")
+                        .IsUnique();
+
                     b.HasIndex("IndustryId");
 
                     b.HasIndex("LogoId");
 
                     b.HasIndex("SalesRepresentativeId");
 
-                    b.HasIndex("CompanyId", "AgencyId")
-                        .IsUnique();
-
-                    b.ToTable("CompanyProfile");
+                    b.ToTable("CompanyProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileContactPerson", b =>
@@ -1333,7 +1422,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("CompanyProfileContactPerson", (string)null);
+                    b.ToTable("CompanyProfileContactPeople", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileDocument", b =>
@@ -1357,31 +1446,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("CompanyProfileDocument", (string)null);
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileHoliday", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("HolidayId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("StatPaidCompany")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyProfileId");
-
-                    b.HasIndex("HolidayId");
-
-                    b.ToTable("CompanyProfileHoliday");
+                    b.ToTable("CompanyProfileDocuments", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileIndustry", b =>
@@ -1400,7 +1465,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("IndustryId");
 
-                    b.ToTable("CompanyProfileIndustry");
+                    b.ToTable("CompanyProfileIndustries", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceNotes", b =>
@@ -1419,7 +1484,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("CompanyProfileInvoiceNotes");
+                    b.ToTable("CompanyProfileInvoiceNotes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceRecipient", b =>
@@ -1441,7 +1506,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CompanyProfileId");
 
-                    b.ToTable("CompanyProfileInvoiceRecipient");
+                    b.ToTable("CompanyProfileInvoiceRecipients", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileJobPositionRate", b =>
@@ -1498,7 +1563,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ShiftId");
 
-                    b.ToTable("CompanyProfileJobPositionRate");
+                    b.ToTable("CompanyProfileJobPositionRates", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileLocation", b =>
@@ -1516,7 +1581,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("CompanyProfileLocation", (string)null);
+                    b.ToTable("CompanyProfileLocations", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileNote", b =>
@@ -1531,7 +1596,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("CompanyProfileNote", (string)null);
+                    b.ToTable("CompanyProfileNotes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyUser", b =>
@@ -1540,7 +1605,7 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1568,10 +1633,10 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("CompanyId", "UserId")
+                    b.HasIndex("CompanyProfileId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("CompanyUser", (string)null);
+                    b.ToTable("CompanyUsers", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Country", b =>
@@ -1588,7 +1653,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Country");
+                    b.ToTable("Countries", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.CovenantFile", b =>
@@ -1605,7 +1670,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CovenantFile");
+                    b.ToTable("CovenantFiles", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.CovenantNote", b =>
@@ -1637,7 +1702,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CovenantNote");
+                    b.ToTable("CovenantNotes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Day", b =>
@@ -1651,523 +1716,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Day");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.CppWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Cpp")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CppWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.FederalTaxSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FederalTaxSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxBiWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxBiWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxSemiMonthly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxSemiMonthly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.ProvincialTaxWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProvincialTaxWeekly");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Deductions.TaxWeekly", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cc0")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc1")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc10")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc2")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc5")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc6")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc7")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc8")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("Cc9")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("From")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("To")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TaxWeekly");
+                    b.ToTable("Days", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Gender", b =>
@@ -2181,7 +1730,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Gender");
+                    b.ToTable("Genders", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Holiday", b =>
@@ -2204,7 +1753,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("Date")
                         .IsUnique();
 
-                    b.ToTable("Holiday", (string)null);
+                    b.ToTable("Holidays", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.IdentificationType", b =>
@@ -2218,7 +1767,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("IdentificationType");
+                    b.ToTable("IdentificationTypes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Industry", b =>
@@ -2235,7 +1784,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Industry");
+                    b.ToTable("Industries", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Language", b =>
@@ -2249,7 +1798,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Language");
+                    b.ToTable("Languages", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Lift", b =>
@@ -2263,7 +1812,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lift");
+                    b.ToTable("Lifts", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Location", b =>
@@ -2297,7 +1846,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("Location");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.LocationTax", b =>
@@ -2332,7 +1881,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationType");
+                    b.ToTable("NotificationTypes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Notification.UserNotificationType", b =>
@@ -2363,7 +1912,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("UserId", "NotificationTypeId")
                         .IsUnique();
 
-                    b.ToTable("UserNotificationType");
+                    b.ToTable("UserNotificationTypes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Province", b =>
@@ -2385,7 +1934,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("Province");
+                    b.ToTable("Provinces", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.ProvinceSetting", b =>
@@ -2413,23 +1962,18 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<string>("Code")
                         .HasColumnType("text");
 
-                    b.Property<long?>("ValueId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ValueId");
-
-                    b.ToTable("ReasonCancellationRequest");
+                    b.ToTable("ReasonCancellationRequests", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AgencyId")
                         .HasColumnType("uuid");
 
                     b.Property<decimal?>("AgencyRate")
@@ -2441,7 +1985,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<bool>("BreakIsPaid")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -2528,6 +2072,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("UsesRunners")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal?>("WorkerRate")
                         .HasColumnType("numeric");
 
@@ -2542,9 +2089,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AgencyId");
-
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("CompanyProfileId");
 
                     b.HasIndex("JobLocationId");
 
@@ -2552,7 +2097,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ShiftId");
 
-                    b.ToTable("Request");
+                    b.ToTable("Requests", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestApplicant", b =>
@@ -2587,7 +2132,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("RequestApplicant");
+                    b.ToTable("RequestApplicants", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCancellationDetail", b =>
@@ -2612,7 +2157,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ReasonCancellationRequestId");
 
-                    b.ToTable("RequestCancellationDetail", (string)null);
+                    b.ToTable("RequestCancellationDetails", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestComission", b =>
@@ -2667,7 +2212,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestFinalizationDetail");
+                    b.ToTable("RequestFinalizationDetails", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestNote", b =>
@@ -2682,7 +2227,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("RequestNote", (string)null);
+                    b.ToTable("RequestNotes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
@@ -2710,7 +2255,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("RequestId", "RecruiterId", "WorkDate")
                         .IsUnique();
 
-                    b.ToTable("RequestRecruiter", (string)null);
+                    b.ToTable("RequestRecruiters", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestReportTo", b =>
@@ -2725,7 +2270,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ContactPersonId");
 
-                    b.ToTable("RequestReportTo", (string)null);
+                    b.ToTable("RequestReportTos", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRequestedBy", b =>
@@ -2740,7 +2285,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("ContactPersonId");
 
-                    b.ToTable("RequestRequestedBy", (string)null);
+                    b.ToTable("RequestRequestedBys", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSkill", b =>
@@ -2759,7 +2304,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestSkill");
+                    b.ToTable("RequestSkills", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSource", b =>
@@ -2784,19 +2329,13 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("SourceId");
 
-                    b.ToTable("RequestSource", (string)null);
+                    b.ToTable("RequestSources", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AgencyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CandidateId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -2812,6 +2351,9 @@ namespace Covenant.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
 
                     b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("RequestRecruiterId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("StartDate")
@@ -2831,20 +2373,22 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("WorkerProfileId")
+                    b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AgencyId");
-
-                    b.HasIndex("CandidateId");
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("RequestId");
 
+                    b.HasIndex("RequestRecruiterId");
+
+                    b.HasIndex("UpdatedBy");
+
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("Runners");
+                    b.ToTable("Runners", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
@@ -2893,9 +2437,13 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("RescheduledBy");
+
                     b.HasIndex("RunnerId");
 
-                    b.ToTable("RunnerInterviews");
+                    b.ToTable("RunnerInterviews", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
@@ -2929,7 +2477,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("RunnerId");
 
-                    b.ToTable("RunnerStatusHistories");
+                    b.ToTable("RunnerStatusHistories", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
@@ -3008,25 +2556,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerRequestId");
 
-                    b.ToTable("TimeSheet");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetPhoto", b =>
-                {
-                    b.Property<Guid>("TimeSheetId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("PhotoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("TimeSheetId", "PhotoId");
-
-                    b.HasIndex("PhotoId");
-
-                    b.ToTable("TimeSheetPhoto", (string)null);
+                    b.ToTable("TimeSheets", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotal", b =>
@@ -3064,7 +2594,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("TimeSheetId")
                         .IsUnique();
 
-                    b.ToTable("TimeSheetTotal");
+                    b.ToTable("TimeSheetTotals", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", b =>
@@ -3102,7 +2632,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("TimeSheetId")
                         .IsUnique();
 
-                    b.ToTable("TimeSheetTotalPayroll", (string)null);
+                    b.ToTable("TimeSheetTotalPayrolls", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimesheetHistory", b =>
@@ -3148,36 +2678,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToView("TimesheetHistory", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RequestRecruiterId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WorkerProfileId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("WorkerProfileId");
-
-                    b.HasIndex("RequestRecruiterId", "WorkerProfileId")
-                        .IsUnique();
-
-                    b.ToTable("WorkerDispatch", (string)null);
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3208,7 +2708,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime?>("WeekStartWorking")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("WorkerId")
+                    b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("WorkerRequestStatus")
@@ -3216,12 +2716,12 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("WorkerProfileId");
 
-                    b.HasIndex("RequestId", "WorkerId")
+                    b.HasIndex("RequestId", "WorkerProfileId")
                         .IsUnique();
 
-                    b.ToTable("WorkerRequest", (string)null);
+                    b.ToTable("WorkerRequests", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequestNote", b =>
@@ -3236,7 +2736,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("NoteId");
 
-                    b.ToTable("WorkerRequestNote", (string)null);
+                    b.ToTable("WorkerRequestNotes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Shift", b =>
@@ -3316,7 +2816,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Shift");
+                    b.ToTable("Shifts", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Source", b =>
@@ -3343,28 +2843,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Sources", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.StringResource", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("En")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Es")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Fr")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("StringResource");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3385,7 +2863,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerComment", b =>
@@ -3394,13 +2872,10 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AgencyId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Comment")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CompanyId")
+                    b.Property<Guid?>("CompanyProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -3415,18 +2890,16 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("Rate")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("WorkerId")
+                    b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AgencyId");
+                    b.HasIndex("CompanyProfileId");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("WorkerProfileId");
 
-                    b.HasIndex("WorkerId");
-
-                    b.ToTable("WorkerComment", (string)null);
+                    b.ToTable("WorkerComments", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfile", b =>
@@ -3596,10 +3069,10 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("SocialInsuranceFileId");
 
-                    b.HasIndex("WorkerId", "AgencyId")
+                    b.HasIndex("WorkerId")
                         .IsUnique();
 
-                    b.ToTable("WorkerProfile");
+                    b.ToTable("WorkerProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailability", b =>
@@ -3614,7 +3087,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AvailabilityId");
 
-                    b.ToTable("WorkerProfileAvailability", (string)null);
+                    b.ToTable("WorkerProfileAvailabilities", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityDay", b =>
@@ -3629,7 +3102,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("DayId");
 
-                    b.ToTable("WorkerProfileAvailabilityDay", (string)null);
+                    b.ToTable("WorkerProfileAvailabilityDays", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityTime", b =>
@@ -3644,7 +3117,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("AvailabilityTimeId");
 
-                    b.ToTable("WorkerProfileAvailabilityTime", (string)null);
+                    b.ToTable("WorkerProfileAvailabilityTimes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileCertificate", b =>
@@ -3665,7 +3138,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileCertificate", (string)null);
+                    b.ToTable("WorkerProfileCertificates", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileHoliday", b =>
@@ -3690,7 +3163,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WorkerProfileId", "HolidayId")
                         .IsUnique();
 
-                    b.ToTable("WorkerProfileHoliday", (string)null);
+                    b.ToTable("WorkerProfileHolidays", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileJobExperience", b =>
@@ -3724,7 +3197,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileJobExperience");
+                    b.ToTable("WorkerProfileJobExperiences", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLanguage", b =>
@@ -3739,7 +3212,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.ToTable("WorkerProfileLanguage", (string)null);
+                    b.ToTable("WorkerProfileLanguages", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLicense", b =>
@@ -3769,7 +3242,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileLicense", (string)null);
+                    b.ToTable("WorkerProfileLicenses", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLocationPreference", b =>
@@ -3784,7 +3257,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("WorkerProfileLocationPreference", (string)null);
+                    b.ToTable("WorkerProfileLocationPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileNote", b =>
@@ -3809,7 +3282,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileNote");
+                    b.ToTable("WorkerProfileNotes", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileOtherDocument", b =>
@@ -3830,7 +3303,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileOtherDocument", (string)null);
+                    b.ToTable("WorkerProfileOtherDocuments", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileSkill", b =>
@@ -3849,7 +3322,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("WorkerProfileId");
 
-                    b.ToTable("WorkerProfileSkill");
+                    b.ToTable("WorkerProfileSkills", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileTaxCategory", b =>
@@ -3891,7 +3364,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WsibGroup");
+                    b.ToTable("WsibGroups", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Models.Accounting.NextNumberModel", b =>
@@ -3906,13 +3379,13 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "Company")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
+                        .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Company");
+                    b.Navigation("CompanyProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
@@ -4415,25 +3888,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileHoliday", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
-                        .WithMany()
-                        .HasForeignKey("CompanyProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Holiday", "Holiday")
-                        .WithMany()
-                        .HasForeignKey("HolidayId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CompanyProfile");
-
-                    b.Navigation("Holiday");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileIndustry", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Industry", "Industry")
@@ -4522,9 +3976,9 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyUser", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.User", "Company")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
+                        .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4534,7 +3988,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Company");
+                    b.Navigation("CompanyProfile");
 
                     b.Navigation("User");
                 });
@@ -4602,27 +4056,12 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Province");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.ReasonCancellationRequest", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.StringResource", "Value")
-                        .WithMany()
-                        .HasForeignKey("ValueId");
-
-                    b.Navigation("Value");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.User", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("CompanyProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Covenant.Common.Entities.Location", "JobLocation")
@@ -4639,9 +4078,7 @@ namespace Covenant.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ShiftId");
 
-                    b.Navigation("Agency");
-
-                    b.Navigation("Company");
+                    b.Navigation("CompanyProfile");
 
                     b.Navigation("JobLocation");
 
@@ -4839,16 +4276,11 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.User", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
-                        .WithMany()
-                        .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
                         .WithMany()
@@ -4856,27 +4288,55 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
+                        .WithMany("Runners")
+                        .HasForeignKey("RequestRecruiterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Covenant.Common.Entities.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
-                    b.Navigation("Agency");
-
-                    b.Navigation("Candidate");
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Request");
+
+                    b.Navigation("RequestRecruiter");
+
+                    b.Navigation("UpdatedByUser");
 
                     b.Navigation("WorkerProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
                 {
+                    b.HasOne("Covenant.Common.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.User", "RescheduledByUser")
+                        .WithMany()
+                        .HasForeignKey("RescheduledBy")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
                         .WithMany("Interviews")
                         .HasForeignKey("RunnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("RescheduledByUser");
 
                     b.Navigation("Runner");
                 });
@@ -4911,25 +4371,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerRequest");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetPhoto", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.CovenantFile", "Photo")
-                        .WithMany()
-                        .HasForeignKey("PhotoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheet", "TimeSheet")
-                        .WithMany()
-                        .HasForeignKey("TimeSheetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Photo");
-
-                    b.Navigation("TimeSheet");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotal", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.TimeSheet", "TimeSheet")
@@ -4952,16 +4393,11 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheet");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerDispatch", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
-                        .WithMany("Dispatches")
-                        .HasForeignKey("RequestRecruiterId")
+                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                        .WithMany("Workers")
+                        .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4971,28 +4407,9 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("RequestRecruiter");
-
-                    b.Navigation("WorkerProfile");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany("Workers")
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.User", "Worker")
-                        .WithMany()
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Request");
 
-                    b.Navigation("Worker");
+                    b.Navigation("WorkerProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequestNote", b =>
@@ -5016,25 +4433,20 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerComment", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("AgencyId");
+                        .HasForeignKey("CompanyProfileId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Covenant.Common.Entities.User", "Company")
+                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
                         .WithMany()
-                        .HasForeignKey("CompanyId");
-
-                    b.HasOne("Covenant.Common.Entities.User", "Worker")
-                        .WithMany()
-                        .HasForeignKey("WorkerId")
+                        .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Agency");
+                    b.Navigation("CompanyProfile");
 
-                    b.Navigation("Company");
-
-                    b.Navigation("Worker");
+                    b.Navigation("WorkerProfile");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfile", b =>
@@ -5455,7 +4867,7 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
                 {
-                    b.Navigation("Dispatches");
+                    b.Navigation("Runners");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>

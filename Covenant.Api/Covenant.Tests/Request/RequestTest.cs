@@ -12,7 +12,7 @@ namespace Covenant.Tests.Request
         public void CancelRequest()
         {
             var now = new DateTime(2019, 01, 01);
-            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), Guid.NewGuid(), new Location(), now, Guid.NewGuid()).Value;
+            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), now, Guid.NewGuid()).Value;
 
             // Verify initial status is Open
             Assert.Equal(RequestStatus.Open, request.Status);
@@ -160,7 +160,7 @@ namespace Covenant.Tests.Request
             Assert.Contains("workers assigned", result.Errors.Single().Message);
 
             // Remove all workers
-            var worker2 = request.Workers.First(w => w.WorkerRequestStatus == WorkerRequestStatus.Booked).WorkerId;
+            var worker2 = request.Workers.First(w => w.WorkerRequestStatus == WorkerRequestStatus.Booked).WorkerProfileId;
             request.RejectWorker(worker2, default);
 
             // Now can cancel (Open status, no workers)

@@ -1,5 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
-import { recruitingAccess, agencyStaff, salesAccess, accountingAccess } from "@/security/roles";
+import { recruitingAccess, agencyStaff, salesAccess, adminAccess } from "@/security/roles";
 import {
   loadAgencyCompaniesResolver,
   loadCompanyToUpdateResolver,
@@ -275,7 +275,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-invoices",
     meta: {
       requiresAuth: true,
-      role: accountingAccess,
+      role: adminAccess,
     },
   },
   {
@@ -284,7 +284,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "create-invoice",
     meta: {
       requiresAuth: true,
-      role: accountingAccess,
+      role: adminAccess,
     },
   },
   {
@@ -293,7 +293,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "agency-paystubs",
     meta: {
       requiresAuth: true,
-      role: accountingAccess,
+      role: adminAccess,
     },
   },
   {
@@ -302,7 +302,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "create-paystub",
     meta: {
       requiresAuth: true,
-      role: accountingAccess,
+      role: adminAccess,
     },
   },
   {
@@ -311,7 +311,7 @@ const routesAgency: RouteRecordRaw[] = [
     name: "reports",
     meta: {
       requiresAuth: true,
-      role: accountingAccess
+      role: adminAccess
     },
   }
 ];

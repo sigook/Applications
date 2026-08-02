@@ -10,7 +10,7 @@
       </h2>
     </div>
     <div>
-      <export :url="'/api/AgencyWorkerProfile/File'" :params="serverParams" :fileName="'Workers'"
+      <export :url="'/api/agency/workers/File'" :params="serverParams" :fileName="'Workers'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
           <b-button tag="router-link" to="/recruiting/workers/register" icon-left="plus">

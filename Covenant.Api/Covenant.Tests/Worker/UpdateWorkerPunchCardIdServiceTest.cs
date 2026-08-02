@@ -10,6 +10,7 @@ using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Agency;
+using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
@@ -40,6 +41,7 @@ namespace Covenant.Tests.Worker
             _sut = new WorkerService(
                 _workerRepository.Object,
                 Mock.Of<IAgencyRepository>(),
+                Mock.Of<ICompanyRepository>(),
                 Mock.Of<IUserRepository>(),
                 Mock.Of<INotificationRepository>(),
                 Mock.Of<IRequestRepository>(),

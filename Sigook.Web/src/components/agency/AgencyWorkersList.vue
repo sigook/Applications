@@ -11,7 +11,7 @@
         </b-field>
       </div>
       <div class="col-12 col-padding">
-        <b-button type="is-primary" @click="bookWorker" :disabled="!workerId">Book Worker</b-button>
+        <b-button type="is-primary" @click="bookWorker" :disabled="!workerProfileId">Book Worker</b-button>
       </div>
     </div>
   </div>
@@ -33,7 +33,7 @@ const requestId = ref<any>(route.params.id);
 const isLoadingList = ref(false);
 const workers = ref<any[]>([]);
 const workerSelected = ref<any>(null);
-const workerId = ref<any>(null);
+const workerProfileId = ref<any>(null);
 
 function onWorkerInput(text: string) {
   if (text.length >= 3) {
@@ -58,9 +58,9 @@ function searchWorkers(text: string) {
 
 function selectWorker(worker: any) {
   if (worker) {
-    workerId.value = worker.id;
+    workerProfileId.value = worker.workerProfileId;
   } else {
-    workerId.value = null;
+    workerProfileId.value = null;
   }
 }
 
@@ -75,7 +75,7 @@ async function bookWorker() {
     confirmText: 'Book',
     onConfirm: async (value: any, dialog: any) => {
       isLoading.value = true;
-      await bookAgencyRequestWorker(requestId.value, workerId.value, { startWorking: value }).then(() => {
+      await bookAgencyRequestWorker(requestId.value, workerProfileId.value, { startWorking: value }).then(() => {
         isLoading.value = false;
         showAlertSuccess('Booked');
         emit('workerBooked');

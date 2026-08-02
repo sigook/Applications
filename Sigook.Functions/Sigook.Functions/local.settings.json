@@ -4,8 +4,12 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "ENVIRONMENT": "Development",
+    "AZURE_FUNCTIONS_ENVIRONMENT": "Development",
     "KeyVault:Url": "https://sigook.vault.azure.net/",
-    "ScheduleTasks_AccountsUrl": "https://localhost:44381/connect/token",
-    "ScheduleTasks_ApiUrl": "https://localhost:44307/api/ScheduleTasks/"
+    "ScheduleTasks__AccountsUrl": "https://localhost:44381/connect/token",
+    "ScheduleTasks__ApiUrl": "https://localhost:44307/api/ScheduleTasks/",
+    "CraTables__ApiUrl": "https://localhost:44307/api/Accounting/Deduction/Cpp/Blob",
+    "CraTablesStorage__blobServiceUri": "https://sigookfilesstaging.blob.core.windows.net",
+    "CraTablesStorage__queueServiceUri": "https://sigookfilesstaging.queue.core.windows.net"
   }
 }

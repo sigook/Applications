@@ -25,7 +25,7 @@
             @click="onShowBulkCancelModal">
             Cancel requests
           </b-dropdown-item>
-          <b-dropdown-item v-if="isAdministration" aria-role="menuitem" :disabled="checkedRows.length < 1"
+          <b-dropdown-item v-if="isAdmin" aria-role="menuitem" :disabled="checkedRows.length < 1"
             @click="onShowBulkRecruitersModal">
             Assign / Unassign recruiters
           </b-dropdown-item>
@@ -64,7 +64,7 @@
             </div>
           </template>
         </b-table-column>
-        <b-table-column field="companyFullName" label="Client" :visible="!companyId" sortable searchable>
+        <b-table-column field="companyFullName" label="Client" :visible="!companyProfileId" sortable searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"
               @keypress="onInputEntered"></b-input>
@@ -261,8 +261,7 @@ import { appGlobals } from '@/varaibles';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, breakWord, currency } from '@/utils/filters';
 import { isDirectHiring } from '@/utils/directHiring';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
-import { useAdministration } from '@/composables/useAdministration';
+import { useAdmin } from '@/composables/useAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
 import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/api/agencyRequestApi";
 import { getSalesRequests } from "@/api/salesApi";
@@ -285,7 +284,7 @@ import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
 import Export from '@/components/Export.vue';
 
-const props = defineProps<{ totalItems?: number; companyId?: any; agencyId?: any; config?: any }>();
+const props = defineProps<{ totalItems?: number; companyProfileId?: any; agencyId?: any; config?: any }>();
 const emit = defineEmits<{
   (e: 'onDataLoading', value: boolean): void;
   (e: 'update:totalItems', value: number): void;
@@ -293,8 +292,7 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const agencyStore = useAgencyStore();
-const { isAccountingManager } = useAccountingAdmin();
-const { isAdministration } = useAdministration();
+const { isAdmin } = useAdmin();
 
 const { isSalesView, requestBase: requestDetailBase, companyBase: companyDetailBase } = useModuleBase();
 const exportUrl = computed(() =>
@@ -463,7 +461,7 @@ function getStatusClass(row: any) {
 function loadRequests() {
   checkedRows.value = [];
   emit('onDataLoading', true);
-  if (!props.companyId && !props.agencyId) {
+  if (!props.companyProfileId && !props.agencyId) {
     agencyStore.updateAgencyRequestFilter(serverParams);
   }
   const fetchRequests = isSalesView.value ? getSalesRequests : getAgencyRequests;
@@ -549,7 +547,7 @@ watch(checkedRows, (rows) => {
   quickActions.isAsap = rows.length > 0 && rows.every((r: any) => r.isAsap);
 });
 
-if (!props.companyId && !props.agencyId) {
+if (!props.companyProfileId && !props.agencyId) {
   if (agencyStore.agencyRequestFilter) {
     Object.assign(serverParams, agencyStore.agencyRequestFilter);
     if (serverParams.statuses) {
@@ -560,12 +558,12 @@ if (!props.companyId && !props.agencyId) {
       createdAtDatesSelected.value[1] = serverParams.createdAtTo;
     }
   } else {
-    serverParams.onlyMine = !isAccountingManager.value;
+    serverParams.onlyMine = !isAdmin.value;
   }
 } else {
   serverParams.onlyMine = false;
-  if (props.companyId) {
-    serverParams.companyId = props.companyId;
+  if (props.companyProfileId) {
+    serverParams.companyProfileId = props.companyProfileId;
   }
   if (props.agencyId) {
     serverParams.agencyId = props.agencyId;

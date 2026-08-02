@@ -104,3 +104,14 @@
     }
   }
 }
+
+// Status chip + worker name row of a runner. Shared by both boards; it cannot
+// live inside the block above because the admin board renders it in a modal
+// that Buefy teleports out of `.weekly-board`.
+.runner-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}

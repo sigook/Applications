@@ -23,8 +23,8 @@ namespace Covenant.Tests.Worker
         private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { Id = UserAgency.Id, User = UserAgency };
         private static readonly User UserWorker = new User(CvnEmail.Create("uWorker@com.com").Value);
         private static readonly WorkerProfile Wp = new WorkerProfile(UserWorker) { Agency = FakeAgency, PunchCardId = "ABC" };
-        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = new Covenant.Common.Entities.Request.Request(new User(CvnEmail.Create("company@com.com").Value), FakeAgency, new CompanyProfileJobPositionRate());
-        private static readonly WorkerRequest Wr = WorkerRequest.AgencyBook(Wp.WorkerId, FakeRequest.Id);
+        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = new Covenant.Common.Entities.Request.Request(new CompanyProfile { FullName = "Fake Company" }, new CompanyProfileJobPositionRate());
+        private static readonly WorkerRequest Wr = WorkerRequest.AgencyBook(Wp.Id, FakeRequest.Id);
 
         public WorkerRequestRepositoryTest()
         {
@@ -36,9 +36,9 @@ namespace Covenant.Tests.Worker
             _sut2 = new TimesheetRepository(_context, Mock.Of<Rates>(), Mock.Of<IRequestRepository>(), Mock.Of<TimeLimits>());
             FakeRequest.UpdateShift(new Shift());
             Wr.UpdateStartWorking(FakeNow);
-            _context.WorkerProfile.Add(Wp);
-            _context.Request.Add(FakeRequest);
-            _context.WorkerRequest.Add(Wr);
+            _context.WorkerProfiles.Add(Wp);
+            _context.Requests.Add(FakeRequest);
+            _context.WorkerRequests.Add(Wr);
             _context.SaveChanges();
         }
 
@@ -53,7 +53,7 @@ namespace Covenant.Tests.Worker
         public async Task GetLatestTimesheet()
         {
             var timeSheet = TimeSheet.CreateTimeSheet(Wr, FakeNow, TimeSpan.FromHours(1), now: FakeNow).Value;
-            await _context.TimeSheet.AddAsync(timeSheet);
+            await _context.TimeSheets.AddAsync(timeSheet);
             await _context.SaveChangesAsync();
             var latestTimesheet = await _sut2.GetLatestTimesheet(w => w.WorkerId == Wp.Worker.Id);
             AssertModel();

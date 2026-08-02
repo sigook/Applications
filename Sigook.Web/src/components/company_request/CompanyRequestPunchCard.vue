@@ -55,7 +55,7 @@
           </b-table-column>
         </template>
         <template #detail="props">
-          <TablePunchCard :workerId="props.row.workerId" :requestId="serverParams.requestId" :request="request"
+          <TablePunchCard :workerProfileId="props.row.workerProfileId" :requestId="serverParams.requestId" :request="request"
             :worker="props.row.worker"></TablePunchCard>
         </template>
       </b-table>

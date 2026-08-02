@@ -18,7 +18,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Requests;
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class RunnersController(IRunnerService runnerService, IRunnerRepository runnerRepository, IRequestRepository requestRepository) : ControllerBase
 {
-    /// <summary>Searches workers and candidates that can be added as runners for the request, excluding those already runners.</summary>
+    /// <summary>Searches workers that can be added as runners for the request, excluding those already runners.</summary>
     /// <param name="requestId">Identifier of the request (order).</param>
     /// <param name="searchTerm">Term used to filter by name, email or number id.</param>
     [HttpGet("Search")]
@@ -49,9 +49,9 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
         return Ok(runner);
     }
 
-    /// <summary>Creates a runner (from a candidate or a worker) for the specified request.</summary>
+    /// <summary>Creates a runner from a worker for the specified request.</summary>
     /// <param name="requestId">Identifier of the request (order).</param>
-    /// <param name="model">Runner data identifying a candidate or a worker profile and its type.</param>
+    /// <param name="model">Runner data identifying a worker profile and its type.</param>
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -61,6 +61,18 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
         var result = await runnerService.CreateRunner(requestId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
+    }
+
+    /// <summary>Deletes a runner along with its status history and interviews.</summary>
+    /// <param name="id">Identifier of the runner.</param>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
+    {
+        var result = await runnerService.DeleteRunner(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     /// <summary>Changes the status of a runner and appends an entry to its status history.</summary>

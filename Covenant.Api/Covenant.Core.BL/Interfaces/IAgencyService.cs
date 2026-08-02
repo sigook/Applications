@@ -19,7 +19,7 @@ public interface IAgencyService
     Task NotifySinsExpired();
     Task NotifyLicensesExpired();
     Task<Result> IncreaseWorkersQuantityByOne(Guid requestId);
-    Task<Result<Guid>> BookWorker(Guid requestId, Guid workerId, AgencyBookWorkerModel model);
+    Task<Result<Guid>> BookWorker(Guid requestId, Guid workerProfileId, AgencyBookWorkerModel model);
     Task UpdateWorkerProfileTaxCategory(Guid workerProfileId, WorkerProfileDetailModel model);
     Task UpdateWorkerProfileTaxRate(Guid workerProfileId, WorkerProfileDetailModel model);
     Task<Result<CompanyProfileDocument>> CreateCompanyDocument(Guid companyProfileId, CompanyProfileDocumentModel model);

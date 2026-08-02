@@ -29,7 +29,7 @@ namespace Covenant.Tests.Billing
             CompanyProfile = FakeProfile
         };
 
-        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(FakeProfile.Agency.Id, FakeProfile.CompanyId, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
+        private static readonly Covenant.Common.Entities.Request.Request FakeRequest = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(FakeProfile.Id, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
 
         public TestGetInvoiceSummary()
         {
@@ -46,10 +46,10 @@ namespace Covenant.Tests.Billing
         public async Task GetInvoiceSummaryById()
         {
             var invoice = FakeInvoice();
-            await _context.CompanyProfile.AddAsync(FakeProfile);
-            await _context.CompanyProfileJobPositionRate.AddAsync(PositionRate);
+            await _context.CompanyProfiles.AddAsync(FakeProfile);
+            await _context.CompanyProfileJobPositionRates.AddAsync(PositionRate);
             await _context.CompanyProfileInvoiceNotes.AddAsync(InvoiceNotes);
-            await _context.Invoice.AddAsync(invoice);
+            await _context.Invoices.AddAsync(invoice);
             await _context.SaveChangesAsync();
 
             var sub = new InvoiceRepository(_context);
@@ -60,7 +60,7 @@ namespace Covenant.Tests.Billing
             Assert.Equal(invoice.NumberId, summaryModel.NumberId);
             Assert.Equal(Invoice.BuildInvoiceNumber(invoice.InvoiceNumber, invoice.CreatedAt), summaryModel.InvoiceNumber);
             Assert.Equal(new DateOnly(invoice.CreatedAt.Year, invoice.CreatedAt.Month, invoice.CreatedAt.Day), summaryModel.CreatedAt);
-            Assert.Equal(invoice.CompanyId, summaryModel.CompanyProfileId);
+            Assert.Equal(invoice.CompanyProfileId, summaryModel.CompanyProfileId);
             Assert.Equal(FakeProfile.FullName, summaryModel.CompanyFullName);
             Assert.Equal(FakeProfile.Company.Email, summaryModel.Email);
             Assert.Equal(FakeProfile.Locations.First().Location.FormattedAddress, summaryModel.Address);
@@ -144,7 +144,7 @@ namespace Covenant.Tests.Billing
         {
             var invoice = new Invoice
             {
-                CompanyId = FakeProfile.Id,
+                CompanyProfileId = FakeProfile.Id,
                 InvoiceNumber = 1,
                 NightShiftRate = 1,
                 HolidayRate = 1,
@@ -301,15 +301,15 @@ namespace Covenant.Tests.Billing
                 TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero,
                 TimeSpan.FromHours(8), TimeSpan.Zero);
 
-            context.Request.Add(FakeRequest);
-            context.User.Add(worker);
-            context.WorkerRequest.Add(workerRequest);
-            context.TimeSheet.AddRange(tRegular, tOtherRegular, tOvertime, tHoliday, tMissing,
+            context.Requests.Add(FakeRequest);
+            context.Users.Add(worker);
+            context.WorkerRequests.Add(workerRequest);
+            context.TimeSheets.AddRange(tRegular, tOtherRegular, tOvertime, tHoliday, tMissing,
                 tMissingOvertime, tMissingDifferentRate, tMissingOvertimeDifferentRate, tNightShift);
-            context.TimeSheetTotal.AddRange(tstRegular, tstOtherRegular, tstOvertime, tstHoliday, tstMissing,
+            context.TimeSheetTotals.AddRange(tstRegular, tstOtherRegular, tstOvertime, tstHoliday, tstMissing,
                 tstMissingOvertime, tstMissingDifferentRate, tstMissingOvertimeDifferentRate, tstNightShift);
             context.SaveChanges();
-            return context.TimeSheetTotal.Include(ts => ts.TimeSheet).ToList();
+            return context.TimeSheetTotals.Include(ts => ts.TimeSheet).ToList();
         }
 
         private static TimeSheet FakeTimeSheet(Guid workerRequestId) =>

@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Worker
     {
         public void Configure(EntityTypeBuilder<WorkerProfileCertificate> builder)
         {
-            builder.ToTable("WorkerProfileCertificate");
+            builder.ToTable("WorkerProfileCertificates");
             builder.HasKey(k => k.Id);
         }
     }

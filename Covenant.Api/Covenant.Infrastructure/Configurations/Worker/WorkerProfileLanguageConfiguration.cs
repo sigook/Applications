@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Worker
     {
         public void Configure(EntityTypeBuilder<WorkerProfileLanguage> builder)
         {
-            builder.ToTable("WorkerProfileLanguage");
+            builder.ToTable("WorkerProfileLanguages");
             builder.HasKey(a => new { a.WorkerProfileId, a.LanguageId });
         }
     }

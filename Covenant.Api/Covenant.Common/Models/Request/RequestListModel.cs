@@ -24,5 +24,5 @@ public class RequestListModel
     public DateTime FinishWorking { get; set; }
     public string DisplayShift { get; set; }
     public bool IsDirectHiring { get; set; }
-    public Guid CompanyId { get; set; }
+    public Guid CompanyProfileId { get; set; }
 }

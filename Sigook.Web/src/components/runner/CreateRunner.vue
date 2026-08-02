@@ -10,10 +10,10 @@
           <b-radio-button v-model="type" :native-value="RunnerType.Passive" type="is-primary">Passive</b-radio-button>
         </b-field>
 
-        <b-field label="Worker/Candidate" :type="errors.applicantId ? 'is-danger' : ''"
-          :message="errors.applicantId || 'Type at least 3 characters to search'">
+        <b-field label="Worker" :type="errors.workerProfileId ? 'is-danger' : ''"
+          :message="errors.workerProfileId || 'Type at least 3 characters to search'">
           <b-autocomplete v-model="searchText" :data="results" placeholder="Search by name, email or ID..." append-to-body
-            name="applicant" :loading="isSearching" :custom-formatter="formatOption" @typing="onSearchInput" @select="onSelect">
+            name="worker" :loading="isSearching" :custom-formatter="formatOption" @typing="onSearchInput" @select="onSelect">
             <template v-slot="props">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -21,7 +21,6 @@
                   <span class="ms-2">{{ props.option.name }}</span>
                   <small v-if="props.option.email" class="ms-2 color-gray-light">{{ props.option.email }}</small>
                 </div>
-                <span class="tag-sm-gray ms-2">{{ props.option.type }}</span>
               </div>
             </template>
           </b-autocomplete>
@@ -29,7 +28,7 @@
       </section>
       <footer class="modal-card-foot">
         <b-button @click="emit('close')">Cancel</b-button>
-        <b-button type="is-primary" native-type="submit">Add Runner</b-button>
+        <b-button type="is-primary" native-type="submit" :loading="props.isSaving">Add Runner</b-button>
       </footer>
     </form>
   </div>
@@ -45,33 +44,31 @@ import type { ApplicantSearchResult } from '@/types/agency';
 import { RunnerType } from '@/types/runner';
 import type { CreateRunnerModel } from '@/types/runner';
 
-const props = defineProps<{ requestId: string }>();
+const props = defineProps<{ requestId: string; isSaving?: boolean }>();
 const emit = defineEmits<{ (e: 'create', model: CreateRunnerModel): void; (e: 'close'): void }>();
 
 const searchText = ref('');
 const results = ref<ApplicantSearchResult[]>([]);
-const selected = ref<ApplicantSearchResult | null>(null);
 const isSearching = ref(false);
 
 const schema = yup.object({
   type: yup.number().required(),
-  applicantId: yup.string().required('Select a worker or candidate'),
+  workerProfileId: yup.string().required('Select a worker'),
 });
 
-const form = useStickyForm<{ type: RunnerType; applicantId: string }>({
+const form = useStickyForm<{ type: RunnerType; workerProfileId: string }>({
   schema,
-  initialValues: { type: RunnerType.Active, applicantId: '' },
+  initialValues: { type: RunnerType.Active, workerProfileId: '' },
 });
-const { type, applicantId } = form.fields;
+const { type, workerProfileId } = form.fields;
 const errors = form.errors;
 
 function formatOption(option: ApplicantSearchResult): string {
-  return `#${option.numberId} | ${option.name} | ${option.email || 'No Email'} | ${option.type}`;
+  return `#${option.numberId} | ${option.name} | ${option.email || 'No Email'}`;
 }
 
 function onSearchInput(text: string) {
-  selected.value = null;
-  applicantId.value = '';
+  workerProfileId.value = '';
   if (text.length < 3) {
     results.value = [];
     return;
@@ -88,18 +85,15 @@ function onSearchInput(text: string) {
 }
 
 function onSelect(item: ApplicantSearchResult | null) {
-  selected.value = item;
-  applicantId.value = item ? (item.workerProfileId ?? item.candidateId ?? '') : '';
+  workerProfileId.value = item?.workerProfileId ?? '';
 }
 
 function submit() {
   form.markInteracted();
   form.handleSubmit(
     values => {
-      if (!selected.value) return;
       emit('create', {
-        workerProfileId: selected.value.workerProfileId ?? null,
-        candidateId: selected.value.candidateId ?? null,
+        workerProfileId: values.workerProfileId,
         type: values.type,
       });
     },

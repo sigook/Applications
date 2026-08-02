@@ -17,17 +17,17 @@ namespace Covenant.Infrastructure.Repositories
 
         public void Delete<T>(T entity) where T: class => _context.Set<T>().Remove(entity);
 
-        public Task<User> GetUserById(Guid userId) => _context.User.FirstOrDefaultAsync(c => c.Id == userId);
+        public Task<User> GetUserById(Guid userId) => _context.Users.FirstOrDefaultAsync(c => c.Id == userId);
 
-        public Task<string> GetUserEmail(Guid userId) => _context.User.Where(c => c.Id == userId).Select(c => c.Email).AsNoTracking().SingleOrDefaultAsync();
+        public Task<string> GetUserEmail(Guid userId) => _context.Users.Where(c => c.Id == userId).Select(c => c.Email).AsNoTracking().SingleOrDefaultAsync();
 
-        public Task<User> GetUserByEmail(string email) => _context.User.SingleOrDefaultAsync(c => c.Email.ToLower().Equals(email.ToLower()));
+        public Task<User> GetUserByEmail(string email) => _context.Users.SingleOrDefaultAsync(c => c.Email.ToLower().Equals(email.ToLower()));
 
-        public async Task<bool> UserExists(string email) => await _context.User.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+        public async Task<bool> UserExists(string email) => await _context.Users.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()));
 
-        public Task<bool> UserIsWorker(Guid userId) => _context.WorkerProfile.AnyAsync(c => c.WorkerId == userId);
+        public Task<bool> UserIsWorker(Guid userId) => _context.WorkerProfiles.AnyAsync(c => c.WorkerId == userId);
 
-        public Task<bool> UserIsCompany(Guid userId) => _context.CompanyProfile.AnyAsync(c => c.CompanyId == userId);
+        public Task<bool> UserIsCompany(Guid userId) => _context.CompanyProfiles.AnyAsync(c => c.CompanyId == userId);
 
         public Task SaveChangesAsync() => _context.SaveChangesAsync();
     }

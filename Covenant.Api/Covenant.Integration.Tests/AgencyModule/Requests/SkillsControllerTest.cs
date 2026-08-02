@@ -38,7 +38,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<SkillModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            RequestSkill entity = await context.RequestSkill.SingleAsync(c => c.Id == detail.Id);
+            RequestSkill entity = await context.RequestSkills.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(detail.Id, entity.Id);
             Assert.Equal(model.Skill, entity.Skill);
         }
@@ -62,7 +62,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Assert.False(await context.RequestSkill.AnyAsync(c => c.Id == id));
+            Assert.False(await context.RequestSkills.AnyAsync(c => c.Id == id));
         }
 
         public class Startup
@@ -95,8 +95,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Request.Add(FakeRequest);
-                context.RequestSkill.AddRange(FakeSkill, FakeDeleteSkill);
+                context.Requests.Add(FakeRequest);
+                context.RequestSkills.AddRange(FakeSkill, FakeDeleteSkill);
                 context.SaveChanges();
             }
         }

@@ -15,33 +15,33 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Requests;
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class WorkerTimeSheetsController(ITimesheetRepository timeSheetRepository, ITimesheetService timeSheetService) : ControllerBase
 {
-    public const string RouteName = "api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets";
+    public const string RouteName = "api/agency/requests/{requestId}/Workers/{workerProfileId}/TimeSheets";
 
     /// <summary>Gets the timesheets of a worker for a request within an optional date range.</summary>
     /// <param name="requestId">Identifier of the request.</param>
-    /// <param name="workerId">Identifier of the worker.</param>
+    /// <param name="workerProfileId">Identifier of the worker profile.</param>
     /// <param name="startDate">Optional start date filter.</param>
     /// <param name="endDate">Optional end date filter.</param>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<TimeSheetListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(
         [FromRoute] Guid requestId,
-        [FromRoute] Guid workerId,
+        [FromRoute] Guid workerProfileId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate) =>
-        Ok(await timeSheetRepository.GetTimeSheetsListModel(workerId, requestId, startDate, endDate));
+        Ok(await timeSheetRepository.GetTimeSheetsListModel(workerProfileId, requestId, startDate, endDate));
 
     /// <summary>Creates a timesheet for a worker on the specified request.</summary>
     /// <param name="requestId">Identifier of the request.</param>
-    /// <param name="workerId">Identifier of the worker.</param>
+    /// <param name="workerProfileId">Identifier of the worker profile.</param>
     /// <param name="model">Timesheet data.</param>
     [HttpPost]
     [ProducesResponseType(typeof(TimeSheetListModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromBody] TimeSheetModel model)
+    public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] TimeSheetModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await timeSheetService.CreateTimesheet(workerId, requestId, model);
+        var result = await timeSheetService.CreateTimesheet(workerProfileId, requestId, model);
         if (result) return Ok(new TimeSheetListModel { Id = result.Value });
         return BadRequest(ModelState.AddErrors(result.Errors));
     }
@@ -62,26 +62,26 @@ public class WorkerTimeSheetsController(ITimesheetRepository timeSheetRepository
 
     /// <summary>Gets the usage information of a specific timesheet.</summary>
     /// <param name="requestId">Identifier of the request.</param>
-    /// <param name="workerId">Identifier of the worker.</param>
+    /// <param name="workerProfileId">Identifier of the worker profile.</param>
     /// <param name="id">Identifier of the timesheet.</param>
     [HttpGet("{id:guid}/Usages")]
     [ProducesResponseType(typeof(TimeSheetUsagesModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Usages([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromRoute] Guid id)
+    public async Task<IActionResult> Usages([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromRoute] Guid id)
     {
-        TimeSheetUsagesModel model = await timeSheetRepository.GetTimeSheetUsages(requestId, workerId, id);
+        TimeSheetUsagesModel model = await timeSheetRepository.GetTimeSheetUsages(requestId, workerProfileId, id);
         if (model is null) return NotFound();
         return Ok(model);
     }
 
     /// <summary>Deletes a timesheet.</summary>
     /// <param name="requestId">Identifier of the request.</param>
-    /// <param name="workerId">Identifier of the worker.</param>
+    /// <param name="workerProfileId">Identifier of the worker profile.</param>
     /// <param name="id">Identifier of the timesheet to delete.</param>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Delete(Guid requestId, Guid workerId, Guid id)
+    public async Task<IActionResult> Delete(Guid requestId, Guid workerProfileId, Guid id)
     {
         var result = await timeSheetService.RemoveTimeSheet(id);
         if (result)

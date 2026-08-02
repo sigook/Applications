@@ -28,24 +28,10 @@ public class WorkerRepository : IWorkerRepository
         filesConfiguration = options.Value;
     }
 
-    public Task UpdateProfile(WorkerProfile entity) => Task.FromResult(_context.WorkerProfile.Update(entity));
-
-    public Task<List<WorkerProfileAgencyListModel>> GetProfiles(Guid workerId)
-    {
-        return (from wp in _context.WorkerProfile.Where(c => c.WorkerId == workerId)
-                join a in _context.Agencies on wp.AgencyId equals a.Id
-                join cf in _context.CovenantFile on a.LogoId equals cf.Id into tmp
-                from cfl in tmp.DefaultIfEmpty()
-                select new WorkerProfileAgencyListModel
-                {
-                    Id = wp.Id,
-                    AgencyFullName = a.FullName,
-                    AgencyLogo = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}"
-                }).AsNoTracking().ToListAsync();
-    }
+    public Task UpdateProfile(WorkerProfile entity) => Task.FromResult(_context.WorkerProfiles.Update(entity));
 
     public Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition) =>
-        _context.WorkerProfile.Where(condition)
+        _context.WorkerProfiles.Where(condition)
             .Include(e => e.Worker)
             .Include(c => c.ProfileImage)
             .Include(c => c.SocialInsuranceFile)
@@ -73,34 +59,12 @@ public class WorkerRepository : IWorkerRepository
 
     public Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition)
     {
-        return (from wp in _context.WorkerProfile.Where(condition)
-                join u in _context.User on wp.WorkerId equals u.Id
-                join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id into temp13
-                from cf in temp13.DefaultIfEmpty()
-                join gender12 in _context.Gender on wp.GenderId equals gender12.Id into tmp12
-                from gender12 in tmp12.DefaultIfEmpty()
-                join scf1 in _context.CovenantFile on wp.SocialInsuranceFileId equals scf1.Id into tmp1
-                from scf1 in tmp1.DefaultIfEmpty()
-                join icf2 in _context.CovenantFile on wp.IdentificationType1FileId equals icf2.Id into tmp2
-                from icf2 in tmp2.DefaultIfEmpty()
-                join icf3 in _context.CovenantFile on wp.IdentificationType2FileId equals icf3.Id into tmp3
-                from icf3 in tmp3.DefaultIfEmpty()
-                join type4 in _context.IdentificationType on wp.IdentificationType1Id equals type4.Id into tmp4
-                from type4 in tmp4.DefaultIfEmpty()
-                join type5 in _context.IdentificationType on wp.IdentificationType2Id equals type5.Id into tmp5
-                from type5 in tmp5.DefaultIfEmpty()
-                join pcf6 in _context.CovenantFile on wp.PoliceCheckBackGroundId equals pcf6.Id into tmp6
-                from pcf6 in tmp6.DefaultIfEmpty()
-                join l7 in _context.Location on wp.LocationId equals l7.Id
-                join lift10 in _context.Lift on wp.LiftId equals lift10.Id into tmp10
-                from lift10 in tmp10.DefaultIfEmpty()
-                join cfr11 in _context.CovenantFile on wp.ResumeId equals cfr11.Id into tmp11
-                from cfr11 in tmp11.DefaultIfEmpty()
+        return (from wp in _context.WorkerProfiles.Where(condition)
                 select new WorkerProfileDetailModel
                 {
                     Id = wp.Id,
                     NumberId = wp.NumberId,
-                    ProfileImage = cf == null
+                    ProfileImage = wp.ProfileImage == null
                         ? new CovenantFileModel
                         {
                             FileName = "worker.png",
@@ -108,88 +72,88 @@ public class WorkerRepository : IWorkerRepository
                         }
                         : new CovenantFileModel
                         {
-                            Id = cf.Id,
-                            Description = cf.Description,
-                            FileName = cf.FileName,
-                            PathFile = string.Concat(filesConfiguration.FilesPath, cf.FileName)
+                            Id = wp.ProfileImage.Id,
+                            Description = wp.ProfileImage.Description,
+                            FileName = wp.ProfileImage.FileName,
+                            PathFile = string.Concat(filesConfiguration.FilesPath, wp.ProfileImage.FileName)
                         },
                     FirstName = wp.FirstName,
                     MiddleName = wp.MiddleName,
                     LastName = wp.LastName,
                     SecondLastName = wp.SecondLastName,
                     BirthDay = wp.BirthDay,
-                    Gender = gender12 == null ? null : new BaseModel<Guid> { Id = gender12.Id, Value = gender12.Value },
+                    Gender = wp.Gender == null ? null : new BaseModel<Guid> { Id = wp.Gender.Id, Value = wp.Gender.Value },
                     SocialInsurance = wp.SocialInsurance,
                     SocialInsuranceExpire = wp.SocialInsuranceExpire,
                     DueDate = wp.DueDate,
-                    SocialInsuranceFile = scf1 == null
+                    SocialInsuranceFile = wp.SocialInsuranceFile == null
                         ? null
                         : new CovenantFileModel
                         {
-                            Id = scf1.Id,
-                            Description = scf1.Description,
-                            FileName = scf1.FileName,
-                            PathFile = string.Concat(filesConfiguration.FilesPath, scf1.FileName)
+                            Id = wp.SocialInsuranceFile.Id,
+                            Description = wp.SocialInsuranceFile.Description,
+                            FileName = wp.SocialInsuranceFile.FileName,
+                            PathFile = string.Concat(filesConfiguration.FilesPath, wp.SocialInsuranceFile.FileName)
                         },
                     IdentificationNumber1 = wp.IdentificationNumber1,
                     IdentificationNumber2 = wp.IdentificationNumber2,
                     HavePoliceCheckBackground = wp.HavePoliceCheckBackground,
-                    IdentificationType1File = icf2 == null
+                    IdentificationType1File = wp.IdentificationType1File == null
                         ? null
                         : new CovenantFileModel
                         {
-                            Id = icf2.Id,
-                            Description = icf2.Description,
-                            FileName = icf2.FileName,
-                            PathFile = string.Concat(filesConfiguration.FilesPath, icf2.FileName)
+                            Id = wp.IdentificationType1File.Id,
+                            Description = wp.IdentificationType1File.Description,
+                            FileName = wp.IdentificationType1File.FileName,
+                            PathFile = string.Concat(filesConfiguration.FilesPath, wp.IdentificationType1File.FileName)
                         },
-                    IdentificationType2File = icf3 == null
+                    IdentificationType2File = wp.IdentificationType2File == null
                         ? null
                         : new CovenantFileModel
                         {
-                            Id = icf3.Id,
-                            Description = icf3.Description,
-                            FileName = icf3.FileName,
-                            PathFile = string.Concat(filesConfiguration.FilesPath, icf3.FileName)
+                            Id = wp.IdentificationType2File.Id,
+                            Description = wp.IdentificationType2File.Description,
+                            FileName = wp.IdentificationType2File.FileName,
+                            PathFile = string.Concat(filesConfiguration.FilesPath, wp.IdentificationType2File.FileName)
                         },
-                    IdentificationType1 = type4 == null ? null : new BaseModel<Guid> { Id = type4.Id, Value = type4.Value },
-                    IdentificationType2 = type5 == null ? null : new BaseModel<Guid> { Id = type5.Id, Value = type5.Value },
-                    PoliceCheckBackGround = pcf6 == null
+                    IdentificationType1 = wp.IdentificationType1 == null ? null : new BaseModel<Guid> { Id = wp.IdentificationType1.Id, Value = wp.IdentificationType1.Value },
+                    IdentificationType2 = wp.IdentificationType2 == null ? null : new BaseModel<Guid> { Id = wp.IdentificationType2.Id, Value = wp.IdentificationType2.Value },
+                    PoliceCheckBackGround = wp.PoliceCheckBackGround == null
                         ? null
                         : new CovenantFileModel
                         {
-                            Id = pcf6.Id,
-                            Description = pcf6.Description,
-                            FileName = pcf6.FileName,
-                            PathFile = string.Concat(filesConfiguration.FilesPath, pcf6.FileName)
+                            Id = wp.PoliceCheckBackGround.Id,
+                            Description = wp.PoliceCheckBackGround.Description,
+                            FileName = wp.PoliceCheckBackGround.FileName,
+                            PathFile = string.Concat(filesConfiguration.FilesPath, wp.PoliceCheckBackGround.FileName)
                         },
                     MobileNumber = wp.MobileNumber,
                     Phone = wp.Phone,
                     PhoneExt = wp.PhoneExt,
-                    Location = l7 == null
+                    Location = wp.Location == null
                         ? null
                         : new LocationDetailModel
                         {
-                            Id = l7.Id,
-                            Address = l7.Address,
-                            Latitude = l7.Latitude,
-                            Longitude = l7.Longitude,
-                            PostalCode = l7.PostalCode,
+                            Id = wp.Location.Id,
+                            Address = wp.Location.Address,
+                            Latitude = wp.Location.Latitude,
+                            Longitude = wp.Location.Longitude,
+                            PostalCode = wp.Location.PostalCode,
                             City = new CityModel
                             {
-                                Id = l7.City.Id,
-                                Value = l7.City.Value,
-                                Code = l7.City.Code,
+                                Id = wp.Location.City.Id,
+                                Value = wp.Location.City.Value,
+                                Code = wp.Location.City.Code,
                                 Province = new ProvinceModel
                                 {
-                                    Id = l7.City.Province.Id,
-                                    Value = l7.City.Province.Value,
-                                    Code = l7.City.Province.Code,
+                                    Id = wp.Location.City.Province.Id,
+                                    Value = wp.Location.City.Province.Value,
+                                    Code = wp.Location.City.Province.Code,
                                     Country = new CountryModel
                                     {
-                                        Id = l7.City.Province.Country.Id,
-                                        Value = l7.City.Province.Country.Value,
-                                        Code = l7.City.Province.Country.Code
+                                        Id = wp.Location.City.Province.Country.Id,
+                                        Value = wp.Location.City.Province.Country.Value,
+                                        Code = wp.Location.City.Province.Country.Code
                                     }
                                 }
                             }
@@ -242,21 +206,21 @@ public class WorkerRepository : IWorkerRepository
                         Id = lp.City.Id,
                         Value = lp.City.Value
                     }),
-                    Lift = lift10 == null ? null : new BaseModel<Guid> { Id = lift10.Id, Value = lift10.Value },
+                    Lift = wp.Lift == null ? null : new BaseModel<Guid> { Id = wp.Lift.Id, Value = wp.Lift.Value },
                     Languages = wp.Languages.Select(l => new BaseModel<Guid>
                     {
                         Id = l.Language.Id,
                         Value = l.Language.Value
                     }),
                     Skills = wp.Skills.Select(skill => new SkillModel { Id = skill.Id, Skill = skill.Skill }).ToList(),
-                    Resume = cfr11 == null
+                    Resume = wp.Resume == null
                         ? null
                         : new CovenantFileModel
                         {
-                            Id = cfr11.Id,
-                            Description = cfr11.Description,
-                            FileName = cfr11.FileName,
-                            PathFile = string.Concat(filesConfiguration.FilesPath, cfr11.FileName)
+                            Id = wp.Resume.Id,
+                            Description = wp.Resume.Description,
+                            FileName = wp.Resume.FileName,
+                            PathFile = string.Concat(filesConfiguration.FilesPath, wp.Resume.FileName)
                         },
                     HaveAnyHealthProblem = wp.HaveAnyHealthProblem,
                     HealthProblem = wp.HealthProblem,
@@ -274,7 +238,7 @@ public class WorkerRepository : IWorkerRepository
                         StartDate = je.StartDate,
                         IsCurrentJobPosition = je.IsCurrentJobPosition
                     }),
-                    Email = u.Email,
+                    Email = wp.Worker.Email,
                     WorkerId = wp.WorkerId,
                     IsSubcontractor = wp.IsSubcontractor,
                     IsContractor = wp.IsContractor,
@@ -303,9 +267,7 @@ public class WorkerRepository : IWorkerRepository
             }).ToListAsync();
 
     public Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId) =>
-        (from wp in _context.WorkerProfile.Where(p => p.Id == workerProfileId)
-         join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
-         from cf in tmp.DefaultIfEmpty()
+        (from wp in _context.WorkerProfiles.Where(p => p.Id == workerProfileId)
          select new WorkerProfileBasicInfoModel
          {
              NumberId = wp.NumberId,
@@ -315,11 +277,11 @@ public class WorkerRepository : IWorkerRepository
              LastName = wp.LastName,
              SecondLastName = wp.SecondLastName,
              ApprovedToWork = wp.ApprovedToWork,
-             ProfileImage = cf == null ? null : new CovenantFileModel
+             ProfileImage = wp.ProfileImage == null ? null : new CovenantFileModel
              {
-                 Id = cf.Id,
-                 FileName = cf.FileName,
-                 PathFile = string.Concat(filesConfiguration.FilesPath, cf.FileName)
+                 Id = wp.ProfileImage.Id,
+                 FileName = wp.ProfileImage.FileName,
+                 PathFile = string.Concat(filesConfiguration.FilesPath, wp.ProfileImage.FileName)
              },
              HasSocialInsurance = !string.IsNullOrEmpty(wp.SocialInsurance),
              HasSocialInsuranceFile = wp.SocialInsuranceFileId != null,
@@ -333,7 +295,7 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task<List<AgencyWorkerDropdownModel>> GetWorkerProfilesDropdown(IEnumerable<Guid> agencyIds, string searchTerm)
     {
-        var workerProfiles = _context.WorkerProfile.Where(wp => agencyIds.Contains(wp.AgencyId));
+        var workerProfiles = _context.WorkerProfiles.Where(wp => agencyIds.Contains(wp.AgencyId));
         var query = workerProfiles
             .Select(wp => new AgencyWorkerDropdownModel
             {
@@ -368,33 +330,30 @@ public class WorkerRepository : IWorkerRepository
 
     public IEnumerable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
     {
-        var workers = _context.WorkerProfile
+        var workers = _context.WorkerProfiles
             .Include(wp => wp.Skills)
             .Include(wp => wp.Worker)
             .Include(wp => wp.Notes)
             .AsQueryable();
-        var workerRequest = _context.WorkerRequest.Include(wr => wr.Request)
+        var workerRequest = _context.WorkerRequests.Include(wr => wr.Request)
             .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status != RequestStatus.Cancelled);
         if (filter.SortBy == GetWorkersProfileSortBy.RequestId)
             workerRequest = workerRequest.AddOrderBy(filter, wr => wr.Request.NumberId);
         if (filter.CompanyProfileId.HasValue)
         {
             workers = from wp in workers
-                      from wr in workerRequest.Where(wr => wr.WorkerId == wp.WorkerId).Take(1)
-                      join c in _context.CompanyProfile.Where(cp => cp.Id == filter.CompanyProfileId) on wr.Request.CompanyId equals c.CompanyId
+                      from wr in workerRequest.Where(wr => wr.WorkerProfileId == wp.Id).Take(1)
+                      where wr.Request.CompanyProfileId == filter.CompanyProfileId
                       select wp;
         }
         if (!string.IsNullOrWhiteSpace(filter.Skills))
             workers = workers.Where(w => w.Skills.Any(s => s.Skill.ToLower().Contains(filter.Skills.ToLower())));
         var query = from wp in workers
-                    join cf in _context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
-                    from cft in tmp.DefaultIfEmpty()
-                    join l in _context.Location on wp.LocationId equals l.Id
                     select new WorkerProfileListModel
                     {
                         AgencyId = wp.AgencyId,
                         Id = wp.Id,
-                        Address = l.Address + " " + l.City.Value + ", " + l.City.Province.Code + " " + l.PostalCode,
+                        Address = wp.Location.Address + " " + wp.Location.City.Value + ", " + wp.Location.City.Province.Code + " " + wp.Location.PostalCode,
                         WorkerId = wp.WorkerId,
                         FullName =
                             wp.FirstName +
@@ -406,10 +365,10 @@ public class WorkerRepository : IWorkerRepository
                         NumberId = wp.NumberId,
                         ApprovedToWork = wp.ApprovedToWork,
                         IsSubcontractor = wp.IsSubcontractor,
-                        ProfileImage = cft == null ? null : $"{filesConfiguration.FilesPath}{cft.FileName}",
+                        ProfileImage = wp.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wp.ProfileImage.FileName}",
                         Skills = wp.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Skill)).OrderBy(s => s.Skill).Select(s => s.Skill),
-                        IsCurrentlyWorking = workerRequest.Any(wr => wr.WorkerId == wp.WorkerId),
-                        Requests = workerRequest.Where(wr => wr.WorkerId == wp.WorkerId).Select(wr => new BaseModel<Guid> { Id = wr.RequestId, Value = wr.Request.NumberId.ToString() }),
+                        IsCurrentlyWorking = workerRequest.Any(wr => wr.WorkerProfileId == wp.Id),
+                        Requests = workerRequest.Where(wr => wr.WorkerProfileId == wp.Id).Select(wr => new BaseModel<Guid> { Id = wr.RequestId, Value = wr.Request.NumberId.ToString() }),
                         Dnu = wp.Dnu,
                         CreatedAt = wp.CreatedAt,
                         SinNumber = wp.SocialInsurance,
@@ -503,18 +462,31 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression)
     {
-        var result = await _context.WorkerProfile.AnyAsync(expression);
+        var result = await _context.WorkerProfiles.AnyAsync(expression);
         return result;
     }
 
     public Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination) =>
-        _context.WorkerProfileNote.Where(e => e.WorkerProfileId == workerProfileId)
+        _context.WorkerProfileNotes.Where(e => e.WorkerProfileId == workerProfileId)
             .Select(e => new WorkerProfileNoteListModel
             {
                 Note = e.Note,
                 CreatedBy = e.CreatedBy,
                 CreatedAt = e.CreatedAt
             }).OrderByDescending(o => o.CreatedAt)
+            .AsNoTracking().ToPaginatedList(pagination);
+
+    public Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination) =>
+        _context.WorkerComments.Where(condition)
+            .Select(c => new WorkerCommentModel
+            {
+                Id = c.Id,
+                Comment = c.Comment,
+                Rate = c.Rate,
+                NumberId = c.NumberId,
+                CreatedAt = c.CreatedAt
+            })
+            .OrderByDescending(c => c.CreatedAt)
             .AsNoTracking().ToPaginatedList(pagination);
 
     public async Task Create<T>(T entity) where T : class => await _context.AddAsync(entity);
@@ -525,7 +497,7 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task CreateWorkerProfileHoliday(WorkerProfileHoliday entity)
     {
-        var workerProfileHoliday = await _context.WorkerProfileHoliday
+        var workerProfileHoliday = await _context.WorkerProfileHolidays
             .SingleOrDefaultAsync(h => h.WorkerProfileId == entity.WorkerProfileId && h.HolidayId == entity.HolidayId);
         if (workerProfileHoliday is null)
         {
@@ -539,10 +511,10 @@ public class WorkerRepository : IWorkerRepository
     public async Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId)
     {
         var previousMonth = DateTime.Now.AddMonths(-1);
-        var query = (from h in _context.Holiday.Where(h => h.Date >= previousMonth)
-                     join wp in _context.WorkerProfileHoliday.Where(w => w.WorkerProfileId == workerProfileId) on h.Id equals wp.HolidayId into tmp
+        var query = (from h in _context.Holidays.Where(h => h.Date >= previousMonth)
+                     join wp in _context.WorkerProfileHolidays.Where(w => w.WorkerProfileId == workerProfileId) on h.Id equals wp.HolidayId into tmp
                      from wp in tmp.DefaultIfEmpty()
-                     where _context.WorkerProfile.Any(w => w.Location.City.Province.Country.Code == h.CountryCode && w.Id == workerProfileId)
+                     where _context.WorkerProfiles.Any(w => w.Location.City.Province.Country.Code == h.CountryCode && w.Id == workerProfileId)
                      orderby h.Date descending
                      select new WorkerProfileHolidayModel
                      {
@@ -560,7 +532,7 @@ public class WorkerRepository : IWorkerRepository
         GetWorkerProfilePunchCarId(wp => wp.Id == profileId);
 
     private Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(Expression<Func<WorkerProfile, bool>> condition) =>
-        _context.WorkerProfile.Where(condition)
+        _context.WorkerProfiles.Where(condition)
             .Select(wp => new WorkerProfilePunchCardIdModel { Id = wp.Id, PunchCardId = wp.PunchCardId, WorkerFullName = $"{wp.FirstName} {wp.MiddleName} {wp.LastName} {wp.SecondLastName}" })
             .AsNoTracking()
             .SingleOrDefaultAsync();
@@ -586,14 +558,13 @@ public class WorkerRepository : IWorkerRepository
         if (payStubs.Items.Any())
         {
             var guids = payStubs.Items.Select(arg => arg.Id).ToList();
-            var companies = await (from psw in _context.PayStubWageDetail.Where(d => guids.Any(psId => d.PayStubId == psId))
-                                   join tst in _context.TimeSheetTotalPayroll on psw.TimeSheetTotalId equals tst.Id
-                                   join ts in _context.TimeSheet on tst.TimeSheetId equals ts.Id
-                                   join wr in _context.WorkerRequest on ts.WorkerRequestId equals wr.Id
-                                   join r in _context.Request on wr.RequestId equals r.Id
-                                   join cp in _context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                                   select new { psw.PayStubId, cp.FullName }).Distinct().ToListAsync();
-            var payStubItem = await _context.PayStubItem.Where(psi => guids.Contains(psi.PayStubId)).ToListAsync();
+            var companies = await (from psw in _context.PayStubWageDetails.Where(d => guids.Any(psId => d.PayStubId == psId))
+                                   select new
+                                   {
+                                       psw.PayStubId,
+                                       psw.TimeSheetTotal.TimeSheet.WorkerRequest.Request.CompanyProfile.FullName
+                                   }).Distinct().ToListAsync();
+            var payStubItem = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).ToListAsync();
             foreach (var stub in payStubs.Items)
             {
                 stub.Companies = companies.Where(p => p.PayStubId == stub.Id).Select(p => p.FullName).ToList();
@@ -620,36 +591,36 @@ public class WorkerRepository : IWorkerRepository
             TotalPaid = payStubs.Sum(ps => ps.TotalPaid)
         };
         var guids = payStubs.Select(arg => arg.Id).ToList();
-        result.Quantity = await _context.PayStubItem.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Quantity);
-        result.Total = await _context.PayStubItem.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Total);
+        result.Quantity = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Quantity);
+        result.Total = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Total);
         return result;
     }
 
     public Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId)
     {
-        var eligibleProfiles = _context.WorkerProfile
+        var eligibleProfiles = _context.WorkerProfiles
             .Where(wp => !wp.Dnu)
             .Where(wp => wp.AgencyId == agencyId)
             .Where(wp => wp.Location.City.ProvinceId == provinceId)
             .Where(wp => !string.IsNullOrEmpty(wp.FirstName));
 
-        var contactableUsers = _context.User
+        var contactableUsers = _context.Users
             .Where(u => !string.IsNullOrEmpty(u.Email))
             .Where(u => u.Email.Contains("@"));
 
-        var subscribedUserIds = _context.UserNotificationType
+        var subscribedUserIds = _context.UserNotificationTypes
             .Where(unt => unt.NotificationTypeId == NotificationType.NewRequestNotifyWorker.Id)
             .Where(unt => unt.EmailNotification)
             .Select(unt => unt.UserId);
 
-        var bookedWorkerIds = _context.WorkerRequest
+        var bookedWorkerProfileIds = _context.WorkerRequests
             .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked)
-            .Select(wr => wr.WorkerId);
+            .Select(wr => wr.WorkerProfileId);
 
         return eligibleProfiles
             .Join(contactableUsers, wp => wp.WorkerId, u => u.Id, (wp, u) => new { wp, u })
             .Where(x => subscribedUserIds.Contains(x.u.Id))
-            .Where(x => !bookedWorkerIds.Contains(x.wp.WorkerId))
+            .Where(x => !bookedWorkerProfileIds.Contains(x.wp.Id))
             .OrderBy(x => x.wp.NumberId)
             .Select(x => new WorkerContactInfoModel
             {
@@ -669,20 +640,18 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date)
     {
-        var query = from wp in _context.WorkerProfile.Where(p => p.ApprovedToWork && p.SocialInsuranceExpire && p.DueDate < date)
-                    join wu in _context.User on wp.WorkerId equals wu.Id
-                    join au in _context.User on wp.AgencyId equals au.Id
+        var query = from wp in _context.WorkerProfiles.Where(p => p.ApprovedToWork && p.SocialInsuranceExpire && p.DueDate < date)
                     orderby wp.DueDate
                     select new WorkerSINExpiredModel
                     {
                         WorkerFullName = $"{wp.FirstName} {wp.MiddleName} {wp.LastName} {wp.SecondLastName}",
-                        WorkerEmail = wu.Email,
+                        WorkerEmail = wp.Worker.Email,
                         SocialInsurance = wp.SocialInsurance,
                         DueDate = wp.DueDate,
                         Phone = wp.Phone,
                         PhoneExt = wp.PhoneExt,
                         MobileNumber = wp.MobileNumber,
-                        AgencyEmail = au.Email,
+                        AgencyEmail = wp.Agency.User.Email,
                         RecruitmentEmail = wp.Agency.RecruitmentEmail
                     };
         var result = await query.ToListAsync();
@@ -691,23 +660,19 @@ public class WorkerRepository : IWorkerRepository
 
     public async Task<IEnumerable<WorkerLicenseExpiredModel>> GetWorkerLicensesExpired(DateTime date)
     {
-        var query = from wpl in _context.WorkerProfileLicenses.Where(lW => lW.Expires < date)
-                    join cf in _context.CovenantFile on wpl.LicenseId equals cf.Id
-                    join wp in _context.WorkerProfile.Where(wp => wp.ApprovedToWork) on wpl.WorkerProfileId equals wp.Id
-                    join wu in _context.User on wp.WorkerId equals wu.Id
-                    join au in _context.User on wp.AgencyId equals au.Id
+        var query = from wpl in _context.WorkerProfileLicenses.Where(lW => lW.Expires < date && lW.WorkerProfile.ApprovedToWork)
                     orderby wpl.Expires
                     select new WorkerLicenseExpiredModel
                     {
-                        NumberId = wp.NumberId,
-                        WorkerFullName = wp.FirstName + " " + wp.MiddleName + " " + wp.LastName + " " + wp.SecondLastName,
-                        WorkerEmail = wu.Email,
-                        MobileNumber = wp.MobileNumber,
-                        LicenseDescription = cf.Description,
+                        NumberId = wpl.WorkerProfile.NumberId,
+                        WorkerFullName = wpl.WorkerProfile.FirstName + " " + wpl.WorkerProfile.MiddleName + " " + wpl.WorkerProfile.LastName + " " + wpl.WorkerProfile.SecondLastName,
+                        WorkerEmail = wpl.WorkerProfile.Worker.Email,
+                        MobileNumber = wpl.WorkerProfile.MobileNumber,
+                        LicenseDescription = wpl.License.Description,
                         LicenseNumber = wpl.Number,
                         Expires = wpl.Expires,
-                        AgencyEmail = au.Email,
-                        RecruitmentEmail = wp.Agency.RecruitmentEmail
+                        AgencyEmail = wpl.WorkerProfile.Agency.User.Email,
+                        RecruitmentEmail = wpl.WorkerProfile.Agency.RecruitmentEmail
                     };
         var result = await query.ToListAsync();
         return result;

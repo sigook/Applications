@@ -7,7 +7,10 @@ Controllers:     Covenant.Api/Controllers/Sigook/                       (root: C
                  Covenant.Api/Controllers/Sigook/Agency/                (Agency, AgencyLocation)
                  Covenant.Api/Controllers/Sigook/Agency/Accounting/     (Invoices, PayStubs, Reports, LocationTax)
                  Covenant.Api/Controllers/Sigook/Agency/Sales/          (Requests, CompanyProfiles — scoped to the sales rep)
-Module controllers: Covenant.Api/{Module}Module/                        (AccountingModule, AgencyModule, CompanyModule, WorkerModule, ManagerModule)
+                 Covenant.Api/Controllers/Sigook/Agency/Candidates/     (Candidates, Notes, PhoneNumbers, Skills, Documents)
+                 Covenant.Api/Controllers/Sigook/Agency/Workers/        (Workers, Notes, Comments, Holidays, RequestHistory)
+                 Covenant.Api/Controllers/Sigook/Agency/Personnel/      (Personnel, Agencies)
+Module controllers: Covenant.Api/{Module}Module/                        (AccountingModule, CompanyModule, WorkerModule, ManagerModule)
 Services:        Covenant.Core.BL/Services/                             (PayStubService, RequestService, WorkerService, etc.)
                  Covenant.Core.BL/Services/Shared/                      (TimesheetCalculatorService — hours breakdown + deductions)
                  Covenant.Core.BL/Services/Invoices/                    (CanadaInvoiceService, UsaInvoiceService)
@@ -50,7 +53,7 @@ Tests:           Covenant.Tests/
 - **`RequestStatus` enum has only 3 values:** `Open = 1`, `Filled = 3`, `Cancelled = 4` (value `2` intentionally skipped). `Status` is the single source of truth — there is no `IsOpen` flag. Transitions happen automatically inside `Request.AddWorker` / `RejectWorker` / `Cancel` / `Open`; never set `Status` directly.
 - **Cancellation rule:** `Request.Cancel()` only succeeds when `Status == Open` AND `WorkersQuantityWorking == 0`. To cancel a request with assignees, reject every worker first.
 - **Controller routes** use the pattern `public const string RouteName = "api/..."` + `[Route(RouteName)]`. To locate an endpoint, grep for `RouteName =`.
-- **Deductions are DB table lookups, not formulas.** `TimesheetCalculatorService.CalculateDeductions` → `DeductionsRepository` range lookups by earnings/year (CPP, Federal, Provincial). EI is the only computed one (`totalEarnings × rates.EmploymentInsurance`, no cap). There are no `CppCalculator`-style classes. Per-worker `WorkerProfileTaxCategory` overrides zero out deductions (subcontractors).
+- **Deductions are DB table lookups, not formulas.** `TimesheetCalculatorService.CalculateDeductions` → `DeductionsRepository` range lookups by earnings/year over **two** tables: `CppDeductions` and `TaxDeductions`, both discriminated by a `PayPeriod` enum (`Weekly`/`BiWeekly`/`SemiMonthly`/`Monthly`), and `TaxDeductions` additionally by `TaxType` (`Federal`/`Provincial`). The old 12 per-period tables are gone. EI is the only computed one (`totalEarnings × rates.EmploymentInsurance`, no cap). There are no `CppCalculator`-style classes. Per-worker `WorkerProfileTaxCategory` overrides zero out deductions (subcontractors).
 - **Night shift is deprecated.** Never computed: `PayStubService` hardcodes `nightShift: 0`; invoices set `NightShiftRate = 0`. Don't add night-shift logic.
 - **Holiday asymmetry invoice vs pay stub:** invoices hardcode `holidayIsPaid: true` (worked holidays always billed at holiday rate); pay stubs honor the timesheet's `HolidayIsPaid` flag. Worked vs not-worked holidays are two separate flows in both.
 - **Invoices do NOT bill vacations or bonus** — `VacationsRate`/`BonusRate` are stored on the entity but never enter the totals. Vacation 4% is a pay-stub concept. HST is a single global config rate (`rates.Hst`), not per-province.

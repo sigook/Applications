@@ -52,14 +52,14 @@ public class TimesheetService : ITimesheetService
         this.telemetryClient = telemetryClient;
     }
 
-    public async Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerId, TimeSpan clockIn)
+    public async Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerProfileId, TimeSpan clockIn)
     {
         DateTime now = timeService.GetCurrentDateTime();
         var clockInDate = new DateTime(now.Year, now.Month, now.Day, clockIn.Hours, clockIn.Minutes, default);
         if (clockInDate > now)
             return Result.Fail<RegisterTimeSheetResultModel>($"Clock in must be less than {now:t}");
 
-        var entity = await workerRequestRepository.GetWorkerRequest(workerId, requestId);
+        var entity = await workerRequestRepository.GetWorkerRequestByWorkerProfileId(workerProfileId, requestId);
         if (entity is null) return Result.Fail<RegisterTimeSheetResultModel>("Worker not found");
         if (entity.IsRejected) return Result.Fail<RegisterTimeSheetResultModel>("Worker is rejected");
         if (entity.TimeSheets.Any(a => a.Date == clockInDate.Date))
@@ -72,11 +72,11 @@ public class TimesheetService : ITimesheetService
         return Result.Ok(new RegisterTimeSheetResultModel(result.Value.Id, default, false));
     }
 
-    public async Task<Result<Guid>> CreateTimesheet(Guid workerId, Guid requestId, TimeSheetModel timeSheetModel)
+    public async Task<Result<Guid>> CreateTimesheet(Guid workerProfileId, Guid requestId, TimeSheetModel timeSheetModel)
     {
         var createdBy = identityServerService.GetNickname();
         var now = timeService.GetCurrentDateTime();
-        var workerRequest = await workerRequestRepository.GetWorkerRequest(workerId, requestId);
+        var workerRequest = await workerRequestRepository.GetWorkerRequestByWorkerProfileId(workerProfileId, requestId);
         if (workerRequest is null)
         {
             return Result.Fail<Guid>(ApiResources.InvalidRequest);
@@ -243,6 +243,14 @@ public class TimesheetService : ITimesheetService
         return request;
     }
 
+    public async Task<ResultGenerateDocument<MemoryStream>> GetTimesheetsReportFile(TimesheetsReportFilter filter)
+    {
+        var agencyId = identityServerService.GetAgencyId();
+        var result = await timeSheetRepository.GetTimesheetsReport(agencyId, filter);
+        var request = await mediator.Send(new GenerateTimesheetsReport(result.ToList()));
+        return request;
+    }
+
     private async Task<Result<RegisterTimeSheetResultModel>> ClockIn(DateTimeOffset now, WorkerRequestInfoModel info)
     {
         var isHoliday = await catalogRepository.IsHoliday(now.DateTime, info.CountryCode);
@@ -261,9 +269,9 @@ public class TimesheetService : ITimesheetService
         return Result.Ok(new RegisterTimeSheetResultModel(latestTimesheet.Id, info.WorkerFullName, true));
     }
 
-    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyId, DateTime startDate, DateTime endDate)
+    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, DateTime startDate, DateTime endDate)
     {
-        var result = await timeSheetRepository.GetJobPositions(companyId, startDate, endDate);
+        var result = await timeSheetRepository.GetJobPositions(companyProfileId, startDate, endDate);
         return result;
     }
 

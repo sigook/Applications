@@ -82,7 +82,7 @@
 import { ref, computed, watch } from 'vue';
 import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { getGenders, getSources } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
 import { getAgencyCandidate, updateAgencyCandidate } from "@/api/agencyCandidateApi";
@@ -93,7 +93,7 @@ import type { Source } from "@/types/common";
 const props = defineProps<{ candidateId: number | string }>();
 const emit = defineEmits<{ (e: 'onUpdateWorker', value: boolean): void }>();
 
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const schema = yup.object({
   name: yup.string().required('Full Name is required').min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
@@ -121,7 +121,7 @@ const genders = computed(() => genderList.value);
 const hasDnuPermission = computed(() => {
   if (!candidate.value || !candidate.value.dnu) {
     return false;
-  } else if (candidate.value.dnu && isAccountingManager.value) {
+  } else if (candidate.value.dnu && isAdmin.value) {
     return false;
   } else {
     return true;

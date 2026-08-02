@@ -10,6 +10,7 @@ public class RunnerConfiguration : IEntityTypeConfiguration<Runner>
 {
     public void Configure(EntityTypeBuilder<Runner> builder)
     {
+        builder.ToTable("Runners");
         builder.Property(e => e.NumberId).ValueGeneratedOnAdd();
         builder.Property(e => e.Type).HasConversion(new EnumToStringConverter<RunnerType>());
         builder.Property(e => e.Status).HasConversion(new EnumToStringConverter<RunnerStatus>());
@@ -21,13 +22,13 @@ public class RunnerConfiguration : IEntityTypeConfiguration<Runner>
 
         builder.HasOne(r => r.WorkerProfile)
             .WithMany()
-            .HasForeignKey(r => r.WorkerProfileId)
+            .HasForeignKey(r => r.WorkerProfileId).IsRequired()
             .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasOne(r => r.Candidate)
-            .WithMany()
-            .HasForeignKey(r => r.CandidateId)
-            .OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne(r => r.RequestRecruiter)
+            .WithMany(rr => rr.Runners)
+            .HasForeignKey(r => r.RequestRecruiterId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasMany(m => m.StatusHistory)
             .WithOne(o => o.Runner)
@@ -40,6 +41,16 @@ public class RunnerConfiguration : IEntityTypeConfiguration<Runner>
             .HasForeignKey(f => f.RunnerId).IsRequired()
             .OnDelete(DeleteBehavior.Cascade)
             .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasOne(r => r.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(r => r.CreatedBy)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasOne(r => r.UpdatedByUser)
+            .WithMany()
+            .HasForeignKey(r => r.UpdatedBy)
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasIndex(r => r.RequestId);
     }

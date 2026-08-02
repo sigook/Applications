@@ -19,7 +19,7 @@
         </template>
         <template #message>
           <span v-if="errors.province">{{ errors.province }}</span>
-          <a v-if="provinceSelected && isAccountingManager && enableProvinceSettings"
+          <a v-if="provinceSelected && isAdmin && enableProvinceSettings"
              @click="openProvinceSettings"
              class="province-configure-link">
             {{ provinceSelected.settings ? 'See Settings' : 'Configure' }}
@@ -76,7 +76,7 @@ import { useSecurityStore } from '@/stores/security';
 import { agencyStaff } from "@/security/roles";
 import ProvinceSettingsModal from "@/components/ProvinceSettingsModal.vue";
 import { getDialog } from '@/utils/buefyProgrammatic';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import {
   getCountries as fetchCountries,
   getProvinces as fetchProvinces,
@@ -106,7 +106,7 @@ const emit = defineEmits<{
   (e: 'update:model', v: any): void;
 }>();
 
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 const securityStore = useSecurityStore();
 
 const { errors: formErrors, defineField, setFieldError, validate } = useForm({

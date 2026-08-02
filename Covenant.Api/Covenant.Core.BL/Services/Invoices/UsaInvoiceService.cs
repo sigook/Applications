@@ -84,7 +84,7 @@ public class UsaInvoiceService(
         await invoiceRepository.SaveChangesAsync();
 
         // Create subcontractor reports for USA invoices
-        await CreateSubcontractorReportsAsync(agencyIds, model.CompanyId);
+        await CreateSubcontractorReportsAsync(agencyIds, model.CompanyProfileId);
 
         return Result.Ok(invoice.Id);
     }

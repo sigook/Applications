@@ -6,9 +6,6 @@
     <form @submit.prevent="submit">
       <section class="modal-card-body" style="min-width: 460px; position: relative">
         <b-loading v-model="isLoading" :is-full-page="false" />
-        <b-message v-if="isCandidate" type="is-warning" size="is-small" has-icon>
-          This runner is a candidate. Convert them to a worker before hiring, otherwise they will not appear in attendance review.
-        </b-message>
         <b-field label="Status" :type="errors.status ? 'is-danger' : ''" :message="errors.status">
           <b-select v-model="status" placeholder="Select a status" expanded>
             <option v-for="s in statuses" :key="s" :value="s">{{ statusLabel(s) }}</option>
@@ -40,20 +37,14 @@ import { changeRunnerStatus } from '@/api/agencyRunnerApi';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { RUNNER_STATUSES, RUNNER_STATUS_LABELS, RunnerStatus } from '@/types/runner';
 
-const props = defineProps<{ requestId: string; runnerId: string; currentStatus: RunnerStatus; isCandidate?: boolean }>();
+const props = defineProps<{ requestId: string; runnerId: string; currentStatus: RunnerStatus }>();
 const emit = defineEmits<{ (e: 'updated'): void; (e: 'close'): void }>();
 
 // 'Interview rescheduled' is assigned automatically when an interview is
 // rescheduled, so it is not selectable here (kept only if it's the current one).
-// A candidate cannot be hired until converted to a worker.
 const statuses = computed(() =>
-  RUNNER_STATUSES.filter(
-    s =>
-      (s !== RunnerStatus.InterviewRescheduled || s === props.currentStatus) &&
-      (s !== RunnerStatus.Hired || !props.isCandidate),
-  ),
+  RUNNER_STATUSES.filter(s => s !== RunnerStatus.InterviewRescheduled || s === props.currentStatus),
 );
-const isCandidate = computed(() => !!props.isCandidate);
 const isLoading = ref(false);
 
 const schema = yup.object({

@@ -16,7 +16,8 @@ namespace Covenant.Common.Models.Request.WeeklyBoard
         public RequestStatus Status { get; set; }
         public bool IsAsap { get; set; }
         public decimal? WorkerSalary { get; set; }
-        public int WorkersSent { get; set; }
-        public List<WeeklyBoardDispatchModel> Dispatches { get; set; } = [];
+        public bool UsesRunners { get; set; }
+        public int RunnersSent { get; set; }
+        public List<WeeklyBoardRunnerModel> Runners { get; set; } = [];
     }
 }

@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-field v-if="isAccountingManager" grouped position="is-right">
+    <b-field v-if="isAdmin" grouped position="is-right">
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
     </b-field>
     <b-table sticky-header height="var(--grid-height)" :data="users" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" pagination-rounded :per-page="pageSize"
@@ -16,7 +16,7 @@
         <b-table-column field="email" label="Email" searchable v-slot="props">
           {{ props.row.email }}
         </b-table-column>
-        <b-table-column field="actions" :visible="isAccountingManager" v-slot="props">
+        <b-table-column field="actions" :visible="isAdmin" v-slot="props">
           <b-button type="is-danger" outlined rounded icon-right="delete"
             @click="deleteUser(props.row.id)"></b-button>
         </b-table-column>
@@ -34,10 +34,10 @@
 import { ref } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { getAgencyPersonnel, deleteAgencyPersonnel } from "@/api/agencyApi";
-import { useAccountingAdmin } from "@/composables/useAccountingAdmin";
+import { useAdmin } from "@/composables/useAdmin";
 import CreateUser from "./AgencyCreatePersonnelModal.vue";
 
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const isLoading = ref(false);
 const pageIndex = ref(1);

@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <Calendar :highlights="data" :workerId="workerId" :requestId="requestId" :startDate="request.startAt"
+    <Calendar :highlights="data" :workerProfileId="workerProfileId" :requestId="requestId" :startDate="request.startAt"
       :status="request.status" :worker="worker" @onMonthChange="(args: any) => onMonthChange(args.startDate, args.endDate)">
       <template v-slot:punch-input="slotProps">
         <div v-if="slotProps.item.id !== null" class="mt-2">
@@ -36,7 +36,7 @@
                 </b-tooltip>
                 <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved" append-to-body>
                   <b-button type="is-ghost" icon-right="check"
-                    @click="timeSheetFastApprove(slotProps.item, requestId, workerId)">
+                    @click="timeSheetFastApprove(slotProps.item, requestId, workerProfileId)">
                   </b-button>
                 </b-tooltip>
                 <b-tooltip label="Delete" type="is-dark" position="is-bottom"
@@ -71,7 +71,7 @@
 
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
-      <TimeSheetModal v-if="editableDay" :requestId="requestId" :worker="{ workerId: workerId }"
+      <TimeSheetModal v-if="editableDay" :requestId="requestId" :worker="{ workerProfileId: workerProfileId }"
         v-model:editable-day="editableDay" @updateData="updateCell" />
     </b-modal>
 
@@ -114,7 +114,7 @@ import {
 
 dayjs.extend(duration);
 
-const props = defineProps<{ workerId: any; requestId: any; request: any; worker: any }>();
+const props = defineProps<{ workerProfileId: any; requestId: any; request: any; worker: any }>();
 
 const emptyTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
 const startDate = ref('');
@@ -132,10 +132,10 @@ const startTime = ref<Date | null>(null);
 
 const maximumDailyHours = computed(() => maximumHoursPerDay);
 
-function timeSheetFastApprove(item: any, requestId: any, workerId: any) {
+function timeSheetFastApprove(item: any, requestId: any, workerProfileId: any) {
   isLoading.value = true;
   const model = buildTimeSheetApproveModel(item);
-  updateCompanyRequestWorkerTimeSheet(requestId, workerId, item.id, model)
+  updateCompanyRequestWorkerTimeSheet(requestId, workerProfileId, item.id, model)
     .then(() => {
       updateCell();
     })
@@ -149,7 +149,7 @@ function timeSheetFastApprove(item: any, requestId: any, workerId: any) {
 
 function getAgencyWorkerTimeSheetByDate() {
   isLoading.value = true;
-  getCompanyWorkerTimeSheetByDate(props.requestId, props.workerId, { startDate: startDate.value, endDate: endDate.value })
+  getCompanyWorkerTimeSheetByDate(props.requestId, props.workerProfileId, { startDate: startDate.value, endDate: endDate.value })
     .then((response: any) => {
       isLoading.value = false;
       data.value = response;
@@ -179,7 +179,7 @@ function onClockIn() {
   if (!clockInTime.value) return;
   isLoading.value = true;
   const model = { "clockIn": dayjs(clockInTime.value).format("HH:mm:ss") };
-  companyTimeSheetClockIn(props.requestId, props.workerId, model)
+  companyTimeSheetClockIn(props.requestId, props.workerProfileId, model)
     .then(() => {
       isLoading.value = false;
       showClockIn.value = false;
@@ -227,7 +227,7 @@ function reportWorkerTimSheet(item: any) {
     bonusOrOthersDescription: item.bonusOrOthersDescription,
     comments: item.comments,
   };
-  postCompanyWorkerTimeSheet(props.requestId, props.workerId, model)
+  postCompanyWorkerTimeSheet(props.requestId, props.workerProfileId, model)
     .then(() => {
       isLoading.value = false;
       getAgencyWorkerTimeSheetByDate();
@@ -248,7 +248,7 @@ function confirmDelete(item: any) {
 
 function doDelete(item: any) {
   isLoading.value = true;
-  deleteCompanyWorkerTimeSheetApi(props.requestId, props.workerId, item.id)
+  deleteCompanyWorkerTimeSheetApi(props.requestId, props.workerProfileId, item.id)
     .then(() => {
       isLoading.value = false;
       item.id = null;
