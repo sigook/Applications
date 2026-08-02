@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Personnel;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -14,20 +14,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
+namespace Covenant.Integration.Tests.AgencyModule.Personnel
 {
-    public class PersonnelAgencyControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<PersonnelAgencyControllerTest.Startup>>
+    public class AgenciesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgenciesControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public PersonnelAgencyControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public AgenciesControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => PersonnelAgencyController.RouteName;
+        private static string RequestUri() => AgenciesController.RouteName;
 
         [Fact]
         public async Task Get()

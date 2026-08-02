@@ -1,9 +1,10 @@
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories;
+using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
@@ -42,32 +43,22 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
         var federalCategory = workerProfileTaxCategory?.FederalCategory ?? TaxCategory.Cc1;
         var provincialCategory = workerProfileTaxCategory?.ProvincialCategory ?? TaxCategory.Cc1;
 
-        var cpp = numberOfWeeks switch
+        var payPeriod = numberOfWeeks switch
         {
-            1 => await _deductionsRepository.GetCppWeekly(totalEarnings, year),
-            2 => await _deductionsRepository.GetCppBiWeekly(totalEarnings, year),
-            3 => await _deductionsRepository.GetCppSemiMonthly(totalEarnings, year),
-            _ => await _deductionsRepository.GetCppMonthly(totalEarnings, year),
+            1 => PayPeriod.Weekly,
+            2 => PayPeriod.BiWeekly,
+            3 => PayPeriod.SemiMonthly,
+            _ => PayPeriod.Monthly,
         };
+
+        var cpp = await _deductionsRepository.GetCpp(totalEarnings, year, payPeriod);
         cpp = workerProfileTaxCategory?.Cpp ?? cpp;
 
         var ei = workerProfileTaxCategory?.Ei ?? decimal.Multiply(totalEarnings, _rates.EmploymentInsurance).DefaultMoneyRound();
 
-        var federalTax = numberOfWeeks switch
-        {
-            1 => await _deductionsRepository.GetFederalTaxWeekly(totalEarnings, year, federalCategory),
-            2 => await _deductionsRepository.GetFederalTaxBiWeekly(totalEarnings, year, federalCategory),
-            3 => await _deductionsRepository.GetFederalTaxSemiMonthly(totalEarnings, year, federalCategory),
-            _ => await _deductionsRepository.GetFederalTaxMonthly(totalEarnings, year, federalCategory),
-        };
+        var federalTax = await _deductionsRepository.GetTax(totalEarnings, year, payPeriod, TaxType.Federal, federalCategory);
 
-        var provincialTax = numberOfWeeks switch
-        {
-            1 => await _deductionsRepository.GetProvincialTaxWeekly(totalEarnings, year, provincialCategory),
-            2 => await _deductionsRepository.GetProvincialTaxBiWeekly(totalEarnings, year, provincialCategory),
-            3 => await _deductionsRepository.GetProvincialTaxSemiMonthly(totalEarnings, year, provincialCategory),
-            _ => await _deductionsRepository.GetProvincialTaxMonthly(totalEarnings, year, provincialCategory),
-        };
+        var provincialTax = await _deductionsRepository.GetTax(totalEarnings, year, payPeriod, TaxType.Provincial, provincialCategory);
 
         return new DeductionsResult
         {

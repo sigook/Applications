@@ -29,23 +29,23 @@ POST api/WorkerProfile              (multipart/form-data, [AllowAnonymous])
 The agency can also register a worker on the worker's behalf:
 
 ```
-POST api/AgencyWorkerProfile        (multipart/form-data)
-→ AgencyWorkerProfileController.CreateWorkerProfile → WorkerService.CreateWorker
+POST api/agency/workers        (multipart/form-data)
+→ WorkersController.CreateWorkerProfile → WorkerService.CreateWorker
 ```
 
 ### Step 2: Agency reviews and approves
 
 ```
-GET api/AgencyWorkerProfile                     → AgencyWorkerProfileController.Get (paginated list, GetWorkerProfileFilter)
-GET api/AgencyWorkerProfile/{id}                → AgencyWorkerProfileController.GetById
-PUT api/AgencyWorkerProfile/{id}/ApprovedToWork → AgencyWorkerProfileController.UpdateApprovedToWork
+GET api/agency/workers                     → WorkersController.Get (paginated list, GetWorkerProfileFilter)
+GET api/agency/workers/{id}                → WorkersController.GetById
+PUT api/agency/workers/{id}/ApprovedToWork → WorkersController.UpdateApprovedToWork
 ```
 
 Approval calls the domain method `WorkerProfile.UpdateApprovedToWork(now)`, which enforces that required documents are complete. Related toggles on the same controller:
 
 ```
-PUT api/AgencyWorkerProfile/{id}/Dnu            (Do Not Use — WorkerProfile.UpdateDnu)
-PUT api/AgencyWorkerProfile/{id}/IsContractor
+PUT api/agency/workers/{id}/Dnu            (Do Not Use — WorkerProfile.UpdateDnu)
+PUT api/agency/workers/{id}/IsContractor
 ```
 
 ### Step 3: Worker uses the app
@@ -203,7 +203,7 @@ POST api/agency/accounting/PayStubs/generate        (body: worker profile ids)
 
 `PayStubService.Generate` iterates workers and calls `GeneratePayStubForWorker`, which aggregates the worker's pending timesheets and computes deductions via `TimesheetCalculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, year, workerProfileId)`.
 
-Deductions are **database table lookups** (CPP, Federal and Provincial tax ranges via `DeductionsRepository`, by earnings and year); EI is the only computed value (`totalEarnings × rates.EmploymentInsurance`). There are no calculator classes. Subcontractor tax-category overrides zero out deductions. Deduction tables are maintained through `api/Accounting/Deduction/Cpp`, `api/Accounting/Deduction/FederalTax`, `api/Accounting/Deduction/ProvincialTax` (`AccountingModule/Deduction/`).
+Deductions are **database table lookups** (CPP, Federal and Provincial tax ranges via `DeductionsRepository`, by earnings and year); EI is the only computed value (`totalEarnings × rates.EmploymentInsurance`). There are no calculator classes. Subcontractor tax-category overrides zero out deductions. Deduction tables are maintained through `api/Accounting/Deduction/Cpp`, `api/Accounting/Deduction/FederalTax`, `api/Accounting/Deduction/ProvincialTax` (`AccountingModule/Deduction/`). The CPP table is imported from the CRA PDF dropped in the `cra-tables` blob container (blob trigger → `POST .../Cpp/Blob`); the tax tables are still uploaded as Excel. See [PAYROLL_RULES](PAYROLL_RULES.md#tax-table-maintenance).
 
 Delivery and management:
 

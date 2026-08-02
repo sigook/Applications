@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyWorkerProfileNote;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
@@ -16,18 +16,18 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileNote
+namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
-    public class AgencyWorkerProfileNoteControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyWorkerProfileNoteControllerTest.Startup>>
+    public class NotesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
     {
         private readonly HttpClient _client;
 
-        public AgencyWorkerProfileNoteControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+        public NotesControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
         [Fact]
         public async Task Post()
         {
-            string url = AgencyWorkerProfileNoteController.RouteName.Replace("{workerProfileId}", Startup.WorkerProfileId.ToString());
+            string url = NotesController.RouteName.Replace("{workerProfileId}", Startup.WorkerProfileId.ToString());
             HttpResponseMessage response = await _client.PostAsJsonAsync(url, new WorkerProfileNoteCreateModel
             {
                 Note = "Worker not available",
@@ -39,7 +39,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileNote
         [Fact]
         public async Task Get()
         {
-            string url = AgencyWorkerProfileNoteController.RouteName.Replace("{workerProfileId}", Startup.WorkerProfileId.ToString());
+            string url = NotesController.RouteName.Replace("{workerProfileId}", Startup.WorkerProfileId.ToString());
             HttpResponseMessage response = await _client.GetAsync(url);
             var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerProfileNoteListModel>>();
             Assert.NotEmpty(list.Items);

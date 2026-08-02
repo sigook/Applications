@@ -36,16 +36,16 @@ Agency profile, personnel and agency switching.
 | `getAgenciesList(filter)` | GET | `/api/Agency` | `AgencyListFilter` (params) | `PaginatedList<AgencyListItem>` | |
 | `createAgency(model)` | POST | `/api/Agency` | `CreateAgencyModel` | `{ id: string }` | |
 | `updateAgency(agency)` | PUT | `/api/Agency` | `AgencyDetail` | `void` | |
-| `getAgencyPersonnel()` | GET | `/api/AgencyPersonnel` | — | `AgencyPersonnelListItem[]` | Back-office users |
-| `createAgencyPersonnel(model)` | POST | `/api/AgencyPersonnel` | `AgencyPersonnelCreateModel` | `void` | |
-| `getAssignableRoles()` | GET | `/api/AgencyPersonnel/Roles` | — | `string[]` | Roles current user may assign |
-| `deleteAgencyPersonnel(id)` | DELETE | `/api/AgencyPersonnel/{id}` | — | `void` | |
+| `getAgencyPersonnel()` | GET | `/api/agency/personnel` | — | `AgencyPersonnelListItem[]` | Back-office users |
+| `createAgencyPersonnel(model)` | POST | `/api/agency/personnel` | `AgencyPersonnelCreateModel` | `void` | |
+| `getAssignableRoles()` | GET | `/api/agency/personnel/Roles` | — | `string[]` | Roles current user may assign |
+| `deleteAgencyPersonnel(id)` | DELETE | `/api/agency/personnel/{id}` | — | `void` | |
 | `getAgencyLocations()` | GET | `/api/Agency/Location` | — | `AgencyLocationDetail[]` | |
 | `createAgencyLocation(model)` | POST | `/api/Agency/Location` | `AgencyLocationDetail` | `{ id: string }` | |
 | `updateAgencyLocation(id, model)` | PUT | `/api/Agency/Location/{id}` | `AgencyLocationDetail` | `void` | |
 | `deleteAgencyLocation(id)` | DELETE | `/api/Agency/Location/{id}` | — | `void` | |
-| `getPersonnelAgencies()` | GET | `/api/PersonnelAgency` | — | `PersonnelAgencyItem[]` | Agencies user has access to |
-| `switchPersonnelAgency(id)` | PUT | `/api/PersonnelAgency/{id}` | — | `void` | Switch active agency context |
+| `getPersonnelAgencies()` | GET | `/api/agency/personnel/Agencies` | — | `PersonnelAgencyItem[]` | Agencies user has access to |
+| `switchPersonnelAgency(id)` | PUT | `/api/agency/personnel/Agencies/{id}` | — | `void` | Switch active agency context |
 
 **Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `PersonnelAgencyItem` (`src/types/agency`)
 
@@ -59,21 +59,21 @@ Candidate pool (recruitment funnel before conversion to Worker).
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyCandidates(filter)` | GET | `/api/AgencyCandidate` | `AgencyCandidateFilter` (params) | `PaginatedList<Candidate>` | |
-| `getAgencyCandidate(id)` | GET | `/api/AgencyCandidate/{id}` | — | `Candidate` | |
-| `createAgencyCandidate(model)` | POST | `/api/AgencyCandidate` | `CreateCandidateModel` | `{ id: string }` | |
-| `updateAgencyCandidate(id, model)` | PUT | `/api/AgencyCandidate/{id}` | `CreateCandidateModel` | `void` | |
-| `deleteAgencyCandidate(id)` | DELETE | `/api/AgencyCandidate/{id}` | — | `void` | |
-| `updateAgencyCandidateRecruiter(id)` | PUT | `/api/AgencyCandidate/{id}/Recruiter` | null | `void` | Assign recruiter |
-| `convertCandidateToWorker(id)` | POST | `/api/AgencyCandidate/{id}/convert-to-worker` | — | `{ id: string }` | Promote to worker |
-| `addCandidatePhoneNumber(id, model)` | POST | `/api/AgencyCandidate/{id}/PhoneNumber` | `CandidatePhoneNumberModel` | `{ id: string }` | |
-| `deleteCandidatePhoneNumber(id, numberId)` | DELETE | `/api/AgencyCandidate/{id}/PhoneNumber/{numberId}` | — | `void` | |
-| `addCandidateSkill(id, model)` | POST | `/api/AgencyCandidate/{id}/Skill` | `CandidateSkillModel` | `{ id: string }` | |
-| `deleteCandidateSkill(id, skillId)` | DELETE | `/api/AgencyCandidate/{id}/Skill/{skillId}` | — | `void` | |
-| `getCandidateDocuments(id)` | GET | `/api/AgencyCandidate/{id}/Document` | — | `PaginatedList<CandidateDocument>` | |
-| `addCandidateDocument(id, model)` | POST | `/api/AgencyCandidate/{id}/Document` | `CreateCandidateDocumentPayload` | `CandidateDocument` | |
-| `deleteCandidateDocument(id, docId)` | DELETE | `/api/AgencyCandidate/{id}/Document/{docId}` | — | `void` | |
-| `bulkAgencyCandidates(agencyId, file)` | POST | `/api/AgencyCandidate/bulk/{agencyId}` | FormData (multipart) | Blob | Excel import → error report |
+| `getAgencyCandidates(filter)` | GET | `/api/agency/candidates` | `AgencyCandidateFilter` (params) | `PaginatedList<Candidate>` | |
+| `getAgencyCandidate(id)` | GET | `/api/agency/candidates/{id}` | — | `Candidate` | |
+| `createAgencyCandidate(model)` | POST | `/api/agency/candidates` | `CreateCandidateModel` | `{ id: string }` | |
+| `updateAgencyCandidate(id, model)` | PUT | `/api/agency/candidates/{id}` | `CreateCandidateModel` | `void` | |
+| `deleteAgencyCandidate(id)` | DELETE | `/api/agency/candidates/{id}` | — | `void` | |
+| `updateAgencyCandidateRecruiter(id)` | PUT | `/api/agency/candidates/{id}/Recruiter` | null | `void` | Assign recruiter |
+| `convertCandidateToWorker(id)` | POST | `/api/agency/candidates/{id}/convert-to-worker` | — | `{ id: string }` | Promote to worker |
+| `addCandidatePhoneNumber(id, model)` | POST | `/api/agency/candidates/{id}/PhoneNumbers` | `CandidatePhoneNumberModel` | `{ id: string }` | |
+| `deleteCandidatePhoneNumber(id, numberId)` | DELETE | `/api/agency/candidates/{id}/PhoneNumbers/{numberId}` | — | `void` | |
+| `addCandidateSkill(id, model)` | POST | `/api/agency/candidates/{id}/Skills` | `CandidateSkillModel` | `{ id: string }` | |
+| `deleteCandidateSkill(id, skillId)` | DELETE | `/api/agency/candidates/{id}/Skills/{skillId}` | — | `void` | |
+| `getCandidateDocuments(id)` | GET | `/api/agency/candidates/{id}/Documents` | — | `PaginatedList<CandidateDocument>` | |
+| `addCandidateDocument(id, model)` | POST | `/api/agency/candidates/{id}/Documents` | `CreateCandidateDocumentPayload` | `CandidateDocument` | |
+| `deleteCandidateDocument(id, docId)` | DELETE | `/api/agency/candidates/{id}/Documents/{docId}` | — | `void` | |
+| `bulkAgencyCandidates(agencyId, file)` | POST | `/api/agency/candidates/bulk/{agencyId}` | FormData (multipart) | Blob | Excel import → error report |
 
 **Types:** `Candidate`, `CandidateDocument`, `CreateCandidateDocumentPayload`, `AgencyCandidateFilter`, `CreateCandidateModel`, `CandidatePhoneNumberModel`, `CandidateSkillModel` (`src/types/candidate`)
 
@@ -199,12 +199,12 @@ Notes attached to Workers, Candidates, Companies, Requests. Company/request note
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | **Worker Notes** | | | | | Read + Create only |
-| `getWorkerProfileNotes(id, pagination)` | GET | `/api/AgencyWorkerProfile/{id}/Note?PageSize={size}&PageIndex={page}` | — | `PaginatedList<NoteItem>` | |
-| `createWorkerProfileNote(id, model)` | POST | `/api/AgencyWorkerProfile/{id}/Note` | `NoteModel` | `CreateNoteResponse` | |
+| `getWorkerProfileNotes(id, pagination)` | GET | `/api/agency/workers/{id}/Notes?PageSize={size}&PageIndex={page}` | — | `PaginatedList<NoteItem>` | |
+| `createWorkerProfileNote(id, model)` | POST | `/api/agency/workers/{id}/Notes` | `NoteModel` | `CreateNoteResponse` | |
 | **Candidate Notes** | | | | | |
-| `getCandidateNotes(id, pagination)` | GET | `/api/AgencyCandidate/{id}/Note?PageSize={size}&PageIndex={page}` | — | `PaginatedList<NoteItem>` | |
-| `createCandidateNote(id, model)` | POST | `/api/AgencyCandidate/{id}/Note` | `NoteModel` | `CreateNoteResponse` | |
-| `deleteCandidateNote(id, noteId)` | DELETE | `/api/AgencyCandidate/{id}/Note/{noteId}` | — | `void` | |
+| `getCandidateNotes(id, pagination)` | GET | `/api/agency/candidates/{id}/Notes?PageSize={size}&PageIndex={page}` | — | `PaginatedList<NoteItem>` | |
+| `createCandidateNote(id, model)` | POST | `/api/agency/candidates/{id}/Notes` | `NoteModel` | `CreateNoteResponse` | |
+| `deleteCandidateNote(id, noteId)` | DELETE | `/api/agency/candidates/{id}/Notes/{noteId}` | — | `void` | |
 | **Company Notes** | | | | | Full CRUD |
 | `getAgencyCompanyNotes(id, pagination)` | GET | `/api/agency/companyprofiles/{id}/Notes?PageSize={size}&PageIndex={page}` | — | `PaginatedList<NoteItem>` | |
 | `createAgencyCompanyNote(id, model)` | POST | `/api/agency/companyprofiles/{id}/Notes` | `NoteModel` | `CreateNoteResponse` | |
@@ -385,23 +385,23 @@ Worker profile management from the agency's perspective.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyWorkers(filter)` | GET | `/api/AgencyWorkerProfile` | `AgencyWorkerFilter` (params) | `PaginatedList<AgencyWorkerListItem>` | |
-| `getAgencyWorkersDropdown(filter)` | GET | `/api/AgencyWorkerProfile/Dropdown` | `{ searchTerm }` (params) | `AgencyWorkerDropdownItem[]` | Autocomplete |
-| `getAgencyWorker(id)` | GET | `/api/AgencyWorkerProfile/{id}` | — | `WorkerProfile` | |
-| `updateApprovedToWork(id)` | PUT | `/api/AgencyWorkerProfile/{id}/ApprovedToWork` | — | `void` | Toggle |
-| `updateAgencyWorkerProfileDNU(id)` | PUT | `/api/AgencyWorkerProfile/{id}/Dnu` | — | `void` | Toggle Do-Not-Use |
-| `updateAgencyWorkerContractor(id)` | PUT | `/api/AgencyWorkerProfile/{id}/IsContractor` | — | `void` | Toggle |
-| `updateAgencyWorkerSubContractor(id)` | PUT | `/api/AgencyWorkerProfile/{id}/IsSubcontractor` | — | `void` | Toggle |
-| `updateWorkerProfileTaxCategory(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/tax-category` | `UpdateWorkerProfileFieldsPayload` | `void` | |
-| `updateWorkerProfileTaxRate(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/tax-rate` | `UpdateWorkerProfileFieldsPayload` | `void` | |
-| `updateWorkerProfileExternalId(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/ExternalId` | `UpdateWorkerProfileFieldsPayload` | `void` | |
-| `updateWorkerProfileWcCode(payload)` | PUT | `/api/AgencyWorkerProfile/{id}/WcCode` | `UpdateWorkerProfileFieldsPayload` | `void` | |
-| `updateAgencyWorkerEmail(id, model)` | PUT | `/api/AgencyWorkerProfile/{id}/Email` | `UpdateWorkerEmailModel` | `void` | |
-| `agencyCommentWorker(id, comment)` | POST | `/api/AgencyWorker/{id}/Comment` | `AgencyWorkerCommentModel` | `void` | |
-| `getAgencyWorkerProfileRequestHistory(id, pagination)` | GET | `/api/AgencyWorkerProfile/{id}/RequestHistory?PageSize={size}&PageIndex={page}` | — | `PaginatedList<AgencyWorkerRequestHistoryItem>` | Past assignments |
-| `getAgencyWorkerProfileHolidays(id)` | GET | `/api/agency-worker-profile-holiday/{id}` | — | `AgencyWorkerHoliday[]` | |
-| `addUpdateAgencyWorkerProfileHolidays(id, data)` | POST | `/api/agency-worker-profile-holiday/{id}` | `AgencyWorkerHoliday` | `void` | |
-| `addNewHoliday(payload)` | POST | `/api/agency-worker-profile-holiday/new-holiday` | `AddNewHolidayPayload` | `void` | Bulk holiday add |
+| `getAgencyWorkers(filter)` | GET | `/api/agency/workers` | `AgencyWorkerFilter` (params) | `PaginatedList<AgencyWorkerListItem>` | |
+| `getAgencyWorkersDropdown(filter)` | GET | `/api/agency/workers/Dropdown` | `{ searchTerm }` (params) | `AgencyWorkerDropdownItem[]` | Autocomplete |
+| `getAgencyWorker(id)` | GET | `/api/agency/workers/{id}` | — | `WorkerProfile` | |
+| `updateApprovedToWork(id)` | PUT | `/api/agency/workers/{id}/ApprovedToWork` | — | `void` | Toggle |
+| `updateAgencyWorkerProfileDNU(id)` | PUT | `/api/agency/workers/{id}/Dnu` | — | `void` | Toggle Do-Not-Use |
+| `updateAgencyWorkerContractor(id)` | PUT | `/api/agency/workers/{id}/IsContractor` | — | `void` | Toggle |
+| `updateAgencyWorkerSubContractor(id)` | PUT | `/api/agency/workers/{id}/IsSubcontractor` | — | `void` | Toggle |
+| `updateWorkerProfileTaxCategory(payload)` | PUT | `/api/agency/workers/{id}/tax-category` | `UpdateWorkerProfileFieldsPayload` | `void` | |
+| `updateWorkerProfileTaxRate(payload)` | PUT | `/api/agency/workers/{id}/tax-rate` | `UpdateWorkerProfileFieldsPayload` | `void` | |
+| `updateWorkerProfileExternalId(payload)` | PUT | `/api/agency/workers/{id}/ExternalId` | `UpdateWorkerProfileFieldsPayload` | `void` | |
+| `updateWorkerProfileWcCode(payload)` | PUT | `/api/agency/workers/{id}/WcCode` | `UpdateWorkerProfileFieldsPayload` | `void` | |
+| `updateAgencyWorkerEmail(id, model)` | PUT | `/api/agency/workers/{id}/Email` | `UpdateWorkerEmailModel` | `void` | |
+| `agencyCommentWorker(id, comment)` | POST | `/api/agency/workers/{id}/Comments` | `AgencyWorkerCommentModel` | `void` | |
+| `getAgencyWorkerProfileRequestHistory(id, pagination)` | GET | `/api/agency/workers/{id}/RequestHistory?PageSize={size}&PageIndex={page}` | — | `PaginatedList<AgencyWorkerRequestHistoryItem>` | Past assignments |
+| `getAgencyWorkerProfileHolidays(id)` | GET | `/api/agency/workers/{id}/Holidays` | — | `AgencyWorkerHoliday[]` | |
+| `addUpdateAgencyWorkerProfileHolidays(id, data)` | POST | `/api/agency/workers/{id}/Holidays` | `AgencyWorkerHoliday` | `void` | |
+| `addNewHoliday(id, payload)` | POST | `/api/agency/workers/{id}/Holidays/new-holiday` | `AddNewHolidayPayload` | `void` | Bulk holiday add |
 
 **Types:** `AgencyWorkerFilter`, `AgencyWorkerListItem`, `AgencyWorkerDropdownItem`, `AgencyWorkerCommentModel`, `UpdateWorkerEmailModel`, `UpdateWorkerProfileFieldsPayload`, `AgencyWorkerHoliday`, `AddNewHolidayPayload`, `AgencyWorkerRequestHistoryItem` (`src/types/agency`); `WorkerProfile` (`src/types/worker`)
 

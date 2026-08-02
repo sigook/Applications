@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyCandidatePhoneNumber.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Interfaces;
@@ -14,21 +14,21 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
+namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
-    public class AgencyCandidatePhoneNumberControllerTest :
-        IClassFixture<CustomWebApplicationFactory<AgencyCandidatePhoneNumberControllerTest.Startup>>
+    public class PhoneNumbersControllerTest :
+        IClassFixture<CustomWebApplicationFactory<PhoneNumbersControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyCandidatePhoneNumberControllerTest(CustomWebApplicationFactory<AgencyCandidatePhoneNumberControllerTest.Startup> factory)
+        public PhoneNumbersControllerTest(CustomWebApplicationFactory<PhoneNumbersControllerTest.Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyCandidatePhoneNumberController.RouteName.Replace("{candidateId}",
+        private static string RequestUri() => PhoneNumbersController.RouteName.Replace("{candidateId}",
             Startup.FakeCandidate.Id.ToString());
 
         [Fact]

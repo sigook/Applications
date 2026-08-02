@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyCandidate.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -24,15 +24,15 @@ using System.Net;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
+namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
-    public class TestAgencyCandidateController : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<TestAgencyCandidateController.Startup>>
+    public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CandidatesControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
-        private const string RequestUri = AgencyCandidateController.RouteName;
+        private const string RequestUri = CandidatesController.RouteName;
 
-        public TestAgencyCandidateController(CustomWebApplicationFactory<Startup> factory)
+        public CandidatesControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();

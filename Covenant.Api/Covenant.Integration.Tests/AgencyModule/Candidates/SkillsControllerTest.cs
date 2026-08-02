@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyCandidateSkill.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Interfaces;
@@ -14,20 +14,20 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
+namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
-    public class AgencyCandidateSkillControllerTest : IClassFixture<CustomWebApplicationFactory<AgencyCandidateSkillControllerTest.Startup>>
+    public class SkillsControllerTest : IClassFixture<CustomWebApplicationFactory<SkillsControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyCandidateSkillControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public SkillsControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyCandidateSkillController.RouteName.Replace("{candidateId}",
+        private static string RequestUri() => SkillsController.RouteName.Replace("{candidateId}",
             Startup.FakeCandidate.Id.ToString());
 
         [Fact]

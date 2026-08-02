@@ -1,11 +1,11 @@
-using Covenant.Common.Entities;
+﻿using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Entities.Accounting.Subcontractor;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Deductions;
+using Covenant.Common.Entities.Accounting.Deductions;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Request.Runners;
@@ -83,18 +83,8 @@ public class CovenantContext : DbContext
     public DbSet<ReasonCancellationRequest> ReasonCancellationRequests { get; set; }
     public DbSet<Holiday> Holidays { get; set; }
     public DbSet<CovenantFile> CovenantFiles { get; set; }
-    public DbSet<CppWeekly> CppWeekly { get; set; }
-    public DbSet<CppBiWeekly> CppBiWeekly { get; set; }
-    public DbSet<CppMonthly> CppMonthly { get; set; }
-    public DbSet<CppSemiMonthly> CppSemiMonthly { get; set; }
-    public DbSet<TaxWeekly> TaxWeekly { get; set; }
-    public DbSet<FederalTaxBiWeekly> FederalTaxBiWeekly { get; set; }
-    public DbSet<FederalTaxSemiMonthly> FederalTaxSemiMonthly { get; set; }
-    public DbSet<FederalTaxMonthly> FederalTaxMonthly { get; set; }
-    public DbSet<ProvincialTaxWeekly> ProvincialTaxWeekly { get; set; }
-    public DbSet<ProvincialTaxBiWeekly> ProvincialTaxBiWeekly { get; set; }
-    public DbSet<ProvincialTaxSemiMonthly> ProvincialTaxSemiMonthly { get; set; }
-    public DbSet<ProvincialTaxMonthly> ProvincialTaxMonthly { get; set; }
+    public DbSet<CppDeduction> CppDeductions { get; set; }
+    public DbSet<TaxDeduction> TaxDeductions { get; set; }
     public DbSet<NotificationType> NotificationTypes { get; set; }
     public DbSet<UserNotificationType> UserNotificationTypes { get; set; }
     public DbSet<PayStub> PayStubs { get; set; }

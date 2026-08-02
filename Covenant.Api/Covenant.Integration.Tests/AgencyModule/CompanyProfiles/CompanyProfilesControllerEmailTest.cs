@@ -1,5 +1,4 @@
 using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
-using Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;

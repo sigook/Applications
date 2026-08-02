@@ -69,7 +69,6 @@ Deliberate exceptions — leave them alone:
 
 | Table | Why |
 |---|---|
-| `CppWeekly`, `CppBiWeekly`, `CppSemiMonthly`, `CppMonthly`, `TaxWeekly`, `FederalTax*`, `ProvincialTax*` | deduction rate-range tables; the plural reads as `CppWeeklies`. Their `DbSet` stays singular too, to match |
 | `AgencyPersonnel`, `AgencyContactInformation` | collective / uncountable |
 | `PayStubHistory`, `TimesheetHistory` | views, not tables |
 | `InvoicesUSA`, `CompanyProfileContactPeople` | natural plural, not the mechanical `InvoiceUSAs` / `...Persons` |
@@ -409,12 +408,13 @@ Pay-stub equivalent for `WorkerProfile.IsSubcontractor` workers (no CPP/EI/tax):
 `ReportSubcontractorWageDetail`, `ReportSubcontractorPublicHoliday`,
 `ReportSubContractorOtherDeduction` (only lines with `Total > 0` are kept).
 
-### Deduction tables (`Entities/Deductions/`)
+### Deduction tables (`Entities/Accounting/Deductions/`)
 
-Row-per-earnings-range lookup tables loaded from CRA data: `Cpp{Weekly,BiWeekly,SemiMonthly,
-Monthly}`, `FederalTax{...}`, `ProvincialTax{...}` (interfaces `ICpp`, `IFederalTax`,
-`IProvincialTax`). Deductions are **range lookups by earnings/year, not formulas**; EI is the
-only computed one.
+Row-per-earnings-range lookup tables loaded from CRA data, consolidated into two entities:
+`CppDeduction` (table `CppDeductions`) and `TaxDeduction` (table `TaxDeductions`). Both carry a
+`PayPeriod` discriminator (`Weekly`, `BiWeekly`, `SemiMonthly`, `Monthly`); `TaxDeduction` adds
+`TaxType` (`Federal`, `Provincial`). Deductions are **range lookups by earnings/year, not
+formulas**; EI is the only computed one.
 
 ---
 

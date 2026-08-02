@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Personnel;
 using Covenant.Api.Authorization;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
@@ -22,20 +22,20 @@ using System.Text.Json;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyPersonnelTest
+namespace Covenant.Integration.Tests.AgencyModule.Personnel
 {
-    public class AgencyPersonnelControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyPersonnelControllerTest.Startup>>
+    public class PersonnelControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<PersonnelControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
 
-        public AgencyPersonnelControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public PersonnelControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyPersonnelController.RouteName;
+        private static string RequestUri() => PersonnelController.RouteName;
 
         [Fact]
         public async Task Post()

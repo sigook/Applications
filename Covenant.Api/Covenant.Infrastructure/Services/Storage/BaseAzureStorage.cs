@@ -54,6 +54,22 @@ public class BaseAzureStorage : IBaseAzureStorage
         }
     }
 
+    public async Task<Stream> DownloadStream(string fileName)
+    {
+        try
+        {
+            var blob = container.GetBlobClient(fileName);
+            var stream = new MemoryStream();
+            await blob.DownloadToAsync(stream);
+            stream.Position = 0;
+            return stream;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<string> DownloadContent(string fileName)
     {
         try

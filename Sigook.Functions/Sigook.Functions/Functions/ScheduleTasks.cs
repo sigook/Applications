@@ -1,24 +1,21 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Sigook.Functions.Configuration;
 using Sigook.Functions.Models;
 using Sigook.Functions.Utils;
 using System.Net.Http.Headers;
 
 namespace Sigook.Functions.Functions;
 
-public class ScheduleTasks
+public class ScheduleTasks(
+    IHttpClientFactory httpClientFactory,
+    ILogger<ScheduleTasks> logger,
+    IConfiguration configuration,
+    IOptions<ScheduleTasksOptions> options)
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ScheduleTasks> _logger;
-    private readonly IConfiguration _configuration;
-
-    public ScheduleTasks(IHttpClientFactory httpClientFactory, ILogger<ScheduleTasks> logger, IConfiguration configuration)
-    {
-        _httpClientFactory = httpClientFactory;
-        _logger = logger;
-        _configuration = configuration;
-    }
+    private readonly ScheduleTasksOptions _options = options.Value;
 
     [Function(nameof(NotificationSinExpiration))]
     public async Task NotificationSinExpiration(
@@ -30,52 +27,51 @@ public class ScheduleTasks
 
     private async Task Execute(string action)
     {
-        _logger.LogInformation("Starting scheduled task: {Action}", action);
+        logger.LogInformation("Starting scheduled task: {Action}", action);
         TeamsMessage message;
         try
         {
-            string baseApiUrl = _configuration["ScheduleTasks_ApiUrl"];
-            if (string.IsNullOrEmpty(baseApiUrl))
+            if (string.IsNullOrEmpty(_options.ApiUrl))
             {
-                _logger.LogError("ScheduleTasks_ApiUrl is not configured");
-                message = TeamsMessage.CreateError("API url is missing", "ScheduleTasks_ApiUrl is not set");
+                logger.LogError("ScheduleTasks:ApiUrl is not configured");
+                message = TeamsMessage.CreateError("API url is missing", "ScheduleTasks:ApiUrl is not set");
             }
             else
             {
-                var url = $"{baseApiUrl}{action}";
-                var apiClient = _httpClientFactory.CreateClient("Api");
-                var token = await apiClient.GetToken(_configuration);
+                var url = $"{_options.ApiUrl}{action}";
+                var apiClient = httpClientFactory.CreateClient("Api");
+                var token = await apiClient.GetToken(_options);
 
                 var request = new HttpRequestMessage(HttpMethod.Post, url);
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                _logger.LogInformation("Calling API: {Url}", url);
+                logger.LogInformation("Calling API: {Url}", url);
                 HttpResponseMessage response = await apiClient.SendAsync(request);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation("Scheduled task {Action} completed successfully", action);
+                    logger.LogInformation("Scheduled task {Action} completed successfully", action);
                     message = TeamsMessage.CreateSuccess(url, "OK");
                 }
                 else
                 {
                     string content = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Scheduled task {Action} failed with status {StatusCode}: {Content}", action, response.StatusCode, content);
+                    logger.LogError("Scheduled task {Action} failed with status {StatusCode}: {Content}", action, response.StatusCode, content);
                     message = TeamsMessage.CreateError(url, content);
                 }
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Scheduled task {Action} threw an exception", action);
+            logger.LogError(e, "Scheduled task {Action} threw an exception", action);
             message = TeamsMessage.CreateError(e.Message, e.ToString());
         }
 
-        var teamsClient = _httpClientFactory.CreateClient("Teams");
-        var notificationResult = await teamsClient.SendTeamsNotification(message, _configuration);
+        var teamsClient = httpClientFactory.CreateClient("Teams");
+        var notificationResult = await teamsClient.SendTeamsNotification(message, configuration);
         if (!string.IsNullOrEmpty(notificationResult))
         {
-            _logger.LogWarning("Teams notification failed for {Action}: {Result}", action, notificationResult);
+            logger.LogWarning("Teams notification failed for {Action}: {Result}", action, notificationResult);
         }
     }
 }

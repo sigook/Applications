@@ -1,4 +1,4 @@
-﻿using Covenant.Api.AgencyModule.AgencyCandidateNote.Controllers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -18,22 +18,22 @@ using Xunit;
 using Xunit.Abstractions;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyCandidate
+namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
-    public class TestAgencyCandidateNoteController : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<TestAgencyCandidateNoteController.Startup>>
+    public class NotesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly ITestOutputHelper _output;
         private readonly HttpClient _client;
 
-        public TestAgencyCandidateNoteController(CustomWebApplicationFactory<Startup> factory, ITestOutputHelper output)
+        public NotesControllerTest(CustomWebApplicationFactory<Startup> factory, ITestOutputHelper output)
         {
             _factory = factory;
             _output = output;
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => AgencyCandidateNoteController.RouteName.Replace("{candidateId}",
+        private static string RequestUri() => NotesController.RouteName.Replace("{candidateId}",
             Startup.FakeCandidate.Id.ToString());
 
         [Fact]

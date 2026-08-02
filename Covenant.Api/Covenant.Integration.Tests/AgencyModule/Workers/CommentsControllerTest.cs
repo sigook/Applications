@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyWorkerComment.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
 using Covenant.Api.Shared.WorkerComment.Models;
 using Covenant.Common.Entities;
@@ -13,14 +13,14 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Covenant.Integration.Tests.AgencyModule.CompanyWorkerComment
+namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
-    public class AgencyWorkerCommentControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyWorkerCommentControllerTest.Startup>>
+    public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
-        private const string Url = AgencyWorkerCommentController.RouteName;
+        private const string Url = CommentsController.RouteName;
         private readonly HttpClient _client;
-        public AgencyWorkerCommentControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public CommentsControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();

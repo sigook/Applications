@@ -5,7 +5,7 @@ How pay stubs are generated and how earnings and deductions are actually compute
 **Source of truth:**
 - `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs` — pay stub generation (`Generate` → `GeneratePayStubForWorker`, `CreateManualPayStub`)
 - `Covenant.Api/Covenant.Core.BL/Services/Shared/TimesheetCalculatorService.cs` — hours breakdown, amounts, deductions
-- `Covenant.Api/Covenant.Infrastructure/Deductions/Repositories/DeductionsRepository.cs` — CPP/tax lookup tables
+- `Covenant.Api/Covenant.Infrastructure/Repositories/Accounting/DeductionsRepository.cs` — CPP/tax lookup tables
 - `Covenant.Api/Covenant.Common/Configuration/Rates.cs` + `Covenant.Api/appsettings.json` (`Rates` section) — multipliers
 - Hours/timesheet rules (breaks, holiday gate, overtime thresholds, statutory holiday catalog): see `TIMESHEET_RULES.md`
 
@@ -96,16 +96,16 @@ All computed by `TimesheetCalculatorService.CalculateDeductions` (TimesheetCalcu
 
 Derived from the pay stub's week span (`DateExtensions.GetNumberOfWeeksIn` between `dateWorkBegins` and `dateWorkEnd`):
 
-| numberOfWeeks | Tables used |
-|---------------|-------------|
-| 1 | Weekly |
-| 2 | BiWeekly |
-| 3 | SemiMonthly |
-| other | Monthly |
+| numberOfWeeks | `PayPeriod` used |
+|---------------|------------------|
+| 1 | `Weekly` |
+| 2 | `BiWeekly` |
+| 3 | `SemiMonthly` |
+| other | `Monthly` |
 
 ### CPP — database lookup, no formula
 
-`DeductionsRepository.GetCpp{Weekly|BiWeekly|SemiMonthly|Monthly}(earnings, year)`: single row where `earnings >= From && earnings <= To`, returns the stored `Cpp` amount. There is **no** 5.95% formula, no basic exemption, no annual maximum in code. `Rates.CanadaPensionPlan` (0.051) exists in configuration but is **not used** for the CPP pay stub deduction.
+`DeductionsRepository.GetCpp(earnings, year, payPeriod)`: single row of `CppDeductions` where `earnings >= From && earnings <= To`, returns the stored `Cpp` amount. There is **no** 5.95% formula, no basic exemption, no annual maximum in code. `Rates.CanadaPensionPlan` (0.051) exists in configuration but is **not used** for the CPP pay stub deduction.
 
 ### EI — the only formula
 
@@ -117,7 +117,7 @@ No maximum insurable earnings cap is implemented.
 
 ### Federal / Provincial tax — database lookup
 
-`DeductionsRepository.GetFederalTax*` / `GetProvincialTax*`: single row where `earnings >= From && earnings < To` for the pay-period earnings **directly** (no annualization), returning the column for the worker's claim code (`TaxCategory` Cc0–Cc10, default `Cc1`). Tables are per year and per frequency; there is one provincial table set (not per-province in code).
+`DeductionsRepository.GetTax(earnings, year, payPeriod, taxType, category)`: single row of `TaxDeductions` where `earnings >= From && earnings < To` for the pay-period earnings **directly** (no annualization), returning the column for the worker's claim code (`TaxCategory` Cc0–Cc10, default `Cc1`). Rows are keyed by year, `PayPeriod` and `TaxType`; provincial rows have no province column (not per-province in code).
 
 ### Per-worker overrides — `WorkerProfileTaxCategory`
 
@@ -152,7 +152,23 @@ PayStubService.cs:425-427: if the pay stub has wage details (timesheet-driven) �
 
 ## Tax Table Maintenance
 
-CPP and tax brackets are **database rows** (`CppWeekly`, `TaxWeekly`, `FederalTax*`, `ProvincialTax*` entities in `Covenant.Common/Entities/Deductions/`), keyed by year. They are loaded/replaced per year via `DeductionsRepository` `Create*` / `Delete*(year)` methods — not code constants.
+CPP and tax brackets are **database rows** in two consolidated tables (`CppDeduction` and `TaxDeduction` entities in `Covenant.Common/Entities/Accounting/Deductions/`), keyed by year plus a `PayPeriod` discriminator (`Weekly`, `BiWeekly`, `SemiMonthly`, `Monthly`); `TaxDeduction` adds a `TaxType` discriminator (`Federal`, `Provincial`) — not code constants.
+
+Bracket lookups differ by concept and that is intentional: CPP matches `earnings >= From && earnings <= To`, taxes match `earnings >= From && earnings < To`.
+
+### CPP: from the CRA PDF, through blob storage
+
+The CPP table is loaded from the PDF the CRA publishes (T4032), with no manual transcription in between:
+
+1. The PDF is dropped in the `cra-tables` blob container, named `CPP <WEEKLY|BIWEEKLY|SEMIMONTHLY|MONTHLY> <YYYY>.pdf` (space, `_` or `-` as separator, case-insensitive).
+2. The `CraTableUploaded` blob trigger in `Sigook.Functions` reads the pay period and the year from that name. A name that does not follow the convention is reported to Teams and never reaches the API.
+3. The function calls `POST api/Accounting/Deduction/Cpp/Blob` with the blob name, the pay period and the year, authenticated with the same client credentials as the scheduled tasks.
+4. `CppDeductionImportService` downloads the blob, `CppPdfParser` (PdfPig) reads the four `From - To  CPP` blocks printed on every line, and `CppTableValidator` checks the result before anything is written: the brackets must start at `0.00`, be contiguous (`From == previous To + 0.01`), never overlap and never lower the contribution. A table that fails validation is rejected and the stored one is left untouched.
+5. `DeductionsRepository.ReplaceCpp(year, payPeriod, rows)` swaps the whole table for that year and pay period in a single transaction.
+
+The 2026 weekly table is 8,928 brackets, from `0.00 - 67.30` to `9344.62 - 9354.61` ($552.30).
+
+Federal and provincial tax tables are still loaded from an Excel upload (`POST api/Accounting/Deduction/{FederalTax|ProvincialTax}/{period}/Excel`, ClosedXML).
 
 ---
 

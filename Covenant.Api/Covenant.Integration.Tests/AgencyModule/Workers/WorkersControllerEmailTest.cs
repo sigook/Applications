@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Worker;
@@ -21,15 +21,15 @@ using System.Net;
 using System.Text.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
+namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
-    public class AgencyWorkerProfileControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AgencyWorkerProfileControllerEmailTest.Startup>>
+    public class WorkersControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerEmailTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
         private readonly HttpClient _client;
-        private static string RequestUri() => AgencyWorkerProfileController.RouteName;
+        private static string RequestUri() => WorkersController.RouteName;
 
-        public AgencyWorkerProfileControllerEmailTest(CustomWebApplicationFactory<Startup> factory)
+        public WorkersControllerEmailTest(CustomWebApplicationFactory<Startup> factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
@@ -40,7 +40,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         {
             CvnEmail newEmail = CvnEmail.Create("newEmail@mail.com").Value;
             Guid id = Startup.FakeWorker.Id;
-            var url = $"{RequestUri()}/{id}/{nameof(AgencyWorkerProfileController.Email)}";
+            var url = $"{RequestUri()}/{id}/{nameof(WorkersController.Email)}";
             HttpResponseMessage response = await _client.PutAsJsonAsync(url, new UpdateEmailModel { NewEmail = newEmail });
             response.EnsureSuccessStatusCode();
 
@@ -54,7 +54,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         {
             CvnEmail newEmail = Startup.OtherUserEmail;
             Guid id = Startup.FakeWorker.Id;
-            var url = $"{RequestUri()}/{id}/{nameof(AgencyWorkerProfileController.Email)}";
+            var url = $"{RequestUri()}/{id}/{nameof(WorkersController.Email)}";
             HttpResponseMessage response = await _client.PutAsJsonAsync(url, new UpdateEmailModel { NewEmail = newEmail });
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }

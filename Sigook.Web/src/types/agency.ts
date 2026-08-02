@@ -129,21 +129,21 @@ export interface AgencyLocationDetail {
   isBilling?: boolean;
 }
 
-// Body used by AgencyCreatePersonnelModal.vue (POST /api/AgencyPersonnel)
+// Body used by AgencyCreatePersonnelModal.vue (POST /api/agency/personnel)
 export interface AgencyPersonnelCreateModel {
   name: string | null;
   email: string | null;
   role: string | null;
 }
 
-// Item returned by GET /api/AgencyPersonnel
+// Item returned by GET /api/agency/personnel
 export interface AgencyPersonnelListItem {
   id: string;
   name: string;
   email: string;
 }
 
-// Item returned by GET /api/PersonnelAgency. Mirrors backend PersonnelAgencyModel.
+// Item returned by GET /api/agency/personnel/Agencies. Mirrors backend PersonnelAgencyModel.
 export interface PersonnelAgencyItem {
   id: string;
   name: string;
@@ -197,7 +197,7 @@ export interface AgencyWorkerFilter {
   isSubcontractor?: boolean | null;
 }
 
-// Item returned by GET /api/AgencyWorkerProfile (paginated list)
+// Item returned by GET /api/agency/workers (paginated list)
 export interface AgencyWorkerListItem {
   id: string;
   fullName: string;
@@ -218,7 +218,7 @@ export interface AgencyWorkerDropdownItem {
   approvedToWork: boolean;
 }
 
-// Worker comment payload (POST /api/AgencyWorker/{id}/Comment)
+// Worker comment payload (POST /api/agency/workers/{id}/Comments)
 // Worker email update payload
 export interface UpdateWorkerEmailModel {
   newEmail: string;

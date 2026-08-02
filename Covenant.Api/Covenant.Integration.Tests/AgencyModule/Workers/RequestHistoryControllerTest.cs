@@ -15,22 +15,22 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
-using static Covenant.Api.AgencyModule.AgencyWorkerProfileRequestHistory.Controllers.AgencyWorkerProfileRequestHistoryController;
+using static Covenant.Api.Controllers.Sigook.Agency.Workers.RequestHistoryController;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfileRequestHistory
+namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
-    public class AgencyWorkerProfileRequestHistoryControllerTest : IClassFixture<CustomWebApplicationFactory<AgencyWorkerProfileRequestHistoryControllerTest.Startup>>
+    public class RequestHistoryControllerTest : IClassFixture<CustomWebApplicationFactory<RequestHistoryControllerTest.Startup>>
     {
         private readonly HttpClient _client;
 
-        public AgencyWorkerProfileRequestHistoryControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+        public RequestHistoryControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
         [Fact]
         public async Task Get()
         {
             HttpResponseMessage response = await _client.GetAsync(
-                RouteUrl.Replace("{workerProfileId}", Startup.FakeWorkerProfile.Id.ToString()));
+                RouteName.Replace("{workerProfileId}", Startup.FakeWorkerProfile.Id.ToString()));
             response.EnsureSuccessStatusCode();
             var list = await response.Content.ReadFromJsonAsync<PaginatedList<RequestListModel>>();
             Assert.NotEmpty(list.Items);

@@ -1,5 +1,5 @@
 ﻿using Covenant.Api;
-using Covenant.Api.AgencyModule.AgencyWorkerProfile.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Notification;
@@ -25,9 +25,9 @@ using System.Net;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
+namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
-    public partial class AgencyWorkerProfileControllerTest : BaseTestOrder
+    public partial class WorkersControllerTest : BaseTestOrder
     {
         private readonly WebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
@@ -53,7 +53,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         private readonly WorkerProfile FakeWorkerIsSubcontractor;
         private readonly WorkerProfile FakeWorkerToUpdateEmail;
 
-        public AgencyWorkerProfileControllerTest()
+        public WorkersControllerTest()
         {
             _factory = new CustomWebApplicationFactory()
                 .WithWebHostBuilder(builder =>
@@ -164,7 +164,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
             Seed(_factory.Services.GetService<CovenantContext>());
         }
 
-        private string RequestUri() => AgencyWorkerProfileController.RouteName;
+        private string RequestUri() => WorkersController.RouteName;
 
         [Fact]
         public async Task GetById()
@@ -227,7 +227,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         public async Task PutIsContractor()
         {
             Guid id = FakeWorkerIsContractor.Id;
-            var url = $"{RequestUri()}/{id}/{nameof(AgencyWorkerProfileController.IsContractor)}";
+            var url = $"{RequestUri()}/{id}/{nameof(WorkersController.IsContractor)}";
             var response = await _client.PutAsJsonAsync(url, new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
@@ -254,7 +254,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyWorkerProfile
         public async Task PutIsSubcontractor()
         {
             Guid id = FakeWorkerIsSubcontractor.Id;
-            var url = $"{RequestUri()}/{id}/{nameof(AgencyWorkerProfileController.IsSubcontractor)}";
+            var url = $"{RequestUri()}/{id}/{nameof(WorkersController.IsSubcontractor)}";
             var response = await _client.PutAsJsonAsync(url, new { });
             response.EnsureSuccessStatusCode();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
