@@ -6380,7 +6380,7 @@
         "tags": [
           "DeductionCpp"
         ],
-        "summary": "Replaces a CPP deduction table with the contents of a CRA PDF already stored in the cra-tables container.",
+        "summary": "Imports a CPP deduction table from a CRA PDF already stored in the cra-tables container, keeping the last two years.",
         "requestBody": {
           "description": "Blob name, pay period and year of the table to import.",
           "content": {

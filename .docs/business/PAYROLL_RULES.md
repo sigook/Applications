@@ -164,7 +164,9 @@ The CPP table is loaded from the PDF the CRA publishes (T4032), with no manual t
 2. The `CraTableUploaded` blob trigger in `Sigook.Functions` reads the pay period and the year from that name. A name that does not follow the convention is reported to Teams and never reaches the API.
 3. The function calls `POST api/Accounting/Deduction/Cpp/Blob` with the blob name, the pay period and the year, authenticated with the same client credentials as the scheduled tasks.
 4. `CppDeductionImportService` downloads the blob, `CppPdfParser` (PdfPig) reads the four `From - To  CPP` blocks printed on every line, and `CppTableValidator` checks the result before anything is written: the brackets must start at `0.00`, be contiguous (`From == previous To + 0.01`), never overlap and never lower the contribution. A table that fails validation is rejected and the stored one is left untouched.
-5. `DeductionsRepository.ReplaceCpp(year, payPeriod, rows)` swaps the whole table for that year and pay period in a single transaction.
+5. `DeductionsRepository.ImportCpp(year, payPeriod, rows, yearsKept)` writes the table for that year and pay period in a single transaction.
+
+**Retention: two years.** The import does not wipe the table — it only replaces the year being imported and deletes the years older than `CppDeductionImportService.YearsKept` (2), per pay period. Importing `CPP WEEKLY 2027.pdf` leaves 2027 and 2026 in place and drops 2025 and earlier. Pay stubs of the previous year keep resolving their brackets; older years are gone on purpose. Re-importing the same year is idempotent, and re-importing an obsolete year only adds that year — the next current-year import purges it.
 
 The 2026 weekly table is 8,928 brackets, from `0.00 - 67.30` to `9344.62 - 9354.61` ($552.30).
 

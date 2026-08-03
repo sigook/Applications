@@ -27,9 +27,9 @@ public class CppDeductionImportServiceTest
 
     public CppDeductionImportServiceTest()
     {
-        _repository.Setup(r => r.ReplaceCpp(It.IsAny<int>(), It.IsAny<PayPeriod>(), It.IsAny<IReadOnlyList<CppDeduction>>()))
-            .Callback<int, PayPeriod, IReadOnlyList<CppDeduction>>((_, _, rows) => _stored = rows)
-            .ReturnsAsync((int _, PayPeriod _, IReadOnlyList<CppDeduction> rows) => rows.Count);
+        _repository.Setup(r => r.ImportCpp(It.IsAny<int>(), It.IsAny<PayPeriod>(), It.IsAny<IReadOnlyList<CppDeduction>>(), It.IsAny<int>()))
+            .Callback<int, PayPeriod, IReadOnlyList<CppDeduction>, int>((_, _, rows, _) => _stored = rows)
+            .ReturnsAsync((int _, PayPeriod _, IReadOnlyList<CppDeduction> rows, int _) => rows.Count);
 
         _sut = new CppDeductionImportService(_container.Object, new CppPdfParser(), _repository.Object,
             new ImportCppFromBlobModelValidator(), NullLogger<CppDeductionImportService>.Instance);
@@ -50,6 +50,16 @@ public class CppDeductionImportServiceTest
             Assert.Equal(2026, row.Year);
             Assert.Equal(PayPeriod.Weekly, row.PayPeriod);
         });
+    }
+
+    [Fact]
+    public async Task Asks_The_Repository_To_Keep_The_Two_Most_Recent_Years()
+    {
+        GivenTheBlobIs(await File.ReadAllBytesAsync(FixturePath));
+
+        await _sut.ImportFromBlob(Model());
+
+        _repository.Verify(r => r.ImportCpp(2026, PayPeriod.Weekly, It.IsAny<IReadOnlyList<CppDeduction>>(), 2), Times.Once);
     }
 
     [Theory]
@@ -94,7 +104,7 @@ public class CppDeductionImportServiceTest
         _container.Setup(c => c.DownloadStream(BlobName)).ReturnsAsync(() => new MemoryStream(content));
 
     private void VerifyNothingWasStored() =>
-        _repository.Verify(r => r.ReplaceCpp(It.IsAny<int>(), It.IsAny<PayPeriod>(), It.IsAny<IReadOnlyList<CppDeduction>>()), Times.Never);
+        _repository.Verify(r => r.ImportCpp(It.IsAny<int>(), It.IsAny<PayPeriod>(), It.IsAny<IReadOnlyList<CppDeduction>>(), It.IsAny<int>()), Times.Never);
 
     private static ImportCppFromBlobModel Model() =>
         new() { BlobName = BlobName, PayPeriod = PayPeriod.Weekly, Year = 2026 };

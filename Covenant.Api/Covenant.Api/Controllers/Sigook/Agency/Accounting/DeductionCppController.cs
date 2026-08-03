@@ -14,7 +14,7 @@ public class DeductionCppController(ICppDeductionImportService importService) : 
     public const string RouteName = "api/Accounting/Deduction/Cpp";
 
     /// <summary>
-    /// Replaces a CPP deduction table with the contents of a CRA PDF already stored in the cra-tables container.
+    /// Imports a CPP deduction table from a CRA PDF already stored in the cra-tables container, keeping the last two years.
     /// </summary>
     /// <param name="model">Blob name, pay period and year of the table to import.</param>
     [HttpPost("Blob")]

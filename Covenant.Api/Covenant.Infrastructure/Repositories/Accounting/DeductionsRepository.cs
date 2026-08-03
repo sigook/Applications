@@ -19,19 +19,24 @@ public class DeductionsRepository(CovenantContext context) : IDeductionsReposito
             .Select(w => w.Cpp)
             .SingleOrDefaultAsync();
 
-    public async Task<int> ReplaceCpp(int year, PayPeriod payPeriod, IReadOnlyList<CppDeduction> rows)
+    public async Task<int> ImportCpp(int year, PayPeriod payPeriod, IReadOnlyList<CppDeduction> rows, int yearsKept)
     {
+        var oldestYearKept = year - yearsKept + 1;
+
         if (!context.Database.IsRelational())
         {
-            context.CppDeductions.RemoveRange(
-                await context.CppDeductions.Where(w => w.Year == year && w.PayPeriod == payPeriod).ToListAsync());
+            context.CppDeductions.RemoveRange(await context.CppDeductions
+                .Where(w => w.PayPeriod == payPeriod && (w.Year == year || w.Year < oldestYearKept))
+                .ToListAsync());
             await context.CppDeductions.AddRangeAsync(rows);
             await context.SaveChangesAsync();
             return rows.Count;
         }
 
         await using var transaction = await context.Database.BeginTransactionAsync();
-        await context.CppDeductions.Where(w => w.Year == year && w.PayPeriod == payPeriod).ExecuteDeleteAsync();
+        await context.CppDeductions
+            .Where(w => w.PayPeriod == payPeriod && (w.Year == year || w.Year < oldestYearKept))
+            .ExecuteDeleteAsync();
         await context.BulkInsertAsync(rows.ToList());
         await transaction.CommitAsync();
         return rows.Count;

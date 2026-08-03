@@ -18,6 +18,8 @@ public class CppDeductionImportService(
     IValidator<ImportCppFromBlobModel> validator,
     ILogger<CppDeductionImportService> logger) : ICppDeductionImportService
 {
+    public const int YearsKept = 2;
+
     public async Task<Result<int>> ImportFromBlob(ImportCppFromBlobModel model)
     {
         var validation = await validator.ValidateAsync(model);
@@ -52,9 +54,10 @@ public class CppDeductionImportService(
         }
 
         var deductions = rows.Select(r => new CppDeduction(r.From, r.To, r.Cpp, model.Year, model.PayPeriod)).ToList();
-        var inserted = await repository.ReplaceCpp(model.Year, model.PayPeriod, deductions);
-        logger.LogInformation("Imported {Rows} {PayPeriod} CPP brackets for {Year} from {BlobName}",
-            inserted, model.PayPeriod, model.Year, model.BlobName);
+        var inserted = await repository.ImportCpp(model.Year, model.PayPeriod, deductions, YearsKept);
+        logger.LogInformation(
+            "Imported {Rows} {PayPeriod} CPP brackets for {Year} from {BlobName}, keeping the last {YearsKept} years",
+            inserted, model.PayPeriod, model.Year, model.BlobName, YearsKept);
         return Result.Ok(inserted);
     }
 }
