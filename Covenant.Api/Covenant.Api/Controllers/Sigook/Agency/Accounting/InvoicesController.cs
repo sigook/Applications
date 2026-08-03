@@ -79,7 +79,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
         var service = await invoiceService.Value;
         var document = await service.GetInvoicePdf(invoiceId);
         if (document is null) return NotFound();
-        return PhysicalFile(document.PdfPath, MediaTypeNames.Application.Pdf, document.FileName);
+        return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
     }
 
     /// <summary>Gets the pay stubs linked to an invoice, including delete-warning information.</summary>

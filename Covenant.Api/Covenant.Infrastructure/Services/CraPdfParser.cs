@@ -21,7 +21,7 @@ public partial class CraPdfParser : ICraPdfParser
     private const string FederalTitle = "federal tax deductions";
     private const string ProvincialTitle = "provincial tax deductions";
 
-    public IReadOnlyList<CppRow> ParseCpp(Stream pdf)
+    public IReadOnlyList<CppRow> ParseCpp(byte[] pdf)
     {
         var rows = new List<CppRow>();
         using var document = PdfDocument.Open(pdf);
@@ -38,7 +38,7 @@ public partial class CraPdfParser : ICraPdfParser
         return rows;
     }
 
-    public IReadOnlyList<TaxRow> ParseTax(Stream pdf)
+    public IReadOnlyList<TaxRow> ParseTax(byte[] pdf)
     {
         var rows = new List<TaxRow>();
         using var document = PdfDocument.Open(pdf);

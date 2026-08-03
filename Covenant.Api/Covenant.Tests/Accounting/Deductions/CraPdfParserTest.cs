@@ -87,9 +87,6 @@ public class CraPdfParserTest
     private List<TaxRow> ParseTax(TaxType taxType) =>
         [.. Parse(CraTableFixture.TaxMonthlyPath, _sut.ParseTax).Where(r => r.TaxType == taxType).OrderBy(r => r.From)];
 
-    private static IReadOnlyList<TRow> Parse<TRow>(string fixturePath, Func<Stream, IReadOnlyList<TRow>> parse)
-    {
-        using var stream = File.OpenRead(fixturePath);
-        return parse(stream);
-    }
+    private static IReadOnlyList<TRow> Parse<TRow>(string fixturePath, Func<byte[], IReadOnlyList<TRow>> parse) =>
+        parse(File.ReadAllBytes(fixturePath));
 }

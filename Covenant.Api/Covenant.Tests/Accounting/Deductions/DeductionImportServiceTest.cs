@@ -96,13 +96,13 @@ public class DeductionImportServiceTest
         });
 
         Assert.True(result.IsFailure);
-        _container.Verify(c => c.DownloadStream(It.IsAny<string>()), Times.Never);
+        _container.Verify(c => c.Download(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
     public async Task Fails_When_The_Blob_Is_Missing()
     {
-        _container.Setup(c => c.DownloadStream(CraTableFixture.CppWeeklyBlobName)).ReturnsAsync((Stream)null);
+        _container.Setup(c => c.Download(CraTableFixture.CppWeeklyBlobName)).ReturnsAsync((byte[])null);
 
         var result = await _sut.ImportCppFromBlob(CppModel());
 
@@ -278,16 +278,16 @@ public class DeductionImportServiceTest
     private Task<Result<int>> ImportCpp(IReadOnlyList<CppRow> rows)
     {
         var parser = new Mock<ICraPdfParser>();
-        parser.Setup(p => p.ParseCpp(It.IsAny<Stream>())).Returns(rows);
-        GivenTheBlobIs(CraTableFixture.CppWeeklyBlobName, []);
+        parser.Setup(p => p.ParseCpp(It.IsAny<byte[]>())).Returns(rows);
+        GivenTheBlobIs(CraTableFixture.CppWeeklyBlobName, Encoding.UTF8.GetBytes("%PDF"));
         return Service(parser.Object).ImportCppFromBlob(CppModel());
     }
 
     private Task<Result<int>> ImportTax(IReadOnlyList<TaxRow> rows)
     {
         var parser = new Mock<ICraPdfParser>();
-        parser.Setup(p => p.ParseTax(It.IsAny<Stream>())).Returns(rows);
-        GivenTheBlobIs(CraTableFixture.TaxMonthlyBlobName, []);
+        parser.Setup(p => p.ParseTax(It.IsAny<byte[]>())).Returns(rows);
+        GivenTheBlobIs(CraTableFixture.TaxMonthlyBlobName, Encoding.UTF8.GetBytes("%PDF"));
         return Service(parser.Object).ImportTaxFromBlob(TaxModel());
     }
 
@@ -299,7 +299,7 @@ public class DeductionImportServiceTest
         GivenTheBlobIs(blobName, await File.ReadAllBytesAsync(fixturePath));
 
     private void GivenTheBlobIs(string blobName, byte[] content) =>
-        _container.Setup(c => c.DownloadStream(blobName)).ReturnsAsync(() => new MemoryStream(content));
+        _container.Setup(c => c.Download(blobName)).ReturnsAsync(content);
 
     private void VerifyNothingWasStored()
     {

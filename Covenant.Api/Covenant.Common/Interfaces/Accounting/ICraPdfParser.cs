@@ -4,7 +4,7 @@ namespace Covenant.Common.Interfaces.Accounting;
 
 public interface ICraPdfParser
 {
-    IReadOnlyList<CppRow> ParseCpp(Stream pdf);
+    IReadOnlyList<CppRow> ParseCpp(byte[] pdf);
 
-    IReadOnlyList<TaxRow> ParseTax(Stream pdf);
+    IReadOnlyList<TaxRow> ParseTax(byte[] pdf);
 }

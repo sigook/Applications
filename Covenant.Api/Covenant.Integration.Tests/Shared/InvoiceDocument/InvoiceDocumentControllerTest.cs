@@ -16,6 +16,7 @@ using Covenant.Integration.Tests.Utils;
 using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Text;
 using Xunit;
 
 namespace Covenant.Integration.Tests.Shared.InvoiceDocument
@@ -49,11 +50,7 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
             services.AddSingleton(identityServerService.Object);
             var pdfService = new Mock<IPdfGeneratorService>();
             pdfService.Setup(s => s.GeneratePdfFromHtml(It.IsAny<PdfParams>()))
-                .ReturnsAsync(() =>
-                {
-                    string path = Path.Combine(Directory.GetCurrentDirectory(), "Files", "some_invoice.pdf");
-                    return Result.Ok(new PdfResult(path));
-                });
+                .ReturnsAsync(() => Result.Ok(Encoding.UTF8.GetBytes("%PDF-1.4 fake invoice")));
             services.AddSingleton(pdfService.Object);
 
         }

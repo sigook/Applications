@@ -468,16 +468,16 @@ public class PayStubService : IPayStubService
     public async Task<PayStubDocument> GetPayStubPdf(Guid payStubId)
     {
         string fileName = payStubId.ToPayStubBlobName();
-        string pdfPath = await payStubsContainer.Download(fileName);
+        byte[] content = await payStubsContainer.Download(fileName);
 
         var model = await payStubRepository.GetPayStubDetail(payStubId);
         if (model is null) return null;
         model.Ytd = await payStubRepository.GetYtdSummary(model.WorkerProfileId, model.EndDate.Year);
 
-        if (string.IsNullOrEmpty(pdfPath)) pdfPath = await UploadPdf(model);
-        if (string.IsNullOrEmpty(pdfPath)) return null;
+        if (content is not { Length: > 0 }) content = await UploadPdf(model);
+        if (content is not { Length: > 0 }) return null;
 
-        return new PayStubDocument(pdfPath, fileName, model.ToPayrollEmailViewModel());
+        return new PayStubDocument(content, fileName, model.ToPayrollEmailViewModel());
     }
 
     public async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId)
@@ -486,7 +486,7 @@ public class PayStubService : IPayStubService
         if (document is null) return PayStubEmailResult.Failed(payStubId);
 
         var model = document.Model;
-        var attachment = new EmailAttachment(document.FileName, MediaTypeNames.Application.Pdf, document.PdfPath);
+        var attachment = new EmailAttachment(document.FileName, MediaTypeNames.Application.Pdf, new MemoryStream(document.Content));
         var body = await renderer.RenderViewToStringAsync(PayStubEmailTemplatePath, model);
         var emailParams = new EmailParams(model.WorkerEmail, $"PayStub {model.PayrollNumber}", body)
         {
@@ -528,15 +528,15 @@ public class PayStubService : IPayStubService
         return result;
     }
 
-    private async Task<string> UploadPdf(PayStubDetailModel model)
+    private async Task<byte[]> UploadPdf(PayStubDetailModel model)
     {
         var fileName = model.Id.ToPayStubBlobName();
         var html = await renderer.RenderViewToStringAsync(PayStubTemplatePath, model.ToPayrollViewModel());
         var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
-        if (!pdf) return string.Empty;
+        if (!pdf) return null;
         try
         {
-            await payStubsContainer.Upload(pdf.Value.Path, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
+            await payStubsContainer.UploadAsync(pdf.Value, fileName, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
             {
                 { nameof(model.PayrollNumberId), model.PayrollNumberId.ToString() }
             });
@@ -545,7 +545,7 @@ public class PayStubService : IPayStubService
         {
             Console.WriteLine(e);
         }
-        return pdf.Value.Path;
+        return pdf.Value;
     }
 
     private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)

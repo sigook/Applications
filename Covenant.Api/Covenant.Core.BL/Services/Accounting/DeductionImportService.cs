@@ -58,7 +58,7 @@ public class DeductionImportService(
 
     private async Task<Result<IReadOnlyList<TRow>>> Read<TRow>(
         ImportCraTableFromBlobModel model,
-        Func<Stream, IReadOnlyList<TRow>> parse,
+        Func<byte[], IReadOnlyList<TRow>> parse,
         Func<IReadOnlyList<TRow>, Result> validate)
     {
         var validation = await validator.ValidateAsync(model);
@@ -67,8 +67,8 @@ public class DeductionImportService(
             return Result.Fail<IReadOnlyList<TRow>>(validation.Errors.Select(e => ResultError.Create(e.PropertyName, e.ErrorMessage)));
         }
 
-        await using var pdf = await container.DownloadStream(model.BlobName);
-        if (pdf is null)
+        var content = await container.Download(model.BlobName);
+        if (content is not { Length: > 0 })
         {
             logger.LogError("The CRA table {BlobName} could not be downloaded", model.BlobName);
             return Result.Fail<IReadOnlyList<TRow>>($"{model.BlobName} was not found in the storage container");
@@ -77,7 +77,7 @@ public class DeductionImportService(
         IReadOnlyList<TRow> rows;
         try
         {
-            rows = parse(pdf);
+            rows = parse(content);
         }
         catch (Exception exception)
         {

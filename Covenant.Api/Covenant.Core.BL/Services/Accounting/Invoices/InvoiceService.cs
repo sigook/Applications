@@ -115,11 +115,11 @@ public abstract class InvoiceService(
         if (model is null) return null;
 
         string fileName = invoiceId.ToInvoiceBlobName();
-        string pdfPath = await invoicesContainer.Download(fileName);
-        if (string.IsNullOrEmpty(pdfPath)) pdfPath = await UploadInvoicePdf(model);
-        if (string.IsNullOrEmpty(pdfPath)) return null;
+        byte[] content = await invoicesContainer.Download(fileName);
+        if (content is not { Length: > 0 }) content = await UploadInvoicePdf(model);
+        if (content is not { Length: > 0 }) return null;
 
-        return new InvoiceDocument(pdfPath, fileName, model);
+        return new InvoiceDocument(content, fileName, model);
     }
 
     public async Task<Result> SendInvoiceEmail(Guid invoiceId, InvoiceEmailModel model)
@@ -129,7 +129,7 @@ public abstract class InvoiceService(
 
         var invoice = document.Model;
         var emailAttachments = BuildAttachments(model.Files);
-        var invoiceStream = new MemoryStream(File.ReadAllBytes(document.PdfPath));
+        var invoiceStream = new MemoryStream(document.Content);
         emailAttachments.Add(new EmailAttachment($"Invoice {invoice.InvoiceNumber}.pdf", MediaTypeNames.Application.Pdf, invoiceStream));
 
         string body = await renderer.RenderViewToStringAsync(InvoiceEmailTemplate, invoice.ToInvoiceEmailViewModel(model.Message));
@@ -154,15 +154,15 @@ public abstract class InvoiceService(
         await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning($"Invoice deleted by {name}", text));
     }
 
-    private async Task<string> UploadInvoicePdf(InvoiceSummaryModel model)
+    private async Task<byte[]> UploadInvoicePdf(InvoiceSummaryModel model)
     {
         string fileName = model.Id.ToInvoiceBlobName();
         string html = await renderer.RenderViewToStringAsync(InvoiceHtmlTemplate, model.ToInvoiceViewModel());
         var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
-        if (!pdf) return string.Empty;
+        if (!pdf) return null;
         try
         {
-            await invoicesContainer.Upload(pdf.Value.Path, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
+            await invoicesContainer.UploadAsync(pdf.Value, fileName, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
             {
                 {nameof(model.InvoiceNumber), model.InvoiceNumber.Trim()}
             });
@@ -171,7 +171,7 @@ public abstract class InvoiceService(
         {
             Console.WriteLine(e);
         }
-        return pdf.Value.Path;
+        return pdf.Value;
     }
 
     private static List<EmailAttachment> BuildAttachments(IEnumerable<IFormFile> files)

@@ -136,7 +136,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                         InvoiceHtmlPath = Path.Combine(Directory.GetCurrentDirectory(), "Common", "fake_invoice_usa.html");
                         File.WriteAllText(InvoiceHtmlPath, pdfParams.Html);
                     })
-                    .ReturnsAsync(Result.Ok(new PdfResult(Path.Combine(Directory.GetCurrentDirectory(), "Common", "Fake_Invoice.pdf"))));
+                    .ReturnsAsync(Result.Ok(File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Common", "Fake_Invoice.pdf"))));
                 services.AddSingleton(pdfGeneratorService.Object);
                 var identityServerService = new Mock<IIdentityServerService>();
                 identityServerService.Setup(s => s.GetAgencyId()).Returns(FakeAgency.Id);
