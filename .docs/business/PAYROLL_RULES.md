@@ -156,21 +156,32 @@ CPP and tax brackets are **database rows** in two consolidated tables (`CppDeduc
 
 Bracket lookups differ by concept and that is intentional: CPP matches `earnings >= From && earnings <= To`, taxes match `earnings >= From && earnings < To`.
 
-### CPP: from the CRA PDF, through blob storage
+### From the CRA PDF, through blob storage
 
-The CPP table is loaded from the PDF the CRA publishes (T4032), with no manual transcription in between:
+Both tables are loaded from the PDFs the CRA publishes (T4032), with no manual transcription in between:
 
-1. The PDF is dropped in the `cra-tables` blob container, named `CPP <WEEKLY|BIWEEKLY|SEMIMONTHLY|MONTHLY> <YYYY>.pdf` (space, `_` or `-` as separator, case-insensitive).
-2. The `CraTableUploaded` blob trigger in `Sigook.Functions` reads the pay period and the year from that name. A name that does not follow the convention is reported to Teams and never reaches the API.
-3. The function calls `POST api/Accounting/Deduction/Cpp/Blob` with the blob name, the pay period and the year, authenticated with the same client credentials as the scheduled tasks.
-4. `CppDeductionImportService` downloads the blob, `CppPdfParser` (PdfPig) reads the four `From - To  CPP` blocks printed on every line, and `CppTableValidator` checks the result before anything is written: the brackets must start at `0.00`, be contiguous (`From == previous To + 0.01`), never overlap and never lower the contribution. A table that fails validation is rejected and the stored one is left untouched.
-5. `DeductionsRepository.ImportCpp(year, payPeriod, rows, yearsKept)` writes the table for that year and pay period in a single transaction.
+1. The PDF is dropped in the `cra-tables` blob container, named `<CPP|TAX> <WEEKLY|BIWEEKLY|SEMIMONTHLY|MONTHLY> <YYYY>.pdf` (space, `_` or `-` as separator, case-insensitive).
 
-**Retention: two years.** The import does not wipe the table — it only replaces the year being imported and deletes the years older than `CppDeductionImportService.YearsKept` (2), per pay period. Importing `CPP WEEKLY 2027.pdf` leaves 2027 and 2026 in place and drops 2025 and earlier. Pay stubs of the previous year keep resolving their brackets; older years are gone on purpose. Re-importing the same year is idempotent, and re-importing an obsolete year only adds that year — the next current-year import purges it.
+   | Blob name | Imports |
+   |---|---|
+   | `CPP WEEKLY 2026.pdf` | weekly CPP contributions for 2026 |
+   | `CPP BI-WEEKLY 2026.pdf` | bi-weekly CPP (`BIWEEKLY`, `BI_WEEKLY` and `BI-WEEKLY` all work) |
+   | `TAX MONTHLY 2026.pdf` | monthly federal **and** provincial income tax — one file carries both |
+   | `tax_semi-monthly_2026.pdf` | semi-monthly income tax (lower case and `_` are fine) |
 
-The 2026 weekly table is 8,928 brackets, from `0.00 - 67.30` to `9344.62 - 9354.61` ($552.30).
+   Rejected, reported to Teams and never sent to the API: `FEDERAL MONTHLY 2026.pdf` (only `CPP` and `TAX` exist — the tax file is not split by tax type), `TAX MONTHLY 2026.xlsx` (only PDF), `TAX MONTHLY.pdf` (the year is mandatory), `TAX ANNUAL 2026.pdf` (annual is not a supported pay period).
 
-Federal and provincial tax tables are still loaded from an Excel upload (`POST api/Accounting/Deduction/{FederalTax|ProvincialTax}/{period}/Excel`, ClosedXML).
+   **The name is the only source of the pay period and the year — nothing is read from the contents of the file.** Uploading the monthly PDF as `TAX WEEKLY 2026.pdf` stores the monthly brackets as the weekly table and every weekly pay stub of that year comes out wrong, with no error anywhere. Rename before uploading, not after.
+2. The `CraTableUploaded` blob trigger in `Sigook.Functions` reads the table, the pay period and the year from that name. A name that does not follow the convention is reported to Teams and never reaches the API.
+3. The function calls `POST api/Accounting/Deduction/Cpp/Blob` or `POST api/Accounting/Deduction/Tax/Blob` (`CraTables:CppApiUrl` / `CraTables:TaxApiUrl`) with the blob name, the pay period and the year, authenticated with the same client credentials as the scheduled tasks.
+4. `DeductionImportService` downloads the blob and `CraPdfParser` (PdfPig) reads it. A table that fails validation is rejected and the stored one is left untouched:
+   - **CPP** — the parser reads the four `From - To  CPP` blocks printed on every line; `CppTableValidator` demands brackets starting at `0.00`, contiguous (`From == previous To + 0.01`), never overlapping and never lowering the contribution.
+   - **Income tax** — one file holds both tax types: the federal pages first, the provincial ones after, each page titled accordingly and laid out as a `CC 0` to `CC 10` header with the amounts right aligned under each claim code and nothing printed where no tax is withheld. The parser takes the tax type from the page title and the claim code from the horizontal position of each amount. `TaxTableValidator` demands both tables to be present, to start at `0.00`, to be contiguous (`From == previous To`, the upper bound is exclusive) and every claim code to grow with the earnings and never lose its amount once the withholding starts.
+5. `DeductionsRepository.ImportCpp` / `ImportTax` (`year, payPeriod, rows, yearsKept`) write the table for that year and pay period in a single transaction. The income tax import replaces both tax types at once.
+
+**Retention: two years.** The import does not wipe the table — it only replaces the year being imported and deletes the years older than `DeductionImportService.YearsKept` (2), per pay period. Importing `CPP WEEKLY 2027.pdf` leaves 2027 and 2026 in place and drops 2025 and earlier. Pay stubs of the previous year keep resolving their brackets; older years are gone on purpose. Re-importing the same year is idempotent, and re-importing an obsolete year only adds that year — the next current-year import purges it.
+
+The 2026 weekly CPP table is 8,928 brackets, from `0.00 - 67.30` to `9344.62 - 9354.61` ($552.30). The 2026 monthly income tax file is 385 brackets per tax type, `0 - 1601` to `24227 - 24363` federal and `0 - 1682` to `24308 - 24444` provincial; earnings above the last bracket are not covered by the CRA tables.
 
 ---
 

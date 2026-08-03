@@ -35,10 +35,10 @@
     <Content Include="wwwroot\files\agency_payroll_worker.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Update="TAX_TABLA_WEEKLY_2019_Final.xlsx">
+    <None Update="Accounting\Deductions\cpp_weekly_2026.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Accounting\Deductions\cpp_weekly_2026.pdf">
+    <None Update="Accounting\Deductions\tax_monthly_2026.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="wwwroot\files\resume.txt">

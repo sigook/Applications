@@ -86,11 +86,11 @@ usecases — pure Dart), `data/` (Freezed models, local/remote datasources, repo
 `Sigook.Functions/Sigook.Functions/Functions/ScheduleTasks.cs` holds two timer triggers
 (`0 0 0 * * 1-5`): `NotificationSinExpiration` and `WarnLicensesExpiration`.
 `Functions/CraTables.cs` holds a blob trigger, `CraTableUploaded`, on the `cra-tables` container
-(`CraTablesStorage` connection): it reads the pay period and the year from the blob name
-(`Utils/CraBlobName.cs`) and asks the API to import the CRA CPP table.
+(`CraTablesStorage` connection): it reads the table, the pay period and the year from the blob name
+(`Utils/CraBlobName.cs`) and asks the API to import the CRA CPP or income tax table.
 
 Every function gets a client-credentials token and POSTs to Covenant.Api (`ScheduleTasks:ApiUrl`,
-`CraTables:ApiUrl`), reporting the outcome to Teams. Email/invitation sending does **not** live
+`CraTables:CppApiUrl`, `CraTables:TaxApiUrl`), reporting the outcome to Teams. Email/invitation sending does **not** live
 here — that moved to Service Bus consumers inside Covenant.Api
 (see [Async messaging](#async-messaging-azure-service-bus)).
 
@@ -168,7 +168,6 @@ Two coexisting layouts:
 |---|---|
 | `CompanyModule/` | company perspective: requests, profile, locations, job positions, request workers, timesheets, invoices, users |
 | `WorkerModule/` | worker perspective: profile, requests, request history, timesheets (clock in/out) |
-| `AccountingModule/` | `Deduction/` (CPP, federal tax, provincial tax lookup endpoints) and `Shared/AccountingBaseController.cs` — nothing else. Invoice/pay-stub CRUD lives in `Controllers/Sigook/Agency/Accounting/` |
 | `ManagerModule/` | `ScheduleTasksController` (called by Sigook.Functions timers), `WorkerProfilePunchCardIdController` |
 
 Routing: older controllers declare `public const string RouteName = "api/..."` +
@@ -200,7 +199,8 @@ Contexts/         CovenantContext.cs (main DbContext), MyKeysContext (DataProtec
 Repositories/     by domain: Accounting/, Agency/, Candidate/, Company/, Notification/,
                   Request/, Worker/ + root repositories (Catalog, Location, Shift, User)
 Configurations/   EF Core IEntityTypeConfiguration classes, mirrored by domain
-Accounting/       Deductions/ — CRA tax table loaders (CppTablesLoader.cs, TaxTablesLoader.cs)
+Accounting/       Deductions/ — CRA table reader (CraPdfParser.cs) and its guards
+                  (CppTableValidator.cs, TaxTableValidator.cs)
 Migrations/       EF Core migrations
 Scripts/          raw SQL (views, functions, stored procedures) run at startup
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
@@ -212,7 +212,8 @@ Services/         integrations: EmailService + SendGridService (SendGrid), Geoco
 
 Payroll deductions are **DB table lookups, not formulas**: `TimesheetCalculatorService` →
 `DeductionsRepository` range lookups by earnings/year. EI is the only computed deduction. The
-lookup calculators are also exposed as REST endpoints by `AccountingModule/Deduction/`.
+tables themselves are only written by `DeductionsController` (`Controllers/Sigook/Agency/Accounting/`),
+which imports the CRA PDFs; there is no endpoint to read them back.
 
 For entities, enums, and the data model, see
 [ENTITIES_RELATIONSHIPS.md](ENTITIES_RELATIONSHIPS.md). For the Request lifecycle rule

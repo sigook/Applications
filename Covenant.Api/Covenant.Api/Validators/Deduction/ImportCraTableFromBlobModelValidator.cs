@@ -3,12 +3,12 @@ using FluentValidation;
 
 namespace Covenant.Api.Validators.Deduction;
 
-public class ImportCppFromBlobModelValidator : AbstractValidator<ImportCppFromBlobModel>
+public class ImportCraTableFromBlobModelValidator : AbstractValidator<ImportCraTableFromBlobModel>
 {
     public const int MinimumYear = 2000;
     public const int MaximumYear = 2100;
 
-    public ImportCppFromBlobModelValidator()
+    public ImportCraTableFromBlobModelValidator()
     {
         RuleFor(m => m.BlobName).NotEmpty()
             .Must(name => name.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase))

@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
+using Covenant.Common.Enums;
 
-namespace Sigook.Functions.Models;
+namespace Covenant.Common.Models.Accounting.Deductions;
 
-public class ImportCppFromBlobModel
+public class ImportCraTableFromBlobModel
 {
     public string BlobName { get; set; }
 

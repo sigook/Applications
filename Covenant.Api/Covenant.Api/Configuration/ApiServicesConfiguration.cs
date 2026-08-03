@@ -112,13 +112,11 @@ public static class ApiServicesConfiguration
         services.AddScoped<InvoiceServiceFactory>();
 
         // CRA deduction tables
-        services.AddScoped<ICppPdfParser, CppPdfParser>();
-        services.AddScoped<ICppDeductionImportService, CppDeductionImportService>();
+        services.AddScoped<ICraPdfParser, CraPdfParser>();
+        services.AddScoped<IDeductionImportService, DeductionImportService>();
 
         //TODO: To Refactor
         services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
-        services.AddScoped<FederalTaxTablesLoader>();
-        services.AddScoped<ProvincialTaxTablesLoader>();
         return services;
     }
 

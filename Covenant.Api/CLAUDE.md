@@ -10,7 +10,7 @@ Controllers:     Covenant.Api/Controllers/Sigook/                       (root: C
                  Covenant.Api/Controllers/Sigook/Agency/Candidates/     (Candidates, Notes, PhoneNumbers, Skills, Documents)
                  Covenant.Api/Controllers/Sigook/Agency/Workers/        (Workers, Notes, Comments, Holidays, RequestHistory)
                  Covenant.Api/Controllers/Sigook/Agency/Personnel/      (Personnel, Agencies)
-Module controllers: Covenant.Api/{Module}Module/                        (AccountingModule, CompanyModule, WorkerModule, ManagerModule)
+Module controllers: Covenant.Api/{Module}Module/                        (CompanyModule, WorkerModule, ManagerModule)
 Services:        Covenant.Core.BL/Services/                             (PayStubService, RequestService, WorkerService, etc.)
                  Covenant.Core.BL/Services/Shared/                      (TimesheetCalculatorService — hours breakdown + deductions)
                  Covenant.Core.BL/Services/Invoices/                    (CanadaInvoiceService, UsaInvoiceService)
