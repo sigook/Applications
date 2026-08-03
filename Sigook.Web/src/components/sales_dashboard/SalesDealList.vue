@@ -36,11 +36,13 @@ const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
 </script>
 
 <style scoped lang="scss">
+@import "../../assets/scss/variables";
+
 .sd-deal-row {
   cursor: pointer;
 
   &:focus-visible {
-    outline: 2px solid rgba(33, 183, 255, 0.5);
+    outline: 2px solid rgba($agency-primary, 0.5);
     outline-offset: 1px;
   }
 }

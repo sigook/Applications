@@ -15,8 +15,7 @@
       </div>
       <div v-if="$slots.actions || actionIcon" class="sd-card__actions">
         <slot name="actions">
-          <button
-            type="button"
+          <b-button
             class="sd-card__action"
             :class="toneClass"
             :title="actionLabel"
@@ -24,7 +23,7 @@
             @click="emit('action')"
           >
             <b-icon :icon="actionIcon" size="is-small"></b-icon>
-          </button>
+          </b-button>
         </slot>
       </div>
     </header>
@@ -62,7 +61,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{ (e: 'action'): void }>();
 
-const toneClass = computed(() => `is-${props.tone}`);
+const toneClass = computed(() => `sd-tone-${props.tone}`);
 </script>
 
 <style scoped lang="scss">
@@ -106,17 +105,17 @@ const toneClass = computed(() => `is-${props.tone}`);
   justify-content: center;
   flex: none;
 
-  &.is-primary {
-    background: rgba(33, 183, 255, 0.12);
-    color: $primary;
+  &.sd-tone-primary {
+    background: rgba($agency-primary, 0.12);
+    color: $agency-primary;
   }
 
-  &.is-green {
+  &.sd-tone-green {
     background: rgba(62, 184, 0, 0.13);
     color: $green-vivid;
   }
 
-  &.is-accent {
+  &.sd-tone-accent {
     background: rgba(255, 153, 50, 0.14);
     color: $accent;
   }
@@ -141,12 +140,12 @@ const toneClass = computed(() => `is-${props.tone}`);
   transition: color 0.15s ease;
 
   &:hover {
-    color: $primary;
+    color: $agency-primary;
     text-decoration: underline;
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(33, 183, 255, 0.5);
+    outline: 2px solid rgba($agency-primary, 0.5);
     outline-offset: 2px;
     border-radius: 3px;
   }
@@ -178,17 +177,17 @@ const toneClass = computed(() => `is-${props.tone}`);
   padding: 0;
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
-  &.is-primary {
-    color: $primary;
+  &.sd-tone-primary {
+    color: $agency-primary;
 
     &:hover {
-      background: $primary;
-      border-color: $primary;
+      background: $agency-primary;
+      border-color: $agency-primary;
       color: $white;
     }
   }
 
-  &.is-green {
+  &.sd-tone-green {
     color: $green-vivid;
 
     &:hover {
@@ -198,7 +197,7 @@ const toneClass = computed(() => `is-${props.tone}`);
     }
   }
 
-  &.is-accent {
+  &.sd-tone-accent {
     color: $accent;
 
     &:hover {
@@ -209,7 +208,7 @@ const toneClass = computed(() => `is-${props.tone}`);
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(33, 183, 255, 0.5);
+    outline: 2px solid rgba($agency-primary, 0.5);
     outline-offset: 1px;
   }
 }

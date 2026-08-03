@@ -70,7 +70,7 @@ const ariaLabel = computed<string>(() => {
 .sd-bar-fill {
   width: 100%;
   max-width: 34px;
-  background: $primary;
+  background: $agency-primary;
   border-radius: 6px 6px 0 0;
   transition: height 0.35s ease;
 }

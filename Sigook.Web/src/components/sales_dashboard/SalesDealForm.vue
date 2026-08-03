@@ -182,8 +182,8 @@ defineExpose({ submit });
 
     &:focus,
     &:active {
-      border-color: $primary;
-      box-shadow: 0 0 0 2px rgba(33, 183, 255, 0.15);
+      border-color: $agency-primary;
+      box-shadow: 0 0 0 2px rgba($agency-primary, 0.15);
     }
   }
 

@@ -17,9 +17,9 @@
             <p class="sd-modal__subtitle">{{ isEditing ? editSubtitle : meta.subtitle }}</p>
           </div>
         </div>
-        <button type="button" class="sd-modal__close" aria-label="Close" @click="close">
+        <b-button class="sd-modal__close" aria-label="Close" @click="close">
           <b-icon icon="close" size="is-small"></b-icon>
-        </button>
+        </b-button>
       </header>
 
       <div class="sd-modal__body">
@@ -115,24 +115,24 @@ watch(
 const SALES_CREATE_META: Record<SalesCreateKind, SalesCreateMeta> = {
   interaction: {
     icon: 'message-text-outline',
-    color: '#21b7ff',
-    tint: 'rgba(33, 183, 255, 0.13)',
+    color: '#7957d5',
+    tint: 'rgba(121, 87, 213, 0.13)',
     title: 'Log interaction',
     subtitle: 'Record a call, email or meeting',
     cta: 'Log interaction',
   },
   client: {
     icon: 'domain',
-    color: '#21b7ff',
-    tint: 'rgba(33, 183, 255, 0.13)',
+    color: '#7957d5',
+    tint: 'rgba(121, 87, 213, 0.13)',
     title: 'New client',
     subtitle: 'Add a business to your book',
     cta: 'Create client',
   },
   deal: {
     icon: 'handshake-outline',
-    color: '#21b7ff',
-    tint: 'rgba(33, 183, 255, 0.13)',
+    color: '#7957d5',
+    tint: 'rgba(121, 87, 213, 0.13)',
     title: 'New deal',
     subtitle: 'Add an opportunity to the pipeline',
     cta: 'Create deal',
@@ -287,7 +287,7 @@ async function onDelete(): Promise<void> {
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(33, 183, 255, 0.5);
+    outline: 2px solid rgba($agency-primary, 0.5);
     outline-offset: 1px;
   }
 }
@@ -320,14 +320,14 @@ async function onDelete(): Promise<void> {
 .sd-modal__cta {
   color: $white;
   font-weight: 600;
-  background-color: $primary;
-  border-color: $primary;
+  background-color: $agency-primary;
+  border-color: $agency-primary;
 
   &:hover,
   &:focus {
     color: $white;
-    background-color: $primary;
-    border-color: $primary;
+    background-color: $agency-primary;
+    border-color: $agency-primary;
     filter: brightness(0.95);
   }
 }

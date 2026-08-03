@@ -2,16 +2,15 @@
   <form class="sd-form" @submit.prevent>
     <b-field label="Type">
       <div class="sd-choices">
-        <button
+        <b-button
           v-for="option in INTERACTION_TYPES"
           :key="option"
-          type="button"
           class="sd-choice"
           :class="{ 'is-active': type === option }"
           @click="type = option"
         >
           {{ INTERACTION_TYPE_LABELS[option] }}
-        </button>
+        </b-button>
       </div>
     </b-field>
 
@@ -174,8 +173,8 @@ defineExpose({ submit });
 
     &:focus,
     &:active {
-      border-color: $primary;
-      box-shadow: 0 0 0 2px rgba(33, 183, 255, 0.15);
+      border-color: $agency-primary;
+      box-shadow: 0 0 0 2px rgba($agency-primary, 0.15);
     }
   }
 
@@ -198,6 +197,7 @@ defineExpose({ submit });
 }
 
 .sd-choice {
+  height: auto;
   border: 0;
   border-radius: 7px;
   padding: 0.4rem 0.85rem;
@@ -208,13 +208,23 @@ defineExpose({ submit });
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 
+  &:hover {
+    background: #e4e7eb;
+    color: #555;
+  }
+
   &.is-active {
-    background: $primary;
+    background: $agency-primary;
     color: $white;
+
+    &:hover {
+      background: $agency-primary;
+      color: $white;
+    }
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(33, 183, 255, 0.5);
+    outline: 2px solid rgba($agency-primary, 0.5);
     outline-offset: 1px;
   }
 }
