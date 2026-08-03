@@ -3,7 +3,7 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Covenant.Core.BL.Services.Invoices;
+namespace Covenant.Core.BL.Services.Accounting.Invoices;
 
 public class InvoiceServiceFactory(
     IServiceProvider serviceProvider,

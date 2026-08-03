@@ -8,7 +8,7 @@ using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
 using MediatR;
 
-namespace Covenant.Core.BL.Services;
+namespace Covenant.Core.BL.Services.Accounting;
 
 public class AccountingService : IAccountingService
 {

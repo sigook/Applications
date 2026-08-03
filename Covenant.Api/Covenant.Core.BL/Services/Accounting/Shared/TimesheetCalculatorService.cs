@@ -11,7 +11,7 @@ using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
-namespace Covenant.Core.BL.Services.Shared;
+namespace Covenant.Core.BL.Services.Accounting.Shared;
 
 public class TimesheetCalculatorService : ITimesheetCalculatorService
 {

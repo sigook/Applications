@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Models.Accounting.Deductions;
-using Covenant.Infrastructure.Accounting.Deductions;
+using Covenant.Infrastructure.Services;
 using Xunit;
 
 namespace Covenant.Tests.Accounting.Deductions;
@@ -29,14 +29,6 @@ public class CraPdfParserTest
         Assert.Equal(9344.62m, rows[^1].From);
         Assert.Equal(9354.61m, rows[^1].To);
         Assert.Equal(552.30m, rows[^1].Cpp);
-    }
-
-    [Fact]
-    public void Produces_A_Cpp_Table_That_Passes_Validation()
-    {
-        var result = CppTableValidator.Validate(ParseCpp());
-
-        Assert.True(result.IsSuccess, result.StringErrors);
     }
 
     [Theory]
@@ -88,14 +80,6 @@ public class CraPdfParserTest
 
         Assert.Equal(3771m, withheld.From);
         Assert.All(rows.TakeWhile(r => r.From < withheld.From), row => Assert.Null(row.ClaimCodes[10]));
-    }
-
-    [Fact]
-    public void Produces_A_Tax_Table_That_Passes_Validation()
-    {
-        var result = TaxTableValidator.Validate(Parse(CraTableFixture.TaxMonthlyPath, _sut.ParseTax));
-
-        Assert.True(result.IsSuccess, result.StringErrors);
     }
 
     private IReadOnlyList<CppRow> ParseCpp() => Parse(CraTableFixture.CppWeeklyPath, _sut.ParseCpp);

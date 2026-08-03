@@ -16,7 +16,7 @@ using Covenant.Core.BL.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Options;
 
-namespace Covenant.Core.BL.Services.Invoices;
+namespace Covenant.Core.BL.Services.Accounting.Invoices;
 
 public class CanadaInvoiceService(
     ITimesheetRepository timeSheetRepository,

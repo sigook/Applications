@@ -26,7 +26,7 @@ using Microsoft.Extensions.Options;
 using System.Net.Mime;
 using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
-namespace Covenant.Core.BL.Services.Invoices;
+namespace Covenant.Core.BL.Services.Accounting.Invoices;
 
 public abstract class InvoiceService(
     ITimesheetRepository timeSheetRepository,

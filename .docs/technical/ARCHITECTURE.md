@@ -199,11 +199,10 @@ Contexts/         CovenantContext.cs (main DbContext), MyKeysContext (DataProtec
 Repositories/     by domain: Accounting/, Agency/, Candidate/, Company/, Notification/,
                   Request/, Worker/ + root repositories (Catalog, Location, Shift, User)
 Configurations/   EF Core IEntityTypeConfiguration classes, mirrored by domain
-Accounting/       Deductions/ — CRA table reader (CraPdfParser.cs) and its guards
-                  (CppTableValidator.cs, TaxTableValidator.cs)
 Migrations/       EF Core migrations
 Scripts/          raw SQL (views, functions, stored procedures) run at startup
-Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
+Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService,
+                  CraPdfParser (PdfPig reader for the CRA deduction tables)
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService/Storage (Azure Blob), PdfGeneratorService,
                   RazorViewToStringRenderer, IdentityServerService, TimeService,

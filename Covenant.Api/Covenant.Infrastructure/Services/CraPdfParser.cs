@@ -6,7 +6,7 @@ using Covenant.Common.Models.Accounting.Deductions;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 
-namespace Covenant.Infrastructure.Accounting.Deductions;
+namespace Covenant.Infrastructure.Services;
 
 /// <summary>
 /// Reads the payroll deduction tables published by the CRA

@@ -6,7 +6,7 @@ using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Core.BL.Interfaces;
-using Covenant.Core.BL.Services.Invoices;
+using Covenant.Core.BL.Services.Accounting.Invoices;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
