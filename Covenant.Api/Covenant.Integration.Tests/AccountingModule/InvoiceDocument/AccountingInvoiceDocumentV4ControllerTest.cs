@@ -139,7 +139,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder().AddTestAuth(o =>
                 {
-                    o.AddAgencyPersonnelRole(FakeAgency.Id);
+                    o.AddAdminRole(FakeAgency.Id);
                 });
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
                 var timeService = new Mock<ITimeService>();
