@@ -48,7 +48,6 @@ namespace Covenant.Tests.Accounting
                 Rate = 1,
                 WorkerRate = 1,
             });
-            _companyRepository.Setup(cr => cr.GetCompanyId(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
             locationRepository = new Mock<ILocationRepository>();
             locationRepository.Setup(l => l.GetLocationById(It.IsAny<Guid>())).ReturnsAsync(new Location
             {

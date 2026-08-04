@@ -206,7 +206,14 @@
         <p v-if="errors.termsAccepted" class="reg-form__field-error">{{ errors.termsAccepted }}</p>
 
         <div class="reg-form__captcha">
-          <RecaptchaCheckbox v-model="captchaToken" theme="dark" @expired="captchaToken = ''" @error="captchaToken = ''" />
+          <Vue3Recaptcha2
+            v-if="showRecaptcha"
+            :sitekey="siteKey"
+            theme="dark"
+            @verify="handleCaptchaVerify"
+            @expire="handleCaptchaExpired"
+            @fail="handleCaptchaError"
+          />
           <p v-if="captchaError" class="reg-form__field-error">{{ captchaError }}</p>
         </div>
 
@@ -238,7 +245,7 @@ import TagInput from '@/components/landing/shared/forms/TagInput.vue'
 import Switch from '@/components/landing/shared/forms/Switch.vue'
 import Checkbox from '@/components/landing/shared/forms/Checkbox.vue'
 import WorkerRegisterStepNav, { type StepDescriptor } from '@/components/landing/shared/forms/WorkerRegisterStepNav.vue'
-import { Checkbox as RecaptchaCheckbox, useRecaptchaProvider } from 'vue-recaptcha/head'
+import Vue3Recaptcha2 from 'vue3-recaptcha2'
 
 import { getSources, getSkills } from '@/api/catalogApi'
 import { getCountries } from '@/api/locationApi'
@@ -263,9 +270,24 @@ const emit = defineEmits<{
   (e: 'submitted'): void
 }>()
 
-useRecaptchaProvider()
+const siteKey = import.meta.env.VUE_APP_RE_CAPTCHA_SITE_KEY
 const captchaToken = ref('')
 const captchaError = ref('')
+const showRecaptcha = ref(true)
+
+function handleCaptchaVerify(token: string) {
+  captchaToken.value = token
+  captchaError.value = ''
+}
+
+function handleCaptchaExpired() {
+  captchaToken.value = ''
+}
+
+function handleCaptchaError() {
+  captchaToken.value = ''
+  captchaError.value = 'Please verify that you are not a robot'
+}
 
 const contextLine = computed(() => props.jobTitle || '')
 type StepKey = 'personal' | 'details' | 'review'
@@ -485,6 +507,8 @@ async function onSubmit(): Promise<void> {
     await submitCandidateApplication(payload, props.requestId)
     showAlertSuccess('Your application has been submitted')
     captchaToken.value = ''
+    showRecaptcha.value = false
+    setTimeout(() => { showRecaptcha.value = true }, 100)
     emit('submitted')
   } catch (err: unknown) {
     showAlertError((err as { data?: string })?.data ?? 'Something went wrong')

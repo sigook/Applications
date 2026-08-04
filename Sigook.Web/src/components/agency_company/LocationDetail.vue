@@ -28,7 +28,7 @@
             @click="openMapModal(props.row)">
             View map
           </b-dropdown-item>
-          <b-dropdown-item v-if="isAccountingManager" aria-role="listitem" @click="configureTax(props.row)">
+          <b-dropdown-item v-if="isAdmin" aria-role="listitem" @click="configureTax(props.row)">
             Configure tax
           </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDeleteLocation(props.row.id)">
@@ -68,11 +68,11 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toas
 import { getAgencyCompanyLocation, deleteAgencyCompanyLocation } from "@/api/agencyCompanyApi";
 import { getLocationTax, upsertLocationTax } from "@/api/locationApi";
 import { getDialog } from "@/utils/buefyProgrammatic";
-import { useAccountingAdmin } from "@/composables/useAccountingAdmin";
+import { useAdmin } from "@/composables/useAdmin";
 import LocationForm from "./LocationForm.vue";
 
 const route = useRoute();
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const pageIndex = ref(1);
 const pageSize = 8;

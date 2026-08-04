@@ -14,9 +14,7 @@ export const agencyStaff: string[] = [...recruitingAccess, roles.sales];
 
 export const salesAccess: string[] = [roles.superAdmin, roles.admin, roles.sales];
 
-export const accountingAccess: string[] = [roles.superAdmin, roles.admin];
-
-export const administrationAccess: string[] = [roles.superAdmin, roles.admin];
+export const adminAccess: string[] = [roles.superAdmin, roles.admin];
 
 export const roleLabels: Record<string, string> = {
   [roles.superAdmin]: "Super Admin",

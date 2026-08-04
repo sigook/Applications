@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Documents.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -252,7 +253,7 @@ public class CompanyService : ICompanyService
         return result;
     }
 
-    public async Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyId = null)
+    public async Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyProfileId = null)
     {
         var email = CvnEmail.Create(model.Email);
         if (email)
@@ -260,18 +261,19 @@ public class CompanyService : ICompanyService
             var user = await userRepository.GetUserByEmail(email.Value);
             if (user == null)
             {
-                companyId ??= identityServerService.GetCompanyId();
+                var profile = await GetCompanyProfileIds(companyProfileId);
+                if (profile is null) return Result.Fail("Company profile not found");
                 var userModel = new CreateUserModel
                 {
                     Email = email.Value,
-                    CompanyId = companyId,
+                    CompanyId = profile.CompanyId,
                     UserType = UserType.CompanyUser,
                     Role = CovenantConstants.Role.CompanyUser
                 };
                 var newUser = await identityServerService.CreateUser(userModel);
                 if (newUser)
                 {
-                    var entity = new CompanyUser(companyId.Value, newUser.Value)
+                    var entity = new CompanyUser(profile.Id, newUser.Value)
                     {
                         Name = model.Name,
                         Lastname = model.Lastname,
@@ -289,15 +291,16 @@ public class CompanyService : ICompanyService
         return email;
     }
 
-    public async Task<Result> DeleteCompanyUser(Guid userId, Guid? companyId = null)
+    public async Task<Result> DeleteCompanyUser(Guid userId, Guid? companyProfileId = null)
     {
-        companyId ??= identityServerService.GetCompanyId();
+        var profile = await GetCompanyProfileIds(companyProfileId);
+        if (profile is null) return Result.Fail("Company profile not found");
         var entity = await companyRepository.GetCompanyUser(userId);
         if (entity != null)
         {
             companyRepository.Delete(entity);
             await companyRepository.SaveChangesAsync();
-            var identityServiceResult = await identityServerService.DeleteUserOrClaim(userId, companyId);
+            var identityServiceResult = await identityServerService.DeleteUserOrClaim(userId, profile.CompanyId);
             if (identityServiceResult)
             {
                 return Result.Ok();
@@ -306,6 +309,11 @@ public class CompanyService : ICompanyService
         }
         return Result.Fail("User not found");
     }
+
+    private Task<CompanyProfileIdsModel> GetCompanyProfileIds(Guid? companyProfileId) =>
+        companyProfileId.HasValue
+            ? companyRepository.GetCompanyProfileId(p => p.Id == companyProfileId.Value)
+            : companyRepository.GetCompanyProfileId(p => p.CompanyId == identityServerService.GetCompanyId());
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCompany(Guid agencyId, IFormFile file)
     {

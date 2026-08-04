@@ -8,8 +8,9 @@ namespace Covenant.Infrastructure.Configurations.Company
     {
         public void Configure(EntityTypeBuilder<CompanyProfile> builder)
         {
+            builder.ToTable("CompanyProfiles");
             builder.Property(c => c.NumberId).ValueGeneratedOnAdd();
-            builder.HasIndex(p => new { p.CompanyId, p.AgencyId }).IsUnique();
+            builder.HasIndex(p => p.CompanyId).IsUnique();
         }
     }
 }

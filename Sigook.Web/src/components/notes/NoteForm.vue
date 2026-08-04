@@ -1,39 +1,33 @@
 <template>
-  <div class="tooltip-form tooltip-form-multiline form-notes" @keydown="onPressEnter">
-    <div>
-      <span :style="styleNote" class="note-color-icon relative top-2 fz-2 fw-normal color-gray-light"
-        :class="{ 'border': styleNote.background === '#fefefe' }">Note:
-      </span>
-      <label>
-        <textarea class="input-block input-border bg-transparent fz-0 min-h-3em" v-on:change="onEditingNote"
-          v-model="newNote.note"></textarea>
-      </label>
-    </div>
-    <div class="container-flex d-flex align-items-center justify-content-between mt-3">
-      <div>
-        <color-picker @onSelectColor="(color) => changeColor(color)"></color-picker>
-      </div>
-      <b-button type="is-primary" size="is-small" rounded class="mt-0" @click="addNote()">Save</b-button>
+  <div class="form-notes" @keydown="onPressEnter">
+    <b-field>
+      <b-input type="textarea" v-model="newNote.note" :rows="2" placeholder="Write a note..."
+        @update:model-value="onEditingNote"></b-input>
+    </b-field>
+    <div class="container-flex align-items-center justify-content-between">
+      <color-picker v-model="newNote.color"></color-picker>
+      <b-button type="is-primary" size="is-small" rounded @click="addNote">Save</b-button>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import { reactive } from 'vue';
+import type { NoteFormModel } from '@/types/agency';
 import ColorPicker from "./ColorPicker.vue";
 
-const props = defineProps<{ currentNote?: any; currentIndex?: number }>();
-const emit = defineEmits<{ (e: 'onSave', note: any): void }>();
+const props = defineProps<{ currentNote?: NoteFormModel }>();
+const emit = defineEmits<{ (e: 'onSave', note: NoteFormModel): void }>();
 
 const keyLocalstorage = "sigook_current_note_editing";
+const defaultColor = "#fefefe";
 
-const styleNote = reactive<{ background: string }>({ background: '#fefefe' });
-const newNote = reactive<any>({
-  color: "#fefefe",
+const newNote = reactive<NoteFormModel & { color: string }>({
+  color: defaultColor,
   note: "",
 });
 
 function addNote() {
-  if (newNote.note === null || newNote.note === "") return;
+  if (!newNote.note) return;
   emit('onSave', {
     id: newNote.id,
     color: newNote.color,
@@ -42,16 +36,10 @@ function addNote() {
     createdBy: newNote.createdBy,
   });
   setTimeout(() => {
-    styleNote.background = '#fefefe';
     newNote.note = "";
-    newNote.color = "#fefefe";
+    newNote.color = defaultColor;
     localStorage.removeItem(keyLocalstorage);
   }, 200);
-}
-
-function changeColor(color: string) {
-  styleNote.background = color;
-  newNote.color = color;
 }
 
 function onPressEnter(event: KeyboardEvent) {
@@ -61,17 +49,16 @@ function onPressEnter(event: KeyboardEvent) {
   }
 }
 
-function onEditingNote() {
-  localStorage.setItem(keyLocalstorage, newNote.note);
+function onEditingNote(value: string) {
+  localStorage.setItem(keyLocalstorage, value);
 }
 
 if (props.currentNote) {
   newNote.id = props.currentNote.id;
-  newNote.color = props.currentNote.color;
+  newNote.color = props.currentNote.color ?? defaultColor;
   newNote.note = props.currentNote.note;
   newNote.createdAt = props.currentNote.createdAt;
   newNote.createdBy = props.currentNote.createdBy;
-  styleNote.background = props.currentNote.color;
 } else {
   const currentNoteEditing = localStorage.getItem(keyLocalstorage);
   if (currentNoteEditing) {
@@ -81,11 +68,14 @@ if (props.currentNote) {
 </script>
 
 <style scoped lang="scss">
-.top-2 {
-  top: 2px;
-}
-
 .form-notes {
+  padding: 10px;
+  border-radius: 4px;
   box-shadow: 0 0 6px #bfbfbf;
+  margin-bottom: 20px;
+
+  :deep(.field) {
+    margin-bottom: 8px;
+  }
 }
 </style>

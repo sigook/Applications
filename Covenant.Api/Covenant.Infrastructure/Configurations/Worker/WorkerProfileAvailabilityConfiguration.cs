@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Worker
     {
         public void Configure(EntityTypeBuilder<WorkerProfileAvailability> builder)
         {
-            builder.ToTable("WorkerProfileAvailability");
+            builder.ToTable("WorkerProfileAvailabilities");
             builder.HasKey(a => new { a.WorkerProfileId, a.AvailabilityId });
         }
     }

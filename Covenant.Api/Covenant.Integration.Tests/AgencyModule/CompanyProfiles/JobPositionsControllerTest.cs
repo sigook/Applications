@@ -102,7 +102,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.CompanyProfileJobPositionRate.SingleAsync(c => c.Id == detail.Id);
+            var entity = await context.CompanyProfileJobPositionRates.SingleAsync(c => c.Id == detail.Id);
             AssertEntityAndModel(model, entity);
             Assert.True(entity.CreatedAt <= DateTime.Now);
             Assert.NotNull(entity.CreatedBy);
@@ -148,7 +148,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             HttpResponseMessage response = await HttpClientJsonExtensions.PutAsJsonAsync(_client, $"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Services.GetRequiredService<CovenantContext>();
-            CompanyProfileJobPositionRate entity = await context.CompanyProfileJobPositionRate.SingleAsync(c => c.Id == id);
+            CompanyProfileJobPositionRate entity = await context.CompanyProfileJobPositionRates.SingleAsync(c => c.Id == id);
             AssertEntityAndModel(model, entity);
             Assert.True(entity.UpdatedAt <= DateTime.Now);
             Assert.NotNull(entity.CreatedBy ?? entity.UpdatedBy);
@@ -252,7 +252,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             FakeCompanyProfile.JobPositionRates.Add(FakePosition);
             FakeCompanyProfile.JobPositionRates.Add(FakeUpdatePosition);
             FakeCompanyProfile.JobPositionRates.Add(FakeDeletePosition);
-            context.CompanyProfile.Add(FakeCompanyProfile);
+            context.CompanyProfiles.Add(FakeCompanyProfile);
             context.SaveChanges();
         }
     }

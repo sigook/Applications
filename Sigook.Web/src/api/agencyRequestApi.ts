@@ -101,16 +101,16 @@ export function getAgencyRequestsWorkers(filter: AgencyRequestWorkerFilter): Pro
   return api.get<PaginatedList<AgencyRequestWorker>>(`${requestsUrl}/${filter.requestId}/Workers`, { params: { ...filter } });
 }
 
-export function bookAgencyRequestWorker(requestId: string, workerId: string, model: BookWorkerModel): Promise<{ id: string }> {
-  return api.post<{ id: string }>(`${requestsUrl}/${requestId}/Workers/${workerId}/Book`, model);
+export function bookAgencyRequestWorker(requestId: string, workerProfileId: string, model: BookWorkerModel): Promise<{ id: string }> {
+  return api.post<{ id: string }>(`${requestsUrl}/${requestId}/Workers/${workerProfileId}/Book`, model);
 }
 
 export function updateAgencyRequestWorkerStartDate(requestId: string, id: string, model: BookWorkerModel): Promise<void> {
   return api.put(`${requestsUrl}/${requestId}/Workers/${id}`, model);
 }
 
-export function rejectAgencyRequestWorker(requestId: string, workerId: string, model: RejectWorkerModel): Promise<void> {
-  return api.put(`${requestsUrl}/${requestId}/Workers/${workerId}/Reject`, model);
+export function rejectAgencyRequestWorker(requestId: string, workerProfileId: string, model: RejectWorkerModel): Promise<void> {
+  return api.put(`${requestsUrl}/${requestId}/Workers/${workerProfileId}/Reject`, model);
 }
 
 // ---------------------------------------------------------------------------

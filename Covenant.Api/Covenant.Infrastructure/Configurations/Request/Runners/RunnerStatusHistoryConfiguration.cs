@@ -10,6 +10,7 @@ public class RunnerStatusHistoryConfiguration : IEntityTypeConfiguration<RunnerS
 {
     public void Configure(EntityTypeBuilder<RunnerStatusHistory> builder)
     {
+        builder.ToTable("RunnerStatusHistories");
         builder.Property(e => e.PreviousStatus).HasConversion(new EnumToStringConverter<RunnerStatus>());
         builder.Property(e => e.NewStatus).HasConversion(new EnumToStringConverter<RunnerStatus>());
 

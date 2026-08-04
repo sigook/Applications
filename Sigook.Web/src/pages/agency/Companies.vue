@@ -22,7 +22,7 @@
             <b-icon icon="file-plus"></b-icon>
             <span>Bulk Data</span>
           </b-dropdown-item>
-          <b-dropdown-item v-if="isAccountingManager" aria-role="listitem" @click="exportWithDetails">
+          <b-dropdown-item v-if="isAdmin" aria-role="listitem" @click="exportWithDetails">
             <b-icon icon="file-excel"></b-icon>
             <span>Export with details</span>
           </b-dropdown-item>
@@ -168,7 +168,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { useAppStore } from '@/stores/app';
 import { downloadFile } from '@/utils/downloadFile';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { getAgencyCompanies, bulkAgencyCompanies } from '@/api/agencyCompanyApi';
 import { getSalesCompanies } from '@/api/salesApi';
 import { downloadAgencyReport } from '@/api/agencyReportApi';
@@ -187,7 +187,7 @@ const exportUrl = computed(() =>
   isSalesView.value ? '/api/agency/sales/companyprofiles/File' : '/api/agency/recruiting/companyprofiles/File');
 const agencyStore = useAgencyStore();
 const appStore = useAppStore();
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const isLoading = ref(true);
 const totalItems = ref(0);

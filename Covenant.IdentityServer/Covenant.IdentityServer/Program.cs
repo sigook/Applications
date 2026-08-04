@@ -5,6 +5,7 @@ using Covenant.IdentityServer.Entities;
 using Covenant.IdentityServer.Services;
 using Covenant.IdentityServer.Services.Impl;
 using IdentityServer4.EntityFramework.DbContexts;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,9 @@ builder.Services.AddCors(options => options.AddPolicy("default", policy => polic
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<CovenantContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<MyKeysContext>(options => options.UseNpgsql(connectionString))
+    .AddDataProtection()
+    .PersistKeysToDbContext<MyKeysContext>();
 builder.Services.AddIdentity<CovenantUser, CovenantRole>(options =>
 {
     options.Password.RequireDigit = false;

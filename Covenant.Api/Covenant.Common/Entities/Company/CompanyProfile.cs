@@ -1,5 +1,4 @@
-﻿using Covenant.Common.Constants;
-using Covenant.Common.Entities.Agency;
+﻿using Covenant.Common.Entities.Agency;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
@@ -9,6 +8,8 @@ namespace Covenant.Common.Entities.Company
 {
     public class CompanyProfile
     {
+        private const int CommentMaximum = 5000;
+
         public const string DefaultImageLogo = "company.png";
 
         public static readonly TimeSpan DefaultOvertimeStarts = TimeSpan.FromHours(44);
@@ -118,9 +119,9 @@ namespace Covenant.Common.Entities.Company
         public Result UpdateVaccinationInfo(bool? required, string comments)
         {
             VaccinationRequired = required;
-            if (!string.IsNullOrEmpty(comments) && comments.Length > CovenantConstants.Validation.CommentMaximum)
+            if (!string.IsNullOrEmpty(comments) && comments.Length > CommentMaximum)
             {
-                return Result.Fail(ValidationMessages.LengthMaxMsg("Comments", CovenantConstants.Validation.CommentMaximum));
+                return Result.Fail(ValidationMessages.LengthMaxMsg("Comments", CommentMaximum));
             }
             VaccinationRequiredComments = comments;
             return Result.Ok();

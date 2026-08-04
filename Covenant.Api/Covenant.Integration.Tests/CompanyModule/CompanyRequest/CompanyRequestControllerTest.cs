@@ -110,9 +110,9 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, Url, Data.NewRequest);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            List<CompanyProfileJobPositionRate> rates = await context.CompanyProfileJobPositionRate.ToListAsync();
+            List<CompanyProfileJobPositionRate> rates = await context.CompanyProfileJobPositionRates.ToListAsync();
             foreach (CompanyProfileJobPositionRate rate in rates) rate.Delete(default);
-            context.CompanyProfileJobPositionRate.UpdateRange(rates);
+            context.CompanyProfileJobPositionRates.UpdateRange(rates);
             await context.SaveChangesAsync();
             response = await _client.GetAsync(response.Headers.Location);
             var detail = await response.Content.ReadFromJsonAsync<CompanyRequestDetailModel>();
@@ -159,15 +159,15 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.User.Add(Data.CompanyUser);
+                context.Users.Add(Data.CompanyUser);
                 context.Set<CompanyProfileIndustry>().Add(Data.CompanyProfileIndustry);
-                context.Location.Add(Data.CompanyLocation);
-                context.CompanyProfile.Add(Data.CompanyProfile);
-                context.City.Add(Data.Toronto);
-                context.Request.Add(Data.OldRequest);
-                context.ReasonCancellationRequest.Add(Data.ReasonCancellationRequest);
-                context.WorkerProfile.Add(Data.FakeWorkerProfile);
-                context.CompanyProfileJobPositionRate.Add(Data.FakeCompanyProfileJobPositionRate);
+                context.Locations.Add(Data.CompanyLocation);
+                context.CompanyProfiles.Add(Data.CompanyProfile);
+                context.Cities.Add(Data.Toronto);
+                context.Requests.Add(Data.OldRequest);
+                context.ReasonCancellationRequests.Add(Data.ReasonCancellationRequest);
+                context.WorkerProfiles.Add(Data.FakeWorkerProfile);
+                context.CompanyProfileJobPositionRates.Add(Data.FakeCompanyProfileJobPositionRate);
                 context.SaveChanges();
             }
         }
@@ -230,7 +230,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                     WednesdayFinish = TimeSpan.Parse("16:00")
                 }
             };
-            public static readonly Request OldRequest = new Request(CompanyProfile.Company, Agency, FakeCompanyProfileJobPositionRate)
+            public static readonly Request OldRequest = new Request(CompanyProfile, FakeCompanyProfileJobPositionRate)
             {
                 JobLocationId = CompanyLocation.Id,
             };

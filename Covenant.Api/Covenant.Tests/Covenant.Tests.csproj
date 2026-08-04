@@ -6,17 +6,15 @@
     <UserSecretsId>5C6C4958-E25A-4749-BAA3-37DE8CEC7EAD</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.11" />
-    <!--<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />-->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.0">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.runner.visualstudio">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
-    <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit" />
 
   </ItemGroup>
   <ItemGroup>
@@ -35,7 +33,10 @@
     <Content Include="wwwroot\files\agency_payroll_worker.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Update="TAX_TABLA_WEEKLY_2019_Final.xlsx">
+    <None Update="Accounting\Deductions\cpp_weekly_2026.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Accounting\Deductions\tax_monthly_2026.pdf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="wwwroot\files\resume.txt">

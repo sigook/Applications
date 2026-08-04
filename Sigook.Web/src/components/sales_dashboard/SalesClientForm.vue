@@ -9,7 +9,7 @@
       />
     </div>
 
-    <b-field v-if="isAccountingManager" class="sd-form__check">
+    <b-field v-if="isAdmin" class="sd-form__check">
       <b-checkbox v-model="company.requiresPermissionToSeeRequests">
         Requires permission to see requests?
       </b-checkbox>
@@ -137,14 +137,14 @@ import UploadImage from '@/components/PreviewImage.vue';
 import PhoneInput from '@/components/PhoneInput.vue';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { usePubSub } from '@/composables/usePubSub';
 import { getDialog } from '@/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/api/catalogApi';
 import { getAgencyPersonnel } from '@/api/agencyApi';
 import { createAgencyCompany } from '@/api/agencyCompanyApi';
 
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 const pubSub = usePubSub();
 
 const numericExt = yup

@@ -86,7 +86,7 @@
                 @click="convertToWorker(props.row.candidateId)">
                 Convert to Worker
               </b-dropdown-item>
-              <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId || props.row.candidateId"
+              <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId"
                 @click="showAddRunner(props.row)">
                 Add Runner
               </b-dropdown-item>
@@ -285,8 +285,7 @@ function addRunner(type: RunnerType) {
   modalAddRunner.value = false;
   isLoading.value = true;
   createAgencyRunner(serverParams.requestId, {
-    workerProfileId: runnerApplicant.value.workerProfileId ?? null,
-    candidateId: runnerApplicant.value.workerProfileId ? null : runnerApplicant.value.candidateId ?? null,
+    workerProfileId: runnerApplicant.value.workerProfileId,
     type
   })
     .then(() => {

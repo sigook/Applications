@@ -60,7 +60,7 @@
           </b-table-column>
         </template>
         <template #detail="props">
-          <PunchCard :workerId="props.row.workerId" :worker="props.row"
+          <PunchCard :workerProfileId="props.row.workerProfileId" :worker="props.row"
             :requestId="serverParams.requestId" :request="request" />
         </template>
       </b-table>

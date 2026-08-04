@@ -1,6 +1,6 @@
 import { Skill } from './common';
 
-// Candidate item returned by GET /api/AgencyCandidate.
+// Candidate item returned by GET /api/agency/candidates.
 // Mirrors backend CandidateListModel (Covenant.Common.Models.Candidate).
 export interface Candidate {
   id: string;
@@ -32,7 +32,7 @@ export interface CandidateDocument {
   canDownload: boolean;
 }
 
-// Payload for POST /api/AgencyCandidate/{id}/Document. The id/pathFile/canDownload
+// Payload for POST /api/agency/candidates/{id}/Documents. The id/pathFile/canDownload
 // fields are populated server-side after upload, so only fileName/description are sent.
 export interface CreateCandidateDocumentPayload {
   fileName: string;
@@ -49,7 +49,7 @@ export interface CandidateFilter {
   status?: string | null;
 }
 
-// Filter for GET /api/AgencyCandidate. Mirrors backend GetCandidatesFilter.
+// Filter for GET /api/agency/candidates. Mirrors backend GetCandidatesFilter.
 export interface AgencyCandidateFilter {
   pageIndex?: number;
   pageSize?: number;
@@ -68,7 +68,7 @@ export interface AgencyCandidateFilter {
   resumeOnly?: boolean;
 }
 
-// Body for POST/PUT /api/AgencyCandidate. Mirrors backend CandidateCreateModel.
+// Body for POST/PUT /api/agency/candidates. Mirrors backend CandidateCreateModel.
 export interface CreateCandidateModel {
   name: string;
   email?: string;
@@ -84,14 +84,14 @@ export interface CreateCandidateModel {
   fileName?: string;
 }
 
-// Phone number payload for POST /api/AgencyCandidate/{id}/PhoneNumber.
+// Phone number payload for POST /api/agency/candidates/{id}/PhoneNumbers.
 // Mirrors backend PhoneNumberModel.
 export interface CandidatePhoneNumberModel {
   id?: string;
   phoneNumber: string;
 }
 
-// Skill payload for POST /api/AgencyCandidate/{id}/Skill.
+// Skill payload for POST /api/agency/candidates/{id}/Skills.
 // Mirrors backend SkillModel.
 export interface CandidateSkillModel {
   id?: string;

@@ -12,8 +12,8 @@ public interface IWorkerRepository
     void Delete<T>(T entity) where T : class;
     Task CreateWorkerProfileHoliday(WorkerProfileHoliday entity);
     Task UpdateProfile(WorkerProfile entity);
-    Task<List<WorkerProfileAgencyListModel>> GetProfiles(Guid workerId);
     Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition);
+    Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination);
     Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId);
     Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition);
     Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter);
@@ -25,8 +25,6 @@ public interface IWorkerRepository
     Task<WorkerProfileCertificate> GetCertificate(Guid certificateId);
     Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression);
     Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId);
-    Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(string punchCardId);
-    Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(Guid profileId);
     Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid workerProfileId, Pagination pagination);
     Task<PayStubHistoryAccumulated> GetWageHistoryAccumulated(Guid workerProfileId, int rowNumber);
     Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination);

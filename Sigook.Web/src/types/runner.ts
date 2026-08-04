@@ -85,6 +85,20 @@ export const INTERVIEW_STATUS_LABELS: Record<InterviewStatus, string> = {
   [InterviewStatus.Rescheduled]: 'Rescheduled',
 };
 
+export function runnerStatusLabel(status: RunnerStatus): string {
+  return RUNNER_STATUS_LABELS[status];
+}
+
+// Buefy tag type used to colour the status chip everywhere a runner is listed.
+export function runnerStatusTagType(status: RunnerStatus): string {
+  if (status === RunnerStatus.Hired) return 'is-success';
+  if (status === RunnerStatus.Rejected || status === RunnerStatus.NoShow || status === RunnerStatus.NoLongerAvailable)
+    return 'is-danger';
+  if (status === RunnerStatus.WaitingForInterviewFeedback || status === RunnerStatus.WaitingForFinalDecision)
+    return 'is-warning';
+  return 'is-info';
+}
+
 // Mirror of the backend guard Runner.CanAddInterview: interviews can only be
 // added when the runner is in 'Interview scheduled' or 'Interview rescheduled'.
 export function canAddInterview(status: RunnerStatus): boolean {
@@ -121,8 +135,7 @@ export interface RunnerListItem {
   numberId: number;
   agencyId: string;
   requestId: string;
-  workerProfileId?: string | null;
-  candidateId?: string | null;
+  workerProfileId: string;
   name: string;
   email?: string;
   type: RunnerType;
@@ -138,8 +151,7 @@ export interface RunnerDetail {
   id: string;
   numberId: number;
   requestId: string;
-  workerProfileId?: string | null;
-  candidateId?: string | null;
+  workerProfileId: string;
   name: string;
   email?: string;
   type: RunnerType;
@@ -168,8 +180,7 @@ export interface AgencyRunnerFilter {
 
 // Body for POST .../Runners. Mirrors backend RunnerCreateModel.
 export interface CreateRunnerModel {
-  workerProfileId?: string | null;
-  candidateId?: string | null;
+  workerProfileId: string;
   type: RunnerType;
 }
 

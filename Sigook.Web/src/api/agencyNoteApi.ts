@@ -8,12 +8,12 @@ import type { NoteModel, NoteItem, NotePagination, CreateNoteResponse } from '@/
 
 export function getWorkerProfileNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
   return api.get<PaginatedList<NoteItem>>(
-    `/api/AgencyWorkerProfile/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+    `/api/agency/workers/${userId}/Notes?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
   );
 }
 
 export function createWorkerProfileNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return api.post<CreateNoteResponse>(`/api/AgencyWorkerProfile/${userId}/Note`, model);
+  return api.post<CreateNoteResponse>(`/api/agency/workers/${userId}/Notes`, model);
 }
 
 // ---------------------------------------------------------------------------
@@ -22,16 +22,16 @@ export function createWorkerProfileNote(userId: string, model: NoteModel): Promi
 
 export function getCandidateNotes(userId: string, pagination: NotePagination): Promise<PaginatedList<NoteItem>> {
   return api.get<PaginatedList<NoteItem>>(
-    `/api/AgencyCandidate/${userId}/Note?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
+    `/api/agency/candidates/${userId}/Notes?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
   );
 }
 
 export function createCandidateNote(userId: string, model: NoteModel): Promise<CreateNoteResponse> {
-  return api.post<CreateNoteResponse>(`/api/AgencyCandidate/${userId}/Note`, model);
+  return api.post<CreateNoteResponse>(`/api/agency/candidates/${userId}/Notes`, model);
 }
 
 export function deleteCandidateNote(userId: string, id: string): Promise<void> {
-  return api.del(`/api/AgencyCandidate/${userId}/Note/${id}`);
+  return api.del(`/api/agency/candidates/${userId}/Notes/${id}`);
 }
 
 // ---------------------------------------------------------------------------

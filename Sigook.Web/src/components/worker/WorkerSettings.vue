@@ -230,7 +230,7 @@ function addHoliday() {
     closeOnConfirm: false,
     confirmText: 'Add',
     onConfirm: async (value: any, dialog: any) => {
-      await addNewHoliday({ workerProfileId: localWorker.value.id, date: value });
+      await addNewHoliday(localWorker.value.id, { workerProfileId: localWorker.value.id, date: value });
       workerHolidays.value = await getAgencyWorkerProfileHolidays(localWorker.value.id);
       dialog.close();
     },

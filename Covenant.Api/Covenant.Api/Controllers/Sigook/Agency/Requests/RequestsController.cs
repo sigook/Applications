@@ -145,7 +145,7 @@ public class RequestsController(IRequestService requestService, IAgencyService a
     /// <summary>Replaces the recruiters of multiple requests in bulk. An empty recruiter list unassigns every recruiter.</summary>
     /// <param name="model">Bulk recruiter update data.</param>
     [HttpPut("bulk-recruiters")]
-    [Authorize(Policy = PolicyConfiguration.Administration)]
+    [Authorize(Policy = PolicyConfiguration.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> BulkRecruiters([FromBody] BulkRequestRecruiters model)

@@ -25,7 +25,7 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<PaginatedList<InvoiceListModel>> GetInvoicesForCompany(Guid companyId, GetCompanyInvoiceFilter filter)
     {
-        var query = from i in _context.Invoice.Where(i => i.Company.CompanyId == companyId)
+        var query = from i in _context.Invoices.Where(i => i.CompanyProfile.CompanyId == companyId)
                     select new InvoiceListModel
                     {
                         Id = i.Id,
@@ -40,7 +40,7 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<PaginatedList<InvoiceListModel>> GetInvoicesForCompanyUSA(Guid companyId, GetCompanyInvoiceFilter filter)
     {
-        var query = from i in _context.InvoiceUSA.Where(i => i.CompanyProfile.CompanyId == companyId)
+        var query = from i in _context.InvoicesUSA.Where(i => i.CompanyProfile.CompanyId == companyId)
                     select new InvoiceListModel
                     {
                         Id = i.Id,
@@ -94,7 +94,7 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<(Guid InvoiceId, string InvoiceNumber)> DeleteInvoiceAndReportsSubcontractor(Guid invoiceId)
     {
-        var invoice = await _context.Invoice
+        var invoice = await _context.Invoices
             .Include(i => i.InvoiceTotals).ThenInclude(i => i.TimeSheetTotal)
             .Where(c => c.Id == invoiceId)
             .SingleOrDefaultAsync();
@@ -102,34 +102,31 @@ public class InvoiceRepository : IInvoiceRepository
         {
             return default;
         }
-        var reports = await (from i in _context.Invoice.Where(c => c.Id == invoiceId)
-                             join it in _context.InvoiceTotals on i.Id equals it.InvoiceId
-                             join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
-                             join tstP in _context.TimeSheetTotalPayroll on tst.TimeSheetId equals tstP.TimeSheetId
-                             join rsw in _context.ReportSubcontractorWageDetail on tstP.Id equals rsw.TimeSheetTotalId
-                             join rs in _context.ReportSubcontractor on rsw.ReportSubcontractorId equals rs.Id
-                             select rs).Distinct().ToListAsync();
+        var reports = await (from i in _context.Invoices.Where(c => c.Id == invoiceId)
+                             from it in i.InvoiceTotals
+                             join tstP in _context.TimeSheetTotalPayrolls on it.TimeSheetTotal.TimeSheetId equals tstP.TimeSheetId
+                             join rsw in _context.ReportSubcontractorWageDetails on tstP.Id equals rsw.TimeSheetTotalId
+                             select rsw.ReportSubcontractor).Distinct().ToListAsync();
         var totalsPayroll = await (from it in _context.InvoiceTotals.Where(c => c.InvoiceId == invoiceId)
-                                   join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
-                                   join tstP in _context.TimeSheetTotalPayroll on tst.TimeSheetId equals tstP.TimeSheetId
-                                   join rsw in _context.ReportSubcontractorWageDetail on tstP.Id equals rsw.TimeSheetTotalId
+                                   join tstP in _context.TimeSheetTotalPayrolls on it.TimeSheetTotal.TimeSheetId equals tstP.TimeSheetId
+                                   join rsw in _context.ReportSubcontractorWageDetails on tstP.Id equals rsw.TimeSheetTotalId
                                    select tstP).ToListAsync();
-        _context.Invoice.Remove(invoice);
+        _context.Invoices.Remove(invoice);
         var timesheetTotals = invoice.InvoiceTotals
             .Where(it => it.TimeSheetTotal != null)
             .Select(s => s.TimeSheetTotal);
         if (timesheetTotals.Any())
         {
-            _context.TimeSheetTotal.RemoveRange(timesheetTotals);
+            _context.TimeSheetTotals.RemoveRange(timesheetTotals);
         }
-        _context.ReportSubcontractor.RemoveRange(reports);
-        _context.TimeSheetTotalPayroll.RemoveRange(totalsPayroll);
+        _context.ReportSubcontractors.RemoveRange(reports);
+        _context.TimeSheetTotalPayrolls.RemoveRange(totalsPayroll);
         return (invoice.Id, invoice.DisplayInvoiceNumber());
     }
 
     public async Task<(Guid InvoiceId, string numberId)> DeleteInvoiceUSA(Guid invoiceId)
     {
-        var invoice = await _context.InvoiceUSA
+        var invoice = await _context.InvoicesUSA
             .Where(c => c.Id == invoiceId)
             .Include(i => i.Items).ThenInclude(i => i.TimeSheetTotal)
             .SingleOrDefaultAsync();
@@ -137,13 +134,13 @@ public class InvoiceRepository : IInvoiceRepository
         {
             return default;
         }
-        _context.InvoiceUSA.Remove(invoice);
+        _context.InvoicesUSA.Remove(invoice);
         var timesheetTotal = invoice.Items
             .Where(i => i.TimeSheetTotal != null)
             .Select(s => s.TimeSheetTotal);
         if (timesheetTotal.Any())
         {
-            _context.TimeSheetTotal.RemoveRange(timesheetTotal);
+            _context.TimeSheetTotals.RemoveRange(timesheetTotal);
         }
         return (invoice.Id, invoice.InvoiceNumber);
     }
@@ -156,42 +153,31 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<InvoiceSummaryModel> GetInvoiceSummaryById(Guid id)
     {
-        var q = from i in _context.Invoice.Where(c => c.Id == id)
-                join cp in _context.CompanyProfile on i.CompanyId equals cp.Id
-                join u in _context.User on cp.CompanyId equals u.Id
-                join a in _context.Agencies on cp.AgencyId equals a.Id
-                join cf in _context.CovenantFile on a.LogoId equals cf.Id into cf1
-                from cf in cf1.DefaultIfEmpty()
-                join cn in _context.CompanyProfileInvoiceNotes on cp.Id equals cn.CompanyProfileId
+        var q = from i in _context.Invoices.Where(c => c.Id == id)
+                join cn in _context.CompanyProfileInvoiceNotes on i.CompanyProfileId equals cn.CompanyProfileId
                     into cn1
                 from cn in cn1.DefaultIfEmpty()
                 select new InvoiceSummaryModel
                 {
                     Id = i.Id,
-                    CompanyProfileId = cp.Id,
-                    CompanyFullName = cp.FullName,
-                    PhonePrincipal = cp.Phone,
-                    PhonePrincipalExt = cp.PhoneExt,
-                    Fax = cp.Fax,
-                    FaxExt = cp.FaxExt,
-                    Email = i.Email != null ? i.Email : u.Email,
-                    Address = (from cpl in cp.Locations.Where(c => c.IsBilling)
-                               join l in _context.Location on cpl.LocationId equals l.Id
-                               join city in _context.City on l.CityId equals city.Id
-                               join p in _context.Province on city.ProvinceId equals p.Id
-                               select $"{l.Address} {city.Value} {p.Code} {l.PostalCode}").FirstOrDefault(),
-                    HstNumber = a.HstNumber,
+                    CompanyProfileId = i.CompanyProfileId,
+                    CompanyFullName = i.CompanyProfile.FullName,
+                    PhonePrincipal = i.CompanyProfile.Phone,
+                    PhonePrincipalExt = i.CompanyProfile.PhoneExt,
+                    Fax = i.CompanyProfile.Fax,
+                    FaxExt = i.CompanyProfile.FaxExt,
+                    Email = i.Email != null ? i.Email : i.CompanyProfile.Company.Email,
+                    Address = (from cpl in i.CompanyProfile.Locations.Where(c => c.IsBilling)
+                               select $"{cpl.Location.Address} {cpl.Location.City.Value} {cpl.Location.City.Province.Code} {cpl.Location.PostalCode}").FirstOrDefault(),
+                    HstNumber = i.CompanyProfile.Agency.HstNumber,
                     HtmlNotes = cn == null ? string.Empty : cn.HtmlNotes,
-                    AgencyFullName = a.FullName,
-                    AgencyLogoFileName = cf == null ? null : cf.FileName,
-                    AgencyAddress = (from al in a.Locations.Where(lW => lW.IsBilling)
-                                     join l in _context.Location on al.LocationId equals l.Id
-                                     join city in _context.City on l.CityId equals city.Id
-                                     join p in _context.Province on city.ProvinceId equals p.Id
-                                     select $"{l.Address} {city.Value} {p.Code} {l.PostalCode}").FirstOrDefault(),
-                    AgencyPhone = a.PhonePrincipal,
-                    AgencyPhoneExt = a.PhonePrincipalExt,
-                    AgencyWebSite = a.WebPage,
+                    AgencyFullName = i.CompanyProfile.Agency.FullName,
+                    AgencyLogoFileName = i.CompanyProfile.Agency.Logo == null ? null : i.CompanyProfile.Agency.Logo.FileName,
+                    AgencyAddress = (from al in i.CompanyProfile.Agency.Locations.Where(lW => lW.IsBilling)
+                                     select $"{al.Location.Address} {al.Location.City.Value} {al.Location.City.Province.Code} {al.Location.PostalCode}").FirstOrDefault(),
+                    AgencyPhone = i.CompanyProfile.Agency.PhonePrincipal,
+                    AgencyPhoneExt = i.CompanyProfile.Agency.PhonePrincipalExt,
+                    AgencyWebSite = i.CompanyProfile.Agency.WebPage,
                     CreatedAt = new DateOnly(i.CreatedAt.Year, i.CreatedAt.Month, i.CreatedAt.Day),
                     NumberId = i.NumberId,
                     InvoiceNumber = $"{Invoice.PrefixInvoiceNumber}-{i.InvoiceNumber:0000}-{i.CreatedAt:yy}",
@@ -231,31 +217,26 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<InvoiceSummaryModel> GetInvoiceUSASummaryById(Guid id)
     {
-        var q = from i in _context.InvoiceUSA.Where(c => c.Id == id)
-                join cp in _context.CompanyProfile on i.CompanyProfileId equals cp.Id
-                join u in _context.User on cp.CompanyId equals u.Id
-                join a in _context.Agencies on cp.AgencyId equals a.Id
-                join cf in _context.CovenantFile on a.LogoId equals cf.Id into cf1
-                from cf in cf1.DefaultIfEmpty()
-                join cn in _context.CompanyProfileInvoiceNotes on cp.Id equals cn.CompanyProfileId
+        var q = from i in _context.InvoicesUSA.Where(c => c.Id == id)
+                join cn in _context.CompanyProfileInvoiceNotes on i.CompanyProfileId equals cn.CompanyProfileId
                     into cn1
                 from cn in cn1.DefaultIfEmpty()
                 select new InvoiceSummaryModel
                 {
                     Id = i.Id,
-                    CompanyProfileId = cp.Id,
-                    CompanyFullName = cp.FullName,
+                    CompanyProfileId = i.CompanyProfileId,
+                    CompanyFullName = i.CompanyProfile.FullName,
                     PhonePrincipal = i.BillToPhone,
                     Fax = i.BillToFax,
                     Email = i.BillToEmail,
                     Address = i.BillToAddress,
                     HtmlNotes = cn == null ? string.Empty : cn.HtmlNotes,
-                    AgencyFullName = a.FullName,
-                    AgencyLogoFileName = cf == null ? null : cf.FileName,
+                    AgencyFullName = i.CompanyProfile.Agency.FullName,
+                    AgencyLogoFileName = i.CompanyProfile.Agency.Logo == null ? null : i.CompanyProfile.Agency.Logo.FileName,
                     AgencyAddress = i.BillFromAddress,
                     AgencyPhone = i.BillFromPhone,
                     AgencyFax = i.BillFromFax,
-                    AgencyWebSite = a.WebPage,
+                    AgencyWebSite = i.CompanyProfile.Agency.WebPage,
                     CreatedAt = new DateOnly(i.CreatedAt.Year, i.CreatedAt.Month, i.CreatedAt.Day),
                     NumberId = i.NumberId,
                     InvoiceNumber = i.InvoiceNumber,
@@ -294,26 +275,32 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<List<CompanyRegularChargesByWorker>> GetCompanyRegularCharges(Guid companyProfileId, DateTime holiday, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays)
     {
-        var alreadyBilled = from i in _context.Invoice.Where(i => i.CompanyId == companyProfileId)
+        var alreadyBilled = from i in _context.Invoices.Where(i => i.CompanyProfileId == companyProfileId)
                             from ih in i.Holidays.Where(ih => ih.Holiday.Date == holiday.Date && ih.WorkerProfileId != null)
                             select ih.WorkerProfileId.Value;
 
-        var workers = from ts in _context.TimeSheet.Where(ts => qualifyingDays.Contains(ts.Date.Date)
+        var workers = from ts in _context.TimeSheets.Where(ts => qualifyingDays.Contains(ts.Date.Date)
                           && ts.TimeSheetTotal == null
                           && ts.TimeInApproved != null
                           && ts.TimeOutApproved != null)
-                      join cp in _context.CompanyProfile.Where(cp => cp.Id == companyProfileId) on ts.WorkerRequest.Request.CompanyId equals cp.CompanyId
-                      group ts by ts.WorkerRequest.WorkerId into g
+                      where ts.WorkerRequest.Request.CompanyProfileId == companyProfileId
+                      group ts by ts.WorkerRequest.WorkerProfileId into g
                       select g.Key;
 
-        return await (from i in _context.Invoice.Where(i => i.CompanyId == companyProfileId)
-                      join cp in _context.CompanyProfile on i.CompanyId equals cp.Id
-                      join it in _context.InvoiceTotals on i.Id equals it.InvoiceId
-                      join tst in _context.TimeSheetTotal on it.TimeSheetTotalId equals tst.Id
-                      join ts in _context.TimeSheet.Where(s => s.Date.Date >= start && s.Date.Date <= end) on tst.TimeSheetId equals ts.Id
-                      join wr in _context.WorkerRequest.Where(wwr => workers.Contains(wwr.WorkerId)) on ts.WorkerRequestId equals wr.Id
-                      join wp in _context.WorkerProfile.Where(w => !alreadyBilled.Contains(w.Id)) on wr.WorkerId equals wp.WorkerId
-                      select new { wr.WorkerId, wp.Id, it.AgencyRate, it.Regular, it.OtherRegular }
+        return await (from i in _context.Invoices.Where(i => i.CompanyProfileId == companyProfileId)
+                      from it in i.InvoiceTotals
+                      where it.TimeSheetTotal.TimeSheet.Date.Date >= start
+                            && it.TimeSheetTotal.TimeSheet.Date.Date <= end
+                            && workers.Contains(it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfileId)
+                            && !alreadyBilled.Contains(it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfileId)
+                      select new
+                      {
+                          it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfile.WorkerId,
+                          Id = it.TimeSheetTotal.TimeSheet.WorkerRequest.WorkerProfileId,
+                          it.AgencyRate,
+                          it.Regular,
+                          it.OtherRegular
+                      }
                       ).GroupBy(a => new { a.WorkerId, a.Id, a.AgencyRate })
             .Select(g => new CompanyRegularChargesByWorker(g.Key.WorkerId, g.Key.Id, g.Key.AgencyRate,
                 g.Sum(r => r.Regular), g.Sum(or => or.OtherRegular)))
@@ -322,23 +309,23 @@ public class InvoiceRepository : IInvoiceRepository
 
     private IQueryable<InvoiceListModel> GetInvoicesQueryForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
     {
-        var invoices = _context.Invoice.Where(i => agencyIds.Contains(i.Company.AgencyId));
+        var invoices = _context.Invoices.Where(i => agencyIds.Contains(i.CompanyProfile.AgencyId));
         var query = from i in invoices
                     select new InvoiceListModel
                     {
                         Id = i.Id,
                         NumberId = i.NumberId,
                         InvoiceNumberId = i.InvoiceNumber,
-                        CompanyFullName = i.Company.FullName,
-                        CompanyProfileId = i.Company.Id,
-                        SalesRepresentative = i.Company.SalesRepresentative.Name,
+                        CompanyFullName = i.CompanyProfile.FullName,
+                        CompanyProfileId = i.CompanyProfile.Id,
+                        SalesRepresentative = i.CompanyProfile.SalesRepresentative.Name,
                         TotalNet = i.TotalNet,
                         CreatedAt = i.CreatedAt,
                         WeekEnding = i.WeekEnding.HasValue ? i.WeekEnding.Value : null,
                         InvoiceNumber = Invoice.PrefixInvoiceNumber + "-" +
                             i.InvoiceNumber.ToString().PadLeft(4, '0') + "-" +
                             (i.CreatedAt.Year % 100).ToString().PadLeft(2, '0'),
-                        Email = i.Company.Company.Email
+                        Email = i.CompanyProfile.Company.Email
                     };
         var predicateNew = ApplyFilterInvoices(filter);
         query = query.Where(predicateNew);
@@ -348,7 +335,7 @@ public class InvoiceRepository : IInvoiceRepository
 
     private IQueryable<InvoiceListModel> GetInvoicesUSAQueryForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
     {
-        var invoices = _context.InvoiceUSA.Where(i => agencyIds.Contains(i.CompanyProfile.AgencyId));
+        var invoices = _context.InvoicesUSA.Where(i => agencyIds.Contains(i.CompanyProfile.AgencyId));
         var query = from i in invoices
                     select new InvoiceListModel
                     {

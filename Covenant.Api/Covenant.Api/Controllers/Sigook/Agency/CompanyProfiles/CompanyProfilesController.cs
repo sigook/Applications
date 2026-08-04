@@ -9,6 +9,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Company.Models;
 using Covenant.Core.BL.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +25,8 @@ public class CompanyProfilesController(
     ICompanyRepository companyRepository,
     IRequestRepository requestRepository,
     IAgencyService agencyService,
-    ICompanyService companyService) : ControllerBase
+    ICompanyService companyService,
+    IValidator<UpdateEmailModel> updateEmailValidator) : ControllerBase
 {
     public const string RouteName = "api/agency/companyprofiles";
 
@@ -75,6 +77,9 @@ public class CompanyProfilesController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Email([FromRoute] Guid id, [FromBody] UpdateEmailModel model)
     {
+        var validation = await updateEmailValidator.ValidateAsync(model);
+        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
+
         var result = await agencyService.UpdateEmailCompanyProfile(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();

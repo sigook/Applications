@@ -20,13 +20,8 @@ public class UsersController(ICompanyService companyService, ICompanyRepository 
     /// <param name="profileId">Identifier of the company profile.</param>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<CompanyUserModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute] Guid profileId)
-    {
-        var companyId = await companyRepository.GetCompanyId(profileId);
-        if (companyId == default) return NotFound();
-        return Ok(await companyRepository.GetAllCompanyUsers(companyId));
-    }
+    public async Task<IActionResult> Get([FromRoute] Guid profileId) =>
+        Ok(await companyRepository.GetAllCompanyUsers(profileId));
 
     /// <summary>Creates a new user for the company that owns the specified company profile.</summary>
     /// <param name="profileId">Identifier of the company profile.</param>
@@ -34,12 +29,9 @@ public class UsersController(ICompanyService companyService, ICompanyRepository 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Post([FromRoute] Guid profileId, [FromBody] CompanyUserModel model)
     {
-        var companyId = await companyRepository.GetCompanyId(profileId);
-        if (companyId == default) return NotFound();
-        var result = await companyService.CreateCompanyUser(model, companyId);
+        var result = await companyService.CreateCompanyUser(model, profileId);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -50,12 +42,9 @@ public class UsersController(ICompanyService companyService, ICompanyRepository 
     [HttpDelete("{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid profileId, [FromRoute] Guid userId)
     {
-        var companyId = await companyRepository.GetCompanyId(profileId);
-        if (companyId == default) return NotFound();
-        var result = await companyService.DeleteCompanyUser(userId, companyId);
+        var result = await companyService.DeleteCompanyUser(userId, profileId);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

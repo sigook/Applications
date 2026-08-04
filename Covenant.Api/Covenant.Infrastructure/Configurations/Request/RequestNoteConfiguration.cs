@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Request
     {
         public void Configure(EntityTypeBuilder<RequestNote> builder)
         {
-            builder.ToTable("RequestNote");
+            builder.ToTable("RequestNotes");
             builder.HasKey(k => new { k.RequestId, k.NoteId });
         }
     }

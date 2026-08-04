@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Request
     {
         public void Configure(EntityTypeBuilder<RequestSource> builder)
         {
-            builder.ToTable("RequestSource");
+            builder.ToTable("RequestSources");
             builder.HasKey(k => new { k.RequestId, k.SourceId });
 
             builder.Property(p => p.ExternalUrl).IsRequired(false);

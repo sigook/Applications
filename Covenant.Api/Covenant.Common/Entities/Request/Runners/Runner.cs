@@ -13,16 +13,15 @@ public class Runner
     public Guid Id { get; private set; } = Guid.NewGuid();
     public long NumberId { get; private set; }
 
-    public Guid AgencyId { get; private set; }
-    public Agency.Agency Agency { get; private set; }
 
     public Guid RequestId { get; private set; }
     public Request Request { get; private set; }
 
-    public Guid? WorkerProfileId { get; private set; }
+    public Guid WorkerProfileId { get; private set; }
     public WorkerProfile WorkerProfile { get; private set; }
-    public Guid? CandidateId { get; private set; }
-    public Candidate.Candidate Candidate { get; private set; }
+
+    public Guid? RequestRecruiterId { get; private set; }
+    public RequestRecruiter RequestRecruiter { get; private set; }
 
     public RunnerType Type { get; private set; }
     public RunnerStatus Status { get; private set; }
@@ -30,8 +29,10 @@ public class Runner
 
     public DateTime CreatedAt { get; private set; } = DateTime.Now;
     public Guid CreatedBy { get; private set; }
+    public User CreatedByUser { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
+    public User UpdatedByUser { get; private set; }
 
     private readonly List<RunnerStatusHistory> _statusHistory = new();
     public IEnumerable<RunnerStatusHistory> StatusHistory => _statusHistory;
@@ -39,36 +40,19 @@ public class Runner
     private readonly List<RunnerInterview> _interviews = new();
     public IEnumerable<RunnerInterview> Interviews => _interviews;
 
-    public static Result<Runner> CreateFromWorker(Guid agencyId, Guid requestId, Guid workerProfileId, RunnerType type, Guid createdBy) =>
-        Create(agencyId, requestId, type, createdBy, workerProfileId: workerProfileId);
-
-    public static Result<Runner> CreateFromCandidate(Guid agencyId, Guid requestId, Guid candidateId, RunnerType type, Guid createdBy) =>
-        Create(agencyId, requestId, type, createdBy, candidateId: candidateId);
-
-    private static Result<Runner> Create(Guid agencyId, Guid requestId, RunnerType type, Guid createdBy, Guid? workerProfileId = null, Guid? candidateId = null)
+    public static Result<Runner> CreateFromWorker(Guid requestId, Guid workerProfileId, RunnerType type, Guid createdBy, Guid? requestRecruiterId = null)
     {
         var runner = new Runner
         {
-            AgencyId = agencyId,
             RequestId = requestId,
             WorkerProfileId = workerProfileId,
-            CandidateId = candidateId,
+            RequestRecruiterId = requestRecruiterId,
             Type = type,
             Status = RunnerStatus.SentToClient,
             CreatedBy = createdBy
         };
         runner._statusHistory.Add(RunnerStatusHistory.Create(runner.Id, null, RunnerStatus.SentToClient, createdBy, null));
         return Result.Ok(runner);
-    }
-
-    public Result ConvertCandidateToWorker(Guid workerProfileId)
-    {
-        if (CandidateId is null)
-            return Result.Fail("This runner is not linked to a candidate");
-        CandidateId = null;
-        WorkerProfileId = workerProfileId;
-        UpdatedAt = DateTime.Now;
-        return Result.Ok();
     }
 
     public static bool CanAddInterview(RunnerStatus status) =>
@@ -80,8 +64,6 @@ public class Runner
             return Result.Fail("A hired runner's status cannot be changed");
         if (next == RunnerStatus.Hired && startDate is null)
             return Result.Fail("A start date is required to hire a runner");
-        if (next == RunnerStatus.Hired && WorkerProfileId is null)
-            return Result.Fail("A candidate must be converted to a worker before being hired");
         var previous = Status;
         Status = next;
         UpdatedAt = DateTime.Now;

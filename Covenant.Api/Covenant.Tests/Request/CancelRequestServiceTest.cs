@@ -29,7 +29,7 @@ namespace Covenant.Tests.Request
         {
             var companyId = Guid.NewGuid();
             var requestRepository = new Mock<IRequestRepository>();
-            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), companyId, new Location(), default, Guid.NewGuid()).Value;
+            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(companyId, new Location(), default, Guid.NewGuid()).Value;
             requestRepository.Setup(c => c.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
             requestRepository.Setup(c => c.GetRequestCancellationDetail(request.Id)).ReturnsAsync(new RequestCancellationDetail());
             var service = new RequestService(

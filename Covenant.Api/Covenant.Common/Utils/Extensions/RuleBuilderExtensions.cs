@@ -1,11 +1,13 @@
-﻿using Covenant.Common.Constants;
-using Covenant.Common.Resources;
+﻿using Covenant.Common.Resources;
 using FluentValidation;
 
 namespace Covenant.Common.Utils.Extensions;
 
 public static class RuleBuilderExtensions
 {
+    private const int PhoneExtMinimum = 0;
+    private const int PhoneExtMaximum = 99999999;
+
     public static IRuleBuilderOptions<T, string> PhoneNumber<T>(this IRuleBuilder<T, string> ruleBuilder)
     {
         return ruleBuilder
@@ -15,7 +17,7 @@ public static class RuleBuilderExtensions
     }
 
     public static IRuleBuilderOptions<T, int?> PhoneExt<T>(this IRuleBuilder<T, int?> ruleBuilder) =>
-        ruleBuilder.InclusiveBetween(CovenantConstants.Validation.PhoneExtMinimum, CovenantConstants.Validation.PhoneExtMaximum).WithName(ApiResources.PhoneExt);
+        ruleBuilder.InclusiveBetween(PhoneExtMinimum, PhoneExtMaximum).WithName(ApiResources.PhoneExt);
 
     public static IRuleBuilderOptions<T, IEnumerable<TElement>> ListMustContainAtLeastOneElement<T, TElement>(this IRuleBuilder<T, IEnumerable<TElement>> ruleBuilder)
     {

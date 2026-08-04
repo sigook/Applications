@@ -15,8 +15,7 @@ public interface ICompanyRepository
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter);
     Task<CompanyProfileJobPositionRateModel> GetJobPositionDetail(Guid id);
-    Task<Guid> GetCompanyId(Guid companyProfileId);
-    Task<List<CompanyProfileAgencyListModel>> GetCompanyProfiles(Guid companyId);
+    Task<CompanyProfileIdsModel> GetCompanyProfileId(Expression<Func<CompanyProfile, bool>> condition);
     Task<CompanyProfile> GetCompanyProfile(Expression<Func<CompanyProfile, bool>> expression);
     Task<CompanyProfileDetailModel> GetCompanyProfileDetail(Expression<Func<CompanyProfile, bool>> expression);
     Task<PaginatedList<CompanyProfileListModel>> GetCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
@@ -40,7 +39,7 @@ public interface ICompanyRepository
     Task<NoteModel> GetNoteDetail(Guid profileId, Guid id);
     Task<CompanyProfileNote> GetNote(Guid profileId, Guid id);
     Task SaveChangesAsync();
-    Task<IEnumerable<CompanyUserModel>> GetAllCompanyUsers(Guid companyId);
+    Task<IEnumerable<CompanyUserModel>> GetAllCompanyUsers(Guid companyProfileId);
     Task<Guid> GetCompanyIdForUser(Guid userId);
     Task<CompanyUserModel> GetCompanyUserDetail(Guid id);
     Task<CompanyUser> GetCompanyUser(Guid id);

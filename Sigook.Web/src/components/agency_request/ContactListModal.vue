@@ -25,7 +25,7 @@ import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 
-const props = defineProps<{ requestId?: any; companyId: any; activeUsers: any[] }>();
+const props = defineProps<{ requestId?: any; companyProfileId: any; activeUsers: any[] }>();
 const emit = defineEmits<{
   (e: 'selectContact', item: any): void;
   (e: 'removeContact', item: any): void;
@@ -36,7 +36,7 @@ const data = ref<any[]>([]);
 
 function loadContactPersons() {
   isLoading.value = true;
-  getAgencyCompanyContactPerson(props.companyId)
+  getAgencyCompanyContactPerson(props.companyProfileId)
     .then(response => {
       isLoading.value = false;
       data.value = response.map((item: any) => ({ ...item, active: false }));

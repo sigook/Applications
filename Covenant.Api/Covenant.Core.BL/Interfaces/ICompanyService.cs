@@ -15,8 +15,8 @@ public interface ICompanyService
     Task<Result> RequestNewJobPosition(ContactDto contact);
     Task<Result> RequestNewWorker(Guid requestId, CommentsModel model);
     Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter);
-    Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyId = null);
+    Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyProfileId = null);
     Task<Result> CreateContact(CompanyProfileContactPersonModel model);
-    Task<Result> DeleteCompanyUser(Guid userId, Guid? companyId = null);
+    Task<Result> DeleteCompanyUser(Guid userId, Guid? companyProfileId = null);
     Task<Result<ResultGenerateDocument<byte[]>>> BulkCompany(Guid agencyId, IFormFile file);
 }

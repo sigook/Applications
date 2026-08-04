@@ -149,7 +149,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Request.Add(FakeRequest);
+                context.Requests.Add(FakeRequest);
                 context.RequestNotes.AddRange(FakeNote, FakeUpdateNote, FakeDeleteNote);
                 context.SaveChanges();
             }

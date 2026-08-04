@@ -6,6 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="ClosedXML" />
+      <PackageReference Include="MediatR" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Covenant.Common\Covenant.Common.csproj" />
     </ItemGroup>
 

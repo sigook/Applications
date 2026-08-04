@@ -34,14 +34,14 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
         {
             Guid id = Startup.FakeCompanyProfile.Id;
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            CompanyProfile entity = await context.CompanyProfile.SingleAsync(c => c.Id == id);
+            CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.Equal(CompanyProfile.DefaultImageLogo, entity.Logo.FileName);
 
             var model = new CovenantFileModel("myLogo.png", "Logo");
             HttpResponseMessage response = await _client.PutAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
 
-            entity = await context.CompanyProfile.SingleAsync(c => c.Id == id);
+            entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.NotNull(entity.LogoId);
             Assert.Equal(model.FileName, entity.Logo.FileName);
             Assert.Equal(model.Description, entity.Logo.Description);
@@ -50,7 +50,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             response = await _client.PutAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
 
-            entity = await context.CompanyProfile.SingleAsync(c => c.Id == id);
+            entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.NotNull(entity.LogoId);
             Assert.Equal(model.FileName, entity.Logo.FileName);
             Assert.Equal(model.Description, entity.Logo.Description);
@@ -90,7 +90,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 FakeAgency.User = new User(CvnEmail.Create("c@mail.com").Value);
-                context.CompanyProfile.Add(FakeCompanyProfile);
+                context.CompanyProfiles.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }
         }

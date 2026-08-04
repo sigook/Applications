@@ -1,7 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading" />
-    <b-field grouped position="is-right">
+    <b-message v-if="!canEdit" type="is-warning" size="is-small" has-icon>
+      This order does not use runners. The list is read-only.
+    </b-message>
+    <b-field v-if="canEdit" grouped position="is-right">
       <b-button type="is-primary" icon-left="plus" @click="showCreate = true">Add Runner</b-button>
     </b-field>
 
@@ -21,12 +24,6 @@
         <template v-slot="props">
           <span class="d-block">
             {{ props.row.name }}
-            <b-tooltip label="Candidate" type="is-dark" append-to-body>
-              <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small" />
-            </b-tooltip>
-            <b-tooltip label="Worker" type="is-dark" append-to-body>
-              <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small" />
-            </b-tooltip>
           </span>
           <i class="fz-2 ellipsis-150 text-lowercase">{{ props.row.email }}</i>
         </template>
@@ -67,67 +64,28 @@
       </b-table-column>
 
       <b-table-column field="actions" v-slot="props">
-        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-          <template #trigger>
-            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-          </template>
-          <b-dropdown-item v-if="props.row.status !== RunnerStatus.Hired" aria-role="listitem"
-            @click="openAction(props.row, 'status')">
-            Change status
-          </b-dropdown-item>
-          <b-dropdown-item v-if="canAddInterview(props.row.status)" aria-role="listitem"
-            @click="openAction(props.row, 'interview')">
-            Add interview
-          </b-dropdown-item>
-          <b-dropdown-item aria-role="listitem" @click="openAction(props.row, 'history')">
-            View history
-          </b-dropdown-item>
-          <b-dropdown-item v-if="props.row.candidateId" aria-role="listitem"
-            @click="showCandidateDetail(props.row.candidateId)">
-            Edit Candidate
-          </b-dropdown-item>
-          <b-dropdown-item v-if="props.row.candidateId && !props.row.workerProfileId" aria-role="listitem"
-            @click="convertToWorker(props.row)">
-            Convert to Worker
-          </b-dropdown-item>
-        </b-dropdown>
+        <runner-actions-dropdown :status="props.row.status" :can-edit="canEdit"
+          @open="action => open(toTarget(props.row), action)" @delete="confirmDelete(toTarget(props.row))" />
       </b-table-column>
     </b-table>
 
     <b-modal v-model="showCreate" width="640px">
-      <create-runner :request-id="requestId" @create="onCreate" @close="showCreate = false" />
+      <create-runner :request-id="requestId" :is-saving="isCreating" @create="onCreate" @close="showCreate = false" />
     </b-modal>
 
-    <b-modal v-model="showStatus" width="520px">
-      <runner-status-modal v-if="selectedRunner" :request-id="requestId" :runner-id="selectedRunner.id"
-        :current-status="selectedRunner.status" :is-candidate="!!selectedRunner.candidateId" @updated="loadRunners"
-        @close="showStatus = false" />
-    </b-modal>
-
-    <b-modal v-model="showInterview" width="540px">
-      <runner-interview-modal v-if="selectedRunner" :request-id="requestId" :runner-id="selectedRunner.id"
-        @updated="loadRunners" @close="showInterview = false" />
-    </b-modal>
-
-    <b-modal v-model="showHistory" width="760px">
-      <runner-history-modal v-if="selectedRunner" :request-id="requestId" :runner-id="selectedRunner.id"
-        @updated="loadRunners" @close="showHistory = false" />
-    </b-modal>
-
-    <b-modal v-model="showCandidateDetailModal" width="500px">
-      <detail-candidate v-if="candidateDetailId" :candidate-id="candidateDetailId"
-        @onUpdateWorker="onCandidateUpdated" />
-    </b-modal>
+    <runner-action-modals :target="target" v-model:status-open="showStatus" v-model:interview-open="showInterview"
+      v-model:history-open="showHistory" @updated="loadRunners" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
 import { dateMonth } from '@/utils/filters';
 import { getAgencyRunners, createAgencyRunner } from '@/api/agencyRunnerApi';
-import { convertCandidateToWorker } from '@/api/agencyCandidateApi';
+import { useRunnerActions } from '@/composables/useRunnerActions';
+import type { RunnerActionTarget } from '@/composables/useRunnerActions';
 import {
   RUNNER_STATUSES,
   RUNNER_STATUS_LABELS,
@@ -135,18 +93,22 @@ import {
   RUNNER_TYPE_LABELS,
   RunnerSortBy,
   RunnerStatus,
-  canAddInterview,
+  runnerStatusLabel,
+  runnerStatusTagType,
 } from '@/types/runner';
 import type { AgencyRunnerFilter, CreateRunnerModel, RunnerListItem, RunnerType } from '@/types/runner';
 import type { CatalogItem } from '@/types/common';
+import type { AgencyRequestDetail } from '@/types/agency';
 import CreateRunner from '@/components/runner/CreateRunner.vue';
-import RunnerStatusModal from '@/components/runner/RunnerStatusModal.vue';
-import RunnerInterviewModal from '@/components/runner/RunnerInterviewModal.vue';
-import RunnerHistoryModal from '@/components/runner/RunnerHistoryModal.vue';
-import DetailCandidate from '@/components/candidate/DetailCandidate.vue';
+import RunnerActionsDropdown from '@/components/runner/RunnerActionsDropdown.vue';
+import RunnerActionModals from '@/components/runner/RunnerActionModals.vue';
+
+const props = defineProps<{ request?: AgencyRequestDetail | null }>();
 
 const route = useRoute();
 const requestId = route.params.id as string;
+
+const canEdit = computed(() => !!props.request?.usesRunners);
 
 const runnerTypes = RUNNER_TYPES;
 const statusOptions: CatalogItem<RunnerStatus>[] = RUNNER_STATUSES.map(s => ({ id: s, value: RUNNER_STATUS_LABELS[s] }));
@@ -155,12 +117,7 @@ const isLoading = ref(false);
 const rows = ref<RunnerListItem[]>([]);
 const totalItems = ref(0);
 const showCreate = ref(false);
-const showStatus = ref(false);
-const showInterview = ref(false);
-const showHistory = ref(false);
-const showCandidateDetailModal = ref(false);
-const candidateDetailId = ref<string | null>(null);
-const selectedRunner = ref<RunnerListItem | null>(null);
+const isCreating = ref(false);
 const statusesSelected = ref<CatalogItem<RunnerStatus>[]>([]);
 
 const serverParams = reactive<AgencyRunnerFilter>({
@@ -171,20 +128,15 @@ const serverParams = reactive<AgencyRunnerFilter>({
   sortBy: RunnerSortBy.CreatedAt,
 });
 
-function statusLabel(status: RunnerStatus): string {
-  return RUNNER_STATUS_LABELS[status];
-}
+const { target, showStatus, showInterview, showHistory, open, confirmDelete } = useRunnerActions(loadRunners);
+
+const statusLabel = runnerStatusLabel;
 
 function typeLabel(type: RunnerType): string {
   return RUNNER_TYPE_LABELS[type];
 }
 
-function statusType(status: RunnerStatus): string {
-  if (status === RunnerStatus.Hired) return 'is-success';
-  if (status === RunnerStatus.Rejected || status === RunnerStatus.NoShow || status === RunnerStatus.NoLongerAvailable) return 'is-danger';
-  if (status === RunnerStatus.WaitingForInterviewFeedback || status === RunnerStatus.WaitingForFinalDecision) return 'is-warning';
-  return 'is-info';
-}
+const statusType = runnerStatusTagType;
 
 function onPageChange(page: number) {
   serverParams.pageIndex = page;
@@ -219,24 +171,11 @@ function onInputEntered(event: KeyboardEvent) {
 }
 
 function onCellClick(row: RunnerListItem, column: { field: string }) {
-  if (column.field !== 'actions') openAction(row, 'history');
+  if (column.field !== 'actions') open(toTarget(row), 'history');
 }
 
-function openAction(row: RunnerListItem, action: 'status' | 'interview' | 'history') {
-  selectedRunner.value = row;
-  if (action === 'status') showStatus.value = true;
-  else if (action === 'interview') showInterview.value = true;
-  else showHistory.value = true;
-}
-
-function showCandidateDetail(candidateId: string) {
-  candidateDetailId.value = candidateId;
-  showCandidateDetailModal.value = true;
-}
-
-function onCandidateUpdated() {
-  showCandidateDetailModal.value = false;
-  loadRunners();
+function toTarget(row: RunnerListItem): RunnerActionTarget {
+  return { requestId, runnerId: row.id, name: row.name, status: row.status };
 }
 
 function loadRunners() {
@@ -252,25 +191,16 @@ function loadRunners() {
     });
 }
 
-function convertToWorker(row: RunnerListItem) {
-  if (!row.candidateId) return;
-  isLoading.value = true;
-  convertCandidateToWorker(row.candidateId)
-    .then(() => loadRunners())
-    .catch(err => {
-      isLoading.value = false;
-      showAlertError(err);
-    });
-}
-
 function onCreate(model: CreateRunnerModel) {
-  showCreate.value = false;
-  isLoading.value = true;
+  isCreating.value = true;
   createAgencyRunner(requestId, model)
-    .then(() => loadRunners())
-    .catch(err => {
-      isLoading.value = false;
-      showAlertError(err);
+    .then(() => {
+      showCreate.value = false;
+      loadRunners();
+    })
+    .catch(err => showAlertError(err))
+    .finally(() => {
+      isCreating.value = false;
     });
 }
 

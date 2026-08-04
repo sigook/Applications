@@ -46,12 +46,13 @@ stages:
             parameters:
               sdkVersion: $(dotnetSdkVersion)
 
-          # Build using template (no unit tests - project has none)
+          # Build and run unit tests using template
           - template: templates/dotnet-build-test.yml
             parameters:
               buildProjects: 'Sigook.Functions/**/*.sln'
               buildConfiguration: 'Release'
-              runUnitTests: false
+              runUnitTests: true
+              unitTestProjects: 'Sigook.Functions/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj'
               runIntegrationTests: false
 
   # ============================================

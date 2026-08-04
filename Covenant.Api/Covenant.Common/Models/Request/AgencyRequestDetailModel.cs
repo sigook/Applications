@@ -41,6 +41,7 @@ namespace Covenant.Common.Models.Request
         public string DisplayRecruiters { get; set; }
         public string DisplayShift { get; set; }
         public bool IsAsap { get; set; }
+        public bool UsesRunners { get; set; }
         public bool? VaccinationRequired { get; set; }
         public bool PunchCardOptionEnabled { get; set; }
         public string InternalRequirements { get; set; }

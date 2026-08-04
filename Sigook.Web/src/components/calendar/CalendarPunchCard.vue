@@ -94,7 +94,7 @@ import { WorkerRequestStatus } from "@/constants/enums";
 
 const props = defineProps<{
   highlights?: any[];
-  workerId?: any;
+  workerProfileId?: any;
   requestId?: any;
   startDate?: any;
   status?: any;

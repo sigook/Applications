@@ -188,7 +188,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                 FakeCompanyProfile.ContactPeople.Add(FakeContactPerson);
                 FakeCompanyProfile.ContactPeople.Add(FakeUpdateContactPerson);
                 FakeCompanyProfile.ContactPeople.Add(FakeDeleteContactPerson);
-                context.CompanyProfile.Add(FakeCompanyProfile);
+                context.CompanyProfiles.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }
         }

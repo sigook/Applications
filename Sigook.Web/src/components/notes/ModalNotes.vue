@@ -1,12 +1,14 @@
 <template>
-  <div>
+  <div class="notes-panel">
     <b-loading v-model="isLoading"></b-loading>
-    <b-button icon-right="close" type="is-ghost" @click="onNoteClose"></b-button>
-    <span>Notes</span>
-    <note-form @onSave="(note) => addNote(note)" />
+    <div class="container-flex align-items-center justify-content-between mb-3">
+      <h3 class="fw-bold mt-0 mb-0">Notes</h3>
+      <b-button v-if="showClose" icon-right="close" type="is-ghost" size="is-small" @click="onNoteClose"></b-button>
+    </div>
+    <note-form @onSave="addNote" />
     <div v-if="notes">
       <ul v-if="notes.items.length > 0" class="note-list">
-        <li v-for="(item, index) in notes.items" :key="'note' + index">
+        <li v-for="(item, index) in notes.items" :key="item.id">
           <div class="color-black">
             <span :style="{ backgroundColor: item.color }" class="note-color-icon"
               :class="{ 'border': item.color === '#fefefe' }"></span>
@@ -15,55 +17,58 @@
             <i class="fz-2" v-if="item.createdAt">{{ dateFromNow(item.createdAt) }} | </i>
             <i class="fz-2" v-if="item.createdAt">{{ dateMonth(item.createdAt) }}</i>
           </div>
-          <div>
-            <button v-if="onUpdate" class="btn-icon-sm btn-icon-edit" type="button"
-              @click="showModalUpdateNote(item, Number(index))"></button>
-            <button v-if="onDelete" class="btn-icon-sm btn-icon-delete" type="button"
-              @click="deleteNote(item.id, Number(index))"></button>
+          <div class="note-actions">
+            <b-button v-if="onUpdate" type="is-text" size="is-small" icon-right="pencil"
+              @click="showModalUpdateNote(item, index)"></b-button>
+            <b-button v-if="onDelete" type="is-text" size="is-small" icon-right="delete"
+              class="has-text-danger" @click="deleteNote(item.id, index)"></b-button>
           </div>
         </li>
       </ul>
-      <div class="padding-5 color-gray-light" v-else>
-        Notes
-      </div>
-      <pagination :total-pages="notes.totalPages" :index-page="notes.pageIndex" :size-page="size"
-        @changePage="(index) => getNotes(index)">
-      </pagination>
+      <p class="padding-5 color-gray-light" v-else>No notes yet</p>
+      <b-pagination v-if="notes.totalPages > 1" v-model:current="currentPage" :total="notes.totalItems"
+        :per-page="size" size="is-small" order="is-centered" simple @change="getNotes">
+      </b-pagination>
     </div>
 
-    <transition name="modal">
-      <div v-if="showModalUpdate" class="vue-modal min-width-0">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
-              <button @click="showModalUpdate = false" type="button" class="cross-icon">close</button>
-              <h3 class="fw-bold">Edit</h3>
-              <note-form :current-note="editNoteModel" :current-index="editNoteIndex"
-                @onSave="(note) => updateNote(note)" />
-            </div>
-          </div>
-        </div>
+    <b-modal v-model="showModalUpdate" width="420px" :destroy-on-hide="true">
+      <div class="modal-card" style="width: 100%">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Edit note</p>
+        </header>
+        <section class="modal-card-body">
+          <note-form :current-note="editNoteModel" @onSave="updateNote" />
+        </section>
       </div>
-    </transition>
+    </b-modal>
   </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { emailName, dateFromNow, dateMonth } from '@/utils/filters';
+import type { PaginatedList } from '@/types/common';
+import type {
+  NoteItem,
+  NoteFormModel,
+  CreateNoteResponse,
+  RequestNotesFetchPayload,
+  RequestNotesCreatePayload,
+  RequestNotesUpdatePayload,
+  RequestNotesDeletePayload
+} from '@/types/agency';
 import NoteForm from "./NoteForm.vue";
-import Pagination from "../../components/Paginator.vue";
 
-const props = defineProps<{
-  requestId?: any;
-  userId?: any;
-  onGet?: (p: any) => Promise<any>;
-  onCreate?: (p: any) => Promise<any>;
-  onUpdate?: (p: any) => Promise<any>;
-  onDelete?: (p: any) => Promise<any>;
+const props = withDefaults(defineProps<{
+  requestId?: string;
+  userId?: string;
+  onGet?: (payload: RequestNotesFetchPayload) => Promise<PaginatedList<NoteItem>>;
+  onCreate?: (payload: RequestNotesCreatePayload) => Promise<CreateNoteResponse>;
+  onUpdate?: (payload: RequestNotesUpdatePayload) => Promise<void>;
+  onDelete?: (payload: RequestNotesDeletePayload) => Promise<void>;
   canCreate?: boolean;
-  currentNote?: any;
-}>();
+  showClose?: boolean;
+}>(), { showClose: true });
 
 const emit = defineEmits<{
   (e: 'onUpdateNote', v: { size: number }): void;
@@ -71,19 +76,19 @@ const emit = defineEmits<{
 }>();
 
 const isLoading = ref(false);
-const notes = ref<any>(null);
+const notes = ref<PaginatedList<NoteItem> | null>(null);
 const currentPage = ref(1);
 const size = ref(20);
 const showModalUpdate = ref(false);
-const editNoteModel = ref<any>(null);
+const editNoteModel = ref<NoteItem | undefined>(undefined);
 const editNoteIndex = ref<number | null>(null);
 
 function getNotes(index: number) {
   if (!props.onGet) return;
   isLoading.value = true;
   props.onGet({
-    userId: props.userId,
-    requestId: props.requestId,
+    userId: props.userId as string,
+    requestId: props.requestId as string,
     pagination: { page: index, size: size.value },
   })
     .then(response => {
@@ -96,16 +101,17 @@ function getNotes(index: number) {
     });
 }
 
-function addNote(newNote: any) {
+function addNote(newNote: NoteFormModel) {
   if (!props.onCreate) return;
   isLoading.value = true;
   props.onCreate({
-    userId: props.userId,
-    requestId: props.requestId,
+    userId: props.userId as string,
+    requestId: props.requestId as string,
     model: newNote,
   })
     .then(response => {
       isLoading.value = false;
+      if (!notes.value) return;
       notes.value.items.unshift({
         id: response.id,
         note: newNote.note,
@@ -121,16 +127,17 @@ function addNote(newNote: any) {
     });
 }
 
-function deleteNote(id: any, index: number) {
+function deleteNote(id: string, index: number) {
   if (!props.onDelete) return;
   isLoading.value = true;
   props.onDelete({
-    userId: props.userId,
-    requestId: props.requestId,
+    userId: props.userId as string,
+    requestId: props.requestId as string,
     id,
   })
     .then(() => {
       isLoading.value = false;
+      if (!notes.value) return;
       notes.value.items.splice(index, 1);
       showAlertSuccess('Deleted');
       emit('onUpdateNote', { size: notes.value.items.length });
@@ -141,40 +148,37 @@ function deleteNote(id: any, index: number) {
     });
 }
 
-function showModalUpdateNote(item: any, index: number) {
+function showModalUpdateNote(item: NoteItem, index: number) {
   showModalUpdate.value = true;
-  editNoteModel.value = {
-    id: item.id,
-    note: item.note,
-    color: item.color,
-    createdAt: item.createdAt,
-    createdBy: item.createdBy,
-  };
+  editNoteModel.value = { ...item };
   editNoteIndex.value = index;
 }
 
-function updateNote(model: any) {
-  if (!props.onUpdate) return;
+function updateNote(model: NoteFormModel) {
+  if (!props.onUpdate || !editNoteModel.value) return;
+  const id = editNoteModel.value.id;
   isLoading.value = true;
   props.onUpdate({
-    userId: props.userId,
-    requestId: props.requestId,
-    id: editNoteModel.value.id,
+    userId: props.userId as string,
+    requestId: props.requestId as string,
+    id,
     model,
   })
     .then(() => {
       isLoading.value = false;
-      notes.value.items[editNoteIndex.value as number] = {
-        id: model.id,
-        note: model.note,
-        color: model.color,
-        createdAt: model.createdAt,
-        createdBy: model.createdBy,
-      };
+      if (notes.value && editNoteIndex.value !== null) {
+        notes.value.items[editNoteIndex.value] = {
+          id,
+          note: model.note,
+          color: model.color,
+          createdAt: model.createdAt,
+          createdBy: model.createdBy,
+        };
+        emit('onUpdateNote', { size: notes.value.items.length });
+      }
       showModalUpdate.value = false;
       editNoteIndex.value = null;
-      editNoteModel.value = null;
-      emit('onUpdateNote', { size: notes.value.items.length });
+      editNoteModel.value = undefined;
     })
     .catch(error => {
       isLoading.value = false;
@@ -192,6 +196,10 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+.notes-panel {
+  min-width: 0;
+}
+
 .note-list {
   border-radius: 5px;
   padding: 0;
@@ -204,11 +212,22 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
     margin-bottom: 10px;
+
+    > div:first-child {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
 
     &:hover {
       background: #f5f5f5;
     }
   }
+}
+
+.note-actions {
+  display: flex;
+  flex-shrink: 0;
 }
 </style>

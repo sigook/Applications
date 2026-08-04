@@ -177,12 +177,12 @@ public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            context.City.AddRange(Toronto, York, Brampton);
+            context.Cities.AddRange(Toronto, York, Brampton);
             FakeLocation.Location.UpdateCoordinates(43.71153872193341, -79.37071707699555);
             FakeCompanyProfile.Locations.Add(FakeLocation);
             FakeCompanyProfile.Locations.Add(FakeUpdateLocation);
             FakeCompanyProfile.Locations.Add(FakeDeleteLocation);
-            context.CompanyProfile.Add(FakeCompanyProfile);
+            context.CompanyProfiles.Add(FakeCompanyProfile);
             context.SaveChanges();
         }
     }

@@ -8,8 +8,18 @@ namespace Covenant.Infrastructure.Configurations.Accounting
     {
         public void Configure(EntityTypeBuilder<InvoiceUSATimeSheetTotal> builder)
         {
-            builder.ToTable("InvoiceUSATimeSheetTotal");
+            builder.ToTable("InvoiceUSATimeSheetTotals");
             builder.HasKey(k => new { k.InvoiceUSAId, k.TimeSheetTotalId });
+
+            builder.HasOne(x => x.InvoiceUSA)
+                .WithMany(x => x.TimeSheetTotals)
+                .HasForeignKey(x => x.InvoiceUSAId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.TimeSheetTotal)
+                .WithMany()
+                .HasForeignKey(x => x.TimeSheetTotalId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 } 

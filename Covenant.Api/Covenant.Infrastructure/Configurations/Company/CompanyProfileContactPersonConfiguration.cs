@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Company
     {
         public void Configure(EntityTypeBuilder<CompanyProfileContactPerson> builder)
         {
-            builder.ToTable("CompanyProfileContactPerson");
+            builder.ToTable("CompanyProfileContactPeople");
             builder.HasKey(k => k.Id);
         }
     }

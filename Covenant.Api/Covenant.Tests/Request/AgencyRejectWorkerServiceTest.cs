@@ -26,7 +26,7 @@ namespace Covenant.Tests.Request
         public async Task Reject()
         {
             var workerId = Guid.NewGuid();
-            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(workerId, Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
+            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
             request.AddWorker(workerId, new DateTime(2019, 01, 01));
             var requestRepository = new Mock<IRequestRepository>();
             requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
@@ -58,7 +58,7 @@ namespace Covenant.Tests.Request
         public async Task IfWorkerHasNotBeenBookedCannotBeRejected()
         {
             var workerId = Guid.NewGuid();
-            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(workerId, Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
+            var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
             var requestRepository = new Mock<IRequestRepository>();
             requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
             var sut = new RequestService(

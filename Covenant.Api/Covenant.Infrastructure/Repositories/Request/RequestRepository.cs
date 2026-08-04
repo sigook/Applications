@@ -36,39 +36,34 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public IEnumerable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
     {
-        var requests = context.Request.AsQueryable();
+        var requests = context.Requests.AsQueryable();
         if (!string.IsNullOrWhiteSpace(filter.Recruiter))
         {
             requests = from r in requests
-                       join rr in context.RequestRecruiter.Where(c => c.Recruiter.User.Email.ToLower() == filter.Recruiter.ToLower()) on r.Id equals rr.RequestId
+                       join rr in context.RequestRecruiters.Where(c => c.Recruiter.User.Email.ToLower() == filter.Recruiter.ToLower()) on r.Id equals rr.RequestId
                        select r;
         }
-        if (filter.CompanyId.HasValue)
-            requests = requests.Where(r => r.CompanyId == filter.CompanyId.Value);
+        if (filter.CompanyProfileId.HasValue)
+            requests = requests.Where(r => r.CompanyProfileId == filter.CompanyProfileId.Value);
         else
-            requests = requests.Where(r => r.AgencyId == agencyId);
+            requests = requests.Where(r => r.CompanyProfile.AgencyId == agencyId);
         if (filter.SalesPersonnelId.HasValue)
         {
-            requests = requests.Where(r => context.RequestComissions
-                .Any(rc => rc.RequestId == r.Id && rc.AgencyPersonnelId == filter.SalesPersonnelId.Value));
+            requests = requests.Where(r => r.RequestComission != null
+                                           && r.RequestComission.AgencyPersonnelId == filter.SalesPersonnelId.Value);
         }
         if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
         {
             var recruiterTerm = filter.DisplayRecruiters.ToLower();
-            requests = requests.Where(r => context.RequestRecruiter
+            requests = requests.Where(r => context.RequestRecruiters
                 .Any(rr => rr.RequestId == r.Id && rr.Recruiter.Name.ToLower().Contains(recruiterTerm)));
         }
         var query = from r in requests
-                    join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                    join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
-                    from cfl in tmp.DefaultIfEmpty()
-                    join rc in context.RequestComissions on r.Id equals rc.RequestId into tmp1
-                    from rrc in tmp1.DefaultIfEmpty()
                     select new AgencyRequestListModel
                     {
                         Id = r.Id,
                         NumberId = r.NumberId,
-                        AgencyId = r.AgencyId,
+                        AgencyId = r.CompanyProfile.AgencyId,
                         JobTitle = r.JobTitle,
                         BillingTitle = r.BillingTitle,
                         CreatedAt = r.CreatedAt,
@@ -77,23 +72,23 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         ProvinceName = r.JobLocation.City.Province.Value,
                         PostalCode = r.JobLocation.PostalCode,
                         Entrance = r.JobLocation.Entrance,
-                        CompanyFullName = cp.FullName,
-                        CompanyProfileId = cp.Id,
+                        CompanyFullName = r.CompanyProfile.FullName,
+                        CompanyProfileId = r.CompanyProfileId,
                         RequestStatus = r.Status,
                         IsAsap = r.IsAsap,
                         WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : r.WorkerRate,
                         WorkerSalary = r.WorkerSalary,
-                        DisplayRecruiters = string.Join("|", context.RequestRecruiter
+                        DisplayRecruiters = string.Join("|", context.RequestRecruiters
                             .Where(rr => rr.RequestId == r.Id)
                             .Select(rr => rr.Recruiter.Name).Distinct()),
                         WorkersQuantity = r.WorkersQuantity,
-                        SalesRepresentative = rrc != null ? rrc.AgencyPersonnel.Name : null,
+                        SalesRepresentative = r.RequestComission != null ? r.RequestComission.AgencyPersonnel.Name : null,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
                         DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
                         NotesCount = r.Notes.Count(n => !n.Note.IsDeleted),
-                        VaccinationRequired = cp.VaccinationRequired.GetValueOrDefault(),
+                        VaccinationRequired = r.CompanyProfile.VaccinationRequired.GetValueOrDefault(),
                         PunchCardOptionEnabled = r.PunchCardOptionEnabled,
-                        HasPermissionToSeeInternalRequests = cp.RequiresPermissionToSeeRequests,
+                        HasPermissionToSeeInternalRequests = r.CompanyProfile.RequiresPermissionToSeeRequests,
                         JobBoards = r.Sources.Select(rs => new RequestSourceDetailModel
                         {
                             SourceId = rs.SourceId,
@@ -238,9 +233,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     public async Task<IEnumerable<JobViewModel>> GetAvailableRequest(IEnumerable<string> countries)
     {
         var openStatus = new RequestStatus[] { RequestStatus.Open };
-        var requests = context.Request.Include(r => r.Shift)
+        var requests = context.Requests.Include(r => r.Shift)
             .Include(r => r.JobLocation).ThenInclude(jl => jl.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
-            .Join(context.CompanyProfile.Where(cp => cp.Active), r => r.CompanyId, cp => cp.CompanyId, (r, cp) => r)
+            .Where(r => r.CompanyProfile.Active)
             .Where(r => openStatus.Contains(r.Status))
             .Where(r => countries.Contains(r.JobLocation.City.Province.Country.Code))
             .Select(r => new JobViewModel
@@ -262,23 +257,16 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<AgencyRequestDetailModel> GetRequestDetailForAgency(Guid id)
     {
-        var requests = context.Request
+        var requests = context.Requests
             .Include(r => r.JobLocation)
             .ThenInclude(jl => jl.City)
             .ThenInclude(c => c.Province)
             .ThenInclude(p => p.Country)
             .Where(c => c.Id == id);
         var query = from r in requests
-                    join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
-                    from cpj in tmp1.DefaultIfEmpty()
-                    join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                    join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
-                    from cfl in tmp.DefaultIfEmpty()
-                    join rcd in context.RequestCancellationDetail on r.Id equals rcd.RequestId
+                    join rcd in context.RequestCancellationDetails on r.Id equals rcd.RequestId
                     into tmpRcd
                     from rcd in tmpRcd.DefaultIfEmpty()
-                    join rc in context.RequestComissions on r.Id equals rc.RequestId into tmp3
-                    from rc in tmp3.DefaultIfEmpty()
                     select new AgencyRequestDetailModel
                     {
                         Id = r.Id,
@@ -286,11 +274,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         JobTitle = r.JobTitle,
                         BillingTitle = string.IsNullOrWhiteSpace(r.BillingTitle) ? r.JobTitle : r.BillingTitle,
                         JobCosting = r.JobCosting,
+                        UsesRunners = r.UsesRunners,
                         Status = r.Status,
                         CancellationDetail = rcd == null ? null : rcd.OtherReasonCancellationRequest,
-                        CompanyLogo = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
-                        CompanyProfileId = cp.Id,
-                        FullName = cp.FullName,
+                        CompanyLogo = r.CompanyProfile.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Logo.FileName}",
+                        CompanyProfileId = r.CompanyProfileId,
+                        FullName = r.CompanyProfile.FullName,
                         Description = r.Description,
                         Requirements = r.Requirements,
                         Responsibilities = r.Responsibilities,
@@ -300,7 +289,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         WorkerRate = r.WorkerRate,
                         WorkerSalary = r.WorkerSalary,
                         JobPositionId = r.JobPositionRateId,
-                        JobPosition = cpj != null ? cpj.JobPosition : r.JobTitle,
+                        JobPosition = r.JobPositionRate != null ? r.JobPositionRate.JobPosition : r.JobTitle,
                         HolidayIsPaid = r.HolidayIsPaid,
                         BreakIsPaid = r.BreakIsPaid,
                         DurationBreak = r.DurationBreak,
@@ -313,15 +302,15 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         IncentiveDescription = r.IncentiveDescription,
                         DurationTerm = r.DurationTerm,
                         EmploymentType = r.EmploymentType,
-                        DisplayRecruiters = string.Join("|", context.RequestRecruiter
+                        DisplayRecruiters = string.Join("|", context.RequestRecruiters
                             .Where(rr => rr.RequestId == r.Id)
                             .Select(rr => rr.Recruiter.Name).Distinct()),
                         DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
                         IsAsap = r.IsAsap,
-                        VaccinationRequired = cp.VaccinationRequired,
+                        VaccinationRequired = r.CompanyProfile.VaccinationRequired,
                         PunchCardOptionEnabled = r.PunchCardOptionEnabled,
                         InternalRequirements = r.InternalRequirements,
-                        SalesRepresentativeId = rc != null ? rc.AgencyPersonnelId : null,
+                        SalesRepresentativeId = r.RequestComission != null ? r.RequestComission.AgencyPersonnelId : null,
                         CompanyUserIds = r.RequestCompanyUser.Select(rcu => rcu.CompanyUserId),
                         JobLocation = new LocationDetailModel
                         {
@@ -357,14 +346,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<PaginatedList<RequestListModel>> GetRequestsForCompany(Guid companyId, GetRequestForCompanyFilter filter)
     {
-        var requests = context.Request.AsQueryable();
+        var requests = context.Requests.Where(r => r.CompanyProfile.CompanyId == companyId);
         if (filter.CompanyUserId.HasValue)
             requests = requests.Where(r => r.RequestCompanyUser.Any(rcu => rcu.CompanyUserId == filter.CompanyUserId));
         var query = from request in requests
-                    join agency in context.Agencies on request.AgencyId equals agency.Id
                     select new RequestListModel
                     {
-                        CompanyId = request.CompanyId,
+                        CompanyProfileId = request.CompanyProfileId,
                         Id = request.Id,
                         NumberId = request.NumberId,
                         JobTitle = request.JobTitle,
@@ -373,23 +361,23 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         WorkersQuantityWorking = request.WorkersQuantityWorking,
                         Location = request.JobLocation.Address + " " + request.JobLocation.City.Value + " " + request.JobLocation.City.Province.Value + " " + request.JobLocation.PostalCode,
                         Entrance = request.JobLocation.Entrance,
-                        CompanyFullName = agency.FullName,
+                        CompanyFullName = request.CompanyProfile.Agency.FullName,
                         RequestStatus = request.Status,
                         IsAsap = request.IsAsap,
                         IsDirectHiring = request.WorkerSalary.HasValue,
                         DisplayShift = request.Shift == null ? null : request.Shift.DisplayShift
                     };
-        var predicateNew = ApplyFilterForCompany(companyId, filter);
+        var predicateNew = ApplyFilterForCompany(filter);
         query = query.Where(predicateNew);
         query = ApplySortForCompany(query, filter);
         return await query.ToPaginatedList(filter);
     }
 
-    private static Expression<Func<RequestListModel, bool>> ApplyFilterForCompany(Guid companyId, GetRequestForCompanyFilter filter)
+    private static Expression<Func<RequestListModel, bool>> ApplyFilterForCompany(GetRequestForCompanyFilter filter)
     {
         // Companies can see Open and Filled orders (InProgress was removed 2026-01-28)
         var statusToVisualize = new RequestStatus[] { RequestStatus.Open, RequestStatus.Filled };
-        Expression<Func<RequestListModel, bool>> predicate = r => r.CompanyId == companyId && statusToVisualize.Contains(r.RequestStatus);
+        Expression<Func<RequestListModel, bool>> predicate = r => statusToVisualize.Contains(r.RequestStatus);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
         if (!string.IsNullOrWhiteSpace(filter.JobTitle))
@@ -422,9 +410,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     }
 
     public Task<CompanyRequestDetailModel> GetRequestDetailForCompany(Guid id) =>
-        (from r in context.Request.Where(c => c.Id == id)
-         join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
-         from cpj in tmp1.DefaultIfEmpty()
+        (from r in context.Requests.Where(c => c.Id == id)
          select new CompanyRequestDetailModel
          {
              Id = r.Id,
@@ -471,7 +457,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
              },
              JobPositionRate = new JobPositionDetailModel
              {
-                 Value = cpj != null ? cpj.JobPosition : r.JobTitle
+                 Value = r.JobPositionRate != null ? r.JobPositionRate.JobPosition : r.JobTitle
              },
              AgencyRate = r.AgencyRate,
              WorkerSalary = r.WorkerSalary,
@@ -484,51 +470,48 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
          }).SingleOrDefaultAsync();
 
     public Task<Common.Entities.Request.Request> GetRequest(Expression<Func<Common.Entities.Request.Request, bool>> condition) =>
-        context.Request.Where(condition)
+        context.Requests.Where(condition)
             .Include(r => r.JobPositionRate)
             .Include(r => r.JobLocation).ThenInclude(l => l.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Include(r => r.Workers)
             .Include(r => r.Shift)
             .Include(i => i.Recruiters).ThenInclude(ti => ti.Recruiter).ThenInclude(u => u.User)
-            .Include(i => i.Agency)
+            .Include(i => i.CompanyProfile).ThenInclude(cp => cp.Agency)
             .SingleOrDefaultAsync();
 
     public async Task<PaginatedList<AgencyWorkerRequestModel>> GetWorkersRequestByRequestId(Guid requestId, GetWorkersRequestFilter filter)
     {
-        var query = from wr in context.WorkerRequest
-                    join wp in context.WorkerProfile on wr.WorkerId equals wp.WorkerId
-                    join cf in context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
-                    from cfl in tmp.DefaultIfEmpty()
+        var query = from wr in context.WorkerRequests
                     select new AgencyWorkerRequestModel
                     {
                         Id = wr.Id,
                         RequestId = wr.RequestId,
-                        NumberId = wp.NumberId,
-                        WorkerId = wr.WorkerId,
-                        WorkerProfileId = wp.Id,
+                        NumberId = wr.WorkerProfile.NumberId,
+                        WorkerId = wr.WorkerProfile.WorkerId,
+                        WorkerProfileId = wr.WorkerProfileId,
                         Name =
-                            wp.FirstName +
-                            (string.IsNullOrWhiteSpace(wp.MiddleName) ? string.Empty : " " + wp.MiddleName) +
-                            " " + wp.LastName +
-                            (string.IsNullOrWhiteSpace(wp.SecondLastName) ? string.Empty : " " + wp.SecondLastName),
-                        ProfileImage = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
+                            wr.WorkerProfile.FirstName +
+                            (string.IsNullOrWhiteSpace(wr.WorkerProfile.MiddleName) ? string.Empty : " " + wr.WorkerProfile.MiddleName) +
+                            " " + wr.WorkerProfile.LastName +
+                            (string.IsNullOrWhiteSpace(wr.WorkerProfile.SecondLastName) ? string.Empty : " " + wr.WorkerProfile.SecondLastName),
+                        ProfileImage = wr.WorkerProfile.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wr.WorkerProfile.ProfileImage.FileName}",
                         WorkerRequestStatus = wr.WorkerRequestStatus,
                         RejectComments = wr.RejectComments,
                         RejectedAt = wr.RejectedAt,
                         RejectedBy = wr.RejectedBy,
-                        ApprovedToWork = wp.ApprovedToWork,
-                        IsSubcontractor = wp.IsSubcontractor,
-                        SocialInsurance = wp.SocialInsurance,
-                        DueDate = wp.DueDate,
-                        SocialInsuranceExpire = wp.SocialInsuranceExpire,
-                        MobileNumber = wp.MobileNumber,
+                        ApprovedToWork = wr.WorkerProfile.ApprovedToWork,
+                        IsSubcontractor = wr.WorkerProfile.IsSubcontractor,
+                        SocialInsurance = wr.WorkerProfile.SocialInsurance,
+                        DueDate = wr.WorkerProfile.DueDate,
+                        SocialInsuranceExpire = wr.WorkerProfile.SocialInsuranceExpire,
+                        MobileNumber = wr.WorkerProfile.MobileNumber,
                         CreatedBy = wr.CreatedBy,
                         CreatedAt = wr.CreatedAt,
                         StartWorking = wr.StartWorking,
                         NotesCount = wr.Notes.Count(n => !n.Note.IsDeleted),
                         TotalHoursApproved = wr.TimeSheets.Where(c => c.TimeOutApproved != null && c.TimeInApproved != null).Sum(s => (s.TimeOutApproved - s.TimeInApproved).Value.TotalHours),
                         TotalHoursWorker = wr.TimeSheets.Where(c => c.TimeOut != null).Sum(c => (c.TimeOut - c.TimeIn).Value.TotalHours),
-                        ExternalId = wp.ExternalId
+                        ExternalId = wr.WorkerProfile.ExternalId
                     };
         var predicateNew = ApplyFilterWorkersRequest(requestId, filter);
         query = query.Where(predicateNew);
@@ -613,46 +596,40 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public Task<AgencyWorkerRequestModel> GetWorkerRequestByAgencyId(Guid agencyId, Guid requestId, Guid workerRequestId)
     {
-        IQueryable<AgencyWorkerRequestModel> query = from wr in context.WorkerRequest.Where(c => c.Id == workerRequestId && c.RequestId == requestId)
-                                                     join wp in context.WorkerProfile.Where(c => c.AgencyId == agencyId) on wr.WorkerId equals wp.WorkerId
-                                                     join cf in context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
-                                                     from cfl in tmp.DefaultIfEmpty()
-                                                     where wr.WorkerId == wp.WorkerId
+        IQueryable<AgencyWorkerRequestModel> query = from wr in context.WorkerRequests.Where(c => c.Id == workerRequestId && c.RequestId == requestId)
+                                                     where wr.WorkerProfile.AgencyId == agencyId
                                                      select new AgencyWorkerRequestModel
                                                      {
                                                          Id = wr.Id,
-                                                         WorkerId = wr.WorkerId,
-                                                         WorkerProfileId = wp.Id,
-                                                         Name = $"{wp.FirstName} {wp.MiddleName} {wp.LastName} {wp.SecondLastName}",
+                                                         WorkerId = wr.WorkerProfile.WorkerId,
+                                                         WorkerProfileId = wr.WorkerProfileId,
+                                                         Name = $"{wr.WorkerProfile.FirstName} {wr.WorkerProfile.MiddleName} {wr.WorkerProfile.LastName} {wr.WorkerProfile.SecondLastName}",
                                                          WorkerRequestStatus = wr.WorkerRequestStatus,
                                                          RejectComments = wr.RejectComments,
                                                          RejectedAt = wr.RejectedAt,
-                                                         ProfileImage = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
-                                                         NumberId = wp.NumberId,
-                                                         ApprovedToWork = wp.ApprovedToWork,
-                                                         SocialInsurance = wp.SocialInsurance,
-                                                         DueDate = wp.DueDate,
-                                                         SocialInsuranceExpire = wp.SocialInsuranceExpire,
-                                                         ExternalId = wp.ExternalId
+                                                         ProfileImage = wr.WorkerProfile.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wr.WorkerProfile.ProfileImage.FileName}",
+                                                         NumberId = wr.WorkerProfile.NumberId,
+                                                         ApprovedToWork = wr.WorkerProfile.ApprovedToWork,
+                                                         SocialInsurance = wr.WorkerProfile.SocialInsurance,
+                                                         DueDate = wr.WorkerProfile.DueDate,
+                                                         SocialInsuranceExpire = wr.WorkerProfile.SocialInsuranceExpire,
+                                                         ExternalId = wr.WorkerProfile.ExternalId
                                                      };
         return query.AsNoTracking().SingleOrDefaultAsync();
     }
 
     public Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, Pagination pagination) =>
-        (from wp in context.WorkerProfile.Where(c => c.WorkerId == workerId)
-         join r in context.Request.Where(r => r.Status == RequestStatus.Cancelled) on wp.AgencyId equals r.AgencyId
-         join wr in context.WorkerRequest.Where(c => c.WorkerId == workerId) on r.Id equals wr.RequestId
-         join agency in context.Agencies on r.AgencyId equals agency.Id
-         join afl in context.CovenantFile on agency.LogoId equals afl.Id into tmp3
-         from afl in tmp3.DefaultIfEmpty()
+        (from wp in context.WorkerProfiles.Where(c => c.WorkerId == workerId)
+         join r in context.Requests.Where(r => r.Status == RequestStatus.Cancelled) on wp.AgencyId equals r.CompanyProfile.AgencyId
+         join wr in context.WorkerRequests.Where(c => c.WorkerProfile.WorkerId == workerId) on r.Id equals wr.RequestId
          orderby r.NumberId descending
          select new WorkerRequestListModel
          {
              Id = r.Id,
              NumberId = r.NumberId,
              IsAsap = r.IsAsap,
-             AgencyFullName = agency.FullName,
-             AgencyLogo = afl == null ? null : $"{filesConfiguration.FilesPath}{afl.FileName}",
+             AgencyFullName = r.CompanyProfile.Agency.FullName,
+             AgencyLogo = r.CompanyProfile.Agency.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Agency.Logo.FileName}",
              CreatedAt = r.CreatedAt,
              JobTitle = r.JobTitle,
              WorkerRate = r.WorkerRate,
@@ -669,11 +646,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination)
     {
-        var workerProfile = await context.WorkerProfile.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
-        var workerRequests = context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
+        var workerProfile = await context.WorkerProfiles.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
+        var workerRequests = context.WorkerRequests.Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
         var openStatus = new RequestStatus[] { RequestStatus.Open };
         var requests = Enumerable.Empty<WorkerRequestListModel>();
-        var ownRequest = context.Request.Include(wr => wr.Agency)
+        var ownRequest = context.Requests.Include(wr => wr.CompanyProfile).ThenInclude(cp => cp.Agency)
             .Join(workerRequests, r => r.Id, wr => wr.RequestId, (r, wr) => new { r, wr })
             .Select(lj => new WorkerRequestListModel
             {
@@ -682,7 +659,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 IsAsap = lj.r.IsAsap,
                 CreatedAt = lj.r.CreatedAt,
                 JobTitle = lj.r.JobTitle,
-                AgencyFullName = lj.r.Agency.FullName,
+                AgencyFullName = lj.r.CompanyProfile.Agency.FullName,
                 WorkerRate = lj.r.WorkerRate.HasValue ? lj.r.WorkerRate : lj.r.WorkerSalary,
                 Location = $"{lj.r.JobLocation.Address} {lj.r.JobLocation.City.Value} {lj.r.JobLocation.City.Province.Value} {lj.r.JobLocation.PostalCode}",
                 Entrance = lj.r.JobLocation.Entrance,
@@ -694,10 +671,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             }).AsEnumerable();
         if (!ownRequest.Any())
         {
-            var requestToExclude = context.WorkerRequest.Where(wr => wr.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
-            var availableRequest = context.Request.Include(r => r.Agency)
+            var requestToExclude = context.WorkerRequests.Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
+            var availableRequest = context.Requests.Include(r => r.CompanyProfile).ThenInclude(cp => cp.Agency)
                 .Where(r => openStatus.Contains(r.Status))
-                .Where(r => r.AgencyId == workerProfile.AgencyId)
+                .Where(r => r.CompanyProfile.AgencyId == workerProfile.AgencyId)
                 .Where(r => !requestToExclude.Any(rte => rte.RequestId == r.Id))
                 .Where(r => !ownRequest.Any(or => or.Id == r.Id))
                 .Select(r => new WorkerRequestListModel
@@ -707,7 +684,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                     IsAsap = r.IsAsap,
                     CreatedAt = r.CreatedAt,
                     JobTitle = r.JobTitle,
-                    AgencyFullName = r.Agency.FullName,
+                    AgencyFullName = r.CompanyProfile.Agency.FullName,
                     WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : r.WorkerRate,
                     Location = $"{r.JobLocation.City.Value} {r.JobLocation.City.Province.Value}",
                     Entrance = r.JobLocation.Entrance,
@@ -730,17 +707,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public Task<WorkerRequestDetailModel> GetRequestDetailForWorker(Guid workerId, Guid requestId)
     {
-        return (from r in context.Request.Where(c => c.Id == requestId)
-                join cpj in context.CompanyProfileJobPositionRate on r.JobPositionRateId equals cpj.Id into tmp1
-                from cpj in tmp1.DefaultIfEmpty()
-                join wp in context.WorkerProfile.Where(c => c.WorkerId == workerId) on r.AgencyId equals wp.AgencyId
-                join wr in context.WorkerRequest.Where(c => c.WorkerId == workerId && c.RequestId == requestId) on r.Id equals wr.RequestId into tmp
+        return (from r in context.Requests.Where(c => c.Id == requestId)
+                join wp in context.WorkerProfiles.Where(c => c.WorkerId == workerId) on r.CompanyProfile.AgencyId equals wp.AgencyId
+                join wr in context.WorkerRequests.Where(c => c.WorkerProfile.WorkerId == workerId && c.RequestId == requestId) on r.Id equals wr.RequestId into tmp
                 from wr in tmp.DefaultIfEmpty()
-                join l in context.Location on r.JobLocationId equals l.Id
-                join agency in context.Agencies on r.AgencyId equals agency.Id
-                join afl in context.CovenantFile on agency.LogoId equals afl.Id into tmp3
-                from afl in tmp3.DefaultIfEmpty()
-                join ra in context.RequestApplicant on new { rId = r.Id, wpId = wp.Id } equals new { rId = ra.RequestId, wpId = ra.WorkerProfileId.Value }
+                join ra in context.RequestApplicants on new { rId = r.Id, wpId = wp.Id } equals new { rId = ra.RequestId, wpId = ra.WorkerProfileId.Value }
                     into tmpRa
                 from ra in tmpRa.DefaultIfEmpty()
                 select new WorkerRequestDetailModel
@@ -750,14 +721,14 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                     Status = wr == null ? "None" : wr.WorkerRequestStatus.ToString(),
                     DurationTerm = r.DurationTerm.ToString(),
                     RequestStatus = r.Status.ToString(),
-                    AgencyFullName = agency.FullName,
-                    AgencyLogo = afl == null ? null : filesConfiguration.FilesPath + afl.FileName,
+                    AgencyFullName = r.CompanyProfile.Agency.FullName,
+                    AgencyLogo = r.CompanyProfile.Agency.Logo == null ? null : filesConfiguration.FilesPath + r.CompanyProfile.Agency.Logo.FileName,
                     Description = r.Description,
                     Requirements = r.Requirements,
                     WorkersQuantity = r.WorkersQuantity,
                     WorkerRate = r.WorkerRate,
                     WorkerSalary = r.WorkerSalary,
-                    JobPosition = cpj != null ? cpj.JobPosition : r.JobTitle,
+                    JobPosition = r.JobPositionRate != null ? r.JobPositionRate.JobPosition : r.JobTitle,
                     HolidayIsPaid = r.HolidayIsPaid,
                     BreakIsPaid = r.BreakIsPaid,
                     CreatedAt = r.CreatedAt,
@@ -766,33 +737,33 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                     Incentive = r.Incentive,
                     IncentiveDescription = r.IncentiveDescription,
                     DurationBreak = r.DurationBreak,
-                    Location = l.Address + " " + l.City.Value + " " + l.City.Province.Value + " " + l.PostalCode,
+                    Location = r.JobLocation.Address + " " + r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value + " " + r.JobLocation.PostalCode,
                     IsApplicant = ra != null,
                     PunchCardOptionEnabled = r.PunchCardOptionEnabled,
                     JobLocation = new LocationDetailModel
                     {
-                        Id = l.Id,
-                        Address = l.Address,
-                        Latitude = l.Latitude,
-                        Longitude = l.Longitude,
-                        PostalCode = l.PostalCode,
-                        Entrance = l.Entrance,
-                        MainIntersection = l.MainIntersection,
+                        Id = r.JobLocation.Id,
+                        Address = r.JobLocation.Address,
+                        Latitude = r.JobLocation.Latitude,
+                        Longitude = r.JobLocation.Longitude,
+                        PostalCode = r.JobLocation.PostalCode,
+                        Entrance = r.JobLocation.Entrance,
+                        MainIntersection = r.JobLocation.MainIntersection,
                         City = new CityModel
                         {
-                            Id = l.City.Id,
-                            Value = l.City.Value,
-                            Code = l.City.Code,
+                            Id = r.JobLocation.City.Id,
+                            Value = r.JobLocation.City.Value,
+                            Code = r.JobLocation.City.Code,
                             Province = new ProvinceModel
                             {
-                                Id = l.City.Province.Id,
-                                Value = l.City.Province.Value,
-                                Code = l.City.Province.Code,
+                                Id = r.JobLocation.City.Province.Id,
+                                Value = r.JobLocation.City.Province.Value,
+                                Code = r.JobLocation.City.Province.Code,
                                 Country = new CountryModel
                                 {
-                                    Id = l.City.Province.Country.Id,
-                                    Value = l.City.Province.Country.Value,
-                                    Code = l.City.Province.Country.Code
+                                    Id = r.JobLocation.City.Province.Country.Id,
+                                    Value = r.JobLocation.City.Province.Country.Value,
+                                    Code = r.JobLocation.City.Province.Country.Code
                                 }
                             }
                         }
@@ -805,67 +776,57 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private Task<PaginatedList<RequestListModel>> GetWorkerRequestHistory(Expression<Func<WorkerProfile, bool>> filter, Pagination pagination)
     {
-        var query = from wp in context.WorkerProfile.Where(filter)
-                    join wr in context.WorkerRequest on wp.WorkerId equals wr.WorkerId
-                    join r in context.Request on new { Ag = wp.AgencyId, Re = wr.RequestId } equals new { Ag = r.AgencyId, Re = r.Id }
-                    join cp in context.CompanyProfile on r.CompanyId equals cp.CompanyId
-                    join cf in context.CovenantFile on cp.LogoId equals cf.Id into tmp
-                    from cfl in tmp.DefaultIfEmpty()
-                    join agency in context.Agencies on r.AgencyId equals agency.Id
-                    join afl in context.CovenantFile on agency.LogoId equals afl.Id into tmp3
-                    from afl in tmp3.DefaultIfEmpty()
+        var query = from wp in context.WorkerProfiles.Where(filter)
+                    join wr in context.WorkerRequests on wp.Id equals wr.WorkerProfileId
+                    join r in context.Requests on new { Ag = wp.AgencyId, Re = wr.RequestId } equals new { Ag = r.CompanyProfile.AgencyId, Re = r.Id }
                     orderby r.NumberId descending
                     select new RequestListModel
                     {
                         Id = r.Id,
                         NumberId = r.NumberId,
                         IsAsap = r.IsAsap,
-                        CompanyFullName = cp.FullName,
-                        Logo = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
-                        AgencyFullName = agency.FullName,
-                        AgencyLogo = afl == null ? null : $"{filesConfiguration.FilesPath}{afl.FileName}",
+                        CompanyFullName = r.CompanyProfile.FullName,
+                        Logo = r.CompanyProfile.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Logo.FileName}",
+                        AgencyFullName = r.CompanyProfile.Agency.FullName,
+                        AgencyLogo = r.CompanyProfile.Agency.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Agency.Logo.FileName}",
                         CreatedAt = r.CreatedAt,
                         JobTitle = r.JobTitle,
                         Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
                         RequestStatus = r.Status,
                         WorkersQuantity = r.WorkersQuantity,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
-                        StartWorking = (from wrS in context.WorkerRequest.Where(wrW => wrW.RequestId == r.Id)
-                                        join tS in context.TimeSheet on wrS.Id equals tS.WorkerRequestId
+                        StartWorking = (from wrS in context.WorkerRequests.Where(wrW => wrW.RequestId == r.Id)
+                                        from tS in wrS.TimeSheets
                                         select tS.Date).DefaultIfEmpty().Min(),
-                        FinishWorking = (from wrS in context.WorkerRequest.Where(wrW => wrW.RequestId == r.Id)
-                                         join tS in context.TimeSheet on wrS.Id equals tS.WorkerRequestId
+                        FinishWorking = (from wrS in context.WorkerRequests.Where(wrW => wrW.RequestId == r.Id)
+                                         from tS in wrS.TimeSheets
                                          select tS.Date).DefaultIfEmpty().Max()
                     };
         return query.ToPaginatedList(pagination);
     }
 
-    public Task<AgencyWorkerRequestModel> GetRequestWorkerByCompanyId(Guid companyId, Guid requestId, Guid workerId)
+    public Task<AgencyWorkerRequestModel> GetRequestWorkerByCompanyId(Guid companyId, Guid requestId, Guid workerProfileId)
     {
-        var query = (from r in context.Request.Where(c => c.Id == requestId && c.CompanyId == companyId)
-                     join wp in context.WorkerProfile on r.AgencyId equals wp.AgencyId
-                     join cf in context.CovenantFile on wp.ProfileImageId equals cf.Id into tmp
-                     from cfl in tmp.DefaultIfEmpty()
-                     join wr in context.WorkerRequest.Where(c => c.RequestId == requestId && c.WorkerId == workerId) on wp.WorkerId equals wr.WorkerId
-                     where wp.WorkerId == wr.WorkerId
+        var query = (from wr in context.WorkerRequests.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
+                     where wr.Request.CompanyProfile.CompanyId == companyId
                      select new AgencyWorkerRequestModel
                      {
                          Id = wr.Id,
-                         WorkerId = wp.WorkerId,
-                         WorkerProfileId = wp.Id,
-                         Name = $"{wp.FirstName} {wp.MiddleName} {wp.LastName} {wp.SecondLastName}",
+                         WorkerId = wr.WorkerProfile.WorkerId,
+                         WorkerProfileId = wr.WorkerProfileId,
+                         Name = $"{wr.WorkerProfile.FirstName} {wr.WorkerProfile.MiddleName} {wr.WorkerProfile.LastName} {wr.WorkerProfile.SecondLastName}",
                          WorkerRequestStatus = wr.WorkerRequestStatus,
-                         ProfileImage = cfl == null ? null : $"{filesConfiguration.FilesPath}{cfl.FileName}",
-                         NumberId = wp.NumberId,
-                         DueDate = wp.DueDate,
-                         SocialInsuranceExpire = wp.SocialInsuranceExpire,
-                         ApprovedToWork = wp.ApprovedToWork
+                         ProfileImage = wr.WorkerProfile.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wr.WorkerProfile.ProfileImage.FileName}",
+                         NumberId = wr.WorkerProfile.NumberId,
+                         DueDate = wr.WorkerProfile.DueDate,
+                         SocialInsuranceExpire = wr.WorkerProfile.SocialInsuranceExpire,
+                         ApprovedToWork = wr.WorkerProfile.ApprovedToWork
                      }).OrderByDescending(c => c.Name).AsNoTracking();
         return query.SingleOrDefaultAsync();
     }
 
     public Task<ShiftModel> GetRequestShift(Guid requestId) =>
-        context.Request.Where(c => c.Id == requestId)
+        context.Requests.Where(c => c.Id == requestId)
             .Select(s => new ShiftModel
             {
                 Sunday = s.Shift.Sunday,
@@ -893,16 +854,16 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             }).SingleOrDefaultAsync();
 
     public Task<RequestCancellationDetail> GetRequestCancellationDetail(Guid requestId) =>
-        context.RequestCancellationDetail.Where(s => s.RequestId == requestId)
+        context.RequestCancellationDetails.Where(s => s.RequestId == requestId)
             .Include(i => i.ReasonCancellationRequest)
             .SingleOrDefaultAsync();
 
-    public Task<RequestFinalizationDetail> GetRequestFinalizationDetail(Guid requestId) => context.RequestFinalizationDetail.SingleOrDefaultAsync(s => s.RequestId == requestId);
+    public Task<RequestFinalizationDetail> GetRequestFinalizationDetail(Guid requestId) => context.RequestFinalizationDetails.SingleOrDefaultAsync(s => s.RequestId == requestId);
 
     public Task SaveChangesAsync() => context.SaveChangesAsync();
 
     public Task<RequestContactPersonDetailModel> GetRequestedByDetail(Guid requestId, Guid contactPersonId) =>
-        context.RequestRequestedBy.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
+        context.RequestRequestedBys.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
             .Select(s => new RequestContactPersonDetailModel
             {
                 Id = s.ContactPerson.Id,
@@ -918,7 +879,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             }).SingleOrDefaultAsync();
 
     public Task<RequestContactPersonDetailModel> GetReportToDetail(Guid requestId, Guid contactPersonId) =>
-        context.RequestReportTo.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
+        context.RequestReportTos.Where(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId)
             .Select(s => new RequestContactPersonDetailModel
             {
                 Id = s.ContactPerson.Id,
@@ -934,7 +895,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             }).SingleOrDefaultAsync();
 
     public Task<PaginatedList<RequestContactPersonModel>> GetRequestedByList(Guid requestId, Pagination pagination) =>
-        context.RequestRequestedBy.Where(c => c.RequestId == requestId)
+        context.RequestRequestedBys.Where(c => c.RequestId == requestId)
             .Select(s => new RequestContactPersonModel
             {
                 Id = s.ContactPerson.Id,
@@ -944,12 +905,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 LastName = s.ContactPerson.LastName,
             }).ToPaginatedList(pagination);
 
-    public Task<RequestRequestedBy> GetRequestedBy(Guid requestId, Guid contactPersonId) => context.RequestRequestedBy.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
+    public Task<RequestRequestedBy> GetRequestedBy(Guid requestId, Guid contactPersonId) => context.RequestRequestedBys.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
 
-    public Task<RequestReportTo> GetReportTo(Guid requestId, Guid contactPersonId) => context.RequestReportTo.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
+    public Task<RequestReportTo> GetReportTo(Guid requestId, Guid contactPersonId) => context.RequestReportTos.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
 
     public Task<PaginatedList<RequestContactPersonModel>> GetReportToList(Guid requestId, Pagination pagination) =>
-        context.RequestReportTo.Where(c => c.RequestId == requestId)
+        context.RequestReportTos.Where(c => c.RequestId == requestId)
             .Select(s => new RequestContactPersonModel
             {
                 Id = s.ContactPerson.Id,
@@ -972,9 +933,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .Include(c => c.Note).SingleOrDefaultAsync();
 
     public async Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignments(Guid agencyId, DateTime weekStart, DateTime weekEnd) =>
-        await (from rr in context.RequestRecruiter
-               join cp in context.CompanyProfile on rr.Request.CompanyId equals cp.CompanyId
-               where rr.Request.AgencyId == agencyId
+        await (from rr in context.RequestRecruiters
+               where rr.Request.CompanyProfile.AgencyId == agencyId
                      && rr.WorkDate != null
                      && rr.WorkDate >= weekStart.Date
                      && rr.WorkDate <= weekEnd.Date
@@ -984,7 +944,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    RecruiterName = rr.Recruiter.Name,
                    RequestId = rr.RequestId,
                    NumberId = rr.Request.NumberId,
-                   CompanyName = cp.FullName,
+                   CompanyName = rr.Request.CompanyProfile.FullName,
                    JobTitle = rr.Request.JobTitle,
                    City = rr.Request.JobLocation.City.Value,
                    ProvinceCode = rr.Request.JobLocation.City.Province.Code,
@@ -992,36 +952,43 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    Status = rr.Request.Status,
                    IsAsap = rr.Request.IsAsap,
                    WorkerSalary = rr.Request.WorkerSalary,
-                   WorkersSent = rr.Dispatches.Count,
-                   Dispatches = rr.Dispatches.Select(d => new WeeklyBoardDispatchModel
+                   UsesRunners = rr.Request.UsesRunners,
+                   RunnersSent = rr.Runners.Count,
+                   Runners = rr.Runners.Select(r => new WeeklyBoardRunnerModel
                    {
-                       WorkerProfileId = d.WorkerProfileId,
-                       FullName = d.WorkerProfile.FirstName +
-                           (string.IsNullOrWhiteSpace(d.WorkerProfile.MiddleName) ? string.Empty : " " + d.WorkerProfile.MiddleName) +
-                           " " + d.WorkerProfile.LastName +
-                           (string.IsNullOrWhiteSpace(d.WorkerProfile.SecondLastName) ? string.Empty : " " + d.WorkerProfile.SecondLastName),
-                       Email = d.WorkerProfile.Worker.Email
+                       RunnerId = r.Id,
+                       WorkerProfileId = r.WorkerProfileId,
+                       FullName = r.WorkerProfile.FirstName +
+                           (string.IsNullOrWhiteSpace(r.WorkerProfile.MiddleName) ? string.Empty : " " + r.WorkerProfile.MiddleName) +
+                           " " + r.WorkerProfile.LastName +
+                           (string.IsNullOrWhiteSpace(r.WorkerProfile.SecondLastName) ? string.Empty : " " + r.WorkerProfile.SecondLastName),
+                       Email = r.WorkerProfile.Worker.Email,
+                       Type = r.Type,
+                       Status = r.Status,
+                       SentAt = r.CreatedAt
                    }).ToList()
                }).ToListAsync();
 
-    public async Task<IEnumerable<WeeklyBoardDispatchModel>> GetOrderDispatches(Guid agencyId, Guid requestId) =>
-        await (from rr in context.RequestRecruiter
-               from d in rr.Dispatches
-               where rr.RequestId == requestId && rr.Request.AgencyId == agencyId
-               orderby d.CreatedAt
-               select new WeeklyBoardDispatchModel
+    public async Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid agencyId, Guid requestId) =>
+        await (from r in context.Runners
+               where r.RequestId == requestId && r.Request.CompanyProfile.AgencyId == agencyId
+               orderby r.CreatedAt
+               select new WeeklyBoardRunnerModel
                {
-                   WorkerProfileId = d.WorkerProfileId,
-                   FullName = d.WorkerProfile.FirstName +
-                       (string.IsNullOrWhiteSpace(d.WorkerProfile.MiddleName) ? string.Empty : " " + d.WorkerProfile.MiddleName) +
-                       " " + d.WorkerProfile.LastName +
-                       (string.IsNullOrWhiteSpace(d.WorkerProfile.SecondLastName) ? string.Empty : " " + d.WorkerProfile.SecondLastName),
-                   Email = d.WorkerProfile.Worker.Email,
-                   SentAt = d.CreatedAt
+                   RunnerId = r.Id,
+                   WorkerProfileId = r.WorkerProfileId,
+                   FullName = r.WorkerProfile.FirstName +
+                       (string.IsNullOrWhiteSpace(r.WorkerProfile.MiddleName) ? string.Empty : " " + r.WorkerProfile.MiddleName) +
+                       " " + r.WorkerProfile.LastName +
+                       (string.IsNullOrWhiteSpace(r.WorkerProfile.SecondLastName) ? string.Empty : " " + r.WorkerProfile.SecondLastName),
+                   Email = r.WorkerProfile.Worker.Email,
+                   Type = r.Type,
+                   Status = r.Status,
+                   SentAt = r.CreatedAt
                }).ToListAsync();
 
     public async Task<Dictionary<Guid, string>> GetWorkerProfileNames(IEnumerable<Guid> workerProfileIds) =>
-        await context.WorkerProfile
+        await context.WorkerProfiles
             .Where(w => workerProfileIds.Contains(w.Id))
             .ToDictionaryAsync(
                 w => w.Id,
@@ -1031,9 +998,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                     (string.IsNullOrWhiteSpace(w.SecondLastName) ? string.Empty : " " + w.SecondLastName));
 
     public async Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd) =>
-        await (from rr in context.RequestRecruiter
-               join cp in context.CompanyProfile on rr.Request.CompanyId equals cp.CompanyId
-               where rr.Request.AgencyId == agencyId
+        await (from rr in context.RequestRecruiters
+               where rr.Request.CompanyProfile.AgencyId == agencyId
                      && rr.RecruiterId == recruiterId
                      && rr.WorkDate != null
                      && rr.WorkDate >= weekStart.Date
@@ -1044,7 +1010,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    RecruiterName = rr.Recruiter.Name,
                    RequestId = rr.RequestId,
                    NumberId = rr.Request.NumberId,
-                   CompanyName = cp.FullName,
+                   CompanyName = rr.Request.CompanyProfile.FullName,
                    JobTitle = rr.Request.JobTitle,
                    City = rr.Request.JobLocation.City.Value,
                    ProvinceCode = rr.Request.JobLocation.City.Province.Code,
@@ -1052,74 +1018,77 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    Status = rr.Request.Status,
                    IsAsap = rr.Request.IsAsap,
                    WorkerSalary = rr.Request.WorkerSalary,
-                   WorkersSent = rr.Dispatches.Count,
-                   Dispatches = rr.Dispatches.Select(d => new WeeklyBoardDispatchModel
+                   UsesRunners = rr.Request.UsesRunners,
+                   RunnersSent = rr.Runners.Count,
+                   Runners = rr.Runners.Select(r => new WeeklyBoardRunnerModel
                    {
-                       WorkerProfileId = d.WorkerProfileId,
-                       FullName = d.WorkerProfile.FirstName +
-                           (string.IsNullOrWhiteSpace(d.WorkerProfile.MiddleName) ? string.Empty : " " + d.WorkerProfile.MiddleName) +
-                           " " + d.WorkerProfile.LastName +
-                           (string.IsNullOrWhiteSpace(d.WorkerProfile.SecondLastName) ? string.Empty : " " + d.WorkerProfile.SecondLastName),
-                       Email = d.WorkerProfile.Worker.Email
+                       RunnerId = r.Id,
+                       WorkerProfileId = r.WorkerProfileId,
+                       FullName = r.WorkerProfile.FirstName +
+                           (string.IsNullOrWhiteSpace(r.WorkerProfile.MiddleName) ? string.Empty : " " + r.WorkerProfile.MiddleName) +
+                           " " + r.WorkerProfile.LastName +
+                           (string.IsNullOrWhiteSpace(r.WorkerProfile.SecondLastName) ? string.Empty : " " + r.WorkerProfile.SecondLastName),
+                       Email = r.WorkerProfile.Worker.Email,
+                       Type = r.Type,
+                       Status = r.Status,
+                       SentAt = r.CreatedAt
                    }).ToList()
                }).ToListAsync();
 
     public Task<RequestRecruiter> GetRequestRecruiter(Guid agencyId, Guid requestId, Guid recruiterId, DateTime workDate) =>
-        context.RequestRecruiter
-            .Include(rr => rr.Dispatches)
+        context.RequestRecruiters
+            .Include(rr => rr.Runners)
             .SingleOrDefaultAsync(rr => rr.RequestId == requestId
                 && rr.RecruiterId == recruiterId
                 && rr.WorkDate == workDate.Date
-                && rr.Request.AgencyId == agencyId);
+                && rr.Request.CompanyProfile.AgencyId == agencyId);
 
     public async Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt)
     {
         var requestIdList = requestIds.ToList();
-        await context.RequestRecruiter.Where(r => requestIdList.Contains(r.RequestId)).ExecuteDeleteAsync();
+        await context.RequestRecruiters.Where(r => requestIdList.Contains(r.RequestId)).ExecuteDeleteAsync();
         var recruiterIdList = recruiterIds?.ToList() ?? [];
         if (recruiterIdList.Count == 0) return;
         var entities = requestIdList
             .SelectMany(rid => recruiterIdList.Select(recId => new RequestRecruiter(rid, recId, createdAt)))
             .ToList();
-        await context.RequestRecruiter.AddRangeAsync(entities);
+        await context.RequestRecruiters.AddRangeAsync(entities);
     }
 
-    public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => context.RequestSkill.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
+    public Task<RequestSkill> GetSkill(Guid requestId, Guid id) => context.RequestSkills.SingleOrDefaultAsync(c => c.RequestId == requestId && c.Id == id);
 
     public async Task<IEnumerable<SkillModel>> GetSkills(Guid requestId) =>
-        await context.RequestSkill.Where(c => c.RequestId == requestId)
+        await context.RequestSkills.Where(c => c.RequestId == requestId)
             .Select(p => new SkillModel { Id = p.Id, Skill = p.Skill })
             .ToListAsync();
 
-    public Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression) => context.RequestApplicant.SingleOrDefaultAsync(expression);
+    public Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression) => context.RequestApplicants.SingleOrDefaultAsync(expression);
 
     public async Task<IEnumerable<RequestApplicant>> GetRequestApplicants(Expression<Func<RequestApplicant, bool>> expression)
     {
-        var applicants = context.RequestApplicant.Where(expression);
+        var applicants = context.RequestApplicants.Where(expression);
         return await applicants.ToListAsync();
     }
 
     public async Task<PaginatedList<RequestApplicantDetailModel>> GetRequestApplicants(Guid requestId, GetRequestApplicantFilter filter)
     {
-        var query = from rc in context.RequestApplicant.Where(c => c.RequestId == requestId)
-                    join c in context.Candidates on rc.CandidateId equals c.Id into tC
-                    from c in tC.DefaultIfEmpty()
-                    join wp in context.WorkerProfile on rc.WorkerProfileId equals wp.Id into tWp
-                    from wp in tWp.DefaultIfEmpty()
-                    join u in context.User on wp.WorkerId equals u.Id into tU
-                    from u in tU.DefaultIfEmpty()
+        var query = from rc in context.RequestApplicants.Where(c => c.RequestId == requestId)
                     select new RequestApplicantDetailModel
                     {
                         Id = rc.Id,
                         Comments = rc.Comments,
                         CandidateId = rc.CandidateId,
                         WorkerProfileId = rc.WorkerProfileId,
-                        WorkerId = c != null ? null : wp.WorkerId,
+                        WorkerId = rc.Candidate != null ? null : rc.WorkerProfile.WorkerId,
                         CreatedBy = rc.CreatedBy,
                         CreatedAt = rc.CreatedAt,
-                        Name = c != null ? c.Name : wp.FirstName + " " + wp.MiddleName + " " + wp.LastName + " " + wp.SecondLastName,
-                        PhoneNumber = c != null ? c.PhoneNumbers.FirstOrDefault().PhoneNumber : wp.MobileNumber != null ? wp.MobileNumber : wp.Phone,
-                        Email = c != null ? c.Email : u.Email
+                        Name = rc.Candidate != null
+                            ? rc.Candidate.Name
+                            : rc.WorkerProfile.FirstName + " " + rc.WorkerProfile.MiddleName + " " + rc.WorkerProfile.LastName + " " + rc.WorkerProfile.SecondLastName,
+                        PhoneNumber = rc.Candidate != null
+                            ? rc.Candidate.PhoneNumbers.FirstOrDefault().PhoneNumber
+                            : rc.WorkerProfile.MobileNumber != null ? rc.WorkerProfile.MobileNumber : rc.WorkerProfile.Phone,
+                        Email = rc.Candidate != null ? rc.Candidate.Email : rc.WorkerProfile.Worker.Email
                     };
         var predicateNew = ApplyFilterRequestApplicants(filter);
         query = query.Where(predicateNew);
@@ -1198,25 +1167,34 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return predicate.And(search);
     }
 
+    private IQueryable<ApplicantSearchResultModel> BuildWorkerSearchQuery(Expression<Func<WorkerProfile, bool>> workerPredicate) =>
+        from wp in context.WorkerProfiles.Where(workerPredicate)
+        select new ApplicantSearchResultModel
+        {
+            WorkerProfileId = wp.Id,
+            CandidateId = null,
+            NumberId = wp.NumberId,
+            Name = wp.FirstName +
+                (string.IsNullOrWhiteSpace(wp.MiddleName) ? string.Empty : " " + wp.MiddleName) +
+                " " + wp.LastName +
+                (string.IsNullOrWhiteSpace(wp.SecondLastName) ? string.Empty : " " + wp.SecondLastName),
+            Email = wp.Worker.Email,
+            Type = nameof(UserType.Worker),
+            ApprovedToWork = wp.ApprovedToWork
+        };
+
+    private Task<List<ApplicantSearchResultModel>> SearchWorkers(Expression<Func<WorkerProfile, bool>> workerPredicate) =>
+        BuildWorkerSearchQuery(workerPredicate)
+            .OrderBy(a => a.Name)
+            .Take(20)
+            .AsNoTracking()
+            .ToListAsync();
+
     private async Task<List<ApplicantSearchResultModel>> SearchWorkersAndCandidates(
         Expression<Func<WorkerProfile, bool>> workerPredicate,
         Expression<Func<CandidateEntity, bool>> candidatePredicate)
     {
-        var workers = from wp in context.WorkerProfile.Where(workerPredicate)
-                      join u in context.User on wp.WorkerId equals u.Id
-                      select new ApplicantSearchResultModel
-                      {
-                          WorkerProfileId = wp.Id,
-                          CandidateId = null,
-                          NumberId = wp.NumberId,
-                          Name = wp.FirstName +
-                              (string.IsNullOrWhiteSpace(wp.MiddleName) ? string.Empty : " " + wp.MiddleName) +
-                              " " + wp.LastName +
-                              (string.IsNullOrWhiteSpace(wp.SecondLastName) ? string.Empty : " " + wp.SecondLastName),
-                          Email = u.Email,
-                          Type = nameof(UserType.Worker),
-                          ApprovedToWork = wp.ApprovedToWork
-                      };
+        var workers = BuildWorkerSearchQuery(workerPredicate);
 
         var candidates = from c in context.Candidates.Where(candidatePredicate)
                          select new ApplicantSearchResultModel
@@ -1242,11 +1220,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var searchLower = searchTerm.ToLower();
         var isNumericSearch = long.TryParse(searchTerm, out var numberId);
 
-        var existingApplicants = context.RequestApplicant.Where(ra => ra.RequestId == requestId);
-        var bookedWorkers = context.WorkerRequest.Where(wr => wr.RequestId == requestId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
+        var existingApplicants = context.RequestApplicants.Where(ra => ra.RequestId == requestId);
+        var bookedWorkers = context.WorkerRequests.Where(wr => wr.RequestId == requestId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
 
         var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
-            wp => !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id) && !bookedWorkers.Any(wr => wr.WorkerId == wp.WorkerId));
+            wp => !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id) && !bookedWorkers.Any(wr => wr.WorkerProfileId == wp.Id));
         var candidatePredicate = BuildCandidateSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
             c => !existingApplicants.Any(ra => ra.CandidateId == c.Id));
 
@@ -1262,10 +1240,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
         var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
             wp => !existingRunners.Any(r => r.WorkerProfileId == wp.Id));
-        var candidatePredicate = BuildCandidateSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
-            c => !existingRunners.Any(r => r.CandidateId == c.Id));
 
-        return SearchWorkersAndCandidates(workerPredicate, candidatePredicate);
+        return SearchWorkers(workerPredicate);
     }
 
     public async Task<RequestComission> GetRequestComission(Guid requestId) => await context.RequestComissions.FirstOrDefaultAsync(rc => rc.RequestId == requestId);
@@ -1274,14 +1250,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds)
     {
-        var companyProfiles = context.CompanyProfile.Where(cp => agencyIds.Contains(cp.AgencyId));
-        var query = from r in context.Request
-                    join cp in companyProfiles on r.CompanyId equals cp.CompanyId
+        var query = from r in context.Requests
+                    where agencyIds.Contains(r.CompanyProfile.AgencyId)
                     select new CompanyProfileListModel
                     {
-                        Id = cp.Id,
-                        CompanyId = cp.CompanyId,
-                        FullName = cp.FullName,
+                        Id = r.CompanyProfileId,
+                        CompanyId = r.CompanyProfile.CompanyId,
+                        FullName = r.CompanyProfile.FullName,
                     };
         var result = await query.Distinct().OrderBy(q => q.FullName).ToListAsync();
         return result;
@@ -1289,13 +1264,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<IEnumerable<Common.Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids)
     {
-        var requests = context.Request.Where(r => ids.Contains(r.Id));
+        var requests = context.Requests.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();
     }
 
     public async Task<bool> ExistsRequestByNumber(int requestId)
     {
-        var result = await context.Request.AnyAsync(r => r.NumberId == requestId);
+        var result = await context.Requests.AnyAsync(r => r.NumberId == requestId);
         return result;
     }
 }

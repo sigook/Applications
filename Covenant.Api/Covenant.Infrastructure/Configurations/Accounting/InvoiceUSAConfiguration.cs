@@ -8,15 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Accounting
     {
         public void Configure(EntityTypeBuilder<InvoiceUSA> builder)
         {
-            builder
-                .HasMany(e => e.Discounts)
-                .WithOne(t => t.InvoiceUSA)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(e => e.Items)
-                .WithOne(t => t.InvoiceUSA)
-                .OnDelete(DeleteBehavior.Cascade);
-
+            builder.ToTable("InvoicesUSA");
             builder.Property(i => i.NumberId).ValueGeneratedOnAdd();
             builder.HasIndex(i => i.InvoiceNumber).IsUnique();
             builder.Property(i => i.InvoiceNumber).IsRequired();

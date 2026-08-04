@@ -10,7 +10,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
+	  <PackageReference Include="Azure.Messaging.ServiceBus" />
+	  <PackageReference Include="ClosedXML" />
+	  <PackageReference Include="CsvHelper" />
+	  <PackageReference Include="FluentValidation" />
+	  <PackageReference Include="GeoCoordinate.NetCore" />
+	  <PackageReference Include="MediatR" />
+	  <PackageReference Include="Microsoft.ApplicationInsights" />
 	</ItemGroup>
 
 	<ItemGroup>

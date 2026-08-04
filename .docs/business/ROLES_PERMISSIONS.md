@@ -84,7 +84,7 @@ representative it already had.
 
 ## User creation
 
-Only `admin` and `superadmin` create agency users (`POST api/AgencyPersonnel`, Policy `Accounting`).
+Only `admin` and `superadmin` create agency users (`POST api/agency/personnel`, Policy `Accounting`).
 
 The role is chosen at creation time and **validated server-side** against what the caller is allowed
 to assign:
@@ -94,7 +94,7 @@ to assign:
 | `admin` | admin, recruiting, sales |
 | `superadmin` | superadmin, admin, recruiting, sales |
 
-`GET api/AgencyPersonnel/Roles` returns that set for the current caller, and the `POST` rejects
+`GET api/agency/personnel/Roles` returns that set for the current caller, and the `POST` rejects
 anything outside it. Hiding a role from the dropdown is not a defense — the check is the defense.
 
 If the email already belongs to an existing user (adding them to a second agency), the submitted role

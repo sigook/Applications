@@ -119,24 +119,24 @@
   </resheader>
   <data name="GetNextInvoiceNumber" xml:space="preserve">
     <value>
-            WITH minimum AS (SELECT coalesce(min(I."InvoiceNumber"),1) "StartFrom" FROM "Invoice" I ),
+            WITH minimum AS (SELECT coalesce(min(I."InvoiceNumber"),1) "StartFrom" FROM "Invoices" I ),
             maximum AS (SELECT (coalesce(max(I2."InvoiceNumber")+1,(SELECT "StartFrom" FROM minimum))) "StopIn"
-            FROM "Invoice" I2)
+            FROM "Invoices" I2)
             SELECT series AS "NextNumber"
             FROM generate_series((SELECT "StartFrom" FROM minimum), (SELECT "StopIn" FROM maximum), 1) series
-            LEFT JOIN "Invoice" ON series = "InvoiceNumber"
+            LEFT JOIN "Invoices" ON series = "InvoiceNumber"
             WHERE "InvoiceNumber" IS NULL
             ORDER BY "NextNumber" LIMIT 1
         </value>
   </data>
   <data name="GetNextInvoiceUSANumber" xml:space="preserve">
     <value>
-            WITH minimum AS (SELECT coalesce(min(I."InvoiceNumberId"),1) "StartFrom" FROM "InvoiceUSA" I ),
+            WITH minimum AS (SELECT coalesce(min(I."InvoiceNumberId"),1) "StartFrom" FROM "InvoicesUSA" I ),
             maximum AS (SELECT (coalesce(max(I2."InvoiceNumberId")+1,(SELECT "StartFrom" FROM minimum))) "StopIn"
-            FROM "InvoiceUSA" I2)
+            FROM "InvoicesUSA" I2)
             SELECT series AS "NextNumber"
             FROM generate_series((SELECT "StartFrom" FROM minimum), (SELECT "StopIn" FROM maximum), 1) series
-            LEFT JOIN "InvoiceUSA" ON series = "InvoiceNumberId"
+            LEFT JOIN "InvoicesUSA" ON series = "InvoiceNumberId"
             WHERE "InvoiceNumberId" IS NULL
             ORDER BY "NextNumber" LIMIT 1
         </value>
@@ -146,14 +146,14 @@
             WITH var AS ( SELECT @limit Maximum,  (SELECT CASE
             WHEN max("UNI"."Max") IS NULL THEN 1
             ELSE max("UNI"."Max") END
-            FROM (SELECT PMA."PayStubNumberId" "Max" FROM "PayStub" PMA
+            FROM (SELECT PMA."PayStubNumberId" "Max" FROM "PayStubs" PMA
             UNION ALL
-            SELECT SPN."PayrollNumber"::BIGINT "Max" FROM "SkipPayrollNumber" SPN) "UNI" ) Finish)
+            SELECT SPN."PayrollNumber"::BIGINT "Max" FROM "SkipPayrollNumbers" SPN) "UNI" ) Finish)
             SELECT series as "NextNumber" FROM generate_series(
             (1),
             (SELECT Finish + Maximum from var),1) series
-            LEFT JOIN "PayStub" P ON series = P."PayStubNumberId"
-            WHERE P."PayStubNumberId" IS NULL AND series NOT IN (SELECT "SkipPayrollNumber"."PayrollNumber"::BIGINT FROM "SkipPayrollNumber")
+            LEFT JOIN "PayStubs" P ON series = P."PayStubNumberId"
+            WHERE P."PayStubNumberId" IS NULL AND series NOT IN (SELECT "SkipPayrollNumbers"."PayrollNumber"::BIGINT FROM "SkipPayrollNumbers")
             ORDER BY "NextNumber" LIMIT (SELECT Maximum from var)
         </value>
   </data>

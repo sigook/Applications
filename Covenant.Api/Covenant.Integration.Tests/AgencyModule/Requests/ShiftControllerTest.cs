@@ -66,7 +66,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await _client.PutAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Request entity = await context.Request.SingleAsync(c => c.Id == Data.FakeRequest.Id);
+            Request entity = await context.Requests.SingleAsync(c => c.Id == Data.FakeRequest.Id);
             Assert.Equal(model.Monday, entity.Shift?.Monday);
             Assert.Equal(model.MondayStart, entity.Shift?.MondayStart);
             Assert.Equal(model.MondayFinish, entity.Shift?.MondayFinish);
@@ -118,9 +118,9 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Agencies.Add(FakeData.FakeAgency(Data.FakeRequest.AgencyId));
-                context.CompanyProfile.Add(Data.FakeCompany);
-                context.Request.Add(Data.FakeRequest);
+                context.Agencies.Add(FakeData.FakeAgency(Data.FakeCompany.AgencyId));
+                context.CompanyProfiles.Add(Data.FakeCompany);
+                context.Requests.Add(Data.FakeRequest);
                 context.SaveChanges();
             }
         }
@@ -152,7 +152,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             static Data()
             {
                 FakeCompany.AddJobPositionRate(CompanyProfileJobPositionRate.Create(FakeCompany.Id, "Labor", 1, 1).Value);
-                FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.CompanyId, FakeCompany.JobPositionRates.First().Id);
+                FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
             }
         }
     }

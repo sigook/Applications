@@ -46,7 +46,6 @@ namespace Covenant.Integration.Tests.AgencyModule
                 services.AddSingleton(new Mock<ITimeService>().Object);
                 services.AddSingleton<AgencyIdFilter>();
                 services.AddSingleton(new Mock<IDefaultLogoProvider>().Object);
-                services.AddAutoMapper(Assembly.Load("Covenant.Api"));
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
