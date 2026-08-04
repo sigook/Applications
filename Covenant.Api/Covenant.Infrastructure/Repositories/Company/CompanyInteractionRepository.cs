@@ -40,7 +40,7 @@ public class CompanyInteractionRepository(CovenantContext context) : ICompanyInt
         context.CompanyInteractions.FirstOrDefaultAsync(expression);
 
     public Task<bool> CompanyProfileBelongsToAgency(Guid companyProfileId, Guid agencyId) =>
-        context.CompanyProfile.AnyAsync(p => p.Id == companyProfileId && p.AgencyId == agencyId);
+        context.CompanyProfiles.AnyAsync(p => p.Id == companyProfileId && p.AgencyId == agencyId);
 
     public async Task Create(CompanyInteraction interaction) => await context.CompanyInteractions.AddAsync(interaction);
 

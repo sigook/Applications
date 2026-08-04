@@ -41,7 +41,7 @@ public class DealRepository(CovenantContext context) : IDealRepository
         context.Deals.FirstOrDefaultAsync(expression);
 
     public Task<bool> CompanyProfileBelongsToAgency(Guid companyProfileId, Guid agencyId) =>
-        context.CompanyProfile.AnyAsync(p => p.Id == companyProfileId && p.AgencyId == agencyId);
+        context.CompanyProfiles.AnyAsync(p => p.Id == companyProfileId && p.AgencyId == agencyId);
 
     public async Task Create(Deal deal) => await context.Deals.AddAsync(deal);
 
