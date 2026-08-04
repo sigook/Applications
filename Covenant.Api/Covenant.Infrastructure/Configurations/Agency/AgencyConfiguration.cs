@@ -7,7 +7,7 @@ public class AgencyConfiguration : IEntityTypeConfiguration<Common.Entities.Agen
 {
     public void Configure(EntityTypeBuilder<Common.Entities.Agency.Agency> builder)
     {
-        builder.ToTable("Agency");
+        builder.ToTable("Agencies");
         builder.Property(a => a.NumberId).ValueGeneratedOnAdd();
         
         // Configure self-referencing relationship for Agency Parent

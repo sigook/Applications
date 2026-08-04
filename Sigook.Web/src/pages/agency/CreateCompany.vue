@@ -12,7 +12,7 @@
               @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
           </div>
         </div>
-        <div v-if="isAccountingManager" class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div v-if="isAdmin" class="col-sm-12 col-md-12 col-lg-12 col-padding">
           <b-field>
             <b-checkbox v-model="company.requiresPermissionToSeeRequests">
               Requires permission to see requests?
@@ -137,7 +137,7 @@ import UploadImage from '@/components/PreviewImage.vue';
 import PhoneInput from '@/components/PhoneInput.vue';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { usePubSub } from '@/composables/usePubSub';
 import { getDialog } from '@/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/api/catalogApi';
@@ -148,7 +148,7 @@ import { useModuleBase } from '@/composables/useModuleBase';
 const route = useRoute();
 const router = useRouter();
 const { companyBase } = useModuleBase();
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 const pubSub = usePubSub();
 
 const numericExt = yup

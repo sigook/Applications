@@ -10,7 +10,7 @@
       </h2>
     </div>
     <div>
-      <export :url="'/api/AgencyCandidate/File'" :params="serverParams" :fileName="'Candidates'"
+      <export :url="'/api/agency/candidates/File'" :params="serverParams" :fileName="'Candidates'"
         @onDataLoading="(value) => isLoading = value">
         <template v-slot:actions>
           <b-button @click="showCreateCandidate = true" icon-left="plus">{{ 'Create' }}</b-button>

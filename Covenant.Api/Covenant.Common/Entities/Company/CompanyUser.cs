@@ -9,9 +9,9 @@ namespace Covenant.Common.Entities.Company
         {
         }
 
-        public CompanyUser(Guid companyId, User user)
+        public CompanyUser(Guid companyProfileId, User user)
         {
-            CompanyId = companyId;
+            CompanyProfileId = companyProfileId;
             User = user ?? throw new ArgumentNullException(nameof(user));
             UserId = user.Id;
             Id = user.Id;
@@ -22,8 +22,8 @@ namespace Covenant.Common.Entities.Company
         public string Lastname { get; set; }
         public string Position { get; set; }
         public string MobileNumber { get; set; }
-        public Guid CompanyId { get; private set; }
-        public User Company { get; private set; }
+        public Guid CompanyProfileId { get; private set; }
+        public CompanyProfile CompanyProfile { get; private set; }
         public Guid UserId { get; private set; }
         public User User { get; private set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;

@@ -24,9 +24,7 @@ public static class CovenantConstants
 
         public static readonly string[] SalesAccess = [SuperAdmin, Admin, Sales];
 
-        public static readonly string[] Accounting = [SuperAdmin, Admin];
-
-        public static readonly string[] Administration = [SuperAdmin, Admin];
+        public static readonly string[] AdminAccess = [SuperAdmin, Admin];
 
         public static readonly string[] AgencyAssignable = [Admin, Recruiting, Sales];
 
@@ -35,93 +33,21 @@ public static class CovenantConstants
 
     public static class Validation
     {
-        public const long MaximumFileSize = 11000000;
-        public const int FullNameMinimumLength = 2;
-        public const int FullNameMaximumLength = 60;
-        public const int BusinessNameMinimumLength = 2;
-        public const int BusinessNameMaximumLength = 50;
-        public const int ContactInformationMaximum = 10;
-
-        public const int HstNumberMinimumLength = 15;
-        public const int HstNumberMaximumLength = 20;
-        public const int BusinessNumberMinimumLength = 9;
-        public const int BusinessNumberMaximumLength = 15;
-
-        public const int WsibMaximumLength = 60;
-        public const int PasswordMinimumLength = 6;
-        public const int PasswordMaximumLength = 100;
-        public const int MobilePhoneMinimumLength = 10;
-        public const int MobilePhoneMaximumLength = 22;
-        public const int PhoneMinimumLength = 6;
-        public const int PhoneMaximumLength = 22;
-        public const int PhoneExtMinimum = 0;
-        public const int PhoneExtMaximum = 99999999;
-        public const int TitleMinimumLength = 1;
-        public const int TitleMaximumLength = 50;
         public const int FirstNameMinLength = 1;
         public const int FirstNameMaxLength = 20;
-        public const int MiddleNameMinimumLength = 1;
-        public const int MiddleNameMaximumLength = 20;
         public const int LastNameMinLength = 2;
         public const int LastNameMaxLength = 20;
-        public const int PositionMinimumLength = 3;
-        public const int PositionMaximumLength = 30;
 
         public const int MaximumLengthRequirements = 50000;
-        public const int MinimumLengthDescription = 5;
-        public const int MaximumLengthDescription = 5000;
-        public const int MaximumLengthJobTitle = 500;
-        public const int MaximumLengthJobCosting = 100;
-        public const int MaximumIncentive = 720;
-        public const int MaximumLengthIncentiveDescription = 5000;
-        public const int MinimumDurationBreakMinutes = 0;
-        public const int MaximumDurationBreakMinutes = 60;
-        public const int MinimumHourPrice = 1;
-        public const int MaximumHourPrice = 9999999;
-        public const double MaximumFirstDay = 365;
-
-        public const double MaximumHoursWeekRequest = 48D;
-        public const int MaximumLengthRepeat = 50;
-        public const double MinimumHoursDay = 1;
-
-        public const int MaximumWorkShiftTime = 365;
-        public const int MinimumWorkShiftTime = 1;
-
-        public const int ApprovedHoursMinimum = 0;
-        public const int ApprovedHoursMaximum = 24;
-        public const int CommentMaximum = 5000;
-
-        public const int CompanyMinLength = 2;
-        public const int CompanyMaxLength = 50;
-        public const int SupervisorMinLength = 2;
-        public const int SupervisorMaxLength = 50;
-        public const int DutiesMinLength = 2;
-        public const int DutiesMaxLength = 5000;
 
         public const int BirthdayMinimumAge = 18;
-        public const int SocialInsuranceMaxLength = 15;
-        public const int SocialInsuranceMinLength = 9;
         public const int HealthProblemMaxLength = 50;
         public const int ContactEmergencyMaxLength = 20;
         public const int ContactEmergencyMinLength = 2;
-        public const int JobExperiencesLessThanOrEqualTo = 30;
-
-        public const decimal RateMinimumLength = 0.1m;
-        public const decimal RateMaximumLength = 50;
-        public const double MaximumMissingHours = 6;
-
-        public const string PhonePattern = @"\s*(?:\+?(\d{1,3}))?([-. (]*(\d{3})[-. )]*)?((\d{3})[-. ]*(\d{2,4})(?:[-.x ]*(\d+))?)\s*";
     }
 
     public static class PublicHolidays
     {
-        public const int TwentyDays = 20;
         public const double LimitForWorkerWorkedHours = 44 * 4;
-    }
-
-    public static class Country
-    {
-        public const string CanadaCode = "CA";
-        public const string UnitedStatesCode = "US";
     }
 }

@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Request
     {
         public void Configure(EntityTypeBuilder<TimeSheetTotalPayroll> builder)
         {
-            builder.ToTable("TimeSheetTotalPayroll");
+            builder.ToTable("TimeSheetTotalPayrolls");
             builder.HasKey(k => k.Id);
             builder.HasIndex(i => i.TimeSheetId).IsUnique();
         }

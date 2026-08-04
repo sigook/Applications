@@ -306,7 +306,6 @@ export interface AgencyInvoiceListResponse {
 // Mirrors backend CreateInvoiceModel.
 export interface CreateAgencyInvoiceModel {
   companyProfileId: string;
-  companyId: string;
   invoiceDate?: string | null;
   email?: string;
   requestIds: string[];

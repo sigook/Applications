@@ -44,12 +44,13 @@ import { showAlertError } from "@/utils/toast";
 import roles from "@/security/roles";
 import { agencyCommentWorker } from "@/api/agencyWorkerApi";
 import { companyCommentWorker } from "@/api/companyApi";
+import type { WorkerCommentCreateModel } from '@/types/worker';
 import iconAgency from '@/assets/images/icon_agency.svg';
 import DialogComment from "./DialogWorkerComment.vue";
 import Pagination from "./Paginator.vue";
 
 const props = defineProps<{
-  userId?: any;
+  workerProfileId?: string;
   data?: any;
   sizeComments?: number;
   onlyView?: boolean;
@@ -99,9 +100,9 @@ function comment() {
   }
 }
 
-function sendComment(commentFn: (userId: any, c: any) => Promise<any>) {
+function sendComment(commentFn: (workerProfileId: string, c: WorkerCommentCreateModel) => Promise<void>) {
   isLoading.value = true;
-  commentFn(props.userId, commentary.value)
+  commentFn(props.workerProfileId, commentary.value)
     .then(() => {
       emit('newComment', true);
       isLoading.value = false;

@@ -129,7 +129,7 @@ public class PayStubsController(
     {
         var file = await payStubService.GetPayStubPdf(payStubId);
         if (file is null) return NotFound();
-        return PhysicalFile(file.PdfPath, MediaTypeNames.Application.Pdf, file.FileName);
+        return File(file.Content, MediaTypeNames.Application.Pdf, file.FileName);
     }
 
     /// <summary>Generates the pay stub PDF and emails it to the worker.</summary>

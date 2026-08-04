@@ -340,20 +340,20 @@ public class AgencyService : IAgencyService
         return Result.Ok();
     }
 
-    public async Task<Result<Guid>> BookWorker(Guid requestId, Guid workerId, AgencyBookWorkerModel model)
+    public async Task<Result<Guid>> BookWorker(Guid requestId, Guid workerProfileId, AgencyBookWorkerModel model)
     {
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null) return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
-        var workerProfile = await GetWorkerProfile(workerId, requestId);
+        var workerProfile = await GetWorkerProfile(workerProfileId, requestId);
         if (!workerProfile) return Result.Fail<Guid>(workerProfile.Errors);
         var createdBy = identityServerService.GetNickname();
-        var result = request.AddWorker(workerId, model.StartWorking ?? timeService.GetCurrentDateTime().Date, createdBy);
+        var result = request.AddWorker(workerProfileId, model.StartWorking ?? timeService.GetCurrentDateTime().Date, createdBy);
         if (!result) return result;
         await requestRepository.Update(request);
-        var applicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == workerProfile.Value.Id);
+        var applicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == workerProfileId);
         if (applicant != null) requestRepository.Delete(applicant);
         await requestRepository.SaveChangesAsync();
-        var data = await notificationDataRepository.GetWorkerData(requestId, workerId, NotificationType.WorkerHasBeenBooked.Id);
+        var data = await notificationDataRepository.GetWorkerData(requestId, workerProfileId, NotificationType.WorkerHasBeenBooked.Id);
         if (data != null && data.EmailNotification)
         {
             var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnWorkerBook/WorkerTemplate.cshtml", data);
@@ -382,20 +382,20 @@ public class AgencyService : IAgencyService
         return result;
     }
 
-    private async Task<Result<WorkerProfile>> GetWorkerProfile(Guid workerId, Guid requesId)
+    private async Task<Result<WorkerProfile>> GetWorkerProfile(Guid workerProfileId, Guid requesId)
     {
-        var isShiftAvailableToBook = await IsShiftAvailableToBook(workerId, requesId);
+        var isShiftAvailableToBook = await IsShiftAvailableToBook(workerProfileId, requesId);
         if (!isShiftAvailableToBook) return Result.Fail<WorkerProfile>(isShiftAvailableToBook.Errors);
-        var workerProfile = await workerRepository.GetProfile(wp => wp.WorkerId == workerId);
+        var workerProfile = await workerRepository.GetProfile(wp => wp.Id == workerProfileId);
         if (workerProfile is null) return Result.Fail<WorkerProfile>(ApiResources.WorkerNotFound);
         var canBeBook = workerProfile.CanBeBook(timeService.GetCurrentDateTime());
         return !canBeBook ? Result.Fail<WorkerProfile>(canBeBook.Errors) : Result.Ok(workerProfile);
     }
 
-    private async Task<Result> IsShiftAvailableToBook(Guid workerId, Guid requestId)
+    private async Task<Result> IsShiftAvailableToBook(Guid workerProfileId, Guid requestId)
     {
         var shiftNewOrder = await requestRepository.GetRequestShift(requestId);
-        var activeShifts = (await workerRequestRepository.GetWorkerRequestsByWorkerId(workerId)).Select(wr => wr.Request.Shift);
+        var activeShifts = (await workerRequestRepository.GetWorkerRequestsByWorkerProfileId(workerProfileId)).Select(wr => wr.Request.Shift);
         var isTimeUsed = false;
         if (shiftNewOrder.Sunday.HasValue)
         {

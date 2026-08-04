@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Documents.Extensions;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.Subcontractor;
 using Covenant.Common.Utils.Extensions;

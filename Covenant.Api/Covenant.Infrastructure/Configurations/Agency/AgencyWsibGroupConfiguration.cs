@@ -8,6 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Agency
     {
         public void Configure(EntityTypeBuilder<AgencyWsibGroup> builder)
         {
+            builder.ToTable("AgencyWsibGroups");
             builder.HasKey(c => new
             {
                 c.AgencyId,

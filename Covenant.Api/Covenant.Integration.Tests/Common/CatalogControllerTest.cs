@@ -32,7 +32,6 @@ public class CatalogControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
             services.AddDbContext<CovenantContext>(c =>
                 c.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
             services.AddSingleton<ICatalogRepository, CatalogRepository>();
-            services.AddAutoMapper(Assembly.Load("Covenant.Api"));
             services.AddResponseCaching();
         }
 
@@ -52,8 +51,8 @@ public class CatalogControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            context.Country.AddRange(Canada, UnitedStates);
-            context.Province.AddRange(Ontario, Florida);
+            context.Countries.AddRange(Canada, UnitedStates);
+            context.Provinces.AddRange(Ontario, Florida);
             context.SaveChanges();
         }
     }

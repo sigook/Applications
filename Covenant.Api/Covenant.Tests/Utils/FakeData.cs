@@ -28,17 +28,17 @@ namespace Covenant.Tests.Utils
         public static Location FakeLocation() => new Location { City = new City { Province = new Province { Country = new Country() } } };
 
         public static Covenant.Common.Entities.Request.Request FakeRequest(Guid agencyId = default,
-            Guid companyId = default, Guid jobPositionRateId = default,
+            Guid companyProfileId = default, Guid jobPositionRateId = default,
             Location location = default, DateTime startAt = default,
             DateTime? finishAt = null, int workersQuantity = 1,
             DurationTerm durationTerm = DurationTerm.LongTerm)
         {
             agencyId = agencyId == default ? Guid.NewGuid() : agencyId;
-            companyId = companyId == default ? Guid.NewGuid() : companyId;
+            companyProfileId = companyProfileId == default ? Guid.NewGuid() : companyProfileId;
             jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
             location = location ?? FakeLocation();
             startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-            return Covenant.Common.Entities.Request.Request.AgencyCreateRequest(agencyId, companyId, location, startAt, jobPositionRateId, finishAt,
+            return Covenant.Common.Entities.Request.Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
                 workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
         }
     }

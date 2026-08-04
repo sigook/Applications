@@ -100,7 +100,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 var workerProfileId = await response.Content.ReadFromJsonAsync<Guid>();
                 var context = _factory.Services.GetRequiredService<CovenantContext>();
-                var detail = await context.WorkerProfile.FindAsync(workerProfileId);
+                var detail = await context.WorkerProfiles.FindAsync(workerProfileId);
                 Assert.NotNull(detail);
                 Assert.Equal(model.FirstName, detail.FirstName);
                 Assert.Equal(model.LastName, detail.LastName);
@@ -153,7 +153,6 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                 services.AddSingleton<INotificationRepository, NotificationRepository>();
                 services.AddSingleton<IWorkerService, WorkerService>();
                 services.AddSingleton(teamNotification.Object);
-                services.AddAutoMapper(typeof(Startup).Assembly);
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
@@ -169,12 +168,12 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
 
-                context.Gender.Add(FakeGender);
-                context.City.Add(FakeCity);
-                context.Availability.Add(FakeAvailability);
-                context.AvailabilityTime.Add(FakeAvailabilityTime);
-                context.Day.Add(FakeDay);
-                context.Lift.Add(FakeLift);
+                context.Genders.Add(FakeGender);
+                context.Cities.Add(FakeCity);
+                context.Availabilities.Add(FakeAvailability);
+                context.AvailabilityTimes.Add(FakeAvailabilityTime);
+                context.Days.Add(FakeDay);
+                context.Lifts.Add(FakeLift);
 
                 var agencyUser = new User(CvnEmail.Create("a@agency.com").Value, Guid.NewGuid());
                 var agency = new Covenant.Common.Entities.Agency.Agency("", "")

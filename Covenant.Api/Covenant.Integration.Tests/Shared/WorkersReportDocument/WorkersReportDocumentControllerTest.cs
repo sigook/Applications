@@ -97,7 +97,7 @@ namespace Covenant.Integration.Tests.Shared.WorkersReportDocument
             workerProfile.PatchBasicInformation(basicInformation.Object);
             workerProfile.PatchSinInformation(sinInformation.Object);
             workerProfile.PatchContactInformation(contactInformation.Object);
-            var workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(workerProfile.WorkerId, Guid.Parse("057d28b0-7d09-4e8e-aca4-a22a97943770"));
+            var workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(workerProfile.Id, Guid.Parse("057d28b0-7d09-4e8e-aca4-a22a97943770"));
             workerRequest.UpdateStartWorking(DateTime.Now);
             context.Add(workerProfile);
             context.Add(workerRequest);

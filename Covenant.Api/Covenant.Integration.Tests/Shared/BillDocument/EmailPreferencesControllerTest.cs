@@ -36,7 +36,7 @@ namespace Covenant.Integration.Tests.Shared.BillDocument
             });
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Assert.True(await context.UserNotificationType.AnyAsync());
+            Assert.True(await context.UserNotificationTypes.AnyAsync());
         }
 
         public class Startup
@@ -61,8 +61,8 @@ namespace Covenant.Integration.Tests.Shared.BillDocument
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.User.Add(FakeUser);
-                context.NotificationType.Add(NotificationType.NewRequestNotifyWorker);
+                context.Users.Add(FakeUser);
+                context.NotificationTypes.Add(NotificationType.NewRequestNotifyWorker);
                 context.SaveChanges();
             }
         }

@@ -3,7 +3,6 @@ namespace Covenant.Common.Models.Accounting;
 public class CreateInvoiceModel
 {
     public Guid CompanyProfileId { get; set; }
-    public Guid CompanyId { get; set; }
     public DateTime? InvoiceDate { get; set; }
     public string Email { get; set; }
     public IEnumerable<Guid> RequestIds { get; set; } = [];

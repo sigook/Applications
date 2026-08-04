@@ -26,9 +26,9 @@ namespace Covenant.Infrastructure.Services
 
         public async Task DeleteFile(Guid documentId)
         {
-            var document = await context.CovenantFile.FirstOrDefaultAsync(cf => cf.Id == documentId);
+            var document = await context.CovenantFiles.FirstOrDefaultAsync(cf => cf.Id == documentId);
             await filesContainer.DeleteFileIfExists(document.FileName);
-            context.CovenantFile.Remove(document);
+            context.CovenantFiles.Remove(document);
             await context.SaveChangesAsync();
         }
     }

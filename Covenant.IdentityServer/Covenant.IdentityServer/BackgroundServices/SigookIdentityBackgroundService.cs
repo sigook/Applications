@@ -38,6 +38,12 @@ public class SigookIdentityBackgroundService : BackgroundService
     private async Task ConfigureMigrations()
     {
         await using var scope = serviceProvider.CreateAsyncScope();
+        var myKeysContext = scope.ServiceProvider.GetRequiredService<MyKeysContext>();
+        if ((await myKeysContext.Database.GetPendingMigrationsAsync()).Any())
+        {
+            await myKeysContext.Database.MigrateAsync();
+        }
+
         var covenantContext = scope.ServiceProvider.GetRequiredService<CovenantContext>();
         if ((await covenantContext.Database.GetPendingMigrationsAsync()).Any())
         {

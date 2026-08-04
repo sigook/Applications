@@ -181,7 +181,7 @@ function confirmDelete(worker: any) {
 function onRejectWorker(comments: string) {
   modalRejectWorker.value = false;
   isLoading.value = true;
-  rejectCompanyRequestWorker(serverParams.requestId, currentWorker.value.workerId, { comments })
+  rejectCompanyRequestWorker(serverParams.requestId, currentWorker.value.workerProfileId, { comments })
     .then(() => {
       isLoading.value = false;
       getWorkers();

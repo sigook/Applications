@@ -32,7 +32,7 @@ namespace Covenant.Common.Models.Request
         public DateTime? CreatedAtTo { get; set; }
         public decimal? RateFrom { get; set; }
         public decimal? RateTo { get; set; }
-        public Guid? CompanyId { get; set; }
+        public Guid? CompanyProfileId { get; set; }
         public Guid? AgencyId { get; set; }
         public string Filter { get; set; }
         public Guid? SalesPersonnelId { get; set; }

@@ -26,8 +26,8 @@ export function getWorkersReportDocument(requestId: string): Promise<Blob> {
 }
 
 // Job positions hours worked report (data, not blob)
-export function getJobPositionsHoursWorked(filter: AgencyReportFilter & { companyId: string }): Promise<AgencyCompanyJobPosition[]> {
-  return api.get<AgencyCompanyJobPosition[]>(`/api/agency/accounting/reports/${filter.companyId}/job-positions`, { params: { ...filter } });
+export function getJobPositionsHoursWorked(filter: AgencyReportFilter & { companyProfileId: string }): Promise<AgencyCompanyJobPosition[]> {
+  return api.get<AgencyCompanyJobPosition[]>(`/api/agency/accounting/reports/${filter.companyProfileId}/job-positions`, { params: { ...filter } });
 }
 
 // Hours worked report (data, not blob)
@@ -43,6 +43,11 @@ export function getT4Report(filter: AgencyReportFilter): Promise<Blob> {
 // CRA payroll report (blob)
 export function getCraPayrollReport(filter: AgencyReportFilter): Promise<Blob> {
   return api.get<Blob>('/api/agency/accounting/reports/cra-payroll', { params: { ...filter }, responseType: 'blob' });
+}
+
+// Timesheets report (blob, USA agencies)
+export function getTimesheetsReport(filter: AgencyReportFilter): Promise<Blob> {
+  return api.get<Blob>('/api/agency/accounting/reports/timesheets/file', { params: { ...filter }, responseType: 'blob' });
 }
 
 // Payment report (data, not blob)

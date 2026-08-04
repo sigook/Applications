@@ -8,7 +8,7 @@ public class SkipPayrollNumberConfiguration : IEntityTypeConfiguration<SkipPayro
 {
     public void Configure(EntityTypeBuilder<SkipPayrollNumber> builder)
     {
-        builder.ToTable("SkipPayrollNumber");
+        builder.ToTable("SkipPayrollNumbers");
         builder.HasKey(e => e.Id);
     }
 }

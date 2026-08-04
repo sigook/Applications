@@ -7,11 +7,10 @@ namespace Covenant.Core.BL.Interfaces
     {
         Task<WeeklyBoardModel> GetWeeklyBoard(WeeklyBoardFilter filter);
         Task<RecruiterWeeklyBoardModel> GetRecruiterWeeklyBoard(WeeklyBoardFilter filter);
-        Task<IEnumerable<WeeklyBoardDispatchModel>> GetOrderDispatches(Guid requestId);
+        Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId);
         Task<Result> AssignRecruiters(AssignRecruitersModel model);
         Task<Result> UnassignRecruiter(Guid requestId, Guid recruiterId, DateTime workDate);
         Task<Result> MoveAssignment(MoveAssignmentModel model);
-        Task<Result> AddWorkers(DispatchWorkersModel model);
-        Task<Result> RemoveWorker(Guid requestId, DateTime workDate, Guid workerProfileId);
+        Task<Result> AddRunner(AddRunnerModel model);
     }
 }

@@ -29,23 +29,23 @@ POST api/WorkerProfile              (multipart/form-data, [AllowAnonymous])
 The agency can also register a worker on the worker's behalf:
 
 ```
-POST api/AgencyWorkerProfile        (multipart/form-data)
-→ AgencyWorkerProfileController.CreateWorkerProfile → WorkerService.CreateWorker
+POST api/agency/workers        (multipart/form-data)
+→ WorkersController.CreateWorkerProfile → WorkerService.CreateWorker
 ```
 
 ### Step 2: Agency reviews and approves
 
 ```
-GET api/AgencyWorkerProfile                     → AgencyWorkerProfileController.Get (paginated list, GetWorkerProfileFilter)
-GET api/AgencyWorkerProfile/{id}                → AgencyWorkerProfileController.GetById
-PUT api/AgencyWorkerProfile/{id}/ApprovedToWork → AgencyWorkerProfileController.UpdateApprovedToWork
+GET api/agency/workers                     → WorkersController.Get (paginated list, GetWorkerProfileFilter)
+GET api/agency/workers/{id}                → WorkersController.GetById
+PUT api/agency/workers/{id}/ApprovedToWork → WorkersController.UpdateApprovedToWork
 ```
 
 Approval calls the domain method `WorkerProfile.UpdateApprovedToWork(now)`, which enforces that required documents are complete. Related toggles on the same controller:
 
 ```
-PUT api/AgencyWorkerProfile/{id}/Dnu            (Do Not Use — WorkerProfile.UpdateDnu)
-PUT api/AgencyWorkerProfile/{id}/IsContractor
+PUT api/agency/workers/{id}/Dnu            (Do Not Use — WorkerProfile.UpdateDnu)
+PUT api/agency/workers/{id}/IsContractor
 ```
 
 ### Step 3: Worker uses the app
@@ -203,7 +203,7 @@ POST api/agency/accounting/PayStubs/generate        (body: worker profile ids)
 
 `PayStubService.Generate` iterates workers and calls `GeneratePayStubForWorker`, which aggregates the worker's pending timesheets and computes deductions via `TimesheetCalculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, year, workerProfileId)`.
 
-Deductions are **database table lookups** (CPP, Federal and Provincial tax ranges via `DeductionsRepository`, by earnings and year); EI is the only computed value (`totalEarnings × rates.EmploymentInsurance`). There are no calculator classes. Subcontractor tax-category overrides zero out deductions. Deduction tables are maintained through `api/Accounting/Deduction/Cpp`, `api/Accounting/Deduction/FederalTax`, `api/Accounting/Deduction/ProvincialTax` (`AccountingModule/Deduction/`).
+Deductions are **database table lookups** (CPP, Federal and Provincial tax ranges via `DeductionsRepository`, by earnings and year); EI is the only computed value (`totalEarnings × rates.EmploymentInsurance`). There are no calculator classes. Subcontractor tax-category overrides zero out deductions. Deduction tables are maintained through `api/Accounting/Deduction` (`DeductionsController`): both the CPP and the income tax tables are imported from the CRA PDFs dropped in the `cra-tables` blob container (blob trigger → `POST .../Cpp/Blob`, `POST .../Tax/Blob`), and one income tax PDF carries the federal and the provincial tables. See [PAYROLL_RULES](PAYROLL_RULES.md#tax-table-maintenance).
 
 Delivery and management:
 
@@ -247,21 +247,34 @@ DELETE api/agency/accounting/Invoices/{id}                  → IInvoiceService.
 
 ## 6. Runner Pipeline Flow
 
-A **Runner** is a Candidate or Worker actively submitted to a specific order (Request). The recruiter creates the runner, advances it through the recruiting pipeline and schedules interviews, until the client hires or rejects it. Runners live in a tab inside the order detail (next to Applicants/Workers).
+A **Runner** is a Worker actively submitted to a specific order (Request). Candidates cannot be runners — they must be converted to a worker first (`CandidateService.ConvertToWorker`).
+
+**`Request.UsesRunners`** (set when the order is created, default `true`) decides whether the order works with runners. When it is `false` the Runners tab is still visible but **read-only**, and the weekly board hides its "Add runner" button; `RunnerService` rejects create/status/interview on such an order. The recruiter creates the runner, advances it through the recruiting pipeline and schedules interviews, until the client hires or rejects it. Runners live in a tab inside the order detail (next to Applicants/Workers).
 
 Controller: `Controllers/Sigook/Agency/Requests/RunnersController.cs` (`[Authorize(Policy = Recruiting)]`) → `RunnerService`. Domain rules live in the `Runner` entity.
 
 ### Step 1: Recruiter adds a runner to the order
 
-The recruiter searches a Worker or Candidate and picks **Type** = `Active` (applied on their own) or `Passive` (sourced by a recruiter) — `RunnerType` enum. The search uses a dedicated runner-prospect endpoint that excludes people already runners on this request:
+The recruiter searches a Worker and picks **Type** = `Active` (applied on their own) or `Passive` (sourced by a recruiter) — `RunnerType` enum. The search uses a dedicated runner-prospect endpoint that returns **only workers** and excludes those already runners on this request:
 
 ```
 GET  api/agency/requests/{requestId}/Runners/Search?searchTerm=...   → IRequestRepository.SearchRunnerProspects
 POST api/agency/requests/{requestId}/Runners                         → RunnerService.CreateRunner
-     { "workerProfileId" | "candidateId", "type": 1 }
+     { "workerProfileId", "type": 1 }
 ```
 
-The runner is created with `Status = SentToClient` and an initial status-history entry (`previousStatus = null`). The same worker/candidate cannot be added twice on the same request (rejected by the `RunnerExists` guard).
+The runner is created with `Status = SentToClient` and an initial status-history entry (`previousStatus = null`). The same worker cannot be added twice on the same request (rejected by the `RunnerExists` guard).
+
+**Second entry point — the recruiting weekly board.** A recruiter can send a runner straight from their day card; the web reuses the same `CreateRunner.vue` modal:
+
+```
+POST   api/agency/recruiting/WeeklyBoard/runner   → WeeklyBoardService.AddRunner → IRunnerService.CreateRunner
+DELETE api/agency/requests/{requestId}/Runners/{id} → RunnerService.DeleteRunner   (shared with the Runners tab)
+```
+
+The board resolves the recruiter from the token, finds their `RequestRecruiter` assignment for that work day and stamps it on `Runner.RequestRecruiterId`, so the card can count and list its runners. Runners created from the order's Runners tab leave that FK null. Sending a runner also appends the request note `"{workerName} was sent"`.
+
+Each runner on a board card exposes the **same actions as the Runners tab** (change status, add interview, view history, delete) through the same modals, and shows its current status as a chip in front of the worker name. Deleting removes the runner with its status history and interviews.
 
 ### Step 2: Recruiter advances the status
 
@@ -273,7 +286,7 @@ PUT api/agency/requests/{requestId}/Runners/{id}/Status              → RunnerS
 - Any status can move to any other (no fixed order) **except** a `Hired` runner, which is terminal and rejects further changes.
 - Each change appends a row to the status history (previous → new, who, when, comments) — never overwrites.
 - Moving to `Hired` **requires** a `StartDate` (the date the runner would begin working); the transition is rejected without it.
-- Moving to `Hired` **requires the runner to be a worker** (`WorkerProfileId` set); a candidate-only runner is rejected — it must be converted to a worker first (`CandidateService.ConvertToWorker`). Otherwise the hire would never surface in attendance review (which is per worker). The web hides the `Hired` option and shows a warning for candidate runners.
+- Every runner is a worker (`WorkerProfileId` is required at creation), so a hire always surfaces in attendance review (which is per worker).
 
 **Pipeline states** (`Covenant.Common/Enums/RunnerStatus.cs`): `SentToClient(1)`, `InterviewScheduled(2)`, `InterviewRescheduled(3)`, `NoLongerAvailable(4)`, `NoShow(5)`, `WaitingForInterviewFeedback(6)`, `WaitingForFinalDecision(7)`, `Rejected(8)`, `InOnboardingProcess(9)`, `Hired(10)`.
 
@@ -309,7 +322,7 @@ GET api/agency/Notifications      → NotificationsController → NotificationSe
 ```
 
 - **Per-user:** only the recruiter who performed the hire sees it. The hire stamps `Runner.UpdatedBy` with the acting user's id (`User.GetUserId()`); the query filters by it (`Hired` is terminal, so `UpdatedBy` = the hirer). No nickname/`StatusHistory` involved.
-- **Scope:** excludes **Direct Hiring** orders (`Request.WorkerSalary` set) and candidate-only runners (only `WorkerProfileId` runners, since the punch card is per worker).
+- **Scope:** excludes **Direct Hiring** orders (`Request.WorkerSalary` set).
 - **3-day window:** the DB does a generous prefilter; `DayNumber = (today − StartDate).Days + 1` is computed in the service and is authoritative (kept only when `1..3`). This avoids a `timestamptz` timezone off-by-one between the window and the day count.
 - **Aggregated, multi-type:** a single endpoint returns `NotificationsModel` (a container with one list per notification kind — today only `WorkersToReview`). The web bell shows a per-type summary + count; clicking opens the **Attendance Review** page (`/recruiting/attendance-review`), and each row links to that order's **Punch Card** tab where the recruiter enters `0` to mark attendance.
 - **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for non admin/payroll/agency users (`useBillingAdmin`); the attendance `0` is entered by whoever may edit.

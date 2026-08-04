@@ -1,5 +1,4 @@
 ﻿using Asp.Versioning;
-using AutoMapper.EquivalencyExpression;
 using Azure.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Api.BackgroundServices;
@@ -130,7 +129,6 @@ builder.Services.AddConfigurations(builder.Configuration);
 builder.Services.AddClients(builder.Configuration);
 builder.Services.AddContainers(builder);
 builder.Services.AddAzureServiceBusConsumer(builder);
-builder.Services.AddAutoMapper(expr => expr.AddCollectionMappers(), Assembly.GetExecutingAssembly());
 builder.Services.AddLocalization();
 builder.Services.AddPolices();
 builder.Services.AddCors(opt => opt.AddPolicy("default", b => b.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));

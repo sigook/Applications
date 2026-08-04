@@ -21,13 +21,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.14.0" />
-		<PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="8.1.1" />
-		<PackageReference Include="GeoTimeZone" Version="6.1.0" />
-		<PackageReference Include="Microsoft.Graph" Version="5.71.0" />
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
-		<PackageReference Include="FirebaseAdmin" Version="3.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.11" />
+		<PackageReference Include="Azure.Identity" />
+		<PackageReference Include="Azure.Messaging.ServiceBus" />
+		<PackageReference Include="Azure.Storage.Blobs" />
+		<PackageReference Include="EFCore.BulkExtensions.PostgreSql" />
+		<PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" />
+		<PackageReference Include="MailKit" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<PackageReference Include="SendGrid" />
+		<PackageReference Include="GeoTimeZone" />
+		<PackageReference Include="Microsoft.Graph" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+		<PackageReference Include="FirebaseAdmin" />
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+		<PackageReference Include="PdfPig" />
 	</ItemGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

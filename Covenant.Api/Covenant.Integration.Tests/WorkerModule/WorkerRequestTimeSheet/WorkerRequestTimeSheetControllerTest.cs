@@ -51,7 +51,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
             response.EnsureSuccessStatusCode();
             var model = await response.Content.ReadFromJsonAsync<RegisterTimeSheetResultModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            Assert.NotNull(context.TimeSheet.Single(s => s.Id == model.TimeSheetId).ClockIn);
+            Assert.NotNull(context.TimeSheets.Single(s => s.Id == model.TimeSheetId).ClockIn);
         }
 
         [Fact]
@@ -138,11 +138,11 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.User.Add(Data.FakeUser);
-                context.WorkerProfile.Add(Data.FakeWorker);
-                context.Location.Add(Data.FakeLocation);
-                context.Request.Add(Data.Request);
-                context.WorkerRequest.Add(Data.FakeWorkerRequest);
+                context.Users.Add(Data.FakeUser);
+                context.WorkerProfiles.Add(Data.FakeWorker);
+                context.Locations.Add(Data.FakeLocation);
+                context.Requests.Add(Data.Request);
+                context.WorkerRequests.Add(Data.FakeWorkerRequest);
                 context.SaveChanges();
             }
         }
@@ -154,10 +154,10 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
             public static readonly User FakeUser = new User(CvnEmail.Create("user_user@mail.com").Value);
             internal static readonly WorkerProfile FakeWorker = new WorkerProfile(FakeUser, AgencyId);
             public static Location FakeLocation = FakeData.FakeLocation();
-            public static readonly Request Request = Request.AgencyCreateRequest(AgencyId, Guid.NewGuid(), FakeLocation, Now, Guid.NewGuid()).Value;
+            public static readonly Request Request = Request.AgencyCreateRequest(Guid.NewGuid(), FakeLocation, Now, Guid.NewGuid()).Value;
             internal static readonly double HoursDay2 = 2;
 
-            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeUser.Id, Request.Id);
+            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorker.Id, Request.Id);
             public static readonly TimeSheet Day1 = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, Now.AddDays(-2).Date).Value;
             public static readonly TimeSheet Day2 = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, Now.AddDays(-1).Date).Value;
 

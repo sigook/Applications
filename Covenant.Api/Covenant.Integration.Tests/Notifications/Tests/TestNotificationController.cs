@@ -72,7 +72,7 @@ namespace Covenant.Integration.Tests.Notifications.Tests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.NotificationType.AddRange(NotificationType.GetAll);
+                context.NotificationTypes.AddRange(NotificationType.GetAll);
                 context.SaveChanges();
             }
         }

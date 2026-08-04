@@ -129,21 +129,21 @@ export interface AgencyLocationDetail {
   isBilling?: boolean;
 }
 
-// Body used by AgencyCreatePersonnelModal.vue (POST /api/AgencyPersonnel)
+// Body used by AgencyCreatePersonnelModal.vue (POST /api/agency/personnel)
 export interface AgencyPersonnelCreateModel {
   name: string | null;
   email: string | null;
   role: string | null;
 }
 
-// Item returned by GET /api/AgencyPersonnel
+// Item returned by GET /api/agency/personnel
 export interface AgencyPersonnelListItem {
   id: string;
   name: string;
   email: string;
 }
 
-// Item returned by GET /api/PersonnelAgency. Mirrors backend PersonnelAgencyModel.
+// Item returned by GET /api/agency/personnel/Agencies. Mirrors backend PersonnelAgencyModel.
 export interface PersonnelAgencyItem {
   id: string;
   name: string;
@@ -197,7 +197,7 @@ export interface AgencyWorkerFilter {
   isSubcontractor?: boolean | null;
 }
 
-// Item returned by GET /api/AgencyWorkerProfile (paginated list)
+// Item returned by GET /api/agency/workers (paginated list)
 export interface AgencyWorkerListItem {
   id: string;
   fullName: string;
@@ -218,12 +218,7 @@ export interface AgencyWorkerDropdownItem {
   approvedToWork: boolean;
 }
 
-// Worker comment payload (POST /api/AgencyWorker/{id}/Comment)
-export interface AgencyWorkerCommentModel {
-  comment: string;
-  rate: number;
-}
-
+// Worker comment payload (POST /api/agency/workers/{id}/Comments)
 // Worker email update payload
 export interface UpdateWorkerEmailModel {
   newEmail: string;
@@ -277,7 +272,7 @@ export interface AgencyWorkerRequestHistoryItem {
   isDirectHiring: boolean;
   workerApprovedToWork?: string;
   status: string;
-  companyId: string;
+  companyProfileId: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -406,7 +401,7 @@ export interface AgencyRequestFilter {
   createdAtTo?: string | null;
   rateFrom?: number | string | null;
   rateTo?: number | string | null;
-  companyId?: string;
+  companyProfileId?: string;
   agencyId?: string;
   filter?: string;
   jobBoardIds?: string[];
@@ -515,6 +510,7 @@ export interface AgencyRequestDetail {
   displayRecruiters?: string;
   displayShift?: string;
   isAsap: boolean;
+  usesRunners: boolean;
   vaccinationRequired?: boolean | null;
   punchCardOptionEnabled: boolean;
   internalRequirements?: string;
@@ -538,6 +534,7 @@ export interface CreateAgencyRequestModel {
   internalRequirements?: string;
   responsibilities?: string;
   isAsap: boolean;
+  usesRunners: boolean;
   jobIsOnBranchOffice: boolean;
   anotherLocation?: LocationDetailModel | null;
   locationId?: string | null;
@@ -776,6 +773,11 @@ export interface NotePagination {
 // Response returned by POST /api/.../Note. Same shape as NoteModel / NoteItem.
 export type CreateNoteResponse = NoteItem;
 
+export interface NoteFormModel extends NoteModel {
+  createdAt?: string;
+  createdBy?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Notes callback payloads — used by ModalNotes and similar note-manager widgets
 // that receive CRUD callbacks as props. Two variants:
@@ -841,7 +843,7 @@ export interface AgencyReportFilter {
   isDescending?: boolean;
   startDate?: string;
   endDate?: string;
-  companyId?: string;
+  companyProfileId?: string;
   jobPositionRateId?: string;
   weekEnding?: string;
 }

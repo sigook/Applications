@@ -17,19 +17,6 @@ namespace Covenant.IdentityServer.Configuration
             return new List<ApiResource> { apiResource };
         }
 
-        public static IEnumerable<Client> GetClients()
-        {
-            return new List<Client>
-            {
-                DevelopmentConfiguration.Development,
-                ProductionSigookConfiguration.Sigook,
-                AndroidConfiguration.Android,
-                IosConfiguration.Ios,
-                ScheduleClient.Schedule,
-                AccountingConfiguration.Accounting
-            };
-        }
-
         public static IEnumerable<IdentityResource> GetIdentityResources()
         {
             var profile = new IdentityResources.OpenId();

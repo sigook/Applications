@@ -3,6 +3,7 @@ using Covenant.Common.Entities.Agency;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Request.Runners;
 using Covenant.Common.Models.Request.WeeklyBoard;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Request;
@@ -10,7 +11,12 @@ using Covenant.Core.BL.Interfaces;
 
 namespace Covenant.Core.BL.Services;
 
-public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRepository agencyRepository, IIdentityServerService identityServerService, ITimeService timeService) : IWeeklyBoardService
+public class WeeklyBoardService(
+    IRequestRepository requestRepository,
+    IRunnerService runnerService,
+    IAgencyRepository agencyRepository,
+    IIdentityServerService identityServerService,
+    ITimeService timeService) : IWeeklyBoardService
 {
     public async Task<WeeklyBoardModel> GetWeeklyBoard(WeeklyBoardFilter filter)
     {
@@ -24,7 +30,7 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
                 RecruiterId = g.Key.RecruiterId,
                 RecruiterName = g.Key.RecruiterName,
                 OrdersCount = g.Select(a => a.RequestId).Distinct().Count(),
-                WorkersSent = g.Sum(a => a.WorkersSent),
+                WorkersSent = g.Sum(a => a.RunnersSent),
                 Assignments = g.OrderBy(a => a.WorkDate).ThenBy(a => a.NumberId).ToList()
             })
             .OrderBy(r => r.RecruiterName)
@@ -35,7 +41,7 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
             WeekStart = filter.From.Date,
             WeekEnd = filter.To.Date,
             TotalAssignments = assignments.Count,
-            TotalWorkersSent = assignments.Sum(a => a.WorkersSent),
+            TotalWorkersSent = assignments.Sum(a => a.RunnersSent),
             Recruiters = recruiters
         };
     }
@@ -53,20 +59,20 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
 
         model.Assignments = assignments.OrderBy(a => a.WorkDate).ThenBy(a => a.NumberId).ToList();
         model.OrdersCount = assignments.Select(a => a.RequestId).Distinct().Count();
-        model.WorkersSent = assignments.Sum(a => a.WorkersSent);
+        model.WorkersSent = assignments.Sum(a => a.RunnersSent);
         return model;
     }
 
-    public async Task<IEnumerable<WeeklyBoardDispatchModel>> GetOrderDispatches(Guid requestId)
+    public async Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId)
     {
         var agencyId = identityServerService.GetAgencyId();
-        return await requestRepository.GetOrderDispatches(agencyId, requestId);
+        return await requestRepository.GetOrderRunners(agencyId, requestId);
     }
 
     public async Task<Result> AssignRecruiters(AssignRecruitersModel model)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
         var recruiterIds = model.RecruiterIds.Distinct().ToList();
@@ -89,7 +95,7 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
     public async Task<Result> UnassignRecruiter(Guid requestId, Guid recruiterId, DateTime workDate)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
         Result result = request.RemoveRecruiter(recruiterId, timeService.GetCurrentDateTime(), workDate);
@@ -103,7 +109,7 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
     public async Task<Result> MoveAssignment(MoveAssignmentModel model)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
         if (model.FromRecruiterId != model.ToRecruiterId)
@@ -120,7 +126,7 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
         return Result.Ok();
     }
 
-    public async Task<Result> AddWorkers(DispatchWorkersModel model)
+    public async Task<Result> AddRunner(AddRunnerModel model)
     {
         var agencyId = identityServerService.GetAgencyId();
         var recruiter = await GetCurrentRecruiter(agencyId);
@@ -129,39 +135,20 @@ public class WeeklyBoardService(IRequestRepository requestRepository, IAgencyRep
         var assignment = await requestRepository.GetRequestRecruiter(agencyId, model.RequestId, recruiter.Id, model.WorkDate);
         if (assignment is null) return Result.Fail("Assignment not found");
 
-        var now = timeService.GetCurrentDateTime();
-        var addedWorkerIds = new List<Guid>();
-        foreach (var workerProfileId in model.WorkerProfileIds.Distinct())
-            if (assignment.AddDispatch(workerProfileId, now, recruiter.UserId))
-                addedWorkerIds.Add(workerProfileId);
+        var created = await runnerService.CreateRunner(
+            model.RequestId,
+            new RunnerCreateModel { WorkerProfileId = model.WorkerProfileId, Type = model.Type },
+            assignment.Id);
+        if (!created) return Result.Fail(created.Errors);
 
-        if (addedWorkerIds.Count > 0)
+        var names = await requestRepository.GetWorkerProfileNames([model.WorkerProfileId]);
+        if (names.TryGetValue(model.WorkerProfileId, out var name) && !string.IsNullOrWhiteSpace(name))
         {
-            var names = await requestRepository.GetWorkerProfileNames(addedWorkerIds);
-            foreach (var workerProfileId in addedWorkerIds)
-            {
-                if (!names.TryGetValue(workerProfileId, out var name) || string.IsNullOrWhiteSpace(name)) continue;
-                var note = CovenantNote.Create($"{name} was sent", CovenantNote.RedColor, recruiter.Name).Value;
-                await requestRepository.Create(new RequestNote(model.RequestId, note));
-            }
+            var note = CovenantNote.Create($"{name} was sent", CovenantNote.RedColor, recruiter.Name).Value;
+            await requestRepository.Create(new RequestNote(model.RequestId, note));
+            await requestRepository.SaveChangesAsync();
         }
 
-        await requestRepository.SaveChangesAsync();
-        return Result.Ok();
-    }
-
-    public async Task<Result> RemoveWorker(Guid requestId, DateTime workDate, Guid workerProfileId)
-    {
-        var agencyId = identityServerService.GetAgencyId();
-        var recruiter = await GetCurrentRecruiter(agencyId);
-        if (recruiter is null) return Result.Fail("Recruiter not found");
-
-        var assignment = await requestRepository.GetRequestRecruiter(agencyId, requestId, recruiter.Id, workDate);
-        if (assignment is null) return Result.Fail("Assignment not found");
-
-        assignment.RemoveDispatch(workerProfileId);
-
-        await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
 

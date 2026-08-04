@@ -66,28 +66,28 @@ public class WorkersController(IAgencyService agencyService, IRequestService req
 
     /// <summary>Books a worker into the specified request.</summary>
     /// <param name="requestId">Identifier of the request.</param>
-    /// <param name="workerId">Identifier of the worker to book.</param>
+    /// <param name="workerProfileId">Identifier of the worker profile to book.</param>
     /// <param name="model">Worker booking data.</param>
-    [HttpPost("{workerId:guid}/Book")]
+    [HttpPost("{workerProfileId:guid}/Book")]
     [ProducesResponseType(typeof(AgencyWorkerRequestModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromBody] AgencyBookWorkerModel model)
+    public async Task<ActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] AgencyBookWorkerModel model)
     {
-        var result = await agencyService.BookWorker(requestId, workerId, model);
+        var result = await agencyService.BookWorker(requestId, workerProfileId, model);
         if (result) return Ok(new AgencyWorkerRequestModel { Id = result.Value });
         return BadRequest(ModelState.AddErrors(result.Errors));
     }
 
     /// <summary>Rejects a worker from the specified request.</summary>
     /// <param name="requestId">Identifier of the request.</param>
-    /// <param name="workerId">Identifier of the worker to reject.</param>
+    /// <param name="workerProfileId">Identifier of the worker profile to reject.</param>
     /// <param name="model">Rejection comments.</param>
-    [HttpPut("{workerId:guid}/Reject")]
+    [HttpPut("{workerProfileId:guid}/Reject")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Reject([FromRoute] Guid requestId, [FromRoute] Guid workerId, [FromBody] CommentsModel model)
+    public async Task<ActionResult> Reject([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] CommentsModel model)
     {
-        var result = await requestService.RejectWorker(requestId, workerId, model);
+        var result = await requestService.RejectWorker(requestId, workerProfileId, model);
         if (result) return Ok();
         return BadRequest(ModelState.AddErrors(result.Errors));
     }

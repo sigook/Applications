@@ -154,7 +154,7 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyLocation
 
         private void Seed(CovenantContext context)
         {
-            context.City.AddRange(Toronto, York, Brampton);
+            context.Cities.AddRange(Toronto, York, Brampton);
             FakeLocation.Location.UpdateCoordinates(43.71153872193341, -79.37071707699555);
             FakeAgency.AddLocation(FakeLocation.Location, true);
             FakeAgency.AddLocation(FakeUpdateLocation.Location);

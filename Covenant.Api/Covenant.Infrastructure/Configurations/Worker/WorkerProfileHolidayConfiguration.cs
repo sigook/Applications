@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Worker
     {
         public void Configure(EntityTypeBuilder<WorkerProfileHoliday> builder)
         {
-            builder.ToTable("WorkerProfileHoliday");
+            builder.ToTable("WorkerProfileHolidays");
             builder.HasKey(k => k.Id);
             builder.HasIndex(h => new { h.WorkerProfileId, h.HolidayId }).IsUnique();
         }

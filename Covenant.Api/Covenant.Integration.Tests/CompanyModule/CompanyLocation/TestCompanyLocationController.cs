@@ -66,7 +66,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyLocation
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.CompanyProfile.Add(Data.CompanyProfile);
+                context.CompanyProfiles.Add(Data.CompanyProfile);
                 context.SaveChanges();
             }
         }

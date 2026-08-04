@@ -20,6 +20,7 @@ public interface IIdentityServerService
     string GetNickname();
     Guid GetUserId();
     bool IsAdmin();
+    bool IsAgencyStaff();
     bool IsSales();
     bool IsSuperAdmin();
     IEnumerable<Guid> GetAgencyIds();

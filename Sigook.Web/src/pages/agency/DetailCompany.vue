@@ -34,7 +34,7 @@
       <b-tab-item label="Detail" value="Detail">
         <detail v-if="visitedTabs.includes('Detail')" v-model:company="company" class="p-2" />
       </b-tab-item>
-      <b-tab-item label="Settings" value="Settings" v-if="isAccountingManager">
+      <b-tab-item label="Settings" value="Settings" v-if="isAdmin">
         <settings v-if="visitedTabs.includes('Settings')" v-model:company="company" class="p-2" />
       </b-tab-item>
       <b-tab-item label="Users" value="Users">
@@ -65,7 +65,7 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { useModuleBase } from '@/composables/useModuleBase';
 import { getAgencyCompany, updateAgencyCompanyProfileLogo } from '@/api/agencyCompanyApi';
 import { lowercase } from '@/utils/filters';
@@ -81,7 +81,7 @@ import CompanyUpdateLogo from '@/components/agency_company/CompanyUpdateLogo.vue
 const route = useRoute();
 const router = useRouter();
 const { requestBase, companyBase } = useModuleBase();
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const currentTab = ref<string>('Detail');
 const visitedTabs = ref<string[]>(['Detail']);
@@ -91,7 +91,7 @@ const showUpdateLogo = ref(false);
 
 const requiresPayrollPermission = computed(() => {
   if (company.value && company.value.requiresPermissionToSeeRequests) {
-    return !isAccountingManager.value;
+    return !isAdmin.value;
   }
   return false;
 });

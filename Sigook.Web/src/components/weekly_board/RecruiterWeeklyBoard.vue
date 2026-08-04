@@ -15,7 +15,7 @@
         </b-navbar-item>
         <b-navbar-item tag="div" class="stat">
           <span class="stat-value">{{ board?.workersSent ?? 0 }}</span>
-          <span class="stat-label">Workers sent</span>
+          <span class="stat-label">Runners sent</span>
         </b-navbar-item>
       </template>
     </b-navbar>
@@ -80,37 +80,51 @@
             </span>
           </div>
 
-          <collapse-section v-if="assignment.dispatches.length > 0" class="sent-workers" variant="compact"
+          <collapse-section v-if="assignment.runners.length > 0" class="sent-workers" variant="compact"
             :model-value="false">
-            <template #title>SENT WORKERS ({{ assignment.dispatches.length }})</template>
-            <div v-for="worker in assignment.dispatches" :key="worker.workerProfileId" class="sent-worker">
+            <template #title>RUNNERS ({{ assignment.runners.length }})</template>
+            <div v-for="worker in assignment.runners" :key="worker.runnerId" class="sent-worker">
               <div class="sent-worker-info">
                 <span class="sent-worker-avatar">{{ workerInitials(worker.fullName) }}</span>
                 <div>
-                  <router-link class="sent-worker-name"
-                    :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">
-                    {{ worker.fullName }}
-                  </router-link>
+                  <div class="runner-title">
+                    <b-tag :type="runnerStatusTagType(worker.status)" size="is-small">
+                      {{ runnerStatusLabel(worker.status) }}
+                    </b-tag>
+                    <router-link class="sent-worker-name"
+                      :to="{ name: 'workerDetail', params: { id: worker.workerProfileId } }" target="_blank">
+                      {{ worker.fullName }}
+                    </router-link>
+                  </div>
                   <p class="sent-worker-email">{{ worker.email }}</p>
                 </div>
               </div>
-              <b-button class="remove-worker" type="is-ghost" size="is-small" icon-right="close" :disabled="isSaving"
-                @click="onRemove(assignment, worker.workerProfileId)"></b-button>
+              <runner-actions-dropdown :status="worker.status" :can-edit="assignment.usesRunners"
+                @open="action => open(toTarget(assignment, worker), action)"
+                @delete="confirmDelete(toTarget(assignment, worker))">
+                <template #trigger>
+                  <b-button class="remove-worker" type="is-ghost" icon-right="dots-vertical"
+                    :disabled="isSaving"></b-button>
+                </template>
+              </runner-actions-dropdown>
             </div>
           </collapse-section>
 
-          <b-button v-if="!isPastDay(assignment.workDate)" type="is-primary" expanded icon-left="account-plus"
-            class="add-worker-btn" @click="openAdd(assignment)">
-            Add worker
+          <b-button v-if="!isPastDay(assignment.workDate) && assignment.usesRunners" type="is-primary" expanded
+            icon-left="account-plus" class="add-worker-btn" @click="openAdd(assignment)">
+            Add runner
           </b-button>
         </div>
       </div>
     </div>
 
     <b-modal v-model="showAdd" :width="560" scroll="keep" :destroy-on-hide="true">
-      <add-workers-modal v-if="activeAssignment" :assignment="activeAssignment" :saving="isSaving" @send="onSend"
+      <create-runner v-if="activeAssignment" :request-id="activeAssignment.requestId" @create="onSend"
         @close="showAdd = false" />
     </b-modal>
+
+    <runner-action-modals :target="target" v-model:status-open="showStatus" v-model:interview-open="showInterview"
+      v-model:history-open="showHistory" @updated="loadBoard" />
   </div>
 </template>
 
@@ -118,12 +132,18 @@
 import { ref, computed, watch } from 'vue';
 import dayjs from 'dayjs';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import { getRecruiterWeeklyBoard, addWorkers, removeWorker } from '@/api/weeklyBoardApi';
+import { getRecruiterWeeklyBoard, addRunner } from '@/api/weeklyBoardApi';
+import { useRunnerActions } from '@/composables/useRunnerActions';
+import type { RunnerActionTarget } from '@/composables/useRunnerActions';
+import { runnerStatusLabel, runnerStatusTagType } from '@/types/runner';
 import { isDirectHiring } from '@/utils/directHiring';
 import { locationLabel } from '@/utils/locationLabel';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
-import type { RecruiterWeeklyBoard, WeeklyBoardAssignment, WeekDay } from '@/types/weeklyBoard';
-import AddWorkersModal from './AddWorkersModal.vue';
+import type { RecruiterWeeklyBoard, WeeklyBoardAssignment, WeeklyBoardRunner, WeekDay } from '@/types/weeklyBoard';
+import type { CreateRunnerModel } from '@/types/runner';
+import CreateRunner from '@/components/runner/CreateRunner.vue';
+import RunnerActionsDropdown from '@/components/runner/RunnerActionsDropdown.vue';
+import RunnerActionModals from '@/components/runner/RunnerActionModals.vue';
 import CollapseSection from '@/components/CollapseSection.vue';
 
 const dateFormat = 'YYYY-MM-DD';
@@ -143,6 +163,8 @@ const activeDay = ref<string | null>(null);
 
 const showAdd = ref(false);
 const activeAssignment = ref<WeeklyBoardAssignment | null>(null);
+
+const { target, showStatus, showInterview, showHistory, open, confirmDelete } = useRunnerActions(loadBoard);
 
 const days = computed<WeekDay[]>(() => {
   const [from, to] = range.value;
@@ -238,16 +260,17 @@ function openAdd(assignment: WeeklyBoardAssignment): void {
   showAdd.value = true;
 }
 
-function onSend(workerProfileIds: string[]): void {
+function onSend(model: CreateRunnerModel): void {
   if (!activeAssignment.value) return;
   isSaving.value = true;
-  addWorkers({
+  addRunner({
     requestId: activeAssignment.value.requestId,
     workDate: dayjs(activeAssignment.value.workDate).format(dateFormat),
-    workerProfileIds,
+    workerProfileId: model.workerProfileId,
+    type: model.type,
   })
     .then(() => {
-      showAlertSuccess('Workers sent');
+      showAlertSuccess('Runner sent');
       showAdd.value = false;
       loadBoard();
     })
@@ -257,23 +280,13 @@ function onSend(workerProfileIds: string[]): void {
     });
 }
 
-function onRemove(assignment: WeeklyBoardAssignment, workerProfileId: string): void {
-  isLoading.value = true;
-  isSaving.value = true;
-  removeWorker({
+function toTarget(assignment: WeeklyBoardAssignment, runner: WeeklyBoardRunner): RunnerActionTarget {
+  return {
     requestId: assignment.requestId,
-    workDate: dayjs(assignment.workDate).format(dateFormat),
-    workerProfileId,
-  })
-    .then(() => {
-      showAlertSuccess('Worker removed');
-      loadBoard();
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-      isSaving.value = false;
-    });
+    runnerId: runner.runnerId,
+    name: runner.fullName,
+    status: runner.status,
+  };
 }
 
 watch(range, loadBoard, { immediate: true });

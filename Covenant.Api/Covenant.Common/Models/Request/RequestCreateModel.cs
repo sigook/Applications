@@ -18,6 +18,7 @@ namespace Covenant.Common.Models.Request
         public string InternalRequirements { get; set; }
         public string Responsibilities { get; set; }
         public bool IsAsap { get; set; }
+        public bool UsesRunners { get; set; } = true;
         public bool JobIsOnBranchOffice { get; set; }
         public LocationDetailModel AnotherLocation { get; set; }
         public Guid? LocationId { get; set; }

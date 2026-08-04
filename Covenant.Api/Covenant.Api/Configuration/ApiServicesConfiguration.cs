@@ -1,8 +1,9 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.HealthChecks;
 using Covenant.Api.Utils;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Accounting;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
@@ -18,11 +19,10 @@ using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Consumers;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
-using Covenant.Core.BL.Services.Invoices;
-using Covenant.Core.BL.Services.Shared;
+using Covenant.Core.BL.Services.Accounting;
+using Covenant.Core.BL.Services.Accounting.Invoices;
+using Covenant.Core.BL.Services.Accounting.Shared;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Deductions;
-using Covenant.Infrastructure.Deductions.Repositories;
 using Covenant.Infrastructure.Repositories;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Infrastructure.Repositories.Agency;
@@ -56,7 +56,6 @@ public static class ApiServicesConfiguration
         services.AddScoped<IPayStubRepository, PayStubRepository>();
         services.AddScoped<IAgencyRepository, AgencyRepository>();
         services.AddScoped<IWorkerRepository, WorkerRepository>();
-        services.AddScoped<IWorkerCommentsRepository, WorkerCommentsRepository>();
         services.AddScoped<ICompanyRepository, CompanyRepository>();
         services.AddScoped<IRequestRepository, RequestRepository>();
         services.AddScoped<IRunnerRepository, RunnerRepository>();
@@ -114,11 +113,12 @@ public static class ApiServicesConfiguration
         services.AddScoped<CanadaInvoiceService>();
         services.AddScoped<InvoiceServiceFactory>();
 
+        // CRA deduction tables
+        services.AddScoped<ICraPdfParser, CraPdfParser>();
+        services.AddScoped<IDeductionImportService, DeductionImportService>();
+
         //TODO: To Refactor
         services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
-        services.AddScoped<ICppTablesLoader, CppTablesLoader>();
-        services.AddScoped<FederalTaxTablesLoader>();
-        services.AddScoped<ProvincialTaxTablesLoader>();
         return services;
     }
 
@@ -193,11 +193,13 @@ public static class ApiServicesConfiguration
         {
             new AccessKey(InvoicesContainer.ContainerName, accountingConnectionSafe),
             new AccessKey(PayStubsContainer.ContainerName, accountingConnectionSafe),
-            new AccessKey(FilesContainer.ContainerName, fileConnectionSafe)
+            new AccessKey(FilesContainer.ContainerName, fileConnectionSafe),
+            new AccessKey(CraTablesContainer.ContainerName, fileConnectionSafe)
         }, new AccessKey("default", accountingConnectionSafe)));
         services.AddScoped<IInvoicesContainer, InvoicesContainer>();
         services.AddScoped<IPayStubsContainer, PayStubsContainer>();
         services.AddScoped<IFilesContainer, FilesContainer>();
+        services.AddScoped<ICraTablesContainer, CraTablesContainer>();
         return services;
     }
 

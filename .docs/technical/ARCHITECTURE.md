@@ -22,9 +22,9 @@ Monorepo with seven applications. Each has its own `CLAUDE.md` with app-specific
 Framework:  ASP.NET Core 8.0 Web API
 Database:   PostgreSQL (cloud-hosted), EF Core 8.0.11 + Npgsql 8.0.10
 Patterns:   Repository, Service Layer, MediatR (document generation)
-Packages:   MediatR 12.4.1, AutoMapper 12.0.1, FluentValidation 11.10.0, Serilog,
+Packages:   MediatR 12.4.1, FluentValidation 11.10.0, Serilog,
             Swashbuckle 7.2.0, Azure.Messaging.ServiceBus 7.18.2,
-            Azure.Storage.Blobs 12.24.0, ClosedXML 0.104.2
+            Azure.Storage.Blobs 12.24.0, ClosedXML 0.104.2, PdfPig 0.1.15
 Cloud:      Azure App Service, Azure Service Bus, Azure Blob Storage, Azure Container Registry
 ```
 
@@ -83,11 +83,30 @@ usecases — pure Dart), `data/` (Freezed models, local/remote datasources, repo
 
 ### Sigook.Functions (.NET 8, isolated worker)
 
-Single class `Sigook.Functions/Sigook.Functions/Functions/ScheduleTasks.cs` with two timer
-triggers (`0 0 0 * * 1-5`): `NotificationSinExpiration` and `WarnLicensesExpiration`. Both get a
-client-credentials token and POST to Covenant.Api (`ScheduleTasks_ApiUrl` config), reporting the
-outcome to Teams. Email/invitation sending does **not** live here — that moved to Service Bus
-consumers inside Covenant.Api (see [Async messaging](#async-messaging-azure-service-bus)).
+`Sigook.Functions/Sigook.Functions/Functions/ScheduleTasks.cs` holds two timer triggers
+(`0 0 0 * * 1-5`): `NotificationSinExpiration` and `WarnLicensesExpiration`.
+`Functions/CraTables.cs` holds a blob trigger, `CraTableUploaded`, on the `cra-tables` container
+(`CraTablesStorage` connection): it reads the table, the pay period and the year from the blob name
+(`Utils/CraBlobName.cs`) and asks the API to import the CRA CPP or income tax table.
+
+Every function gets a client-credentials token and POSTs to Covenant.Api (`ScheduleTasks:ApiUrl`,
+`CraTables:CppApiUrl`, `CraTables:TaxApiUrl`), reporting the outcome to Teams. Email/invitation sending does **not** live
+here — that moved to Service Bus consumers inside Covenant.Api
+(see [Async messaging](#async-messaging-azure-service-bus)).
+
+Unit tests live in `Sigook.Functions/Sigook.Functions.Tests` and run in the pipeline.
+
+The blob-trigger connection is resolved by the Functions **host**, not by the isolated worker's
+`IConfiguration`, so it can never come from Key Vault through `ConfigureAppConfiguration`. It is
+declared as an **identity-based connection** instead of a connection string, which keeps secrets out
+of the repo: `CraTablesStorage__blobServiceUri` + `CraTablesStorage__queueServiceUri` (the polling
+trigger needs the queue endpoint too, for its internal scan queues).
+
+- Locally it authenticates with `az login`; in Azure, with the Function App's managed identity.
+- Whoever runs it needs **Storage Blob Data Contributor** and **Storage Queue Data Contributor** on
+  the storage account.
+- Local settings point at `sigookfilesstaging`; production points at `sigookfiles` through the same
+  two App Settings on `sigook-functions`.
 
 ### Sigook.CognitiveServices (.NET 8)
 
@@ -122,6 +141,18 @@ Covenant.Api/
   Keep these in sync with `Covenant.Common` by hand — the API exchanges DTOs with IdentityServer
   over HTTP.
 - `Sigook.Functions` doesn't reference it either; it only calls the API over HTTP.
+- **Declare what you use**: every project lists a `PackageReference` for each package its own code
+  compiles against, even when a referenced project already brings it in transitively. Duplicated
+  declarations cost nothing (NuGet resolves one package, one version) and keep a lower layer from
+  breaking the ones above it when it drops a dependency. Conversely, `Covenant.Common` only carries
+  what it actually compiles against (CsvHelper, FluentValidation, libphonenumber, ASP.NET Identity
+  EF) — don't add packages there just because a downstream project needs them.
+- **Versions are centralized** in `Covenant.Api/Directory.Packages.props`
+  (`ManagePackageVersionsCentrally`). `PackageReference` entries carry no `Version` — add or bump
+  the `PackageVersion` in that file so every project resolves the same version.
+- Keep infrastructure concerns out of `Covenant.Common`: Excel helpers live in `Covenant.Documents`,
+  ASP.NET-bound helpers (`IFormFile`, `IConfiguration`, Razor helpers) in `Covenant.Api`/
+  `Covenant.Core.BL`, and test-only helpers in `Covenant.Test.Utils`.
 
 ### Controllers (presentation layer)
 
@@ -138,17 +169,18 @@ Two coexisting layouts:
 | `Controllers/Sigook/Agency/Requests/` | request detail: `RequestsController`, `ApplicantsController`, `RunnersController`, `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, notes, shift, skills, report-to, requested-by |
 | `Controllers/Sigook/Agency/Recruiting/` | recruiting-scoped lists: `RequestsController`, `CompanyProfilesController`, `WeeklyBoardController` |
 | `Controllers/Sigook/Agency/Sales/` | sales-scoped lists: `RequestsController`, `CompanyProfilesController` |
+| `Controllers/Sigook/Agency/Candidates/` | candidate domain: `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
+| `Controllers/Sigook/Agency/Workers/` | worker-profile management: `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController` |
+| `Controllers/Sigook/Agency/Personnel/` | `PersonnelController` (agency back-office users), `AgenciesController` (agencies the caller belongs to) |
 | `Controllers/WebSite/` | `WebSiteController` (public marketing endpoints) |
+| `Controllers/Jobs/` | `ScheduleTasksController` (called by Sigook.Functions timers) |
 
 **2. Module folders** under `Covenant.Api/{Module}Module/{Resource}/Controllers/`:
 
 | Module | Contents |
 |---|---|
-| `AgencyModule/` | worker-profile management (`AgencyWorkerProfileController`, notes, comments, holidays, request history), personnel, and the Candidate domain: `AgencyCandidateController` + note/phone/skill/document controllers |
 | `CompanyModule/` | company perspective: requests, profile, locations, job positions, request workers, timesheets, invoices, users |
 | `WorkerModule/` | worker perspective: profile, requests, request history, timesheets (clock in/out) |
-| `AccountingModule/` | `Deduction/` (CPP, federal tax, provincial tax lookup endpoints) and `Shared/AccountingBaseController.cs` — nothing else. Invoice/pay-stub CRUD lives in `Controllers/Sigook/Agency/Accounting/` |
-| `ManagerModule/` | `ScheduleTasksController` (called by Sigook.Functions timers), `WorkerProfilePunchCardIdController` |
 
 Routing: older controllers declare `public const string RouteName = "api/..."` +
 `[Route(RouteName)]` (grep for `RouteName =` to find an endpoint); newer ones use attribute
@@ -179,10 +211,10 @@ Contexts/         CovenantContext.cs (main DbContext), MyKeysContext (DataProtec
 Repositories/     by domain: Accounting/, Agency/, Candidate/, Company/, Notification/,
                   Request/, Worker/ + root repositories (Catalog, Location, Shift, User)
 Configurations/   EF Core IEntityTypeConfiguration classes, mirrored by domain
-Deductions/       CPP / federal / provincial tax table loaders (CppTablesLoader.cs, etc.)
 Migrations/       EF Core migrations
 Scripts/          raw SQL (views, functions, stored procedures) run at startup
-Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
+Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService,
+                  CraPdfParser (PdfPig reader for the CRA deduction tables)
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService/Storage (Azure Blob), PdfGeneratorService,
                   RazorViewToStringRenderer, IdentityServerService, TimeService,
@@ -191,7 +223,8 @@ Services/         integrations: EmailService + SendGridService (SendGrid), Geoco
 
 Payroll deductions are **DB table lookups, not formulas**: `TimesheetCalculatorService` →
 `DeductionsRepository` range lookups by earnings/year. EI is the only computed deduction. The
-lookup calculators are also exposed as REST endpoints by `AccountingModule/Deduction/`.
+tables themselves are only written by `DeductionsController` (`Controllers/Sigook/Agency/Accounting/`),
+which imports the CRA PDFs; there is no endpoint to read them back.
 
 For entities, enums, and the data model, see
 [ENTITIES_RELATIONSHIPS.md](ENTITIES_RELATIONSHIPS.md). For the Request lifecycle rule

@@ -13,7 +13,7 @@ namespace Covenant.Infrastructure.Repositories
         public LocationRepository(CovenantContext context) => _context = context;
 
         public async Task<IEnumerable<Location>> GetLocationWithoutGeocode() =>
-            await _context.Location
+            await _context.Locations
             .Include(l => l.City)
             .ThenInclude(c => c.Province)
             .ThenInclude(c => c.Country)
@@ -22,7 +22,7 @@ namespace Covenant.Infrastructure.Repositories
 
         public Task UpdateLocation(Location location)
         {
-            _context.Location.Update(location);
+            _context.Locations.Update(location);
             return Task.CompletedTask;
         }
 
@@ -30,7 +30,7 @@ namespace Covenant.Infrastructure.Repositories
 
         public async Task<Location> GetLocationById(Guid id)
         {
-            var location = _context.Location
+            var location = _context.Locations
                 .Include(l => l.City)
                 .ThenInclude(c => c.Province)
                 .ThenInclude(p => p.Country)

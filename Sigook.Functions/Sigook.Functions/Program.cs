@@ -29,6 +29,8 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+        services.Configure<ScheduleTasksOptions>(context.Configuration.GetSection(ScheduleTasksOptions.SectionName));
+        services.Configure<CraTablesOptions>(context.Configuration.GetSection(CraTablesOptions.SectionName));
         services.AddHttpClient("Api");
         services.AddHttpClient("Teams");
     })

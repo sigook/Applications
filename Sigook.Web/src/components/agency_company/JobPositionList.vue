@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <b-field grouped position="is-right">
-        <b-button v-if="isAccountingManager" type="is-ghost" icon-right="plus-circle"
+        <b-button v-if="isAdmin" type="is-ghost" icon-right="plus-circle"
           @click="showModal = true">Add</b-button>
         <b-button v-else type="is-ghost" icon-right="forum" @click="showModalRole = true">Ask for a new
           role</b-button>
@@ -24,7 +24,7 @@
               {{ props.row.jobPosition }}
             </template>
           </b-table-column>
-          <b-table-column field="rate" label="Agency Rate" :visible="isAccountingManager" v-slot="props">
+          <b-table-column field="rate" label="Agency Rate" :visible="isAdmin" v-slot="props">
             {{ currency(props.row.rate) }}
           </b-table-column>
           <b-table-column field="workerRate" label="Worker Rate" v-slot="props">
@@ -42,7 +42,7 @@
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
             <roles-shift v-if="props.row.displayShift" :displayShift="props.row.displayShift" :roleId="props.row.id"
-              :companyId="profileId" />
+              :companyProfileId="profileId" />
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
             <b-button type="is-info" outlined rounded icon-right="pencil" class="me-2"
@@ -73,7 +73,7 @@
 import { ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 import { currency, emailName, dateMonth } from "@/utils/filters";
 import { getAgencyCompanyJobPositions, deleteAgencyCompanyJobPosition } from "@/api/agencyCompanyApi";
 import type { AgencyCompanyJobPositionFilter } from "@/types/agency";
@@ -82,7 +82,7 @@ import RequestPositionForm from "../../components/agency_company/RequestJobPosit
 import RolesShift from "../agency_company/RolesShiftDetail.vue";
 
 const route = useRoute();
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const isLoading = ref(true);
 const rows = ref<any[]>([]);

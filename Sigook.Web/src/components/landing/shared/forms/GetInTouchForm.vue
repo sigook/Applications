@@ -113,6 +113,17 @@
         <span v-if="errors.message" class="git-card__field-error">{{ errors.message }}</span>
       </div>
 
+      <div class="git-card__recaptcha">
+        <Vue3Recaptcha2
+          v-if="showRecaptcha"
+          :sitekey="siteKey"
+          @verify="handleCaptchaVerify"
+          @expire="handleCaptchaExpired"
+          @fail="handleCaptchaError"
+        />
+        <span v-if="captchaError" class="git-card__field-error">Please verify you are human.</span>
+      </div>
+
       <div v-if="submitted" class="git-card__feedback git-card__feedback--success">
         Thank you! We'll reach out to you shortly.
       </div>
@@ -139,6 +150,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import Vue3Recaptcha2 from 'vue3-recaptcha2'
 import * as yup from 'yup'
 import { useStickyForm } from '@/composables/useStickyForm'
 import { submitContactForm } from '@/api/websiteApi'
@@ -168,9 +180,10 @@ const submitting  = ref(false)
 const submitted   = ref(false)
 const submitError = ref('')
 
-useRecaptchaProvider()
-const captchaToken = ref('')
-const captchaError = ref('')
+const siteKey       = import.meta.env.VUE_APP_RE_CAPTCHA_SITE_KEY
+const captchaToken  = ref<string | null>(null)
+const captchaError  = ref(false)
+const showRecaptcha = ref(true)
 
 const states = ref<Province[]>([])
 
@@ -184,16 +197,36 @@ onMounted(async () => {
   }
 })
 
+function handleCaptchaVerify(token: string) {
+  captchaToken.value = token
+  captchaError.value = false
+}
+
+function handleCaptchaExpired() {
+  captchaToken.value = null
+}
+
+function handleCaptchaError() {
+  captchaToken.value = null
+  captchaError.value = true
+}
+
+function resetCaptcha() {
+  captchaToken.value  = null
+  captchaError.value  = false
+  showRecaptcha.value = false
+  setTimeout(() => { showRecaptcha.value = true }, 100)
+}
+
 async function handleFormSubmit() {
   markInteracted()
   const result = await validate()
   if (!result.valid) return
 
   if (!captchaToken.value) {
-    captchaError.value = 'Please verify that you are not a robot'
+    captchaError.value = true
     return
   }
-  captchaError.value = ''
 
   submitting.value  = true
   submitError.value = ''
@@ -217,14 +250,14 @@ async function handleFormSubmit() {
   } catch {
     submitError.value = 'Something went wrong. Please try again later.'
   } finally {
+    resetCaptcha()
     submitting.value = false
   }
 }
 
 function handleReset() {
   resetAll()
-  captchaToken.value = ''
-  captchaError.value = ''
+  resetCaptcha()
   submitted.value   = false
   submitError.value = ''
 }
@@ -421,6 +454,13 @@ function handleReset() {
   font-weight: 500;
   margin-top: 6px;
   padding-left: 4px;
+}
+
+.git-card__recaptcha {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
 }
 
 .git-card__feedback {

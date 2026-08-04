@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Worker
     {
         public void Configure(EntityTypeBuilder<WorkerProfileOtherDocument> builder)
         {
-            builder.ToTable("WorkerProfileOtherDocument");
+            builder.ToTable("WorkerProfileOtherDocuments");
             builder.HasKey(k => k.Id);
         }
     }

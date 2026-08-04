@@ -35,20 +35,20 @@ export function updateAgency(agency: AgencyDetail): Promise<void> {
 
 // Agency Personnel (users of the agency back-office)
 export function getAgencyPersonnel(): Promise<AgencyPersonnelListItem[]> {
-  return api.get<AgencyPersonnelListItem[]>('/api/AgencyPersonnel');
+  return api.get<AgencyPersonnelListItem[]>('/api/agency/personnel');
 }
 
 export function createAgencyPersonnel(model: AgencyPersonnelCreateModel): Promise<void> {
-  return api.post('/api/AgencyPersonnel', model);
+  return api.post('/api/agency/personnel', model);
 }
 
 // Roles the logged-in user is allowed to assign when creating personnel
 export function getAssignableRoles(): Promise<string[]> {
-  return api.get<string[]>('/api/AgencyPersonnel/Roles');
+  return api.get<string[]>('/api/agency/personnel/Roles');
 }
 
 export function deleteAgencyPersonnel(id: string): Promise<void> {
-  return api.del(`/api/AgencyPersonnel/${id}`);
+  return api.del(`/api/agency/personnel/${id}`);
 }
 
 // Agency Locations (billing addresses)
@@ -70,9 +70,9 @@ export function deleteAgencyLocation(id: string): Promise<void> {
 
 // Personnel Agencies (agencies a user has access to + switching)
 export function getPersonnelAgencies(): Promise<PersonnelAgencyItem[]> {
-  return api.get<PersonnelAgencyItem[]>('/api/PersonnelAgency');
+  return api.get<PersonnelAgencyItem[]>('/api/agency/personnel/Agencies');
 }
 
 export function switchPersonnelAgency(id: string): Promise<void> {
-  return api.put(`/api/PersonnelAgency/${id}`);
+  return api.put(`/api/agency/personnel/Agencies/${id}`);
 }

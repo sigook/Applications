@@ -1,30 +1,26 @@
 <template>
-    <div class="color-picker">
-        <button @mouseover="showColors = true"
-                @mouseleave="showColors = false"
-                id="button-select-color" class="relative">
-            <img src="../../assets/images/palette.png" alt="select color button">
-            <transition name="fade">
-                <ul class="colors-container" v-if="showColors">
-                    <li class="color-item"
-                        v-for="(color, index) in colors"
-                        :key="'color' + index"
-                        :class="{'active': color === selected}"
-                        @click="onSelectColor(color)">
-                        <span :style="{background: color}" class="dot-color"></span>
-                    </li>
-                </ul>
-            </transition>
-        </button>
-    </div>
+    <b-dropdown aria-role="list" position="is-top-right" append-to-body>
+        <template #trigger>
+            <b-button type="is-text" size="is-small" icon-left="palette" class="color-picker-trigger">
+                <span class="note-color-icon" :class="{ 'border': modelValue === '#fefefe' }"
+                    :style="{ backgroundColor: modelValue }"></span>
+            </b-button>
+        </template>
+        <b-dropdown-item custom aria-role="listitem">
+            <div class="colors-container">
+                <button v-for="color in colors" :key="color" type="button" class="color-item"
+                    :class="{ 'active': color === modelValue }" @click="onSelectColor(color)">
+                    <span :style="{ background: color }" class="dot-color"></span>
+                </button>
+            </div>
+        </b-dropdown-item>
+    </b-dropdown>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+defineProps<{ modelValue: string }>();
 
-const emit = defineEmits<{ (e: 'onSelectColor', color: string): void }>();
+const emit = defineEmits<{ (e: 'update:modelValue', color: string): void }>();
 
-const showColors = ref(false);
-const selected = ref('#fefefe');
 const colors = [
   '#fefefe',
   '#f28c82',
@@ -41,43 +37,27 @@ const colors = [
 ];
 
 function onSelectColor(color: string) {
-  selected.value = color;
-  emit('onSelectColor', color);
+  emit('update:modelValue', color);
 }
 </script>
 
 <style scoped lang="scss">
-.color-picker {
-  display: inline-block;
-}
-
-#button-select-color {
-  border: 0;
-  margin: 0 10px 0 0;
-  vertical-align: middle;
-
-  img {
-    width: 20px;
-    height: auto;
-  }
+.color-picker-trigger {
+  text-decoration: none;
 }
 
 .colors-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   width: 180px;
-  padding: 6px;
-  position: absolute;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 4px #f1f1f1;
-  bottom: -75px;
-  left: -10px;
-  border-radius: 6px;
 }
 
 .color-item {
   flex-basis: 25%;
+  background: transparent;
+  border: 0;
+  padding: 3px;
+  cursor: pointer;
 
   .dot-color {
     width: 30px;

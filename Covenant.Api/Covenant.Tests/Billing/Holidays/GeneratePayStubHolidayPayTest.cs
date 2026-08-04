@@ -10,7 +10,7 @@ using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Services;
-using Covenant.Core.BL.Services.Shared;
+using Covenant.Core.BL.Services.Accounting.Shared;
 using MediatR;
 using Moq;
 using Xunit;

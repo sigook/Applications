@@ -18,22 +18,21 @@ erDiagram
     Agency ||--o{ CompanyProfile : "AgencyId"
     Agency ||--o{ WorkerProfile : "AgencyId"
     Agency ||--o{ Candidate : "AgencyId"
-    Agency ||--o{ Request : "AgencyId"
     AgencyPersonnel ||--o{ CompanyProfile : "SalesRepresentativeId"
     CompanyProfile ||--o{ CompanyProfileJobPositionRate : ""
-    User ||--o{ Request : "Request.CompanyId (company-side user)"
+    CompanyProfile ||--o{ Request : "Request.CompanyProfileId"
     CompanyProfileJobPositionRate ||--o{ Request : "JobPositionRateId"
     Request ||--o{ WorkerRequest : ""
     Request ||--o{ RequestApplicant : ""
     Request ||--o{ Runner : ""
     Request ||--o{ RequestRecruiter : ""
-    RequestRecruiter ||--o{ WorkerDispatch : ""
-    User ||--o{ WorkerRequest : "WorkerRequest.WorkerId"
+    RequestRecruiter ||--o{ Runner : ""
+    WorkerProfile ||--o{ WorkerRequest : "WorkerRequest.WorkerProfileId"
     WorkerRequest ||--o{ TimeSheet : ""
     TimeSheet ||--o| TimeSheetTotal : "billing totals"
     TimeSheet ||--o| TimeSheetTotalPayroll : "payroll totals"
     WorkerProfile ||--o{ PayStub : ""
-    CompanyProfile ||--o{ Invoice : "Invoice.CompanyId"
+    CompanyProfile ||--o{ Invoice : "Invoice.CompanyProfileId"
     CompanyProfile ||--o{ InvoiceUSA : "CompanyProfileId"
     TimeSheetTotal ||--o{ InvoiceTotal : ""
 ```
@@ -46,14 +45,49 @@ point at **User**, not at the profile entity:
 
 | FK | Points to | Not to |
 |---|---|---|
-| `Request.CompanyId` | company-side `User` | `CompanyProfile` |
-| `WorkerRequest.WorkerId` | worker `User` | `WorkerProfile` |
 | `CompanyProfile.CompanyId` | company `User` | — |
 | `WorkerProfile.WorkerId` | worker `User` | — |
-| `CompanyUser.CompanyId` / `.UserId` | company `User` / member `User` | — |
+| `CompanyUser.UserId` | member `User` | — |
 
-To get from a `Request` to its `CompanyProfile` you join through the user
-(`CompanyProfile.CompanyId == Request.CompanyId`).
+Those three are the anchors that tie a profile to its login. **Every other FK points at the
+profile, never at the `User`**: `Request.CompanyProfileId`, `WorkerRequest.WorkerProfileId`,
+`PayStub.WorkerProfileId`, `Invoice.CompanyProfileId`, `WorkerComment.WorkerProfileId` /
+`.CompanyProfileId`, `CompanyUser.CompanyProfileId`. Reach profile data through the navigation
+property; when a query genuinely needs the login user (notification emails, JWT scoping), go
+through `Request.CompanyProfile.CompanyId` / `WorkerRequest.WorkerProfile.WorkerId`.
+
+`Request` and `Runner` have **no** `AgencyId` of their own — the agency comes from
+`Request.CompanyProfile.AgencyId`. Scope agency queries through that navigation.
+
+### Table naming and EF configuration
+
+**Table names are plural; entity class names are singular.** `WorkerProfile` → `WorkerProfiles`,
+`Request` → `Requests`, `User` → `Users`. The `DbSet` properties on `CovenantContext` match the
+table name, so `_context.Requests`, not `_context.Request`.
+
+Deliberate exceptions — leave them alone:
+
+| Table | Why |
+|---|---|
+| `AgencyPersonnel`, `AgencyContactInformation` | collective / uncountable |
+| `PayStubHistory`, `TimesheetHistory` | views, not tables |
+| `InvoicesUSA`, `CompanyProfileContactPeople` | natural plural, not the mechanical `InvoiceUSAs` / `...Persons` |
+
+Every mapped entity has its own `IEntityTypeConfiguration<T>` in **one file per entity**
+(`Configurations/{Domain}/{Entity}Configuration.cs`), and that file declares `ToTable` explicitly
+— never relying on the `DbSet`-name convention — plus `HasKey` and the entity's relationships.
+Relationships are configured from the **dependent** side (`HasOne(...).WithMany(...)
+.HasForeignKey(...)`), not with `HasMany` from the aggregate root, so each FK is declared exactly
+once and in the config of the entity that owns the column.
+
+**One profile per user.** A worker belongs to exactly one agency, and so does a company:
+`WorkerProfile.WorkerId` and `CompanyProfile.CompanyId` are each uniquely indexed on their own.
+Never assume a user can hold profiles in several agencies — filtering by `User.Id` instead of the
+profile id does not leak data across agencies, it is simply the wrong key.
+
+The `companyId` claim in the JWT (`User.GetCompanyId()`) and the worker's `sub`
+(`User.GetUserId()`) are still `User.Id`, not profile ids. Translate between the two with
+`ICompanyRepository.GetCompanyProfileId(condition)`, which returns both ids in either direction.
 
 `UserType` enum (`Covenant.Common/Enums/UserType.cs`): `Worker=1, Company, CompanyUser,
 AgencyPersonnel, Agency, Candidate`.
@@ -99,7 +133,7 @@ The client company, always owned by an agency. Key fields:
 - Misc: `Industry` (CompanyProfileIndustry), `VaccinationRequired(+Comments)`, `About`,
   `InternalInfo`, audit fields
 
-Unique index `(CompanyId, AgencyId)`.
+Unique index on `CompanyId` — one profile per company.
 
 ### CompanyProfileJobPositionRate (`CompanyProfileJobPositionRate.cs`)
 
@@ -118,12 +152,11 @@ invoice/pay-stub time.
 | `CompanyProfileLocation` | Company↔Location + `IsBilling` |
 | `CompanyProfileContactPerson` | contact: name parts, `Position`, `MobileNumber`, `OfficeNumber(+Ext)`, `Email` |
 | `CompanyProfileDocument` | Company↔CovenantFile + `DocumentType` (`Enums/CompanyProfileDocumentType.cs`), audit |
-| `CompanyProfileHoliday` | per-company stat-holiday billing rate: `HolidayId` → Holiday, `StatPaidCompany` (decimal) |
 | `CompanyProfileIndustry` | `IndustryId` (catalog) or free-text `OtherIndustry` |
 | `CompanyProfileInvoiceNotes` | `HtmlNotes` printed on invoices |
 | `CompanyProfileInvoiceRecipient` | extra invoice email recipients: `Email`, `Name` |
 | `CompanyProfileNote` | Company↔CovenantNote (shared note entity with soft delete) |
-| `CompanyUser` | additional company-side login: `CompanyId` → User (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyId, UserId)` |
+| `CompanyUser` | additional company-side login: `CompanyProfileId` → CompanyProfile (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyProfileId, UserId)` |
 
 ---
 
@@ -134,7 +167,7 @@ invoice/pay-stub time.
 Registered worker, owned by an agency. Key fields:
 
 - Identity: `Id`, `NumberId` (sequential — **canonical source for the worker number on pay stubs
-  and reports**), `WorkerId` → User, `AgencyId`; unique index `(WorkerId, AgencyId)`
+  and reports**), `WorkerId` → User, `AgencyId`; unique index on `WorkerId` — one profile per worker
 - Person: `FirstName`/`MiddleName`/`LastName`/`SecondLastName` (computed `FullName`), `BirthDay`,
   `GenderId`, `HasVehicle`, `LocationId`
 - SIN: `SocialInsurance` (+ `MaskedSocialInsurance`), `SocialInsuranceExpire`, `DueDate`,
@@ -185,8 +218,9 @@ Children:
 | `CandidateDocument` | join Candidate↔`CovenantFile` (`CandidateId`, `DocumentId`) |
 | `CandidateNote` | join Candidate↔`CovenantNote` (`CandidateId`, `NoteId`) |
 
-A Candidate reaches a job order through `RequestApplicant` or `Runner` (below), which reference
-the candidate by FK — personal data is never copied.
+A Candidate reaches a job order through `RequestApplicant`, which references the candidate by FK —
+personal data is never copied. Runners are worker-only: a candidate must be converted to a worker
+(`CandidateService.ConvertToWorker`) before entering the recruiting pipeline.
 
 ---
 
@@ -196,7 +230,8 @@ the candidate by FK — personal data is never copied.
 
 A job order. Key fields:
 
-- `Id`, `NumberId`, `AgencyId`, `CompanyId` → **User** (company-side user, not CompanyProfile)
+- `Id`, `NumberId`, `CompanyProfileId` → CompanyProfile (navigation `CompanyProfile`; the agency
+  comes from `CompanyProfile.AgencyId` — `Request` has no `AgencyId`)
 - Job: `JobTitle`, `BillingTitle`, `JobCosting` (admin/superadmin only in the UI), `Description`,
   `Requirements`, `InternalRequirements`, `Responsibilities`, `JobLocationId` → Location,
   `JobIsOnBranchOffice`
@@ -217,11 +252,12 @@ there is no `IsOpen` flag.** Transitions happen only inside `AddWorker`, `Reject
 Child/related entities in the same folder: `RequestNote`, `RequestSkill`, `RequestReportTo`,
 `RequestRequestedBy`, `RequestCompanyUser` (which company users may see the request),
 `RequestComission`, `RequestCancellationDetail`, `RequestFinalizationDetail`
-(+ root-level `ReasonCancellationRequest`).
+(+ root-level `ReasonCancellationRequest`, whose `Value` is a plain English `string` — it used
+to point at a multi-language `StringResource` row, now deleted).
 
 ### WorkerRequest (`WorkerRequest.cs`)
 
-Assignment of a worker to a request. `Id`, `RequestId`, `WorkerId` → **User**,
+Assignment of a worker to a request. `Id`, `RequestId`, `WorkerProfileId` → **WorkerProfile**,
 `WorkerRequestStatus` (`Enums/WorkerRequestStatus.cs`: **`Rejected = 2`, `Booked = 3`** — there
 is no value 1), `StartWorking`, `WeekStartWorking` (computed Sunday of the start week),
 `CreatedBy`/`RejectedBy`/`RejectedAt`/`RejectComments`, `LimitDateToAddTimeSheet`
@@ -242,7 +278,7 @@ M:N Request↔`Source` (job board posting), composite PK `(RequestId, SourceId)`
 with `Source.IsAvailableForRequests = true` are selectable as job boards
 (`GET api/Catalog/source/requests`).
 
-### RequestRecruiter + WorkerDispatch (weekly board)
+### RequestRecruiter (weekly board)
 
 `RequestRecruiter.cs`: assigns an `AgencyPersonnel` recruiter to a request, optionally for one
 `WorkDate` (day cell on the recruiting weekly board). Max 10 recruiters per request per day;
@@ -250,14 +286,16 @@ unique `(RequestId, RecruiterId, WorkDate)`. Managed through `Request.AddRecruit
 `RemoveRecruiter` / `MoveRecruiterAssignment` and `WeeklyBoardService` /
 `Controllers/Sigook/Agency/Recruiting/WeeklyBoardController.cs`.
 
-`WorkerDispatch.cs`: worker dispatched under a recruiter assignment — `RequestRecruiterId`,
-`WorkerProfileId`, `CreatedBy`; unique `(RequestRecruiterId, WorkerProfileId)`; added via
-`RequestRecruiter.AddDispatch` (duplicate-safe).
+The people a recruiter sends under an assignment are **Runners** (`RequestRecruiter.Runners`,
+FK `Runner.RequestRecruiterId`, `ON DELETE SET NULL`). The old `WorkerDispatch` entity was
+replaced by `Runner` in migration `RunnersWorkerOnlyAndBoardRunners`.
 
 ### Runner (`Entities/Request/Runners/`)
 
-Recruiting pipeline for a person actively submitted to one request. `Runner.cs`:
-`Id`, `NumberId` (long), `AgencyId`, `RequestId`, `WorkerProfileId` XOR `CandidateId`,
+Recruiting pipeline for a worker actively submitted to one request. `Runner.cs`:
+`Id`, `NumberId` (long), `RequestId`, `WorkerProfileId` (required — runners are
+worker-only; candidates cannot be runners), `RequestRecruiterId` (nullable — set when the runner
+is sent from the weekly board, null when created from the order's Runners tab),
 `Type` (`RunnerType`: `Active=1` applied on own initiative, `Passive=2` sourced),
 `Status` (`RunnerStatus`, stored as **text** via `EnumToStringConverter`:
 `SentToClient=1, InterviewScheduled, InterviewRescheduled, NoLongerAvailable, NoShow,
@@ -270,7 +308,7 @@ Entity-enforced constraints:
   **appends** a history row (never overwrites).
 - Any→any transitions allowed, **except `Hired` is terminal**; moving to `Hired` requires
   `StartDate`.
-- Same person cannot be a runner twice on one request (`IRunnerRepository.RunnerExists`).
+- Same worker cannot be a runner twice on one request (`IRunnerRepository.RunnerExists`).
 - Interviews (`RunnerInterview.cs`: `ScheduledDate`, `InterviewType` Phone/Video/Onsite,
   `Interviewer`, `InterviewStatus` Scheduled/Rescheduled, `Feedback`, `RescheduleCount`) can be
   added/rescheduled only in `InterviewScheduled`/`InterviewRescheduled`; rescheduling
@@ -308,8 +346,7 @@ Two parallel 1:1 hour-breakdown rows per timesheet, same shape (`ITimeSheetTotal
 
 Night shift is deprecated: `NightShiftHours` exists but pay stubs and invoices compute it as 0.
 
-Also: `TimeSheetPhoto` (punch-card photo evidence), `TimesheetHistory` (keyless read model for
-a worker's timesheet history view).
+Also: `TimesheetHistory` (keyless read model for a worker's timesheet history view).
 
 ---
 
@@ -371,12 +408,13 @@ Pay-stub equivalent for `WorkerProfile.IsSubcontractor` workers (no CPP/EI/tax):
 `ReportSubcontractorWageDetail`, `ReportSubcontractorPublicHoliday`,
 `ReportSubContractorOtherDeduction` (only lines with `Total > 0` are kept).
 
-### Deduction tables (`Entities/Deductions/`)
+### Deduction tables (`Entities/Accounting/Deductions/`)
 
-Row-per-earnings-range lookup tables loaded from CRA data: `Cpp{Weekly,BiWeekly,SemiMonthly,
-Monthly}`, `FederalTax{...}`, `ProvincialTax{...}` (interfaces `ICpp`, `IFederalTax`,
-`IProvincialTax`). Deductions are **range lookups by earnings/year, not formulas**; EI is the
-only computed one.
+Row-per-earnings-range lookup tables loaded from CRA data, consolidated into two entities:
+`CppDeduction` (table `CppDeductions`) and `TaxDeduction` (table `TaxDeductions`). Both carry a
+`PayPeriod` discriminator (`Weekly`, `BiWeekly`, `SemiMonthly`, `Monthly`); `TaxDeduction` adds
+`TaxType` (`Federal`, `Provincial`). Deductions are **range lookups by earnings/year, not
+formulas**; EI is the only computed one.
 
 ---
 
@@ -407,13 +445,12 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | User | `Email` |
 | Holiday | `Date` |
 | Source | `Value` |
-| CompanyProfile | `(CompanyId, AgencyId)` |
-| WorkerProfile | `(WorkerId, AgencyId)` |
+| CompanyProfile | `CompanyId` |
+| WorkerProfile | `WorkerId` |
 | AgencyPersonnel | `(AgencyId, UserId)` |
-| CompanyUser | `(CompanyId, UserId)` |
-| WorkerRequest | `(RequestId, WorkerId)` |
+| CompanyUser | `(CompanyProfileId, UserId)` |
+| WorkerRequest | `(RequestId, WorkerProfileId)` |
 | RequestRecruiter | `(RequestId, RecruiterId, WorkDate)` |
-| WorkerDispatch | `(RequestRecruiterId, WorkerProfileId)` |
 | WorkerProfileHoliday | `(WorkerProfileId, HolidayId)` |
 | TimeSheetTotalPayroll | `TimeSheetId` |
 | InvoiceUSA | `InvoiceNumber`; `InvoiceNumberId` |

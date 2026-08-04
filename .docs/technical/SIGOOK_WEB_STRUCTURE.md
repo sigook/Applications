@@ -66,7 +66,7 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | sharedApi.ts | Email preferences unsubscribe |
 | userNotificationApi.ts | In-app user notifications |
 | websiteApi.ts | Public: job search, contact form, candidate apply |
-| weeklyBoardApi.ts | Recruiting weekly board: assignments, dispatches |
+| weeklyBoardApi.ts | Recruiting weekly board: assignments, runners |
 | workerApi.ts | Worker portal: profile build, job apply, timesheet, wage/shift history |
 
 ---
@@ -84,7 +84,7 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | runner.ts | `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, interview models, `RunnerStartingToday` |
 | security.ts | `ChangeEmailRequest`, `GetEmailResponse`, `UserProfile` |
 | website.ts | `JobSearchFilter`, `JobViewModel`, `ContactForm` |
-| weeklyBoard.ts | `WeeklyBoard`, `RecruiterWeeklyBoard`, assignment/dispatch payloads |
+| weeklyBoard.ts | `WeeklyBoard`, `RecruiterWeeklyBoard`, assignment/runner payloads |
 | worker.ts | `WorkerProfile`, worker profile section models, `WorkerRequest*`, `WorkerTimeSheet*`, wage/timesheet history |
 
 ---
@@ -195,8 +195,8 @@ Domain folders + shared root-level components. Components take function refs (e.
 | notes/ | ColorPicker, ModalNotes, NoteForm, NotesPopover |
 | notifications/ | NotificationBell (agency sidebar bell, uses `useNotifications`) |
 | request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
-| runner/ | CreateRunner, RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
-| weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal, AddWorkersModal |
+| runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
+| weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
 | worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 
 ---
@@ -213,7 +213,7 @@ Exports the **`api` wrapper** (`get`, `post`, `put`, `patch`, `del`) that return
 
 ### roles.ts
 
-7 role strings mirroring backend `CovenantConstants.Role` (`superadmin`, `admin`, `recruiting`, `sales`, `company`, `companyUser`, `worker`) plus route-guard groups: `recruitingAccess`, `agencyStaff`, `salesAccess`, `accountingAccess`. See `.docs/business/ROLES_PERMISSIONS.md`.
+7 role strings mirroring backend `CovenantConstants.Role` (`superadmin`, `admin`, `recruiting`, `sales`, `company`, `companyUser`, `worker`) plus route-guard groups: `recruitingAccess`, `agencyStaff`, `salesAccess`, `adminAccess`. See `.docs/business/ROLES_PERMISSIONS.md`.
 
 ### securityService.ts
 
@@ -247,11 +247,11 @@ Sidebar navigation per role group: `recruitingMenu`, `salesMenu`, `accountingMen
 
 ---
 
-## src/composables/ (12 files)
+## src/composables/ (13 files)
 
 | File | Purpose |
 |------|---------|
-| useAccountingAdmin.ts | `isAccountingManager` check (superadmin, admin) |
+| useAdmin.ts | `isAdmin` check (superadmin, admin) |
 | useBodyScrollLock.ts | `lockScroll`/`unlockScroll` for modals |
 | useCarousel.ts | Generic carousel state (landing) |
 | useCreateWorker.ts | Worker registration flow |
@@ -261,6 +261,7 @@ Sidebar navigation per role group: `recruitingMenu`, `salesMenu`, `accountingMen
 | useNotifications.ts | Loads notification bell payload; maps typed lists → `AppNotification[]` grouped by type |
 | usePubSub.ts | Pub/sub event system |
 | useRecruitingAccess.ts | `hasRecruitingAccess` check (superadmin, admin, recruiting) |
+| useRunnerActions.ts | Runner menu state (status/interview/history modals) + delete with confirm; shared by the Runners tab and the weekly board |
 | useRevealOnScroll.ts | Reveal-on-scroll animation (landing) |
 | useStickyForm.ts | Persists in-progress form state |
 
@@ -319,7 +320,7 @@ assets/
 
 1. Login via IdentityServer (oidc-client-ts); `/callback` completes sign-in, `/silent-refresh` renews tokens in a hidden iframe.
 2. On 401, `apiService` retries once after `silentSignin`; on failure redirects to login.
-3. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAccountingAdmin`.
+3. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
 
 ### Patterns
 

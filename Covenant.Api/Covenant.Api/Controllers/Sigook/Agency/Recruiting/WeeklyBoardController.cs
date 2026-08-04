@@ -28,12 +28,12 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
     public async Task<IActionResult> GetMine([FromQuery] WeeklyBoardFilter filter) =>
         Ok(await weeklyBoardService.GetRecruiterWeeklyBoard(filter));
 
-    /// <summary>Gets every worker dispatched to an order across all recruiters and work days.</summary>
+    /// <summary>Gets every runner sent to an order across all recruiters and work days.</summary>
     /// <param name="requestId">Identifier of the order.</param>
-    [HttpGet("{requestId:guid}/dispatches")]
-    [ProducesResponseType(typeof(IEnumerable<WeeklyBoardDispatchModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetOrderDispatches(Guid requestId) =>
-        Ok(await weeklyBoardService.GetOrderDispatches(requestId));
+    [HttpGet("{requestId:guid}/runners")]
+    [ProducesResponseType(typeof(IEnumerable<WeeklyBoardRunnerModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOrderRunners(Guid requestId) =>
+        Ok(await weeklyBoardService.GetOrderRunners(requestId));
 
     /// <summary>Assigns one or more recruiters to an order for one or more work days.</summary>
     /// <param name="model">Assignment data: order, work days and recruiters.</param>
@@ -73,28 +73,14 @@ public class WeeklyBoardController(IWeeklyBoardService weeklyBoardService) : Con
         return Ok();
     }
 
-    /// <summary>Adds one or more workers sent by the current recruiter to an order for a specific work day.</summary>
-    /// <param name="model">Dispatch data: order, work day and worker profiles.</param>
-    [HttpPost("dispatch")]
+    /// <summary>Adds a runner sent by the current recruiter to an order for a specific work day.</summary>
+    /// <param name="model">Runner data: order, work day, worker profile and runner type.</param>
+    [HttpPost("runner")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddWorkers([FromBody] DispatchWorkersModel model)
+    public async Task<IActionResult> AddRunner([FromBody] AddRunnerModel model)
     {
-        var result = await weeklyBoardService.AddWorkers(model);
-        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        return Ok();
-    }
-
-    /// <summary>Removes a worker sent by the current recruiter from an order for a specific work day.</summary>
-    /// <param name="requestId">Identifier of the order.</param>
-    /// <param name="workDate">Work day of the dispatch.</param>
-    /// <param name="workerProfileId">Identifier of the worker profile to remove.</param>
-    [HttpDelete("dispatch")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> RemoveWorker([FromQuery] Guid requestId, [FromQuery] DateTime workDate, [FromQuery] Guid workerProfileId)
-    {
-        var result = await weeklyBoardService.RemoveWorker(requestId, workDate, workerProfileId);
+        var result = await weeklyBoardService.AddRunner(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

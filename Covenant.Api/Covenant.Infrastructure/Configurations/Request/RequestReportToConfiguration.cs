@@ -8,7 +8,7 @@ namespace Covenant.Infrastructure.Configurations.Request
     {
         public void Configure(EntityTypeBuilder<RequestReportTo> builder)
         {
-            builder.ToTable("RequestReportTo");
+            builder.ToTable("RequestReportTos");
             builder.HasKey(k => new { k.RequestId, RequestedById = k.ContactPersonId });
         }
     }

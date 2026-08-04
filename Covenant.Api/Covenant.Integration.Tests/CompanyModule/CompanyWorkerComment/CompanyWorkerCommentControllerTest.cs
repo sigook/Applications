@@ -1,16 +1,14 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyWorkerComment.Controllers;
-using Covenant.Api.Shared.WorkerComment.Models;
+using Covenant.Common.Models.Worker;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Repositories.Company;
-using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Company;
-using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
@@ -34,20 +32,17 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyWorkerComment
         [Fact]
         public async Task Post()
         {
-            Guid workerId = Startup.FakeWorker.Worker.Id;
-            string url = Url.Replace("{workerId:guid}", workerId.ToString());
+            Guid workerProfileId = Startup.FakeWorker.Id;
+            string url = Url.Replace("{workerProfileId:guid}", workerProfileId.ToString());
             var model = new CreateCommentModel { Comment = "Good worker", Rate = 5 };
             HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            WorkerComment entity = await context.WorkerComment.SingleAsync();
+            WorkerComment entity = await context.WorkerComments.SingleAsync();
             Assert.Equal(model.Comment, entity.Comment);
             Assert.Equal(model.Rate, entity.Rate);
-            Assert.Equal(workerId, entity.WorkerId);
-            Assert.Equal(Startup.FakeCompany.Company.Id, entity.CompanyId);
-            Assert.Null(entity.AgencyId);
-            response = await _client.GetAsync(response.Headers.Location);
-            response.EnsureSuccessStatusCode();
+            Assert.Equal(workerProfileId, entity.WorkerProfileId);
+            Assert.Equal(Startup.FakeCompany.Id, entity.CompanyProfileId);
         }
 
         public class Startup
@@ -66,7 +61,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyWorkerComment
                 });
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
-                services.AddSingleton<IWorkerCommentsRepository, WorkerCommentsRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<CompanyIdFilter>();
             }
@@ -83,8 +77,8 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyWorkerComment
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.WorkerProfile.Add(FakeWorker);
-                context.CompanyProfile.Add(FakeCompany);
+                context.WorkerProfiles.Add(FakeWorker);
+                context.CompanyProfiles.Add(FakeCompany);
                 context.SaveChanges();
             }
         }

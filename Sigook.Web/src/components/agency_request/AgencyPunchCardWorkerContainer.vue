@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <Calendar :highlights="data" :workerId="workerId" :requestId="requestId" :startDate="request.startAt"
+    <Calendar :highlights="data" :workerProfileId="workerProfileId" :requestId="requestId" :startDate="request.startAt"
       :status="request.status" :worker="worker" @onMonthChange="(args) => onMonthChange(args.startDate, args.endDate)">
       <template v-slot:punch-input="slotProps">
         <div v-if="slotProps.item.id !== null" class="mt-1">
@@ -32,13 +32,13 @@
                 <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button type="is-ghost" @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
                 </b-tooltip>
-                <b-tooltip v-if="isAccountingManager" label="Edit" type="is-dark" append-to-body>
+                <b-tooltip v-if="isAdmin" label="Edit" type="is-dark" append-to-body>
                   <b-button type="is-ghost" icon-right="pencil" @click="editPunchCard(slotProps.item)">
                   </b-button>
                 </b-tooltip>
                 <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved" append-to-body>
                   <b-button type="is-ghost" icon-right="check"
-                    @click="timeSheetFastApprove(slotProps.item, requestId, workerId)">
+                    @click="timeSheetFastApprove(slotProps.item, requestId, workerProfileId)">
                   </b-button>
                 </b-tooltip>
                 <div class="d-flex" v-if="slotProps.item.id && !slotProps.item.canUpdate">
@@ -74,7 +74,7 @@
               <b-field :type="itemErrors[slotProps.index] ? 'is-danger' : ''"
                 :message="itemErrors[slotProps.index] || ''">
                 <b-numberinput v-model="slotProps.item.totalHoursApproved" placeholder="Hours"
-                  :disabled="!isAccountingManager || !!slotProps.item.id" step="0.01" :name="'item' + slotProps.index"
+                  :disabled="!isAdmin || !!slotProps.item.id" step="0.01" :name="'item' + slotProps.index"
                   title="Approved hours" :controls="false">
                 </b-numberinput>
                 <b-button type="is-ghost" @click="validatePost(slotProps.item, slotProps.index)" v-if="!slotProps.item.id"
@@ -88,7 +88,7 @@
 
     <!-- Modal para punch card -->
     <b-modal v-model="showModalPunchCard">
-      <TimeSheetModal v-if="editableDay" :worker="{ workerId: workerId }" v-model:editable-day="editableDay"
+      <TimeSheetModal v-if="editableDay" :worker="{ workerProfileId: workerProfileId }" v-model:editable-day="editableDay"
         @updateData="updateCell" />
     </b-modal>
 
@@ -116,13 +116,13 @@ import {
 import Calendar from '../calendar/CalendarPunchCard.vue';
 import TimeSheetModal from '../../components/agency_request/AgencyRequestTimeSheetModal.vue';
 import TimeSheetDetail from '../../components/agency_request/AgencyRequestTimeSheetDetail.vue';
-import { useAccountingAdmin } from '@/composables/useAccountingAdmin';
+import { useAdmin } from '@/composables/useAdmin';
 
 dayjs.extend(duration);
 
-const props = defineProps<{ workerId: any; requestId: any; request: any; worker: any }>();
+const props = defineProps<{ workerProfileId: any; requestId: any; request: any; worker: any }>();
 
-const { isAccountingManager } = useAccountingAdmin();
+const { isAdmin } = useAdmin();
 
 const startDate = ref('');
 const endDate = ref('');
@@ -139,10 +139,10 @@ const itemErrors = ref<Record<string, string>>({});
 
 const maximumDailyHours = computed(() => maximumHoursPerDay);
 
-function timeSheetFastApprove(item: any, requestId: any, workerId: any) {
+function timeSheetFastApprove(item: any, requestId: any, workerProfileId: any) {
   isLoading.value = true;
   const model = buildTimeSheetApproveModel(item);
-  updateAgencyWorkerTimeSheet(requestId, workerId, item.id, model)
+  updateAgencyWorkerTimeSheet(requestId, workerProfileId, item.id, model)
     .then(() => {
       updateCell();
     })
@@ -156,7 +156,7 @@ function timeSheetFastApprove(item: any, requestId: any, workerId: any) {
 
 function loadTimeSheets() {
   isLoading.value = true;
-  getAgencyWorkerTimeSheetByDate(props.requestId, props.workerId, { startDate: startDate.value, endDate: endDate.value })
+  getAgencyWorkerTimeSheetByDate(props.requestId, props.workerProfileId, { startDate: startDate.value, endDate: endDate.value })
     .then(response => {
       isLoading.value = false;
       data.value = response;
@@ -209,7 +209,7 @@ function reportWorkerTimSheet(item: any) {
     deductionsOthers: item.deductionsOthers
   };
   isLoading.value = true;
-  postAgencyWorkerTimeSheet(props.requestId, props.workerId, model)
+  postAgencyWorkerTimeSheet(props.requestId, props.workerProfileId, model)
     .then(() => {
       isLoading.value = false;
       loadTimeSheets();
@@ -221,7 +221,7 @@ function reportWorkerTimSheet(item: any) {
 
 function deleteWorkerTimSheet(item: any) {
   isLoading.value = true;
-  deleteAgencyWorkerTimeSheet(props.requestId, props.workerId, item.id)
+  deleteAgencyWorkerTimeSheet(props.requestId, props.workerProfileId, item.id)
     .then(() => {
       isLoading.value = false;
       item.id = null;
@@ -244,7 +244,7 @@ function todayTimeZero(time: any) {
 
 function loadTimeSheetUsages(item: any) {
   isLoading.value = true;
-  getAgencyTimeSheetUsages(props.requestId, props.workerId, item.id)
+  getAgencyTimeSheetUsages(props.requestId, props.workerProfileId, item.id)
     .then((response) => {
       isLoading.value = false;
       currentTimeSheetUsage.invoiceNumber = response.invoiceNumber;

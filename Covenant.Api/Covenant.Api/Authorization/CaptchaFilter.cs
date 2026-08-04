@@ -23,6 +23,7 @@ namespace Covenant.Api.Authorization
             if (await ValidCaptcha(context))
             {
                 await next();
+                return;
             }
             context.Result = new BadRequestObjectResult("Captcha not valid");
         }

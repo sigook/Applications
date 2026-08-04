@@ -1,4 +1,4 @@
-using Covenant.Api.AgencyModule.AgencyPersonnel.Controllers;
+using Covenant.Api.Controllers.Sigook.Agency.Personnel;
 using RecruitingRequestsController = Covenant.Api.Controllers.Sigook.Agency.Recruiting.RequestsController;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
@@ -81,13 +81,13 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
     public async Task OnlyAccountingManagersCanListAssignableRoles(string role)
     {
         HttpClient client = ClientAs(role, Data.RecruiterUser.Id);
-        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync($"{AgencyPersonnelController.RouteName}/Roles")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync($"{PersonnelController.RouteName}/Roles")).StatusCode);
     }
 
     [Fact]
     public async Task AdminCannotSeeTheSuperAdminRole()
     {
-        HttpResponseMessage response = await AsAdmin().GetAsync($"{AgencyPersonnelController.RouteName}/Roles");
+        HttpResponseMessage response = await AsAdmin().GetAsync($"{PersonnelController.RouteName}/Roles");
         response.EnsureSuccessStatusCode();
         var roles = await response.Content.ReadFromJsonAsync<string[]>();
         Assert.Equal(CovenantConstants.Role.AgencyAssignable, roles);
@@ -97,7 +97,7 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
     public async Task SuperAdminSeesEveryAssignableRole()
     {
         HttpClient client = ClientAs(CovenantConstants.Role.SuperAdmin, Data.AdminUser.Id);
-        HttpResponseMessage response = await client.GetAsync($"{AgencyPersonnelController.RouteName}/Roles");
+        HttpResponseMessage response = await client.GetAsync($"{PersonnelController.RouteName}/Roles");
         response.EnsureSuccessStatusCode();
         var roles = await response.Content.ReadFromJsonAsync<string[]>();
         Assert.Equal(CovenantConstants.Role.SuperAdminAssignable, roles);
@@ -163,15 +163,15 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
         {
             FakeCompany.AddJobPositionRate(Rate);
             Guid rateId = FakeCompany.JobPositionRates.First().Id;
-            OwnRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, rateId, FakeLocation);
-            OtherSalesRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, rateId, FakeLocation);
-            UnassignedRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Company.Id, rateId, FakeLocation);
+            OwnRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId, FakeLocation);
+            OtherSalesRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId, FakeLocation);
+            UnassignedRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId, FakeLocation);
         }
 
         public static void Seed(CovenantContext context)
         {
             context.Agencies.Add(FakeAgency);
-            context.User.AddRange(SalesUser, OtherSalesUser, AdminUser, RecruiterUser);
+            context.Users.AddRange(SalesUser, OtherSalesUser, AdminUser, RecruiterUser);
             context.AgencyPersonnel.AddRange(SalesPersonnel, OtherSalesPersonnel, AdminPersonnel, RecruiterPersonnel);
             context.AddRange(FakeCompany, OwnRequest, OtherSalesRequest, UnassignedRequest);
             context.RequestComissions.AddRange(

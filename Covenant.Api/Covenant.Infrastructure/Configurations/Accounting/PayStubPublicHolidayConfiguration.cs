@@ -8,8 +8,13 @@ namespace Covenant.Infrastructure.Configurations.Accounting
     {
         public void Configure(EntityTypeBuilder<PayStubPublicHoliday> builder)
         {
-            builder.ToTable("PayStubPublicHoliday");
+            builder.ToTable("PayStubPublicHolidays");
             builder.HasKey(k => k.Id);
+
+            builder.HasOne(x => x.PayStub)
+                .WithMany(x => x.Holidays)
+                .HasForeignKey(x => x.PayStubId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 } 

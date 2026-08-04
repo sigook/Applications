@@ -6,7 +6,7 @@ using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Core.BL.Interfaces;
-using Covenant.Core.BL.Services.Invoices;
+using Covenant.Core.BL.Services.Accounting.Invoices;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
@@ -79,7 +79,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
         var service = await invoiceService.Value;
         var document = await service.GetInvoicePdf(invoiceId);
         if (document is null) return NotFound();
-        return PhysicalFile(document.PdfPath, MediaTypeNames.Application.Pdf, document.FileName);
+        return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
     }
 
     /// <summary>Gets the pay stubs linked to an invoice, including delete-warning information.</summary>
@@ -91,14 +91,16 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
 
     /// <summary>Generates the invoice PDF and emails it, with optional attachments, to the client.</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
-    /// <param name="model">Email content, recipients and attachment files.</param>
+    /// <param name="model">Email content and recipients.</param>
+    /// <param name="files">Files to attach to the email.</param>
     [HttpPost("{invoiceId:guid}/email")]
     [Consumes("multipart/form-data")]
 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model)
+    public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model, IFormFileCollection files)
     {
+        model.Attachments = files.ToEmailAttachments();
         var service = await invoiceService.Value;
         var result = await service.SendInvoiceEmail(invoiceId, model);
         if (result) return Ok();

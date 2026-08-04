@@ -37,35 +37,27 @@ public class BaseAzureStorage : IBaseAzureStorage
         var info = await blob.UploadAsync(stream, new BlobHttpHeaders { ContentType = contentType }, metadata ?? []);
     }
 
-    public async Task<string> Download(string fileName)
+    public async Task UploadAsync(byte[] content, string fileName, string contentType, Dictionary<string, string> metadata = default)
     {
-        try
-        {
-            var blob = container.GetBlobClient(fileName);
-            var response = await blob.DownloadAsync();
-            if (response is null) return string.Empty;
-            string path = Path.Combine(Path.GetTempPath(), fileName);
-            using (FileStream file = File.OpenWrite(path)) await response.Value.Content.CopyToAsync(file);
-            return path;
-        }
-        catch (Exception)
-        {
-            return string.Empty;
-        }
+        if (content is null || content.Length == 0) throw new ArgumentNullException(nameof(content));
+        var blob = container.GetBlobClient(fileName);
+        if (await blob.ExistsAsync()) return;
+        using var stream = new MemoryStream(content);
+        await blob.UploadAsync(stream, new BlobHttpHeaders { ContentType = contentType }, metadata ?? []);
     }
 
-    public async Task<string> DownloadContent(string fileName)
+    public async Task<byte[]> Download(string fileName)
     {
         try
         {
             var blob = container.GetBlobClient(fileName);
             var response = await blob.DownloadContentAsync();
-            if (response is null) return string.Empty;
-            return response.Value.Content.ToString();
+            if (response is null) return null;
+            return response.Value.Content.ToArray();
         }
-        catch (Exception)
+        catch
         {
-            return string.Empty;
+            return null;
         }
     }
 

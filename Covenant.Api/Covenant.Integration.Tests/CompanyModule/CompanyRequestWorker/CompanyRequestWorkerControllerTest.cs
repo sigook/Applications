@@ -63,7 +63,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
         [Fact]
         public async Task GetById()
         {
-            HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeWorkerRequest.WorkerId}");
+            HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeWorkerRequest.WorkerProfileId}");
             response.EnsureSuccessStatusCode();
             var model = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
             Assert.NotNull(model);
@@ -82,10 +82,10 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
         {
             var worker = Data.FakeWorkerRequestReject;
             var model = new CommentsModel { Comments = "Worker didn't show up" };
-            HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerId}/Reject", model);
+            HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerProfileId}/Reject", model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
-            var entity = await context.WorkerRequest.SingleAsync(s => s.Id == worker.Id);
+            var entity = await context.WorkerRequests.SingleAsync(s => s.Id == worker.Id);
             Assert.Equal(WorkerRequestStatus.Rejected, entity.WorkerRequestStatus);
             Assert.Equal(model.Comments, entity.RejectComments);
 
@@ -132,12 +132,12 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Availability.Add(Data.FakeAvailability);
-                context.Request.Add(Data.FakeRequest);
-                context.WorkerRequest.AddRange(Data.FakeWorkerRequest, Data.FakeWorkerRequestReject);
-                context.WorkerProfile.AddRange(Data.WorkerProfile, Data.FakeWorkerReject);
-                context.CompanyProfile.Add(Data.CompanyProfile);
-                context.CompanyProfileJobPositionRate.Add(Data.FakeRate);
+                context.Availabilities.Add(Data.FakeAvailability);
+                context.Requests.Add(Data.FakeRequest);
+                context.WorkerRequests.AddRange(Data.FakeWorkerRequest, Data.FakeWorkerRequestReject);
+                context.WorkerProfiles.AddRange(Data.WorkerProfile, Data.FakeWorkerReject);
+                context.CompanyProfiles.Add(Data.CompanyProfile);
+                context.CompanyProfileJobPositionRates.Add(Data.FakeRate);
                 context.SaveChanges();
             }
         }
@@ -157,7 +157,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                 Industry = new CompanyProfileIndustry("Company Industry")
             };
             public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(Agency.Id, CompanyProfile.Company.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
+            public static readonly Request FakeRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
             public static readonly Availability FakeAvailability = new Availability();
             private static WorkerProfile _workerProfile;
             public static WorkerProfile WorkerProfile
@@ -185,10 +185,10 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                 Location = new Location { City = new City { Province = new Province() } }
             };
 
-            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.WorkerId, FakeRequest.Id);
+            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);
 
             public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestReject =
-                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerReject.WorkerId, FakeRequest.Id, "recruiter@mail.com");
+                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerReject.Id, FakeRequest.Id, "recruiter@mail.com");
         }
     }
 }

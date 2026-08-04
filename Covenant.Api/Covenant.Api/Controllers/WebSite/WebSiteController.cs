@@ -1,4 +1,5 @@
 ﻿using Covenant.Api.Authorization;
+using Covenant.Core.BL.Extensions;
 using Covenant.Api.Common.Models;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
@@ -43,7 +44,7 @@ public class WebSiteController(
     {
         try
         {
-            var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/WebSite/Contact/Detail.cshtml", contact);
+            var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Website/Contact/Detail.cshtml", contact);
             await emailService.SendEmail(new EmailParams(string.Empty, contact.Subject, message)
             {
                 EmailSettingName = contact.EmailSetting

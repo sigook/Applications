@@ -191,7 +191,7 @@ Covenant.Api/
 ├── AgencyModule/         # Agency, Candidate, Request controllers
 ├── CompanyModule/        # Company, Profile, Request controllers
 ├── WorkerModule/         # Worker, Profile, Request controllers
-├── ManagerModule/        # Administrative controllers
+├── Controllers/Jobs/     # Endpoints triggered by Sigook.Functions timers
 └── Security/             # Authentication and user management
 ```
 

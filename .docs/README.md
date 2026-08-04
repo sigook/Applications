@@ -41,7 +41,7 @@
 
 **Modify payroll:**
 1. [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) — calculation rules
-2. Code: `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs` and `Covenant.Api/Covenant.Infrastructure/Deductions/`
+2. Code: `Covenant.Api/Covenant.Core.BL/Services/Accounting/` (PayStubService, DeductionImportService)
 
 **Modify billing:**
 1. [BILLING_RULES.md](./business/BILLING_RULES.md) — billing rules

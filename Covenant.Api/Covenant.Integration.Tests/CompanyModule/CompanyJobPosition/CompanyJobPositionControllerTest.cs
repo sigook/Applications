@@ -119,7 +119,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
                 shift.AddSaturday(TimeSpan.Parse("09:00"), TimeSpan.Parse("17:00"));
                 FakePosition.AddShift(shift);
                 FakeCompanyProfile.JobPositionRates.Add(FakePosition);
-                context.CompanyProfile.Add(FakeCompanyProfile);
+                context.CompanyProfiles.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }
         }
