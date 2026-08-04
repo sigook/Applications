@@ -13,7 +13,7 @@
         <div class="sd-meter__track">
           <div
             class="sd-meter__fill"
-            :style="{ width: ratioOf(item.count, max) * 100 + '%', backgroundColor: item.color }"
+            :style="{ width: widthScale(item.count) + '%', backgroundColor: item.color }"
           ></div>
         </div>
         <span class="sd-meter__count">{{ item.count }}</span>
@@ -24,13 +24,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { scaleLinear } from 'd3-scale';
+import { max as d3max } from 'd3-array';
 import type { SalesMeter } from '@/types/salesDashboard';
-import { ratioOf } from '@/utils/salesDashboardFormat';
 
 const props = defineProps<{ title: string; items: readonly SalesMeter[] }>();
 
-const max = computed(() =>
-  props.items.length > 0 ? Math.max(...props.items.map((item) => item.count)) : 0
+const max = computed<number>(() => d3max(props.items, (item) => item.count) ?? 0);
+
+// `|| 1` reproduces the old ratioOf guard: when max <= 0 every fill is 0%.
+const widthScale = computed(() =>
+  scaleLinear().domain([0, max.value || 1]).range([0, 100]).clamp(true)
 );
 </script>
 
