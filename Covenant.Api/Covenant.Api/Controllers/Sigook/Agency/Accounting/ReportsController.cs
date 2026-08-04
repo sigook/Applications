@@ -14,7 +14,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 
 [Route("api/agency/accounting/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Policy = PolicyConfiguration.Admin)]
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class ReportsController(
     IAccountingService accountingService,

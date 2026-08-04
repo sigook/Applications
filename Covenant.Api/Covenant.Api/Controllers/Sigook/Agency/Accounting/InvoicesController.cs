@@ -7,6 +7,7 @@ using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Accounting.Invoices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
@@ -14,6 +15,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 
 [Route("api/agency/accounting/[controller]")]
 [ApiController]
+[Authorize(Policy = PolicyConfiguration.Admin)]
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPayStubRepository payStubRepository) : ControllerBase
 {

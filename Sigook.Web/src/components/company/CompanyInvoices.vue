@@ -33,17 +33,11 @@
 import { ref, reactive } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { datetime, date, currency } from '@/utils/filters';
-import { downloadPDF } from '@/utils/downloadFile';
-import { fetchInvoicePdf } from "@/api/downloadApi";
 import { getCompanyInvoice } from "@/api/companyApi";
 
 const isLoading = ref(true);
 const totalItems = ref(0);
 const rows = ref<any[]>([]);
-const invoiceId = ref<any>(null);
-const invoiceNumber = ref<any>(null);
-const showModalCompanyInvoicePay = ref(false);
-const showModalPaymentSupport = ref(false);
 const serverParams = reactive<any>({
   sortBy: 0,
   isDescending: false,
@@ -65,39 +59,5 @@ function onGetCompanyInvoice() {
     });
 }
 
-function downloadInvoicePdf(item: any) {
-  isLoading.value = true;
-  fetchInvoicePdf(item.id)
-    .then((response: any) => {
-      isLoading.value = false;
-      downloadPDF(response, "Invoice_" + item.numberId);
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
-}
-
-function openCompanyInvoicePay(id: any, num: any) {
-  invoiceId.value = id;
-  showModalCompanyInvoicePay.value = true;
-  invoiceNumber.value = num;
-}
-
-function openPaymentSupportModal(id: any, num: any) {
-  showModalPaymentSupport.value = true;
-  invoiceId.value = id;
-  invoiceNumber.value = num;
-}
-
-function onModalCompanyInvoicePayClose(change: boolean) {
-  showModalCompanyInvoicePay.value = false;
-  if (change) {
-    onGetCompanyInvoice();
-  }
-}
-
 onGetCompanyInvoice();
-
-defineExpose({ downloadInvoicePdf, openCompanyInvoicePay, openPaymentSupportModal, onModalCompanyInvoicePayClose });
 </script>

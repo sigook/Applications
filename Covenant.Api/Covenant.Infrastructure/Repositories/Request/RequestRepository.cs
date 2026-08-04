@@ -1273,4 +1273,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var result = await context.Requests.AnyAsync(r => r.NumberId == requestId);
         return result;
     }
+
+    public async Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId)
+    {
+        return await context.Requests.AnyAsync(r => r.Id == requestId && r.CompanyProfile.CompanyId == companyId);
+    }
 }

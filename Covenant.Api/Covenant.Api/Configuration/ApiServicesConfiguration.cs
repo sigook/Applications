@@ -122,7 +122,6 @@ public static class ApiServicesConfiguration
     {
         services.AddScoped<ICandidateAdapter, CandidateAdapter>();
         services.AddScoped<ICompanyAdapter, CompanyAdapter>();
-        services.AddScoped<ICompanyAdapter, CompanyAdapter>();
         services.AddScoped<IWorkerAdapter, WorkerAdapter>();
         return services;
     }

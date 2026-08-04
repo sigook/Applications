@@ -1,5 +1,5 @@
 import { api } from '@/security/apiService';
-import type { Country, Province, City, LocationTax } from '@/types/common';
+import type { Country, Province, City, LocationTax, ProvinceSettings } from '@/types/common';
 
 export function getCountries(): Promise<Country[]> {
   return api.get<Country[]>('/api/Location/country');
@@ -17,8 +17,8 @@ export function createCity(city: { value: string; code?: string; province?: { id
   return api.post<City>('/api/Location/city', city);
 }
 
-export function addProvinceSetting(provinceId: string, settings: { paidHolidays?: boolean; overtimeStartsAfter?: number }): Promise<void> {
-  return api.post<void>(`/api/Location/province/${provinceId}/settings`, settings);
+export function updateProvinceSettings(provinceId: string, settings: ProvinceSettings): Promise<void> {
+  return api.put(`/api/Location/province/${provinceId}/settings`, settings);
 }
 
 export function getLocationTax(locationId: string): Promise<LocationTax | null> {

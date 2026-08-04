@@ -15,11 +15,6 @@ export function downloadAgencyReport(url: string, filter: ReportQueryParams): Pr
   return api.get<Blob>(url, { params: { ...filter }, responseType: 'blob' });
 }
 
-// Request timesheet document (PDF/Excel)
-export function getRequestTimeSheetDocument(requestId: string): Promise<Blob> {
-  return api.get<Blob>(`/api/Request/${requestId}/TimeSheet/Document`, { responseType: 'blob' });
-}
-
 // Workers report document (PDF/Excel)
 export function getWorkersReportDocument(requestId: string): Promise<Blob> {
   return api.get<Blob>(`/api/WorkersReportDocument/${requestId}/Document`, { responseType: 'blob' });

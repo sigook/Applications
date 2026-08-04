@@ -45,7 +45,7 @@ There are exactly **three** explicit states. Value `2` is intentionally skipped 
 
 A new `Request` is created with `Status = RequestStatus.Open` (default in the constructor).
 
-### 2. `AddWorker(workerId, startWorking)`
+### 2. `AddWorker(Guid workerProfileId, DateTime startWorking, string createdBy = null)` (`Request.cs:94`)
 
 Books a worker on the request. Triggers an automatic transition:
 
@@ -58,7 +58,7 @@ Pre-conditions:
 - The request must be `IsAvailableToApply` (i.e. `Status == Open`).
 - The request must not already be at full capacity.
 
-### 3. `RejectWorker(workerId, detail)`
+### 3. `RejectWorker(Guid workerProfileId, string detail, string rejectedBy = null)` (`Request.cs:125`)
 
 Rejects an assigned worker. Triggers:
 
@@ -69,9 +69,12 @@ if (Status == RequestStatus.Filled && WorkersQuantityWorking < WorkersQuantity)
 
 ### 4. `Cancel(now)`
 
-Cancels the request. Two strict pre-conditions:
+Cancels the request. Three strict pre-conditions, in order (`Request.cs:143`):
 
 ```csharp
+if (!CanBeUpdated)
+    return Result.Fail(TheRequestCanNotBeChanged);
+
 if (Status != RequestStatus.Open)
     return Result.Fail("Only requests in Open status can be cancelled");
 
@@ -79,17 +82,23 @@ if (WorkersQuantityWorking > 0)
     return Result.Fail("Cannot cancel requests with workers assigned. Please remove all workers first.");
 ```
 
+`CanBeUpdated => Status != RequestStatus.Cancelled` (`Request.cs:78`), so cancelling an already-cancelled request fails first with the generic "can't be changed" message, not the Open-only one.
+
 In other words, cancellation is only valid for an `Open` request that has zero booked workers. To cancel a request that already has assignees, the agency must first remove every worker (which transitions a `Filled` request back to `Open`).
+
+Note: after the guards, `Cancel()` runs `foreach (WorkerRequest worker in Workers) worker.Reject(...)` (`Request.cs:153-157`), but this loop is effectively unreachable for booked workers — the `WorkersQuantityWorking > 0` guard above already rejected any request with them. Do not "fix" that guard assuming the loop handles booked workers.
 
 ### 5. `Open(now)` (reopen)
 
-Reopens a cancelled request. The resulting state depends on the current capacity:
+Reopens a cancelled request. Calling it on an `Open` or `Filled` request is a silent no-op (returns `Result.Ok()`). For a `Cancelled` request, the resulting state depends on the current capacity, and the duration term is reset:
 
 ```csharp
 Status = WorkersQuantityWorking >= WorkersQuantity
     ? RequestStatus.Filled
     : RequestStatus.Open;
 ```
+
+Reopening also sets `DurationTerm = DurationTerm.LongTerm` (`Request.cs:179`), regardless of the original term.
 
 ### 6. `IncreaseWorkersQuantityByOne()` / `DecreaseWorkersQuantityByOne()`
 

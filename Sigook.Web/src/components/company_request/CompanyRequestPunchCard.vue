@@ -71,8 +71,7 @@ import DataEntryTerms from "@/components/DataEntryTerms.vue";
 import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { downloadFile } from '@/utils/downloadFile';
-import { getRequestWorkers } from '@/api/companyApi';
-import { getRequestTimeSheetDocument } from "@/api/agencyReportApi";
+import { getRequestWorkers, getCompanyRequestTimeSheetFile } from '@/api/companyApi';
 import { WorkerRequestStatusLabels } from "@/constants/enums";
 
 defineProps<{ request: any }>();
@@ -145,7 +144,7 @@ function getWorkers() {
 
 function downloadTimeSheetDocument() {
   isLoading.value = true;
-  getRequestTimeSheetDocument(serverParams.requestId)
+  getCompanyRequestTimeSheetFile(serverParams.requestId)
     .then((response: any) => {
       isLoading.value = false;
       downloadFile(response, `TimeSheet_${serverParams.requestId}`);
