@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Documents.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;

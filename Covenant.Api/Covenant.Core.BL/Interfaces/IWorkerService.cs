@@ -10,7 +10,6 @@ public interface IWorkerService
 {
     Task<Result<Guid>> CreateWorker(int? orderId);
     Task<Result> DeleteWorker(Guid workerProfileId);
-    Task<Result> UpdateWorkerPunchCardId(Guid profileId, Guid agencyId, string punchCardId);
     Task<Result<RequestApplicantDetailModel>> Apply(Guid requestId, WorkerRequestApplyModel model, Guid? workerId = null);
     Task<Result> UpdateProfileImage(Guid profileId);
     Task<Result> UpdateDocumentSection(Guid profileId, WorkerDocumentType documentType);

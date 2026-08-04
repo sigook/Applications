@@ -1,3 +1,4 @@
+using Covenant.Documents.Extensions;
 using ClosedXML.Excel;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;

@@ -10,13 +10,14 @@ Controllers:     Covenant.Api/Controllers/Sigook/                       (root: C
                  Covenant.Api/Controllers/Sigook/Agency/Candidates/     (Candidates, Notes, PhoneNumbers, Skills, Documents)
                  Covenant.Api/Controllers/Sigook/Agency/Workers/        (Workers, Notes, Comments, Holidays, RequestHistory)
                  Covenant.Api/Controllers/Sigook/Agency/Personnel/      (Personnel, Agencies)
-Module controllers: Covenant.Api/{Module}Module/                        (CompanyModule, WorkerModule, ManagerModule)
+                 Covenant.Api/Controllers/Jobs/                         (ScheduleTasks — called by Sigook.Functions timers)
+Module controllers: Covenant.Api/{Module}Module/                        (CompanyModule, WorkerModule)
 Services:        Covenant.Core.BL/Services/                             (PayStubService, RequestService, WorkerService, etc.)
                  Covenant.Core.BL/Services/Shared/                      (TimesheetCalculatorService — hours breakdown + deductions)
                  Covenant.Core.BL/Services/Invoices/                    (CanadaInvoiceService, UsaInvoiceService)
 Bus consumers:   Covenant.Core.BL/Consumers/                            (Email, Invitation, NewCandidate, RequestApplicant, Teams, BulkPayStubEmail)
 Entities:        Covenant.Common/Entities/{Domain}/                     (Accounting/, Agency/, Company/, Request/, Worker/, Candidate/)
-Models/DTOs:     Covenant.Common/Models/{Domain}/                       (mirrors Entities structure)
+Models/DTOs:     Covenant.Common/Models/{Domain}/                       (mirrors Entities structure — ALL of them, no exceptions)
 Repo interfaces: Covenant.Common/Repositories/{Domain}/
 Repo impls:      Covenant.Infrastructure/Repositories/{Domain}/
 EF configs:      Covenant.Infrastructure/Configurations/{Domain}/
@@ -43,6 +44,8 @@ Tests:           Covenant.Tests/
 
 ## Patterns
 
+- **Every model/DTO lives in `Covenant.Common/Models/{Domain}/`** — request bodies, responses, filters, view models. No `Models/` folders inside `Covenant.Api`, even for a DTO used by a single endpoint. Keep ASP.NET types (`IFormFile`) out of them: bind files as a separate controller parameter (see `InvoicesController.SendInvoiceEmail`).
+- **Validators live in `Covenant.Api/Validators/{Domain}/`**, one per file, named `{Model}Validator`. Never inline them next to the model.
 - All services/repos registered as `AddScoped<>` in `ApiServicesConfiguration.cs`
 - Repository pattern with interfaces in `Covenant.Common`, implementations in `Covenant.Infrastructure`
 - Services in `Covenant.Core.BL` depend only on repository interfaces

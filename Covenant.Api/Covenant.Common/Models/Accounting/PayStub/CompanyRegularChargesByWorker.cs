@@ -4,6 +4,8 @@ namespace Covenant.Common.Models.Accounting.PayStub
 {
     public class CompanyRegularChargesByWorker
     {
+        private const int TwentyDays = 20;
+
         public CompanyRegularChargesByWorker(Guid workerId, Guid workerProfileId, decimal agencyRate, decimal regular, decimal otherRegular)
         {
             WorkerId = workerId;
@@ -26,7 +28,7 @@ namespace Covenant.Common.Models.Accounting.PayStub
                     ? CovenantConstants.PublicHolidays.LimitForWorkerWorkedHours : partialTotalHours;
             }
         }
-        public double HoursToPay => TotalHours / CovenantConstants.PublicHolidays.TwentyDays;
+        public double HoursToPay => TotalHours / TwentyDays;
         public decimal AmountToPay => new decimal(HoursToPay) * AgencyRate;
     }
 }

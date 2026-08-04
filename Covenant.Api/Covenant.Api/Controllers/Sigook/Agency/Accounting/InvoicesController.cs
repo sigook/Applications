@@ -91,14 +91,16 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
 
     /// <summary>Generates the invoice PDF and emails it, with optional attachments, to the client.</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
-    /// <param name="model">Email content, recipients and attachment files.</param>
+    /// <param name="model">Email content and recipients.</param>
+    /// <param name="files">Files to attach to the email.</param>
     [HttpPost("{invoiceId:guid}/email")]
     [Consumes("multipart/form-data")]
 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model)
+    public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model, IFormFileCollection files)
     {
+        model.Attachments = files.ToEmailAttachments();
         var service = await invoiceService.Value;
         var result = await service.SendInvoiceEmail(invoiceId, model);
         if (result) return Ok();

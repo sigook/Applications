@@ -1,4 +1,5 @@
 ﻿using Covenant.Common.Configuration;
+using Covenant.Core.BL.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Notification;
@@ -171,22 +172,6 @@ public class WorkerService : IWorkerService
     public Task<Result> DeleteWorker(Guid workerProfileId)
     {
         throw new NotImplementedException();
-    }
-
-    public async Task<Result> UpdateWorkerPunchCardId(Guid profileId, Guid agencyId, string punchCardId)
-    {
-        var entity = await workerRepository.GetProfile(p => p.Id == profileId && p.AgencyId == agencyId);
-        if (entity is null) return Result.Fail();
-        if (!string.IsNullOrEmpty(punchCardId))
-        {
-            WorkerProfilePunchCardIdModel punchCardModel = await workerRepository.GetWorkerProfilePunchCarId(punchCardId);
-            if (punchCardModel != null && entity.Id != punchCardModel.Id)
-                return Result.Fail($"The worker {punchCardModel.WorkerFullName} is using this card please try another one");
-        }
-        entity.PunchCardId = punchCardId;
-        await workerRepository.UpdateProfile(entity);
-        await workerRepository.SaveChangesAsync();
-        return Result.Ok();
     }
 
     public async Task<Result<RequestApplicantDetailModel>> Apply(Guid requestId, WorkerRequestApplyModel model, Guid? workerId = null)

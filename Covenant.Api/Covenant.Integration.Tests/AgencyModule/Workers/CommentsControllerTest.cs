@@ -1,6 +1,6 @@
-using Covenant.Api.Controllers.Sigook.Agency.Workers;
+﻿using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
-using Covenant.Api.Shared.WorkerComment.Models;
+using Covenant.Common.Models.Worker;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;

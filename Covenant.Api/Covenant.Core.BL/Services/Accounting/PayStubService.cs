@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Documents.Extensions;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Enums;
@@ -12,7 +13,7 @@ using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Common.Utils.Extensions.Models.Accounting;
+using Covenant.Core.BL.Extensions.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
 using MediatR;

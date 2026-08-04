@@ -153,7 +153,6 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                 services.AddSingleton<INotificationRepository, NotificationRepository>();
                 services.AddSingleton<IWorkerService, WorkerService>();
                 services.AddSingleton(teamNotification.Object);
-                services.AddAutoMapper(typeof(Startup).Assembly);
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

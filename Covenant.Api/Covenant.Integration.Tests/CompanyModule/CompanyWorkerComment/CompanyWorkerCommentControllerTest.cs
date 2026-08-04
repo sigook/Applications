@@ -1,6 +1,6 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyWorkerComment.Controllers;
-using Covenant.Api.Shared.WorkerComment.Models;
+using Covenant.Common.Models.Worker;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Worker;

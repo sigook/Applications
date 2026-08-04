@@ -17,6 +17,9 @@ public class WorkerProfile :
     IWorkerContactInformation<Location, City>,
     IWorkerProfileOtherInformation<Lift>
 {
+    private const int SocialInsuranceMinLength = 9;
+    private const int SocialInsuranceMaxLength = 15;
+
     public WorkerProfile()
     {
     }
@@ -177,8 +180,8 @@ public class WorkerProfile :
         if (!string.IsNullOrEmpty(sinInformation.SocialInsurance))
         {
             int length = sinInformation.SocialInsurance.Length;
-            if (length < CovenantConstants.Validation.SocialInsuranceMinLength || length > CovenantConstants.Validation.SocialInsuranceMaxLength)
-                return Result.Fail(ValidationMessages.LengthMsg(ApiResources.SocialInsurance, CovenantConstants.Validation.SocialInsuranceMinLength, CovenantConstants.Validation.SocialInsuranceMaxLength));
+            if (length < SocialInsuranceMinLength || length > SocialInsuranceMaxLength)
+                return Result.Fail(ValidationMessages.LengthMsg(ApiResources.SocialInsurance, SocialInsuranceMinLength, SocialInsuranceMaxLength));
             if (sinInformation.SocialInsuranceExpire)
             {
                 if (sinInformation.DueDate is null) return Result.Fail(ValidationMessages.RequiredMsg(ApiResources.SocialInsuranceDate));

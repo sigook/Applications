@@ -30,17 +30,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Security.Models.ChangeEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Security.ChangeEmailModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Security.Models.ChangeEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Security.ChangeEmailModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Security.Models.ChangeEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Security.ChangeEmailModel"
               }
             }
           }
@@ -2674,17 +2674,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.CreateCommentModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.CreateCommentModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.CreateCommentModel"
               }
             }
           }
@@ -5966,17 +5966,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.CreateCommentModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.CreateCommentModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.CreateCommentModel"
               }
             }
           }
@@ -7637,17 +7637,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models.CompanyProfileInvoiceNotesModel"
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileInvoiceNotesModel"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models.CompanyProfileInvoiceNotesModel"
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileInvoiceNotesModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models.CompanyProfileInvoiceNotesModel"
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileInvoiceNotesModel"
                 }
               }
             }
@@ -7685,17 +7685,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models.CompanyProfileInvoiceNotesModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileInvoiceNotesModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models.CompanyProfileInvoiceNotesModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileInvoiceNotesModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models.CompanyProfileInvoiceNotesModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileInvoiceNotesModel"
               }
             }
           }
@@ -8441,11 +8441,10 @@
                   "Message": {
                     "type": "string"
                   },
-                  "Files": {
+                  "Attachments": {
                     "type": "array",
                     "items": {
-                      "type": "string",
-                      "format": "binary"
+                      "$ref": "#/components/schemas/Covenant.Common.Models.EmailAttachment"
                     }
                   },
                   "Cc": {
@@ -8453,6 +8452,14 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Files to attach to the email."
                   }
                 }
               },
@@ -8463,10 +8470,13 @@
                 "Message": {
                   "style": "form"
                 },
-                "Files": {
+                "Attachments": {
                   "style": "form"
                 },
                 "Cc": {
+                  "style": "form"
+                },
+                "files": {
                   "style": "form"
                 }
               }
@@ -17425,17 +17435,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Models.CompanyClockInModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.CompanyClockInModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Models.CompanyClockInModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.CompanyClockInModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Models.CompanyClockInModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.CompanyClockInModel"
               }
             }
           }
@@ -18851,129 +18861,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/PunchCardId": {
-      "put": {
-        "tags": [
-          "WorkerProfilePunchCardId"
-        ],
-        "summary": "Updates the punch card identifier of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Punch card identifier data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfilePunchCardIdUpdateModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfilePunchCardIdUpdateModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfilePunchCardIdUpdateModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "WorkerProfilePunchCardId"
-        ],
-        "summary": "Gets the punch card identifier of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfilePunchCardIdModel"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfilePunchCardIdModel"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfilePunchCardIdModel"
                 }
               }
             }
@@ -23121,54 +23008,6 @@
   },
   "components": {
     "schemas": {
-      "Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Models.CompanyClockInModel": {
-        "type": "object",
-        "properties": {
-          "clockIn": {
-            "type": "string",
-            "format": "date-span"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models.CompanyProfileInvoiceNotesModel": {
-        "type": "object",
-        "properties": {
-          "htmlNotes": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Api.Security.Models.ChangeEmailModel": {
-        "type": "object",
-        "properties": {
-          "newEmail": {
-            "type": "string",
-            "nullable": true
-          },
-          "confirmNewEmail": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Api.Shared.WorkerComment.Models.CreateCommentModel": {
-        "type": "object",
-        "properties": {
-          "comment": {
-            "type": "string",
-            "nullable": true
-          },
-          "rate": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Entities.Company.CompanyProfileIndustry": {
         "type": "object",
         "properties": {
@@ -24970,6 +24809,16 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Company.CompanyProfileInvoiceNotesModel": {
+        "type": "object",
+        "properties": {
+          "htmlNotes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Company.CompanyProfileInvoiceRecipientModel": {
         "type": "object",
         "properties": {
@@ -25384,6 +25233,34 @@
           },
           "canDownload": {
             "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.EmailAttachment": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "mediaType": {
+            "type": "string",
+            "nullable": true
+          },
+          "contentStream": {
+            "type": "string",
+            "format": "binary",
+            "nullable": true
+          },
+          "filePath": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "isPath": {
+            "type": "boolean",
+            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -27687,6 +27564,16 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.TimeSheet.CompanyClockInModel": {
+        "type": "object",
+        "properties": {
+          "clockIn": {
+            "type": "string",
+            "format": "date-span"
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Request.TimeSheet.RegisterTimeSheetResultModel": {
         "type": "object",
         "properties": {
@@ -28156,10 +28043,21 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Security.ChangeEmailModel": {
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "confirmNewEmail": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Security.UpdateEmailModel": {
-        "required": [
-          "newEmail"
-        ],
         "type": "object",
         "properties": {
           "id": {
@@ -28171,9 +28069,8 @@
             "nullable": true
           },
           "newEmail": {
-            "minLength": 1,
             "type": "string",
-            "format": "email"
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -28398,6 +28295,20 @@
             "type": "string",
             "nullable": true,
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Worker.CreateCommentModel": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "rate": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -29130,34 +29041,6 @@
         "properties": {
           "lift": {
             "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Worker.WorkerProfilePunchCardIdModel": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "punchCardId": {
-            "type": "string",
-            "nullable": true
-          },
-          "workerFullName": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Worker.WorkerProfilePunchCardIdUpdateModel": {
-        "type": "object",
-        "properties": {
-          "punchCardId": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

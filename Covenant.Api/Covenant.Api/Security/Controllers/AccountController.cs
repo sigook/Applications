@@ -1,5 +1,4 @@
-using Covenant.Api.Security.Models;
-using Covenant.Api.Utils.Extensions;
+﻿using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;

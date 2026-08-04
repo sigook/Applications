@@ -1,4 +1,4 @@
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.Subcontractor;
 using Covenant.Common.Functionals;
@@ -16,12 +16,10 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Common.Utils.Extensions.Models.Accounting;
+using Covenant.Core.BL.Extensions.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
 using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
@@ -128,7 +126,7 @@ public abstract class InvoiceService(
         if (document is null) return Result.Fail("Invoice not found");
 
         var invoice = document.Model;
-        var emailAttachments = BuildAttachments(model.Files);
+        var emailAttachments = model.Attachments ?? [];
         var invoiceStream = new MemoryStream(document.Content);
         emailAttachments.Add(new EmailAttachment($"Invoice {invoice.InvoiceNumber}.pdf", MediaTypeNames.Application.Pdf, invoiceStream));
 
@@ -174,28 +172,6 @@ public abstract class InvoiceService(
         return pdf.Value;
     }
 
-    private static List<EmailAttachment> BuildAttachments(IEnumerable<IFormFile> files)
-    {
-        var attachments = new List<EmailAttachment>();
-        if (files is null) return attachments;
-
-        foreach (var file in files)
-        {
-            var contentType = file.ContentType;
-            if (string.IsNullOrEmpty(contentType))
-            {
-                var fileProvider = new FileExtensionContentTypeProvider();
-                if (fileProvider.TryGetContentType(file.FileName, out string result))
-                {
-                    contentType = result;
-                }
-            }
-            using var reader = new BinaryReader(file.OpenReadStream());
-            var data = reader.ReadBytes((int)file.OpenReadStream().Length);
-            attachments.Add(new EmailAttachment(file.FileName, contentType, new MemoryStream(data)));
-        }
-        return attachments;
-    }
 
     #endregion
 

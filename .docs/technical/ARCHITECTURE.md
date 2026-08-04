@@ -22,7 +22,7 @@ Monorepo with seven applications. Each has its own `CLAUDE.md` with app-specific
 Framework:  ASP.NET Core 8.0 Web API
 Database:   PostgreSQL (cloud-hosted), EF Core 8.0.11 + Npgsql 8.0.10
 Patterns:   Repository, Service Layer, MediatR (document generation)
-Packages:   MediatR 12.4.1, AutoMapper 12.0.1, FluentValidation 11.10.0, Serilog,
+Packages:   MediatR 12.4.1, FluentValidation 11.10.0, Serilog,
             Swashbuckle 7.2.0, Azure.Messaging.ServiceBus 7.18.2,
             Azure.Storage.Blobs 12.24.0, ClosedXML 0.104.2, PdfPig 0.1.15
 Cloud:      Azure App Service, Azure Service Bus, Azure Blob Storage, Azure Container Registry
@@ -141,6 +141,18 @@ Covenant.Api/
   Keep these in sync with `Covenant.Common` by hand — the API exchanges DTOs with IdentityServer
   over HTTP.
 - `Sigook.Functions` doesn't reference it either; it only calls the API over HTTP.
+- **Declare what you use**: every project lists a `PackageReference` for each package its own code
+  compiles against, even when a referenced project already brings it in transitively. Duplicated
+  declarations cost nothing (NuGet resolves one package, one version) and keep a lower layer from
+  breaking the ones above it when it drops a dependency. Conversely, `Covenant.Common` only carries
+  what it actually compiles against (CsvHelper, FluentValidation, libphonenumber, ASP.NET Identity
+  EF) — don't add packages there just because a downstream project needs them.
+- **Versions are centralized** in `Covenant.Api/Directory.Packages.props`
+  (`ManagePackageVersionsCentrally`). `PackageReference` entries carry no `Version` — add or bump
+  the `PackageVersion` in that file so every project resolves the same version.
+- Keep infrastructure concerns out of `Covenant.Common`: Excel helpers live in `Covenant.Documents`,
+  ASP.NET-bound helpers (`IFormFile`, `IConfiguration`, Razor helpers) in `Covenant.Api`/
+  `Covenant.Core.BL`, and test-only helpers in `Covenant.Test.Utils`.
 
 ### Controllers (presentation layer)
 
@@ -161,6 +173,7 @@ Two coexisting layouts:
 | `Controllers/Sigook/Agency/Workers/` | worker-profile management: `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController` |
 | `Controllers/Sigook/Agency/Personnel/` | `PersonnelController` (agency back-office users), `AgenciesController` (agencies the caller belongs to) |
 | `Controllers/WebSite/` | `WebSiteController` (public marketing endpoints) |
+| `Controllers/Jobs/` | `ScheduleTasksController` (called by Sigook.Functions timers) |
 
 **2. Module folders** under `Covenant.Api/{Module}Module/{Resource}/Controllers/`:
 
@@ -168,7 +181,6 @@ Two coexisting layouts:
 |---|---|
 | `CompanyModule/` | company perspective: requests, profile, locations, job positions, request workers, timesheets, invoices, users |
 | `WorkerModule/` | worker perspective: profile, requests, request history, timesheets (clock in/out) |
-| `ManagerModule/` | `ScheduleTasksController` (called by Sigook.Functions timers), `WorkerProfilePunchCardIdController` |
 
 Routing: older controllers declare `public const string RouteName = "api/..."` +
 `[Route(RouteName)]` (grep for `RouteName =` to find an endpoint); newer ones use attribute
