@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-2">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         Invoices
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
         <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
@@ -23,7 +23,7 @@
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="invoiceNumber" label="Invoice Number" sortable searchable>
@@ -76,12 +76,12 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
                   @click="onDownloadInvoicePdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-info" outlined rounded icon-right="email" class="me-2"
+                <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
                   @click="openSendEmailModal(props.row)">
                 </b-button>
               </b-tooltip>
@@ -95,11 +95,11 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showDeleteModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showDeleteModal" width="800px">
       <delete-invoice v-if="currentInvoice" :invoice="currentInvoice" @deleted="onDeleteInvoice" />
     </b-modal>
 
-    <b-modal v-model="showSendEmailModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showSendEmailModal" width="500px">
       <send-invoice-email v-if="currentInvoice" :invoice="currentInvoice" @sent="onSendInvoiceEmail" />
     </b-modal>
   </div>

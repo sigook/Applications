@@ -2,15 +2,15 @@
   <div class="p-3">
     <div v-if="candidate">
       <b-loading v-model="isLoading"></b-loading>
-      <h2 class="text-center main-title">{{ candidate.name }}</h2>
+      <h2 class="has-text-centered main-title">{{ candidate.name }}</h2>
       <form @submit.prevent="validateForm">
-        <div class="container-flex">
-          <div class="col-12">
+        <div class="columns is-multiline">
+          <div class="column is-12">
             <b-checkbox v-model="candidate.dnu" :disabled="hasDnuPermission">
               DNU
             </b-checkbox>
           </div>
-          <div class="col-12">
+          <div class="column is-12">
             <b-field :type="formErrors.name ? 'is-danger' : ''" :message="formErrors.name">
               <template #label>
                 Full Name <span class="has-text-danger">*</span>
@@ -18,7 +18,7 @@
               <b-input type="text" v-model="name" name="name" />
             </b-field>
           </div>
-          <div class="col-12 mb-1">
+          <div class="column is-12 mb-1">
             <b-field :type="formErrors.email ? 'is-danger' : ''" :message="formErrors.email">
               <template #label>
                 Email <span class="has-text-danger">*</span>
@@ -26,11 +26,11 @@
               <b-input type="email" v-model="email" name="email" />
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="column is-12">
             <PhoneInput ref="phoneComponent" model="Phone" :required="true" :defaultValue="phoneNumber"
               @formattedPhone="(phone: string) => phoneNumber = phone" />
           </div>
-          <div class="col-12 mb-3">
+          <div class="column is-12 mb-3">
             <b-field :type="formErrors.address ? 'is-danger' : ''" :message="formErrors.address">
               <template #label>
                 Address <span class="has-text-danger">*</span>
@@ -38,7 +38,7 @@
               <b-input type="text" v-model="address" name="address" />
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="column is-12">
             <b-field :type="sourceError ? 'is-danger' : ''" :message="sourceError">
               <template #label>
                 Source <span class="has-text-danger">*</span>
@@ -48,7 +48,7 @@
               </b-select>
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="column is-12">
             <b-field label="Status">
               <b-select v-model="candidate.residencyStatus" expanded placeholder="Select a residency status">
                 <option v-for="(item, index) in residencyList" :key="index" :value="item">{{ item }}
@@ -56,21 +56,21 @@
               </b-select>
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="column is-12">
             <b-field label="Gender">
               <b-select v-model="candidate.gender" expanded placeholder="Select a gender">
                 <option v-for="item in genders" v-bind:key="item.id" :value="item">{{ item.value }}</option>
               </b-select>
             </b-field>
           </div>
-          <div class="col-12 mb-3">
+          <div class="column is-12 mb-3">
             <b-field label="Has Vehicle">
               <b-switch v-model="candidate.hasVehicle" :true-value="true" :false-value="false">
                 {{ candidate.hasVehicle ? "Yes" : "No" }}
               </b-switch>
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="column is-12">
             <b-button type="is-primary" rounded native-type="submit">Update</b-button>
           </div>
         </div>

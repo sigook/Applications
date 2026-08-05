@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field>
           <template #label>
             {{ "File" }} <span class="has-text-danger">*</span>
@@ -23,7 +23,7 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
+      <div class="column is-8">
         <b-field :type="formErrors.description ? 'is-danger' : ''"
           :message="formErrors.description || ''">
           <template #label>
@@ -32,18 +32,18 @@
           <b-input type="text" v-model="description" name="license description" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div class="column is-4">
         <b-field label="Number">
           <b-input type="text" v-model="number" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Issued">
           <b-datepicker v-model="issued" :focused-date="todayDate" :max-date="todayDate"
             :mobile-native="false" append-to-body position="is-top-right" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.expires ? 'is-danger' : ''"
           :message="formErrors.expires || ''">
           <template #label>
@@ -53,7 +53,7 @@
             :mobile-native="false" append-to-body position="is-top-right" name="licenseExpires" />
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
           {{ "Save" }}
         </b-button>

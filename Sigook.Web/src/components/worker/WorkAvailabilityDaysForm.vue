@@ -1,16 +1,16 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field :label="'Available days'">
-          <div class="container-flex">
-            <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-6 is-3-desktop">
               <b-checkbox v-model="allDaysSelected" @update:modelValue="changeDaysSelected">
                 All Days
               </b-checkbox>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-for="day in days" v-bind:key="day.id">
+            <div class="column is-6 is-3-desktop" v-for="day in days" v-bind:key="day.id">
               <b-checkbox v-model="worker.availabilityDays" :native-value="day" @update:modelValue="changeAllDays">
                 {{ day.value }}
               </b-checkbox>
@@ -18,7 +18,7 @@
           </div>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveWorkerAvailabilityDays()">
           {{ "Save" }}
         </b-button>

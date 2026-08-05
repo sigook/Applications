@@ -1,6 +1,6 @@
 <template>
     <section>
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="is-flex is-align-items-center is-justify-content-space-between">
             <h3 class="section-title">{{ 'Resume' }}</h3>
             <b-button type="is-info" outlined rounded icon-right="pencil"
               @click="modal = true"></b-button>
@@ -16,7 +16,7 @@
                 </span>
             </div>
         </div>
-        <b-modal v-model="modal" width="500px">
+        <b-modal custom-content-class="card" v-model="modal" width="500px">
             <resume-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
         </b-modal>
     </section>

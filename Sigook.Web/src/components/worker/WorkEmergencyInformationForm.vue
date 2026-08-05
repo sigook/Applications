@@ -1,15 +1,15 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-4">
         <b-field :label="'Do you have any health problems / allergies?'" class="has-text-weight-normal">
           <b-switch v-model="worker.haveAnyHealthProblem">
             {{ worker.haveAnyHealthProblem ? 'Yes' : 'No' }}
           </b-switch>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding" v-if="worker.haveAnyHealthProblem">
+      <div class="column is-4" v-if="worker.haveAnyHealthProblem">
         <b-field :type="formErrors.healthProblem ? 'is-danger' : ''"
           :message="formErrors.healthProblem || ''">
           <template #label>
@@ -19,16 +19,16 @@
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding" v-if="worker.haveAnyHealthProblem">
+      <div class="column is-4" v-if="worker.haveAnyHealthProblem">
         <b-field :label="'Other allergies'" class="has-text-weight-normal">
           <b-input type="text" v-model="worker.otherHealthProblem">
           </b-input>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
-        <h1 class="fw-bold">{{ 'In case of emergency notify' }}</h1>
+      <div class="column is-12">
+        <h1 class="has-text-weight-bold">{{ 'In case of emergency notify' }}</h1>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.contactEmergencyName ? 'is-danger' : ''"
           :message="formErrors.contactEmergencyName || ''">
           <template #label>
@@ -38,7 +38,7 @@
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field class="has-text-weight-normal"
           :type="formErrors.contactEmergencyLastName ? 'is-danger' : ''"
           :message="formErrors.contactEmergencyLastName || ''">
@@ -49,12 +49,12 @@
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <PhoneInput ref="emergencyPhoneComponent" :required="true" model="Contact Emergency Phone"
           :defaultValue="worker.contactEmergencyPhone"
           @formattedPhone="(phone) => worker.contactEmergencyPhone = phone" />
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
           {{ "Save" }}
         </b-button>

@@ -1,13 +1,13 @@
 <template>
   <div class="p-3">
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field :label="title" :type="formErrors.dataModel ? 'is-danger' : ''"
           :message="formErrors.dataModel || ''">
           <b-input type="textarea" :name="title" v-model="dataModel"></b-input>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="onSave">Save</b-button>
       </div>
     </div>

@@ -12,7 +12,7 @@
         pagination-rounded :per-page="pageSize" detail-transition="fade" v-model:current-page="pageIndex" pagination-size="is-small"
         :has-detailed-visible="(row) => row.description">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="jobPosition" label="Role" searchable>
@@ -45,7 +45,7 @@
               :companyProfileId="profileId" />
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <b-button type="is-info" outlined rounded icon-right="pencil" class="me-2"
+            <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
               @click="openEditModal(props.row)"></b-button>
             <b-button type="is-danger" outlined rounded icon-right="delete"
               @click="onDeleteJobPosition(props.row.id)"></b-button>
@@ -58,13 +58,13 @@
     </div>
 
     <!-- Custom modal -->
-    <b-modal v-model="showModal" @close="closeVueModal" width="850px">
+    <b-modal custom-content-class="card" v-model="showModal" @close="closeVueModal" width="850px">
       <position-form :current-position="currentPosition" :profile-id="profileId"
         @updateContent="onUpdateModal"></position-form>
     </b-modal>
 
     <!-- Request Role Modal -->
-    <b-modal v-model="showModalRole" @close="closeRequestPositionModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showModalRole" @close="closeRequestPositionModal" width="500px">
       <request-position-form :profile-id="profileId" @closeModal="closeRequestPositionModal" />
     </b-modal>
   </div>

@@ -2,7 +2,7 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <form class="form-md" @submit.prevent="onSubmit">
-      <div class="col-12 col-padding">
+      <div class="">
         <div>
           <h2 class="main-title">
             {{ isUpdate ? `Update Candidate Request (${request.numberId})` : "Create Candidate Request" }}
@@ -10,8 +10,8 @@
           <span class="line-orange"></span>
         </div>
       </div>
-      <div class="container-flex">
-        <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-12">
           <b-field>
             <b-checkbox v-model="directHiring">Direct Hiring?</b-checkbox>
             <b-checkbox v-model="request.isAsap" :disabled="isUpdate">Is Asap?</b-checkbox>
@@ -20,37 +20,37 @@
               title?</b-checkbox>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+        <div class="column is-6 is-4-desktop">
           <b-field :type="errors.jobTitle ? 'is-danger' : ''" :label="`${'Job title'} *`"
             :message="errors.jobTitle || ''">
             <b-input v-model="jobTitle" name="job title"></b-input>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+        <div class="column is-6 is-4-desktop">
           <b-field :type="errors.billingTitle ? 'is-danger' : ''" label="Billing Title *"
             :message="errors.billingTitle || ''">
             <b-input v-model="billingTitle" name="billingTitle" :disabled="sameBillingTitle"></b-input>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAdmin">
+        <div class="column is-6 is-4-desktop" v-if="isAdmin">
           <b-field :type="errors.jobCosting ? 'is-danger' : ''" label="Job Costing"
             :message="errors.jobCosting || ''">
             <b-input v-model="jobCosting" name="jobCosting"></b-input>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="directHiring">
+        <div class="column is-6 is-4-desktop" v-if="directHiring">
           <b-field :type="errors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
             :message="errors.workerSalary || ''">
             <b-numberinput v-model="workerSalary" name="workerSalary" controls-alignment="right"></b-numberinput>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+        <div class="column is-6 is-4-desktop">
           <b-field :type="errors.workersQuantity ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
             :message="errors.workersQuantity || ''">
             <b-numberinput v-model="workersQuantity" name="worker quantity" controls-alignment="right" expanded></b-numberinput>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="!directHiring">
+        <div class="column is-6 is-4-desktop" v-if="!directHiring">
           <b-field :type="errors.jobPosition ? 'is-danger' : ''" :label="`${'Rol'} *`"
             :message="errors.jobPosition || ''">
             <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="jobPosition"
@@ -67,7 +67,7 @@
           </b-field>
           <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+        <div class="column is-6 is-4-desktop">
           <b-field :label="`${'Branch office'} *`" :message="errors.branchOffice || ''"
             :type="errors.branchOffice ? 'is-danger' : ''">
             <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="branchOffice" open-on-focus
@@ -80,7 +80,7 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="isAdmin">
+        <div class="column is-6 is-4-desktop" v-if="isAdmin">
           <b-field label="Sales Representative">
             <b-autocomplete :data="filteredSalesRepresentative" placeholder="Sales Rep." v-model="salesRepresentative"
               open-on-focus :custom-formatter="(option) => `${option.name} - ${option.email}`"
@@ -88,7 +88,7 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-if="companyUsers.length > 0">
+        <div class="column is-6 is-4-desktop" v-if="companyUsers.length > 0">
           <b-field label="Company User">
             <b-taginput v-model="companyUsersSelected" autocomplete :data="companyUsers" open-on-focus icon="label"
               ref="companyUserTagInput" :placeholder="'Select'">
@@ -105,23 +105,24 @@
           </b-field>
         </div>
         <br />
-        <div class="container-flex">
-          <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
-            <b-field :label="`${'Description'} *`" :message="errors.description || ''"
+        <div class="column is-12">
+          <div class="columns is-multiline">
+            <div class="column is-12 is-6-desktop">
+              <b-field :label="`${'Description'} *`" :message="errors.description || ''"
               :type="errors.description ? 'is-danger' : ''">
               <div class="vue-trix-editor">
                 <QuillEditor theme="snow" content-type="html" v-model:content="description" />
               </div>
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
+          <div class="column is-12 is-6-desktop">
             <b-field label="Responsibilities">
               <div class="vue-trix-editor">
                 <QuillEditor theme="snow" content-type="html" v-model:content="request.responsibilities" />
               </div>
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
+          <div class="column is-12 is-6-desktop">
             <b-field :label="`${'Requirements'} *`" :message="errors.requirements || ''"
               :type="errors.requirements ? 'is-danger' : ''">
               <div class="vue-trix-editor">
@@ -129,48 +130,49 @@
               </div>
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-12 col-lg-6 col-padding">
-            <b-field label="Internal Requirements">
-              <div class="vue-trix-editor">
-                <QuillEditor theme="snow" content-type="html" v-model:content="request.internalRequirements" />
-              </div>
-            </b-field>
+            <div class="column is-12 is-6-desktop">
+              <b-field label="Internal Requirements">
+                <div class="vue-trix-editor">
+                  <QuillEditor theme="snow" content-type="html" v-model:content="request.internalRequirements" />
+                </div>
+              </b-field>
+            </div>
           </div>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" disabled="!directHiring">
+        <div class="column is-6 is-3-desktop" disabled="!directHiring">
           <b-field :type="errors.incentive ? 'is-danger' : ''" :label="'Incentive'"
             :message="errors.incentive || ''">
             <b-numberinput controls-alignment="right" v-model="incentive" name="incentive" step="0.01" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-9 col-padding">
+        <div class="column is-6 is-9-desktop">
           <b-field :type="errors.incentiveDescription ? 'is-danger' : ''" :label="'Incentive Description'"
             :message="errors.incentiveDescription || ''">
             <b-input v-model="incentiveDescription" name="incentiveDes" :disabled="!incentive" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="!directHiring">
+        <div class="column is-6 is-3-desktop" v-if="!directHiring">
           <b-field :label="'Duration break is paid'">
             <b-switch v-model="request.breakIsPaid" :true-value="true" :false-value="false">
               {{ request.breakIsPaid ? "Yes" : "No" }}
             </b-switch>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="!directHiring">
+        <div class="column is-6 is-3-desktop" v-if="!directHiring">
           <b-field label="Duration Break">
             <b-timepicker v-model="request.durationBreak" :max-time="maxBreak" hour-format="24"
               :disabled="!request.breakIsPaid">
             </b-timepicker>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-if="!directHiring">
+        <div class="column is-6" v-if="!directHiring">
           <b-field :label="'Punch card is visible in app'">
             <b-switch v-model="request.punchCardOptionEnabled" :true-value="true" :false-value="false">
               {{ request.punchCardOptionEnabled ? "Yes" : "No" }}
             </b-switch>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <div class="column is-6 is-3-desktop">
           <b-field label="Duration Term">
             <b-select v-model="request.durationTerm" expanded>
               <option :value="DurationTerm.LongTerm">
@@ -182,7 +184,7 @@
             </b-select>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <div class="column is-6 is-3-desktop">
           <b-field label="Employment Type">
             <b-select v-model="request.employmentType" expanded>
               <option :value="EmploymentType.FullTime">
@@ -200,34 +202,34 @@
             </b-select>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <div class="column is-6 is-3-desktop">
           <b-field label="Start *" :type="errors.startAt ? 'is-danger' : ''"
             :message="errors.startAt || ''">
             <b-datepicker v-model="startAt" name="from" :min-date="timeZero">
             </b-datepicker>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-if="request.durationTerm === DurationTerm.ShortTerm">
+        <div class="column is-6 is-3-desktop" v-if="request.durationTerm === DurationTerm.ShortTerm">
           <b-field label="Finish">
             <b-datepicker v-model="request.finishAt" name="from" :min-date="startAt" :max-date="finishDate">
             </b-datepicker>
           </b-field>
         </div>
       </div>
-      <div class="col-12 mt-5">
+      <div class="mt-5">
         <b-button type="is-primary" native-type="submit">
           {{ isUpdate ? 'Update' : "Create" }}
         </b-button>
       </div>
     </form>
 
-    <b-modal v-model="showRolesModal" @close="showRolesModal = false" width="850px">
+    <b-modal custom-content-class="card" v-model="showRolesModal" @close="showRolesModal = false" width="850px">
       <position-form v-if="isAdmin" :profile-id="companyProfileId"
         @updateContent="onUpdateRolesModal"></position-form>
       <request-position-form v-else :profile-id="companyProfileId" @closeModal="() => showRolesModal = false" />
     </b-modal>
 
-    <b-modal v-model="showLocationModal" @close="showLocationModal = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showLocationModal" @close="showLocationModal = false" width="500px">
       <location-form :profile-id="companyProfileId" @updateContent="onUpdateLocationModal"></location-form>
     </b-modal>
   </div>

@@ -2,7 +2,7 @@
   <div class="p-2 p-sm-4">
     <b-loading v-model="isLoading"></b-loading>
 
-    <h2 class="fz1 fw-bold mb-4">Workers to review attendance</h2>
+    <h2 class="fz1 has-text-weight-bold mb-4">Workers to review attendance</h2>
 
     <b-table :data="workers" :mobile-cards="true" :striped="true" :hoverable="true">
       <b-table-column field="workerName" label="Worker" v-slot="props">

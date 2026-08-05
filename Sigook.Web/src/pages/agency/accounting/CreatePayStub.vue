@@ -1,14 +1,14 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-2">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         Create PayStub
       </h2>
     </div>
     <div>
-      <div class="container-flex">
-        <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-4">
           <b-field label="Worker" :type="formErrors.worker ? 'is-danger' : ''"
             :message="formErrors.worker || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="worker" :data="workers" placeholder="Worker" name="worker"
@@ -16,19 +16,19 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+        <div class="column is-4">
           <b-field label="Position" :type="formErrors.position ? 'is-danger' : ''"
             :message="formErrors.position">
             <b-input v-model="position" name="position"></b-input>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+        <div class="column is-4">
           <b-field label="Dates of work" :type="formErrors.datesOfWork ? 'is-danger' : ''"
             :message="formErrors.datesOfWork">
             <b-datepicker v-model="datesOfWork" name="datesOfWork" range @update:modelValue="onDatesSelected" />
           </b-field>
         </div>
-        <div class="col-12 col-padding">
+        <div class="column is-12">
           <b-field label="Pay Vacations">
             <b-switch v-model="payVacations">
               {{ payVacations ? 'Yes' : 'No' }}
@@ -36,22 +36,22 @@
           </b-field>
         </div>
       </div>
-      <div class="container-flex">
+      <div class="columns is-multiline">
         <!-- Items Section -->
-        <div class="col-12 col-padding">
-          <h3 class="fz1 fw-semibold mb-3">Items</h3>
+        <div class="column is-12">
+          <h3 class="fz1 has-text-weight-semibold mb-3">Items</h3>
           <div class="expandable-section-container mb-5">
             <div class="expandable-section-header" @click="addItem"
               :class="{ 'is-disabled': availableItemTypes.length === 0 }">
-              <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
-                <b-icon icon="plus-circle" class="me-2"></b-icon>
+              <h3 class="expandable-section-title fz1 has-text-weight-semibold mb-2 has-text-centered">
+                <b-icon icon="plus-circle" class="mr-2"></b-icon>
                 Add Item
               </h3>
-              <p class="fz-1 color-gray mb-0 text-center">Click here to add an item to the pay stub</p>
+              <p class="fz-1 color-gray mb-0 has-text-centered">Click here to add an item to the pay stub</p>
             </div>
             <div class="expandable-section-list" v-if="items.length > 0">
-              <div class="container-flex" v-for="(item, i) in items" :key="i">
-                <div class="col-sm-6 col-md-3 col-lg-3 col-padding">
+              <div class="columns is-multiline" v-for="(item, i) in items" :key="i">
+                <div class="column is-6-mobile is-3">
                   <b-field label="Type" expanded :type="itemErrors['type' + i] ? 'is-danger' : ''"
                     :message="itemErrors['type' + i]">
                     <b-select v-model="item.type" :name="'type' + i" expanded
@@ -63,31 +63,31 @@
                     </b-select>
                   </b-field>
                 </div>
-                <div class="col-sm-6 col-md-3 col-lg-2 col-padding">
+                <div class="column is-6-mobile is-3 is-2-desktop">
                   <b-field label="Description" expanded>
                     <b-input v-model="item.description" placeholder="Optional"></b-input>
                   </b-field>
                 </div>
-                <div class="col-sm-6 col-md-2 col-lg-2 col-padding">
+                <div class="column is-6-mobile is-2">
                   <b-field label="Quantity" expanded :type="itemErrors['qty' + i] ? 'is-danger' : ''"
                     :message="itemErrors['qty' + i]">
                     <b-numberinput v-model="item.quantity" :min="1" :max="1000000" :step="0.01" :controls="false"
                       :name="'quantity' + i" @update:modelValue="updateItem(item)" />
                   </b-field>
                 </div>
-                <div class="col-sm-6 col-md-2 col-lg-2 col-padding">
+                <div class="column is-6-mobile is-2">
                   <b-field label="Price" expanded :type="itemErrors['price' + i] ? 'is-danger' : ''"
                     :message="itemErrors['price' + i]">
                     <b-numberinput v-model="item.unitPrice" :min="0.01" :max="1000000" :step="0.01" :controls="false"
                       :name="'unitPrice' + i" @update:modelValue="updateItem(item)" />
                   </b-field>
                 </div>
-                <div class="col-sm-6 col-md-2 col-lg-2 col-padding">
+                <div class="column is-6-mobile is-2">
                   <b-field label="Total" expanded>
                     <b-input v-model="item.total" disabled></b-input>
                   </b-field>
                 </div>
-                <div class="col-sm-2 col-md-1 col-lg-1 col-padding">
+                <div class="column is-2-mobile is-1">
                   <b-field label="Delete" expanded>
                     <b-button type="is-danger" outlined rounded icon-right="delete"
                       @click="removeItem(item)"></b-button>
@@ -99,19 +99,19 @@
         </div>
 
         <!-- Discount Section -->
-        <div class="col-12 col-padding">
-          <h3 class="fz1 fw-semibold mb-3">Discount</h3>
+        <div class="column is-12">
+          <h3 class="fz1 has-text-weight-semibold mb-3">Discount</h3>
           <div class="expandable-section-container">
             <div class="expandable-section-header" @click="addDiscount" :class="{ 'is-disabled': discount }">
-              <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
-                <b-icon icon="minus-circle" class="me-2"></b-icon>
+              <h3 class="expandable-section-title fz1 has-text-weight-semibold mb-2 has-text-centered">
+                <b-icon icon="minus-circle" class="mr-2"></b-icon>
                 Add Discount
               </h3>
-              <p class="fz-1 color-gray mb-0 text-center">Click here to add a discount to the pay stub</p>
+              <p class="fz-1 color-gray mb-0 has-text-centered">Click here to add a discount to the pay stub</p>
             </div>
             <div class="expandable-section-list" v-if="discount">
-              <div class="container-flex">
-                <div class="col-sm-4 col-md-4 col-lg-5 col-padding">
+              <div class="columns is-multiline">
+                <div class="column is-4-mobile is-4 is-5-desktop">
                   <b-field label="Description" expanded :type="itemErrors['discountDescription'] ? 'is-danger' : ''"
                     :message="itemErrors['discountDescription']">
                     <b-input v-model="discount.description" name="discountDescription"
@@ -119,7 +119,7 @@
                     </b-input>
                   </b-field>
                 </div>
-                <div class="col-sm-4 col-md-4 col-lg-5 col-padding">
+                <div class="column is-4-mobile is-4 is-5-desktop">
                   <b-field label="Amount" expanded :type="itemErrors['discountAmount'] ? 'is-danger' : ''"
                     :message="itemErrors['discountAmount']">
                     <b-numberinput v-model="discount.amount" :min="0.01" :max="1000000" :step="0.01" :controls="false"
@@ -127,7 +127,7 @@
                     </b-numberinput>
                   </b-field>
                 </div>
-                <div class="col-sm-4 col-md-4 col-lg-2 col-padding">
+                <div class="column is-4-mobile is-4 is-2-desktop">
                   <b-field label="Delete" expanded>
                     <b-button type="is-danger" outlined rounded icon-right="delete" @click="removeDiscount">
                     </b-button>
@@ -138,7 +138,7 @@
           </div>
         </div>
 
-        <div class="col-12 col-padding mt-4">
+        <div class="column is-12 mt-4">
           <b-button type="is-primary" @click="createPayStub">Create PayStub</b-button>
         </div>
       </div>

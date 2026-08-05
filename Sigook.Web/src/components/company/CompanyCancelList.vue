@@ -4,20 +4,20 @@
     <b-message type="is-warning" has-icon>
       Please note that all workers in the order will be rejected.
     </b-message>
-    <div class="container-flex cancellation-list">
-      <div class="item col-12 col-padding" v-for="item in cancellationList" v-bind:key="item.id"
+    <div class="columns is-multiline cancellation-list">
+      <div class="item column is-12" v-for="item in cancellationList" v-bind:key="item.id"
         @click="reasonSelected = item" :class="{ 'selected': item === reasonSelected }">
         {{ item.value }}
       </div>
       <transition name="fadeHeight">
-        <div v-if="reasonSelected" class="col-12 col-padding">
+        <div v-if="reasonSelected" class="">
           <b-field label="Please indicate the reason" :type="formErrors.reason ? 'is-danger' : ''"
             :message="formErrors.reason || ''">
             <b-input type="textarea" v-model="reason" name="reason" />
           </b-field>
         </div>
       </transition>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="validateInput">{{ "Send" }}</b-button>
       </div>
     </div>

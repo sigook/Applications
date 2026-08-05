@@ -1,7 +1,7 @@
 <template>
     <div class="page-not-found">
-        <h2 class="text-center color-primary">404</h2>
-        <p class="text-center">{{ "The page you’re looking for can’t be found." }}</p>
+        <h2 class="has-text-centered color-primary">404</h2>
+        <p class="has-text-centered">{{ "The page you’re looking for can’t be found." }}</p>
     </div>
 </template>
 

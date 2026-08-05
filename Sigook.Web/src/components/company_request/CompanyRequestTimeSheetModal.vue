@@ -1,23 +1,23 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title"> {{ dateMonth(localEditableDay.day) }} </h2>
-    <div class="text-center">
+    <h2 class="has-text-centered main-title"> {{ dateMonth(localEditableDay.day) }} </h2>
+    <div class="has-text-centered">
       <div class="container-worker-report">
         <h3 class="fz-0">Worker Report</h3>
-        <div class="d-flex justify-content-between">
-          <div class="ps-2 pe-2">
-            <span class="fz-2 fw-bold d-block">Clock In</span>
+        <div class="is-flex is-justify-content-space-between">
+          <div class="pl-2 pr-2">
+            <span class="fz-2 has-text-weight-bold is-block">Clock In</span>
             <span v-if="localEditableDay.clockIn">{{ dateHHmm(localEditableDay.clockIn) }}</span>
             <span v-else class="fz-1">No reported</span>
           </div>
-          <div class="ps-2 pe-2">
-            <span class="fz-2 fw-bold d-block">Clock Out</span>
+          <div class="pl-2 pr-2">
+            <span class="fz-2 has-text-weight-bold is-block">Clock Out</span>
             <span v-if="localEditableDay.clockOut">{{ dateHHmm(localEditableDay.clockOut) }}</span>
             <span v-else class="fz-1">No reported</span>
           </div>
-          <div class="ps-2 pe-2">
-            <span class="fz-2 fw-bold d-block">Hours</span>
+          <div class="pl-2 pr-2">
+            <span class="fz-2 has-text-weight-bold is-block">Hours</span>
             <span v-if="localEditableDay.clockOut && localEditableDay.totalHours">
               {{ hour(localEditableDay.totalHours) }}
             </span>
@@ -29,29 +29,29 @@
     <b-message type="is-info" v-if="localEditableDay.clockIn && !localEditableDay.clockOut" has-icon>
         The worker didn't clock out. Please enter the total hours worked in the "Hours Approved" field.
     </b-message>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-4">
         <b-field :label="'Hours Approved'">
           <b-timepicker v-model="localEditableDay.hoursApprovedToDate" name="hoursApproved" hour-format="24"
             :max-time="maximumDailyHours">
           </b-timepicker>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div class="column is-4">
         <b-field :label="'Missing Hours'">
           <b-timepicker v-model="localEditableDay.missinghoursToDate" name="missingHours" hour-format="24"
             :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div class="column is-4">
         <b-field label="Missing Hours Overtime">
           <b-timepicker v-model="localEditableDay.missingHoursOvertimeToDate" name="missingHoursOvertime" hour-format="24"
             :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveHours">Save</b-button>
       </div>
     </div>

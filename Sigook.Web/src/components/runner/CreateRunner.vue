@@ -15,11 +15,11 @@
           <b-autocomplete v-model="searchText" :data="results" placeholder="Search by name, email or ID..." append-to-body
             name="worker" :loading="isSearching" :custom-formatter="formatOption" @typing="onSearchInput" @select="onSelect">
             <template v-slot="props">
-              <div class="d-flex justify-content-between align-items-center">
+              <div class="is-flex is-justify-content-space-between is-align-items-center">
                 <div>
                   <strong>#{{ props.option.numberId }}</strong>
-                  <span class="ms-2">{{ props.option.name }}</span>
-                  <small v-if="props.option.email" class="ms-2 color-gray-light">{{ props.option.email }}</small>
+                  <span class="ml-2">{{ props.option.name }}</span>
+                  <small v-if="props.option.email" class="ml-2 color-gray-light">{{ props.option.email }}</small>
                 </div>
               </div>
             </template>

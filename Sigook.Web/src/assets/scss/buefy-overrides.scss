@@ -47,26 +47,7 @@ html:root {
 }
 
 .notices .toast {
-  flex-basis: auto;
-  max-width: none;
-  font-size: inherit;
-  background-color: initial;
-  background-clip: initial;
-  border: 0;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   opacity: 0.92;
   border-radius: 2em;
-}
-
-// Bootstrap's global table CSS paints every cell with `--bs-table-bg` (white),
-// which sits on top of and hides buefy's selected-row background, leaving white
-// text on white. Re-apply buefy's selected color on the cell so selected rows
-// are visible across every b-table.
-.b-table .table tr.is-selected td {
-  background-color: #7957d5;
-  color: #fff;
-
-  a {
-    color: #fff;
-  }
 }

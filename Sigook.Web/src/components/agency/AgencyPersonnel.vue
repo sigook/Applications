@@ -7,7 +7,7 @@
     <b-table sticky-header height="var(--grid-height)" :data="users" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" pagination-rounded :per-page="pageSize"
       v-model:current-page="pageIndex">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="name" label="Name" searchable v-slot="props">
@@ -24,7 +24,7 @@
     </b-table>
 
     <!-- Create user modal-->
-    <b-modal v-model="showModal" @close="showModal = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showModal" @close="showModal = false" width="500px">
       <create-user @updateUsers="() => updateList()" />
     </b-modal>
   </div>

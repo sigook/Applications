@@ -2,8 +2,8 @@
   <section class="worker-comments" id="comments">
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="d-flex align-items-center justify-content-between" v-if="!onlyView">
-      <h3 class="fw-bold fz-0">{{ 'Comments & Qualification' }}</h3>
+    <div class="is-flex is-align-items-center is-justify-content-space-between" v-if="!onlyView">
+      <h3 class="has-text-weight-bold fz-0">{{ 'Comments & Qualification' }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="alertComment">{{ 'Add Comment' }}</b-button>
     </div>
     <div>
@@ -28,7 +28,7 @@
 
 
 
-    <b-modal v-model="modalValidation" width="500px">
+    <b-modal custom-content-class="card" v-model="modalValidation" width="500px">
       <dialog-comment @createComment="(data) => getComment(data)"></dialog-comment>
     </b-modal>
 

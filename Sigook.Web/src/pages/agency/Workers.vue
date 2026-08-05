@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-5">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         Workers
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -23,7 +23,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="profileImage" width="50" v-slot="props">
@@ -52,7 +52,7 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <span class="d-block">
+              <span class="is-block">
                 <router-link :to="{ path: '/recruiting/workers/' + props.row.id }">
                   {{ props.row.fullName }}
                 </router-link>
@@ -60,7 +60,7 @@
                 <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
               </span>
               <p>
-                <i class="fz-2 text-lowercase block">
+                <i class="fz-2 is-lowercase block">
                   <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
                 </i>
               </p>
@@ -94,7 +94,7 @@
                   </b-tag>
                 </b-taglist>
               </div>
-              <span v-else class="op3 is-inline-block align-middle pe-0">Request ID</span>
+              <span v-else class="op3 is-inline-block valign-middle pr-0">Request ID</span>
             </template>
           </b-table-column>
           <b-table-column field="createdAt" label="Created At" sortable searchable>

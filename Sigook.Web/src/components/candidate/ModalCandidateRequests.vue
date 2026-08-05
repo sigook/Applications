@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="RequestID, Position">
           <b-autocomplete :data="rows" placeholder="RequestID, Position" :loading="isLoadingList"
             :custom-formatter="(option: any) => `${option.numberId} | ${option.jobTitle} | ${option.companyFullName}`"
@@ -17,7 +17,7 @@
           </b-autocomplete>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveRequestApplicant">Save</b-button>
       </div>
     </div>

@@ -7,7 +7,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="profileImage" width="50" v-slot="props">
@@ -29,13 +29,13 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <span class="d-block">
+              <span class="is-block">
                 {{ props.row.fullName }}
                 <b-icon v-if="props.row.approvedToWork" icon="check-all" size="is-small"></b-icon>
                 <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
               </span>
               <p>
-                <i class="fz-2 text-lowercase block">
+                <i class="fz-2 is-lowercase block">
                   <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
                 </i>
               </p>
@@ -81,11 +81,11 @@
             <template v-slot="props">
               <div v-if="props.row.skills.length > 0">
                 <span v-for="(skill, index) in props.row.skills" :key="`${skill}_${index}`"
-                  class="tag-sm-gray mb-1 me-1 ellipsis-full">
+                  class="tag-sm-gray mb-1 mr-1 ellipsis-full">
                   {{ skill }}
                 </span>
               </div>
-              <span v-else class="op3 is-inline-block align-middle pe-0">Skill</span>
+              <span v-else class="op3 is-inline-block valign-middle pr-0">Skill</span>
             </template>
           </b-table-column>
           <b-table-column field="isCurrentlyWorking" label="Details" searchable>

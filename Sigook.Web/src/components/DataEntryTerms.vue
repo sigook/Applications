@@ -4,7 +4,7 @@
     <div v-if="expanded">
       <br />
       <div v-if="isCompanyProfile">
-        <h1 class="text-capitalize fz1 fw-bold">Business Owner Data Entry</h1>
+        <h1 class="is-capitalized fz1 has-text-weight-bold">Business Owner Data Entry</h1>
         <p>
           If you are a Business Owner, by clicking the submit button, you
           acknowledge your receipt and approval of the time report. You
@@ -14,7 +14,7 @@
         </p>
       </div>
       <div v-else-if="isWorkerProfile">
-        <h1 class="text-capitalize fz1 fw-bold">Worker Data Entry</h1>
+        <h1 class="is-capitalized fz1 has-text-weight-bold">Worker Data Entry</h1>
         <p>
           If you are a Worker, you certify that the days and hours entered
           on the time report through the System are correct, complete, and were
@@ -23,7 +23,7 @@
           the removal of your account from the System.
         </p>
       </div>
-      <h1 class="text-capitalize fz1 fw-bold">Data Entry Terms</h1>
+      <h1 class="is-capitalized fz1 has-text-weight-bold">Data Entry Terms</h1>
         <p>
           By submitting your hours, comments, data and/or approval of time
           report information to the System (the "Time Report Information"), you

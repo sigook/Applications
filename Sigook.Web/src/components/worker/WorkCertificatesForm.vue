@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field>
           <template #label>
             {{ "File" }} <span class="has-text-danger">*</span>
@@ -23,7 +23,7 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="column is-12">
         <b-field :type="formErrors.description ? 'is-danger' : ''"
           :message="formErrors.description || ''">
           <template #label>
@@ -32,7 +32,7 @@
           <b-input type="text" v-model="description" name="certificate description" />
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
           {{ "Save" }}
         </b-button>

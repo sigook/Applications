@@ -30,7 +30,7 @@
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @click="onRowClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="numberId" label="Request ID" v-slot="props">
@@ -46,8 +46,8 @@
           </b-table-column>
           <b-table-column field="startAt">
             <template v-slot:header>
-              <p class="fw-semibold">Duration</p>
-              <p class="fw-semibold">(Start - End)</p>
+              <p class="has-text-weight-semibold">Duration</p>
+              <p class="has-text-weight-semibold">(Start - End)</p>
             </template>
             <template v-slot="props">
               {{ dateMonth(props.row.startAt) }}
@@ -68,7 +68,7 @@
             {{ props.row.workersQuantity }}
           </b-table-column>
           <b-table-column field="status" v-slot="props">
-            <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized fw-bold text-center"
+            <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized has-text-weight-bold has-text-centered"
               :class="props.row.status">
               {{ props.row.status }}
             </div>

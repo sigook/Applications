@@ -10,8 +10,8 @@
           </h3>
           <div class="subtitle">{{ data.companyFullName }}</div>
         </div>
-        <div class="text-end container-right">
-          <div class="subtitle icon-before-location text-uppercase icon-before"> {{ data.location }}</div>
+        <div class="has-text-right container-right">
+          <div class="subtitle icon-before-location is-uppercase icon-before"> {{ data.location }}</div>
         </div>
       </div>
       <div class="container-actions">
@@ -22,15 +22,15 @@
           {{ dateFromNow(data.createdAt) }}
 
           <i class="icon-workers"></i>
-          <span class="color-green fw-normal">{{ data.workersQuantityWorking }} / {{ data.workersQuantity }}</span>
+          <span class="color-green has-text-weight-normal">{{ data.workersQuantityWorking }} / {{ data.workersQuantity }}</span>
 
           <i v-if="showFinishAt(data.finishAt)" class="icon-time margin-left"></i>
-          <span v-if="showFinishAt(data.finishAt)" v-bind:class="{'color-danger fw-normal' : showFinishWarning(data.finishAt)}">
+          <span v-if="showFinishAt(data.finishAt)" v-bind:class="{'color-danger has-text-weight-normal' : showFinishWarning(data.finishAt)}">
             Finish: {{dateFromNow(data.finishAt) }}
           </span>
         </div>
 
-        <div class="container-status text-uppercase" :class="'status-' + data.status.toLowerCase()"
+        <div class="container-status is-uppercase" :class="'status-' + data.status.toLowerCase()"
              v-status="{status: data.status}"> {{ data.status }}
         </div>
       </div>

@@ -1,44 +1,44 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-6">
         <b-field label="Company Full Name" :type="formErrors.fullName ? 'is-danger' : ''"
           :message="formErrors.fullName || ''">
           <b-input v-model="fullName" name="full name" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Industry">
           <b-autocomplete v-model="industry" :data="filteredIndustries" field="value" :placeholder="'Select industry'"
             open-on-focus @select="selectIndustry">
           </b-autocomplete>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <PhoneInput ref="phoneComponent" :required="true" model="Phone" label="Phone"
           :defaultValue="localCompanyData.phone" @formattedPhone="(phone: string) => localCompanyData.phone = phone" />
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="Phone Ext" :type="formErrors.phoneExt ? 'is-danger' : ''" :message="formErrors.phoneExt || ''">
           <b-input type="text" v-model="phoneExt" name="phoneExt" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Website" :type="formErrors.website ? 'is-danger' : ''" :message="formErrors.website || ''">
           <b-input type="text" v-model="website" name="website" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <PhoneInput ref="faxComponent" :required="false" model="Fax" label="Fax" :defaultValue="localCompanyData.fax"
           @formattedPhone="(phone: string) => localCompanyData.fax = phone" />
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="Fax Ext" :type="formErrors.faxExt ? 'is-danger' : ''" :message="formErrors.faxExt || ''">
           <b-input type="text" v-model="faxExt" name="faxExt" />
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="save">Save</b-button>
       </div>
     </div>

@@ -5,7 +5,7 @@
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable
       v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="payStubNumber" v-slot="tableProps">

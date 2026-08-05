@@ -1,7 +1,7 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title">{{ title }}</h2>
+    <h2 class="has-text-centered main-title">{{ title }}</h2>
     <div v-if="!fileError">
       <b-field label="Agency">
         <b-select v-model="agencySelected" expanded>

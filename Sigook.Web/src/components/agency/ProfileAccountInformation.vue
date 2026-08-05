@@ -1,20 +1,20 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-6">
         <b-field label="Email" :type="formErrors.email ? 'is-danger' : ''"
           :message="formErrors.email">
           <b-input v-model="email" name="email" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Confirm Email" :type="formErrors.confirmNewEmail ? 'is-danger' : ''"
           :message="formErrors.confirmNewEmail">
           <b-input v-model="confirmNewEmail" name="confirmNewEmail" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-button type="is-primary" @click="onChangeEmail">Save</b-button>
       </div>
     </div>

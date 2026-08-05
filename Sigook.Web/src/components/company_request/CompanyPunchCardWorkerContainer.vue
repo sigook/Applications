@@ -5,8 +5,8 @@
       :status="request.status" :worker="worker" @onMonthChange="(args: any) => onMonthChange(args.startDate, args.endDate)">
       <template v-slot:punch-input="slotProps">
         <div v-if="slotProps.item.id !== null" class="mt-2">
-          <div class="container-flex">
-            <div class="col-8 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-8-mobile is-8">
               <div v-if="slotProps.item.clockIn" class="mb-2">
                 <b-tag type="is-info is-light">
                   <strong>Clock in:</strong> {{ dateHHmm(slotProps.item.clockIn) }}
@@ -25,7 +25,7 @@
                   <strong>Hours Approved:</strong> {{ hour(slotProps.item.totalHoursApproved) }}
                 </b-tag>
               </div>
-              <div class="d-flex gap-2 justify-content-center align-items-center">
+              <div class="is-flex is-gap-1 is-justify-content-center is-align-items-center">
                 <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button v-if="slotProps.item.id && !slotProps.item.canUpdate" type="is-ghost"
                     @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
@@ -49,7 +49,7 @@
           </div>
         </div>
         <div class="mt-2" v-else>
-          <div class="container-flex">
+          <div class="is-flex is-flex-wrap-wrap">
             <b-field :type="itemErrors[slotProps.index] ? 'is-danger' : ''"
               :message="itemErrors[slotProps.index] || ''">
               <b-numberinput v-model="slotProps.item.totalHoursApproved" placeholder="Hours"
@@ -70,18 +70,18 @@
     </Calendar>
 
     <!-- Modal para punch card -->
-    <b-modal v-model="showModalPunchCard">
+    <b-modal custom-content-class="card" v-model="showModalPunchCard">
       <TimeSheetModal v-if="editableDay" :requestId="requestId" :worker="{ workerProfileId: workerProfileId }"
         v-model:editable-day="editableDay" @updateData="updateCell" />
     </b-modal>
 
     <!-- Modal para detalle -->
-    <b-modal v-model="showDetailPunchCard" width="500px">
+    <b-modal custom-content-class="card" v-model="showDetailPunchCard" width="500px">
       <TimeSheetDetail v-if="editableDay" :editable-day="editableDay" />
     </b-modal>
 
     <!-- Clock in modal -->
-    <b-modal v-model="showClockIn" width="400px">
+    <b-modal custom-content-class="card" v-model="showClockIn" width="400px">
       <div class="p-3">
         <b-field label="At what time did the worker clock in?">
           <b-timepicker v-model="clockInTime" hour-format="24" :max-time="maxClockInTime" append-to-body>

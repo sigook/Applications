@@ -1,11 +1,11 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <shift-form v-if="shift" :current-shift="shift" :is-update="true" @updateModel="(val) => shift = val" />
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveShift(shift)">Save</b-button>
       </div>
     </div>

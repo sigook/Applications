@@ -1,15 +1,15 @@
 <template>
   <div class="mt-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <b-checkbox class="col-2" v-model="localCompany.requiresPermissionToSeeRequests" @update:modelValue="updateRequiresPermissionToSee">
+    <div class="columns is-multiline">
+      <b-checkbox class="column is-2-mobile is-2" v-model="localCompany.requiresPermissionToSeeRequests" @update:modelValue="updateRequiresPermissionToSee">
         Requires permission to see requests?
       </b-checkbox>
-      <b-checkbox class="col-2" v-model="localCompany.paidHolidays" @update:modelValue="updatePaidHolidaysHandler">
+      <b-checkbox class="column is-2-mobile is-2" v-model="localCompany.paidHolidays" @update:modelValue="updatePaidHolidaysHandler">
         Paid Holidays?
       </b-checkbox>
       <span class="line-gray"></span>
-      <div class="col-4">
+      <div class="column is-4-mobile is-4">
         <b-field label="Overtime Starts After">
           <b-input v-model="localCompany.overtimeStartsAfter"></b-input>
           <b-button type="is-primary is-light" @click="updateOvertimeHandler">Save</b-button>

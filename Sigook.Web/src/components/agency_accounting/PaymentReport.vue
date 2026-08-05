@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated pagination-size="is-small" backend-pagination
           backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
           v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
           <template v-slot:empty>
-            <p class="container text-center">No records available</p>
+            <p class="container has-text-centered">No records available</p>
           </template>
           <template>
             <b-table-column field="weekEnding" label="Payment Date" v-slot="props">

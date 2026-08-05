@@ -8,7 +8,7 @@
     </b-field>
     <b-table sticky-header height="var(--grid-height)" :data="data" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" pagination-rounded :per-page="10">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="fullName" label="Full Name" v-slot="props">
@@ -31,7 +31,7 @@
           {{ props.row.email }}
         </b-table-column>
         <b-table-column field="actions" label="Actions" v-slot="props">
-          <b-button type="is-info" outlined rounded icon-right="pencil" class="me-2"
+          <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
             @click="openEditModal(props.row)"></b-button>
           <b-button type="is-danger" outlined rounded icon-right="delete"
             @click="onDeleteContactPerson(props.row.id)"></b-button>
@@ -39,7 +39,7 @@
       </template>
     </b-table>
 
-    <b-modal v-model="showModal" @close="showModal = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showModal" @close="showModal = false" width="500px">
       <contact-form :current-contact="currentContact" :profile-id="profileId"
         @updateContent="onUpdateModal"></contact-form>
     </b-modal>

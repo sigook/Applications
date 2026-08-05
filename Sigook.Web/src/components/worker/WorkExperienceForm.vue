@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-6">
         <b-field :type="formErrors.company ? 'is-danger' : ''"
           :message="formErrors.company || ''">
           <template #label>
@@ -11,7 +11,7 @@
           <b-input type="text" v-model="company" :name="'company'" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.supervisor ? 'is-danger' : ''"
           :message="formErrors.supervisor || ''">
           <template #label>
@@ -20,7 +20,7 @@
           <b-input type="text" v-model="supervisor" :name="'supervisor'" />
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field :type="formErrors.duties ? 'is-danger' : ''"
           :message="formErrors.duties || ''">
           <template #label>
@@ -29,7 +29,7 @@
           <b-input type="textarea" v-model="duties" :name="'duties'" />
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field :label="'Current Job'">
           <b-switch v-model="workExperience.isCurrentJobPosition" :name="'isCurrentJobPosition'" :true-value="true"
             :false-value="false">
@@ -37,7 +37,7 @@
           </b-switch>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.startDate ? 'is-danger' : ''"
           :message="formErrors.startDate || ''">
           <template #label>
@@ -48,7 +48,7 @@
           </b-datepicker>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-if="!workExperience.isCurrentJobPosition">
+      <div class="column is-6" v-if="!workExperience.isCurrentJobPosition">
         <b-field :type="formErrors.endDate ? 'is-danger' : ''" :label="'End date'"
           :message="formErrors.endDate || ''">
           <b-datepicker v-model="endDate" :name="'endDate'"
@@ -56,7 +56,7 @@
           </b-datepicker>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="validateAll">
           {{ "Save" }}
         </b-button>

@@ -5,20 +5,20 @@
       The user will receive an email to confirm and create a password. If you don't receive an email,
       please check your spam or junk mail folder.
     </b-message>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-6">
         <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name *"
           :message="formErrors.name">
           <b-input type="text" v-model="name" name="name" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email *"
           :message="formErrors.email">
           <b-input type="email" v-model="email" name="email" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-field :type="formErrors.role ? 'is-danger' : ''" label="Role *" :message="formErrors.role">
           <b-select v-model="role" name="role" placeholder="Select a role" expanded>
             <option v-for="option in assignableRoles" :key="option" :value="option">
@@ -27,7 +27,7 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateForm">Create</b-button>
       </div>
     </div>

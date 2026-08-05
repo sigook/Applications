@@ -13,7 +13,7 @@
       :per-page="serverParams.pageSize" v-model:current-page="serverParams.pageIndex" default-sort="createdAt"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template #empty>
-        <p class="container text-center">No runners yet</p>
+        <p class="container has-text-centered">No runners yet</p>
       </template>
 
       <b-table-column field="name" label="Name" sortable searchable>
@@ -22,10 +22,10 @@
             @keypress="onInputEntered" />
         </template>
         <template v-slot="props">
-          <span class="d-block">
+          <span class="is-block">
             {{ props.row.name }}
           </span>
-          <i class="fz-2 ellipsis-150 text-lowercase">{{ props.row.email }}</i>
+          <i class="fz-2 ellipsis-150 is-lowercase">{{ props.row.email }}</i>
         </template>
       </b-table-column>
 
@@ -69,7 +69,7 @@
       </b-table-column>
     </b-table>
 
-    <b-modal v-model="showCreate" width="640px">
+    <b-modal has-modal-card v-model="showCreate" width="640px">
       <create-runner :request-id="requestId" :is-saving="isCreating" @create="onCreate" @close="showCreate = false" />
     </b-modal>
 

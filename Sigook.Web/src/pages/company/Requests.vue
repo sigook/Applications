@@ -1,10 +1,10 @@
 <template>
   <div class="company-requests">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-5">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         {{ "Staff Requests" }}
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -18,7 +18,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="numberId" label="Request ID" sortable searchable>
@@ -55,20 +55,20 @@
             </template>
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
-            <AgencyShift class="d-block" :requestId="props.row.id"
+            <AgencyShift class="is-block" :requestId="props.row.id"
               :displayShift="props.row.displayShift"></AgencyShift>
           </b-table-column>
           <b-table-column field="workersQuantityWorking" sortable>
             <template v-slot:header>
-              <p class="fw-semibold">Workers</p>
-              <p class="fw-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+              <p class="has-text-weight-semibold">Workers</p>
+              <p class="has-text-weight-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
             </template>
             <template v-slot="props">
               {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
             </template>
           </b-table-column>
           <b-table-column field="requestStatus" label="Status" v-slot="props">
-            <div class="text-center">
+            <div class="has-text-centered">
               <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled"

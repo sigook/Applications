@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="Worker" :message="'Type at least 3 characters to search'">
           <b-autocomplete v-model="workerSelected" :data="workers" placeholder="Worker" name="worker" append-to-body
             :loading="isLoadingList" @typing="onWorkerInput" @select="selectWorker"
@@ -10,7 +10,7 @@
           </b-autocomplete>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="bookWorker" :disabled="!workerProfileId">Book Worker</b-button>
       </div>
     </div>

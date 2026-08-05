@@ -6,7 +6,7 @@ Monorepo with seven applications. Each has its own `CLAUDE.md` with app-specific
 |---|---|---|
 | `Covenant.Api/` | .NET 8 Web API | Backend for the whole platform |
 | `Covenant.IdentityServer/` | .NET 6 + IdentityServer4 4.1.2 | OIDC/OAuth2 authentication server |
-| `Sigook.Web/` | Vue 3 + Pinia + buefy-next | Agency web portal (main platform) |
+| `Sigook.Web/` | Vue 3 + Pinia + buefy 3 | Agency web portal (main platform) |
 | `Covenant.Web/` | Vue 3 + Vuetify | Public marketing website |
 | `SigookApp/` | Flutter | Worker mobile app |
 | `Sigook.Functions/` | Azure Functions v4 (.NET 8 isolated) | Scheduled background triggers |
@@ -48,7 +48,7 @@ reference `Covenant.Common` (see [Covenant.Common sharing](#covenantcommon-shari
 ```
 Framework:  Vue 3.5.x + Vite 8 (Node 20+), TypeScript 6.x
 State:      Pinia 3.x (+ pinia-plugin-persistedstate)
-UI:         @ntohq/buefy-next 0.2.x (Buefy port for Vue 3 / Bulma)
+UI:         buefy 3.x (official Buefy for Vue 3, bundles Bulma 1.x)
 Auth:       oidc-client-ts 3.x
 HTTP:       Axios 1.10.0 (API calls live in src/api/*.ts)
 Validation: VeeValidate 4.x + Yup 1.x; i18n: vue-i18n

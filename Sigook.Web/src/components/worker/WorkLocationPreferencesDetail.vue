@@ -9,7 +9,7 @@
       </span>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalLocation = true"></b-button>
     </div>
-    <b-modal v-model="modalLocation" width="500px" max-height="80vh">
+    <b-modal custom-content-class="card" v-model="modalLocation" width="500px" max-height="80vh">
       <location-preferences-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </div>

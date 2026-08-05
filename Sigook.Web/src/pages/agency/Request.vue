@@ -10,22 +10,22 @@
         <router-link :to="companyBase + '/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" alt="logo" />
         </router-link>
-        <h2 class="text-capitalize fz1 fw-bold">
+        <h2 class="is-capitalized fz1 has-text-weight-bold">
           <span v-if="request.isAsap || isDirectHiringComputed" class="request-flags">
             <span v-if="request.isAsap" class="request-flag request-flag--asap">Asap</span>
             <span v-if="isDirectHiringComputed" class="request-flag request-flag--dh">DH</span>
           </span>
-          <span class="fw-normal fz-0">{{ request.numberId }}</span>
+          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
           {{ request.jobTitle }}
           <i class="fz-2 block">{{ billingTitle }}</i>
         </h2>
       </div>
       <div>
-        <div class="d-inline-block option-request-top">
+        <div class="is-inline-block option-request-top">
           {{ breakWord(request.displayRecruiters) }}
         </div>
         <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top text-uppercase fw-bold is-inline-block" :class="getStatusColorClass(request)">
+          class="option-request-top is-uppercase has-text-weight-bold is-inline-block" :class="getStatusColorClass(request)">
           {{ RequestStatusLabels[request.status] }}
         </div>
         <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="request.canEdit">
@@ -82,11 +82,11 @@
 
     <div v-if="request">
 
-      <b-modal v-model="cancelRequestModal" width="500px">
+      <b-modal custom-content-class="card" v-model="cancelRequestModal" width="500px">
         <cancel-list @sendReason="(reason) => onCancelRequest(reason)"></cancel-list>
       </b-modal>
 
-       <b-modal v-model="showShiftModal" width="800px">
+       <b-modal custom-content-class="card" v-model="showShiftModal" width="800px">
         <shift-modal @onUpdateShift="(val) => updateShift(val)" />
       </b-modal>
     </div>

@@ -1,6 +1,6 @@
 <template>
   <section>
-    <div class="d-flex align-items-center justify-content-between">
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
       <h3 class="section-title mt-0">{{ "Basic Information" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalBasicInformation = true"></b-button>
@@ -9,7 +9,7 @@
       <div>
         <span>{{ 'Full Name' }}</span>
         <span>
-          <p class="fw-light m-0">
+          <p class="has-text-weight-light m-0">
             {{ props.worker.firstName }} {{ props.worker.middleName }} {{ props.worker.lastName }} {{ props.worker.secondLastName }}
           </p>
         </span>
@@ -17,24 +17,24 @@
       <div>
         <span>{{ 'Date of birth' }}</span>
         <span>
-          <p class="fw-light m-0">{{ dateMonth(props.worker.birthDay) }}</p>
+          <p class="has-text-weight-light m-0">{{ dateMonth(props.worker.birthDay) }}</p>
         </span>
       </div>
       <div>
         <span>{{ 'Gender' }}</span>
         <span>
-          <p class="fw-light m-0">{{ props.worker.gender ? props.worker.gender.value : null }}</p>
+          <p class="has-text-weight-light m-0">{{ props.worker.gender ? props.worker.gender.value : null }}</p>
         </span>
       </div>
       <div>
         <span>{{ 'Do you have your own vehicle?' }}</span>
         <span>
-          <p class="fw-light m-0">{{ props.worker.hasVehicle ? 'Yes' : 'No' }}</p>
+          <p class="has-text-weight-light m-0">{{ props.worker.hasVehicle ? 'Yes' : 'No' }}</p>
         </span>
       </div>
     </div>
     <!-- custom modal -->
-    <b-modal v-model="modalBasicInformation" @close="modalBasicInformation = false" width="500px">
+    <b-modal custom-content-class="card" v-model="modalBasicInformation" @close="modalBasicInformation = false" width="500px">
       <basic-information-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
 

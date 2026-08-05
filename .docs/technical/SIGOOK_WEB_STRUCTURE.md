@@ -1,6 +1,6 @@
 # Sigook.Web Codebase Structure
 
-Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `@ntohq/buefy-next`, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
+Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `buefy` 3.x, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
 
 ---
 
@@ -334,7 +334,7 @@ assets/
 - **No API data caching in Pinia** — components fetch directly via `src/api` functions; stores keep list filters so pagination/search survive route changes.
 - **Forms:** VeeValidate 4 + Yup schemas; toasts via `src/utils/toast.ts`.
 - **Reusable components take function props** (API functions passed in) instead of dispatch strings.
-- **Styling:** Bootstrap 5 CSS + `@ntohq/buefy-next` (Bulma-based) + global SCSS partials in `src/assets/scss/`.
+- **Styling:** Bootstrap 5 CSS + `buefy` 3.x (Bulma 1.x) + global SCSS partials in `src/assets/scss/`. `index.html` pins `data-theme="light"` to block Bulma 1's automatic dark mode.
 - Naming conventions: see `Sigook.Web/CLAUDE.md`.
 
 ### Build & Deploy

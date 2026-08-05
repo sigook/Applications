@@ -1,10 +1,10 @@
 <template>
   <div class="p-3">
     <div>
-      <h2 class="text-center main-title">Documents</h2>
+      <h2 class="has-text-centered main-title">Documents</h2>
       <div class="tooltip-form tooltip-form-multiline">
-        <div class="col-12 col-padding">
-          <div class="fz-1 fw-normal">
+        <div class="">
+          <div class="fz-1 has-text-weight-normal">
             Document
             <span class="sign-required"></span>
             <div class="input-file-edited input-block" v-if="newDocument.fileName">
@@ -16,7 +16,7 @@
               @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()" />
           </div>
         </div>
-        <div class="col-12 col-padding">
+        <div class="">
           <input type="text" class="input-border input-block" placeholder="Description"
             v-model="description" name="documentDescription" />
           <span v-show="errors.description" class="help is-danger no-margin">

@@ -1,32 +1,32 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <h2 v-if="isUpdate" class="text-center main-title">Update Client</h2>
-    <h2 v-else class="text-center main-title">Create Client</h2>
+    <h2 v-if="isUpdate" class="has-text-centered main-title">Update Client</h2>
+    <h2 v-else class="has-text-centered main-title">Create Client</h2>
     <span class="line-orange"></span>
     <form class="form-md" @submit.prevent="validateForm">
-      <div class="container-flex">
-        <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-12">
           <div class="container-image mx-auto my-2">
             <UploadImage @imageSelected="(img) => (company.logo.fileName = img)" :required="false"
               @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
           </div>
         </div>
-        <div v-if="isAdmin" class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div v-if="isAdmin" class="column is-12">
           <b-field>
             <b-checkbox v-model="company.requiresPermissionToSeeRequests">
               Requires permission to see requests?
             </b-checkbox>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.fullName ? 'is-danger' : ''"
             :message="formErrors.fullName || ''">
             <template #label>Full name <span class="has-text-danger">*</span></template>
             <b-input type="text" v-model="fullName" name="full name" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.industry ? 'is-danger' : ''"
             :message="formErrors.industry || ''">
             <template #label>Type of industry <span class="has-text-danger">*</span></template>
@@ -40,7 +40,7 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.companyStatus ? 'is-danger' : ''"
             :message="formErrors.companyStatus || ''">
             <template #label>Status <span class="has-text-danger">*</span></template>
@@ -49,7 +49,7 @@
             </b-select>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.salesRepresentative ? 'is-danger' : ''"
             :message="formErrors.salesRepresentative || ''">
             <template #label>Sales Representative <span class="has-text-danger">*</span></template>
@@ -60,13 +60,13 @@
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div class="column is-12">
           <b-field :type="formErrors.about ? 'is-danger' : ''" :label="'About'"
             :message="formErrors.about || ''">
             <b-input type="textarea" v-model="about" name="about" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div class="column is-12">
           <b-field label="Internal Info">
             <div class="vue-trix-editor">
               <div>
@@ -76,36 +76,36 @@
           </b-field>
         </div>
       </div>
-      <h3 class="fz1 col-padding">Contact Information</h3>
-      <div class="container-flex">
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <h3 class="fz1">Contact Information</h3>
+      <div class="columns is-multiline">
+        <div class="column is-6">
           <PhoneInput :required="false" :defaultValue="company.phone" label="Phone"
             @formattedPhone="(phone) => (company.phone = phone)"></PhoneInput>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.phoneExt ? 'is-danger' : ''" label="Phone Ext"
             :message="formErrors.phoneExt || ''">
             <b-input type="text" v-model="phoneExt" name="phoneExt" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <PhoneInput :required="false" :defaultValue="company.fax" label="Fax"
             @formattedPhone="(phone) => (company.fax = phone)"></PhoneInput>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.faxExt ? 'is-danger' : ''" label="Fax Ext"
             :message="formErrors.faxExt || ''">
             <b-input type="text" v-model="faxExt" name="faxExt" />
           </b-field>
         </div>
-        <div v-if="!isUpdate" class="col-sm-12 col-md-6 col-padding">
+        <div v-if="!isUpdate" class="column is-6">
           <b-field :type="formErrors.email ? 'is-danger' : ''"
             :message="formErrors.email || ''">
             <template #label>Email <span class="has-text-danger">*</span></template>
             <b-input type="email" v-model="email" name="email" />
           </b-field>
         </div>
-        <div v-if="displayPassword" class="col-sm-12 col-md-6 col-padding">
+        <div v-if="displayPassword" class="column is-6">
           <b-field :type="formErrors.password ? 'is-danger' : ''"
             :message="formErrors.password || ''">
             <template #label>Password <span class="has-text-danger">*</span></template>
@@ -113,14 +113,14 @@
           </b-field>
         </div>
         <div
-          :class="displayPassword ? 'col-sm-12 col-md-12 col-lg-12 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
+          :class="displayPassword ? 'column is-12' : 'column is-6'">
           <b-field :type="formErrors.website ? 'is-danger' : ''" :label="'Website'"
             :message="formErrors.website || ''">
             <b-input type="text" v-model="website" name="website"
               placeholder="www.example.com" />
           </b-field>
         </div>
-        <div class="col-12 mt-5">
+        <div class="column is-12 mt-5">
           <b-button v-if="isUpdate" type="is-primary" native-type="submit">Update</b-button>
           <b-button v-else type="is-primary" native-type="submit">Create</b-button>
         </div>

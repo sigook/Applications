@@ -70,11 +70,11 @@
             <b-tag :type="statusTagType(assignment.status)" rounded>{{ statusLabel(assignment.status) }}</b-tag>
           </div>
           <p class="card-position">{{ assignment.jobTitle }}</p>
-          <div class="card-meta container-flex">
-            <span class="col-12"><b-icon icon="office-building-outline" size="is-small"></b-icon>
+          <div class="card-meta columns is-multiline">
+            <span class="column is-12"><b-icon icon="office-building-outline" size="is-small"></b-icon>
               {{ assignment.companyName }}
             </span>
-            <span v-if="locationLabel(assignment)" class="col-12"><b-icon icon="map-marker-outline"
+            <span v-if="locationLabel(assignment)" class="column is-12"><b-icon icon="map-marker-outline"
                 size="is-small"></b-icon>
               {{ locationLabel(assignment) }}
             </span>
@@ -118,7 +118,7 @@
       </div>
     </div>
 
-    <b-modal v-model="showAdd" :width="560" scroll="keep" :destroy-on-hide="true">
+    <b-modal has-modal-card v-model="showAdd" :width="560" scroll="keep" :destroy-on-hide="true">
       <create-runner v-if="activeAssignment" :request-id="activeAssignment.requestId" @create="onSend"
         @close="showAdd = false" />
     </b-modal>
@@ -406,7 +406,7 @@ watch(range, loadBoard, { immediate: true });
       margin-bottom: 0.75rem;
       row-gap: 0.25rem;
 
-      .col-6 {
+      .column {
         min-width: 0;
       }
     }

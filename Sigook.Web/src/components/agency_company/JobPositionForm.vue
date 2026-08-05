@@ -1,14 +1,14 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div :class="isAdmin ? 'col-sm-12 col-md-6 col-lg-6 col-padding' : 'col-sm-12 col-md-12 col-lg-12 col-padding'">
+    <div class="columns is-multiline">
+      <div :class="isAdmin ? 'column is-6' : 'column is-12'">
         <b-field label="Position" :type="formErrors.jobPosition ? 'is-danger' : ''"
           :message="formErrors.jobPosition || ''">
           <b-input placeholder="Position" v-model="jobPosition" name="positions" />
         </b-field>
       </div>
-      <div v-if="isAdmin" class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div v-if="isAdmin" class="column is-6">
         <b-field label="Overtime Starts After (hours)" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
           :message="formErrors.overtimeStartsAfter || 'Leave empty to inherit from company/province default'">
           <b-numberinput v-model="overtimeStartsAfter" name="overtimeStartsAfter" controls-alignment="right"
@@ -16,7 +16,7 @@
           </b-numberinput>
         </b-field>
       </div>
-      <div v-if="isAdmin" class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div v-if="isAdmin" class="column is-4">
         <b-field :label="'Agency Rate'" :type="formErrors.rate ? 'is-danger' : ''"
           :message="formErrors.rate || ''">
           <b-numberinput v-model="rate" name="rate" controls-alignment="right" step="0.01" placeholder="10.00">
@@ -24,7 +24,7 @@
         </b-field>
       </div>
       <div
-        :class="isAdmin ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
+        :class="isAdmin ? 'column is-4' : 'column is-6'">
         <b-field :label="'Worker Rate'" :type="formErrors.workerRate ? 'is-danger' : ''"
           :message="formErrors.workerRate || ''">
           <b-numberinput v-model="workerRate" :disabled="!isAdmin" name="workerRate"
@@ -33,7 +33,7 @@
         </b-field>
       </div>
       <div
-        :class="isAdmin ? 'col-sm-12 col-md-4 col-lg-4 col-padding' : 'col-sm-12 col-md-6 col-lg-6 col-padding'">
+        :class="isAdmin ? 'column is-4' : 'column is-6'">
         <b-field :label="'Worker Rate Max'" :type="formErrors.workerRateMax ? 'is-danger' : ''"
           :message="formErrors.workerRateMax || ''">
           <b-numberinput v-model="workerRateMax" name="workerRateMax" controls-alignment="right"
@@ -41,22 +41,22 @@
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-field :label="'Description'" :type="formErrors.description ? 'is-danger' : ''"
           :message="formErrors.description || ''">
           <b-input type="textarea" v-model="description" name="description">
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-if="props.currentPosition">
+      <div class="column is-12" v-if="props.currentPosition">
         <shift v-if="model.shift" :is-update="true" :current-shift="model.shift"
           @updateModel="(shift) => model.shift = shift" />
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-else>
+      <div class="column is-12" v-else>
         <shift :is-update="false" @updateModel="(shift) => model.shift = shift" />
       </div>
 
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="validateForm">
           {{ props.currentPosition ? 'Save' : 'Create' }}
         </b-button>

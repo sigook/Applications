@@ -7,7 +7,7 @@
       </span>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalLift = true"></b-button>
     </div>
-    <b-modal v-model="modalLift" width="500px">
+    <b-modal custom-content-class="card" v-model="modalLift" width="500px">
       <lift-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </div>

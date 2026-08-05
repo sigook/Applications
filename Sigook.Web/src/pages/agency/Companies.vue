@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-2">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         {{ 'Clients' }}
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -33,7 +33,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="fullName" label="Name" sortable searchable>
@@ -156,7 +156,7 @@
       </b-table>
     </div>
 
-    <b-modal v-model="addFile" @close="addFile = false" width="500px">
+    <b-modal custom-content-class="card" v-model="addFile" @close="addFile = false" width="500px">
       <bulk-data :upload-fn="bulkAgencyCompanies" :error-file-name="'BulkCompaniesError'"
         :title="'Bulk Companies'" :file-label="'Companies File'" @close="addFile = false" />
     </b-modal>

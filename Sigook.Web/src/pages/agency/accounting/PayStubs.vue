@@ -1,8 +1,8 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-2">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         PayStubs
       </h2>
     </div>
@@ -34,7 +34,7 @@
         checkable checkbox-position="left" v-model:checked-rows="checkedRows"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="payStubNumber" label="PayStub Number" sortable searchable>
@@ -87,13 +87,13 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
                   @click="onDownloadPayStubPdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
-                  class="me-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
+                  class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
                   @click="onSendPayStubEmail(props.row)">
                 </b-button>
               </b-tooltip>
@@ -107,11 +107,11 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showGeneratePayStubsModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showGeneratePayStubsModal" width="800px">
       <generate-pay-stubs @pay-stubs-generated="onPayStubsGenerated" />
     </b-modal>
 
-    <b-modal v-model="showSkipPayrollNumberModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showSkipPayrollNumberModal" width="500px">
       <skip-payroll-number></skip-payroll-number>
     </b-modal>
   </div>

@@ -1,15 +1,15 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="Languages">
           <b-taginput v-model="worker.languages" autocomplete :data="filteredLanguages" open-on-focus field="value"
             icon="label" placeholder="Select Languages" @typing="getFilteredLanguages" append-to-body>
           </b-taginput>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveWorkerLanguages()">
           {{ "Save" }}
         </b-button>

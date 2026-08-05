@@ -5,8 +5,8 @@
       <p class="has-text-grey is-size-7">Pick the request, the work day, and who runs it.</p>
     </header>
     <section class="modal-card-body">
-      <div class="container-flex">
-        <div class="col-12 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-12">
           <b-field label="Request">
             <b-autocomplete :data="requests" placeholder="RequestID, Position" :loading="isLoadingRequests"
               :custom-formatter="(option: AgencyRequestListItem) => `#${option.numberId} | ${option.jobTitle} | ${option.companyFullName}`"
@@ -19,7 +19,7 @@
           </b-field>
         </div>
 
-        <div class="col-12 col-padding">
+        <div class="column is-12">
           <b-field label="Work day">
             <div class="day-grid">
               <button v-for="day in days" :key="day.date" type="button" class="day-cell"
@@ -31,7 +31,7 @@
           </b-field>
         </div>
 
-        <div class="col-12 col-padding">
+        <div class="column is-12">
           <b-field label="Recruiter(s)">
             <b-taginput v-model="selectedRecruiters" :data="filteredRecruiters" autocomplete open-on-focus field="name"
               icon="account" placeholder="Type to search recruiters" append-to-body @typing="onRecruiterTyping">

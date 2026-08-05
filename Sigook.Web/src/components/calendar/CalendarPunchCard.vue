@@ -1,10 +1,10 @@
 <template>
   <div class="wrapper-calendar">
-    <div class="container-flex">
-      <div class="col-8">
-        <h2 class="fz1">{{ onlyMonth(selectDate) }} <span class="fw-light">{{ onlyYear(selectDate) }}</span></h2>
+    <div class="columns is-multiline">
+      <div class="column is-8">
+        <h2 class="fz1">{{ onlyMonth(selectDate) }} <span class="has-text-weight-light">{{ onlyYear(selectDate) }}</span></h2>
       </div>
-      <div class="col-4 text-end align-self-center">
+      <div class="column is-4 has-text-right is-align-self-center">
         <b-button size="is-small" @click="getPreviousMonth" icon-left="chevron-left" class="btn-calendar">
         </b-button>
         <b-button size="is-small" @click="getTodayMonth" class="btn-today">Today</b-button>
@@ -22,7 +22,7 @@
               Total
             </div>
           </th>
-          <th class="ps-1 min-100" v-for="item in weekdays" :key="'weekDays' + item">{{ item }}</th>
+          <th class="pl-1 min-100" v-for="item in weekdays" :key="'weekDays' + item">{{ item }}</th>
         </tr>
       </thead>
       <tbody>
@@ -379,14 +379,7 @@ defineExpose({ WorkerRequestStatus });
     display: none;
   }
 
-  .container-flex {
-    flex-wrap: wrap;
-  }
-
-  .container-flex .col-8,
-  .container-flex .col-4 {
-    flex: 1;
-    min-width: 100%;
+  .columns .column {
     text-align: center;
     margin-bottom: 10px;
   }

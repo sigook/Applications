@@ -1,7 +1,7 @@
 <template>
-    <div class="d-inline-block relative align-text-top" @mouseleave="showDetail = false">
+    <div class="is-inline-block relative align-text-top" @mouseleave="showDetail = false">
         <span>{{ props.displayShift }}</span>
-        <button v-if="props.displayShift" @click="getShift" class="border-0 ps-4 pe-3" :class="{ 'up': showDetail }">
+        <button v-if="props.displayShift" @click="getShift" class="border-0 pl-4 pr-3" :class="{ 'up': showDetail }">
             <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px">
         </button>
         <shift-detail v-if="showDetail" :shift="shift" v-model:is-loading="isLoading" />

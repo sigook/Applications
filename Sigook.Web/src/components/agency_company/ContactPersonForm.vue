@@ -2,8 +2,8 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field :label="'Title *'" :type="formErrors.title ? 'is-danger' : ''"
           :message="formErrors.title || ''">
           <b-select v-model="title" name="title" expanded :placeholder="'Select'">
@@ -14,60 +14,60 @@
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Name *'" :type="formErrors.firstName ? 'is-danger' : ''"
           :message="formErrors.firstName || ''">
           <b-input v-model="firstName" name="name" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Middle Name'" :type="formErrors.middleName ? 'is-danger' : ''"
           :message="formErrors.middleName || ''">
           <b-input v-model="middleName" name="middlename" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Last Name *'" :type="formErrors.lastName ? 'is-danger' : ''"
           :message="formErrors.lastName || ''">
           <b-input v-model="lastName" name="lastname" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Position *'" :type="formErrors.position ? 'is-danger' : ''"
           :message="formErrors.position || ''">
           <b-input v-model="position" name="position" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <phone-input :required="false" :model="'Office Number'" label="Office Number" :defaultValue="contactPerson.officeNumber"
           @formattedPhone="(phone) => contactPerson.officeNumber = phone">
         </phone-input>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Ext.'" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
           :message="formErrors.officeNumberExt || ''">
           <b-input v-model="officeNumberExt" name="officeNumberExt" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <phone-input :required="false" :model="'Mobile Number'" label="Mobile Number" :defaultValue="contactPerson.mobileNumber"
           @formattedPhone="(phone) => contactPerson.mobileNumber = phone">
         </phone-input>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Email *'" :type="formErrors.email ? 'is-danger' : ''"
           :message="formErrors.email || ''">
           <b-input type="email" v-model="email" name="email" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="validateForm">
           {{ props.currentContact ? 'Save' : 'Create' }}
         </b-button>
