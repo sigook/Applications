@@ -6,7 +6,6 @@ using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories;
 using Covenant.Integration.Tests.Configuration;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Xunit;

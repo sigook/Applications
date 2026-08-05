@@ -17,8 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8001C1FF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Covenant.Integration.Tests", "Covenant.Integration.Tests\Covenant.Integration.Tests.csproj", "{DAE544F7-37EE-4ADB-ADCD-912A3A264504}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Covenant.Test.Utils", "Covenant.Test.Utils\Covenant.Test.Utils.csproj", "{6CBE45D8-AD82-4D65-A82D-4C8F7B33EE24}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Covenant.Core.BL", "Covenant.Core.BL\Covenant.Core.BL.csproj", "{7615049C-B1EC-41E4-81D3-4B6AB6B98F78}"
 EndProject
 Global
@@ -51,10 +49,6 @@ Global
 		{DAE544F7-37EE-4ADB-ADCD-912A3A264504}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAE544F7-37EE-4ADB-ADCD-912A3A264504}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAE544F7-37EE-4ADB-ADCD-912A3A264504}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6CBE45D8-AD82-4D65-A82D-4C8F7B33EE24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6CBE45D8-AD82-4D65-A82D-4C8F7B33EE24}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6CBE45D8-AD82-4D65-A82D-4C8F7B33EE24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6CBE45D8-AD82-4D65-A82D-4C8F7B33EE24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7615049C-B1EC-41E4-81D3-4B6AB6B98F78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7615049C-B1EC-41E4-81D3-4B6AB6B98F78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7615049C-B1EC-41E4-81D3-4B6AB6B98F78}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -66,7 +60,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{10DF896D-961F-4E3F-A914-5213BE5899D8} = {8001C1FF-1592-4750-A8CD-3C5A4F2DC84B}
 		{DAE544F7-37EE-4ADB-ADCD-912A3A264504} = {8001C1FF-1592-4750-A8CD-3C5A4F2DC84B}
-		{6CBE45D8-AD82-4D65-A82D-4C8F7B33EE24} = {8001C1FF-1592-4750-A8CD-3C5A4F2DC84B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C314DEB5-0020-40DE-912C-C9F72CA24F36}

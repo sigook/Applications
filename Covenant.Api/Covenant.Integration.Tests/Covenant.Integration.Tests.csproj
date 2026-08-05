@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     
     <PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -34,7 +34,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Covenant.Api\Covenant.Api.csproj" />
-      <ProjectReference Include="..\Covenant.Test.Utils\Covenant.Test.Utils.csproj" />
     </ItemGroup>
 
     <ItemGroup>

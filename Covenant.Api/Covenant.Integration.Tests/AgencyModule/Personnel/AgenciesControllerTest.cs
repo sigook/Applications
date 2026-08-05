@@ -9,7 +9,6 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
