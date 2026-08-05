@@ -23,7 +23,7 @@ namespace Covenant.Common.Entities
         public double? Longitude { get; set; }
         public LocationTax LocationTax { get; set; }
         public virtual string FormattedAddress => $"{Address} {City?.Value} {City?.Province?.Code} {PostalCode}";
-        public bool IsUSA => City?.Province?.Country.Code == "USA";
+        public bool IsUSA => City?.Province?.Country?.Code == "USA";
 
         public void UpdatePostalCode(CvnPostalCode postalCode)
         {

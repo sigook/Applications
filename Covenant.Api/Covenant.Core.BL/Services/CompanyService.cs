@@ -235,7 +235,7 @@ public class CompanyService : ICompanyService
         var locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfile.CompanyId == companyId);
         var mainLocation = locations.FirstOrDefault(l => l.IsBilling);
         PaginatedList<InvoiceListModel> result;
-        if (mainLocation.IsUSA)
+        if (mainLocation?.IsUSA == true)
         {
             result = await invoiceRepository.GetInvoicesForCompanyUSA(companyId, filter);
         }
