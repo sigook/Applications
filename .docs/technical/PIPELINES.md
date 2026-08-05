@@ -213,6 +213,7 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 - Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
 - Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
 - `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
+- Final step restarts `sigook-api-staging` and `sigook-accounts-staging` (resource group `SigookStaging`): the restore leaves staging with the production schema, and both apps apply pending EF migrations on startup (`SigookBackgroundService` / `SigookIdentityBackgroundService`)
 
 **Requirements:**
 - The `SigookPipelines` service principal has the `Key Vault Secrets User` role on the `Sigook` vault (RBAC model)

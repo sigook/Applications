@@ -50,3 +50,15 @@ stages:
               CONNECTION_STRING: $(production-ids--ConnectionStrings--DefaultConnection)
               RESET_USERS: 'true'
               PASSWORD_HASH: $(pipelines--DbRefresh--StagingPasswordHash)
+
+          # Staging apps apply pending EF migrations on startup, so a restart
+          # brings the restored production schema up to the dev branch state
+          - task: AzureCLI@2
+            displayName: 'Restart Staging Apps'
+            inputs:
+              azureSubscription: 'SigookPipelines'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az webapp restart --resource-group SigookStaging --name sigook-api-staging
+                az webapp restart --resource-group SigookStaging --name sigook-accounts-staging
