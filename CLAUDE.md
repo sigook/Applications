@@ -24,7 +24,6 @@ Before implementing any feature, read the relevant document from `.docs/`:
 | Workflows step-by-step | `.docs/business/WORKFLOWS.md` |
 | Request state management | `.docs/business/REQUEST_STATE_MANAGEMENT.md` |
 | Roles & permissions (7 roles, sales scoping) | `.docs/business/ROLES_PERMISSIONS.md` |
-| Roles & permissions | `.docs/business/ROLES_PERMISSIONS.md` |
 | Architecture & stack | `.docs/technical/ARCHITECTURE.md` |
 | API endpoints | `.docs/technical/openapi.json` (OpenAPI spec, generated on build) |
 | Data model & relationships | `.docs/technical/ENTITIES_RELATIONSHIPS.md` |

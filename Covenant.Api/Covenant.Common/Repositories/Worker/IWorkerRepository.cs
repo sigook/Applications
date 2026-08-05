@@ -25,8 +25,6 @@ public interface IWorkerRepository
     Task<WorkerProfileCertificate> GetCertificate(Guid certificateId);
     Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression);
     Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId);
-    Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(string punchCardId);
-    Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(Guid profileId);
     Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid workerProfileId, Pagination pagination);
     Task<PayStubHistoryAccumulated> GetWageHistoryAccumulated(Guid workerProfileId, int rowNumber);
     Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination);

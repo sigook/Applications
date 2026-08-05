@@ -21,4 +21,5 @@ public interface ITimesheetService
     Task<Result<ClockType>> GetClockType(Guid requestId, DateTime? date);
     Task<Result> RemoveTimeSheet(Guid id);
     Task<ResultGenerateDocument<MemoryStream>> GetRequestTimesheetFile(Guid requestId);
+    Task<Result<ResultGenerateDocument<MemoryStream>>> GetCompanyRequestTimesheetFile(Guid requestId, Guid companyId);
 }

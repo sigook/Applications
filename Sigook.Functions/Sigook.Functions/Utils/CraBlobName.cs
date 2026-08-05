@@ -4,18 +4,18 @@ using Sigook.Functions.Models;
 namespace Sigook.Functions.Utils;
 
 /// <summary>
-/// Reads the pay period and the year from the name of a CRA table uploaded to the cra-tables container.
+/// Reads the table, the pay period and the year from the name of a CRA table uploaded to the cra-tables container.
 /// </summary>
 public static partial class CraBlobName
 {
-    public const string Convention = "CPP <WEEKLY|BIWEEKLY|SEMIMONTHLY|MONTHLY> <YYYY>.pdf";
+    public const string Convention = "<CPP|TAX> <WEEKLY|BIWEEKLY|SEMIMONTHLY|MONTHLY> <YYYY>.pdf";
     private const string PdfExtension = ".pdf";
     private const int MinimumYear = 2000;
     private const int MaximumYear = 2100;
 
-    public static bool TryParse(string blobName, out ImportCppFromBlobModel model, out string error)
+    public static bool TryParse(string blobName, out CraTable table, out string error)
     {
-        model = null;
+        table = null;
         if (string.IsNullOrWhiteSpace(blobName))
         {
             error = "The blob name is empty";
@@ -26,7 +26,7 @@ public static partial class CraBlobName
             error = $"'{blobName}' is not a PDF file";
             return false;
         }
-        var match = CppTable().Match(blobName);
+        var match = CraTableName().Match(blobName);
         if (!match.Success)
         {
             error = $"'{blobName}' does not follow the convention {Convention}";
@@ -39,15 +39,18 @@ public static partial class CraBlobName
             return false;
         }
 
-        model = new ImportCppFromBlobModel
+        table = new CraTable(ToKind(match.Groups["table"].Value), new ImportCraTableFromBlobModel
         {
             BlobName = blobName,
             PayPeriod = ToPayPeriod(match.Groups["period"].Value),
             Year = year
-        };
+        });
         error = null;
         return true;
     }
+
+    private static CraTableKind ToKind(string value) =>
+        value.ToUpperInvariant() == "CPP" ? CraTableKind.Cpp : CraTableKind.Tax;
 
     private static PayPeriod ToPayPeriod(string value) =>
         new string(value.Where(char.IsLetter).ToArray()).ToUpperInvariant() switch
@@ -58,7 +61,7 @@ public static partial class CraBlobName
             _ => PayPeriod.Monthly
         };
 
-    [GeneratedRegex(@"^CPP[ _-]+(?<period>WEEKLY|BI[ _-]?WEEKLY|SEMI[ _-]?MONTHLY|MONTHLY)[ _-]+(?<year>\d{4})\.pdf$",
+    [GeneratedRegex(@"^(?<table>CPP|TAX)[ _-]+(?<period>WEEKLY|BI[ _-]?WEEKLY|SEMI[ _-]?MONTHLY|MONTHLY)[ _-]+(?<year>\d{4})\.pdf$",
         RegexOptions.IgnoreCase)]
-    private static partial Regex CppTable();
+    private static partial Regex CraTableName();
 }

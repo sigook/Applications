@@ -1,12 +1,9 @@
-﻿using EFCore.BulkExtensions;
-using Covenant.Common.Models;
+using System.Linq.Expressions;
+using EFCore.BulkExtensions;
 using Covenant.Common.Entities.Accounting.Deductions;
-using Covenant.Common.Models.Accounting.Deductions;
-using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
-using Covenant.Common.Utils.Extensions;
 using Covenant.Common.Enums;
 
 namespace Covenant.Infrastructure.Repositories.Accounting;
@@ -19,22 +16,10 @@ public class DeductionsRepository(CovenantContext context) : IDeductionsReposito
             .Select(w => w.Cpp)
             .SingleOrDefaultAsync();
 
-    public async Task<int> ReplaceCpp(int year, PayPeriod payPeriod, IReadOnlyList<CppDeduction> rows)
+    public Task<int> ImportCpp(int year, PayPeriod payPeriod, IReadOnlyList<CppDeduction> rows, int yearsKept)
     {
-        if (!context.Database.IsRelational())
-        {
-            context.CppDeductions.RemoveRange(
-                await context.CppDeductions.Where(w => w.Year == year && w.PayPeriod == payPeriod).ToListAsync());
-            await context.CppDeductions.AddRangeAsync(rows);
-            await context.SaveChangesAsync();
-            return rows.Count;
-        }
-
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        await context.CppDeductions.Where(w => w.Year == year && w.PayPeriod == payPeriod).ExecuteDeleteAsync();
-        await context.BulkInsertAsync(rows.ToList());
-        await transaction.CommitAsync();
-        return rows.Count;
+        var oldestYearKept = year - yearsKept + 1;
+        return Import(rows, w => w.PayPeriod == payPeriod && (w.Year == year || w.Year < oldestYearKept));
     }
 
     public Task<decimal?> GetTax(decimal earnings, int year, PayPeriod payPeriod, TaxType taxType, TaxCategory category) =>
@@ -55,37 +40,27 @@ public class DeductionsRepository(CovenantContext context) : IDeductionsReposito
                 category == TaxCategory.Cc10 ? w.Cc10 : w.Cc1)
             .SingleOrDefaultAsync();
 
-    public Task<PaginatedList<TaxModel>> GetTax(DeductionPagination pagination, PayPeriod payPeriod, TaxType taxType) =>
-        context.TaxDeductions
-            .Where(w => w.Year == pagination.Year && w.PayPeriod == payPeriod && w.TaxType == taxType)
-            .Select(w => new TaxModel
-            {
-                Id = w.Id,
-                PayPeriod = w.PayPeriod,
-                TaxType = w.TaxType,
-                From = w.From,
-                To = w.To,
-                Cc0 = w.Cc0,
-                Cc1 = w.Cc1,
-                Cc2 = w.Cc2,
-                Cc3 = w.Cc3,
-                Cc4 = w.Cc4,
-                Cc5 = w.Cc5,
-                Cc6 = w.Cc6,
-                Cc7 = w.Cc7,
-                Cc8 = w.Cc8,
-                Cc9 = w.Cc9,
-                Cc10 = w.Cc10,
-                Year = w.Year
-            })
-            .OrderBy(o => o.From)
-            .ToPaginatedList(pagination);
+    public Task<int> ImportTax(int year, PayPeriod payPeriod, IReadOnlyList<TaxDeduction> rows, int yearsKept)
+    {
+        var oldestYearKept = year - yearsKept + 1;
+        return Import(rows, w => w.PayPeriod == payPeriod && (w.Year == year || w.Year < oldestYearKept));
+    }
 
-    public async Task CreateTax(TaxDeduction entity) => await context.TaxDeductions.AddAsync(entity);
+    private async Task<int> Import<TDeduction>(IReadOnlyList<TDeduction> rows, Expression<Func<TDeduction, bool>> replaced)
+        where TDeduction : class
+    {
+        if (!context.Database.IsRelational())
+        {
+            context.Set<TDeduction>().RemoveRange(await context.Set<TDeduction>().Where(replaced).ToListAsync());
+            await context.Set<TDeduction>().AddRangeAsync(rows);
+            await context.SaveChangesAsync();
+            return rows.Count;
+        }
 
-    public async Task DeleteTax(int year, PayPeriod payPeriod, TaxType taxType) =>
-        context.TaxDeductions.RemoveRange(
-            await context.TaxDeductions.Where(w => w.Year == year && w.PayPeriod == payPeriod && w.TaxType == taxType).ToListAsync());
-
-    public Task SaveChangesAsync() => context.SaveChangesAsync();
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        await context.Set<TDeduction>().Where(replaced).ExecuteDeleteAsync();
+        await context.BulkInsertAsync(rows.ToList());
+        await transaction.CommitAsync();
+        return rows.Count;
+    }
 }

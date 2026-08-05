@@ -257,16 +257,18 @@ Report generation and blob downloads.
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `downloadAgencyReport(url, filter)` | GET | (dynamic url) | `ReportQueryParams` (params) | Blob | Generic blob downloader |
-| `getRequestTimeSheetDocument(requestId)` | GET | `/api/Request/{requestId}/TimeSheet/Document` | — | Blob | Timesheet doc per request |
 | `getWorkersReportDocument(requestId)` | GET | `/api/WorkersReportDocument/{requestId}/Document` | — | Blob | |
-| `getJobPositionsHoursWorked(filter)` | GET | `/api/agency/accounting/reports/{companyId}/job-positions` | `AgencyReportFilter & { companyId }` (params) | `AgencyCompanyJobPosition[]` | Hours per position |
+| `getJobPositionsHoursWorked(filter)` | GET | `/api/agency/accounting/reports/{companyProfileId}/job-positions` | `AgencyReportFilter & { companyProfileId }` (params) | `AgencyCompanyJobPosition[]` | Hours per position |
 | `getHoursWorkedReport(filter)` | GET | `/api/agency/accounting/reports/hours-worked` | `AgencyReportFilter` (params) | `HoursWorkedResume` | |
+| `getTimesheetsReport(filter)` | GET | `/api/agency/accounting/reports/timesheets/file` | `AgencyReportFilter` (params) | Blob | USA agencies |
 | `getT4Report(filter)` | GET | `/api/agency/accounting/reports/t4` | `AgencyReportFilter` (params) | Blob | Tax form export |
 | `getCraPayrollReport(filter)` | GET | `/api/agency/accounting/reports/cra-payroll` | `AgencyReportFilter` (params) | Blob | CRA export |
 | `getPaymentReport(filter)` | GET | `/api/agency/accounting/reports/payments` | `AgencyReportFilter` (params) | `PaginatedList<WeeklyPayrollItem>` | Weekly payroll summary |
 | `downloadWeeklyPayrollReport(weekEnding)` | GET | `/api/agency/accounting/reports/payments/file` | `weekEnding` (param) | Blob | Excel |
 
 **Types:** `ReportQueryParams`, `AgencyReportFilter`, `AgencyCompanyJobPosition`, `HoursWorkedResume`, `WeeklyPayrollItem` (`src/types/agency`, `src/types/accounting`)
+
+> Backend-only: `/api/agency/accounting/Reports/hours-worked/file` exists in the backend but has no frontend wrapper.
 
 ---
 
@@ -386,7 +388,7 @@ Worker profile management from the agency's perspective.
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getAgencyWorkers(filter)` | GET | `/api/agency/workers` | `AgencyWorkerFilter` (params) | `PaginatedList<AgencyWorkerListItem>` | |
-| `getAgencyWorkersDropdown(filter)` | GET | `/api/agency/workers/Dropdown` | `{ searchTerm }` (params) | `AgencyWorkerDropdownItem[]` | Autocomplete |
+| `getAgencyWorkersDropdown(filter)` | GET | `/api/agency/workers/Dropdown` | `{ searchTerm }` (params) | `AgencyWorkerDropdownItem[]` | Autocomplete¹ |
 | `getAgencyWorker(id)` | GET | `/api/agency/workers/{id}` | — | `WorkerProfile` | |
 | `updateApprovedToWork(id)` | PUT | `/api/agency/workers/{id}/ApprovedToWork` | — | `void` | Toggle |
 | `updateAgencyWorkerProfileDNU(id)` | PUT | `/api/agency/workers/{id}/Dnu` | — | `void` | Toggle Do-Not-Use |
@@ -408,6 +410,8 @@ Worker profile management from the agency's perspective.
 **Pinia:** `agencyWorkerProfileFilter` in `useAgencyStore`.
 
 **Business Logic:** contractor/subcontractor flags affect payroll treatment; tax category/rate drive withholdings; holidays feed holiday pay.
+
+¹ The URL string at `agencyWorkerApi.ts:23` is missing its leading slash (`'api/agency/workers/Dropdown'`) — it only works because axios concatenates it onto the baseURL.
 
 ---
 
@@ -503,6 +507,7 @@ Company portal (client) view of their profile, requests and workers.
 | `deleteContactPerson(id)` | DELETE | `/api/CompanyProfileContactPerson/{id}` | — | `void` | |
 | `getCompanyInvoice(filter)` | GET | `/api/CompanyInvoice` | `CompanyInvoiceFilter` (params) | `PaginatedList<CompanyInvoiceListItem>` | |
 | `getCompanyInvoiceDetail(id)` | GET | `/api/CompanyInvoice/{id}` | — | `InvoiceSummaryModel` | |
+| `getCompanyRequestTimeSheetFile(requestId)` | GET | `/api/CompanyRequest/{requestId}/TimeSheets/File` | — | Blob | Excel punch-card export, ownership-checked server-side |
 
 **Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`)
 
@@ -514,13 +519,7 @@ Company portal (client) view of their profile, requests and workers.
 
 ## 15. downloadApi.ts
 
-| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
-|----------|------------|----------|--------------|---------------|-------|
-| `fetchInvoicePdf(id)` | GET | `/api/Invoice/{id}/Document/PDF` | — | Blob | |
-| `downloadPayrollSubcontractor(weekEnding)` | GET | `/api/PayrollSubcontractor/{weekEnding}/Document/EXCEL` | — | Blob | |
-| `downloadWeeklyPayrollExcel(weekEnding)` | GET | `/api/WeeklyPayroll/{weekEnding}/Document/EXCEL` | — | Blob | |
-| `downloadWeeklyPayrollExcelByWeekEnding(date)` | GET | `/api/WeeklyPayroll/{date}/Document/EXCEL/ByWeekEnding` | — | Blob | |
-| `downloadWeeklyPayrollExcelByPaymentDate(date)` | GET | `/api/WeeklyPayroll/{date}/Document/EXCEL/ByPaymentDate` | — | Blob | |
+**Removed (2026-08).** The file held 5 endpoints that never existed in the backend. Its only live caller (`fetchInvoicePdf` in `CompanyInvoices.vue`) was unreachable dead code and was removed with it; the company punch-card export now uses `getCompanyRequestTimeSheetFile` in companyApi.ts (section 14).
 
 ---
 
@@ -532,11 +531,13 @@ Company portal (client) view of their profile, requests and workers.
 | `getProvinces(countryId)` | GET | `/api/Location/province/{countryId}` | — | `Province[]` | |
 | `getCities(provinceId)` | GET | `/api/Location/city/{provinceId}` | — | `City[]` | |
 | `createCity(city)` | POST | `/api/Location/city` | `{ value, code?, province: { id } }` | `City` | Add custom city |
-| `addProvinceSetting(provinceId, settings)` | POST | `/api/Location/province/{provinceId}/settings` | `{ paidHolidays?, overtimeStartsAfter? }` | `void` | Provincial payroll rules |
+| `updateProvinceSettings(provinceId, settings)` | PUT | `/api/Location/province/{provinceId}/settings` | `ProvinceSettings` | `void` | Global provincial rules; Policy `Admin` |
 | `getLocationTax(locationId)` | GET | `/api/Location/{locationId}/tax` | — | `LocationTax \| null` | Tax % per location (admin) |
 | `upsertLocationTax(locationId, model)` | PUT | `/api/Location/{locationId}/tax` | `LocationTax` | `void` | |
 
 **Types:** `Country`, `Province`, `City`, `LocationTax` (`src/types/common`)
+
+Province settings (`ProvinceSettingsModal.vue`) persist through `updateProvinceSettings` directly — the modal calls the API on save and then emits to `Address.vue`, which only refreshes the local display model. They are **global per province** (admin-only), not part of the company-location save; the old side-effect path (`CompanyService.UpsertProvinceSettingsIfProvided`) was removed in 2026-08.
 
 ---
 
@@ -753,4 +754,4 @@ Public landing site endpoints (no auth).
 | **Account** | accountApi.ts | Email change, deactivation |
 | **Website** | websiteApi.ts | Public job search, contact form, candidate apply |
 | **Notification** | notificationApi.ts, userNotificationApi.ts | Agency bell (aggregated) / user inbox |
-| **Shared** | sharedApi.ts, downloadApi.ts, requestApi.ts | Unsubscribe, blob downloads, shift lookup |
+| **Shared** | sharedApi.ts, requestApi.ts | Unsubscribe, shift lookup |

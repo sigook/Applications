@@ -20,11 +20,9 @@ using Covenant.Core.BL.Consumers;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Accounting;
-using Covenant.Core.BL.Services.Invoices;
-using Covenant.Core.BL.Services.Shared;
+using Covenant.Core.BL.Services.Accounting.Invoices;
+using Covenant.Core.BL.Services.Accounting.Shared;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Accounting.Deductions;
-using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Infrastructure.Repositories;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Infrastructure.Repositories.Agency;
@@ -112,20 +110,17 @@ public static class ApiServicesConfiguration
         services.AddScoped<InvoiceServiceFactory>();
 
         // CRA deduction tables
-        services.AddScoped<ICppPdfParser, CppPdfParser>();
-        services.AddScoped<ICppDeductionImportService, CppDeductionImportService>();
+        services.AddScoped<ICraPdfParser, CraPdfParser>();
+        services.AddScoped<IDeductionImportService, DeductionImportService>();
 
         //TODO: To Refactor
         services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
-        services.AddScoped<FederalTaxTablesLoader>();
-        services.AddScoped<ProvincialTaxTablesLoader>();
         return services;
     }
 
     public static IServiceCollection AddAdapters(this IServiceCollection services)
     {
         services.AddScoped<ICandidateAdapter, CandidateAdapter>();
-        services.AddScoped<ICompanyAdapter, CompanyAdapter>();
         services.AddScoped<ICompanyAdapter, CompanyAdapter>();
         services.AddScoped<IWorkerAdapter, WorkerAdapter>();
         return services;

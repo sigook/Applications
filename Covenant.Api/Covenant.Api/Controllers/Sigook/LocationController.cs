@@ -70,6 +70,23 @@ public class LocationController(ILocationService locationService) : ControllerBa
         return Ok(cities);
     }
 
+    /// <summary>Creates or updates the settings for the given province.</summary>
+    /// <param name="provinceId">Province identifier.</param>
+    /// <param name="model">Province settings.</param>
+    [Authorize(Policy = PolicyConfiguration.Admin)]
+    [HttpPut("province/{provinceId:guid}/settings")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpsertProvinceSettings([FromRoute] Guid provinceId, [FromBody] ProvinceSettingsModel model)
+    {
+        var result = await _locationService.UpsertProvinceSettings(provinceId, model);
+        if (!result)
+        {
+            return BadRequest(result.Errors);
+        }
+        return Ok();
+    }
+
     /// <summary>Adds a new city.</summary>
     /// <param name="model">City data to create.</param>
     [Authorize(Policy = PolicyConfiguration.Agency)]

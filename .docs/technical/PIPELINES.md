@@ -35,14 +35,15 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 | Pipeline | File | Trigger Path | Stages | Deploy Target |
 |----------|------|-------------|--------|---------------|
 | Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test → Docker+Deploy → Notify | `sigook-api-staging` / `sigook-api` |
-| Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint → Docker+Deploy → Notify | `sigook-web-staging` / `sigook` |
-| Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | Type-check+Lint+Build → Deploy → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
+| Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check → Docker+Deploy → Notify | `sigook-web-staging` / `sigook` |
+| Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | IdentityServer | `covenant-identityserver-pipeline.yml` | `Covenant.IdentityServer/**` | Build+Test → Docker+Deploy | `sigook-accounts-staging` / `sigook-accounts` |
 | SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Build AAB → Google Play → Notify | Google Play (internal/production) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build → Publish+Deploy | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build → Publish+Deploy | `sigook-cognitive-services` (production only) |
+| Database Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | Refresh | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) |
 
-**Note:** All pipelines exclude `**/*.md` from triggers (documentation changes don't trigger builds).
+**Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
 **Warning:** A legacy `Covenant.IdentityServer/azure-pipelines.yml` still exists alongside the documented `.azure-pipelines/covenant-identityserver-pipeline.yml`, with its own `main/master/dev` trigger. It is superseded — do not extend it; candidate for deletion.
 
@@ -77,7 +78,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Stage 1 - Build and Validate:**
 - Node.js 22 via shared template
-- pnpm via corepack (pinned by `packageManager` field)
+- pnpm via corepack, version resolved from the `packageManager` field in package.json (the `npm i -g` fallback reads the same field)
 - Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
 - Lint with ESLint, TypeScript type-check
 
@@ -96,24 +97,26 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Build naming:** `CovenantWeb-YYYYMMDDr`
 
-**Stage 1 - Build and Test:**
-- Node.js 22 via shared template
-- pnpm via corepack (pinned by `packageManager` field)
+Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "Notify".
+
+**Stage 1 (CI_CD) - Job 1: Build and Test:**
+- Node.js 22 via shared template (the YAML also declares a stale, unused `nodeVersion: '20.x'` variable)
+- pnpm via corepack, version resolved from the `packageManager` field in package.json (the `npm i -g` fallback reads the same field)
 - Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
 - Type checking: `pnpm run type-check`
 - Linting: `pnpm run lint`
-- Build: `pnpm run build:staging` or `pnpm run build:production`
+- Build: `pnpm run build:staging` or `pnpm run build:production` — for PRs the environment resolves from the PR *target* branch, so a PR into `main` builds with production config
 - Verify `dist/index.html` exists
 - Publish `dist/` as artifact `covenantweb-dist` (only on direct push, not PRs)
 
-**Stage 2 - Deploy** (only on direct push to dev/main):
+**Stage 1 (CI_CD) - Job 2: Deploy** (only on direct push to dev/main):
 - Deploy prebuilt `dist/` via `AzureStaticWebApp@0` (`skip_app_build: true`)
 - Deployment token fetched at deploy time via `AzureCLI@2` + `SigookPipelines` service connection (`az staticwebapp secrets list`) — no manual pipeline variables needed
 - SPA routing handled by `Covenant.Web/public/staticwebapp.config.json` (navigationFallback to `index.html`)
 - Staging: `https://lively-island-020c8260f.7.azurestaticapps.net` (SWA `covenantgroup-staging-swa`, Free tier)
 - Production: `https://www.covenantgroupl.com` (SWA `covenantgroup-swa`, Free tier, default host `ambitious-bush-0eb4f540f.7.azurestaticapps.net`)
 
-**Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
+**Stage 2 - Notify** (production only, uses `Sigook-Notifications` variable group):
 - Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `website`)
 
 ### Covenant.IdentityServer (.NET 6)
@@ -177,7 +180,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Stage 1 - Build:**
 - .NET SDK 8.0.415
-- Build solution (no tests - project has none)
+- Build solution + unit tests (`Sigook.Functions.Tests`, via `runUnitTests: true`)
 
 **Stage 2 - Deploy to Production** (not on PRs):
 - `dotnet publish` with zip
@@ -199,6 +202,22 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 - Deploy: `AzureWebApp@1` (Linux) to `sigook-cognitive-services`
 - Production: `https://sigook-cognitive-services.azurewebsites.net`
 
+### Database Refresh (Staging)
+
+**Build naming:** `DatabaseRefresh-YYYY.M.D.r`
+
+**Trigger:** Manual only (run from Azure DevOps). Refreshes **both** databases in one run.
+
+**Stage 1 - Refresh Staging Databases:**
+- Fetches secrets from Key Vault `Sigook` via `AzureKeyVault@2` (`SigookPipelines` service connection): production connection strings for API (`CovenantCore`) and IdentityServer (`CovenantSecurity`), plus `pipelines--DbRefresh--StagingPasswordHash`
+- Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
+- Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
+- `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
+
+**Requirements:**
+- The `SigookPipelines` service principal has the `Key Vault Secrets User` role on the `Sigook` vault (RBAC model)
+- The agent (`sigook-build-vm`, Azure VM) reaches the Postgres server through the existing "Allow Azure services" firewall rule
+- No connection data or credentials live in the repo — everything is resolved from Key Vault at runtime
 
 ## Reusable Templates
 

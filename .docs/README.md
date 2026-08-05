@@ -12,14 +12,13 @@
 | [WORKFLOWS.md](./business/WORKFLOWS.md) | Detailed step-by-step flows (Worker Registration, Job Matching, Payroll, etc.) |
 | [REQUEST_STATE_MANAGEMENT.md](./business/REQUEST_STATE_MANAGEMENT.md) | Request lifecycle and state transitions |
 | [ROLES_PERMISSIONS.md](./business/ROLES_PERMISSIONS.md) | The 7 roles, role groups, sales data scoping, user creation rules |
-| [ROLES_PERMISSIONS.md](./business/ROLES_PERMISSIONS.md) | The 7 roles, what each one reaches, and how sales is scoped |
 
 ## Technical
 
 | Document | Description |
 |----------|-------------|
 | [ARCHITECTURE.md](./technical/ARCHITECTURE.md) | Tech stack, layers, modules, and project organization |
-| `technical/openapi.json` | OpenAPI 3.0 specification — the source of truth for every endpoint. Generated locally on each API build (not committed). Browse it via Swagger UI at the API site root in Dev/Staging |
+| `technical/openapi.json` | OpenAPI 3.0 specification — the source of truth for every endpoint. Generated on each API build and committed; regenerate after adding endpoints. Browse it via Swagger UI at the API site root in Dev/Staging |
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
@@ -41,7 +40,7 @@
 
 **Modify payroll:**
 1. [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) — calculation rules
-2. Code: `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs` and `Covenant.Api/Covenant.Infrastructure/Accounting/Deductions/`
+2. Code: `Covenant.Api/Covenant.Core.BL/Services/Accounting/` (PayStubService, DeductionImportService)
 
 **Modify billing:**
 1. [BILLING_RULES.md](./business/BILLING_RULES.md) — billing rules

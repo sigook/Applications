@@ -10,6 +10,7 @@ using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,8 @@ public class WorkersController(
     IMediator mediator,
     IWorkerRepository workerRepository,
     IWorkerService workerService,
-    IAgencyService agencyService) : Controller
+    IAgencyService agencyService,
+    IValidator<UpdateEmailModel> updateEmailValidator) : Controller
 {
     public const string RouteName = "api/agency/workers";
 
@@ -142,6 +144,9 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Email([FromServices] IIdentityServerService service, [FromRoute] Guid workerProfileId, [FromBody] UpdateEmailModel model)
     {
+        var validation = await updateEmailValidator.ValidateAsync(model);
+        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
+
         Guid agencyId = User.GetAgencyId();
         var profile = await workerRepository.GetProfile(c => c.Id == workerProfileId && c.AgencyId == agencyId);
         if (profile is null) return BadRequest();

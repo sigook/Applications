@@ -26,6 +26,7 @@ public class TimesheetService : ITimesheetService
     private readonly ITimeService timeService;
     private readonly IWorkerRequestRepository workerRequestRepository;
     private readonly ITimesheetRepository timeSheetRepository;
+    private readonly IRequestRepository requestRepository;
     private readonly ICatalogRepository catalogRepository;
     private readonly IConfiguration configuration;
     private readonly IIdentityServerService identityServerService;
@@ -36,6 +37,7 @@ public class TimesheetService : ITimesheetService
         ITimeService timeService,
         IWorkerRequestRepository workerRequestRepository,
         ITimesheetRepository timeSheetRepository,
+        IRequestRepository requestRepository,
         ICatalogRepository catalogRepository,
         IConfiguration configuration,
         IIdentityServerService identityServerService,
@@ -45,6 +47,7 @@ public class TimesheetService : ITimesheetService
         this.timeService = timeService;
         this.workerRequestRepository = workerRequestRepository;
         this.timeSheetRepository = timeSheetRepository;
+        this.requestRepository = requestRepository;
         this.catalogRepository = catalogRepository;
         this.configuration = configuration;
         this.identityServerService = identityServerService;
@@ -329,5 +332,13 @@ public class TimesheetService : ITimesheetService
         var data = await timeSheetRepository.GetRequestTimeSheet(requestId);
         var request = await mediator.Send(new GenerateRequestTimeSheetReport(data.ToList()));
         return request;
+    }
+
+    public async Task<Result<ResultGenerateDocument<MemoryStream>>> GetCompanyRequestTimesheetFile(Guid requestId, Guid companyId)
+    {
+        var belongsToCompany = await requestRepository.RequestBelongsToCompany(requestId, companyId);
+        if (!belongsToCompany)
+            return Result.Fail<ResultGenerateDocument<MemoryStream>>("Request doesn't exist");
+        return Result.Ok(await GetRequestTimesheetFile(requestId));
     }
 }

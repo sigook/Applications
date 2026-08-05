@@ -19,6 +19,7 @@ using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Globalization;
+using System.Net.Mime;
 using Xunit;
 
 namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
@@ -55,6 +56,23 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
             response.EnsureSuccessStatusCode();
         }
 
+        [Fact]
+        public async Task EmailWithAttachments()
+        {
+            using var content = new MultipartFormDataContent
+            {
+                { new StringContent("Invoice"), nameof(InvoiceEmailModel.Subject) },
+                { new StringContent("Test message"), nameof(InvoiceEmailModel.Message) },
+                { new ByteArrayContent("attachment content"u8.ToArray()), "files", "attachment.txt" }
+            };
+            HttpResponseMessage response = await _client.PostAsync($"{RouteName}/email", content);
+            response.EnsureSuccessStatusCode();
+
+            var attachments = Startup.SentEmailParams.Attachments;
+            Assert.Equal(2, attachments.Count());
+            Assert.Contains(attachments, a => a.Name == "attachment.txt" && a.MediaType == MediaTypeNames.Text.Plain);
+        }
+
         public class Startup
         {
             private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
@@ -84,6 +102,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 null).Value;
 
             public static string InvoiceHtmlPath;
+            public static EmailParams SentEmailParams;
 
             public static InvoiceUSA FakeInvoice;
 
@@ -120,7 +139,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder().AddTestAuth(o =>
                 {
-                    o.AddAgencyPersonnelRole(FakeAgency.Id);
+                    o.AddAdminRole(FakeAgency.Id);
                 });
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
                 var timeService = new Mock<ITimeService>();
@@ -136,13 +155,18 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                         InvoiceHtmlPath = Path.Combine(Directory.GetCurrentDirectory(), "Common", "fake_invoice_usa.html");
                         File.WriteAllText(InvoiceHtmlPath, pdfParams.Html);
                     })
-                    .ReturnsAsync(Result.Ok(new PdfResult(Path.Combine(Directory.GetCurrentDirectory(), "Common", "Fake_Invoice.pdf"))));
+                    .ReturnsAsync(Result.Ok(File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Common", "Fake_Invoice.pdf"))));
                 services.AddSingleton(pdfGeneratorService.Object);
                 var identityServerService = new Mock<IIdentityServerService>();
                 identityServerService.Setup(s => s.GetAgencyId()).Returns(FakeAgency.Id);
                 identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { FakeAgency.Id });
                 services.AddSingleton(identityServerService.Object);
                 services.AddSingleton<AgencyIdFilter>();
+                var emailService = new Mock<IEmailService>();
+                emailService.Setup(s => s.SendCovenantEmail(It.IsAny<EmailParams>()))
+                    .Callback<EmailParams>(p => SentEmailParams = p)
+                    .ReturnsAsync(true);
+                services.AddSingleton(emailService.Object);
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

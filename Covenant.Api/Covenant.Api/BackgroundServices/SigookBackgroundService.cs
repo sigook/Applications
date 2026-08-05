@@ -51,7 +51,6 @@ public class SigookBackgroundService : BackgroundService
         await client.CreateQueueIfNotExistsAsync(configuration.InvitationQueue);
         await client.CreateTopicIfNotExistsAsync(configuration.CreateApplicantTopic);
         await client.CreateSubscriptionIfNotExistsAsync(configuration.CreateApplicantTopic, TopicSubscription.TeamsNotification);
-        await client.CreateSubscriptionIfNotExistsAsync(configuration.CreateApplicantTopic, TopicSubscription.EmailNotification);
         await client.CreateSubscriptionIfNotExistsAsync(configuration.CreateApplicantTopic, TopicSubscription.RequestApplicantNotification);
         await client.CreateRuleIfNotExistsAsync(configuration.CreateApplicantTopic, TopicSubscription.RequestApplicantNotification,
             "OnCandidateCreated",

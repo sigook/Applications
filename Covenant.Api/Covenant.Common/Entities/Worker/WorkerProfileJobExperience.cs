@@ -1,5 +1,4 @@
-﻿using Covenant.Common.Constants;
-using Covenant.Common.Functionals;
+﻿using Covenant.Common.Functionals;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Resources;
 
@@ -7,6 +6,13 @@ namespace Covenant.Common.Entities.Worker
 {
     public class WorkerProfileJobExperience : IWorkerProfileJobExperience
     {
+        private const int CompanyMinLength = 2;
+        private const int CompanyMaxLength = 50;
+        private const int SupervisorMinLength = 2;
+        private const int SupervisorMaxLength = 50;
+        private const int DutiesMinLength = 2;
+        private const int DutiesMaxLength = 5000;
+
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Company { get; private set; }
         public string Supervisor { get; private set; }
@@ -21,18 +27,18 @@ namespace Covenant.Common.Entities.Worker
         {
             if (string.IsNullOrEmpty(company)) return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.RequiredMsg(ApiResources.Company));
             int length = company.Length;
-            if (length < CovenantConstants.Validation.CompanyMinLength || length > CovenantConstants.Validation.CompanyMaxLength)
-                return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.LengthMsg(ApiResources.Company, CovenantConstants.Validation.CompanyMinLength, CovenantConstants.Validation.CompanyMaxLength));
+            if (length < CompanyMinLength || length > CompanyMaxLength)
+                return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.LengthMsg(ApiResources.Company, CompanyMinLength, CompanyMaxLength));
             if (!string.IsNullOrEmpty(supervisor))
             {
                 length = supervisor.Length;
-                if (length < CovenantConstants.Validation.SupervisorMinLength || length > CovenantConstants.Validation.SupervisorMaxLength)
-                    return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.LengthMsg(ApiResources.Supervisor, CovenantConstants.Validation.SupervisorMinLength, CovenantConstants.Validation.SupervisorMaxLength));
+                if (length < SupervisorMinLength || length > SupervisorMaxLength)
+                    return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.LengthMsg(ApiResources.Supervisor, SupervisorMinLength, SupervisorMaxLength));
             }
             if (string.IsNullOrEmpty(duties)) return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.RequiredMsg(ApiResources.Duties));
             length = duties.Length;
-            if (length < CovenantConstants.Validation.DutiesMinLength || length > CovenantConstants.Validation.DutiesMaxLength)
-                return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.LengthMsg(ApiResources.Duties, CovenantConstants.Validation.DutiesMinLength, CovenantConstants.Validation.DutiesMaxLength));
+            if (length < DutiesMinLength || length > DutiesMaxLength)
+                return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.LengthMsg(ApiResources.Duties, DutiesMinLength, DutiesMaxLength));
 
             if (startDate == default)
                 return Result.Fail<WorkerProfileJobExperience>(ValidationMessages.RequiredMsg(ApiResources.StartDate));

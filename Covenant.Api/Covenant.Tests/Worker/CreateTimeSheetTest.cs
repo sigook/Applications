@@ -54,6 +54,7 @@ namespace Covenant.Tests.Worker
                 _timeService.Object,
                 workerRequestRepository.Object,
                 _timeSheetRepository.Object,
+                Mock.Of<IRequestRepository>(),
                 catalogRepository.Object,
                 Mock.Of<IConfiguration>(),
                 identityServerService.Object,

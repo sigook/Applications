@@ -1,5 +1,5 @@
-using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles.Models;
+﻿using Covenant.Api.Authorization;
+using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

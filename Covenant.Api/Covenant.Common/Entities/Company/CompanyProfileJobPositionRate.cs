@@ -1,6 +1,5 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
-using System.ComponentModel.DataAnnotations;
 
 namespace Covenant.Common.Entities.Company
 {
@@ -21,7 +20,6 @@ namespace Covenant.Common.Entities.Company
         public Guid? ShiftId { get; private set; }
         public Shift Shift { get; private set; }
 
-        [Range(0.1, 1000)]
         public decimal Rate { get; set; } //AgencyRate
         public decimal WorkerRate { get; set; }
         public decimal? WorkerRateMin { get; private set; }

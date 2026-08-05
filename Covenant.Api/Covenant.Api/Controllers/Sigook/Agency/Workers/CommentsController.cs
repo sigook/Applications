@@ -1,5 +1,5 @@
-using Covenant.Api.Authorization;
-using Covenant.Api.Shared.WorkerComment.Models;
+﻿using Covenant.Api.Authorization;
+using Covenant.Common.Models.Worker;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;

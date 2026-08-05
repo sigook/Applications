@@ -525,18 +525,6 @@ public class WorkerRepository : IWorkerRepository
         return await query.ToListAsync();
     }
 
-    public Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(string punchCardId) =>
-        GetWorkerProfilePunchCarId(wp => EF.Functions.ILike(wp.PunchCardId, punchCardId));
-
-    public Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(Guid profileId) =>
-        GetWorkerProfilePunchCarId(wp => wp.Id == profileId);
-
-    private Task<WorkerProfilePunchCardIdModel> GetWorkerProfilePunchCarId(Expression<Func<WorkerProfile, bool>> condition) =>
-        _context.WorkerProfiles.Where(condition)
-            .Select(wp => new WorkerProfilePunchCardIdModel { Id = wp.Id, PunchCardId = wp.PunchCardId, WorkerFullName = $"{wp.FirstName} {wp.MiddleName} {wp.LastName} {wp.SecondLastName}" })
-            .AsNoTracking()
-            .SingleOrDefaultAsync();
-
     public async Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid workerProfileId, Pagination pagination)
     {
         var payStubs = await _context.PayStubHistories

@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Covenant.Documents.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -49,7 +50,6 @@ public class CompanyService : ICompanyService
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IValidator<CompanyCsvModel> bulkCompanyValidator;
     private readonly ICompanyAdapter companyAdapter;
-    private readonly ILocationService locationService;
     public CompanyService(
         ICompanyRepository companyRepository,
         IUserRepository userRepository,
@@ -63,8 +63,7 @@ public class CompanyService : ICompanyService
         IGeocodeService geocodeService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IValidator<CompanyCsvModel> bulkCompanyValidator,
-        ICompanyAdapter companyAdapter,
-        ILocationService locationService)
+        ICompanyAdapter companyAdapter)
     {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
@@ -79,7 +78,6 @@ public class CompanyService : ICompanyService
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.bulkCompanyValidator = bulkCompanyValidator;
         this.companyAdapter = companyAdapter;
-        this.locationService = locationService;
     }
 
     public async Task<Result<Guid>> CreateCompanyProfile(CompanyRegisterByItselfModel model)
@@ -159,8 +157,6 @@ public class CompanyService : ICompanyService
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
 
-        await UpsertProvinceSettingsIfProvided(model);
-
         return Result.Ok(entity.LocationId);
     }
 
@@ -180,8 +176,6 @@ public class CompanyService : ICompanyService
         entity.IsBilling = model.IsBilling;
         companyRepository.Update(entity);
         await companyRepository.SaveChangesAsync();
-
-        await UpsertProvinceSettingsIfProvided(model);
 
         return Result.Ok();
     }
@@ -409,14 +403,4 @@ public class CompanyService : ICompanyService
         return Result.Ok();
     }
 
-    private async Task UpsertProvinceSettingsIfProvided(CompanyProfileLocationDetailModel model)
-    {
-        var provinceId = model.Province?.Id ?? model.City?.Province?.Id;
-        var settings = model.Province?.Settings ?? model.City?.Province?.Settings;
-
-        if (provinceId.HasValue && provinceId.Value != Guid.Empty && settings != null)
-        {
-            await locationService.UpsertProvinceSettings(provinceId.Value, settings);
-        }
-    }
 }

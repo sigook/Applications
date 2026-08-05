@@ -62,4 +62,5 @@ public interface IRequestRepository
     Task SaveChangesAsync();
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
     Task<bool> ExistsRequestByNumber(int requestId);
+    Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId);
 }

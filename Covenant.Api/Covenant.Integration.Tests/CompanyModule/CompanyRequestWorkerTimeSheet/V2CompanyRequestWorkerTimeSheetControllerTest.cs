@@ -1,5 +1,4 @@
-﻿using Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Models;
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.CompanyModule.CompanyRequestWorkerTimeSheet.Controllers;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;

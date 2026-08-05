@@ -32,7 +32,7 @@ An **agency owner** gets `admin`. There is no `agency` role: what resolves a use
 | `RecruitingAccess` | superadmin, admin, recruiting | Recruiting module |
 | `AgencyStaff` | RecruitingAccess + sales | Anyone who belongs to an agency |
 | `SalesAccess` | superadmin, admin, sales | Sales module |
-| `Accounting` | superadmin, admin | Invoices, pay stubs, reports, and user management |
+| `AdminAccess` | superadmin, admin | Invoices, pay stubs, reports, and user management (policy name: `Admin`) |
 
 `AgencyStaff` is also the **identity** group: those are the users for whom `AgencyIdFilter` and
 `AgencyPersonnelIdFilter` inject the `agencyId` / `agencyPersonnelId` claims.
@@ -52,10 +52,11 @@ Concretely:
   `CompanyProfile.SalesRepresentativeId` for clients). Admin and superadmin hit the same endpoints
   **unscoped** — the scoping is per-caller, not per-endpoint.
 - **The unscoped lists are closed to sales.** `GET api/agency/recruiting/requests` and
-  `GET api/agency/recruiting/companyprofiles` (plus their `/all` and `/File` variants) require Policy
+  `GET api/agency/recruiting/companyprofiles` (plus `/all` and `/File` on requests, and `/File` and
+  `/FileWithDetails` on companyprofiles — there is no companyprofiles `/all`) require Policy
   `Recruiting`. Otherwise a sales user would just call those and see everything.
 - **Details are not scoped.** Policy `Agency` = `AgencyStaff`, so sales reaches the same detail,
-  edit, workers, timesheets, applicants and runners endpoints a recruiter reaches. A sales user who
+  edit, workers, timesheets and applicants endpoints a recruiter reaches. A sales user who
   knows the id of another rep's order can open and edit it. **This is accepted on purpose** — the
   list is the boundary, not the record.
 
@@ -79,12 +80,34 @@ representative it already had.
 |------|--------|-----|
 | Weekly Board | `Recruiting` | Recruiting planning tool |
 | Unscoped order / client lists | `Recruiting` | Would defeat the sales scoping |
-| Invoices, pay stubs, reports | `Accounting` | Financial data |
-| Create / delete agency users | `Accounting` | User management |
+| Runners | `Recruiting` | Recruiting pipeline (`RunnersController.cs:17`) |
+| Invoices, pay stubs, reports | `Admin` | Financial data |
+| Create / delete agency users | `Admin` | User management |
+| Bulk recruiter assignment | `Admin` | `PUT api/agency/requests/bulk-recruiters` |
+
+> `PayStubsController`, `InvoicesController` and `ReportsController` enforce
+> `[Authorize(Policy = PolicyConfiguration.Admin)]`. `DeductionsController` keeps a bare
+> `[Authorize]` on purpose — it is called by the `CraTableUploaded` Azure Function with its own
+> credentials, not by an agency user. Note there is no global `FallbackPolicy`: a controller
+> without `[Authorize]` is anonymous, so new accounting controllers must declare their policy
+> explicitly.
+
+## Other policies
+
+Besides `Agency`, `Recruiting`, `Sales` and `Admin` (`PolicyConfiguration.cs`):
+
+- `SuperAdmin` — superadmin only.
+- `Covenant` — requires the `all2job` claim.
+- `AgencyOrCompany` / `AgencyOrWorker` — built from `RecruitingAccess` plus the company/worker
+  roles, so they **exclude sales**.
+- `Request` — authenticated-only (any logged-in user).
+
+On the frontend, route guards live in `Sigook.Web/src/router/routesAgency.ts` and the
+`useAdmin` / `useRecruitingAccess` composables — UI mirrors, not defenses.
 
 ## User creation
 
-Only `admin` and `superadmin` create agency users (`POST api/agency/personnel`, Policy `Accounting`).
+Only `admin` and `superadmin` create agency users (`POST api/agency/personnel`, Policy `Admin`).
 
 The role is chosen at creation time and **validated server-side** against what the caller is allowed
 to assign:
@@ -100,3 +123,6 @@ anything outside it. Hiding a role from the dropdown is not a defense — the ch
 If the email already belongs to an existing user (adding them to a second agency), the submitted role
 is **ignored** and the user keeps their current role: the role is global, not per-agency, so changing
 it would also change it in their first agency.
+
+Only existing **agency** users can be added to a second agency: if the email belongs to a worker or
+company user, `AgencyService` rejects it with `EmailAlreadyTaken` (`AgencyService.cs:625-628`).

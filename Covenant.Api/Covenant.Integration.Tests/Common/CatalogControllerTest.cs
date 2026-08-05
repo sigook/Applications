@@ -32,7 +32,6 @@ public class CatalogControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
             services.AddDbContext<CovenantContext>(c =>
                 c.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
             services.AddSingleton<ICatalogRepository, CatalogRepository>();
-            services.AddAutoMapper(Assembly.Load("Covenant.Api"));
             services.AddResponseCaching();
         }
 

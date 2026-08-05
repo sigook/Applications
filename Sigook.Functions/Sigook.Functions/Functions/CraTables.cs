@@ -28,7 +28,7 @@ public class CraTables(
     {
         logger.LogInformation("A CRA table was uploaded: {Name}", name);
 
-        if (!CraBlobName.TryParse(name, out var model, out var nameError))
+        if (!CraBlobName.TryParse(name, out var table, out var nameError))
         {
             logger.LogError("The CRA table {Name} was ignored: {Error}", name, nameError);
             await Notify(TeamsMessage.CreateError($"CRA table ignored: {name}", nameError));
@@ -38,23 +38,26 @@ public class CraTables(
         TeamsMessage message;
         try
         {
-            if (string.IsNullOrEmpty(_options.ApiUrl))
+            var apiUrl = table.Kind == CraTableKind.Cpp ? _options.CppApiUrl : _options.TaxApiUrl;
+            if (string.IsNullOrEmpty(apiUrl))
             {
-                logger.LogError("CraTables:ApiUrl is not configured");
-                message = TeamsMessage.CreateError("API url is missing", "CraTables:ApiUrl is not set");
+                var setting = $"CraTables:{(table.Kind == CraTableKind.Cpp ? nameof(_options.CppApiUrl) : nameof(_options.TaxApiUrl))}";
+                logger.LogError("{Setting} is not configured", setting);
+                message = TeamsMessage.CreateError("API url is missing", $"{setting} is not set");
             }
             else
             {
                 var apiClient = httpClientFactory.CreateClient("Api");
                 var token = await apiClient.GetToken(_apiCredentials);
 
-                var request = new HttpRequestMessage(HttpMethod.Post, _options.ApiUrl)
+                var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
                 {
-                    Content = JsonContent.Create(model)
+                    Content = JsonContent.Create(table.Import)
                 };
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                logger.LogInformation("Importing the {PayPeriod} {Year} CPP table from {Name}", model.PayPeriod, model.Year, name);
+                logger.LogInformation("Importing the {PayPeriod} {Year} {Table} table from {Name}",
+                    table.Import.PayPeriod, table.Import.Year, table.Label, name);
                 HttpResponseMessage response = await apiClient.SendAsync(request);
                 string content = await response.Content.ReadAsStringAsync();
 
@@ -62,7 +65,7 @@ public class CraTables(
                 {
                     logger.LogInformation("The CRA table {Name} was imported with {Rows} rows", name, content);
                     message = TeamsMessage.CreateSuccess($"CRA table imported: {name}",
-                        $"{content} {model.PayPeriod} CPP brackets were stored for {model.Year}");
+                        $"{content} {table.Import.PayPeriod} {table.Label} brackets were stored for {table.Import.Year}");
                 }
                 else
                 {

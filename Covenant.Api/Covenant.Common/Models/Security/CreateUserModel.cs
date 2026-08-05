@@ -1,18 +1,14 @@
-﻿using Covenant.Common.Enums;
-using System.ComponentModel.DataAnnotations;
+using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Security
+namespace Covenant.Common.Models.Security;
+
+public class CreateUserModel
 {
-    public class CreateUserModel
-    {
-        [Required, EmailAddress]
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string ConfirmPassword { get; set; }
-        public UserType UserType { get; set; }
-        [Required]
-        public string Role { get; set; }
-        public Guid? AgencyId { get; set; }
-        public Guid? CompanyId { get; set; }
-    }
+    public string Email { get; set; }
+    public string Password { get; set; }
+    public string ConfirmPassword { get; set; }
+    public UserType UserType { get; set; }
+    public string Role { get; set; }
+    public Guid? AgencyId { get; set; }
+    public Guid? CompanyId { get; set; }
 }
