@@ -20,7 +20,7 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="invoiceNumber"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -112,6 +112,7 @@ import { showAlertError } from '@/utils/toast';
 import { downloadPDF } from '@/utils/downloadFile';
 import { getAgencyInvoices, downloadInvoicePdf } from '@/api/agencyInvoiceApi';
 import { currency, dateMonth } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import DeleteInvoice from '@/components/agency_accounting/DeleteInvoice.vue';
 import SendInvoiceEmail from '@/components/agency_accounting/SendInvoiceEmail.vue';
@@ -129,6 +130,14 @@ const serverParams = ref<any>({
   pageSize: 30,
   isDescending: true,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  invoiceNumber: 0,
+  createdAt: 1,
+  companyFullName: 2,
+  salesRepresentative: 3,
+}, () => loadInvoices());
+
 const showDeleteModal = ref(false);
 const currentInvoice = ref<any>(null);
 const showSendEmailModal = ref(false);
@@ -144,25 +153,6 @@ loadInvoices();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadInvoices();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'invoiceNumber':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'companyFullName':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'salesRepresentative':
-      serverParams.value.sortBy = 3;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadInvoices();
 }
 

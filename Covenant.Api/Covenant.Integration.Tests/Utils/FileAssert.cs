@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Xunit;
 
-namespace Covenant.Test.Utils
+namespace Covenant.Integration.Tests.Utils
 {
     public static class FileAssert
     {

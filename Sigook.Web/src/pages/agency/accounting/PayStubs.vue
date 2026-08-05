@@ -30,7 +30,7 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="payStubNumber"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         checkable checkbox-position="left" v-model:checked-rows="checkedRows"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
@@ -131,6 +131,7 @@ import {
   sendPayStubEmailBulk,
   deleteAgencyPayStub,
 } from '@/api/agencyPayStubApi';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import GeneratePayStubs from '@/components/agency_accounting/GeneratePayStubs.vue';
 import SkipPayrollNumber from '@/components/agency_accounting/SkipPayrollNumber.vue';
@@ -148,6 +149,15 @@ const serverParams = ref<any>({
   pageSize: 30,
   isDescending: true,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  payStubNumber: 0,
+  createdAt: 1,
+  workerFullName: 2,
+  numberId: 3,
+  totalPaid: 4,
+}, () => loadPayStubs());
+
 const showGeneratePayStubsModal = ref(false);
 const showSkipPayrollNumberModal = ref(false);
 
@@ -162,28 +172,6 @@ loadPayStubs();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadPayStubs();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'payStubNumber':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'workerFullName':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'numberId':
-      serverParams.value.sortBy = 3;
-      break;
-    case 'totalPaid':
-      serverParams.value.sortBy = 4;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadPayStubs();
 }
 

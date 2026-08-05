@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Candidate;
+﻿using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using System.Linq.Expressions;
@@ -10,7 +10,7 @@ public interface ICandidateRepository
     Task<Common.Entities.Candidate.Candidate> GetCandidate(Expression<Func<Common.Entities.Candidate.Candidate, bool>> expression);
     Task<bool> CandidateExists(string email);
     Task<PaginatedList<CandidateListModel>> GetCandidates(Guid agencyId, GetCandidatesFilter filter);
-    IEnumerable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter);
+    IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter);
     Task<CandidateDetailModel> GetCandidateDetail(Guid id);
     Task<PhoneNumberModel> GetPhoneNumberDetail(Guid candidateId, Guid id);
     Task<SkillModel> GetSkillDetail(Guid candidateId, Guid id);

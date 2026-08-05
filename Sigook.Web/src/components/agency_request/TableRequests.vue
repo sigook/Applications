@@ -40,7 +40,7 @@
     </div>
     <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" pagination-size="is-small"
-      focuseable :default-sort="['numberId', 'desc']" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
+      focuseable :default-sort="defaultSort" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>
         <p class="container text-center">No records available</p>
@@ -282,6 +282,7 @@ import JobBoardsModal from '../../components/agency_request/JobBoardsModal.vue';
 import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterModal.vue';
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 
 const props = defineProps<{ totalItems?: number; companyProfileId?: any; agencyId?: any; config?: any }>();
@@ -335,6 +336,17 @@ const serverParams = reactive<any>({
 });
 const quickActions = reactive<any>({ isAsap: false });
 
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  numberId: 0,
+  companyFullName: 1,
+  jobTitle: 2,
+  createdAt: 3,
+  displayRecruiters: 4,
+  workerRate: 5,
+  workersQuantityWorking: 6,
+  salesRepresentative: 7,
+}, () => loadRequests());
+
 const tableConfig = computed(() => ({ ...defaultConfig, ...props.config }));
 const totalQuantityWorking = computed(() => {
   if (rows.value.length > 0) {
@@ -374,37 +386,6 @@ function onCellClick(row: any, column: any, rowIndex: number) {
 
 function onPageChange(params: any) {
   serverParams.pageIndex = params;
-  loadRequests();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'numberId':
-      serverParams.sortBy = 0;
-      break;
-    case 'companyFullName':
-      serverParams.sortBy = 1;
-      break;
-    case 'jobTitle':
-      serverParams.sortBy = 2;
-      break;
-    case 'createdAt':
-      serverParams.sortBy = 3;
-      break;
-    case 'displayRecruiters':
-      serverParams.sortBy = 4;
-      break;
-    case 'workerRate':
-      serverParams.sortBy = 5;
-      break;
-    case 'workersQuantityWorking':
-      serverParams.sortBy = 6;
-      break;
-    case 'salesRepresentative':
-      serverParams.sortBy = 7;
-      break;
-  }
-  serverParams.isDescending = order !== 'asc';
   loadRequests();
 }
 

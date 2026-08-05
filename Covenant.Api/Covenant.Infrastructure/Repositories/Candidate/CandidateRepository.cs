@@ -1,4 +1,4 @@
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
@@ -33,7 +33,7 @@ namespace Covenant.Infrastructure.Repositories.Candidate
             return await query.ToPaginatedList(filter);
         }
 
-        public IEnumerable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter)
+        public IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter)
         {
             var candidates = _context.Candidates
                 .AsNoTracking()

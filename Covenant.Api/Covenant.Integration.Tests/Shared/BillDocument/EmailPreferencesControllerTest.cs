@@ -9,7 +9,6 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories;
 using Covenant.Infrastructure.Repositories.Notification;
 using Covenant.Integration.Tests.Configuration;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

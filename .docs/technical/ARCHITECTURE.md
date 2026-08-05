@@ -132,7 +132,6 @@ Covenant.Api/
 ├── Covenant.Infrastructure/    # EF Core (CovenantContext), repositories, integrations, deductions
 ├── Covenant.Documents/         # Excel/PDF report generators (MediatR handlers)
 ├── Covenant.Tests/             # Unit tests
-├── Covenant.Test.Utils/        # Test utilities
 └── Covenant.Integration.Tests/ # Integration tests
 ```
 
@@ -157,7 +156,7 @@ Covenant.Api/
   the `PackageVersion` in that file so every project resolves the same version.
 - Keep infrastructure concerns out of `Covenant.Common`: Excel helpers live in `Covenant.Documents`,
   ASP.NET-bound helpers (`IFormFile`, `IConfiguration`, Razor helpers) in `Covenant.Api`/
-  `Covenant.Core.BL`, and test-only helpers in `Covenant.Test.Utils`.
+  `Covenant.Core.BL`, and test-only helpers inside each test project.
 
 ### Controllers (presentation layer)
 

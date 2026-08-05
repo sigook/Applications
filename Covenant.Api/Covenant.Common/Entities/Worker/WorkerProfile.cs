@@ -103,6 +103,7 @@ public class WorkerProfile :
     public List<WorkerProfileLicense> Licenses { get; set; } = [];
     public List<WorkerProfileCertificate> Certificates { get; set; } = [];
     public List<WorkerProfileJobExperience> JobExperiences { get; set; } = [];
+    public List<Request.WorkerRequest> WorkerRequests { get; set; } = [];
 
     public event EventHandler<CovenantFile> OnNewDocumentAdded;
 

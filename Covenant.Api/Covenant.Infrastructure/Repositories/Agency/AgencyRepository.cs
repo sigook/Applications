@@ -1,4 +1,4 @@
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Enums;
@@ -230,7 +230,7 @@ public class AgencyRepository : IAgencyRepository
         return await query.ToPaginatedList(filter);
     }
 
-    public IEnumerable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter)
+    public IQueryable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter)
     {
         var agencies = _context.Agencies
             .Include(a => a.User)

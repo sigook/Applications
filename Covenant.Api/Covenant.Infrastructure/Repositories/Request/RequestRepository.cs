@@ -34,7 +34,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public Task Update<T>(T entity) where T : class => Task.FromResult(context.Set<T>().Update(entity));
 
-    public IEnumerable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
+    public IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
     {
         var requests = context.Requests.AsQueryable();
         if (!string.IsNullOrWhiteSpace(filter.Recruiter))
@@ -112,7 +112,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     public async Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
     {
         // Reuse the same filtered query (without paging) and aggregate the JobBoards projection.
-        var query = (IQueryable<AgencyRequestListModel>)GetAllRequestsForAgency(agencyId, filter);
+        var query = GetAllRequestsForAgency(agencyId, filter);
         var summary = await query
             .SelectMany(r => r.JobBoards)
             .GroupBy(jb => new { jb.SourceId, jb.Value })

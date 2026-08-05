@@ -25,7 +25,8 @@ public static class TestStartupExtensions
     public static void AddDefaultTestConfiguration(this IServiceCollection services)
     {
         services.AddRepositories().AddServices().AddAdapters();
-        services.AddControllersWithViews();
+        services.AddControllersWithViews()
+            .AddApplicationPart(typeof(Program).Assembly);
         services.Configure<ApiBehaviorOptions>(opt =>
         {
             opt.SuppressConsumesConstraintForFormFileParameters = true;

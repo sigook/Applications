@@ -16,7 +16,7 @@
         </b-button>
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="fullName"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
           <p class="container text-center">No records available</p>
@@ -73,6 +73,7 @@ import { useAgencyStore } from '@/stores/agency';
 import { showAlertError } from '@/utils/toast';
 import { getAgenciesList } from '@/api/agencyApi';
 import { agencyType } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import { appGlobals } from '@/varaibles';
 
 const agencyStore = useAgencyStore();
@@ -88,6 +89,12 @@ const serverParams = ref<any>({
   pageSize: 30,
 });
 
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  fullName: 0,
+  email: 1,
+  agencyType: 2,
+}, () => getAgencies());
+
 if (agencyStore.agencyListFilter) {
   serverParams.value = agencyStore.agencyListFilter;
 }
@@ -95,22 +102,6 @@ getAgencies();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  getAgencies();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'fullName':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'email':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'agencyType':
-      serverParams.value.sortBy = 2;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   getAgencies();
 }
 
