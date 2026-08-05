@@ -1,0 +1,52 @@
+# Azure Pipeline for Staging Database Refresh
+# Dumps CovenantCore and CovenantSecurity from production and restores them
+# into their Staging counterparts on the same Postgres server
+
+name: DatabaseRefresh-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
+
+# Manual trigger only
+trigger: none
+pr: none
+
+pool:
+  name: 'covenant-build-pool'
+
+variables:
+  keyVaultName: 'Sigook'
+
+stages:
+  - stage: Refresh
+    displayName: 'Refresh Staging Databases'
+    jobs:
+      - job: Dump_and_Restore
+        displayName: 'Dump Production and Restore Staging'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+
+          - task: AzureKeyVault@2
+            displayName: 'Fetch Secrets from Key Vault'
+            inputs:
+              azureSubscription: 'SigookPipelines'
+              KeyVaultName: $(keyVaultName)
+              SecretsFilter: 'production-api--ConnectionStrings--DefaultConnection,production-ids--ConnectionStrings--DefaultConnection,pipelines--DbRefresh--StagingPasswordHash'
+              RunAsPreJob: false
+
+          - task: Bash@3
+            displayName: 'Refresh CovenantCoreStaging'
+            inputs:
+              targetType: 'filePath'
+              filePath: 'Sigook.Database/Scripts/database-refresh.sh'
+            env:
+              CONNECTION_STRING: $(production-api--ConnectionStrings--DefaultConnection)
+              RESET_USERS: 'false'
+
+          - task: Bash@3
+            displayName: 'Refresh CovenantSecurityStaging'
+            inputs:
+              targetType: 'filePath'
+              filePath: 'Sigook.Database/Scripts/database-refresh.sh'
+            env:
+              CONNECTION_STRING: $(production-ids--ConnectionStrings--DefaultConnection)
+              RESET_USERS: 'true'
+              PASSWORD_HASH: $(pipelines--DbRefresh--StagingPasswordHash)

@@ -41,6 +41,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 | SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Build AAB → Google Play → Notify | Google Play (internal/production) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build → Publish+Deploy | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build → Publish+Deploy | `sigook-cognitive-services` (production only) |
+| Database Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | Refresh | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
@@ -201,6 +202,22 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 - Deploy: `AzureWebApp@1` (Linux) to `sigook-cognitive-services`
 - Production: `https://sigook-cognitive-services.azurewebsites.net`
 
+### Database Refresh (Staging)
+
+**Build naming:** `DatabaseRefresh-YYYY.M.D.r`
+
+**Trigger:** Manual only (run from Azure DevOps). Refreshes **both** databases in one run.
+
+**Stage 1 - Refresh Staging Databases:**
+- Fetches secrets from Key Vault `Sigook` via `AzureKeyVault@2` (`SigookPipelines` service connection): production connection strings for API (`CovenantCore`) and IdentityServer (`CovenantSecurity`), plus `pipelines--DbRefresh--StagingPasswordHash`
+- Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
+- Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
+- `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
+
+**Requirements:**
+- The `SigookPipelines` service principal has the `Key Vault Secrets User` role on the `Sigook` vault (RBAC model)
+- The agent (`sigook-build-vm`, Azure VM) reaches the Postgres server through the existing "Allow Azure services" firewall rule
+- No connection data or credentials live in the repo — everything is resolved from Key Vault at runtime
 
 ## Reusable Templates
 
