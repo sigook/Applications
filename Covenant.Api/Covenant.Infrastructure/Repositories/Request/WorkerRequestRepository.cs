@@ -34,7 +34,12 @@ namespace Covenant.Infrastructure.Repositories.Request
 
         public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequestByWorkerProfileId(Guid workerProfileId, Guid requestId) =>
             _context.WorkerRequests.Where(wr => wr.WorkerProfileId == workerProfileId && wr.RequestId == requestId)
-                .Include(i => i.TimeSheets).SingleOrDefaultAsync();
+                .Include(i => i.TimeSheets)
+                .Include(i => i.Request)
+                .ThenInclude(r => r.JobLocation)
+                .ThenInclude(jl => jl.City)
+                .ThenInclude(c => c.Province)
+                .ThenInclude(p => p.Country).SingleOrDefaultAsync();
 
         public async Task<IEnumerable<Common.Entities.Request.WorkerRequest>> GetWorkerRequestsByWorkerProfileId(Guid workerProfileId)
         {

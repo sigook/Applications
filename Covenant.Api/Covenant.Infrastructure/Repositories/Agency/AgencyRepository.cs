@@ -133,11 +133,11 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<Location> GetBillingLocation(Guid agencyId)
     {
-        var query = _context.AgencyLocations
+        var agencyLocation = await _context.AgencyLocations
             .Include(i => i.Location).ThenInclude(l => l.City).ThenInclude(i => i.Province).ThenInclude(i => i.Country)
             .Where(f => f.AgencyId == agencyId && f.IsBilling)
-            .Select(s => s.Location);
-        return await query.FirstOrDefaultAsync();
+            .FirstOrDefaultAsync();
+        return agencyLocation?.Location;
     }
 
     public Task<Guid> GetAgencyIdForUser(Guid userId) =>
@@ -192,26 +192,16 @@ public class AgencyRepository : IAgencyRepository
     public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city)
     {
         var country = await _context.Cities.AsNoTracking()
-            .Include(c => c.Province).ThenInclude(p => p.Country)
             .Where(c => c.Id == city.Id)
             .Select(c => c.Province.Country)
             .FirstOrDefaultAsync();
-        var agencyLocations = _context.AgencyLocations
-            .Include(al => al.Location)
-            .ThenInclude(l => l.City)
-            .ThenInclude(c => c.Province)
-            .ThenInclude(p => p.Country)
-            .Include(al => al.Agency)
-            .Where(al => al.Agency.AgencyType == AgencyType.Master)
-            .Where(al => al.Location.City.Province.CountryId == country.Id)
-            .ToList();
-        var agencyLocation = agencyLocations.FirstOrDefault();
-        return agencyLocation.Agency;
+        if (country is null) return null;
+        return await GetAgencyMasterByCountry(country.Id);
     }
 
     public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByCountry(Guid countryId)
     {
-        var agencyLocations = await _context.AgencyLocations
+        var agencyLocation = await _context.AgencyLocations
             .Include(al => al.Location)
             .ThenInclude(l => l.City)
             .ThenInclude(c => c.Province)
@@ -219,9 +209,8 @@ public class AgencyRepository : IAgencyRepository
             .Include(al => al.Agency)
             .Where(al => al.Agency.AgencyType == AgencyType.Master)
             .Where(al => al.Location.City.Province.CountryId == countryId)
-            .ToListAsync();
-        var agencyLocation = agencyLocations.FirstOrDefault();
-        return agencyLocation.Agency;
+            .FirstOrDefaultAsync();
+        return agencyLocation?.Agency;
     }
 
     public async Task<PaginatedList<AgencyModel>> GetAgencies(Guid agencyId, GetAgenciesFilter filter)
