@@ -328,7 +328,7 @@ public class WorkerRepository : IWorkerRepository
         return await query.ToPaginatedList(filter);
     }
 
-    public IEnumerable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
+    public IQueryable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
     {
         var workers = _context.WorkerProfiles
             .Include(wp => wp.Skills)

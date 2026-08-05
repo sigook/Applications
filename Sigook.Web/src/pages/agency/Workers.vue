@@ -19,7 +19,7 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="fullName"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
@@ -168,6 +168,7 @@ import { workerFeatures as features } from '@/constants/workerFeatures';
 import { formatPhone } from '@/utils/phoneFormat';
 import { getAgencyWorkers, updateApprovedToWork } from '@/api/agencyWorkerApi';
 import { dateMonth } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 
 const router = useRouter();
@@ -185,6 +186,15 @@ const serverParams = ref<any>({
   pageSize: 30,
 });
 
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  fullName: 0,
+  numberId: 1,
+  requests: 2,
+  createdAt: 3,
+  skills: 4,
+  externalId: 5,
+}, () => loadWorkers());
+
 if (agencyStore.agencyWorkerProfileFilter) {
   serverParams.value = agencyStore.agencyWorkerProfileFilter;
   if (serverParams.value.features) {
@@ -199,31 +209,6 @@ loadWorkers();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadWorkers();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'fullName':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'numberId':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'requests':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 3;
-      break;
-    case 'skills':
-      serverParams.value.sortBy = 4;
-      break;
-    case 'externalId':
-      serverParams.value.sortBy = 5;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadWorkers();
 }
 

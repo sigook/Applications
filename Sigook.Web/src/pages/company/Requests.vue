@@ -14,7 +14,7 @@
         <b-button tag="router-link" to="/company-requests/create" icon-left="plus">Create Request</b-button>
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
@@ -92,6 +92,7 @@ import { showAlertError } from '@/utils/toast';
 import { getRequests } from '@/api/companyApi';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { dateFromNow } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import AgencyShift from '@/components/agency_request/AgencyShiftDetail.vue';
 
 const router = useRouter();
@@ -106,6 +107,12 @@ const serverParams = reactive<any>({
   pageIndex: 1,
   pageSize: 30,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  numberId: 0,
+  jobTitle: 2,
+  workersQuantityWorking: 6,
+}, () => getCompanyRequests());
 
 const totalQuantityWorking = computed(() => {
   if (rows.value.length > 0) {
@@ -138,22 +145,6 @@ function getCompanyRequests() {
 
 function onPageChange(params: number) {
   serverParams.pageIndex = params;
-  getCompanyRequests();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'numberId':
-      serverParams.sortBy = 0;
-      break;
-    case 'jobTitle':
-      serverParams.sortBy = 2;
-      break;
-    case 'workersQuantityWorking':
-      serverParams.sortBy = 6;
-      break;
-  }
-  serverParams.isDescending = order !== 'asc';
   getCompanyRequests();
 }
 

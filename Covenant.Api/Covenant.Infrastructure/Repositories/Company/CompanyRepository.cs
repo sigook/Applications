@@ -175,7 +175,7 @@ public class CompanyRepository : ICompanyRepository
         return await query.ToPaginatedList(filter);
     }
 
-    public IEnumerable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter)
+    public IQueryable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter)
     {
         var companies = _context.CompanyProfiles
             .Include(cp => cp.Locations)

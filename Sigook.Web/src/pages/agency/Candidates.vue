@@ -23,7 +23,7 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="name"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
@@ -239,6 +239,7 @@ import {
 import { getSources } from '@/api/catalogApi';
 import type { Source } from '@/types/common';
 import { dateMonth, emailName } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import {
   getCandidateNotes,
   createCandidateNote,
@@ -274,6 +275,16 @@ const serverParams = ref<any>({
   pageIndex: 1,
   pageSize: 30,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  name: 0,
+  address: 1,
+  skills: 2,
+  createdAt: 3,
+  recruiter: 4,
+  residencyStatus: 5,
+  source: 6,
+}, () => loadCandidates());
 
 const residencyListValue = residencyList;
 const sourceList = ref<Source[]>([]);
@@ -314,34 +325,6 @@ function onCellClick(row: any, column: any) {
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadCandidates();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'name':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'address':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'skills':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 3;
-      break;
-    case 'recruiter':
-      serverParams.value.sortBy = 4;
-      break;
-    case 'residencyStatus':
-      serverParams.value.sortBy = 5;
-      break;
-    case 'source':
-      serverParams.value.sortBy = 6;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadCandidates();
 }
 
