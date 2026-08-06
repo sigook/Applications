@@ -18,11 +18,11 @@ namespace Covenant.Infrastructure.Repositories.Request
 
         public WorkerRequestRepository(CovenantContext context) => _context = context;
 
-        public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid id) => GetWorkerRequest(w => w.Id == id);
+        public Task<WorkerRequest> GetWorkerRequest(Guid id) => GetWorkerRequest(w => w.Id == id);
 
-        public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid workerId, Guid requestId) => GetWorkerRequest(c => c.WorkerProfile.WorkerId == workerId && c.RequestId == requestId);
+        public Task<WorkerRequest> GetWorkerRequest(Guid workerId, Guid requestId) => GetWorkerRequest(c => c.WorkerProfile.WorkerId == workerId && c.RequestId == requestId);
 
-        private Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Expression<Func<Common.Entities.Request.WorkerRequest, bool>> condition) =>
+        private Task<WorkerRequest> GetWorkerRequest(Expression<Func<WorkerRequest, bool>> condition) =>
             _context.WorkerRequests.Where(condition)
                 .Include(r => r.TimeSheets)
                 .Include(r => r.Request)
@@ -32,11 +32,16 @@ namespace Covenant.Infrastructure.Repositories.Request
                 .ThenInclude(p => p.Country)
                 .FirstOrDefaultAsync();
 
-        public Task<Common.Entities.Request.WorkerRequest> GetWorkerRequestByWorkerProfileId(Guid workerProfileId, Guid requestId) =>
+        public Task<WorkerRequest> GetWorkerRequestByWorkerProfileId(Guid workerProfileId, Guid requestId) =>
             _context.WorkerRequests.Where(wr => wr.WorkerProfileId == workerProfileId && wr.RequestId == requestId)
-                .Include(i => i.TimeSheets).SingleOrDefaultAsync();
+                .Include(i => i.TimeSheets)
+                .Include(i => i.Request)
+                .ThenInclude(r => r.JobLocation)
+                .ThenInclude(jl => jl.City)
+                .ThenInclude(c => c.Province)
+                .ThenInclude(p => p.Country).SingleOrDefaultAsync();
 
-        public async Task<IEnumerable<Common.Entities.Request.WorkerRequest>> GetWorkerRequestsByWorkerProfileId(Guid workerProfileId)
+        public async Task<IEnumerable<WorkerRequest>> GetWorkerRequestsByWorkerProfileId(Guid workerProfileId)
         {
             var workerRequest = await _context.WorkerRequests.Include(wr => wr.Request).ThenInclude(r => r.Shift)
                 .Where(wr => wr.WorkerProfileId == workerProfileId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked)
@@ -87,7 +92,7 @@ namespace Covenant.Infrastructure.Repositories.Request
 
         public Task Update(WorkerRequestNote entity) => Task.FromResult(_context.WorkerRequestNotes.Update(entity));
 
-        public Task UpdateWorkerRequest(Common.Entities.Request.WorkerRequest entity) => Task.FromResult(_context.WorkerRequests.Update(entity));
+        public Task UpdateWorkerRequest(WorkerRequest entity) => Task.FromResult(_context.WorkerRequests.Update(entity));
 
         public Task SaveChangesAsync() => _context.SaveChangesAsync();
     }

@@ -5,7 +5,7 @@ How worked hours are captured (clock in/out, manual entry), approved, and broken
 **Source of truth:**
 - `Covenant.Api/Covenant.Common/Entities/Request/TimeSheet.cs` — entity + clock/approval invariants
 - `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs` (`TimesheetService` class) — clock in/out, CRUD, geofence
-- `Covenant.Api/Covenant.Core.BL/Services/Shared/TimesheetCalculatorService.cs` — **all hours-breakdown calculation** (not TimesheetService)
+- `Covenant.Api/Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs` — **all hours-breakdown calculation** (not TimesheetService)
 - Consumers: `PayStubService.GeneratePayStubForWorker` (payroll) and the invoice services (billing) — see `PAYROLL_RULES.md` / `BILLING_RULES.md`
 
 ---
@@ -23,14 +23,14 @@ How worked hours are captured (clock in/out, manual entry), approved, and broken
 | `ClockIn` / `ClockOut` | DateTime? | Raw punch timestamps |
 | `ClockInRounded` / `ClockOutRounded` | DateTime? | **Optional caller-supplied inputs; the backend never computes rounding** (used instead of raw clocks in `AddClockOut` when both present) |
 | `MissingHours` / `MissingHoursOvertime` | TimeSpan | Extra paid hours (e.g. minimum-call rules), entered by agency |
-| `MissingRateWorker` / `MissingRateAgency` | decimal | Rate for missing hours (worker pay / company billing); ≤ 0 falls back to `WorkerRate` |
+| `MissingRateWorker` / `MissingRateAgency` | decimal | Rate for missing hours; `MissingRateWorker` ≤ 0 falls back to `WorkerRate`; `MissingRateAgency` is never consumed (invoices bill missing hours at `AgencyRate`) |
 | `DeductionsOthers` + `DeductionsOthersDescription` | decimal (non-nullable) | Validated 0–1000 in `AddDeductionsOthers` |
 | `BonusOrOthers` + `BonusOrOthersDescription` | decimal (non-nullable) | Ignored when ≤ 0 |
 | `Reimbursements` + `ReimbursementsDescription` | decimal | Non-taxable; excluded from gross on the pay stub |
 | `Comment` | string | E.g. `"Created and approved by {user}"` |
 | `WorkerRequestId`, `TimeSheetTotal`, `TimeSheetTotalPayroll` | | Links to the worker booking and computed totals |
 
-`BreakIsPaid`, `DurationBreak`, `HolidayIsPaid`, `OvertimeStartsAfter`, `WorkerRate` are **not** on the entity — they are joined from the Request/CompanyProfile into the calculation models (`TimeSheetApprovedPayrollModel`, etc.). `OvertimeStartsAfter` is configured on `CompanyProfile.OvertimeStartsAfter` (overridable per `CompanyProfileJobPositionRate`).
+`BreakIsPaid`, `DurationBreak`, `HolidayIsPaid`, `OvertimeStartsAfter`, `WorkerRate` are **not** on the entity — they are joined from the Request/CompanyProfile into the calculation models (`TimeSheetApprovedPayrollModel`, etc.). `OvertimeStartsAfter` defaults to `CompanyProfile.OvertimeStartsAfter` (44 h), overridable per `CompanyProfileJobPositionRate`, with `ProvinceSetting.OvertimeStartsAfter` in between (fallback chain `JobPositionRate → ProvinceSetting → CompanyProfile`).
 
 ---
 
@@ -40,15 +40,15 @@ All entry points are in `TimesheetService` (`Covenant.Core.BL/Services/TimeSheet
 
 ### 1. `Register(requestId, workerLocationModel)` — worker mobile punch
 
-1. **GPS geofence** (TimeSheetService.cs:155-196), active only when the `ValidateLocation` configuration flag is true:
+1. **GPS geofence** (TimeSheetService.cs:155-197), active only when the `ValidateLocation` configuration flag is true:
    - Worker coordinates missing → rejected ("Your location is invalid").
    - Request has no coordinates → rejected.
    - Distance worker↔job pin `>= 101` meters → rejected ("You are too far from check point").
-   - Every check emits a `TimesheetLocationDistanceCheck` telemetry event.
+   - Every distance comparison emits a `TimesheetLocationDistanceCheck` telemetry event (`TimeSheetService.cs:165-179`) — it fires only when both worker and request coordinates are present; the two rejection branches above return without telemetry.
 2. **Clock-in vs clock-out decision**: `TimesheetRepository.GetTimeSheeFromTheLast14Hours` fetches the latest timesheet in a 14-hour window.
    - None found → clock in (creates timesheet via `TimeSheet.WorkerClockIn`, `IsHoliday` set from the `Holiday` catalog by date + country).
    - Found but already approved → rejected.
-   - Found and `IsClockOutValid(now)` (has ClockIn, no ClockOut, and elapsed ≤ `TimeLimits.MaximumHoursDay` = **12 h**, TimeSheet.cs:90-94) → clock out.
+   - Found and `IsClockOutValid(now)` (has ClockIn, no ClockOut, and elapsed ≤ `TimeLimits.DefaultTimeLimits.MaximumHoursDay` = **14 h**, a hardcoded static (`TimeLimits.cs:5`); the `TimeLimits:MaximumHoursDay` config key (12 in appsettings.json) does **not** affect this check — TimeSheet.cs:90-94) → clock out.
    - Otherwise → new clock in.
 
 ### 2. `AddClockIn(requestId, workerId, clockIn)` — agency enters a clock-in time
@@ -90,7 +90,7 @@ Deletion/locking: `TimesheetService.RemoveTimeSheet` refuses to delete a timeshe
 
 ## Hours Breakdown
 
-Single implementation for payroll, invoicing and holiday-pay base: `TimesheetCalculatorService.CalculateHoursBreakdown` (TimesheetCalculatorService.cs:91-147).
+Single implementation for payroll, invoicing and holiday-pay base: `TimesheetCalculatorService.CalculateHoursBreakdown` (TimesheetCalculatorService.cs:82-138).
 
 ### 1. Total hours and breaks
 
@@ -98,11 +98,11 @@ Single implementation for payroll, invoicing and holiday-pay base: `TimesheetCal
 var totalHours = (timeOut - timeIn).Subtract(breakIsPaid ? durationBreak : TimeSpan.Zero);
 ```
 
-`DurationBreak` is subtracted **when `BreakIsPaid` is `true`** (TimesheetCalculatorService.cs:105). The flag name reads inverted relative to its effect — treat `BreakIsPaid = true` as "deduct the break from paid hours" when reasoning about this code.
+`DurationBreak` is subtracted **when `BreakIsPaid` is `true`** (TimesheetCalculatorService.cs:96). The flag name reads inverted relative to its effect — treat `BreakIsPaid = true` as "deduct the break from paid hours" when reasoning about this code.
 
 ### 2. Holiday gate
 
-Hours become `HolidayHours` only when `IsHoliday && HolidayIsPaid` (TimesheetCalculatorService.cs:108). In that case all hours of the day are holiday hours and are **not** added to the weekly accumulator. A holiday with `HolidayIsPaid = false` is processed as a normal day. (Invoicing hardcodes `holidayIsPaid: true`; pay stubs honor the flag.)
+Hours become `HolidayHours` only when `IsHoliday && HolidayIsPaid` (TimesheetCalculatorService.cs:99). In that case all hours of the day are holiday hours and are **not** added to the weekly accumulator. A holiday with `HolidayIsPaid = false` is processed as a normal day. (Invoicing hardcodes `holidayIsPaid: true`; pay stubs honor the flag.)
 
 ### 3. Weekly accumulation — per Worker + Week + Request
 
@@ -116,13 +116,15 @@ Callers group timesheets by week (Sunday–Saturday) then by `RequestId` and pas
 | `OtherRegularHours` | Accumulated hours beyond `TimeLimits.MaxHoursWeek` (config, 44 h) that are not overtime — straight rate, separate pay/bill line |
 | `RegularHours` | Everything else |
 
-Excess is computed by `CalculateExcessHours` (TimesheetCalculatorService.cs:153-164): a day that crosses a threshold is split; a day starting past it is entirely excess.
+Invoices and `CalculateHolidayPayBase` use the per-timesheet `OvertimeStartsAfter` value as-is; pay stubs read it once from `timesheets.First()` (`PayStubService.cs:237`) and reuse it for the whole batch.
+
+Excess is computed by `CalculateExcessHours` (TimesheetCalculatorService.cs:144-155): a day that crosses a threshold is split; a day starting past it is entirely excess.
 
 **Example** (`OvertimeStartsAfter = 44`): Saturday shift of 8 h with 40 h already accumulated → Regular 4 h, Overtime 4 h, accumulated 48 h.
 
 ### 5. Night shift — deprecated
 
-Not computed. `CalculateHoursBreakdown` explicitly does not support it (TimesheetCalculatorService.cs:90) and downstream consumers pass 0. Legacy `NightShift` columns/fields still exist but are always zero.
+Not computed. `CalculateHoursBreakdown` explicitly does not support it (TimesheetCalculatorService.cs:80) and downstream consumers pass 0. Legacy `NightShift` columns/fields still exist but are always zero.
 
 ---
 
@@ -138,7 +140,7 @@ Pay consequences (worked at 1.5×, not-worked "/20" entitlement) are documented 
 
 ## Provincial Overtime Thresholds (legal reference only)
 
-The code applies a single configurable `OvertimeStartsAfter` per company/position plus the global 44 h `MaxHoursWeek`; provinces are **not** modeled in the calculation (a `ProvinceSetting.OvertimeStartsAfter` entity exists but the calculator uses the per-timesheet value). For configuring companies correctly:
+The code applies a single weekly `OvertimeStartsAfter` threshold plus the global 44 h `MaxHoursWeek`. The threshold is resolved per timesheet as `JobPositionRate → ProvinceSetting → CompanyProfile` (`TimeSheetRepository.cs:181-186, :227-231, :275-279, :324-328`): provinces **are** modeled via `ProvinceSetting`, but only as a single weekly threshold — no daily rules. `ProvinceSetting.PaidHolidays` participates in the same fallback for payroll (`TimeSheetRepository.cs:236-237`). The table below is legal reference for seeding `ProvinceSetting`:
 
 | Province | Weekly OT threshold |
 |----------|---------------------|
@@ -158,4 +160,4 @@ Daily overtime thresholds (BC/AB/MB) are not supported.
 | `BonusOrOthers` | Added to gross, grouped by description |
 | `Reimbursements` | Excluded from gross/deductions, added to net pay |
 | `DeductionsOthers` | Added to total deductions (0–1000 per timesheet) |
-| `MissingHours` / `MissingHoursOvertime` | Paid at `MissingRateWorker` (×1.5 for the overtime variant); billed at `MissingRateAgency` |
+| `MissingHours` / `MissingHoursOvertime` | Paid at `MissingRateWorker` (×1.5 for the overtime variant); invoices bill them at `agencyRate` (`InvoiceService.cs:343, :363`) — `MissingRateAgency` is projected but never consumed |

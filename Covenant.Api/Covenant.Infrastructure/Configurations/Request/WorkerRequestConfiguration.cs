@@ -13,7 +13,7 @@ namespace Covenant.Infrastructure.Configurations.Request
             builder.HasIndex(r => new { r.RequestId, r.WorkerProfileId }).IsUnique();
 
             builder.HasOne(e => e.WorkerProfile)
-                .WithMany()
+                .WithMany(e => e.WorkerRequests)
                 .HasForeignKey(e => e.WorkerProfileId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);

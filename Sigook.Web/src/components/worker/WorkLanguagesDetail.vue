@@ -9,7 +9,7 @@
       </span>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalLanguages = true"></b-button>
     </div>
-    <b-modal v-model="modalLanguages" width="500px">
+    <b-modal custom-content-class="card" v-model="modalLanguages" width="500px">
       <languages-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </div>

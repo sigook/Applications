@@ -9,7 +9,7 @@
           :edited-image="companyProfile.logo" :class="{ disabled: isDisabled }" :required="false">
         </UploadImage>
         <div v-if="companyProfile">
-          <h1 class="text-capitalize fz2">
+          <h1 class="is-capitalized fz2">
             {{ lowercase(companyProfile.fullName) }}
           </h1>
         </div>

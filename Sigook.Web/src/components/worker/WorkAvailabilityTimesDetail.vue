@@ -9,7 +9,7 @@
       </span>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalAvailability = true"></b-button>
     </div>
-    <b-modal v-model="modalAvailability" width="500px">
+    <b-modal custom-content-class="card" v-model="modalAvailability" width="500px">
       <availability-times-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </div>

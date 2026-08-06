@@ -1,5 +1,6 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
+using Covenant.Common.Constants;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
@@ -76,6 +77,20 @@ namespace Covenant.Api.CompanyModule.CompanyRequest.Controllers
             Result result = await requestService.UpdateRequirements(id, model);
             if (result) return Ok();
             return BadRequest(ModelState.AddErrors(result.Errors));
+        }
+
+        /// <summary>Generates and downloads the Excel timesheet report for a request of the current company.</summary>
+        /// <param name="timesheetService">Timesheet service resolved from DI.</param>
+        /// <param name="id">Request identifier.</param>
+        [HttpGet("{id}/TimeSheets/File")]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetTimeSheetsFile([FromServices] ITimesheetService timesheetService, [FromRoute] Guid id)
+        {
+            var result = await timesheetService.GetCompanyRequestTimesheetFile(id, User.GetCompanyId());
+            if (!result) return NotFound();
+            return File(result.Value.Document.ToArray(), CovenantConstants.ExcelMime, result.Value.DocumentName);
         }
 
         /// <summary>Cancels an existing request.</summary>

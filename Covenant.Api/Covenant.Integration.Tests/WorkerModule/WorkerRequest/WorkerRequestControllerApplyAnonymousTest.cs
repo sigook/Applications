@@ -10,7 +10,6 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;

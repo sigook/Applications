@@ -32,5 +32,5 @@ public interface IAgencyRepository
     Task<Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city);
     Task<Entities.Agency.Agency> GetAgencyMasterByCountry(Guid countryId);
     Task<PaginatedList<AgencyModel>> GetAgencies(Guid agencyId, GetAgenciesFilter filter);
-    IEnumerable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter);
+    IQueryable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter);
 }

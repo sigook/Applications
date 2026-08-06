@@ -1,10 +1,10 @@
 <template>
   <div class="unsubscribe-container">
     <b-loading v-model="isLoading"></b-loading>
-    <h3 class="text-center">Would you like to unsubscribe from these emails?</h3>
-    <p class="alert-warning-red text-center" v-if="errorMessage" v-html="errorMessage"></p>
+    <h3 class="has-text-centered">Would you like to unsubscribe from these emails?</h3>
+    <p class="alert-warning-red has-text-centered" v-if="errorMessage" v-html="errorMessage"></p>
     <div>
-      <b-button rounded class="me-2" @click="redirectToHome">Cancel</b-button>
+      <b-button rounded class="mr-2" @click="redirectToHome">Cancel</b-button>
       <b-button type="is-danger" rounded @click="onUnsubscribe">Yes</b-button>
     </div>
   </div>

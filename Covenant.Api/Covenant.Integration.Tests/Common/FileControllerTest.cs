@@ -1,7 +1,6 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Integration.Tests.Configuration;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
 using System.Net;

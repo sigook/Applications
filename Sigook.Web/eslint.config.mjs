@@ -131,7 +131,7 @@ export default [
           'Suspense',
           'component',
           'slot',
-          // Buefy (globally registered via @ntohq/buefy-next)
+          // Buefy (globally registered via buefy)
           '^[Bb]-.*',
           '^[Bb][A-Z].*',
           // VeeValidate (auto-imported / globally registered)

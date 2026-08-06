@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-2">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         Invoices
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
         <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
@@ -20,10 +20,10 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="invoiceNumber"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="invoiceNumber" label="Invoice Number" sortable searchable>
@@ -76,12 +76,12 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
                   @click="onDownloadInvoicePdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-info" outlined rounded icon-right="email" class="me-2"
+                <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
                   @click="openSendEmailModal(props.row)">
                 </b-button>
               </b-tooltip>
@@ -95,11 +95,11 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showDeleteModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showDeleteModal" width="800px">
       <delete-invoice v-if="currentInvoice" :invoice="currentInvoice" @deleted="onDeleteInvoice" />
     </b-modal>
 
-    <b-modal v-model="showSendEmailModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showSendEmailModal" width="500px">
       <send-invoice-email v-if="currentInvoice" :invoice="currentInvoice" @sent="onSendInvoiceEmail" />
     </b-modal>
   </div>
@@ -112,6 +112,7 @@ import { showAlertError } from '@/utils/toast';
 import { downloadPDF } from '@/utils/downloadFile';
 import { getAgencyInvoices, downloadInvoicePdf } from '@/api/agencyInvoiceApi';
 import { currency, dateMonth } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import DeleteInvoice from '@/components/agency_accounting/DeleteInvoice.vue';
 import SendInvoiceEmail from '@/components/agency_accounting/SendInvoiceEmail.vue';
@@ -129,6 +130,14 @@ const serverParams = ref<any>({
   pageSize: 30,
   isDescending: true,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  invoiceNumber: 0,
+  createdAt: 1,
+  companyFullName: 2,
+  salesRepresentative: 3,
+}, () => loadInvoices());
+
 const showDeleteModal = ref(false);
 const currentInvoice = ref<any>(null);
 const showSendEmailModal = ref(false);
@@ -144,25 +153,6 @@ loadInvoices();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadInvoices();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'invoiceNumber':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'companyFullName':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'salesRepresentative':
-      serverParams.value.sortBy = 3;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadInvoices();
 }
 

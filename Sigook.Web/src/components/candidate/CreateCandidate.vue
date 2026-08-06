@@ -4,8 +4,8 @@
     <form @submit.prevent="submit">
       <b-steps v-model="activeStep" animated mobile-mode="compact" :has-navigation="false">
         <b-step-item step="1" label="Basic" :clickable="false">
-          <div class="container-flex">
-            <div class="col-12">
+          <div class="columns is-multiline">
+            <div class="column is-12">
               <b-field :type="errors.name ? 'is-danger' : ''" :message="errors.name">
                 <template #label>
                   Full Name <span class="has-text-danger">*</span>
@@ -13,7 +13,7 @@
                 <b-input type="text" v-model="name" />
               </b-field>
             </div>
-            <div class="col-12">
+            <div class="column is-12">
               <b-field :type="errors.email ? 'is-danger' : ''" :message="errors.email">
                 <template #label>
                   Email <span class="has-text-danger">*</span>
@@ -21,11 +21,11 @@
                 <b-input type="email" v-model="email" />
               </b-field>
             </div>
-            <div class="col-12">
+            <div class="column is-12">
               <PhoneInput ref="phoneComponent" model="Phone" :required="true" :defaultValue="phoneNumber"
                 @formattedPhone="(phone: string) => phoneNumber = phone" />
             </div>
-            <div class="col-12">
+            <div class="column is-12">
               <b-field :type="errors.address ? 'is-danger' : ''" :message="errors.address">
                 <template #label>
                   Address <span class="has-text-danger">*</span>
@@ -33,7 +33,7 @@
                 <b-input type="text" v-model="address" />
               </b-field>
             </div>
-            <div class="col-12">
+            <div class="column is-12">
               <b-field :type="sourceError ? 'is-danger' : ''" :message="sourceError">
                 <template #label>
                   Source <span class="has-text-danger">*</span>
@@ -44,7 +44,7 @@
                 </b-select>
               </b-field>
             </div>
-            <div class="col-12 mt-5">
+            <div class="column is-12 mt-5">
               <b-field class="file is-primary" :class="{ 'has-name': !!file }">
                 <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" @update:modelValue="uploadResume" rounded>
                   <span class="file-cta">
@@ -61,13 +61,13 @@
           </div>
         </b-step-item>
         <b-step-item step="2" label="Additionals" :clickable="false">
-          <div class="col-12">
+          <div class="">
             <b-field label="Skills (Press enter to add)">
               <b-taginput v-model="candidate.skills" :maxlength="20" open-on-focus icon="label" placeholder="Add Skills" allow-new>
               </b-taginput>
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="">
             <b-field label="Status">
               <b-select v-model="candidate.residencyStatus" expanded placeholder="Select a residency status">
                 <option v-for="(item, index) in residencyList" :key="'residency' + index" :value="item">{{ item }}
@@ -75,14 +75,14 @@
               </b-select>
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="">
             <b-field label="Gender">
               <b-select v-model="candidate.gender" expanded placeholder="Select a gender">
                 <option v-for="item in genders" v-bind:key="item.id" :value="item">{{ item.value }}</option>
               </b-select>
             </b-field>
           </div>
-          <div class="col-12">
+          <div class="">
             <b-field label="Has Vehicle">
               <b-switch v-model="candidate.hasVehicle" :true-value="true" :false-value="false">
                 {{ candidate.hasVehicle ? "Yes" : "No" }}

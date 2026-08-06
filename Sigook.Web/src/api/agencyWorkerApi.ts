@@ -15,12 +15,12 @@ import type { WorkerProfile } from '@/types/worker';
 
 // Workers list (paginated)
 export function getAgencyWorkers(filter: AgencyWorkerFilter): Promise<PaginatedList<AgencyWorkerListItem>> {
-  return api.get<PaginatedList<AgencyWorkerListItem>>('api/agency/workers', { params: { ...filter } });
+  return api.get<PaginatedList<AgencyWorkerListItem>>('/api/agency/workers', { params: { ...filter } });
 }
 
 // Workers autocomplete (Dropdown)
 export function getAgencyWorkersDropdown(filter: { searchTerm: string }): Promise<AgencyWorkerDropdownItem[]> {
-  return api.get<AgencyWorkerDropdownItem[]>('api/agency/workers/Dropdown', { params: { ...filter } });
+  return api.get<AgencyWorkerDropdownItem[]>('/api/agency/workers/Dropdown', { params: { ...filter } });
 }
 
 // Single worker

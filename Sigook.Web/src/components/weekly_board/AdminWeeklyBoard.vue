@@ -90,12 +90,12 @@
       </table>
     </div>
 
-    <b-modal v-model="showAssign" :width="720" scroll="keep" :destroy-on-hide="true">
+    <b-modal has-modal-card v-model="showAssign" :width="720" scroll="keep" :destroy-on-hide="true">
       <assign-recruiter-modal :days="days" :preset="assignPreset" :saving="isSaving" @assign="onAssign"
         @close="showAssign = false" />
     </b-modal>
 
-    <b-modal v-model="showDetail" :width="480" scroll="keep">
+    <b-modal has-modal-card v-model="showDetail" :width="480" scroll="keep">
       <div v-if="detail" class="modal-card detail-card">
         <header class="modal-card-head is-flex-direction-column is-align-items-start">
           <p class="modal-card-title">Request #{{ detail.numberId }}</p>
@@ -155,7 +155,7 @@
       </div>
     </b-modal>
 
-    <b-modal v-model="showRunnerHistory" width="680px" scroll="keep" :destroy-on-hide="true">
+    <b-modal has-modal-card v-model="showRunnerHistory" width="680px" scroll="keep" :destroy-on-hide="true">
       <runner-history-modal v-if="historyRunner && detail" :request-id="detail.requestId"
         :runner-id="historyRunner.runnerId" @close="showRunnerHistory = false" />
     </b-modal>

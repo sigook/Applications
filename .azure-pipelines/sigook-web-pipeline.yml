@@ -52,12 +52,13 @@ stages:
             parameters:
               nodeVersion: '22'
 
-          # Install pnpm (pinned via packageManager field in package.json)
+          # Install pnpm (version resolved from the packageManager field in package.json)
           - script: |
-              corepack enable || npm i -g pnpm@11.1.2
-              corepack prepare pnpm@11.1.2 --activate 2>/dev/null || true
+              corepack enable || npm i -g "$(node -p "require('./package.json').packageManager")"
+              corepack prepare --activate 2>/dev/null || true
               pnpm --version
             displayName: 'Setup pnpm'
+            workingDirectory: $(workingDirectory)
 
           # Resolve pnpm store directory for caching
           - script: |

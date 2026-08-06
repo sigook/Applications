@@ -1,8 +1,8 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-2">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         PayStubs
       </h2>
     </div>
@@ -30,11 +30,11 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="payStubNumber"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         checkable checkbox-position="left" v-model:checked-rows="checkedRows"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="payStubNumber" label="PayStub Number" sortable searchable>
@@ -87,13 +87,13 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
                   @click="onDownloadPayStubPdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
-                  class="me-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
+                  class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
                   @click="onSendPayStubEmail(props.row)">
                 </b-button>
               </b-tooltip>
@@ -107,11 +107,11 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showGeneratePayStubsModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showGeneratePayStubsModal" width="800px">
       <generate-pay-stubs @pay-stubs-generated="onPayStubsGenerated" />
     </b-modal>
 
-    <b-modal v-model="showSkipPayrollNumberModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showSkipPayrollNumberModal" width="500px">
       <skip-payroll-number></skip-payroll-number>
     </b-modal>
   </div>
@@ -131,6 +131,7 @@ import {
   sendPayStubEmailBulk,
   deleteAgencyPayStub,
 } from '@/api/agencyPayStubApi';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import GeneratePayStubs from '@/components/agency_accounting/GeneratePayStubs.vue';
 import SkipPayrollNumber from '@/components/agency_accounting/SkipPayrollNumber.vue';
@@ -148,6 +149,15 @@ const serverParams = ref<any>({
   pageSize: 30,
   isDescending: true,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  payStubNumber: 0,
+  createdAt: 1,
+  workerFullName: 2,
+  numberId: 3,
+  totalPaid: 4,
+}, () => loadPayStubs());
+
 const showGeneratePayStubsModal = ref(false);
 const showSkipPayrollNumberModal = ref(false);
 
@@ -162,28 +172,6 @@ loadPayStubs();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadPayStubs();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'payStubNumber':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'workerFullName':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'numberId':
-      serverParams.value.sortBy = 3;
-      break;
-    case 'totalPaid':
-      serverParams.value.sortBy = 4;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadPayStubs();
 }
 

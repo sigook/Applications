@@ -14,8 +14,6 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Covenant.Test.Utils;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Globalization;
@@ -139,7 +137,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder().AddTestAuth(o =>
                 {
-                    o.AddAgencyPersonnelRole(FakeAgency.Id);
+                    o.AddAdminRole(FakeAgency.Id);
                 });
                 services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
                 var timeService = new Mock<ITimeService>();

@@ -1,6 +1,6 @@
 # Sigook.Web Codebase Structure
 
-Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `@ntohq/buefy-next`, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
+Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `buefy` 3.x, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
 
 ---
 
@@ -27,10 +27,16 @@ Sigook.Web/
 │   ├── utils/              # Utility functions
 │   ├── App.vue             # Root component (layout switch)
 │   ├── main.ts             # App entry point
-│   └── varaibles.ts        # App-wide global constants (note misspelled filename)
-├── public/                 # Static assets (data/, fonts/, images/, robots.txt, sitemap.xml, version.json)
+│   ├── varaibles.ts        # App-wide global constants (note misspelled filename)
+│   └── *.d.ts              # app-globals.d.ts, shims-tsx.d.ts (likely dead), shims-vue.d.ts, vite-env.d.ts
+├── public/                 # Static assets (data/, fonts/, images/, favicon.ico, polyfill.min.js, robots.txt, sitemap.xml, version.json)
+├── index.html
 ├── CLAUDE.md
-├── package.json            # pnpm; scripts: dev, build, staging, production, type-check, lint
+├── package.json            # pnpm; scripts: dev, build, staging, production, type-check, lint, preview, format
+├── tsconfig.json
+├── eslint.config.mjs
+├── pnpm-workspace.yaml
+├── pnpm-lock.yaml
 ├── vite.config.ts          # envPrefix: 'VUE_APP_'
 ├── nginx.conf
 └── Dockerfile              # Node 22 + pnpm build → nginx
@@ -182,9 +188,9 @@ Domain folders + shared root-level components. Components take function refs (e.
 
 | Folder | Contents |
 |--------|----------|
-| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, Searcher, SidebarLogged, UploadFiles, UserNotification |
+| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged, UploadFiles, UserNotification |
 | agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
-| agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4 |
+| agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4, TimesheetsReport |
 | agency_company/ | CompanyDetailTab, CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
 | agency_request/ | AgencyRequestDetail, AgencyRequestSkills, timesheet detail/modal, AgencyShiftDetail, Applicants, ManageApplicantsModal, ContactListModal, DatepickerModal, EditTextarea, JobBoardsModal, MassivePunchCard, punch-card container, ReportTo, RequestedBy, RequestNotes(+Table), Runners, TableRequests, WorkerStatusFilter |
 | calendar/ | CalendarPunchCard |
@@ -213,7 +219,7 @@ Exports the **`api` wrapper** (`get`, `post`, `put`, `patch`, `del`) that return
 
 ### roles.ts
 
-7 role strings mirroring backend `CovenantConstants.Role` (`superadmin`, `admin`, `recruiting`, `sales`, `company`, `companyUser`, `worker`) plus route-guard groups: `recruitingAccess`, `agencyStaff`, `salesAccess`, `adminAccess`. See `.docs/business/ROLES_PERMISSIONS.md`.
+7 role strings mirroring backend `CovenantConstants.Role` (`superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user` — exported under the key `companyUser` — and `worker`) plus route-guard groups: `recruitingAccess`, `agencyStaff`, `salesAccess`, `adminAccess`. Also exports a `roleLabels` map (role value → display label). See `.docs/business/ROLES_PERMISSIONS.md`.
 
 ### securityService.ts
 
@@ -221,11 +227,11 @@ oidc-client-ts `UserManager` configured from `VUE_APP_SECURITY_SERVER` / `VUE_AP
 
 ### menu.ts
 
-Sidebar navigation per role group: `recruitingMenu`, `salesMenu`, `accountingMenu` — admin/superadmin get all three; recruiting and sales get only theirs.
+Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no named exports). Builds the agency sidebar groups (recruiting, sales, accounting — admin/superadmin get all three; recruiting and sales get only theirs) plus the company, companyUser, and worker menus.
 
 ---
 
-## src/utils/ (15 files)
+## src/utils/ (14 files)
 
 | File | Purpose |
 |------|---------|
@@ -239,11 +245,12 @@ Sidebar navigation per role group: `recruitingMenu`, `salesMenu`, `accountingMen
 | filters.ts | Formatter helpers |
 | locationLabel.ts | Location display label formatting |
 | phoneFormat.ts | Phone number formatting |
-| recaptcha.ts | reCAPTCHA site key (`VUE_APP_RE_CAPTCHA_SITE_KEY`) |
 | timeSheetApprove.ts | Timesheet approval workflow |
 | toast.ts | Toast notification helper (replaces the old toastMixin) |
 | validation.ts | Shared validation helpers |
 | workerStatus.ts | Worker status helpers |
+
+> Note: `src/utils/filters.ts` coexists with the `src/filters/` folder — a confusing pair.
 
 ---
 
@@ -281,7 +288,7 @@ Plain functions imported where needed (Vue 3 removed template filters):
 
 - **directives/**: `status-directive.ts` only (registered as `v-status` in main.ts) — status badge rendering.
 - **constants/**: `enums.ts` (6 numeric enums used by agency/company pages, incl. `ClockType`), `catalog.ts` (`maximumHoursPerDay` from `VUE_APP_MAXIMUM_HOURS_DAY`, `residencyList`), `workerFeatures.ts` (worker status feature list).
-- **lang/**: NOT i18n translations — `validator.ts` registers VeeValidate rules (built-in + custom phone via google-libphonenumber), `en_error.ts` holds English validation messages, `utils.ts` has helpers. The app is English-only; no vue-i18n.
+- **lang/**: NOT i18n translations — a single `validator.ts` registers VeeValidate rules (built-in + custom `cvn-postal-code` and `phoneCustom` via google-libphonenumber) with English messages inline. The app is English-only; no vue-i18n.
 - **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json).
 
 ---
@@ -327,7 +334,7 @@ assets/
 - **No API data caching in Pinia** — components fetch directly via `src/api` functions; stores keep list filters so pagination/search survive route changes.
 - **Forms:** VeeValidate 4 + Yup schemas; toasts via `src/utils/toast.ts`.
 - **Reusable components take function props** (API functions passed in) instead of dispatch strings.
-- **Styling:** Bootstrap 5 CSS + `@ntohq/buefy-next` (Bulma-based) + global SCSS partials in `src/assets/scss/`.
+- **Styling:** Bootstrap 5 CSS + `buefy` 3.x (Bulma 1.x) + global SCSS partials in `src/assets/scss/`. `index.html` pins `data-theme="light"` to block Bulma 1's automatic dark mode.
 - Naming conventions: see `Sigook.Web/CLAUDE.md`.
 
 ### Build & Deploy

@@ -1,10 +1,10 @@
 <template>
   <div class="company-requests">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-5">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         {{ "Staff Requests" }}
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -14,11 +14,11 @@
         <b-button tag="router-link" to="/company-requests/create" icon-left="plus">Create Request</b-button>
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="numberId" label="Request ID" sortable searchable>
@@ -55,20 +55,20 @@
             </template>
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
-            <AgencyShift class="d-block" :requestId="props.row.id"
+            <AgencyShift class="is-block" :requestId="props.row.id"
               :displayShift="props.row.displayShift"></AgencyShift>
           </b-table-column>
           <b-table-column field="workersQuantityWorking" sortable>
             <template v-slot:header>
-              <p class="fw-semibold">Workers</p>
-              <p class="fw-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+              <p class="has-text-weight-semibold">Workers</p>
+              <p class="has-text-weight-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
             </template>
             <template v-slot="props">
               {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
             </template>
           </b-table-column>
           <b-table-column field="requestStatus" label="Status" v-slot="props">
-            <div class="text-center">
+            <div class="has-text-centered">
               <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled"
@@ -92,6 +92,7 @@ import { showAlertError } from '@/utils/toast';
 import { getRequests } from '@/api/companyApi';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { dateFromNow } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import AgencyShift from '@/components/agency_request/AgencyShiftDetail.vue';
 
 const router = useRouter();
@@ -106,6 +107,12 @@ const serverParams = reactive<any>({
   pageIndex: 1,
   pageSize: 30,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  numberId: 0,
+  jobTitle: 2,
+  workersQuantityWorking: 6,
+}, () => getCompanyRequests());
 
 const totalQuantityWorking = computed(() => {
   if (rows.value.length > 0) {
@@ -138,22 +145,6 @@ function getCompanyRequests() {
 
 function onPageChange(params: number) {
   serverParams.pageIndex = params;
-  getCompanyRequests();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'numberId':
-      serverParams.sortBy = 0;
-      break;
-    case 'jobTitle':
-      serverParams.sortBy = 2;
-      break;
-    case 'workersQuantityWorking':
-      serverParams.sortBy = 6;
-      break;
-  }
-  serverParams.isDescending = order !== 'asc';
   getCompanyRequests();
 }
 

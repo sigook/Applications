@@ -328,23 +328,19 @@ public class WorkerRepository : IWorkerRepository
         return await query.ToPaginatedList(filter);
     }
 
-    public IEnumerable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
+    public IQueryable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
     {
         var workers = _context.WorkerProfiles
             .Include(wp => wp.Skills)
             .Include(wp => wp.Worker)
             .Include(wp => wp.Notes)
             .AsQueryable();
-        var workerRequest = _context.WorkerRequests.Include(wr => wr.Request)
-            .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status != RequestStatus.Cancelled);
-        if (filter.SortBy == GetWorkersProfileSortBy.RequestId)
-            workerRequest = workerRequest.AddOrderBy(filter, wr => wr.Request.NumberId);
         if (filter.CompanyProfileId.HasValue)
         {
-            workers = from wp in workers
-                      from wr in workerRequest.Where(wr => wr.WorkerProfileId == wp.Id).Take(1)
-                      where wr.Request.CompanyProfileId == filter.CompanyProfileId
-                      select wp;
+            workers = workers.Where(wp => wp.WorkerRequests.Any(wr =>
+                wr.WorkerRequestStatus == WorkerRequestStatus.Booked &&
+                wr.Request.Status != RequestStatus.Cancelled &&
+                wr.Request.CompanyProfileId == filter.CompanyProfileId));
         }
         if (!string.IsNullOrWhiteSpace(filter.Skills))
             workers = workers.Where(w => w.Skills.Any(s => s.Skill.ToLower().Contains(filter.Skills.ToLower())));
@@ -367,8 +363,13 @@ public class WorkerRepository : IWorkerRepository
                         IsSubcontractor = wp.IsSubcontractor,
                         ProfileImage = wp.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wp.ProfileImage.FileName}",
                         Skills = wp.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Skill)).OrderBy(s => s.Skill).Select(s => s.Skill),
-                        IsCurrentlyWorking = workerRequest.Any(wr => wr.WorkerProfileId == wp.Id),
-                        Requests = workerRequest.Where(wr => wr.WorkerProfileId == wp.Id).Select(wr => new BaseModel<Guid> { Id = wr.RequestId, Value = wr.Request.NumberId.ToString() }),
+                        IsCurrentlyWorking = wp.WorkerRequests.Any(wr =>
+                            wr.WorkerRequestStatus == WorkerRequestStatus.Booked &&
+                            wr.Request.Status != RequestStatus.Cancelled),
+                        Requests = wp.WorkerRequests
+                            .Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked && wr.Request.Status != RequestStatus.Cancelled)
+                            .OrderBy(wr => wr.Request.NumberId)
+                            .Select(wr => new BaseModel<Guid> { Id = wr.RequestId, Value = wr.Request.NumberId.ToString() }),
                         Dnu = wp.Dnu,
                         CreatedAt = wp.CreatedAt,
                         SinNumber = wp.SocialInsurance,
@@ -445,7 +446,7 @@ public class WorkerRepository : IWorkerRepository
                 query = query.AddOrderBy(filter, wp => wp.NumberId);
                 break;
             case GetWorkersProfileSortBy.RequestId:
-                query = query.AddOrderBy(filter, wp => wp.Requests.Any() ? wp.Requests.FirstOrDefault().Value : null);
+                query = query.AddOrderBy(filter, wp => wp.Requests.Min(r => r.Value));
                 break;
             case GetWorkersProfileSortBy.CreatedAt:
                 query = query.AddOrderBy(filter, wp => wp.CreatedAt);

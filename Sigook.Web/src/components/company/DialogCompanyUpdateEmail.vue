@@ -8,8 +8,8 @@
       if necessary notify the worker about the change.
     </b-message>
 
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="New Email" :type="formErrors.newEmail ? 'is-danger' : ''"
           :message="formErrors.newEmail || ''">
           <b-input type="email" v-model="newEmail" name="newEmail">
@@ -17,7 +17,7 @@
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-field label="Confirm Email" :type="formErrors.confirmEmail ? 'is-danger' : ''"
           :message="formErrors.confirmEmail || ''">
           <b-input type="email" @paste.prevent v-model="confirmEmail" name="confirmEmail">
@@ -25,7 +25,7 @@
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="validateAll()">
           {{ "Save" }}
         </b-button>

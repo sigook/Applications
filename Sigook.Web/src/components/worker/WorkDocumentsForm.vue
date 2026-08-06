@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-6">
         <b-field :type="formErrors.identificationType1 ? 'is-danger' : ''"
           :message="formErrors.identificationType1 || ''">
           <template #label>
@@ -17,14 +17,14 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Identification Number'"
           :type="formErrors.identificationNumber1 ? 'is-danger' : ''"
           :message="formErrors.identificationNumber1 || ''">
           <b-input type="text" v-model="identificationNumber1" name="identificationNumber1" expanded />
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field :label="'Identification file'">
           <div v-if="worker.identificationType1File && worker.identificationType1File.fileName"
             class="selected-file-display">
@@ -43,7 +43,7 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.identificationType2 ? 'is-danger' : ''"
           :message="formErrors.identificationType2 || ''">
           <template #label>
@@ -58,14 +58,14 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :label="'Identification Number'"
           :type="formErrors.identificationNumber2 ? 'is-danger' : ''"
           :message="formErrors.identificationNumber2 || ''">
           <b-input type="text" v-model="identificationNumber2" name="identificationNumber2" expanded />
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field :label="'Identification file'">
           <div v-if="worker.identificationType2File && worker.identificationType2File.fileName"
             class="selected-file-display">
@@ -84,14 +84,14 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field :label="'Got Police Check/Background?'">
           <b-switch v-model="worker.havePoliceCheckBackground" :true-value="true" :false-value="false">
             {{ worker.havePoliceCheckBackground ? "Yes" : "No" }}
           </b-switch>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()" :disabled="isLoading">
           {{ "Save" }}
         </b-button>

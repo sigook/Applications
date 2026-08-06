@@ -17,7 +17,6 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Moq;

@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="Skills">
           <b-taginput ref="workSkillFormTagInput" v-model="selectedSkills" autocomplete :data="filteredSkills"
             open-on-focus field="skill" icon="label" placeholder="Select or Add Skill" :create-tag="createTag" allow-new
@@ -10,7 +10,7 @@
           </b-taginput>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveWorkerSkills()">
           {{ "Save" }}
         </b-button>

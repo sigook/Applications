@@ -4,7 +4,7 @@
       backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
       v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="weekEnding" label="Week Ending" v-slot="props">

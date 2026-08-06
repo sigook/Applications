@@ -14,7 +14,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="profileImage" width="50" v-slot="props">
@@ -130,7 +130,7 @@
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="text-uppercase fw-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
+              <span class="is-uppercase has-text-weight-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
               <i class="fz-1 block" v-html="props.row.rejectComments"></i>
             </template>
           </b-table-column>
@@ -147,16 +147,16 @@
     </div>
 
     <!-- custom modal Manage Workers-->
-    <b-modal v-model="modalManageWorkers" width="500px">
+    <b-modal custom-content-class="card" v-model="modalManageWorkers" width="500px">
       <workers-list :request-id="serverParams.requestId" @workerBooked="onWorkerBooked"></workers-list>
     </b-modal>
 
-    <b-modal v-model="modalRejectWorker" width="500px">
+    <b-modal custom-content-class="card" v-model="modalRejectWorker" width="500px">
       <edit-textarea title="Reject Worker" :subtitle="'Please indicate the reason.'" :min-length="10"
         class="sm-edit-textarea" @updateContent="(data) => rejectWorker(data)" />
     </b-modal>
 
-    <b-modal v-model="modalStartWorking" width="415px">
+    <b-modal custom-content-class="card" v-model="modalStartWorking" width="415px">
       <datepicker-modal v-if="currentWorker" v-model:start-working="currentWorker.startWorking"
         @onSelectCalendar="(date) => onUpdateRequestWorkerStartDate(date)" />
     </b-modal>

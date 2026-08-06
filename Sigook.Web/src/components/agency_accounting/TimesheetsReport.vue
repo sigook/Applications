@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div class="container-flex">
-      <div class="col-3 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-3-mobile is-3">
         <b-field label="Dates (From - To)" :type="formErrors.dates ? 'is-danger' : ''"
           :message="formErrors.dates">
           <b-datepicker v-model="dates" name="dates" range
             @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="getReport" :loading="isLoading">Generate</b-button>
       </div>
     </div>

@@ -5,8 +5,8 @@
       <b-steps v-model="activeStep" animated mobile-mode="compact" :has-navigation="false">
         <b-step-item step="1" label="Basic" :clickable="false">
           <h1 class="title has-text-centered">Basic Information</h1>
-          <div class="container-flex">
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-12">
               <div class=" container-image mx-auto my-2">
                 <UploadImage @imageSelected="(profileImg) => saveImage(profileImg)" :edited-image="worker.profileImage"
                   @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"
@@ -16,7 +16,7 @@
                 </p>
               </div>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+            <div class="column is-6 is-3-desktop">
               <b-field :type="errors.firstName ? 'is-danger' : ''"
                 :message="errors.firstName || ''">
                 <template #label>
@@ -25,7 +25,7 @@
                 <b-input type="text" v-model="firstName" name="name" />
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+            <div class="column is-6 is-3-desktop">
               <b-field :type="errors.lastName ? 'is-danger' : ''"
                 :message="errors.lastName || ''">
                 <template #label>
@@ -34,7 +34,7 @@
                 <b-input type="text" v-model="lastName" name="lastname" />
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+            <div class="column is-6 is-3-desktop">
               <b-field :type="errors.birthDay ? 'is-danger' : ''"
                 :message="errors.birthDay || ''">
                 <template #label>
@@ -45,7 +45,7 @@
                 </b-datepicker>
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+            <div class="column is-6 is-3-desktop">
               <b-field :type="errors.gender ? 'is-danger' : ''"
                 :message="errors.gender || ''">
                 <template #label>
@@ -61,8 +61,8 @@
           </div>
           <AddressComponent ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value"
             @isCanada="isCanadaSelected($event)" />
-          <div class="container-flex">
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-12">
               <PhoneInput ref="phoneComponent" :required="true" model="Mobile Number"
                 :defaultValue="worker.mobileNumber as string" @formattedPhone="(phone) => (worker.mobileNumber = phone)" />
             </div>
@@ -76,11 +76,11 @@
         </b-step-item>
         <b-step-item step="2" label="Preferences" :visible="!isLogin" :clickable="false">
           <h1 class="title has-text-centered">Preferences</h1>
-          <div class="container-flex">
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-12">
               <b-field :label="'Availability'">
-                <div class="container-flex">
-                  <div class="col-sm-12 col-md-6 col-lg-4 col-padding" v-for="item in availabilities"
+                <div class="columns is-multiline">
+                  <div class="column is-6 is-4-desktop" v-for="item in availabilities"
                     v-bind:key="item.id">
                     <b-checkbox v-model="worker.availabilities" :native-value="item">
                       {{ item.value }}
@@ -89,10 +89,10 @@
                 </div>
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+            <div class="column is-12">
               <b-field :label="'Available Time'">
-                <div class="container-flex">
-                  <div class="col-sm-12 col-md-6 col-lg-6 col-padding" v-for="t in availabilityTimes"
+                <div class="columns is-multiline">
+                  <div class="column is-6" v-for="t in availabilityTimes"
                     v-bind:key="t.id">
                     <b-checkbox v-model="worker.availabilityTimes" :native-value="t">
                       {{ t.value }}
@@ -101,15 +101,15 @@
                 </div>
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+            <div class="column is-12">
               <b-field :label="'Available days'">
-                <div class="container-flex">
-                  <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+                <div class="columns is-multiline">
+                  <div class="column is-6 is-3-desktop">
                     <b-checkbox v-model="allDaysSelected" @update:modelValue="changeDaysSelected">
                       All Days
                     </b-checkbox>
                   </div>
-                  <div class="col-sm-12 col-md-6 col-lg-3 col-padding" v-for="day in days" v-bind:key="day.id">
+                  <div class="column is-6 is-3-desktop" v-for="day in days" v-bind:key="day.id">
                     <b-checkbox v-model="worker.availabilityDays" :native-value="day" @update:modelValue="changeAllDays">
                       {{ day.value }}
                     </b-checkbox>
@@ -117,7 +117,7 @@
                 </div>
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+            <div class="column is-6">
               <b-field :label="'Can you Lift up to'">
                 <b-select v-model="worker.lift" placeholder="Select option" expanded>
                   <option v-for="item in lifts" :value="item" v-bind:key="item.id">
@@ -126,21 +126,21 @@
                 </b-select>
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+            <div class="column is-6">
               <b-field :label="'Do you have your own vehicle?'">
                 <b-switch v-model="worker.hasVehicle" :true-value="true" :false-value="false">
                   {{ worker.hasVehicle ? "Yes" : "No" }}
                 </b-switch>
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+            <div class="column is-12">
               <b-field :label="'Languages'">
                 <b-taginput v-model="worker.languages" autocomplete :data="filteredLanguages" open-on-focus
                   field="value" icon="label" placeholder="Select Languages" @typing="getFilteredLanguages">
                 </b-taginput>
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+            <div class="column is-12">
               <b-field :label="'Skills'">
                 <b-taginput v-model="worker.skills" autocomplete :data="filteredSkills" open-on-focus field="skill"
                   icon="label" placeholder="Select or Add Skills" :maxlength="20" allow-new @typing="getFilteredSkills"
@@ -163,13 +163,13 @@
         </b-step-item>
         <b-step-item :step="isLogin ? 2 : 3" label="Documents" :clickable="false">
           <h1 class="title has-text-centered">Documents</h1>
-          <div class="container-flex">
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <div class="container-flex document-section-header">
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-semibold section-label">Documents <span class="has-text-danger">*</span></label>
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <div class="columns is-multiline document-section-header">
+                <div class="column is-6">
+                  <label class="fz1 has-text-weight-semibold section-label">Documents <span class="has-text-danger">*</span></label>
                 </div>
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
+                <div class="column is-6 upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{
                     'has-name': !!selectedDocumentFile,
                     'upload-disabled': worker.identificationType1File && worker.identificationType2File
@@ -189,18 +189,18 @@
                 </div>
               </div>
               <div class="container-files">
-                <div class="col-12 col-padding" v-if="worker.identificationType1File">
+                <div class="" v-if="worker.identificationType1File">
                   <div class="document-card">
-                    <div class="container-flex document-card-header">
-                      <div class="col-10 no-padding">
+                    <div class="columns is-multiline document-card-header">
+                      <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-semibold document-filename">
+                          <h4 class="has-text-weight-semibold document-filename">
                             {{ filename(worker.identificationType1File.fileName) }}
                           </h4>
                         </div>
                       </div>
-                      <div class="col-2 document-delete-container no-padding">
+                      <div class="column is-2-mobile is-2 document-delete-container no-padding">
                         <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteDocument(worker.identificationType1File)">
@@ -208,8 +208,8 @@
                         </b-tooltip>
                       </div>
                     </div>
-                    <div class="container-flex">
-                      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
                         <b-field :type="errors.identificationType1 ? 'is-danger' : ''"
                           :message="errors.identificationType1 || ''">
                           <template #label>
@@ -225,7 +225,7 @@
                           </b-select>
                         </b-field>
                       </div>
-                      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+                      <div class="column is-6">
                         <b-field :type="errors.identificationNumber1 ? 'is-danger' : ''"
                           :message="errors.identificationNumber1 || ''">
                           <template #label>
@@ -238,18 +238,18 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-12 col-padding" v-if="worker.identificationType2File">
+                <div class="" v-if="worker.identificationType2File">
                   <div class="document-card">
-                    <div class="container-flex document-card-header">
-                      <div class="col-10 no-padding">
+                    <div class="columns is-multiline document-card-header">
+                      <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-semibold document-filename">
+                          <h4 class="has-text-weight-semibold document-filename">
                             {{ filename(worker.identificationType2File.fileName) }}
                           </h4>
                         </div>
                       </div>
-                      <div class="col-2 document-delete-container no-padding">
+                      <div class="column is-2-mobile is-2 document-delete-container no-padding">
                         <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteDocument(worker.identificationType2File)">
@@ -257,8 +257,8 @@
                         </b-tooltip>
                       </div>
                     </div>
-                    <div class="container-flex">
-                      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
                         <b-field :type="errors.identificationType2 ? 'is-danger' : ''"
                           :message="errors.identificationType2 || ''">
                           <template #label>
@@ -274,7 +274,7 @@
                           </b-select>
                         </b-field>
                       </div>
-                      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+                      <div class="column is-6">
                         <b-field :type="errors.identificationNumber2 ? 'is-danger' : ''"
                           :message="errors.identificationNumber2 || ''">
                           <template #label>
@@ -292,12 +292,12 @@
                 At least one identification document is required
               </span>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <div class="container-flex document-section-header">
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-semibold section-label">{{ "Licenses" }}</label>
+            <div class="column is-12">
+              <div class="columns is-multiline document-section-header">
+                <div class="column is-6">
+                  <label class="fz1 has-text-weight-semibold section-label">{{ "Licenses" }}</label>
                 </div>
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
+                <div class="column is-6 upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedLicenseFile }">
                     <b-upload v-model="selectedLicenseFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
                       @update:modelValue="handleLicenseUpload" :loading="isLoading" class="file-label" rounded>
@@ -312,19 +312,19 @@
                 </div>
               </div>
               <div class="container-files">
-                <div class="col-12 col-padding" v-for="(item, index) in worker.licenses"
+                <div class="" v-for="(item, index) in worker.licenses"
                   v-bind:key="'licences' + index">
                   <div class="document-card">
-                    <div class="container-flex document-card-header">
-                      <div class="col-10 no-padding">
+                    <div class="columns is-multiline document-card-header">
+                      <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="certificate" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-semibold document-filename">
+                          <h4 class="has-text-weight-semibold document-filename">
                             {{ filename(item.license.fileName) }}
                           </h4>
                         </div>
                       </div>
-                      <div class="col-2 document-delete-container no-padding">
+                      <div class="column is-2-mobile is-2 document-delete-container no-padding">
                         <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteLicense(index)">
@@ -332,8 +332,8 @@
                         </b-tooltip>
                       </div>
                     </div>
-                    <div class="container-flex">
-                      <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
+                    <div class="columns is-multiline">
+                      <div class="column is-8">
                         <b-field :type="itemErrors['description' + index] ? 'is-danger' : ''"
                           :message="itemErrors['description' + index] || ''">
                           <template #label>
@@ -343,7 +343,7 @@
                             :name="'description' + index" />
                         </b-field>
                       </div>
-                      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+                      <div class="column is-4">
                         <b-field :type="itemErrors['licenseExpires' + index] ? 'is-danger' : ''"
                           :message="itemErrors['licenseExpires' + index] || ''">
                           <template #label>
@@ -358,12 +358,12 @@
                 </div>
               </div>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <div class="container-flex document-section-header">
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-semibold section-label">{{ "Certificates" }}</label>
+            <div class="column is-12">
+              <div class="columns is-multiline document-section-header">
+                <div class="column is-6">
+                  <label class="fz1 has-text-weight-semibold section-label">{{ "Certificates" }}</label>
                 </div>
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
+                <div class="column is-6 upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedCertificateFile }">
                     <b-upload v-model="selectedCertificateFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
                       @update:modelValue="handleCertificateUpload" :loading="isLoading" class="file-label" rounded>
@@ -378,17 +378,17 @@
                 </div>
               </div>
               <div class="container-files">
-                <div class="col-12 col-padding" v-for="(item, index) in worker.certificates"
+                <div class="" v-for="(item, index) in worker.certificates"
                   v-bind:key="'certificates' + index">
                   <div class="document-card">
-                    <div class="container-flex document-card-header">
-                      <div class="col-10 no-padding">
+                    <div class="columns is-multiline document-card-header">
+                      <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="card-account-details" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-semibold document-filename">{{ filename(item.fileName) }}</h4>
+                          <h4 class="has-text-weight-semibold document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
-                      <div class="col-2 document-delete-container no-padding">
+                      <div class="column is-2-mobile is-2 document-delete-container no-padding">
                         <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteCertificate(index)">
@@ -406,12 +406,12 @@
                 </div>
               </div>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
-              <div class="container-flex document-section-header">
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
-                  <label class="fz1 fw-semibold section-label">{{ "Resume" }}</label>
+            <div class="column is-12">
+              <div class="columns is-multiline document-section-header">
+                <div class="column is-6">
+                  <label class="fz1 has-text-weight-semibold section-label">{{ "Resume" }}</label>
                 </div>
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
+                <div class="column is-6 upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{
                     'has-name': !!selectedResumeFile,
                     'upload-disabled': worker.resume
@@ -430,18 +430,18 @@
                 </div>
               </div>
               <div class="container-files">
-                <div class="col-12 col-padding" v-if="worker.resume">
+                <div class="" v-if="worker.resume">
                   <div class="document-card">
-                    <div class="container-flex document-card-header">
-                      <div class="col-10 no-padding">
+                    <div class="columns is-multiline document-card-header">
+                      <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-account" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-semibold document-filename">
+                          <h4 class="has-text-weight-semibold document-filename">
                             {{ filename(worker.resume.fileName) }}
                           </h4>
                         </div>
                       </div>
-                      <div class="col-2 document-delete-container no-padding">
+                      <div class="column is-2-mobile is-2 document-delete-container no-padding">
                         <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteResume()">
@@ -453,15 +453,15 @@
                 </div>
               </div>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-if="isCanada">
-              <div class="container-flex document-section-header">
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+            <div class="column is-12" v-if="isCanada">
+              <div class="columns is-multiline document-section-header">
+                <div class="column is-6">
                   <div>
-                    <label class="fz1 fw-semibold section-label block-label">WHMIS and Health and Safety Training</label>
+                    <label class="fz1 has-text-weight-semibold section-label block-label">WHMIS and Health and Safety Training</label>
                     <i class="fz-2">Complete the training following both links below and upload your certificates</i>
                   </div>
                 </div>
-                <div class="col-sm-12 col-md-6 col-lg-6 col-padding upload-button-container">
+                <div class="column is-6 upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{ 'has-name': !!selectedOtherDocFile }">
                     <b-upload v-model="selectedOtherDocFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
                       @update:modelValue="handleOtherDocumentUpload" :loading="isLoading" class="file-label" rounded>
@@ -475,28 +475,28 @@
                   </b-field>
                 </div>
               </div>
-              <div class="col-sm-12 col-md-12 col-lg-12 col-padding canada-links-container">
+              <div class="canada-links-container">
                 <p class="canada-link">
                   <a href="https://aixsafety.com/wp-content/uploads/articulate_uploads/WHS-Apr2025Aix/story.html"
-                    target="_blank" class="color-primary fw-semibold">WHIMS Training</a>
+                    target="_blank" class="color-primary has-text-weight-semibold">WHIMS Training</a>
                 </p>
                 <p>
                   <a href="https://www.labour.gov.on.ca/english/hs/elearn/worker/foursteps.php" target="_blank"
-                    class="color-primary fw-semibold">HS BOOKLET</a>
+                    class="color-primary has-text-weight-semibold">HS BOOKLET</a>
                 </p>
               </div>
               <div class="container-files">
-                <div class="col-12 col-padding" v-for="(item, index) in worker.otherDocuments"
+                <div class="" v-for="(item, index) in worker.otherDocuments"
                   v-bind:key="'otherDocument' + index">
                   <div class="document-card">
-                    <div class="container-flex document-card-header">
-                      <div class="col-10 no-padding">
+                    <div class="columns is-multiline document-card-header">
+                      <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="folder-open" size="is-small" class="document-icon"></b-icon>
-                          <h4 class="fw-semibold document-filename">{{ filename(item.fileName) }}</h4>
+                          <h4 class="has-text-weight-semibold document-filename">{{ filename(item.fileName) }}</h4>
                         </div>
                       </div>
-                      <div class="col-2 document-delete-container no-padding">
+                      <div class="column is-2-mobile is-2 document-delete-container no-padding">
                         <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                           <b-button type="is-danger" size="is-small" icon-left="delete" outlined
                             @click="deleteOtherDocument(index)">
@@ -526,8 +526,8 @@
         </b-step-item>
         <b-step-item :step="isLogin ? 3 : 4" label="Account" :clickable="false">
           <h1 class="title has-text-centered">Account</h1>
-          <div class="container-flex">
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-12">
               <b-field :type="errors.email ? 'is-danger' : ''"
                 :message="errors.email || ''">
                 <template #label>
@@ -537,7 +537,7 @@
                   :class="{ 'is-danger': !!errors.email }" />
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+            <div class="column is-6">
               <b-field :type="errors.password ? 'is-danger' : ''"
                 :message="errors.password || ''">
                 <template #label>
@@ -546,7 +546,7 @@
                 <b-input type="password" v-model="password" name="password" />
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+            <div class="column is-6">
               <b-field :type="errors.confirmPassword ? 'is-danger' : ''"
                 :message="errors.confirmPassword || ''">
                 <template #label>
@@ -555,7 +555,7 @@
                 <b-input type="password" v-model="confirmPassword" name="confirmPassword" />
               </b-field>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding" v-if="!isLogin">
+            <div class="column is-12" v-if="!isLogin">
               <b-field>
                 <b-checkbox v-model="agreeTermsAndConditions" name="agree terms">
                   {{ "I agree Sigook™" }}
@@ -572,7 +572,7 @@
                 {{ errors.agreeTermsAndConditions || '' }}
               </span>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+            <div class="column is-12">
               <div class="step-navigation-buttons">
                 <b-button @click="goToPreviousStep()">
                   {{ 'Previous' }}

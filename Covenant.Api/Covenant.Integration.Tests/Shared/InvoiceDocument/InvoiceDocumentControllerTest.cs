@@ -13,7 +13,6 @@ using Covenant.Infrastructure.Repositories.Company;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Text;
@@ -40,7 +39,7 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
         {
             services.AddDefaultTestConfiguration();
             services.AddTestAuthenticationBuilder()
-                .AddTestAuth(o => { });
+                .AddTestAuth(o => o.AddAdminRole(Data.Agency.Id));
             services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
             services.AddSingleton(Mock.Of<IInvoicesContainer>());
             services.AddSingleton(Mock.Of<IPayStubsContainer>());

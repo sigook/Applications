@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-5">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         Candidates
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -23,11 +23,11 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="name"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="name" label="Name" sortable searchable>
@@ -41,14 +41,14 @@
               </b-field>
             </template>
             <template v-slot="props">
-              <span class="d-block">
+              <span class="is-block">
                 {{ props.row.name }}
                 <b-icon v-if="props.row.hasVehicle" icon="car-back" size="is-small"></b-icon>
                 <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
                 <b-icon v-if="props.row.hasDocuments" icon="file-download" size="is-small"
                   class="cursor-poiner"></b-icon>
               </span>
-              <i class="fz-2 ellipsis-150 text-lowercase">
+              <i class="fz-2 ellipsis-150 is-lowercase">
                 <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
               </i>
             </template>
@@ -71,8 +71,8 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <p class="text-capitalize">{{ props.row.address }}</p>
-              <i class="fz-2 d-block ps-1">
+              <p class="is-capitalized">{{ props.row.address }}</p>
+              <i class="fz-2 is-block pl-1">
                 {{ props.row.postalCode }}
               </i>
             </template>
@@ -115,7 +115,7 @@
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ props.row.source }}</span>
+              <span class="is-block">{{ props.row.source }}</span>
             </template>
           </b-table-column>
           <b-table-column field="createdAt" label="Created At" sortable searchable>
@@ -127,7 +127,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ dateMonth(props.row.createdAt) }}</span>
+              <span class="is-block">{{ dateMonth(props.row.createdAt) }}</span>
             </template>
           </b-table-column>
           <b-table-column field="recruiter" label="Recruiter" sortable searchable>
@@ -136,13 +136,13 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <div class="text-capitalize is-inline-block align-middle pe-0" v-if="props.row.recruiter">
+              <div class="is-capitalized is-inline-block valign-middle pr-0" v-if="props.row.recruiter">
                 {{ emailName(props.row.recruiter) }}
               </div>
-              <div v-else class="op3 is-inline-block align-middle pe-0">
+              <div v-else class="op3 is-inline-block valign-middle pr-0">
                 Recruiter
               </div>
-              <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block align-middle"
+              <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block valign-middle"
                 @click="updateCandidateRecruiter(props.row.id)" style="position: relative; top: 2px"></button>
             </template>
           </b-table-column>
@@ -195,25 +195,25 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showDocuments" @close="showDocuments = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showDocuments" @close="showDocuments = false" width="500px">
       <modal-documents :candidateId="detailId" />
     </b-modal>
 
 
-    <b-modal v-model="showCreateCandidate" @close="showCreateCandidate = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showCreateCandidate" @close="showCreateCandidate = false" width="500px">
       <create-candidate @onClose="onCandidateCreated()"></create-candidate>
     </b-modal>
 
-    <b-modal v-model="showDetailCandidate" @close="showDetailCandidate = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showDetailCandidate" @close="showDetailCandidate = false" width="500px">
       <detail-candidate :candidate-id="detailId" @onUpdateWorker="() => updateCandidate()"></detail-candidate>
     </b-modal>
 
-    <b-modal v-model="addFile" @close="addFile = false" width="500px">
+    <b-modal custom-content-class="card" v-model="addFile" @close="addFile = false" width="500px">
       <bulk-data :upload-fn="bulkAgencyCandidates" :error-file-name="'BulkCandidatesError'"
         :title="'Bulk Candidates'" :file-label="'Candidates File'" @close="addFile = false" />
     </b-modal>
 
-    <b-modal v-model="showRequestModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showRequestModal" width="500px">
       <candidate-request :candidate-id="detailId" @onSelectRequest="onSelectRequest" />
     </b-modal>
   </div>
@@ -239,6 +239,7 @@ import {
 import { getSources } from '@/api/catalogApi';
 import type { Source } from '@/types/common';
 import { dateMonth, emailName } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import {
   getCandidateNotes,
   createCandidateNote,
@@ -274,6 +275,16 @@ const serverParams = ref<any>({
   pageIndex: 1,
   pageSize: 30,
 });
+
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  name: 0,
+  address: 1,
+  skills: 2,
+  createdAt: 3,
+  recruiter: 4,
+  residencyStatus: 5,
+  source: 6,
+}, () => loadCandidates());
 
 const residencyListValue = residencyList;
 const sourceList = ref<Source[]>([]);
@@ -314,34 +325,6 @@ function onCellClick(row: any, column: any) {
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadCandidates();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'name':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'address':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'skills':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 3;
-      break;
-    case 'recruiter':
-      serverParams.value.sortBy = 4;
-      break;
-    case 'residencyStatus':
-      serverParams.value.sortBy = 5;
-      break;
-    case 'source':
-      serverParams.value.sortBy = 6;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadCandidates();
 }
 

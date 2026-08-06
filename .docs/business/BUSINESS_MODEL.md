@@ -18,7 +18,7 @@ Intermediary that connects Companies with Workers and operates the platform: rec
 | `Regular` | 2 | Standard independent agency |
 | `BusinessPartner` | 3 | Business partner with limited access |
 
-An Agency has physical locations (`AgencyLocation`, with the billing address), internal personnel (`AgencyPersonnel`), and tax registration data (`BusinessNumber`, `HstNumber`).
+An Agency has physical locations (`AgencyLocation`, with the billing address), internal personnel (`AgencyPersonnel`), and tax registration data (`BusinessNumber`, `HstNumber`). Sub-agencies hang under a `Master` agency via `Agency.AgencyParentId`.
 
 There is no "agency" role anymore: agency staff authenticate with one of the platform roles below (`admin`, `recruiting`, `sales`), scoped to their agency.
 
@@ -34,6 +34,8 @@ Agency client that needs temporary or permanent staff. Defines job positions wit
 ### 3. WORKER
 
 Job seeker using the Flutter mobile app. Entity: `Covenant.Common/Entities/Worker/WorkerProfile.cs`.
+
+A worker **User** has exactly **one** `WorkerProfile`, bound to exactly one agency (`WorkerProfile.AgencyId` is non-nullable, and `WorkerId` has a single-column unique index); companies follow the same pattern (`CompanyProfile.CompanyId` unique). Only agency staff genuinely span agencies, via multiple `AgencyPersonnel` rows (the `agencyIds` claim).
 
 Key flags on `WorkerProfile`:
 - `ApprovedToWork` — set by the agency after reviewing documents; gates applying/booking.
@@ -62,7 +64,7 @@ Defined in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`Coven
 | `Role.CompanyUser` | `company.user` | Company internal user |
 | `Role.Worker` | `worker` | Worker (mobile app) |
 
-Composite groups in the same file: `RecruitingAccess`, `SalesAccess`, `AgencyStaff`, `Accounting` (superadmin + admin), `AgencyAssignable`. The old `agency` / `agency.personnel` roles were deleted; there is no "Account Manager" role.
+Composite groups in the same file: `RecruitingAccess`, `SalesAccess`, `AgencyStaff`, `AdminAccess` (superadmin + admin), `AgencyAssignable`, `SuperAdminAssignable`. The old `agency` / `agency.personnel` roles were deleted; there is no "Account Manager" role.
 
 ---
 
@@ -76,7 +78,7 @@ AgencyRate ($25/hr billed to Company) − WorkerRate ($18/hr paid to Worker) = $
 
 Agency costs against that markup: employer CPP/EI contributions, insurance, overhead.
 
-**Direct Hiring:** a Request with `WorkerSalary` set (`Covenant.Common/Entities/Request/Request.cs:60`) is a permanent-placement order — the company hires the worker directly for a salary. These orders change billing and attendance behavior (no punch-card billing; excluded from attendance-review notifications — see `WORKFLOWS.md` section 6).
+**Direct Hiring:** a Request with `WorkerSalary` set (`Covenant.Common/Entities/Request/Request.cs:53`) is a permanent-placement order — the company hires the worker directly for a salary. These orders change billing and attendance behavior (no punch-card billing; excluded from attendance-review notifications — see `WORKFLOWS.md` section 6).
 
 ---
 

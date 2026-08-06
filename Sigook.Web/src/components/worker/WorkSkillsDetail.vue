@@ -9,7 +9,7 @@
       </span>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalSkills = true"></b-button>
     </div>
-    <b-modal v-model="modalSkills" width="500px">
+    <b-modal custom-content-class="card" v-model="modalSkills" width="500px">
       <skills-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </div>

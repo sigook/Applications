@@ -1,28 +1,28 @@
 <template>
-  <div class="container-flex">
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+  <div class="columns is-multiline">
+    <div class="column is-6">
       <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name"
         :message="formErrors.name">
         <b-input type="text" v-model="name" name="name" />
       </b-field>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="column is-6">
       <b-field :type="formErrors.lastname ? 'is-danger' : ''" label="Last Name"
         :message="formErrors.lastname">
         <b-input type="text" v-model="lastname" name="lastname" />
       </b-field>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="column is-6">
       <b-field :type="formErrors.position ? 'is-danger' : ''" label="Position"
         :message="formErrors.position">
         <b-input type="text" v-model="position" name="position" />
       </b-field>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="column is-6">
       <PhoneInput :required="false" model="Mobile Number" :default-value="mobileNumber"
         @formattedPhone="(phone: string) => mobileNumber = phone" />
     </div>
-    <div class="col-12 mt-5">
+    <div class="column is-12 mt-5">
       <b-button type="is-primary" @click="update">Save</b-button>
     </div>
   </div>

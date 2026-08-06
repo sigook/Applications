@@ -7,14 +7,14 @@
         <router-link :to="'/recruiting/companies/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" />
         </router-link>
-        <h2 class="text-capitalize fz1 fw-bold">
-          <span class="fw-normal fz-0">{{ request.numberId }}</span>
+        <h2 class="is-capitalized fz1 has-text-weight-bold">
+          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
           {{ request.jobTitle }}
         </h2>
       </div>
       <div>
         <div v-if="request.status"
-          class="option-request-top capitailized fw-bold is-inline-block" :class="RequestStatusLabels[request.status]">
+          class="option-request-top capitailized has-text-weight-bold is-inline-block" :class="RequestStatusLabels[request.status]">
           {{ RequestStatusLabels[request.status] }}
         </div>
         <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="canEdit">
@@ -46,19 +46,19 @@
       </b-tab-item>
     </b-tabs>
 
-    <b-modal v-model="modalValidation" width="500px">
+    <b-modal custom-content-class="card" v-model="modalValidation" width="500px">
       <CancelList @sendReason="(reason) => onCancelRequest(reason)"></CancelList>
     </b-modal>
 
-    <b-modal v-model="modalValidationRequestAnotherWorker" width="500px">
+    <b-modal custom-content-class="card" v-model="modalValidationRequestAnotherWorker" width="500px">
       <RequestAnotherWorker
         @sendAnotherWorker="(comment) => onRequestAnotherWorker(comment)"></RequestAnotherWorker>
     </b-modal>
 
-    <b-modal v-model="editContentModal" width="800px">
+    <b-modal custom-content-class="card" v-model="editContentModal" width="800px">
       <div class="p-3">
-        <div class="container-flex">
-          <div class="col-12 col-padding">
+        <div class="columns is-multiline">
+          <div class="column is-12">
             <b-field label="Requirements" :type="requirementsError ? 'is-danger' : ''"
               :message="requirementsError || ''">
               <div class="vue-trix-editor">
@@ -66,7 +66,7 @@
               </div>
             </b-field>
           </div>
-          <div class="col-12 col-padding">
+          <div class="column is-12">
             <b-button type="is-primary" @click="onUpdateRequirements()">Save</b-button>
           </div>
         </div>

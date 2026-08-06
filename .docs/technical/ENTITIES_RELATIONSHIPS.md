@@ -48,9 +48,14 @@ point at **User**, not at the profile entity:
 | `CompanyProfile.CompanyId` | company `User` | — |
 | `WorkerProfile.WorkerId` | worker `User` | — |
 | `CompanyUser.UserId` | member `User` | — |
+| `Agency.UserId` | agency `User` | — |
+| `AgencyPersonnel.UserId` | staff `User` | — |
+| `UserNotificationType.UserId` | any `User` | — |
+| `Runner.CreatedBy`/`UpdatedBy`/`ChangedBy`/`RescheduledBy` | acting `User` (real audit FKs, `RunnerConfiguration.cs:45-53`) | — |
 
-Those three are the anchors that tie a profile to its login. **Every other FK points at the
-profile, never at the `User`**: `Request.CompanyProfileId`, `WorkerRequest.WorkerProfileId`,
+The first three are the anchors that tie a profile to its login; the rest also target `User`
+directly. **Every other domain FK points at the profile, never at the `User`**:
+`Request.CompanyProfileId`, `WorkerRequest.WorkerProfileId`,
 `PayStub.WorkerProfileId`, `Invoice.CompanyProfileId`, `WorkerComment.WorkerProfileId` /
 `.CompanyProfileId`, `CompanyUser.CompanyProfileId`. Reach profile data through the navigation
 property; when a query genuinely needs the login user (notification emails, JWT scoping), go
@@ -63,7 +68,9 @@ through `Request.CompanyProfile.CompanyId` / `WorkerRequest.WorkerProfile.Worker
 
 **Table names are plural; entity class names are singular.** `WorkerProfile` → `WorkerProfiles`,
 `Request` → `Requests`, `User` → `Users`. The `DbSet` properties on `CovenantContext` match the
-table name, so `_context.Requests`, not `_context.Request`.
+table name, so `_context.Requests`, not `_context.Request` — except `PayStubHistories` /
+`TimesheetHistories` (the views are singular) and `NextNumber` (keyless, mapped to the
+placeholder view `view_doesnt_exitst` — typo baked into the source).
 
 Deliberate exceptions — leave them alone:
 
@@ -72,13 +79,18 @@ Deliberate exceptions — leave them alone:
 | `AgencyPersonnel`, `AgencyContactInformation` | collective / uncountable |
 | `PayStubHistory`, `TimesheetHistory` | views, not tables |
 | `InvoicesUSA`, `CompanyProfileContactPeople` | natural plural, not the mechanical `InvoiceUSAs` / `...Persons` |
+| `RequestComissions` | misspelling baked into table, entity and config filename — the only config file not named `{Entity}Configuration.cs` |
+| `CompanyProfileInvoiceNotes` | entity class is already plural |
 
 Every mapped entity has its own `IEntityTypeConfiguration<T>` in **one file per entity**
 (`Configurations/{Domain}/{Entity}Configuration.cs`), and that file declares `ToTable` explicitly
-— never relying on the `DbSet`-name convention — plus `HasKey` and the entity's relationships.
-Relationships are configured from the **dependent** side (`HasOne(...).WithMany(...)
-.HasForeignKey(...)`), not with `HasMany` from the aggregate root, so each FK is declared exactly
-once and in the config of the entity that owns the column.
+— never relying on the `DbSet`-name convention. Most also declare `HasKey` (13 configs omit it
+and rely on the `Id` convention), plus the entity's relationships.
+Relationships are normally configured from the **dependent** side (`HasOne(...).WithMany(...)
+.HasForeignKey(...)`), so each FK is declared exactly once and in the config of the entity that
+owns the column. Exception: the `Request`, `Runner`, and `Candidate` configs use
+`HasMany(...).WithOne(...)` from the aggregate root, because their collections are
+backing-field encapsulated (`SetPropertyAccessMode(PropertyAccessMode.Field)`).
 
 **One profile per user.** A worker belongs to exactly one agency, and so does a company:
 `WorkerProfile.WorkerId` and `CompanyProfile.CompanyId` are each uniquely indexed on their own.
@@ -156,7 +168,7 @@ invoice/pay-stub time.
 | `CompanyProfileInvoiceNotes` | `HtmlNotes` printed on invoices |
 | `CompanyProfileInvoiceRecipient` | extra invoice email recipients: `Email`, `Name` |
 | `CompanyProfileNote` | Company↔CovenantNote (shared note entity with soft delete) |
-| `CompanyUser` | additional company-side login: `CompanyProfileId` → CompanyProfile (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyProfileId, UserId)` |
+| `CompanyUser` | additional company-side login: `CompanyProfileId` → CompanyProfile (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyProfileId, UserId)`. Gotcha: `Id == UserId` (the ctor sets `Id = user.Id`), so a user can hold only one CompanyUser row globally |
 
 ---
 
@@ -185,7 +197,8 @@ LocationPreferences, Notes, OtherDocuments.
 ### WorkerProfileTaxCategory (`WorkerProfileTaxCategory.cs`)
 
 Per-worker tax claim codes (`Enums/TaxCategory.cs`) used by payroll deduction lookups;
-subcontractor categories zero out CPP/EI/tax.
+subcontractor categories zero out CPP/EI/tax. PK is `WorkerProfileId` (true 1:1 with cascade
+delete); also carries `Cpp`/`Ei` override columns.
 
 ### WorkerProfileHoliday (`WorkerProfileHoliday.cs`)
 
@@ -242,7 +255,8 @@ A job order. Key fields:
   `EmploymentType` (`FullTime=1, PartTime, Contractor, Temporary`), `ShiftId` → Shift,
   `DurationBreak` (max 1h), `BreakIsPaid`, `HolidayIsPaid` (default true),
   `PunchCardOptionEnabled`
-- Extras: `Incentive(+Description)`, `InvitationSentItAt` (resend throttle: 7 days), `CreatedBy`
+- Extras: `Incentive(+Description)`, `UsesRunners` (bool, default true),
+  `InvitationSentItAt` (resend throttle: 7 days), `CreatedBy`
 
 **`Status` (`RequestStatus`: `Open=1, Filled=3, Cancelled=4`) is the single source of truth —
 there is no `IsOpen` flag.** Transitions happen only inside `AddWorker`, `RejectWorker`,
@@ -253,7 +267,10 @@ Child/related entities in the same folder: `RequestNote`, `RequestSkill`, `Reque
 `RequestRequestedBy`, `RequestCompanyUser` (which company users may see the request),
 `RequestComission`, `RequestCancellationDetail`, `RequestFinalizationDetail`
 (+ root-level `ReasonCancellationRequest`, whose `Value` is a plain English `string` — it used
-to point at a multi-language `StringResource` row, now deleted).
+to point at a multi-language `StringResource` row, now deleted). Migration
+`20260731002342_PluralizeTableNames` dropped three tables: `CompanyProfileHoliday`,
+`StringResource`, `TimeSheetPhoto` — holiday eligibility is now worker-side only
+(`WorkerProfileHoliday`).
 
 ### WorkerRequest (`WorkerRequest.cs`)
 
@@ -263,7 +280,7 @@ is no value 1), `StartWorking`, `WeekStartWorking` (computed Sunday of the start
 `CreatedBy`/`RejectedBy`/`RejectedAt`/`RejectComments`, `LimitDateToAddTimeSheet`
 (= RejectedAt + 1 month). Owns the `TimeSheets` collection and `WorkerRequestNote`s. Rebooking a
 rejected worker reuses the same row (`Book()` clears rejection fields). Unique
-`(RequestId, WorkerId)`.
+`(RequestId, WorkerProfileId)` (`WorkerRequestConfiguration.cs`).
 
 ### RequestApplicant (`RequestApplicant.cs`)
 
@@ -374,7 +391,8 @@ a read model for pay-stub listings, not a table.
 
 ### Invoice — Canada (`Accounting/Invoice/Invoice.cs`)
 
-Weekly invoice to a company. `CompanyId` FK → CompanyProfile (property `Company`), `NumberId`,
+Weekly invoice to a company. `CompanyProfileId` FK → CompanyProfile (navigation
+`CompanyProfile`; renamed in migration `20260730001645_ProfileForeignKeys`), `NumberId`,
 `InvoiceNumber` (long; displayed as `AI-{number:0000}-{yy}` via `BuildInvoiceNumber`), `Email`,
 `WeekEnding`, totals (`SubTotal`, `Hst`, `TotalNet`), snapshot rates (`NightShiftRate` — always
 written 0, `HolidayRate`, `OverTimeRate`, `VacationsRate`, `HstRate`, `BonusRate`). Note:
@@ -394,7 +412,7 @@ pay-stub concept; HST is a single global config rate, not per-province.
 ### InvoiceUSA (`Accounting/Invoice/InvoiceUSA.cs`)
 
 US-company invoice (selected by `InvoiceServiceFactory` when the agency billing location is in
-the USA). `CompanyProfileId` FK (direct, unlike Canada's `CompanyId`), `InvoiceNumber` (string,
+the USA). `CompanyProfileId` FK (same shape as Canada's), `InvoiceNumber` (string,
 prefix `US`) + `InvoiceNumberId` (both unique-indexed), `SubTotal`, `Tax`, `TotalNet`,
 `HtmlNotes`, bill-to/bill-from address blocks. Children: `InvoiceUSAItem` (same amount breakdown
 as `InvoiceTotal`, optional `TimeSheetTotalId`), `InvoiceUSADiscount`, and
@@ -414,7 +432,11 @@ Row-per-earnings-range lookup tables loaded from CRA data, consolidated into two
 `CppDeduction` (table `CppDeductions`) and `TaxDeduction` (table `TaxDeductions`). Both carry a
 `PayPeriod` discriminator (`Weekly`, `BiWeekly`, `SemiMonthly`, `Monthly`); `TaxDeduction` adds
 `TaxType` (`Federal`, `Provincial`). Deductions are **range lookups by earnings/year, not
-formulas**; EI is the only computed one.
+formulas**; EI is the only computed one. Non-unique lookup indexes: `CppDeduction`
+`(Year, PayPeriod, From, To)`, `TaxDeduction` `(Year, PayPeriod, TaxType, From, To)`.
+`TaxDeduction`'s `Cc0`–`Cc10` claim-code columns are selected by
+`WorkerProfileTaxCategory.FederalCategory`/`ProvincialCategory` (`TaxCategory` enum,
+`Cc0=1`…`Cc10=11`).
 
 ---
 
@@ -422,8 +444,8 @@ formulas**; EI is the only computed one.
 
 | Entity | Purpose |
 |---|---|
-| `Location.cs` | address: `Address`, `CityId` → City, `PostalCode`, `Entrance`, `MainIntersection`, `Latitude`/`Longitude`, `LocationTax`; `IsUSA` computed from country code |
-| `City.cs` / `Province.cs` / `Country.cs` | geo catalogs; `Province.Code` = "ON"/"BC"/…, `Country.Code` = "CA"/"US" (`CovenantConstants.Country`); `ProvinceSetting.cs` holds per-province config |
+| `Location.cs` | address: `Address`, `CityId` → City, `PostalCode`, `Entrance`, `MainIntersection`, `Latitude`/`Longitude`, `LocationTax`; `IsUSA` is a null-conditional navigation chain (`City?.Province?.Country?.Code`) — a missing `Include` of City.Province.Country silently yields `false` → Canadian invoice for a US company |
+| `City.cs` / `Province.cs` / `Country.cs` | geo catalogs; `Province.Code` = "ON"/"BC"/…, `Country.Code` = "CA"/"USA" (3 letters for USA — asymmetric; `Location.IsUSA` compares to "USA", so comparing to "US" never matches). Canonical values are the static factories `Country.Canada`/`Country.UnitedStates` — there is no `CovenantConstants.Country` class. `ProvinceSetting.cs` holds per-province config |
 | `Holiday.cs` | public holidays: `Date` (unique index), `Description`, `CountryCode` |
 | `CovenantFile.cs` | file metadata for blobs (referenced by all `*Document` join entities) |
 | `CovenantNote.cs` | shared note entity with author/soft-delete (used by Candidate/Company/Request notes) |
@@ -432,7 +454,7 @@ formulas**; EI is the only computed one.
 | `Gender.cs`, `Language.cs`, `IdentificationType.cs`, `Lift.cs`, `Day.cs`, `Availability*` | catalogs |
 | `WsibGroup.cs` | WSIB classification catalog |
 | `User.cs` | see [User anchor](#the-user-anchor-critical-gotcha) |
-| `Notification/` | `NotificationType`, `UserNotificationType` (per-user notification prefs) |
+| `Notification/` | `NotificationType`, `UserNotificationType` (per-user notification prefs); `NotificationType.Id` is a hand-assigned `int` — the only non-Guid PK |
 
 ---
 
@@ -454,7 +476,7 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | WorkerProfileHoliday | `(WorkerProfileId, HolidayId)` |
 | TimeSheetTotalPayroll | `TimeSheetId` |
 | InvoiceUSA | `InvoiceNumber`; `InvoiceNumberId` |
-| NotificationType (user link) | `(UserId, NotificationTypeId)` |
+| UserNotificationType (table `UserNotificationTypes`) | `(UserId, NotificationTypeId)` |
 
 Non-unique example: `Runner.RequestId` (`Configurations/Request/Runners/RunnerConfiguration.cs`).
 For anything else, check the entity's configuration class before assuming an index exists.

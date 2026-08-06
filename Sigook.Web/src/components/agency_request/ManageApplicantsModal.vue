@@ -2,27 +2,27 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <div class="p-3">
-      <div class="container-flex">
-        <div class="col-12 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-12">
           <b-field label="Worker/Candidate" :type="formErrors.applicant ? 'is-danger' : ''"
             :message="formErrors.applicant || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="applicant" :data="applicants" placeholder="Search by name, email or ID..."
               name="applicant" append-to-body :loading="isLoadingList" @typing="onSearchInput" @select="selectApplicant"
               :custom-formatter="(option) => `#${option.numberId} | ${option.name} | ${option.email || 'No Email' } | ${option.type}`">
               <template v-slot="props">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="is-flex is-justify-content-space-between is-align-items-center">
                   <div>
                     <strong>#{{ props.option.numberId }}</strong>
-                    <span class="ms-2">{{ props.option.name }}</span>
-                    <small class="ms-2 color-gray-light" v-if="props.option.email">{{ props.option.email }}</small>
+                    <span class="ml-2">{{ props.option.name }}</span>
+                    <small class="ml-2 color-gray-light" v-if="props.option.email">{{ props.option.email }}</small>
                   </div>
-                  <span class="tag-sm-gray ms-2">{{ props.option.type }}</span>
+                  <span class="tag-sm-gray ml-2">{{ props.option.type }}</span>
                 </div>
               </template>
             </b-autocomplete>
           </b-field>
         </div>
-        <div class="col-12 mt-5">
+        <div class="column is-12 mt-5">
           <b-button type="is-primary" @click="saveApplicant">Add Applicant</b-button>
         </div>
       </div>

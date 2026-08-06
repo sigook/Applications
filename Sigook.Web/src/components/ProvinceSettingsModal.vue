@@ -4,8 +4,8 @@
 
     <h3 class="title is-4 mb-4">Province Settings - {{ provinceName }}</h3>
 
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field>
           <b-checkbox v-model="paidHolidays">
             Paid Holidays
@@ -13,14 +13,14 @@
         </b-field>
       </div>
 
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field label="Overtime Starts After" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
           :message="formErrors.overtimeStartsAfter">
           <b-input v-model="overtimeStartsAfter" name="overtimeStartsAfter" type="number" step="1"></b-input>
         </b-field>
       </div>
 
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="saveSettings">
           Save
         </b-button>
@@ -34,19 +34,16 @@ import { ref } from 'vue';
 import * as yup from 'yup';
 import { showAlertError } from '@/utils/toast';
 import { useStickyForm } from '@/composables/useStickyForm';
-
-interface Settings {
-  paidHolidays: boolean;
-  overtimeStartsAfter: number | null;
-}
+import { updateProvinceSettings } from '@/api/locationApi';
+import type { ProvinceSettings } from '@/types/common';
 
 const props = defineProps<{
-  provinceId?: number;
+  provinceId: string;
   provinceName?: string;
-  currentSettings?: Settings | null;
+  currentSettings?: ProvinceSettings | null;
 }>();
 
-const emit = defineEmits<{ (e: 'saved', settings: Settings): void }>();
+const emit = defineEmits<{ (e: 'saved', settings: ProvinceSettings): void }>();
 
 const schema = yup.object({
   overtimeStartsAfter: yup
@@ -78,9 +75,21 @@ async function saveSettings() {
     showAlertError('Please fill in all required fields correctly');
     return;
   }
-  emit('saved', {
+  const settings: ProvinceSettings = {
     paidHolidays: paidHolidays.value,
-    overtimeStartsAfter: parseFloat(String(overtimeStartsAfter.value)),
-  });
+    overtimeStartsAfter:
+      overtimeStartsAfter.value === null || String(overtimeStartsAfter.value) === ''
+        ? null
+        : parseFloat(String(overtimeStartsAfter.value)),
+  };
+  isLoading.value = true;
+  try {
+    await updateProvinceSettings(props.provinceId, settings);
+    emit('saved', settings);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>

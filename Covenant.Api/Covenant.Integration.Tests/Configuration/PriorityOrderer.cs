@@ -2,12 +2,12 @@
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Covenant.Test.Utils.Configuration
+namespace Covenant.Integration.Tests.Configuration
 {
     public class DisplayNameOrderer : ITestCollectionOrderer
     {
-        public const string FullName = "Covenant.Test.Utils.Configuration.DisplayNameOrderer";
-        public const string Assembly = "Covenant.Test.Utils";
+        public const string FullName = "Covenant.Integration.Tests.Configuration.DisplayNameOrderer";
+        public const string Assembly = "Covenant.Integration.Tests";
         public IEnumerable<ITestCollection> OrderTestCollections(IEnumerable<ITestCollection> testCollections)
         {
             return testCollections.OrderBy(collection => collection.DisplayName);
@@ -18,8 +18,8 @@ namespace Covenant.Test.Utils.Configuration
 
     public class PriorityOrderer : ITestCaseOrderer
     {
-        public const string FullName = "Covenant.Test.Utils.Configuration.PriorityOrderer";
-        public const string Assembly = "Covenant.Test.Utils";
+        public const string FullName = "Covenant.Integration.Tests.Configuration.PriorityOrderer";
+        public const string Assembly = "Covenant.Integration.Tests";
 
         public IEnumerable<TTestCase> OrderTestCases<TTestCase>(IEnumerable<TTestCase> testCases) where TTestCase : ITestCase
         {

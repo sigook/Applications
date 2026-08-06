@@ -7,6 +7,14 @@
         "serve",
         "--mcp"
       ]
+    },
+    "buefy": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "buefy-mcp"
+      ]
     }
   }
 }

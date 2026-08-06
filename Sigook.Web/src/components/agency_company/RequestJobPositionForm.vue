@@ -1,21 +1,21 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title"> Role </h2>
-    <div class="container-flex">
-      <div class="col-12">
+    <h2 class="has-text-centered main-title"> Role </h2>
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="Position" :type="formErrors.jobPosition ? 'is-danger' : ''"
           :message="formErrors.jobPosition">
           <b-input placeholder="Position" v-model="jobPosition" name="positions" />
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="column is-12">
         <b-field :type="formErrors.message ? 'is-danger' : ''" label="Message"
           :message="formErrors.message">
           <b-input type="textarea" v-model="message" name="message" />
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateForm">Save</b-button>
       </div>
     </div>

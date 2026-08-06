@@ -7,7 +7,7 @@
     <b-table sticky-header height="var(--grid-height)" :data="locations" narrowed hoverable paginated pagination-size="is-small" pagination-rounded :per-page="pageSize"
       v-model:current-page="pageIndex">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="formattedAddress" label="Address" v-slot="props" searchable
@@ -19,23 +19,23 @@
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
           <b-field>
-            <b-button outlined rounded type="is-primary" @click="editLocation(props.row)" class="me-2"
+            <b-button outlined rounded type="is-primary" @click="editLocation(props.row)" class="mr-2"
               icon-left="pencil" />
             <b-button outlined rounded type="is-danger" @click="deleteLocation(props.row.id)"
-              class="me-2" icon-left="delete" />
+              class="mr-2" icon-left="delete" />
           </b-field>
         </b-table-column>
       </template>
     </b-table>
-    <b-modal v-model="showModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showModal" width="500px">
       <AddressComponent ref="addressComponent" v-model:model="locationBeingUpdate"
         :enableProvinceSettings="true"
         @isLoading="(value: boolean) => isLoading = value" />
-      <div class="container-flex">
-        <div class="col-12 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-12">
           <b-checkbox v-model="locationBeingUpdate.isBilling">{{ 'Use as billing address ?' }}</b-checkbox>
         </div>
-        <div class="col-12 col-padding">
+        <div class="column is-12">
           <b-button type="is-primary" @click="saveChanges">SAVE</b-button>
         </div>
       </div>

@@ -1,33 +1,36 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title">{{ "Location" }}</h2>
+    <h2 class="has-text-centered main-title">{{ "Location" }}</h2>
 
-    <div class="container-flex">
-      <cvn-address ref="addressComponent" v-model:model="location" :enableProvinceSettings="props.enableProvinceSettings" />
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <cvn-address ref="addressComponent" v-model:model="location"
+          :enableProvinceSettings="props.enableProvinceSettings" />
+      </div>
+      <div class="column is-6">
         <b-field label="Latitude">
           <b-input v-model="location.latitude" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Longitude">
           <b-input v-model="location.longitude" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.mainIntersection ? 'is-danger' : ''" :label="'Main Intersection'"
           :message="formErrors.mainIntersection || ''">
           <b-input type="text" v-model="mainIntersection" name="mainIntersection" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.entrance ? 'is-danger' : ''" label="Entrance"
           :message="formErrors.entrance || ''">
           <b-input type="text" v-model="entrance" name="entrance" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-field>
           <b-checkbox v-model="location.isBilling">
             {{ 'Use as billing address' }}
@@ -35,7 +38,7 @@
         </b-field>
       </div>
     </div>
-    <div class="col-12 mt-5">
+    <div class="mt-5">
       <b-button type="is-primary" @click="validateForm">
         {{ props.currentLocation ? 'Save' : 'Create' }}
       </b-button>

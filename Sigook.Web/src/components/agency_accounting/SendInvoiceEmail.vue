@@ -1,13 +1,13 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="To">
           <b-input disabled :value="invoice.email"></b-input>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field label="Cc" :type="emailValidationType || ''"
           :message="emailValidationMessage">
           <b-taginput v-model="invoiceRecipients" autocomplete field="email" append-to-body allow-new
@@ -15,28 +15,28 @@
             name="recipients"></b-taginput>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field label="Subject" :type="formErrors.subject ? 'is-danger' : ''"
           :message="formErrors.subject || ''">
           <b-input v-model="subject" placeholder="Subject" name="subject"></b-input>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field label="Attachments">
           <b-upload v-model="newEmail.attachments" multiple>
             <div class="expandable-section-container">
               <div class="expandable-section-header">
-                <h3 class="expandable-section-title fz1 fw-semibold mb-2 text-center">
-                  <b-icon icon="plus-circle" class="me-2"></b-icon>
+                <h3 class="expandable-section-title fz1 has-text-weight-semibold mb-2 has-text-centered">
+                  <b-icon icon="plus-circle" class="mr-2"></b-icon>
                   Add Attachments
                 </h3>
-                <p class="fz-1 color-gray mb-0 text-center">Click here to add extra files or documents to this email</p>
+                <p class="fz-1 color-gray mb-0 has-text-centered">Click here to add extra files or documents to this email</p>
               </div>
             </div>
           </b-upload>
         </b-field>
       </div>
-      <div class="col-12 col-padding" v-if="newEmail.attachments.length > 0">
+      <div class="column is-12" v-if="newEmail.attachments.length > 0">
         <b-taglist>
           <b-tag v-for="file in newEmail.attachments" :key="file.name" type="is-info" closable
             @close="removeFile(file)">
@@ -44,7 +44,7 @@
           </b-tag>
         </b-taglist>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field label="Body" :type="formErrors.body ? 'is-danger' : ''"
           :message="formErrors.body || ''">
           <div class="vue-trix-editor">
@@ -54,7 +54,7 @@
           </div>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="sendEmail">Send Email</b-button>
       </div>
     </div>
@@ -160,17 +160,17 @@ loadInvoiceRecipients();
 </script>
 
 <style scoped>
-.col-12 .upload {
+.column .upload {
   width: 100%;
   display: block;
 }
 
-.col-12 .upload :deep(.upload-draggable) {
+.column .upload :deep(.upload-draggable) {
   width: 100%;
   display: block;
 }
 
-.col-12 .upload :deep(.file-input) {
+.column .upload :deep(.file-input) {
   width: 100%;
 }
 </style>

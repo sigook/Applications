@@ -44,8 +44,13 @@ PUT api/agency/workers/{id}/ApprovedToWork → WorkersController.UpdateApprovedT
 Approval calls the domain method `WorkerProfile.UpdateApprovedToWork(now)`, which enforces that required documents are complete. Related toggles on the same controller:
 
 ```
-PUT api/agency/workers/{id}/Dnu            (Do Not Use — WorkerProfile.UpdateDnu)
+PUT api/agency/workers/{id}/Dnu             (Do Not Use — WorkerProfile.UpdateDnu)
 PUT api/agency/workers/{id}/IsContractor
+PUT api/agency/workers/{id}/IsSubcontractor (short-circuits ApprovedToWork)
+PUT api/agency/workers/{id}/ExternalId
+PUT api/agency/workers/{id}/WcCode
+PUT api/agency/workers/{id}/tax-category
+PUT api/agency/workers/{id}/tax-rate
 ```
 
 ### Step 3: Worker uses the app
@@ -53,7 +58,7 @@ PUT api/agency/workers/{id}/IsContractor
 Once approved, the worker sees their profile(s) and available jobs:
 
 ```
-GET api/WorkerProfile               → WorkerProfileController.Get   (profiles across agencies)
+GET api/WorkerProfile/{profileId}   → WorkerProfileController.GetById
 GET api/WorkerProfile/me            → WorkerProfileController.GetMyProfile
 ```
 
@@ -81,7 +86,7 @@ Key facts about the `Request` entity (`Covenant.Common/Entities/Request/Request.
 
 - Rates (`AgencyRate`, `WorkerRate`) come from the selected `CompanyProfileJobPositionRate`.
 - A new request starts as `RequestStatus.Open`. The enum has exactly three values: `Open = 1`, `Filled = 3`, `Cancelled = 4` (value 2 intentionally skipped).
-- `WorkerSalary` (`Request.cs:60`) set = **Direct Hiring** order (permanent placement); changes billing and attendance behavior (see §6).
+- `WorkerSalary` (`Request.cs:53`) set = **Direct Hiring** order (permanent placement); changes billing and attendance behavior (see §6).
 - State transitions (fill on capacity, reopen, cancel restrictions) are automatic inside the entity — **do not re-implement them**; the authoritative description is `.docs/business/REQUEST_STATE_MANAGEMENT.md`.
 
 Request management endpoints on the same controller:
@@ -126,9 +131,9 @@ DELETE api/agency/requests/{requestId}/Applicants/{id}
 ### Booking
 
 ```
-POST api/agency/requests/{requestId}/Workers/{workerId}/Book
+POST api/agency/requests/{requestId}/Workers/{workerProfileId}/Book
 → WorkersController.Post (Controllers/Sigook/Agency/Requests/WorkersController.cs)
-→ AgencyService.BookWorker(requestId, workerId, AgencyBookWorkerModel)
+→ AgencyService.BookWorker(requestId, workerProfileId, AgencyBookWorkerModel)
 ```
 
 `BookWorker` validates the worker profile (approved, not DNU) and calls `Request.AddWorker`, which creates the `WorkerRequest` with `WorkerRequestStatus.Booked` and auto-transitions the request to `Filled` when capacity is reached (see `REQUEST_STATE_MANAGEMENT.md`).
@@ -141,7 +146,7 @@ POST api/agency/requests/{requestId}/Workers/{workerId}/Book
 GET api/agency/requests/{requestId}/Workers                        → workers assigned to the request
 GET api/agency/requests/{requestId}/Workers/{id}                   → single worker request
 PUT api/agency/requests/{requestId}/Workers/{id}                   → WorkerRequest.UpdateStartWorking (change start date)
-PUT api/agency/requests/{requestId}/Workers/{workerId}/Reject      → RequestService.RejectWorker (may reopen a Filled request)
+PUT api/agency/requests/{requestId}/Workers/{workerProfileId}/Reject → RequestService.RejectWorker (may reopen a Filled request)
 ```
 
 The company sees its assigned workers via `api/CompanyRequest/{requestId}/Worker` (`CompanyModule/CompanyRequestWorker/Controllers/CompanyRequestWorkerController.cs`).
@@ -182,7 +187,7 @@ A request-wide view exists at `GET api/agency/requests/{requestId}/TimeSheets` (
 
 ### Step 3: Hours breakdown
 
-Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Shared/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is deprecated — it is never computed anywhere; do not add night-shift logic.
+Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is deprecated — it is never computed anywhere; do not add night-shift logic.
 
 ---
 
@@ -209,12 +214,17 @@ Delivery and management:
 
 ```
 GET    api/agency/accounting/PayStubs                    → PayStubService.GetPayStubs (filtered list)
+GET    api/agency/accounting/PayStubs/file               → filtered list as file export
 GET    api/agency/accounting/PayStubs/{payStubId}/pdf    → PayStubService.GetPayStubPdf
 POST   api/agency/accounting/PayStubs/{payStubId}/email  → PayStubService.SendPayStubEmail
 POST   api/agency/accounting/PayStubs/email/bulk         → queues BulkPayStubEmailJob on Azure Service Bus (ISigookBusClient)
 DELETE api/agency/accounting/PayStubs/{id}               → PayStubService.DeletePayStub
 POST   api/agency/accounting/PayStubs                    → PayStubService.CreateManualPayStub (obsolete)
 ```
+
+The controller also exposes skip-payroll-number endpoints, and accounting reports live under
+`api/agency/accounting/Reports/*` (`ReportsController`: t4, cra-payroll, payments, subcontractors,
+hours-worked, timesheets).
 
 ### 5.2 Invoicing
 
@@ -224,7 +234,7 @@ POST api/agency/accounting/Invoices           → IInvoiceService.CreateInvoice
 → InvoicesController (Controllers/Sigook/Agency/Accounting/InvoicesController.cs)
 ```
 
-The controller resolves the service through `InvoiceServiceFactory` (`Covenant.Core.BL/Services/Invoices/`), which picks `CanadaInvoiceService` or `UsaInvoiceService`.
+The controller resolves the service through `InvoiceServiceFactory` (`Covenant.Core.BL/Services/Accounting/Invoices/`), which picks `CanadaInvoiceService` or `UsaInvoiceService`.
 
 Key facts (full rules in `BILLING_RULES.md`):
 
@@ -325,4 +335,4 @@ GET api/agency/Notifications      → NotificationsController → NotificationSe
 - **Scope:** excludes **Direct Hiring** orders (`Request.WorkerSalary` set).
 - **3-day window:** the DB does a generous prefilter; `DayNumber = (today − StartDate).Days + 1` is computed in the service and is authoritative (kept only when `1..3`). This avoids a `timestamptz` timezone off-by-one between the window and the day count.
 - **Aggregated, multi-type:** a single endpoint returns `NotificationsModel` (a container with one list per notification kind — today only `WorkersToReview`). The web bell shows a per-type summary + count; clicking opens the **Attendance Review** page (`/recruiting/attendance-review`), and each row links to that order's **Punch Card** tab where the recruiter enters `0` to mark attendance.
-- **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for non admin/payroll/agency users (`useBillingAdmin`); the attendance `0` is entered by whoever may edit.
+- **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` composable, used in `AgencyPunchCardWorkerContainer.vue` via `v-if="isAdmin"` / `:disabled="!isAdmin || ..."`); the attendance `0` is entered by whoever may edit.

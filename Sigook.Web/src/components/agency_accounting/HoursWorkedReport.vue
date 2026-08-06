@@ -1,47 +1,47 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-33">
+    <div class="columns is-multiline">
+      <div class="column is-one-third-mobile is-one-third col-min-250">
         <b-field label="Dates (From - To)" :type="formErrors.dates ? 'is-danger' : ''"
           :message="formErrors.dates">
           <b-datepicker v-model="dates" name="dates" range
             @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
-      <div class="col-33">
+      <div class="column is-one-third-mobile is-one-third col-min-250">
         <b-field label="Company">
           <b-autocomplete v-model="companySelected" :data="filteredCompanies" open-on-focus
             field="fullName" name="company" placeholder="Company" @select="selectCompany">
           </b-autocomplete>
         </b-field>
       </div>
-      <div class="col-33">
+      <div class="column is-one-third-mobile is-one-third col-min-250">
         <b-field label="Job Position">
           <b-autocomplete v-model="jobPositionSelected" :data="filteredJobPositions" open-on-focus
             field="jobPosition" :loading="isLoadingJobPositions" name="jobPosition" placeholder="Job Position"
             @select="selectJobPosition">
             <template v-slot:empty>
-              <p class="container text-center">No records available</p>
+              <p class="container has-text-centered">No records available</p>
             </template>
           </b-autocomplete>
         </b-field>
       </div>
     </div>
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-button type="is-primary" @click="getReport" :loading="isLoadingReport">Generate</b-button>
       </div>
     </div>
-    <div v-if="reportGenerated" class="container-flex">
-      <div class="col-12 col-padding">
+    <div v-if="reportGenerated" class="columns is-multiline">
+      <div class="column is-12">
         <Export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </Export>
         <b-table sticky-header height="var(--grid-height)" :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated pagination-size="is-small" :per-page="pageSize"
           v-model:current-page="pageIndex" pagination-rounded>
           <template v-slot:empty>
-            <p class="container text-center">No records available</p>
+            <p class="container has-text-centered">No records available</p>
           </template>
           <template>
             <b-table-column field="workerName" label="Worker Name" v-slot="props">

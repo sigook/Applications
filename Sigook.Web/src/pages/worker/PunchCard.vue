@@ -7,7 +7,7 @@
         <b-datepicker inline v-model="dateSelected" :events="highlights" indicators="dots"></b-datepicker>
       </div>
       <div class="right-40">
-        <h3 class="fz2 fw-normal">{{ "Punch card" }}</h3>
+        <h3 class="fz2 has-text-weight-normal">{{ "Punch card" }}</h3>
         <table class="table-report-hours">
           <tr>
             <td>Day:</td>
@@ -28,7 +28,7 @@
           <div class="current-hour">
             <span>{{ currentHour }}</span>
           </div>
-          <div class="text-center" v-if="canBeRegistered">
+          <div class="has-text-centered" v-if="canBeRegistered">
             <b-button v-if="isEntryTime" type="is-white" outlined rounded @click="registerEntryHour">START SHIFT</b-button>
             <b-button v-else type="is-white" outlined rounded @click="registerDepartureHour">END SHIFT</b-button>
           </div>

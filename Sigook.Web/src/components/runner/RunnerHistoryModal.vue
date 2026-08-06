@@ -4,7 +4,7 @@
       <div class="runner-head">
         <div>
           <p class="modal-card-title">{{ detail?.name || 'History' }}</p>
-          <i v-if="detail?.email" class="fz-2 text-lowercase">{{ detail.email }}</i>
+          <i v-if="detail?.email" class="fz-2 is-lowercase">{{ detail.email }}</i>
         </div>
       </div>
     </header>
@@ -33,7 +33,7 @@
           </div>
           <b-table :data="detail.interviews" narrowed hoverable :mobile-cards="false">
           <template #empty>
-            <p class="text-center op3">No interviews yet</p>
+            <p class="has-text-centered op3">No interviews yet</p>
           </template>
           <b-table-column field="scheduledDate" label="Scheduled" v-slot="props">
             {{ dateMonth(props.row.scheduledDate) }}
@@ -58,7 +58,7 @@
       <b-button @click="emit('close')">Close</b-button>
     </footer>
 
-    <b-modal v-model="showAddInterview" width="540px">
+    <b-modal has-modal-card v-model="showAddInterview" width="540px">
       <runner-interview-modal :request-id="requestId" :runner-id="runnerId"
         @updated="onInterviewAdded" @close="showAddInterview = false" />
     </b-modal>

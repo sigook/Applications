@@ -5,18 +5,18 @@
     <section class="wrapper-request-top" v-if="request">
       <div>
         <img v-if="request.agencyLogo" :src="request.agencyLogo" />
-        <h2 class="text-capitalize fz1 fw-bold">{{ request.jobTitle }}</h2>
+        <h2 class="is-capitalized fz1 has-text-weight-bold">{{ request.jobTitle }}</h2>
       </div>
 
       <div>
         <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top capitailized fw-bold is-inline-block" :class="request.status">
+          class="option-request-top capitailized has-text-weight-bold is-inline-block" :class="request.status">
           {{ request.status }}
         </div>
-        <div v-else class="option-request-top capitailized fw-bold is-inline-block" :class="request.requestStatus">
+        <div v-else class="option-request-top capitailized has-text-weight-bold is-inline-block" :class="request.requestStatus">
           {{ request.requestStatus }}
         </div>
-        <div v-if="currentUser.approvedToWork" class="d-inline-block">
+        <div v-if="currentUser.approvedToWork" class="is-inline-block">
           <b-button v-if="canApply" type="is-primary" rounded @click="modalMessage = true">
             Apply
           </b-button>
@@ -28,8 +28,8 @@
       <li class="active">Detail</li>
     </ul>
 
-    <div class="container-flex">
-      <section class="col-md-9 col-sm-12 section-left">
+    <div class="columns is-multiline">
+      <section class="column is-9 section-left">
         <RequestDetail v-if="request" :request="request"></RequestDetail>
         <div v-if="currentUser.approvedToWork" class="mt-5">
           <div v-if="canApply">
@@ -38,11 +38,11 @@
             </b-button>
           </div>
         </div>
-        <div class="alert-warning text-center" v-else>
+        <div class="alert-warning has-text-centered" v-else>
           You are not approved to work
         </div>
       </section>
-      <aside class="col-md-3 col-sm-12 section-right">
+      <aside class="column is-3 section-right">
         <Location :jobLocation="request.jobLocation" />
       </aside>
     </div>

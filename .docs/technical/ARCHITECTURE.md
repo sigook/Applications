@@ -6,7 +6,7 @@ Monorepo with seven applications. Each has its own `CLAUDE.md` with app-specific
 |---|---|---|
 | `Covenant.Api/` | .NET 8 Web API | Backend for the whole platform |
 | `Covenant.IdentityServer/` | .NET 6 + IdentityServer4 4.1.2 | OIDC/OAuth2 authentication server |
-| `Sigook.Web/` | Vue 3 + Pinia + buefy-next | Agency web portal (main platform) |
+| `Sigook.Web/` | Vue 3 + Pinia + buefy 3 | Agency web portal (main platform) |
 | `Covenant.Web/` | Vue 3 + Vuetify | Public marketing website |
 | `SigookApp/` | Flutter | Worker mobile app |
 | `Sigook.Functions/` | Azure Functions v4 (.NET 8 isolated) | Scheduled background triggers |
@@ -22,9 +22,11 @@ Monorepo with seven applications. Each has its own `CLAUDE.md` with app-specific
 Framework:  ASP.NET Core 8.0 Web API
 Database:   PostgreSQL (cloud-hosted), EF Core 8.0.11 + Npgsql 8.0.10
 Patterns:   Repository, Service Layer, MediatR (document generation)
-Packages:   MediatR 12.4.1, FluentValidation 11.10.0, Serilog,
+Packages:   MediatR 12.4.1, FluentValidation 11.10.0,
             Swashbuckle 7.2.0, Azure.Messaging.ServiceBus 7.18.2,
             Azure.Storage.Blobs 12.24.0, ClosedXML 0.104.2, PdfPig 0.1.15
+Logging:    Microsoft.Extensions.Logging (Console/Debug) + Application Insights (no Serilog)
+Config:     Azure Key Vault via PrefixKeyVaultSecretManager (also used by Sigook.Functions)
 Cloud:      Azure App Service, Azure Service Bus, Azure Blob Storage, Azure Container Registry
 ```
 
@@ -46,7 +48,7 @@ reference `Covenant.Common` (see [Covenant.Common sharing](#covenantcommon-shari
 ```
 Framework:  Vue 3.5.x + Vite 8 (Node 20+), TypeScript 6.x
 State:      Pinia 3.x (+ pinia-plugin-persistedstate)
-UI:         @ntohq/buefy-next 0.2.x (Buefy port for Vue 3 / Bulma)
+UI:         buefy 3.x (official Buefy for Vue 3, bundles Bulma 1.x)
 Auth:       oidc-client-ts 3.x
 HTTP:       Axios 1.10.0 (API calls live in src/api/*.ts)
 Validation: VeeValidate 4.x + Yup 1.x; i18n: vue-i18n
@@ -58,11 +60,14 @@ Prod:       https://sigook.azurewebsites.net
 ### Covenant.Web (Vue 3, marketing site)
 
 ```
-Framework:  Vue 3.5.22 + Vite 7.1.11, TypeScript 5.9.3
+Framework:  Vue 3.5.22 + Vite 7.1.11, TypeScript 6.x (^6.0.3)
 State/UI:   Pinia 3.0.3, Vuetify 3.7.0, VeeValidate 4.15.1 + Yup 1.7.1
 Hosting:    Azure Static Web Apps (staging: lively-island-020c8260f.7.azurestaticapps.net,
             prod: https://www.covenantgroupl.com)
 ```
+
+Both web apps use **pnpm** as their package manager (`packageManager: pnpm@11.7.0`, via
+corepack). Covenant.Web builds to `dist/` (Sigook.Web builds to `wwwroot/`).
 
 ### SigookApp (Flutter)
 
@@ -127,7 +132,6 @@ Covenant.Api/
 ├── Covenant.Infrastructure/    # EF Core (CovenantContext), repositories, integrations, deductions
 ├── Covenant.Documents/         # Excel/PDF report generators (MediatR handlers)
 ├── Covenant.Tests/             # Unit tests
-├── Covenant.Test.Utils/        # Test utilities
 └── Covenant.Integration.Tests/ # Integration tests
 ```
 
@@ -152,7 +156,7 @@ Covenant.Api/
   the `PackageVersion` in that file so every project resolves the same version.
 - Keep infrastructure concerns out of `Covenant.Common`: Excel helpers live in `Covenant.Documents`,
   ASP.NET-bound helpers (`IFormFile`, `IConfiguration`, Razor helpers) in `Covenant.Api`/
-  `Covenant.Core.BL`, and test-only helpers in `Covenant.Test.Utils`.
+  `Covenant.Core.BL`, and test-only helpers inside each test project.
 
 ### Controllers (presentation layer)
 
@@ -164,9 +168,9 @@ Two coexisting layouts:
 |---|---|
 | `Controllers/Sigook/` | `CatalogController`, `LocationController`, `FileController` |
 | `Controllers/Sigook/Agency/` | `AgencyController`, `AgencyLocationController`, `NotificationsController` |
-| `Controllers/Sigook/Agency/Accounting/` | `InvoicesController`, `PayStubsController`, `ReportsController`, `LocationTaxController` |
+| `Controllers/Sigook/Agency/Accounting/` | `InvoicesController`, `PayStubsController`, `ReportsController`, `LocationTaxController`, `DeductionsController` |
 | `Controllers/Sigook/Agency/CompanyProfiles/` | company detail: profile, contacts, documents, invoice notes/recipients, job positions, locations, logo, notes, users |
-| `Controllers/Sigook/Agency/Requests/` | request detail: `RequestsController`, `ApplicantsController`, `RunnersController`, `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, notes, shift, skills, report-to, requested-by |
+| `Controllers/Sigook/Agency/Requests/` | request detail: `RequestsController`, `ApplicantsController`, `RunnersController`, `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController` (per-worker notes on a request), notes, shift, skills, report-to, requested-by |
 | `Controllers/Sigook/Agency/Recruiting/` | recruiting-scoped lists: `RequestsController`, `CompanyProfilesController`, `WeeklyBoardController` |
 | `Controllers/Sigook/Agency/Sales/` | sales-scoped lists: `RequestsController`, `CompanyProfilesController` |
 | `Controllers/Sigook/Agency/Candidates/` | candidate domain: `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
@@ -186,45 +190,83 @@ Routing: older controllers declare `public const string RouteName = "api/..."` +
 `[Route(RouteName)]` (grep for `RouteName =` to find an endpoint); newer ones use attribute
 literals like `[Route("api/agency/accounting/[controller]")]` or
 `[Route("api/agency/sales/[controller]")]`. There is no `{Module}{Resource}V{N}Controller`
-convention in production code (the odd `V2` in a couple of legacy names is historical, not a
-system).
+convention in production code (the single legacy `V2` name,
+`V2CompanyRequestWorkerTimeSheetController.cs`, is historical, not a system).
 
 ### Services (business logic) — `Covenant.Core.BL/Services/`
 
-`AccountingService`, `AgencyService`, `CandidateService`, `CompanyService`, `LocationService`,
-`NotificationService`, `PayStubService`, `RequestService`, `RunnerService`, `SalesService`,
-`TimeSheetService`, `WeeklyBoardService`, `WorkerService`, plus:
+Root: `AgencyService`, `CandidateService`, `CompanyService`, `LocationService`,
+`NotificationService`, `RequestService`, `RunnerService`, `SalesService`, `TimeSheetService`,
+`WeeklyBoardService`, `WorkerService`. Watch the file/type mismatch: the file
+`TimeSheetService.cs` holds the class `TimesheetService : ITimesheetService`, while the
+interface file is `ITimeSheetService.cs` — a real grep trap.
 
-- `Services/Invoices/` — `InvoiceService` (abstract base), `CanadaInvoiceService`,
+Everything billing/payroll lives under `Services/Accounting/`:
+
+- `AccountingService`, `PayStubService`, `DeductionImportService` (CRA PDF import).
+- `Services/Accounting/Invoices/` — `InvoiceService` (abstract base), `CanadaInvoiceService`,
   `UsaInvoiceService`, `InvoiceServiceFactory` (resolves the country service from the agency
   billing location).
-- `Services/Shared/` — `TimesheetCalculatorService` (hours breakdown + payroll deductions).
+- `Services/Accounting/Shared/` — `TimesheetCalculatorService` (hours breakdown + payroll
+  deductions), shared by payroll and invoicing.
+
+Also in `Covenant.Core.BL/`: `Adapters/` (entity→model adapters for candidate, company, worker,
+interfaces in `Covenant.Common/Interfaces/Adapters/`), `Extensions/Accounting/` (Razor view-model
+extensions for the invoice and payroll templates) and `Consumers/` (Service Bus).
 
 Services depend only on repository interfaces from `Covenant.Common/Repositories/`; controllers
-only delegate to services. DI registration (all `AddScoped`, consumers `AddSingleton`) lives in
+only delegate to services. DI registration (services/repositories/adapters/containers
+`AddScoped`; Service Bus clients + consumers and config option objects (`Rates`, `TimeLimits`,
+`AzureStorageConfiguration`) `AddSingleton`) lives in
 `Covenant.Api/Configuration/ApiServicesConfiguration.cs`.
 
 ### Infrastructure — `Covenant.Infrastructure/`
 
 ```
-Contexts/         CovenantContext.cs (main DbContext), MyKeysContext (DataProtection keys)
+Contexts/         CovenantContext.cs (main DbContext), MyKeysContext (DataProtection keys),
+                  PostgresFunctions.cs (EF DbFunction mappings backing
+                  Scripts/Functions/get_week_start_sunday.sql)
 Repositories/     by domain: Accounting/, Agency/, Candidate/, Company/, Notification/,
-                  Request/, Worker/ + root repositories (Catalog, Location, Shift, User)
+                  Request/, Worker/ + root repositories (Catalog, Location, Shift, User);
+                  shared plumbing in BaseRepository.cs
+Mappers/          entity→model projection extensions used inside repositories:
+                  AgencyExtensionsMapping, CandidateExtensionsMapping, CompanyExtensionsMapping,
+                  RequestExtensionsMapping, WorkerRequestExtensionsMapping
 Configurations/   EF Core IEntityTypeConfiguration classes, mirrored by domain
 Migrations/       EF Core migrations
 Scripts/          raw SQL (views, functions, stored procedures) run at startup
-Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService,
-                  CraPdfParser (PdfPig reader for the CRA deduction tables)
+Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
-                  (webhooks), DocumentService/Storage (Azure Blob), PdfGeneratorService,
-                  RazorViewToStringRenderer, IdentityServerService, TimeService,
-                  SigookBusClient / SigookBusAdministrationClient (Service Bus)
+                  (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
+                  IdentityServerService, TimeService, CraPdfParser (PdfPig reader for the CRA
+                  deduction tables), SigookBusClient / SigookBusAdministrationClient (Service Bus)
+Services/Storage/ Azure Blob containers, one class per container (see below)
+Services/Handlers/ Microsoft365TokenHandler (DelegatingHandler: Entra client-credentials bearer
+                  token, attached to the IdentityServer HttpClient in AddClients)
 ```
 
+**Blob storage** — one typed container class per Azure Blob container, all deriving from
+`BaseAzureStorage`, with interfaces in `Covenant.Common/Interfaces/Storage/`:
+`InvoicesContainer` (invoice PDFs), `PayStubsContainer` (pay stub PDFs), `FilesContainer`
+(worker/company documents), `CraTablesContainer` (CRA deduction PDFs). Registered in
+`ApiServicesConfiguration.AddContainers` against two connection strings —
+`AccountingStorageConnection` (invoices, pay stubs) and `FileStorageConnection` (files, CRA
+tables). Invoice and pay stub PDFs are **cached** in their container: delete the blob to force a
+regeneration after fixing a Razor template.
+
 Payroll deductions are **DB table lookups, not formulas**: `TimesheetCalculatorService` →
-`DeductionsRepository` range lookups by earnings/year. EI is the only computed deduction. The
-tables themselves are only written by `DeductionsController` (`Controllers/Sigook/Agency/Accounting/`),
-which imports the CRA PDFs; there is no endpoint to read them back.
+`DeductionsRepository` range lookups by earnings/year. EI is the only computed deduction.
+Import flow: a CRA PDF is uploaded to the `cra-tables` blob container → the Azure Function
+`CraTableUploaded` (blob trigger, `Sigook.Functions/Functions/CraTables.cs`) calls the API's
+`DeductionsController` (`POST api/Accounting/Deduction/Cpp/Blob` / `Tax/Blob`, which takes a
+blob reference) → `DeductionImportService` (uses `CraPdfParser` + `CraTablesContainer`) →
+`DeductionsRepository.ImportCpp/ImportTax(year, payPeriod, rows, yearsKept)`, keeping the last
+2 years. Reads happen only through `TimesheetCalculatorService`; there is no endpoint to read
+the tables back.
+
+**Health checks** — `AddCovenantHealthChecks` + `Covenant.Api/HealthChecks/` (tagged
+`config`/`ready`/`live`) probe the four connection strings: `DefaultConnection`,
+`AccountingStorageConnection`, `FileStorageConnection`, `ServiceBusConnection`.
 
 For entities, enums, and the data model, see
 [ENTITIES_RELATIONSHIPS.md](ENTITIES_RELATIONSHIPS.md). For the Request lifecycle rule
@@ -252,9 +294,14 @@ applies pending EF migrations for both contexts, executes the raw SQL in
 with Teams/Email/RequestApplicant subscriptions), then calls `OnInit()` on every registered
 consumer.
 
-Consumers in `Covenant.Core.BL/Consumers/` (registered as `IAzureServiceBusConsumer` singletons
-in `ApiServicesConfiguration.cs`): `BulkPayStubEmailConsumer`, `EmailConsumer`,
-`InvitationConsumer`, `NewCandidateConsumer`, `RequestApplicantConsumer`, `TeamsConsumer`.
+Consumers live in `Covenant.Core.BL/Consumers/`; exactly **5** are registered as
+`IAzureServiceBusConsumer` singletons in `AddAzureServiceBusConsumer`
+(`ApiServicesConfiguration.cs`): `NewCandidateConsumer`, `TeamsConsumer`,
+`RequestApplicantConsumer`, `BulkPayStubEmailConsumer`, `InvitationConsumer`.
+(A stillborn `EmailConsumer` and its `EmailNotification` topic subscription were removed in
+2026-08; the orphaned subscription must also be deleted by hand in the Azure portal for staging
+and production, since removing the `CreateSubscriptionIfNotExistsAsync` call does not delete an
+existing subscription.)
 
 Local development connects to the **staging** Service Bus — inject `ISigookBusClient` (mockable)
 rather than constructing clients directly.
@@ -269,11 +316,14 @@ rather than constructing clients directly.
 - **Roles** (exactly 7, lowercase, defined in `Covenant.Common/Constants/CovenantConstants.cs`):
   `superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker`. Role groups:
   `RecruitingAccess` (superadmin/admin/recruiting), `SalesAccess` (superadmin/admin/sales),
-  `AgencyStaff` (recruiting access + sales), `Accounting` (superadmin/admin). Always reference
-  via `CovenantConstants.Role.*`.
-- **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency` (AgencyStaff),
-  `Recruiting`, `Sales`, `Company` (company or company.user), `Worker`, `Accounting`,
-  `SuperAdmin`, `AgencyOrCompany`, `AgencyOrWorker`.
+  `AgencyStaff` (recruiting access + sales), `AdminAccess` (superadmin/admin),
+  `AgencyAssignable` (admin/recruiting/sales), `SuperAdminAssignable` (`CovenantConstants.cs`).
+  Always reference via `CovenantConstants.Role.*`.
+- **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency`, `Recruiting`,
+  `Company`, `Worker`, `Request` (authenticated only), `Covenant` (claim `all2job`),
+  `AgencyOrCompany`, `AgencyOrWorker`, `Admin`, `SuperAdmin`, `Sales`. There is no `Accounting`
+  policy. Note `AgencyOrCompany`/`AgencyOrWorker` are built from `RecruitingAccess`, so they
+  exclude sales.
 
 ### Data isolation (multi-tenancy)
 

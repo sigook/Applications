@@ -5,7 +5,7 @@
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
       v-model:current-page="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="profileImage" width="50" v-slot="props">
@@ -50,7 +50,7 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <span class="text-uppercase fw-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
+            <span class="is-uppercase has-text-weight-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">

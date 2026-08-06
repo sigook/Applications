@@ -32,7 +32,6 @@ The solution consists of 15+ projects following domain-driven design:
 ### Testing Projects
 - **Covenant.Tests** - Unit tests
 - **Covenant.Integration.Tests** - Integration tests
-- **Covenant.Test.Utils** - Shared test utilities
 
 > **Note:** Invoice/billing logic is located in `Covenant.Core.BL/Services/Invoices/` (CanadaInvoiceService, UsaInvoiceService). Invoice entities are in `Covenant.Common/Entities/Accounting/Invoice/`.
 

@@ -15,7 +15,6 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
@@ -78,7 +77,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             services.AddDefaultTestConfiguration();
             services.AddTestAuthenticationBuilder().AddTestAuth(o =>
             {
-                o.AddAgencyPersonnelRole(Data.FakeAgency.Id);
+                o.AddAdminRole(Data.FakeAgency.Id);
             });
             services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
             services.AddSingleton<IInvoiceRepository, InvoiceRepositoryTest>();

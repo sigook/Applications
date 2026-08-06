@@ -10,6 +10,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
@@ -18,6 +19,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Accounting;
 
 [Route("api/agency/accounting/[controller]")]
 [ApiController]
+[Authorize(Policy = PolicyConfiguration.Admin)]
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class PayStubsController(
     ITimesheetRepository timeSheetRepository,

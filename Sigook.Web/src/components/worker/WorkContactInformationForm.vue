@@ -1,17 +1,20 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <LocationAddress ref="addressComponent" v-model:model="worker.location" @isLoading="(value) => isLoading = value" />
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <LocationAddress ref="addressComponent" v-model:model="worker.location"
+          @isLoading="(value) => isLoading = value" />
+      </div>
+      <div class="column is-6">
         <PhoneInput ref="mobileComponent" :required="true" model="Mobile Number" :defaultValue="worker.mobileNumber"
           @formattedPhone="(phone) => worker.mobileNumber = phone" />
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <PhoneInput ref="phoneComponent" :required="false" model="Phone" :defaultValue="worker.phone"
           @formattedPhone="(phone) => worker.phone = phone" />
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">{{ "Save" }}</b-button>
       </div>
     </div>

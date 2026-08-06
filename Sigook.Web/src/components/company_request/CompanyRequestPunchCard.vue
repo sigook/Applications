@@ -12,7 +12,7 @@
         detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
         @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="profileImage" width="50" v-slot="props">
@@ -71,8 +71,7 @@ import DataEntryTerms from "@/components/DataEntryTerms.vue";
 import { showAlertError } from "@/utils/toast";
 import { hour } from '@/utils/filters';
 import { downloadFile } from '@/utils/downloadFile';
-import { getRequestWorkers } from '@/api/companyApi';
-import { getRequestTimeSheetDocument } from "@/api/agencyReportApi";
+import { getRequestWorkers, getCompanyRequestTimeSheetFile } from '@/api/companyApi';
 import { WorkerRequestStatusLabels } from "@/constants/enums";
 
 defineProps<{ request: any }>();
@@ -145,7 +144,7 @@ function getWorkers() {
 
 function downloadTimeSheetDocument() {
   isLoading.value = true;
-  getRequestTimeSheetDocument(serverParams.requestId)
+  getCompanyRequestTimeSheetFile(serverParams.requestId)
     .then((response: any) => {
       isLoading.value = false;
       downloadFile(response, `TimeSheet_${serverParams.requestId}`);

@@ -19,7 +19,7 @@ public interface ICompanyRepository
     Task<CompanyProfile> GetCompanyProfile(Expression<Func<CompanyProfile, bool>> expression);
     Task<CompanyProfileDetailModel> GetCompanyProfileDetail(Expression<Func<CompanyProfile, bool>> expression);
     Task<PaginatedList<CompanyProfileListModel>> GetCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
-    IEnumerable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
+    IQueryable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
     Task<List<CompanyProfileWithDetailsModel>> GetCompaniesWithDetailsForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
     Task<string> GetCompanyProfileInvoiceNotes(Guid companyProfileId);
     Task UpdateCompanyProfileInvoiceNotes(Guid companyProfileId, string htmlNotes);

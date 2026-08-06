@@ -16,7 +16,7 @@ public interface IRequestRepository
     Task Update<T>(T entity) where T : class;
     Task<Entities.Request.Request> GetRequest(Expression<Func<Entities.Request.Request, bool>> condition);
     Task<IEnumerable<Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids);
-    IEnumerable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
+    IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<PaginatedList<AgencyRequestListModel>> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<IEnumerable<RequestSource>> GetRequestSources(Guid requestId);
@@ -62,4 +62,5 @@ public interface IRequestRepository
     Task SaveChangesAsync();
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
     Task<bool> ExistsRequestByNumber(int requestId);
+    Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId);
 }

@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-5">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         Agencies
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -16,10 +16,10 @@
         </b-button>
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="fullName"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="fullName" label="Name" sortable searchable>
@@ -29,7 +29,7 @@
             </template>
             <template v-slot="props">
               <router-link :to="{ path: '/sales/agencies/' + props.row.id }">
-                <span class="d-block">{{ props.row.fullName }}</span>
+                <span class="is-block">{{ props.row.fullName }}</span>
                 <template v-for="(location, index) in props.row.locations">
                   <p v-if="index < 2" :key="location">
                     <i class="fz-2 block">{{ location }}</i>
@@ -47,7 +47,7 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ props.row.email }}</span>
+              <span class="is-block">{{ props.row.email }}</span>
             </template>
           </b-table-column>
           <b-table-column field="agencyType" label="Type" sortable searchable>
@@ -73,6 +73,7 @@ import { useAgencyStore } from '@/stores/agency';
 import { showAlertError } from '@/utils/toast';
 import { getAgenciesList } from '@/api/agencyApi';
 import { agencyType } from '@/utils/filters';
+import { useGridSort } from '@/composables/useGridSort';
 import { appGlobals } from '@/varaibles';
 
 const agencyStore = useAgencyStore();
@@ -88,6 +89,12 @@ const serverParams = ref<any>({
   pageSize: 30,
 });
 
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  fullName: 0,
+  email: 1,
+  agencyType: 2,
+}, () => getAgencies());
+
 if (agencyStore.agencyListFilter) {
   serverParams.value = agencyStore.agencyListFilter;
 }
@@ -95,22 +102,6 @@ getAgencies();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  getAgencies();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'fullName':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'email':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'agencyType':
-      serverParams.value.sortBy = 2;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   getAgencies();
 }
 

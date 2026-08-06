@@ -11,7 +11,6 @@ using Covenant.Infrastructure.Repositories.Candidate;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Covenant.Test.Utils.Configuration;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;

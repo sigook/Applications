@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
+    <div class="section-top-title columns is-multiline mb-2">
+      <h2 class="fz1 pt-3 column is-7-mobile is-5">
         {{ 'Clients' }}
-        <span class="fw-light fz-1">
+        <span class="has-text-weight-light fz-1">
           ({{ totalItems }})
         </span>
       </h2>
@@ -29,11 +29,11 @@
         </template>
       </export>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="updatedAt"
+        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="fullName" label="Name" sortable searchable>
@@ -156,7 +156,7 @@
       </b-table>
     </div>
 
-    <b-modal v-model="addFile" @close="addFile = false" width="500px">
+    <b-modal custom-content-class="card" v-model="addFile" @close="addFile = false" width="500px">
       <bulk-data :upload-fn="bulkAgencyCompanies" :error-file-name="'BulkCompaniesError'"
         :title="'Bulk Companies'" :file-label="'Companies File'" @close="addFile = false" />
     </b-modal>
@@ -176,6 +176,7 @@ import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 import { dateMonth } from '@/utils/filters';
 import { useModuleBase } from '@/composables/useModuleBase';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import NotesPopover from '@/components/notes/NotesPopover.vue';
 import BulkData from '@/components/agency/BulkData.vue';
@@ -204,6 +205,14 @@ const serverParams = ref<any>({
   pageSize: 30,
 });
 
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  fullName: 0,
+  industry: 1,
+  createdAt: 2,
+  updatedAt: 3,
+  salesRepresentative: 4,
+}, () => loadCompanies());
+
 const getCompanyNotes = ({ userId, pagination }: NotesFetchPayload) => getAgencyCompanyNotes(userId, pagination);
 const createCompanyNote = ({ userId, model }: NotesCreatePayload) => createAgencyCompanyNote(userId, model);
 const deleteCompanyNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id);
@@ -225,28 +234,6 @@ loadCompanies();
 
 function onPageChange(params: number) {
   serverParams.value.pageIndex = params;
-  loadCompanies();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'fullName':
-      serverParams.value.sortBy = 0;
-      break;
-    case 'industry':
-      serverParams.value.sortBy = 1;
-      break;
-    case 'createdAt':
-      serverParams.value.sortBy = 2;
-      break;
-    case 'updatedAt':
-      serverParams.value.sortBy = 3;
-      break;
-    case 'salesRepresentative':
-      serverParams.value.sortBy = 4;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
   loadCompanies();
 }
 

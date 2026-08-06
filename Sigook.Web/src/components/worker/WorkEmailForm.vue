@@ -6,8 +6,8 @@
       not be able to login with the previous email anymore,
       if necessary notify the worker about the change.
     </b-message>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field :type="formErrors.newEmail ? 'is-danger' : ''"
           :message="formErrors.newEmail || ''">
           <template #label>
@@ -17,7 +17,7 @@
           </b-input>
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="column is-12">
         <b-field :type="formErrors.confirmEmail ? 'is-danger' : ''"
           :message="formErrors.confirmEmail || ''">
           <template #label>
@@ -27,7 +27,7 @@
           </b-input>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
           {{ "Save" }}
         </b-button>

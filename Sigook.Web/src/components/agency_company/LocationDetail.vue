@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="container-flex justify-content-between mb-4">
-      <h3 class="fw-bold">Location</h3>
+    <div class="is-flex is-flex-wrap-wrap is-justify-content-space-between mb-4">
+      <h3 class="has-text-weight-bold">Location</h3>
       <b-button type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
     </div>
     <div class="location-table-wrap">
@@ -39,14 +39,14 @@
     </b-table>
     </div>
 
-    <b-modal v-model="showModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showModal" width="800px">
       <location-form :current-location="currentLocation" :profile-id="profileId"
         @updateContent="onUpdateModal" :enableProvinceSettings="true"></location-form>
     </b-modal>
 
     <b-modal v-model="showMapModal" width="600px">
       <div class="card p-4" v-if="mapLocation">
-        <h4 class="fw-bold mb-2">{{ locationLabel(mapLocation) }}</h4>
+        <h4 class="has-text-weight-bold mb-2">{{ locationLabel(mapLocation) }}</h4>
         <p class="fz-1 op5 mb-3">Lat: {{ mapLocation.latitude }} | Lng: {{ mapLocation.longitude }}</p>
         <div class="location-map-modal">
           <iframe :src="mapEmbedSrc(mapLocation)" allowfullscreen width="100%" height="400px" frameborder="0"

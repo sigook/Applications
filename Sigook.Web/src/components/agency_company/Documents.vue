@@ -2,8 +2,8 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="d-flex align-items-center justify-content-between">
-      <span class="fw-bold">Documents</span>
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
+      <span class="has-text-weight-bold">Documents</span>
       <button class="show-notes-btn" @click="onShowDocuments()">
         <img src="../../assets/images/right-arrow.svg" :class="{ open: showDocuments }" />
       </button>
@@ -14,14 +14,14 @@
       <div v-if="showDocuments && data" class="mb-5">
         <div class="profile-licenses profile-experience">
           <div v-for="(document, index) in data.items" :key="document.id" class="container-license hover-actions">
-            <div v-if="document.canDownload" class="d-flex align-items-center justify-content-between">
+            <div v-if="document.canDownload" class="is-flex is-align-items-center is-justify-content-space-between">
               <a :href="document.pathFile" target="_blank" download>
-                <p class="fw-normal">
+                <p class="has-text-weight-normal">
                   {{ filename(document.fileName) }}
                   <span class="download-button"></span>
                 </p>
               </a>
-              <div class="actions text-end">
+              <div class="actions has-text-right">
                 <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
                   <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
                     @click="onDeleteDocument(document.id, Number(index))">
@@ -30,10 +30,10 @@
                 </b-tooltip>
               </div>
             </div>
-            <p v-else class="fw-normal">{{ filename(document.fileName) }}</p>
+            <p v-else class="has-text-weight-normal">{{ filename(document.fileName) }}</p>
             <div class="fz-1">
               <p>
-                <strong class="fw-normal">{{ document.description }}</strong>
+                <strong class="has-text-weight-normal">{{ document.description }}</strong>
               </p>
             </div>
           </div>

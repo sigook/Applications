@@ -10,7 +10,7 @@
         detail-transition="fade" default-sort="name" v-model:current-page="serverParams.pageIndex"
         @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="profileImage" width="50" v-slot="props">

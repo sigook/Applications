@@ -1,7 +1,7 @@
 <template>
-  <div class="container-flex">
+  <div class="columns is-multiline">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="col-12 col-padding">
+    <div class="column is-12">
       <b-field :type="errors.country ? 'is-danger' : ''" :message="errors.country || ''">
         <template #label>
           {{ 'Country' }} <span class="has-text-danger">*</span>
@@ -12,7 +12,7 @@
         </b-select>
       </b-field>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="column is-6">
       <b-field :type="errors.province ? 'is-danger' : ''">
         <template #label>
           {{ 'Province/State' }} <span class="has-text-danger">*</span>
@@ -29,7 +29,7 @@
           name="province" :loading="loadingProvinces" @select="onProvinceSelected"></b-autocomplete>
       </b-field>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="column is-6">
       <b-field :type="errors.city ? 'is-danger' : ''" :message="errors.city || ''">
         <template #label>
           {{ 'City' }} <span class="has-text-danger">*</span>
@@ -44,7 +44,7 @@
         </b-autocomplete>
       </b-field>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="column is-6">
       <b-field :type="errors.address ? 'is-danger' : ''" :message="errors.address || ''">
         <template #label>
           {{ 'Address' }} <span class="has-text-danger">*</span>
@@ -52,7 +52,7 @@
         <b-input type="text" v-model="address" name="address" />
       </b-field>
     </div>
-    <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="column is-6">
       <b-field :type="errors.postalCode ? 'is-danger' : ''" :message="errors.postalCode || ''">
         <template #label>
           {{ 'Postal/ZIP Code' }} <span class="has-text-danger">*</span>
@@ -60,7 +60,7 @@
         <b-input type="text" v-model="postalCode" name="postalCode" />
       </b-field>
     </div>
-    <b-modal v-model="showProvinceSettingsModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showProvinceSettingsModal" width="500px">
       <province-settings-modal v-if="provinceSelected" :provinceId="provinceSelected.id"
         :provinceName="provinceSelected.value" :currentSettings="provinceSelected.settings"
         @saved="onProvinceSettingsSaved" />

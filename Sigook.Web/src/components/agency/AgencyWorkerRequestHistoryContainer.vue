@@ -10,8 +10,8 @@
                 </h3>
                 <div class="subtitle">{{ data.companyFullName }}</div>
             </div>
-            <div class="text-end container-right">
-                <div class="subtitle icon-before-location text-uppercase icon-before">{{ data.location }}</div>
+            <div class="has-text-right container-right">
+                <div class="subtitle icon-before-location is-uppercase icon-before">{{ data.location }}</div>
             </div>
         </div>
         <div class="container-actions">
@@ -21,7 +21,7 @@
                 |
                 <b>Finish:</b> {{ date(data.finishWorking) }}
             </div>
-            <div v-if="data.status" class="container-status text-uppercase" :class="'status-' + data.status.toLowerCase()"
+            <div v-if="data.status" class="container-status is-uppercase" :class="'status-' + data.status.toLowerCase()"
                 v-status="{ status: data.status }"> {{ data.status }}</div>
         </div>
         <!--</router-link>-->

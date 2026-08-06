@@ -1,9 +1,9 @@
 <template>
   <section>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="d-flex align-items-center justify-content-between">
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
       <div>
-        <h3 class="fw-bold fz-0">{{ props.justWhmis ? 'WHMIS and Health and Safety Training' : 'Other documents' }} </h3>
+        <h3 class="has-text-weight-bold fz-0">{{ props.justWhmis ? 'WHMIS and Health and Safety Training' : 'Other documents' }} </h3>
         <i class="fz-2" v-if="props.justWhmis">Complete the training following both links below and uplaod your
           certificates</i>
       </div>
@@ -25,14 +25,14 @@
     <div class="profile-licenses profile-experience">
       <div class="container-license hover-actions" v-for="(item, index) in props.worker.otherDocuments"
         v-bind:key="'docs' + index">
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="is-flex is-align-items-center is-justify-content-space-between">
           <a :href="item.pathFile" target="_blank" download>
-            <h4 class="fw-normal">
+            <h4 class="has-text-weight-normal">
               {{ filename(item.fileName) }}
               <span class="download-button"></span>
             </h4>
           </a>
-          <div class="actions text-end">
+          <div class="actions has-text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item)">
                 {{ "Delete" }}
@@ -42,13 +42,13 @@
         </div>
         <div class="fz-1">
           <p>
-            <strong class="fw-normal">{{ item.description }}</strong>
+            <strong class="has-text-weight-normal">{{ item.description }}</strong>
           </p>
         </div>
       </div>
     </div>
 
-    <b-modal v-model="modalDocuments" width="500px">
+    <b-modal custom-content-class="card" v-model="modalDocuments" width="500px">
       <documents-form :data="props.worker" @closeAndUpdate="() => closeAndUpdate()" />
     </b-modal>
   </section>

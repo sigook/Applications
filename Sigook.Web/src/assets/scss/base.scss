@@ -431,6 +431,40 @@ input[type="file"] {
   color: #f57f6c;
 }
 
+.border-0 {
+  border: 0 !important;
+}
+
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+.align-text-top {
+  vertical-align: text-top !important;
+}
+
+.h-auto {
+  height: auto !important;
+}
+
+.w-50 {
+  width: 50% !important;
+}
+
+.col-min-250 {
+  min-width: 250px;
+}
+
+@media (min-width: 576px) {
+  .p-sm-0 {
+    padding: 0 !important;
+  }
+
+  .p-sm-4 {
+    padding: 1.5rem !important;
+  }
+}
+
 .line-orange {
   display: block;
   width: 100px;
@@ -1160,21 +1194,21 @@ label.superscript {
   background: #a8a8a8;
 }
 
-.expandable-section-list .container-flex:nth-child(even) {
+.expandable-section-list .columns:nth-child(even) {
   background: #f9f9f9;
 }
 
-.expandable-section-list .container-flex:nth-child(odd) {
+.expandable-section-list .columns:nth-child(odd) {
   background: #ffffff;
 }
 
-.expandable-section-list .container-flex {
+.expandable-section-list .columns {
   margin: 0;
   padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.expandable-section-list .container-flex:last-child {
+.expandable-section-list .columns:last-child {
   border-bottom: none;
 }
 

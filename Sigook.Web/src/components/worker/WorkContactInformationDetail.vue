@@ -1,6 +1,6 @@
 <template>
   <section>
-    <div class="d-flex align-items-center justify-content-between">
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
       <h3 class="section-title">{{ "Contact information" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil"
         @click="modalContactInformation = true"></b-button>
@@ -9,7 +9,7 @@
       <div v-if="props.worker.location">
         <span>{{ 'Address' }}</span>
         <span>
-          <p class="fw-light m-0 text-capitalize">
+          <p class="has-text-weight-light m-0 is-capitalized">
             {{ props.worker.location.address }}
             {{ props.worker.location.city.value }}, {{ props.worker.location.city.province.code }}
             {{ props.worker.location.postalCode }}
@@ -19,14 +19,14 @@
       <div>
         <span>{{ 'Mobile Number' }}</span>
         <span>
-          <p class="fw-light m-0">{{ props.worker.mobileNumber }}</p>
+          <p class="has-text-weight-light m-0">{{ props.worker.mobileNumber }}</p>
         </span>
       </div>
       <div v-if="props.worker.phone">
         <span>{{ 'Phone' }}</span>
         <span>
-          <p class="fw-light m-0">{{ props.worker.phone }}
-            <span v-if="props.worker.phoneExt" class="fw-light">
+          <p class="has-text-weight-light m-0">{{ props.worker.phone }}
+            <span v-if="props.worker.phoneExt" class="has-text-weight-light">
               <b>{{ 'Ext.' }}:</b>
               {{ props.worker.phoneExt }}
             </span>
@@ -34,7 +34,7 @@
         </span>
       </div>
     </div>
-    <b-modal v-model="modalContactInformation" width="800px">
+    <b-modal custom-content-class="card" v-model="modalContactInformation" width="800px">
       <contact-information-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </section>

@@ -2,7 +2,7 @@
     <b-dropdown aria-role="list" position="is-top-right" append-to-body>
         <template #trigger>
             <b-button type="is-text" size="is-small" icon-left="palette" class="color-picker-trigger">
-                <span class="note-color-icon" :class="{ 'border': modelValue === '#fefefe' }"
+                <span class="note-color-icon" :class="{ 'has-border': modelValue === '#fefefe' }"
                     :style="{ backgroundColor: modelValue }"></span>
             </b-button>
         </template>

@@ -1,8 +1,8 @@
 <template>
   <div class="p-4">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center fz1 mb-4">Assign Recruiters</h2>
-    <p class="text-center mb-4">
+    <h2 class="has-text-centered fz1 mb-4">Assign Recruiters</h2>
+    <p class="has-text-centered mb-4">
       {{ requestCount }} order(s) selected
     </p>
     <b-message type="is-warning" size="is-small" :closable="false">

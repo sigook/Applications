@@ -4,13 +4,15 @@ How `PayStubService.GeneratePayStubForWorker` builds a pay stub from approved ti
 
 ## Entry Point
 
-`PayStubService.Generate(agencyIds, workerIds)` iterates sequentially (plain `foreach`, no locking) over each worker and calls `GeneratePayStubForWorker(agencyIds, workerId)` for each one.
+`PayStubService.Generate(agencyIds, workerIds)` iterates sequentially (plain `foreach`, no locking) over each worker and calls `GeneratePayStubForWorker(agencyIds, workerId)` for each one. The whole batch aborts on the first worker failure (`PayStubService.cs:217-222`: `if (!result) return result;`) — remaining workers are skipped.
 
-A second, independent entry point exists: `PayStubService.CreateManualPayStub` — builds a pay stub from manually entered items (supports a `PayVacations` flag and an explicit `Vacations` item type) instead of approved timesheets.
+A second, independent entry point exists: `PayStubService.CreateManualPayStub` — builds a pay stub from manually entered items (supports a `PayVacations` flag and an explicit `Vacations` item type) instead of approved timesheets. Unlike the timesheet path (`PayStubService.cs:423`), it does **not** add reimbursements back into net (`PayStubService.cs:174`: `totalPaid = totalEarnings - totalDeductions`) — an asymmetry, possibly a bug.
 
-**Key file:** `Covenant.Api/Covenant.Core.BL/Services/PayStubService.cs`
+**Key file:** `Covenant.Api/Covenant.Core.BL/Services/Accounting/PayStubService.cs`
 
 ## Step-by-Step Flow
+
+> Note: the code comments in `GeneratePayStubForWorker` number the later steps one higher than this doc — doc Steps 5-9 correspond to code comments Step 6-10 (`PayStubService.cs:399`, `:407`, `:418`, `:425`, `:462`).
 
 ### Step 1: Get Approved Timesheets
 - Source: `timeSheetRepository.GetTimeSheetForCreatingPayStubs(agencyIds, workerId)`
@@ -77,9 +79,9 @@ Week groups (ordered by week number)
 
 For each week, looks up statutory holidays (`catalogRepository.GetHolidaysInWeek`) and, for each holiday, resolves the public holiday pay (paid to entitled workers who did **not** work the holiday):
 
-1. **Entitlement flags** from `payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays)`: `HolidayWasPaid` (already paid in a prior pay stub), `CustomPublicHolidayValue` (agency override), `IsEntitledToReceiveHolidayPay` (worked at least one qualifying day around the holiday).
-2. **Base wage** from `calculatorService.CalculateHolidayPayBase(workerProfileId, lookbackStart, holidayWeekEnd)`: the worker's gross earnings (regular + other-regular + overtime + worked-holiday + missing) **plus vacation pay** over the worked timesheets of the four work weeks before the holiday's week. The window is computed with `holiday.GetEnd()` (last Saturday of the week before the holiday's Sunday–Saturday week) and `.GetStart()` (four weeks earlier). Source is the worked timesheets, not previously generated pay stubs, so the amount does not depend on pay stub generation order.
-3. **Resolution** via `RegularWageWorker.CalculateAmount()`: `0` if already paid or not entitled, the custom value when present, otherwise `base / 20`.
+1. **Entitlement flags** from `payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays)`: `HolidayWasPaid` (already paid in a prior pay stub), `CustomPublicHolidayValue` (per-WorkerProfile × per-holiday override from `WorkerProfileHolidays.StatPaidWorker`, `PayStubRepository.cs:114-117`), `IsEntitledToReceiveHolidayPay` (worked at least one qualifying day around the holiday).
+2. **Base wage** from `calculatorService.CalculateHolidayPayBase(workerProfileId, lookbackStart, holidayWeekEnd)`: the worker's gross earnings (regular + other-regular + overtime + worked-holiday + missing + missing-overtime; `TimesheetCalculatorService.cs:226-232`) **plus vacation pay** over the worked timesheets of the four work weeks before the holiday's week. The window is computed with `holiday.GetEnd()` (last Saturday of the week before the holiday's Sunday–Saturday week) and `.GetStart()` (four weeks earlier). Source is the worked timesheets, not previously generated pay stubs, so the amount does not depend on pay stub generation order.
+3. **Resolution** via `RegularWageWorker.CalculateAmount()` (`RegularWageWorker.cs:16-35`), evaluated in order: (1) already paid → `0`; (2) custom value > 0 → the custom value; (3) not entitled → `0`; (4) otherwise `base / 20`. Because the custom-value check runs before the entitlement check, a configured custom value is paid even to a non-entitled worker. Same decision order as documented in `PAYROLL_RULES.md`.
 
 The resulting amount (when `> 0`) becomes a `PayStubPublicHoliday` and a `StatutoryHoliday` `PayStubItem`.
 
@@ -162,7 +164,7 @@ Persists to database via `payStubRepository.Create(payStub)` and `SaveChangesAsy
 | Dependency | Purpose |
 |------------|---------|
 | `ITimesheetCalculatorService` | Hours breakdown, amount calculations, TimeSheetTotal creation, deductions calculation |
-| `ITimeSheetRepository` | Fetch approved timesheets |
+| `ITimesheetRepository` | Fetch approved timesheets |
 | `IPayStubRepository` | PayStub CRUD, next number, regular wages lookup |
 | `ICatalogRepository` | Public holidays lookup |
 | `Rates` (config) | Overtime multiplier, holiday multiplier, vacation rate |

@@ -1,10 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title">Document</h2>
-    <div class="form container-flex">
-      <div class="col-12 col-padding">
-        <div class="fz-1 fw-normal">
+    <h2 class="has-text-centered main-title">Document</h2>
+    <div class="form columns is-multiline">
+      <div class="column is-12">
+        <div class="fz-1 has-text-weight-normal">
           Document
           <span class="sign-required"></span>
           <div class="input-file-edited input-block" v-if="fileName">
@@ -16,8 +16,8 @@
             @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()" />
         </div>
       </div>
-      <div class="col-12 col-padding">
-        <label class="fz-1 fw-normal sign-required d-block">Description</label>
+      <div class="column is-12">
+        <label class="fz-1 has-text-weight-normal sign-required is-block">Description</label>
         <input type="text" v-model="description" class="input-border input-block" name="Description"
           :class="{ 'is-danger': formErrors.description }"
           autocomplete="nope" />
@@ -25,15 +25,15 @@
           {{ formErrors.description }}
         </span>
       </div>
-      <div class="col-12 col-padding">
-        <label class="fz-1 fw-normal d-block">Document Type</label>
+      <div class="column is-12">
+        <label class="fz-1 has-text-weight-normal is-block">Document Type</label>
         <b-select v-model="documentType" placeholder="Select Document Type" expanded>
           <option value="1">Contract</option>
         </b-select>
       </div>
     </div>
 
-    <div class="text-end pe-3">
+    <div class="has-text-right pr-3">
       <b-button type="is-primary" rounded class="mt-3 mb-3" @click="validateForm" :disabled="disableButton">
         Save
       </b-button>

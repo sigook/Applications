@@ -40,10 +40,10 @@
     </div>
     <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
       :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" pagination-size="is-small"
-      focuseable :default-sort="['numberId', 'desc']" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
+      focuseable :default-sort="defaultSort" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="numberId" label="ID" sortable searchable>
@@ -105,7 +105,7 @@
           </template>
           <template v-slot="props">
             {{ dateMonth(props.row.createdAt) }}
-            <AgencyShift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
+            <AgencyShift class="fz-2 is-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
           </template>
         </b-table-column>
         <b-table-column field="displayRecruiters" label="Recruiter" sortable searchable>
@@ -114,7 +114,7 @@
               @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
-            <div v-if="props.row.displayRecruiters" class="text-capitalize is-inline-block align-middle">
+            <div v-if="props.row.displayRecruiters" class="is-capitalized is-inline-block valign-middle">
               {{ breakWord(props.row.displayRecruiters) }}
             </div>
             <span v-else class="op3">—</span>
@@ -145,8 +145,8 @@
         </b-table-column>
         <b-table-column field="workersQuantityWorking" sortable>
           <template v-slot:header>
-            <p class="fw-semibold">Workers</p>
-            <p class="fw-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+            <p class="has-text-weight-semibold">Workers</p>
+            <p class="has-text-weight-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
           </template>
           <template v-slot="props">
             {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
@@ -192,7 +192,7 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <div class="text-center">
+            <div class="has-text-centered">
               <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
@@ -230,12 +230,12 @@
     </b-table>
 
     <!-- bulk cancel -->
-    <b-modal v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
       <CancelList @sendReason="onBulkCancelConfirmed" />
     </b-modal>
 
     <!-- bulk recruiters -->
-    <b-modal v-model="showBulkRecruitersModal" @close="showBulkRecruitersModal = false" width="500px" :destroy-on-hide="true">
+    <b-modal custom-content-class="card" v-model="showBulkRecruitersModal" @close="showBulkRecruitersModal = false" width="500px" :destroy-on-hide="true">
       <BulkRecruiterModal :request-count="checkedRows.length"
         @submit="onBulkRecruitersConfirmed"
         @cancel="showBulkRecruitersModal = false" />
@@ -282,6 +282,7 @@ import JobBoardsModal from '../../components/agency_request/JobBoardsModal.vue';
 import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterModal.vue';
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import CancelList from '@/components/company/CompanyCancelList.vue';
+import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 
 const props = defineProps<{ totalItems?: number; companyProfileId?: any; agencyId?: any; config?: any }>();
@@ -335,6 +336,17 @@ const serverParams = reactive<any>({
 });
 const quickActions = reactive<any>({ isAsap: false });
 
+const { defaultSort, onSortChange } = useGridSort(serverParams, {
+  numberId: 0,
+  companyFullName: 1,
+  jobTitle: 2,
+  createdAt: 3,
+  displayRecruiters: 4,
+  workerRate: 5,
+  workersQuantityWorking: 6,
+  salesRepresentative: 7,
+}, () => loadRequests());
+
 const tableConfig = computed(() => ({ ...defaultConfig, ...props.config }));
 const totalQuantityWorking = computed(() => {
   if (rows.value.length > 0) {
@@ -374,37 +386,6 @@ function onCellClick(row: any, column: any, rowIndex: number) {
 
 function onPageChange(params: any) {
   serverParams.pageIndex = params;
-  loadRequests();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'numberId':
-      serverParams.sortBy = 0;
-      break;
-    case 'companyFullName':
-      serverParams.sortBy = 1;
-      break;
-    case 'jobTitle':
-      serverParams.sortBy = 2;
-      break;
-    case 'createdAt':
-      serverParams.sortBy = 3;
-      break;
-    case 'displayRecruiters':
-      serverParams.sortBy = 4;
-      break;
-    case 'workerRate':
-      serverParams.sortBy = 5;
-      break;
-    case 'workersQuantityWorking':
-      serverParams.sortBy = 6;
-      break;
-    case 'salesRepresentative':
-      serverParams.sortBy = 7;
-      break;
-  }
-  serverParams.isDescending = order !== 'asc';
   loadRequests();
 }
 

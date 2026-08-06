@@ -185,3 +185,8 @@ export function getCompanyInvoice(filter: CompanyInvoiceFilter): Promise<Paginat
 export function getCompanyInvoiceDetail(id: string): Promise<InvoiceSummaryModel> {
   return api.get<InvoiceSummaryModel>(`/api/CompanyInvoice/${id}`);
 }
+
+// Request timesheets
+export function getCompanyRequestTimeSheetFile(requestId: string): Promise<Blob> {
+  return api.get<Blob>(`/api/CompanyRequest/${requestId}/TimeSheets/File`, { responseType: 'blob' });
+}

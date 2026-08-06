@@ -7,7 +7,7 @@
     <b-table sticky-header height="var(--grid-height)" :data="contactPeople" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small"
       pagination-rounded>
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="firstName" label="Full Name" v-slot="props">
@@ -32,10 +32,10 @@
         </b-table-column>
       </template>
     </b-table>
-    <b-modal v-model="showModal">
+    <b-modal custom-content-class="card" v-model="showModal">
       <div class="p-3">
-        <div class="container-flex">
-          <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="columns is-multiline">
+          <div class="column is-6">
             <b-field label="Title" :type="formErrors.title ? 'is-danger' : ''"
               :message="formErrors.title || ''">
               <b-select v-model="title" name="title" expanded>
@@ -45,52 +45,52 @@
               </b-select>
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+          <div class="column is-6">
             <b-field label="First Name" :type="formErrors.firstName ? 'is-danger' : ''"
               :message="formErrors.firstName || ''">
               <b-input v-model="firstName" name="first name" />
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+          <div class="column is-6">
             <b-field label="Middle Name" :type="formErrors.middleName ? 'is-danger' : ''"
               :message="formErrors.middleName || ''">
               <b-input v-model="middleName" name="middle name" />
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+          <div class="column is-6">
             <b-field label="Last Name" :type="formErrors.lastName ? 'is-danger' : ''"
               :message="formErrors.lastName || ''">
               <b-input v-model="lastName" name="last name" />
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+          <div class="column is-6">
             <b-field label="Email" :type="formErrors.email ? 'is-danger' : ''"
               :message="formErrors.email || ''">
               <b-input v-model="email" name="email" />
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+          <div class="column is-6">
             <b-field label="Position" :type="formErrors.position ? 'is-danger' : ''"
               :message="formErrors.position || ''">
               <b-input v-model="position" name="position" />
             </b-field>
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+          <div class="column is-6 is-4-desktop">
             <PhoneInput ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
               model="Mobile Number" @formattedPhone="(phone: string) => mobileNumber = phone" />
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+          <div class="column is-6 is-4-desktop">
             <PhoneInput ref="officeComponent" :required="false" :defaultValue="officeNumber"
               model="Office Number" @formattedPhone="(phone: string) => officeNumber = phone" />
           </div>
-          <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+          <div class="column is-6 is-4-desktop">
             <b-field label="Extension" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
               :message="formErrors.officeNumberExt || ''">
               <b-input v-model="officeNumberExt" name="officeNumberExt" />
             </b-field>
           </div>
         </div>
-        <div class="col-12 col-padding">
+        <div class="">
           <b-button type="is-primary" @click="validateForm">SAVE</b-button>
         </div>
       </div>

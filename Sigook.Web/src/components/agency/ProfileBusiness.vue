@@ -1,54 +1,54 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-6">
         <b-field label="Agency Name" :type="formErrors.fullName ? 'is-danger' : ''"
           :message="formErrors.fullName || ''">
           <b-input v-model="fullName" name="agency name" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Agency HST Number" :type="formErrors.hstNumber ? 'is-danger' : ''"
           :message="formErrors.hstNumber || ''">
           <b-input v-model="hstNumber" name="hts #" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="BN/EIN" :type="formErrors.businessNumber ? 'is-danger' : ''"
           :message="formErrors.businessNumber || ''">
           <b-input v-model="businessNumber" name="business #" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-3 col-lg-3 col-padding">
+      <div class="column is-3">
         <phone-input ref="phoneComponent" :required="true" :defaultValue="localAgencyData.phonePrincipal"
           model="Phone Principal" @formattedPhone="(phone) => (localAgencyData.phonePrincipal = phone)">
         </phone-input>
       </div>
-      <div class="col-sm-12 col-md-3 col-lg-3 col-padding">
+      <div class="column is-3">
         <b-field label="Ext" :type="formErrors.phonePrincipalExt ? 'is-danger' : ''"
           :message="formErrors.phonePrincipalExt || ''">
           <b-input v-model="phonePrincipalExt" name="phonePrincipalExt" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Web Page" :type="formErrors.webPage ? 'is-danger' : ''"
           :message="formErrors.webPage || ''">
           <b-input v-model="webPage" name="web page" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-3 col-lg-3 col-padding">
+      <div class="column is-3">
         <phone-input ref="faxComponent" :required="false" :defaultValue="localAgencyData.fax" model="Fax Number"
           @formattedPhone="(phone) => (localAgencyData.fax = phone)">
         </phone-input>
       </div>
-      <div class="col-sm-12 col-md-3 col-lg-3 col-padding">
+      <div class="column is-3">
         <b-field label="Ext" :type="formErrors.faxExt ? 'is-danger' : ''"
           :message="formErrors.faxExt || ''">
           <b-input v-model="faxExt" name="faxExt" />
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="WSIB Group" :type="formErrors.wsibGroup ? 'is-danger' : ''"
           :message="formErrors.wsibGroup || ''">
           <b-taginput v-model="localAgencyData.wsibGroup" autocomplete :data="wsibGroups" open-on-focus field="value"
@@ -56,7 +56,7 @@
           </b-taginput>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="validateForm">SAVE</b-button>
       </div>
     </div>

@@ -1,19 +1,19 @@
 <template>
     <div class="p-3">
-        <span class="fz1 fw-bold">{{ "New comment" }}</span>
-        <div class="container-flex mt-3">
-            <div class="col-12 col-padding">
+        <span class="fz1 has-text-weight-bold">{{ "New comment" }}</span>
+        <div class="columns is-multiline mt-3">
+            <div class="column is-12">
                 <b-field :label="'Qualification'">
                     <b-rate v-model="rating" :max="5"></b-rate>
                 </b-field>
             </div>
-            <div class="col-12 col-padding">
+            <div class="column is-12">
                 <b-field :type="formErrors.comment ? 'is-danger' : ''" :label="'Comment'"
                     :message="formErrors.comment || ''">
                     <b-input type="textarea" v-model="comment" :name="'comment'" placeholder="Your comment here" />
                 </b-field>
             </div>
-            <div class="col-12 col-padding">
+            <div class="column is-12">
                 <b-button type="is-primary" @click="onComment">{{ "Comment" }}</b-button>
             </div>
         </div>
