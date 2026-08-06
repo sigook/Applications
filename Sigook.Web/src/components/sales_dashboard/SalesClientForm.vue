@@ -340,18 +340,25 @@ defineExpose({ submit });
     margin-bottom: 0.35rem;
   }
 
+  // Size the control on the wrapper so Bulma's em-based control height stays
+  // consistent (the select's height derives from .select, not the inner <select>).
+  :deep(.input),
+  :deep(.textarea),
+  :deep(.select) {
+    font-size: 0.82rem;
+  }
+
   :deep(.input),
   :deep(.textarea),
   :deep(.select select) {
-    font-size: 0.82rem;
     border-color: $gray-border;
     box-shadow: none;
     color: #333;
 
     &:focus,
     &:active {
-      border-color: $agency-primary;
-      box-shadow: 0 0 0 2px rgba($agency-primary, 0.15);
+      border-color: $primary;
+      box-shadow: 0 0 0 2px rgba($primary, 0.15);
     }
   }
 

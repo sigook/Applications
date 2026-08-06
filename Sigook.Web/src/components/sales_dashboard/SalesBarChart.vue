@@ -117,7 +117,7 @@ const ariaLabel = computed<string>(() => {
 }
 
 .sd-bar-fill {
-  fill: $agency-primary;
+  fill: $primary;
 }
 
 .sd-bar-amount {

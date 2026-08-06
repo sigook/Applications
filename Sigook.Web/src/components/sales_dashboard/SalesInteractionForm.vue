@@ -173,8 +173,8 @@ defineExpose({ submit });
 
     &:focus,
     &:active {
-      border-color: $agency-primary;
-      box-shadow: 0 0 0 2px rgba($agency-primary, 0.15);
+      border-color: $primary;
+      box-shadow: 0 0 0 2px rgba($primary, 0.15);
     }
   }
 
@@ -214,17 +214,17 @@ defineExpose({ submit });
   }
 
   &.is-active {
-    background: $agency-primary;
+    background: $primary;
     color: $white;
 
     &:hover {
-      background: $agency-primary;
+      background: $primary;
       color: $white;
     }
   }
 
   &:focus-visible {
-    outline: 2px solid rgba($agency-primary, 0.5);
+    outline: 2px solid rgba($primary, 0.5);
     outline-offset: 1px;
   }
 }

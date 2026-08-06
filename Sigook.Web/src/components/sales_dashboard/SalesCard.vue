@@ -106,13 +106,13 @@ const toneClass = computed(() => `sd-tone-${props.tone}`);
   flex: none;
 
   &.sd-tone-primary {
-    background: rgba($agency-primary, 0.12);
-    color: $agency-primary;
+    background: rgba($primary, 0.12);
+    color: $primary;
   }
 
   &.sd-tone-green {
     background: rgba(62, 184, 0, 0.13);
-    color: $green-vivid;
+    color: $green;
   }
 
   &.sd-tone-accent {
@@ -140,12 +140,12 @@ const toneClass = computed(() => `sd-tone-${props.tone}`);
   transition: color 0.15s ease;
 
   &:hover {
-    color: $agency-primary;
+    color: $primary;
     text-decoration: underline;
   }
 
   &:focus-visible {
-    outline: 2px solid rgba($agency-primary, 0.5);
+    outline: 2px solid rgba($primary, 0.5);
     outline-offset: 2px;
     border-radius: 3px;
   }
@@ -178,21 +178,21 @@ const toneClass = computed(() => `sd-tone-${props.tone}`);
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 
   &.sd-tone-primary {
-    color: $agency-primary;
+    color: $primary;
 
     &:hover {
-      background: $agency-primary;
-      border-color: $agency-primary;
+      background: $primary;
+      border-color: $primary;
       color: $white;
     }
   }
 
   &.sd-tone-green {
-    color: $green-vivid;
+    color: $green;
 
     &:hover {
-      background: $green-vivid;
-      border-color: $green-vivid;
+      background: $green;
+      border-color: $green;
       color: $white;
     }
   }
@@ -208,7 +208,7 @@ const toneClass = computed(() => `sd-tone-${props.tone}`);
   }
 
   &:focus-visible {
-    outline: 2px solid rgba($agency-primary, 0.5);
+    outline: 2px solid rgba($primary, 0.5);
     outline-offset: 1px;
   }
 }

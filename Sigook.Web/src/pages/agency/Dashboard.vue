@@ -258,7 +258,7 @@ onMounted(() => {
   }
 
   .sd-total {
-    color: $green-vivid;
+    color: $green;
     font-weight: 600;
   }
 

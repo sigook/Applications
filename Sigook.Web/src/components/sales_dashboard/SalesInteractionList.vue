@@ -45,7 +45,7 @@ const emit = defineEmits<{ (e: 'edit', interaction: CompanyInteraction): void }>
   cursor: pointer;
 
   &:focus-visible {
-    outline: 2px solid rgba($agency-primary, 0.5);
+    outline: 2px solid rgba($primary, 0.5);
     outline-offset: 1px;
   }
 }
@@ -57,8 +57,8 @@ const emit = defineEmits<{ (e: 'edit', interaction: CompanyInteraction): void }>
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: rgba($agency-primary, 0.1);
-  color: $agency-primary;
+  background: rgba($primary, 0.1);
+  color: $primary;
 }
 
 .sd-interaction-time {

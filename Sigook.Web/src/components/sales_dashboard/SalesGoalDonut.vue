@@ -92,7 +92,7 @@ const valuePath = computed<string | null>(() =>
 }
 
 .sd-goal__value {
-  fill: $green-vivid;
+  fill: $green;
 }
 
 .sd-goal__percent {

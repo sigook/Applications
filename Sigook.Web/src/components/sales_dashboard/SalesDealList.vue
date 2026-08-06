@@ -42,7 +42,7 @@ const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
   cursor: pointer;
 
   &:focus-visible {
-    outline: 2px solid rgba($agency-primary, 0.5);
+    outline: 2px solid rgba($primary, 0.5);
     outline-offset: 1px;
   }
 }

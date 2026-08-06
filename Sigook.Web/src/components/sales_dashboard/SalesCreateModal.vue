@@ -287,7 +287,7 @@ async function onDelete(): Promise<void> {
   }
 
   &:focus-visible {
-    outline: 2px solid rgba($agency-primary, 0.5);
+    outline: 2px solid rgba($primary, 0.5);
     outline-offset: 1px;
   }
 }
@@ -320,14 +320,14 @@ async function onDelete(): Promise<void> {
 .sd-modal__cta {
   color: $white;
   font-weight: 600;
-  background-color: $agency-primary;
-  border-color: $agency-primary;
+  background-color: $primary;
+  border-color: $primary;
 
   &:hover,
   &:focus {
     color: $white;
-    background-color: $agency-primary;
-    border-color: $agency-primary;
+    background-color: $primary;
+    border-color: $primary;
     filter: brightness(0.95);
   }
 }
