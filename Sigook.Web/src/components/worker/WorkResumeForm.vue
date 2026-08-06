@@ -33,7 +33,7 @@
 import { ref, reactive } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/fileNaming";
 import { createWorkerResume } from '@/api/workerApi';
 
 const props = defineProps<{ data?: any }>();

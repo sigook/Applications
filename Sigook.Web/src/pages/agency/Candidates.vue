@@ -195,8 +195,9 @@
       </b-table>
     </div>
 
-    <b-modal custom-content-class="card" v-model="showDocuments" @close="showDocuments = false" width="500px">
-      <modal-documents :candidateId="detailId" />
+    <b-modal custom-content-class="card" v-model="showDocuments" @close="showDocuments = false" width="500px"
+      :destroy-on-hide="true">
+      <modal-documents :candidateId="detailId" @close="showDocuments = false" />
     </b-modal>
 
 

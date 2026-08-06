@@ -52,6 +52,7 @@ public class WorkerService : IWorkerService
     private readonly IFilesContainer filesContainer;
     private readonly IDocumentService documentService;
     private readonly ICandidateService candidateService;
+    private readonly IUploadedFilesService uploadedFilesService;
     private readonly ICompanyRepository companyRepository;
 
     public WorkerService(
@@ -75,7 +76,8 @@ public class WorkerService : IWorkerService
         IHttpContextAccessor httpContextAccessor,
         IFilesContainer filesContainer,
         IDocumentService documentService,
-        ICandidateService candidateService)
+        ICandidateService candidateService,
+        IUploadedFilesService uploadedFilesService)
     {
         this.workerRepository = workerRepository;
         this.agencyRepository = agencyRepository;
@@ -96,12 +98,15 @@ public class WorkerService : IWorkerService
         this.filesContainer = filesContainer;
         this.documentService = documentService;
         this.candidateService = candidateService;
+        this.uploadedFilesService = uploadedFilesService;
     }
 
     public async Task<Result<Guid>> CreateWorker(int? requestId)
     {
         var form = httpContextAccessor.HttpContext.Request.Form;
         var model = form.DeserializeData<WorkerProfileCreateModel>();
+        var filesValidation = uploadedFilesService.Validate();
+        if (!filesValidation) return Result.Fail<Guid>(filesValidation.Errors);
         var validationResult = await workerProfileValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return Result.Fail<Guid>(validationResult.Errors.Select(e => new ResultError(e.PropertyName, e.ErrorMessage)));
 
@@ -125,7 +130,7 @@ public class WorkerService : IWorkerService
 
         await candidateService.DeleteCandidateByEmail(model.Email);
 
-        await UploadWorkerFiles(form.Files, entity);
+        await UploadWorkerFiles(entity);
 
         var notification = TeamsNotificationModel.CreateSuccess($"SIGOOK.COM|{model.WorkerFullName}|{model.Email}", $"Worker created on Sigook");
         notification.PotentialAction =
@@ -148,7 +153,7 @@ public class WorkerService : IWorkerService
         return Result.Ok(entity.Id);
     }
 
-    private async Task UploadWorkerFiles(IFormFileCollection files, WorkerProfile entity)
+    private async Task UploadWorkerFiles(WorkerProfile entity)
     {
         var fileNames = new List<string>
         {
@@ -162,11 +167,7 @@ public class WorkerService : IWorkerService
         fileNames.AddRange(entity.Certificates.Select(c => c.Certificate?.FileName));
         fileNames.AddRange(entity.OtherDocuments.Select(d => d.Document?.FileName));
 
-        foreach (var fileName in fileNames.Where(n => !string.IsNullOrEmpty(n)))
-        {
-            var file = files[fileName];
-            if (file != null) await filesContainer.UploadAsync(file.OpenReadStream(), fileName);
-        }
+        await uploadedFilesService.Upload(fileNames);
     }
 
     public Task<Result> DeleteWorker(Guid workerProfileId)
@@ -204,6 +205,8 @@ public class WorkerService : IWorkerService
         {
             return Result.Fail("Profile image file is required");
         }
+        var filesValidation = uploadedFilesService.Validate();
+        if (!filesValidation) return filesValidation;
         var entity = await workerRepository.GetProfile(p => p.Id == profileId);
         if (entity is null)
         {
@@ -227,6 +230,8 @@ public class WorkerService : IWorkerService
     public async Task<Result> UpdateDocumentSection(Guid profileId, WorkerDocumentType documentType)
     {
         var form = httpContextAccessor.HttpContext.Request.Form;
+        var filesValidation = uploadedFilesService.Validate();
+        if (!filesValidation) return filesValidation;
         var entity = await workerRepository.GetProfile(p => p.Id == profileId);
         if (entity is null) return Result.Fail("Worker not found");
 
@@ -245,7 +250,7 @@ public class WorkerService : IWorkerService
 
         if (!handlerResult) return Result.Fail(handlerResult.Errors);
 
-        await UploadFormFiles(form.Files, handlerResult.Value);
+        await uploadedFilesService.Upload(handlerResult.Value);
         await workerRepository.UpdateProfile(entity);
         await workerRepository.SaveChangesAsync();
         return Result.Ok();
@@ -290,16 +295,6 @@ public class WorkerService : IWorkerService
         await workerRepository.Create(entity);
         await workerRepository.SaveChangesAsync();
         return Result.Ok();
-    }
-
-    private async Task UploadFormFiles(IFormFileCollection files, IEnumerable<string> fileNames)
-    {
-        foreach (var fileName in fileNames.Where(f => !string.IsNullOrEmpty(f)))
-        {
-            var file = files[fileName];
-            if (file != null)
-                await filesContainer.UploadAsync(file.OpenReadStream(), fileName);
-        }
     }
 
     private async Task<Result<IEnumerable<string>>> HandleIdentification(WorkerProfile entity, IFormCollection form, Guid profileId)

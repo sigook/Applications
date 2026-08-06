@@ -69,7 +69,7 @@ import { useAppStore } from '@/stores/app';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/fileNaming";
 import { createWorkerLicenses } from '@/api/workerApi';
 
 interface LicenseForm {

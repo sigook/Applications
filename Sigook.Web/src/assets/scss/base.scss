@@ -208,7 +208,7 @@ button {
   }
 
   .bg-dark {
-    background: #333333;
+    background: $navy;
     color: white;
     text-align: left;
     padding: 12px 20px;
@@ -364,13 +364,13 @@ button {
   padding: 0 10px;
 
   &.is-danger {
-    border-color: #da3025;
+    border-color: $danger;
   }
 }
 
 span.help.is-danger {
   display: block;
-  color: #d93025;
+  color: $danger;
   font-size: 14px;
   font-weight: normal;
   margin-left: calc(35% + 10px);
@@ -468,7 +468,7 @@ input[type="file"] {
 .line-orange {
   display: block;
   width: 100px;
-  border-top: 3px solid $accent;
+  border-top: 3px solid $primary;
   margin: 8px auto 30px;
 }
 
@@ -503,8 +503,8 @@ input[type="file"] {
 .status-inprogress,
 .status-inqueue,
 .status-working {
-  background-color: #0da7ff; // Brighter blue
-  box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
+  background-color: $primary;
+  box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.3);
   transition: all 0.3s ease;
 
   // Subtle pulse animation for active states
@@ -514,17 +514,17 @@ input[type="file"] {
 .status-filled,
 .status-book,
 .status-booked {
-  background-color: #3eb800; // More saturated green
-  box-shadow: 0 0 0 4px rgba(62, 184, 0, 0.3);
+  background-color: $green;
+  box-shadow: 0 0 0 4px rgba(72, 199, 142, 0.3);
   transition: all 0.3s ease;
 }
 
 .status-cancelled,
 .status-reject,
 .status-rejected {
-  background-color: #e02020; // Brighter red
+  background-color: $danger;
   opacity: 0.8;
-  box-shadow: 0 0 0 4px rgba(224, 32, 32, 0.2);
+  box-shadow: 0 0 0 4px rgba(229, 45, 39, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -540,11 +540,11 @@ input[type="file"] {
 
   0%,
   100% {
-    box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.3);
   }
 
   50% {
-    box-shadow: 0 0 0 6px rgba(13, 167, 255, 0.4);
+    box-shadow: 0 0 0 6px rgba(0, 173, 239, 0.4);
   }
 }
 
@@ -554,7 +554,7 @@ input[type="file"] {
 .Cancelled,
 .Reject,
 .Rejected {
-  color: $red;
+  color: $danger;
 }
 
 .Filled {
@@ -812,7 +812,7 @@ input[type="checkbox"] {
 }
 
 .tag_primary_absolute {
-  background: #1fb7ff;
+  background: $primary;
   color: white;
   font-weight: 400;
   align-items: center;
@@ -1034,7 +1034,7 @@ Pagination
     &.active {
       color: $primary;
       border-color: $primary;
-      background: #21b7ff2e;
+      background: #00adef2e;
       width: 24px;
       height: 21px;
     }
@@ -1331,7 +1331,7 @@ body {
   }
 
   &.is-danger {
-    border-color: #da3025;
+    border-color: $danger;
   }
 }
 
@@ -1339,11 +1339,11 @@ body {
 
   input,
   button {
-    border-color: #da3025 !important;
+    border-color: $danger !important;
   }
 
   &+button {
-    border-color: #da3025 !important;
+    border-color: $danger !important;
   }
 }
 

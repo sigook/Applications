@@ -1,4 +1,5 @@
 import { api } from '@/security/apiService';
+import { buildMultipartFormData } from '@/utils/multipart';
 import type { PaginatedList } from '@/types/common';
 import type {
   AgencyCompanyFilter,
@@ -165,8 +166,12 @@ export function getAgencyCompanyDocument(
     .get<PaginatedList<CompanyProfileDocumentModel>>(`${companyProfilesUrl}/${profileId}/Documents?PageSize=${pagination.size}&PageIndex=${pagination.page}`);
 }
 
-export function createAgencyCompanyDocument(profileId: string, model: CompanyProfileDocumentModel): Promise<{ id: string; pathFile: string }> {
-  return api.post<{ id: string; pathFile: string }>(`${companyProfilesUrl}/${profileId}/Documents`, model);
+export function createAgencyCompanyDocument(profileId: string, model: CompanyProfileDocumentModel, file: File): Promise<string> {
+  return api.post<string>(
+    `${companyProfilesUrl}/${profileId}/Documents`,
+    buildMultipartFormData(model, { [model.fileName]: file }),
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
 }
 
 export function deleteAgencyCompanyDocument(profileId: string, id: string): Promise<void> {

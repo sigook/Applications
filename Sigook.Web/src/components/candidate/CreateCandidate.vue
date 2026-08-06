@@ -46,7 +46,7 @@
             </div>
             <div class="column is-12 mt-5">
               <b-field class="file is-primary" :class="{ 'has-name': !!file }">
-                <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" @update:modelValue="uploadResume" rounded>
+                <b-upload v-model="file" class="file-label" accept=".pdf,.doc,.docx" rounded>
                   <span class="file-cta">
                     <b-icon class="file-icon" icon="upload"></b-icon>
                     <span class="file-label">{{ file ? file.name : "Click to upload" }}</span>
@@ -105,7 +105,7 @@ import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
 import PhoneInput from "@/components/PhoneInput.vue";
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { uploadFile } from "@/utils/fileUpload";
+import { generateFileName } from "@/utils/fileNaming";
 import { getGenders, getSources } from "@/api/catalogApi";
 import { residencyList } from "@/constants/catalog";
 import { createAgencyCandidate } from "@/api/agencyCandidateApi";
@@ -159,7 +159,6 @@ const candidate = reactive<{
   gender: Gender | null;
   hasVehicle: boolean;
   residencyStatus: string | null;
-  fileName: string | null;
 }>({
   phoneNumbers: [],
   skills: [],
@@ -167,7 +166,6 @@ const candidate = reactive<{
   gender: null,
   hasVehicle: false,
   residencyStatus: null,
-  fileName: null,
 });
 const file = ref<File | null>(null);
 
@@ -223,9 +221,9 @@ function submitCandidate(values: any) {
     gender: candidate.gender,
     hasVehicle: candidate.hasVehicle,
     residencyStatus: candidate.residencyStatus,
-    fileName: candidate.fileName,
+    fileName: file.value ? generateFileName('Resume', file.value.name) : null,
   };
-  createAgencyCandidate(payload)
+  createAgencyCandidate(payload, file.value)
     .then(() => {
       isLoading.value = false;
       showAlertSuccess("Created");
@@ -235,13 +233,6 @@ function submitCandidate(values: any) {
       isLoading.value = false;
       showAlertError(error);
     });
-}
-
-async function uploadResume(f: File) {
-  isLoading.value = true;
-  const response = await uploadFile(f, 'document', 'Resume_');
-  candidate.fileName = response;
-  isLoading.value = false;
 }
 
 (async () => {

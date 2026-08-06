@@ -62,7 +62,7 @@ import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/fileNaming";
 import { createWorkerSin } from '@/api/workerApi';
 
 interface SinForm {

@@ -188,13 +188,13 @@ Domain folders + shared root-level components. Components take function refs (e.
 
 | Folder | Contents |
 |--------|----------|
-| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged, UploadFiles, UserNotification |
+| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged, UserNotification |
 | agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
 | agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4, TimesheetsReport |
 | agency_company/ | CompanyDetailTab, CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
 | agency_request/ | AgencyRequestDetail, AgencyRequestSkills, timesheet detail/modal, AgencyShiftDetail, Applicants, ManageApplicantsModal, ContactListModal, DatepickerModal, EditTextarea, JobBoardsModal, MassivePunchCard, punch-card container, ReportTo, RequestedBy, RequestNotes(+Table), Runners, TableRequests, WorkerStatusFilter |
 | calendar/ | CalendarPunchCard |
-| candidate/ | CreateCandidate, DetailAddress, DetailCandidate, ModalCandidateRequests, ModalDocuments |
+| candidate/ | CreateCandidate, DetailAddress, DetailCandidate, DocumentsForm, ModalCandidateRequests, ModalDocuments |
 | company/ | CompanyCancelList, CompanyInvoices, CompanyUsers(+Update), DialogCompanyUpdateEmail, DialogReplaceWorker, DialogRequestWorker, ProfileBusiness/Contact/Location |
 | company_request/ | CompanyRequestDetail, punch card components, timesheet detail/modal, CompanyRequestWorkers |
 | landing/ | Section components per page (About/, Employers/, Home/, Industries/, OpenPositions/, Partner/, SpecialProjects/, Talents/) + `shared/` (cards, forms incl. CandidateApplyForm/Modal + WorkerRegisterForm, hero, icons, layout Header/Footer/GlobalBackground/AppVersionToast, sections, ui) |
@@ -241,7 +241,9 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | directHiring.ts | Direct-hire specific logic |
 | distributeHours.ts | Timesheet hour distribution |
 | downloadFile.ts | Blob download helper |
-| fileUpload.ts | File upload helper |
+| fileNaming.ts | Generates the `Prefix_<guid>.ext` blob name sent in multipart uploads |
+| fileValidation.ts | Shared `accept` string + extension/size check for `b-upload` pickers |
+| multipart.ts | Builds the `data` JSON + file parts FormData for multipart endpoints |
 | filters.ts | Formatter helpers |
 | locationLabel.ts | Location display label formatting |
 | phoneFormat.ts | Phone number formatting |

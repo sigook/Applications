@@ -31,16 +31,14 @@
       </b-pagination>
     </div>
 
-    <b-modal has-modal-card v-model="showModalUpdate" width="420px" :destroy-on-hide="true">
-      <div class="modal-card" style="width: 100%">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Edit note</p>
-        </header>
-        <section class="modal-card-body">
+    <Teleport to="body">
+      <b-modal custom-content-class="card" v-model="showModalUpdate" width="420px" :destroy-on-hide="true">
+        <div class="p-4">
+          <h2 class="has-text-centered fz1 mb-4">Edit note</h2>
           <note-form :current-note="editNoteModel" @onSave="updateNote" />
-        </section>
-      </div>
-    </b-modal>
+        </div>
+      </b-modal>
+    </Teleport>
   </div>
 </template>
 <script setup lang="ts">

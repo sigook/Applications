@@ -61,7 +61,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 |----------|------------|----------|--------------|---------------|-------|
 | `getAgencyCandidates(filter)` | GET | `/api/agency/candidates` | `AgencyCandidateFilter` (params) | `PaginatedList<Candidate>` | |
 | `getAgencyCandidate(id)` | GET | `/api/agency/candidates/{id}` | — | `Candidate` | |
-| `createAgencyCandidate(model)` | POST | `/api/agency/candidates` | `CreateCandidateModel` | `{ id: string }` | |
+| `createAgencyCandidate(model, resume?)` | POST | `/api/agency/candidates` | `CreateCandidateModel` (multipart: `data` + resume file) | `{ id: string }` | |
 | `updateAgencyCandidate(id, model)` | PUT | `/api/agency/candidates/{id}` | `CreateCandidateModel` | `void` | |
 | `deleteAgencyCandidate(id)` | DELETE | `/api/agency/candidates/{id}` | — | `void` | |
 | `updateAgencyCandidateRecruiter(id)` | PUT | `/api/agency/candidates/{id}/Recruiter` | null | `void` | Assign recruiter |
@@ -71,7 +71,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | `addCandidateSkill(id, model)` | POST | `/api/agency/candidates/{id}/Skills` | `CandidateSkillModel` | `{ id: string }` | |
 | `deleteCandidateSkill(id, skillId)` | DELETE | `/api/agency/candidates/{id}/Skills/{skillId}` | — | `void` | |
 | `getCandidateDocuments(id)` | GET | `/api/agency/candidates/{id}/Documents` | — | `PaginatedList<CandidateDocument>` | |
-| `addCandidateDocument(id, model)` | POST | `/api/agency/candidates/{id}/Documents` | `CreateCandidateDocumentPayload` | `CandidateDocument` | |
+| `addCandidateDocument(id, model, file)` | POST | `/api/agency/candidates/{id}/Documents` | `CreateCandidateDocumentPayload` (multipart: `data` + file) | `string` (document id) | Callers refetch the list |
 | `deleteCandidateDocument(id, docId)` | DELETE | `/api/agency/candidates/{id}/Documents/{docId}` | — | `void` | |
 | `bulkAgencyCandidates(agencyId, file)` | POST | `/api/agency/candidates/bulk/{agencyId}` | FormData (multipart) | Blob | Excel import → error report |
 
@@ -130,7 +130,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getAgencyCompanyDocument(id, pagination)` | GET | `/api/agency/companyprofiles/{id}/Documents?PageSize={size}&PageIndex={page}` | — | `PaginatedList<CompanyProfileDocumentModel>` | |
-| `createAgencyCompanyDocument(id, model)` | POST | `/api/agency/companyprofiles/{id}/Documents` | `CompanyProfileDocumentModel` | `{ id: string; pathFile: string }` | |
+| `createAgencyCompanyDocument(id, model, file)` | POST | `/api/agency/companyprofiles/{id}/Documents` | `CompanyProfileDocumentModel` (multipart: `data` + file) | `string` (document id) | Callers refetch the list |
 | `deleteAgencyCompanyDocument(id, docId)` | DELETE | `/api/agency/companyprofiles/{id}/Documents/{docId}` | — | `void` | |
 
 ### Invoice Notes & Recipients

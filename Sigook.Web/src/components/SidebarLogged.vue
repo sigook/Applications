@@ -253,7 +253,7 @@ $sidebar-width-collapsed: 100px;
   top: 0;
   align-self: flex-start;
   flex: 0 0 auto;
-  z-index: 30;
+  z-index: 40;
   display: flex;
   flex-direction: column;
   width: $sidebar-width;
@@ -347,8 +347,8 @@ $sidebar-width-collapsed: 100px;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #21b7ff;
-      background-color: rgba(33, 183, 255, 0.1);
+      color: #00adef;
+      background-color: rgba(0, 173, 239, 0.1);
       border-radius: 6px;
       padding: 4px 6px;
       margin-bottom: 6px;
@@ -372,8 +372,8 @@ $sidebar-width-collapsed: 100px;
       }
 
       &.is-active {
-        background-color: rgba(33, 183, 255, 0.12);
-        color: #21b7ff;
+        background-color: rgba(0, 173, 239, 0.12);
+        color: #00adef;
       }
     }
 
