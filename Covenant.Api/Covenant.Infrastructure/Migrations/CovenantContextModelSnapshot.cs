@@ -4527,7 +4527,7 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
-                        .WithMany()
+                        .WithMany("WorkerRequests")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -5046,6 +5046,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Skills");
 
                     b.Navigation("WorkerProfileTaxCategory");
+
+                    b.Navigation("WorkerRequests");
                 });
 #pragma warning restore 612, 618
         }

@@ -47,7 +47,13 @@
         :message="formErrors.companyStatus || ''"
       >
         <template #label>Status <span class="has-text-danger">*</span></template>
-        <b-select v-model="companyStatus" placeholder="Select option" name="state" expanded>
+        <b-select
+          v-model="companyStatus"
+          placeholder="Select option"
+          name="state"
+          expanded
+          :class="{ 'sd-form__select--empty': !companyStatus }"
+        >
           <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.value }}</option>
         </b-select>
       </b-field>
@@ -351,6 +357,16 @@ defineExpose({ submit });
 
   :deep(.textarea) {
     min-height: 5.5rem;
+  }
+
+  // Buefy select: neutral chevron + gray placeholder text so it matches the
+  // sibling inputs instead of Bulma's default link-coloured arrow / dark text.
+  :deep(.select:not(.is-multiple):not(.is-loading))::after {
+    border-color: $grey-light;
+  }
+
+  :deep(.sd-form__select--empty select) {
+    color: #b5b5b5;
   }
 }
 
