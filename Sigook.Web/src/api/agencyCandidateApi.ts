@@ -1,4 +1,5 @@
 import { api } from '@/security/apiService';
+import { buildMultipartFormData } from '@/utils/multipart';
 import type { PaginatedList } from '@/types/common';
 import type {
   Candidate,
@@ -22,8 +23,12 @@ export function getAgencyCandidate(candidateId: string): Promise<Candidate> {
   return api.get<Candidate>(`/api/agency/candidates/${candidateId}`);
 }
 
-export function createAgencyCandidate(model: CreateCandidateModel): Promise<{ id: string }> {
-  return api.post<{ id: string }>('/api/agency/candidates', model);
+export function createAgencyCandidate(model: CreateCandidateModel, resume?: File | null): Promise<{ id: string }> {
+  return api.post<{ id: string }>(
+    '/api/agency/candidates',
+    buildMultipartFormData(model, model.fileName ? { [model.fileName]: resume } : {}),
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
 }
 
 export function updateAgencyCandidate(candidateId: string, model: CreateCandidateModel): Promise<void> {
@@ -74,8 +79,12 @@ export function getCandidateDocuments(candidateId: string): Promise<PaginatedLis
   return api.get<PaginatedList<CandidateDocument>>(`/api/agency/candidates/${candidateId}/Documents`);
 }
 
-export function addCandidateDocument(candidateId: string, model: CreateCandidateDocumentPayload): Promise<CandidateDocument> {
-  return api.post<CandidateDocument>(`/api/agency/candidates/${candidateId}/Documents`, model);
+export function addCandidateDocument(candidateId: string, model: CreateCandidateDocumentPayload, file: File): Promise<string> {
+  return api.post<string>(
+    `/api/agency/candidates/${candidateId}/Documents`,
+    buildMultipartFormData(model, { [model.fileName]: file }),
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
 }
 
 export function deleteCandidateDocument(candidateId: string, id: string): Promise<void> {

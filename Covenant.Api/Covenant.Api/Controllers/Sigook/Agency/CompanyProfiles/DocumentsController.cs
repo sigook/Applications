@@ -17,14 +17,13 @@ public class DocumentsController(IAgencyService agencyService) : Controller
 
     /// <summary>Creates a new document for the specified company profile.</summary>
     /// <param name="profileId">Identifier of the company profile.</param>
-    /// <param name="model">Document data.</param>
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromRoute] Guid profileId, [FromBody] CompanyProfileDocumentModel model)
+    public async Task<IActionResult> Post([FromRoute] Guid profileId)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-        var entity = await agencyService.CreateCompanyDocument(profileId, model);
+        var entity = await agencyService.CreateCompanyDocument(profileId);
         if (!entity) return BadRequest(ModelState.AddErrors(entity.Errors));
         return Ok(entity.Value.DocumentId);
     }

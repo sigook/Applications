@@ -14,6 +14,7 @@ using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
+using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -64,6 +65,7 @@ namespace Covenant.Tests.Request
                 Mock.Of<IDocumentService>(),
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
+                Mock.Of<IUploadedFilesService>(),
                 Mock.Of<ILogger<AgencyService>>(),
                 Mock.Of<IServiceProvider>());
         }

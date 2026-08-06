@@ -87,7 +87,7 @@ load();
   height: 22px;
   padding: 0 7px;
   border-radius: 999px;
-  background-color: #21b7ff;
+  background-color: #00adef;
   color: #fff;
   font-size: 12px;
   font-weight: 700;

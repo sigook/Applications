@@ -49,21 +49,6 @@
       <None Update="Files\some_pay_stub.pdf">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="Common\imageprofile.jpg">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-        <None Update="Common\imageprofilelarge.jpg">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\imageprofile.invalidformat">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\social_insurance_test.pdf">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\resume_test.pdf">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
         <None Update="Common\Fake_Invoice.pdf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>

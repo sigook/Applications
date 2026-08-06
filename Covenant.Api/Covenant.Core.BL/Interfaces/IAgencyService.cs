@@ -22,7 +22,7 @@ public interface IAgencyService
     Task<Result<Guid>> BookWorker(Guid requestId, Guid workerProfileId, AgencyBookWorkerModel model);
     Task UpdateWorkerProfileTaxCategory(Guid workerProfileId, WorkerProfileDetailModel model);
     Task UpdateWorkerProfileTaxRate(Guid workerProfileId, WorkerProfileDetailModel model);
-    Task<Result<CompanyProfileDocument>> CreateCompanyDocument(Guid companyProfileId, CompanyProfileDocumentModel model);
+    Task<Result<CompanyProfileDocument>> CreateCompanyDocument(Guid companyProfileId);
     Task<PaginatedList<CompanyProfileDocumentModel>> GetCompanyDocuments(Guid compnayProfileId, Pagination pagination);
     Task DeleteCompanyDocument(Guid companyProfileDocumentId);
     Task<Result> UpdateEmailCompanyProfile(Guid companyProfileId, UpdateEmailModel model);

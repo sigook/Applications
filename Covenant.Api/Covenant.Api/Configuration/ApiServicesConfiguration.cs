@@ -90,6 +90,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<ITimesheetService, TimesheetService>();
         services.AddScoped<IPayStubService, PayStubService>();
         services.AddScoped<IDocumentService, DocumentService>();
+        services.AddScoped<IUploadedFilesService, UploadedFilesService>();
         services.AddScoped<IGeocodeService, GeocodeService>();
         services.AddScoped<IIdentityServerService, IdentityServerService>();
         services.AddScoped<IEmailService, EmailService>();

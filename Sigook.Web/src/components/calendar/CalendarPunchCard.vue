@@ -480,7 +480,7 @@ defineExpose({ WorkerRequestStatus });
     }
 
     .isToday {
-      color: #21b7ff;
+      color: #00adef;
       font-weight: bold;
     }
 

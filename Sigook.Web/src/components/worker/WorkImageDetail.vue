@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { showAlertError } from '@/utils/toast';
-import { generateFileName } from '@/utils/buildWorkerFormData';
+import { generateFileName } from '@/utils/fileNaming';
 import { compressFile } from '@/utils/compressFile';
 import { usePubSub } from '@/composables/usePubSub';
 import { createWorkerImage } from '@/api/workerApi';

@@ -23,10 +23,8 @@
               </a>
               <div class="actions has-text-right">
                 <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
-                  <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button"
-                    @click="onDeleteDocument(document.id, Number(index))">
-                    {{ "Delete" }}
-                  </button>
+                  <b-button type="is-text" size="is-small" icon-right="delete" class="has-text-danger"
+                    @click="onDeleteDocument(document.id, Number(index))"></b-button>
                 </b-tooltip>
               </div>
             </div>
@@ -47,20 +45,10 @@
       </div>
     </transition>
 
-    <transition name="modal">
-      <div v-if="showModal" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light small-container modal-overflow h-auto border-radius">
-              <button @click="showModal = false" type="button" class="cross-icon">
-                close
-              </button>
-              <documents-form :profile-id="profileId" @onCreateDocument="(item) => onCreateDocument(item)" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
+    <b-modal custom-content-class="card" v-model="showModal" @close="showModal = false" width="500px"
+      :destroy-on-hide="true">
+      <documents-form :profile-id="profileId" @onCreateDocument="onCreateDocument" />
+    </b-modal>
   </div>
 </template>
 <script setup lang="ts">
@@ -78,7 +66,7 @@ const showDocuments = ref(false);
 const isLoading = ref(false);
 const showModal = ref(false);
 const data = ref<any>(null);
-const profileId = route.params.id;
+const profileId = route.params.id as string;
 const size = 10;
 const currentPage = 1;
 
@@ -104,7 +92,7 @@ function loadDocuments(index: number) {
     });
 }
 
-function onCreateDocument(_item?: any) {
+function onCreateDocument() {
   showModal.value = false;
   loadDocuments(currentPage);
 }

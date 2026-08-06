@@ -2,6 +2,30 @@
   --grid-height: calc(100vh - 280px);
 }
 
+html:root {
+  --bulma-primary-h: 197deg;
+  --bulma-primary-s: 100%;
+  --bulma-primary-l: 47%;
+
+  --bulma-link-h: 205deg;
+  --bulma-link-s: 80%;
+  --bulma-link-l: 41%;
+
+  --bulma-info-h: 205deg;
+  --bulma-info-s: 80%;
+  --bulma-info-l: 41%;
+
+  --bulma-danger-h: 2deg;
+  --bulma-danger-s: 79%;
+  --bulma-danger-l: 53%;
+}
+
+html .menu {
+  --bulma-menu-item-selected-h: var(--bulma-primary-h);
+  --bulma-menu-item-selected-s: var(--bulma-primary-s);
+  --bulma-menu-item-selected-l: var(--bulma-primary-l);
+}
+
 // Bulma forces `html { overflow-y: scroll }`, which paints a permanent
 // dead window scrollbar because the logged layout is position:fixed and
 // never overflows the viewport. Use `auto` so the bar shows only on real overflow.
