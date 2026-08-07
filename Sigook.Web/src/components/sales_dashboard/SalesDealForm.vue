@@ -35,14 +35,21 @@
     </b-field>
 
     <b-field label="Date">
-      <b-datepicker v-model="date" placeholder="Pick a date"></b-datepicker>
+      <b-datepicker
+        ref="datePicker"
+        v-model="date"
+        placeholder="Pick a date"
+        @active-change="onPickerActive"
+      ></b-datepicker>
     </b-field>
   </form>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import type { ComponentPublicInstance } from 'vue';
 import { getSalesCompanies } from '@/api/salesApi';
+import { useDropdownReveal } from '@/composables/useDropdownReveal';
 import { createDeal, updateDeal } from '@/api/dealApi';
 import {
   DealType,
@@ -74,6 +81,13 @@ const date = ref<Date | null>(null);
 const value = ref<number | null>(null);
 const type = ref<DealType>(DealType.Temporal);
 const status = ref<DealStatus>(DealStatus.ToSend);
+
+const datePicker = ref<ComponentPublicInstance | null>(null);
+const { reveal } = useDropdownReveal();
+
+function onPickerActive(active: boolean): void {
+  reveal(datePicker.value?.$el as HTMLElement | undefined, active);
+}
 
 onMounted(() => {
   if (props.deal) {

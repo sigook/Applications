@@ -23,6 +23,7 @@
     <b-field :type="formErrors.industry ? 'is-danger' : ''" :message="formErrors.industry || ''">
       <template #label>Type of industry <span class="has-text-danger">*</span></template>
       <b-autocomplete
+        ref="industryPicker"
         v-model="industry"
         :data="filteredIndustries"
         open-on-focus
@@ -30,6 +31,7 @@
         name="industry"
         placeholder="Industry"
         selectable-footer
+        @active="(active) => onDropdownActive(industryPicker, active)"
         @select="selectIndustry"
         @select-footer="onAddIndustry"
       >
@@ -65,12 +67,14 @@
       >
         <template #label>Sales Representative <span class="has-text-danger">*</span></template>
         <b-autocomplete
+          ref="salesRepresentativePicker"
           v-model="salesRepresentative"
           :data="filteredSalesRepresentative"
           open-on-focus
           name="salesRepresentative"
           placeholder="Select"
           :custom-formatter="(option) => `${option.name} - ${option.email}`"
+          @active="(active) => onDropdownActive(salesRepresentativePicker, active)"
           @select="onSalesRepresentativeSelected"
         ></b-autocomplete>
       </b-field>
@@ -138,10 +142,12 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import type { ComponentPublicInstance } from 'vue';
 import * as yup from 'yup';
 import UploadImage from '@/components/PreviewImage.vue';
 import PhoneInput from '@/components/PhoneInput.vue';
 import { useStickyForm } from '@/composables/useStickyForm';
+import { useDropdownReveal } from '@/composables/useDropdownReveal';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useAdmin } from '@/composables/useAdmin';
 import { usePubSub } from '@/composables/usePubSub';
@@ -211,6 +217,14 @@ const formErrors = form.errors;
 watch(form.fields.companyStatus, (v) => {
   companyStatusValue.value = (v as number | null) ?? null;
 });
+
+const industryPicker = ref<ComponentPublicInstance | null>(null);
+const salesRepresentativePicker = ref<ComponentPublicInstance | null>(null);
+const { reveal } = useDropdownReveal();
+
+function onDropdownActive(picker: ComponentPublicInstance | null, active: boolean): void {
+  reveal(picker?.$el as HTMLElement | undefined, active);
+}
 
 const statuses = ref<any[]>([]);
 const industryOptions = ref<any[]>([]);
