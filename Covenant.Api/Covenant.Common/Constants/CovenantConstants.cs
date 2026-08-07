@@ -39,6 +39,8 @@ public static class CovenantConstants
         public const int LastNameMaxLength = 20;
 
         public const int MaximumLengthRequirements = 50000;
+        public const int MaximumLengthDealTitle = 500;
+        public const int MaximumLengthInteractionDescription = 5000;
 
         public const int BirthdayMinimumAge = 18;
         public const int HealthProblemMaxLength = 50;
