@@ -14,14 +14,14 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Sales;
 [Authorize(Policy = PolicyConfiguration.Sales)]
 [ServiceFilter(typeof(AgencyIdFilter))]
 [ServiceFilter(typeof(AgencyPersonnelIdFilter))]
-public class CompanyInteractionsController(ICompanyInteractionService interactionService) : ControllerBase
+public class CompanyInteractionsController(ISalesService salesService) : ControllerBase
 {
     /// <summary>Gets a paginated list of company interactions for the sales module. Sales users only see the interactions they own.</summary>
     /// <param name="filter">Interaction filter and pagination parameters.</param>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<CompanyInteractionListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromQuery] GetCompanyInteractionsFilter filter) =>
-        Ok(await interactionService.GetInteractions(filter));
+        Ok(await salesService.GetInteractions(filter));
 
     /// <summary>Logs a new interaction for a company profile, owned by the current sales user.</summary>
     /// <param name="model">Interaction data: company profile, description, purpose, type and status.</param>
@@ -31,7 +31,7 @@ public class CompanyInteractionsController(ICompanyInteractionService interactio
     public async Task<IActionResult> Post([FromBody] CreateCompanyInteractionModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await interactionService.Create(model);
+        var result = await salesService.CreateInteraction(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
     }
@@ -45,7 +45,7 @@ public class CompanyInteractionsController(ICompanyInteractionService interactio
     public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] UpdateCompanyInteractionModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await interactionService.Update(id, model);
+        var result = await salesService.UpdateInteraction(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -57,7 +57,7 @@ public class CompanyInteractionsController(ICompanyInteractionService interactio
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var result = await interactionService.Delete(id);
+        var result = await salesService.DeleteInteraction(id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

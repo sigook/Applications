@@ -15,7 +15,6 @@ public class CompanyInteractionRepository(CovenantContext context) : ICompanyInt
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter)
     {
         var query = context.CompanyInteractions
-            .AsNoTracking()
             .Where(i => i.Company.AgencyId == agencyId)
             .Select(i => new CompanyInteractionListModel
             {

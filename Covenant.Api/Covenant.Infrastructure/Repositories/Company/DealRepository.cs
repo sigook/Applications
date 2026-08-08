@@ -15,7 +15,6 @@ public class DealRepository(CovenantContext context) : IDealRepository
     public async Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, GetDealsFilter filter)
     {
         var query = context.Deals
-            .AsNoTracking()
             .Where(d => d.Company.AgencyId == agencyId)
             .Select(d => new DealListModel
             {

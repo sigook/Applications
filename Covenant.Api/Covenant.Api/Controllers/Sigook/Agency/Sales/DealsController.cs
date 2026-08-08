@@ -14,14 +14,14 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Sales;
 [Authorize(Policy = PolicyConfiguration.Sales)]
 [ServiceFilter(typeof(AgencyIdFilter))]
 [ServiceFilter(typeof(AgencyPersonnelIdFilter))]
-public class DealsController(IDealService dealService) : ControllerBase
+public class DealsController(ISalesService salesService) : ControllerBase
 {
     /// <summary>Gets a paginated list of deals for the sales module. Sales users only see the deals they own.</summary>
     /// <param name="filter">Deal filter and pagination parameters.</param>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<DealListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromQuery] GetDealsFilter filter) =>
-        Ok(await dealService.GetDeals(filter));
+        Ok(await salesService.GetDeals(filter));
 
     /// <summary>Creates a deal for a company profile, owned by the current sales user.</summary>
     /// <param name="model">Deal data: company profile, title, date, value, type, status and optional document.</param>
@@ -31,7 +31,7 @@ public class DealsController(IDealService dealService) : ControllerBase
     public async Task<IActionResult> Post([FromBody] CreateDealModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await dealService.Create(model);
+        var result = await salesService.CreateDeal(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
     }
@@ -45,7 +45,7 @@ public class DealsController(IDealService dealService) : ControllerBase
     public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] UpdateDealModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await dealService.Update(id, model);
+        var result = await salesService.UpdateDeal(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -57,7 +57,7 @@ public class DealsController(IDealService dealService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var result = await dealService.Delete(id);
+        var result = await salesService.DeleteDeal(id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
