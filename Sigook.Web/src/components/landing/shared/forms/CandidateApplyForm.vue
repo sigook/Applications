@@ -233,7 +233,6 @@ import TagInput from '@/components/landing/shared/forms/TagInput.vue'
 import Switch from '@/components/landing/shared/forms/Switch.vue'
 import Checkbox from '@/components/landing/shared/forms/Checkbox.vue'
 import WorkerRegisterStepNav, { type StepDescriptor } from '@/components/landing/shared/forms/WorkerRegisterStepNav.vue'
-import Vue3Recaptcha2 from 'vue3-recaptcha2'
 
 import { getSources, getSkills } from '@/api/catalogApi'
 import { getCountries } from '@/api/locationApi'
@@ -257,25 +256,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'submitted'): void
 }>()
-
-const siteKey = import.meta.env.VUE_APP_RE_CAPTCHA_SITE_KEY
-const captchaToken = ref('')
-const captchaError = ref('')
-const showRecaptcha = ref(true)
-
-function handleCaptchaVerify(token: string) {
-  captchaToken.value = token
-  captchaError.value = ''
-}
-
-function handleCaptchaExpired() {
-  captchaToken.value = ''
-}
-
-function handleCaptchaError() {
-  captchaToken.value = ''
-  captchaError.value = 'Please verify that you are not a robot'
-}
 
 const contextLine = computed(() => props.jobTitle || '')
 type StepKey = 'personal' | 'details' | 'review'
@@ -467,12 +447,6 @@ async function onSubmit(): Promise<void> {
     showAlertError('Resume is required when you apply via LinkedIn')
     return
   }
-  if (!captchaToken.value) {
-    captchaError.value = 'Please verify that you are not a robot'
-    showAlertError('Please verify that you are not a robot')
-    return
-  }
-  captchaError.value = ''
 
   isSubmitting.value = true
 
@@ -488,15 +462,11 @@ async function onSubmit(): Promise<void> {
     hasVehicle: hasVehicle.value,
     resume: resume.value,
     termsAccepted: termsAccepted.value,
-    captchaResponse: captchaToken.value,
   }
 
   try {
     await submitCandidateApplication(payload, props.requestId)
     showAlertSuccess('Your application has been submitted')
-    captchaToken.value = ''
-    showRecaptcha.value = false
-    setTimeout(() => { showRecaptcha.value = true }, 100)
     emit('submitted')
   } catch (err: unknown) {
     showAlertError((err as { data?: string })?.data ?? 'Something went wrong')
