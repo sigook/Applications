@@ -58,8 +58,8 @@ import {
   DEAL_STATUSES,
   DEAL_TYPE_LABELS,
   DEAL_STATUS_LABELS,
-} from '@/types/deal';
-import type { Deal } from '@/types/deal';
+} from '@/types/company';
+import type { Deal } from '@/types/company';
 import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import SearchSelect from './SearchSelect.vue';

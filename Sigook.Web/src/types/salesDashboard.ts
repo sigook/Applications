@@ -1,5 +1,4 @@
-import type { InteractionType } from './companyInteraction';
-import type { DealStatus } from './deal';
+import type { DealStatus, InteractionType } from './company';
 
 export type SalesRangeKey = 'week' | 'month' | 'quarter';
 

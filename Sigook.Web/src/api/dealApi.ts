@@ -1,6 +1,6 @@
 import { api } from '@/security/apiService';
 import type { PaginatedList } from '@/types/common';
-import type { Deal, DealFilter, CreateDealModel, UpdateDealModel } from '@/types/deal';
+import type { Deal, DealFilter, CreateDealModel, UpdateDealModel } from '@/types/company';
 
 const base = '/api/agency/sales/deals';
 

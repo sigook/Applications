@@ -52,8 +52,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getDeals } from '@/api/dealApi';
-import { DealSortBy, DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/types/deal';
-import type { Deal } from '@/types/deal';
+import { DealSortBy, DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/types/company';
+import type { Deal } from '@/types/company';
 import { currency, date } from '@/utils/filters';
 import { showAlertError } from '@/utils/toast';
 import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue';

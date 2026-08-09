@@ -94,20 +94,21 @@ import { getDeals } from '@/api/dealApi';
 import { useCurrentAgent } from '@/composables/useCurrentAgent';
 import { compactMoney, shortDate } from '@/utils/salesDashboardFormat';
 import { showAlertError } from '@/utils/toast';
-import { DealSortBy, DEAL_STATUS_COLORS, DEAL_STATUS_LABELS } from '@/types/deal';
-import type { Deal } from '@/types/deal';
+import {
+  DealSortBy,
+  DEAL_STATUS_COLORS,
+  DEAL_STATUS_LABELS,
+  CompanyInteractionSortBy,
+  INTERACTION_TYPE_COLORS,
+  INTERACTION_TYPE_LABELS,
+} from '@/types/company';
+import type { Deal, CompanyInteraction } from '@/types/company';
 import type {
   SalesCreateKind,
   SalesDashboardModel,
   SalesMeter,
   SalesRangeKey,
 } from '@/types/salesDashboard';
-import {
-  CompanyInteractionSortBy,
-  INTERACTION_TYPE_COLORS,
-  INTERACTION_TYPE_LABELS,
-} from '@/types/companyInteraction';
-import type { CompanyInteraction } from '@/types/companyInteraction';
 
 const { agentName, loadAgentName } = useCurrentAgent();
 

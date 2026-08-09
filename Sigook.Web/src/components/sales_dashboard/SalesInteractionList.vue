@@ -26,8 +26,8 @@
 <script setup lang="ts">
 import SalesList from './SalesList.vue';
 import SalesListRow from './SalesListRow.vue';
-import { INTERACTION_TYPE_ICONS, INTERACTION_TYPE_LABELS } from '@/types/companyInteraction';
-import type { CompanyInteraction } from '@/types/companyInteraction';
+import { INTERACTION_TYPE_ICONS, INTERACTION_TYPE_LABELS } from '@/types/company';
+import type { CompanyInteraction } from '@/types/company';
 import { relativeTime } from '@/utils/salesDashboardFormat';
 
 defineProps<{

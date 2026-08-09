@@ -57,8 +57,8 @@ import {
   INTERACTION_TYPE_LABELS,
   INTERACTION_PURPOSE_LABELS,
   INTERACTION_STATUS_LABELS,
-} from '@/types/companyInteraction';
-import type { CompanyInteraction } from '@/types/companyInteraction';
+} from '@/types/company';
+import type { CompanyInteraction } from '@/types/company';
 import { date } from '@/utils/filters';
 import { showAlertError } from '@/utils/toast';
 import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue';

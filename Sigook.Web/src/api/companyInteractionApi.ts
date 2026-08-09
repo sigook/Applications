@@ -5,7 +5,7 @@ import type {
   CompanyInteractionFilter,
   CreateCompanyInteractionModel,
   UpdateCompanyInteractionModel,
-} from '@/types/companyInteraction';
+} from '@/types/company';
 
 const base = '/api/agency/sales/companyinteractions';
 

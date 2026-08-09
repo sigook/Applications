@@ -24,8 +24,8 @@
 <script setup lang="ts">
 import SalesList from './SalesList.vue';
 import SalesListRow from './SalesListRow.vue';
-import { DEAL_STATUS_LABELS } from '@/types/deal';
-import type { Deal } from '@/types/deal';
+import { DEAL_STATUS_LABELS } from '@/types/company';
+import type { Deal } from '@/types/company';
 import { compactMoney } from '@/utils/salesDashboardFormat';
 
 defineProps<{

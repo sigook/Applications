@@ -61,8 +61,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { SalesCreateKind } from '@/types/salesDashboard';
-import type { CompanyInteraction } from '@/types/companyInteraction';
-import type { Deal } from '@/types/deal';
+import type { CompanyInteraction, Deal } from '@/types/company';
 import { deleteCompanyInteraction } from '@/api/companyInteractionApi';
 import { deleteDeal } from '@/api/dealApi';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
