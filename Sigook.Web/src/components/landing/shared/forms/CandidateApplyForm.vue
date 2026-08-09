@@ -205,18 +205,6 @@
         </Checkbox>
         <p v-if="errors.termsAccepted" class="reg-form__field-error">{{ errors.termsAccepted }}</p>
 
-        <div class="reg-form__captcha">
-          <Vue3Recaptcha2
-            v-if="showRecaptcha"
-            :sitekey="siteKey"
-            theme="dark"
-            @verify="handleCaptchaVerify"
-            @expire="handleCaptchaExpired"
-            @fail="handleCaptchaError"
-          />
-          <p v-if="captchaError" class="reg-form__field-error">{{ captchaError }}</p>
-        </div>
-
         <footer class="reg-form__nav">
           <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
             <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
@@ -802,12 +790,6 @@ onMounted(async () => {
   font-weight: 600;
   color: var(--c-brand-red);
   margin: 4px 0 0;
-}
-
-.reg-form__captcha {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .reg-form__nav {
