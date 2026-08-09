@@ -15,14 +15,14 @@ public class CompanyInteractionRepository(CovenantContext context) : ICompanyInt
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter)
     {
         var query = context.CompanyInteractions
-            .Where(i => i.Company.AgencyId == agencyId)
+            .Where(i => i.CompanyProfile.AgencyId == agencyId)
             .Select(i => new CompanyInteractionListModel
             {
                 Id = i.Id,
-                CompanyProfileId = i.CompanyId,
-                CompanyName = i.Company.FullName,
-                OwnerId = i.OwnerId,
-                OwnerName = context.AgencyPersonnel.Where(p => p.UserId == i.OwnerId).Select(p => p.Name).FirstOrDefault(),
+                CompanyProfileId = i.CompanyProfileId,
+                CompanyName = i.CompanyProfile.FullName,
+                OwnerId = i.UserId,
+                OwnerName = context.AgencyPersonnel.Where(p => p.UserId == i.UserId).Select(p => p.Name).FirstOrDefault(),
                 Description = i.Description,
                 InteractionPurpose = i.InteractionPurpose,
                 InteractionType = i.InteractionType,

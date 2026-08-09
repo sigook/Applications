@@ -15,21 +15,23 @@ public class DealRepository(CovenantContext context) : IDealRepository
     public async Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, GetDealsFilter filter)
     {
         var query = context.Deals
-            .Where(d => d.Company.AgencyId == agencyId)
+            .Where(d => d.CompanyProfile.AgencyId == agencyId)
             .Select(d => new DealListModel
             {
                 Id = d.Id,
                 Title = d.Title,
-                CompanyProfileId = d.CompanyId,
-                CompanyName = d.Company.FullName,
-                OwnerId = d.OwnerId,
-                OwnerName = context.AgencyPersonnel.Where(p => p.UserId == d.OwnerId).Select(p => p.Name).FirstOrDefault(),
+                CompanyProfileId = d.CompanyProfileId,
+                CompanyName = d.CompanyProfile.FullName,
+                OwnerId = d.UserId,
+                OwnerName = context.AgencyPersonnel.Where(p => p.UserId == d.UserId).Select(p => p.Name).FirstOrDefault(),
                 Date = d.Date,
                 Value = d.Value,
                 Type = d.Type,
                 Status = d.Status,
                 DocumentId = d.DocumentId,
-                DocumentName = d.Document.FileName
+                DocumentName = d.Document.FileName,
+                CreatedAt = d.CreatedAt,
+                UpdatedAt = d.UpdatedAt
             });
         query = query.Where(ApplyFilter(filter));
         query = ApplySort(query, filter);

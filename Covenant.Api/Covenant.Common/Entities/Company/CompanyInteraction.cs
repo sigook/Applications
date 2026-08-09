@@ -4,12 +4,12 @@ public class CompanyInteraction
 {
     public CompanyInteraction() { }
 
-    public CompanyInteraction(string description, Guid ownerId, Guid companyId, Purpose purpose, Type type, Status status)
+    public CompanyInteraction(string description, Guid userId, Guid companyProfileId, Purpose purpose, Type type, Status status)
     {
         Id = Guid.NewGuid();
         Description = description;
-        OwnerId = ownerId;
-        CompanyId = companyId;
+        UserId = userId;
+        CompanyProfileId = companyProfileId;
         InteractionPurpose = purpose;
         InteractionType = type;
         InteractionStatus = status;
@@ -17,12 +17,12 @@ public class CompanyInteraction
 
     public Guid Id { get; set; }
     public string Description { get; set; } = string.Empty;
-    public Guid OwnerId { get; set; }
-    public User Owner { get; set; }
+    public Guid UserId { get; set; }
+    public User User { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    public Guid CompanyId { get; set; }
-    public CompanyProfile Company { get; set; }
+    public Guid CompanyProfileId { get; set; }
+    public CompanyProfile CompanyProfile { get; set; }
     public Purpose InteractionPurpose { get; set; }
     public Type InteractionType { get; set; }
     public Status InteractionStatus { get; set; } = Status.NotStarted;

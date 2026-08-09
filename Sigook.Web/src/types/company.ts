@@ -414,6 +414,8 @@ export interface Deal {
   status: DealStatus;
   documentId?: string | null;
   documentName?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Filter for GET .../deals. Mirrors backend GetDealsFilter.
