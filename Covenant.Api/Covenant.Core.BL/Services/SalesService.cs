@@ -143,20 +143,18 @@ public class SalesService(
 
     private async Task<Result<CompanyInteraction>> GetOwnedInteraction(Guid id)
     {
-        var agencyId = identityServerService.GetAgencyId();
-        var interaction = await companyRepository.GetInteraction(i => i.Id == id && i.CompanyProfile.AgencyId == agencyId);
+        var interaction = await companyRepository.GetInteraction(i => i.Id == id);
         if (interaction is null) return Result.Fail<CompanyInteraction>("Interaction not found");
-        if (identityServerService.IsSales() && interaction.UserId != identityServerService.GetUserId())
+        if (interaction.UserId != identityServerService.GetUserId())
             return Result.Fail<CompanyInteraction>("You can only manage your own interactions");
         return Result.Ok(interaction);
     }
 
     private async Task<Result<Deal>> GetOwnedDeal(Guid id)
     {
-        var agencyId = identityServerService.GetAgencyId();
-        var deal = await companyRepository.GetDeal(d => d.Id == id && d.CompanyProfile.AgencyId == agencyId);
+        var deal = await companyRepository.GetDeal(d => d.Id == id);
         if (deal is null) return Result.Fail<Deal>("Deal not found");
-        if (identityServerService.IsSales() && deal.UserId != identityServerService.GetUserId())
+        if (deal.UserId != identityServerService.GetUserId())
             return Result.Fail<Deal>("You can only manage your own deals");
         return Result.Ok(deal);
     }
