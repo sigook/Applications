@@ -44,4 +44,9 @@ public interface ICompanyRepository
     Task<CompanyUserModel> GetCompanyUserDetail(Guid id);
     Task<CompanyUser> GetCompanyUser(Guid id);
     Task BulkCompanies(IEnumerable<BulkCompany> bulk);
+    Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, GetDealsFilter filter);
+    Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression);
+    Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter);
+    Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression);
+    Task<bool> CompanyProfileBelongsToAgency(Guid companyProfileId, Guid agencyId);
 }

@@ -16,8 +16,6 @@ public class SalesService(
     IRequestService requestService,
     IRequestRepository requestRepository,
     ICompanyRepository companyRepository,
-    ICompanyInteractionRepository interactionRepository,
-    IDealRepository dealRepository,
     IIdentityServerService identityServerService,
     IValidator<CreateCompanyInteractionModel> createInteractionValidator,
     IValidator<UpdateCompanyInteractionModel> updateInteractionValidator,
@@ -55,7 +53,7 @@ public class SalesService(
     {
         var agencyId = identityServerService.GetAgencyId();
         filter.OwnerId = identityServerService.GetUserId();
-        return await interactionRepository.GetInteractions(agencyId, filter);
+        return await companyRepository.GetInteractions(agencyId, filter);
     }
 
     public async Task<Result<Guid>> CreateInteraction(CreateCompanyInteractionModel model)
@@ -63,13 +61,13 @@ public class SalesService(
         var validationResult = await createInteractionValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Guid>();
         var agencyId = identityServerService.GetAgencyId();
-        if (!await interactionRepository.CompanyProfileBelongsToAgency(model.CompanyProfileId, agencyId))
+        if (!await companyRepository.CompanyProfileBelongsToAgency(model.CompanyProfileId, agencyId))
             return Result.Fail<Guid>("Company profile not found");
         var userId = identityServerService.GetUserId();
         var interaction = new CompanyInteraction(model.Description, userId, model.CompanyProfileId,
             model.InteractionPurpose, model.InteractionType, model.InteractionStatus);
-        await interactionRepository.Create(interaction);
-        await interactionRepository.SaveChangesAsync();
+        await companyRepository.Create(interaction);
+        await companyRepository.SaveChangesAsync();
         return Result.Ok(interaction.Id);
     }
 
@@ -80,8 +78,8 @@ public class SalesService(
         var interaction = await GetOwnedInteraction(id);
         if (!interaction) return Result.Fail(interaction.Errors);
         interaction.Value.Update(model.Description, model.InteractionPurpose, model.InteractionType, model.InteractionStatus);
-        await interactionRepository.Update(interaction.Value);
-        await interactionRepository.SaveChangesAsync();
+        companyRepository.Update(interaction.Value);
+        await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
 
@@ -89,8 +87,8 @@ public class SalesService(
     {
         var interaction = await GetOwnedInteraction(id);
         if (!interaction) return Result.Fail(interaction.Errors);
-        await interactionRepository.Delete(interaction.Value);
-        await interactionRepository.SaveChangesAsync();
+        companyRepository.Delete(interaction.Value);
+        await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
 
@@ -98,7 +96,7 @@ public class SalesService(
     {
         var agencyId = identityServerService.GetAgencyId();
         filter.OwnerId = identityServerService.GetUserId();
-        return await dealRepository.GetDeals(agencyId, filter);
+        return await companyRepository.GetDeals(agencyId, filter);
     }
 
     public async Task<Result<Guid>> CreateDeal(CreateDealModel model)
@@ -106,13 +104,13 @@ public class SalesService(
         var validationResult = await createDealValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Guid>();
         var agencyId = identityServerService.GetAgencyId();
-        if (!await dealRepository.CompanyProfileBelongsToAgency(model.CompanyProfileId, agencyId))
+        if (!await companyRepository.CompanyProfileBelongsToAgency(model.CompanyProfileId, agencyId))
             return Result.Fail<Guid>("Company profile not found");
         var userId = identityServerService.GetUserId();
         var deal = new Deal(model.Title, userId, model.CompanyProfileId, model.Date, model.Value,
             model.Type, model.Status, model.DocumentId);
-        await dealRepository.Create(deal);
-        await dealRepository.SaveChangesAsync();
+        await companyRepository.Create(deal);
+        await companyRepository.SaveChangesAsync();
         return Result.Ok(deal.Id);
     }
 
@@ -123,8 +121,8 @@ public class SalesService(
         var result = await GetOwnedDeal(id);
         if (!result) return Result.Fail(result.Errors);
         result.Value.Update(model.Title, model.Date, model.Value, model.Type, model.Status, model.DocumentId);
-        await dealRepository.Update(result.Value);
-        await dealRepository.SaveChangesAsync();
+        companyRepository.Update(result.Value);
+        await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
 
@@ -132,8 +130,8 @@ public class SalesService(
     {
         var result = await GetOwnedDeal(id);
         if (!result) return Result.Fail(result.Errors);
-        await dealRepository.Delete(result.Value);
-        await dealRepository.SaveChangesAsync();
+        companyRepository.Delete(result.Value);
+        await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
 
@@ -146,7 +144,7 @@ public class SalesService(
     private async Task<Result<CompanyInteraction>> GetOwnedInteraction(Guid id)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var interaction = await interactionRepository.GetInteraction(i => i.Id == id && i.CompanyProfile.AgencyId == agencyId);
+        var interaction = await companyRepository.GetInteraction(i => i.Id == id && i.CompanyProfile.AgencyId == agencyId);
         if (interaction is null) return Result.Fail<CompanyInteraction>("Interaction not found");
         if (identityServerService.IsSales() && interaction.UserId != identityServerService.GetUserId())
             return Result.Fail<CompanyInteraction>("You can only manage your own interactions");
@@ -156,7 +154,7 @@ public class SalesService(
     private async Task<Result<Deal>> GetOwnedDeal(Guid id)
     {
         var agencyId = identityServerService.GetAgencyId();
-        var deal = await dealRepository.GetDeal(d => d.Id == id && d.CompanyProfile.AgencyId == agencyId);
+        var deal = await companyRepository.GetDeal(d => d.Id == id && d.CompanyProfile.AgencyId == agencyId);
         if (deal is null) return Result.Fail<Deal>("Deal not found");
         if (identityServerService.IsSales() && deal.UserId != identityServerService.GetUserId())
             return Result.Fail<Deal>("You can only manage your own deals");

@@ -16,8 +16,7 @@ namespace Covenant.Tests.Sales
 {
     public class SalesServiceDealTest
     {
-        private readonly Mock<IDealRepository> _dealRepository = new();
-        private readonly Mock<ICompanyInteractionRepository> _interactionRepository = new();
+        private readonly Mock<ICompanyRepository> _companyRepository = new();
         private readonly Mock<IIdentityServerService> _identityServerService = new();
         private readonly ISalesService _sut;
         private readonly Guid _agencyId = Guid.NewGuid();
@@ -27,15 +26,13 @@ namespace Covenant.Tests.Sales
         {
             _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
             _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
-            _dealRepository
+            _companyRepository
                 .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
                 .ReturnsAsync(true);
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
                 Mock.Of<IRequestRepository>(),
-                Mock.Of<ICompanyRepository>(),
-                _interactionRepository.Object,
-                _dealRepository.Object,
+                _companyRepository.Object,
                 _identityServerService.Object,
                 new CreateCompanyInteractionModelValidator(),
                 new UpdateCompanyInteractionModelValidator(),
@@ -73,8 +70,8 @@ namespace Covenant.Tests.Sales
             Result<Guid> result = await _sut.CreateDeal(ValidCreateModel());
             Assert.True(result);
             Assert.Empty(result.Errors);
-            _dealRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Once);
-            _dealRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _companyRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Once);
+            _companyRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
@@ -85,7 +82,7 @@ namespace Covenant.Tests.Sales
             Result<Guid> result = await _sut.CreateDeal(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.Title));
-            _dealRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Never);
+            _companyRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Never);
         }
 
         [Fact]
@@ -124,32 +121,32 @@ namespace Covenant.Tests.Sales
             var model = ValidCreateModel();
             model.Title = string.Empty;
             await _sut.CreateDeal(model);
-            _dealRepository.Verify(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
+            _companyRepository.Verify(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
         }
 
         [Fact]
         public async Task CreateDealFailsWhenCompanyDoesNotBelongToAgency()
         {
-            _dealRepository
+            _companyRepository
                 .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
                 .ReturnsAsync(false);
             Result<Guid> result = await _sut.CreateDeal(ValidCreateModel());
             Assert.False(result);
             Assert.Equal("Company profile not found", result.Errors.First().Message);
-            _dealRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Never);
+            _companyRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Never);
         }
 
         [Fact]
         public async Task UpdateDealSucceedsWhenValidAndOwned()
         {
             var deal = OwnedDeal(_userId);
-            _dealRepository
+            _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
             Result result = await _sut.UpdateDeal(deal.Id, ValidUpdateModel());
             Assert.True(result);
-            _dealRepository.Verify(r => r.Update(deal), Times.Once);
-            _dealRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _companyRepository.Verify(r => r.Update(deal), Times.Once);
+            _companyRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
@@ -160,13 +157,13 @@ namespace Covenant.Tests.Sales
             Result result = await _sut.UpdateDeal(Guid.NewGuid(), model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(UpdateDealModel.Title));
-            _dealRepository.Verify(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()), Times.Never);
+            _companyRepository.Verify(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()), Times.Never);
         }
 
         [Fact]
         public async Task UpdateDealFailsWhenDealNotFound()
         {
-            _dealRepository
+            _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync((Deal)null);
             Result result = await _sut.UpdateDeal(Guid.NewGuid(), ValidUpdateModel());
@@ -179,38 +176,38 @@ namespace Covenant.Tests.Sales
         {
             _identityServerService.Setup(i => i.IsSales()).Returns(true);
             var deal = OwnedDeal(Guid.NewGuid());
-            _dealRepository
+            _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
             Result result = await _sut.UpdateDeal(deal.Id, ValidUpdateModel());
             Assert.False(result);
             Assert.Equal("You can only manage your own deals", result.Errors.First().Message);
-            _dealRepository.Verify(r => r.Update(It.IsAny<Deal>()), Times.Never);
+            _companyRepository.Verify(r => r.Update(It.IsAny<Deal>()), Times.Never);
         }
 
         [Fact]
         public async Task DeleteDealSucceedsWhenOwned()
         {
             var deal = OwnedDeal(_userId);
-            _dealRepository
+            _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
             Result result = await _sut.DeleteDeal(deal.Id);
             Assert.True(result);
-            _dealRepository.Verify(r => r.Delete(deal), Times.Once);
-            _dealRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _companyRepository.Verify(r => r.Delete(deal), Times.Once);
+            _companyRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
         public async Task DeleteDealFailsWhenDealNotFound()
         {
-            _dealRepository
+            _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync((Deal)null);
             Result result = await _sut.DeleteDeal(Guid.NewGuid());
             Assert.False(result);
             Assert.Equal("Deal not found", result.Errors.First().Message);
-            _dealRepository.Verify(r => r.Delete(It.IsAny<Deal>()), Times.Never);
+            _companyRepository.Verify(r => r.Delete(It.IsAny<Deal>()), Times.Never);
         }
     }
 }
