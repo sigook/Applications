@@ -1,5 +1,6 @@
 using Covenant.Api.Validators.Company;
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Company;
@@ -48,8 +49,8 @@ namespace Covenant.Tests.Sales
             CompanyProfileId = Guid.NewGuid(),
             Date = new DateTime(2026, 1, 1),
             Value = 1000m,
-            Type = Deal.DealType.Temporal,
-            Status = Deal.DealStatus.ToSend,
+            Type = DealType.Temporal,
+            Status = DealStatus.ToSend,
             DocumentId = null,
         };
 
@@ -58,13 +59,13 @@ namespace Covenant.Tests.Sales
             Title = "Updated title",
             Date = new DateTime(2026, 2, 1),
             Value = 500m,
-            Type = Deal.DealType.Permanent,
-            Status = Deal.DealStatus.Sent,
+            Type = DealType.Permanent,
+            Status = DealStatus.Sent,
             DocumentId = null,
         };
 
         private Deal OwnedDeal(Guid ownerId) =>
-            new("Existing", ownerId, Guid.NewGuid(), new DateTime(2026, 1, 1), 1, Deal.DealType.Temporal, Deal.DealStatus.ToSend, null);
+            new("Existing", ownerId, Guid.NewGuid(), new DateTime(2026, 1, 1), 1, DealType.Temporal, DealStatus.ToSend, null);
 
         [Fact]
         public async Task CreateDealSucceedsWhenModelValid()
@@ -101,7 +102,7 @@ namespace Covenant.Tests.Sales
         public async Task CreateDealFailsWhenTypeOutOfRange()
         {
             var model = ValidCreateModel();
-            model.Type = (Deal.DealType)99;
+            model.Type = (DealType)99;
             Result<Guid> result = await _sut.CreateDeal(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.Type));

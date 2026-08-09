@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 
 namespace Covenant.Common.Models.Company;
 
@@ -12,8 +12,8 @@ public class DealListModel
     public string OwnerName { get; set; }
     public DateTime Date { get; set; }
     public decimal Value { get; set; }
-    public Deal.DealType Type { get; set; }
-    public Deal.DealStatus Status { get; set; }
+    public DealType Type { get; set; }
+    public DealStatus Status { get; set; }
     public Guid? DocumentId { get; set; }
     public string DocumentName { get; set; }
     public DateTime CreatedAt { get; set; }

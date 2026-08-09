@@ -2732,14 +2732,14 @@
             "name": "InteractionPurpose",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Purpose"
+              "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionPurpose"
             }
           },
           {
             "name": "InteractionType",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Type"
+              "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionType"
             }
           },
           {
@@ -2748,7 +2748,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Status"
+                "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionStatus"
               }
             }
           },
@@ -2772,7 +2772,7 @@
             "name": "SortBy",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetCompanyInteractionsSortBy"
+              "$ref": "#/components/schemas/Covenant.Common.Enums.GetCompanyInteractionsSortBy"
             }
           },
           {
@@ -6726,7 +6726,7 @@
             "name": "Type",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealType"
+              "$ref": "#/components/schemas/Covenant.Common.Enums.DealType"
             }
           },
           {
@@ -6735,7 +6735,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealStatus"
+                "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
               }
             }
           },
@@ -6759,7 +6759,7 @@
             "name": "SortBy",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetDealsSortBy"
+              "$ref": "#/components/schemas/Covenant.Common.Enums.GetDealsSortBy"
             }
           },
           {
@@ -23307,36 +23307,6 @@
   },
   "components": {
     "schemas": {
-      "Covenant.Common.Entities.Company.CompanyInteraction.Purpose": {
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "Covenant.Common.Entities.Company.CompanyInteraction.Status": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "Covenant.Common.Entities.Company.CompanyInteraction.Type": {
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "Covenant.Common.Entities.Company.CompanyProfileIndustry": {
         "type": "object",
         "properties": {
@@ -23358,25 +23328,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "Covenant.Common.Entities.Company.Deal.DealStatus": {
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "Covenant.Common.Entities.Company.Deal.DealType": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
       },
       "Covenant.Common.Entities.Industry": {
         "type": "object",
@@ -23442,6 +23393,25 @@
         "type": "integer",
         "format": "int32"
       },
+      "Covenant.Common.Enums.DealStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.DealType": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "Covenant.Common.Enums.DurationTerm": {
         "enum": [
           0,
@@ -23468,6 +23438,55 @@
           2,
           3,
           4
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.GetCompanyInteractionsSortBy": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.GetDealsSortBy": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.InteractionPurpose": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.InteractionStatus": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.InteractionType": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
         ],
         "type": "integer",
         "format": "int32"
@@ -24984,13 +25003,13 @@
             "nullable": true
           },
           "interactionPurpose": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Purpose"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionPurpose"
           },
           "interactionType": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Type"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionType"
           },
           "interactionStatus": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Status"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionStatus"
           },
           "createdAt": {
             "type": "string",
@@ -25549,13 +25568,13 @@
             "nullable": true
           },
           "interactionPurpose": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Purpose"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionPurpose"
           },
           "interactionType": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Type"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionType"
           },
           "interactionStatus": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Status"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionStatus"
           }
         },
         "additionalProperties": false
@@ -25580,10 +25599,10 @@
             "format": "double"
           },
           "type": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealType"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealType"
           },
           "status": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealStatus"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
           },
           "documentId": {
             "type": "string",
@@ -25629,10 +25648,10 @@
             "format": "double"
           },
           "type": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealType"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealType"
           },
           "status": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealStatus"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
           },
           "documentId": {
             "type": "string",
@@ -25665,25 +25684,6 @@
         "type": "integer",
         "format": "int32"
       },
-      "Covenant.Common.Models.Company.GetCompanyInteractionsSortBy": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "Covenant.Common.Models.Company.GetDealsSortBy": {
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "Covenant.Common.Models.Company.JobPositionPetitionModel": {
         "type": "object",
         "properties": {
@@ -25706,13 +25706,13 @@
             "nullable": true
           },
           "interactionPurpose": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Purpose"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionPurpose"
           },
           "interactionType": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Type"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionType"
           },
           "interactionStatus": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.CompanyInteraction.Status"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionStatus"
           }
         },
         "additionalProperties": false
@@ -25733,10 +25733,10 @@
             "format": "double"
           },
           "type": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealType"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealType"
           },
           "status": {
-            "$ref": "#/components/schemas/Covenant.Common.Entities.Company.Deal.DealStatus"
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
           },
           "documentId": {
             "type": "string",

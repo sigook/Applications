@@ -1,5 +1,6 @@
 using Covenant.Api.Validators.Company;
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Company;
@@ -46,21 +47,21 @@ namespace Covenant.Tests.Sales
         {
             CompanyProfileId = Guid.NewGuid(),
             Description = "Called the client to introduce our services",
-            InteractionPurpose = CompanyInteraction.Purpose.Intro,
-            InteractionType = CompanyInteraction.Type.Call,
-            InteractionStatus = CompanyInteraction.Status.NotStarted,
+            InteractionPurpose = InteractionPurpose.Intro,
+            InteractionType = InteractionType.Call,
+            InteractionStatus = InteractionStatus.NotStarted,
         };
 
         private static UpdateCompanyInteractionModel ValidUpdateModel() => new()
         {
             Description = "Followed up by email",
-            InteractionPurpose = CompanyInteraction.Purpose.FollowUp,
-            InteractionType = CompanyInteraction.Type.Mail,
-            InteractionStatus = CompanyInteraction.Status.InProgress,
+            InteractionPurpose = InteractionPurpose.FollowUp,
+            InteractionType = InteractionType.Mail,
+            InteractionStatus = InteractionStatus.InProgress,
         };
 
         private CompanyInteraction OwnedInteraction(Guid ownerId) =>
-            new("Existing", ownerId, Guid.NewGuid(), CompanyInteraction.Purpose.Intro, CompanyInteraction.Type.Call, CompanyInteraction.Status.NotStarted);
+            new("Existing", ownerId, Guid.NewGuid(), InteractionPurpose.Intro, InteractionType.Call, InteractionStatus.NotStarted);
 
         [Fact]
         public async Task CreateInteractionSucceedsWhenModelValid()
@@ -97,7 +98,7 @@ namespace Covenant.Tests.Sales
         public async Task CreateInteractionFailsWhenPurposeOutOfRange()
         {
             var model = ValidCreateModel();
-            model.InteractionPurpose = (CompanyInteraction.Purpose)99;
+            model.InteractionPurpose = (InteractionPurpose)99;
             Result<Guid> result = await _sut.CreateInteraction(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateCompanyInteractionModel.InteractionPurpose));

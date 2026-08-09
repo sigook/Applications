@@ -1,3 +1,5 @@
+using Covenant.Common.Enums;
+
 namespace Covenant.Common.Entities.Company;
 
 public class Deal
@@ -41,20 +43,5 @@ public class Deal
         Status = status;
         DocumentId = documentId;
         UpdatedAt = DateTime.UtcNow;
-    }
-
-    public enum DealType
-    {
-        Temporal = 0,
-        Permanent = 1,
-        TempToPerm = 2
-    }
-
-    public enum DealStatus
-    {
-        ToSend = 0,
-        Sent = 1,
-        Rejected = 2,
-        Accepted = 3
     }
 }

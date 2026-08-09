@@ -1,4 +1,5 @@
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
