@@ -54,8 +54,7 @@ public class SalesService(
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(GetCompanyInteractionsFilter filter)
     {
         var agencyId = identityServerService.GetAgencyId();
-        if (identityServerService.IsSales())
-            filter.OwnerId = identityServerService.GetUserId();
+        filter.OwnerId = identityServerService.GetUserId();
         return await interactionRepository.GetInteractions(agencyId, filter);
     }
 
@@ -98,8 +97,7 @@ public class SalesService(
     public async Task<PaginatedList<DealListModel>> GetDeals(GetDealsFilter filter)
     {
         var agencyId = identityServerService.GetAgencyId();
-        if (identityServerService.IsSales())
-            filter.OwnerId = identityServerService.GetUserId();
+        filter.OwnerId = identityServerService.GetUserId();
         return await dealRepository.GetDeals(agencyId, filter);
     }
 
