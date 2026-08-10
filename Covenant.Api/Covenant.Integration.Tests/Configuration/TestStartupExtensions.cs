@@ -66,7 +66,8 @@ public static class TestStartupExtensions
         {
             TemplatesReportsPath = "../../../../Covenant.Api/Report/Templates/",
             FilesUrl = Environment.CurrentDirectory,
-            MaximumFileSize = 1000000
+            MaximumFileSize = 1000000,
+            DocumentFormats = ["pdf"]
         });
         services.AddSingleton(mockFilesConfiguration.Object);
         var mockMicrosoft365Configuration = new Mock<IOptions<Microsoft365Configuration>>();
