@@ -30,7 +30,6 @@ public class DealsController(ISalesService salesService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] CreateDealModel model)
     {
-        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
         var result = await salesService.CreateDeal(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
@@ -44,7 +43,6 @@ public class DealsController(ISalesService salesService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] UpdateDealModel model)
     {
-        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
         var result = await salesService.UpdateDeal(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();

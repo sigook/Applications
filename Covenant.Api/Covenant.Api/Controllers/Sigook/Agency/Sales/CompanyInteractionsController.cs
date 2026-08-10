@@ -30,7 +30,6 @@ public class CompanyInteractionsController(ISalesService salesService) : Control
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] CreateCompanyInteractionModel model)
     {
-        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
         var result = await salesService.CreateInteraction(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
@@ -44,7 +43,6 @@ public class CompanyInteractionsController(ISalesService salesService) : Control
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] UpdateCompanyInteractionModel model)
     {
-        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
         var result = await salesService.UpdateInteraction(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();

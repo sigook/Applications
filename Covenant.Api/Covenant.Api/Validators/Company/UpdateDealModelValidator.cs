@@ -12,7 +12,7 @@ public class UpdateDealModelValidator : AbstractValidator<UpdateDealModel>
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(m => m.Title)
             .NotEmpty()
-            .MaximumLength(CovenantConstants.Validation.MaximumLengthDealTitle)
+            .MaximumLength(500)
             .WithName(ApiResources.Title);
         RuleFor(m => m.Date)
             .NotEmpty();

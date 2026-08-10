@@ -12,7 +12,7 @@ public class UpdateCompanyInteractionModelValidator : AbstractValidator<UpdateCo
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(m => m.Description)
             .NotEmpty()
-            .MaximumLength(CovenantConstants.Validation.MaximumLengthInteractionDescription)
+            .MaximumLength(5000)
             .WithName(ApiResources.Description);
         RuleFor(m => m.InteractionPurpose)
             .IsInEnum();
