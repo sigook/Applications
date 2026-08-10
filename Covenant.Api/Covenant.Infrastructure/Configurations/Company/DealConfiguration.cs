@@ -8,7 +8,7 @@ public class DealConfiguration : IEntityTypeConfiguration<Deal>
 {
     public void Configure(EntityTypeBuilder<Deal> builder)
     {
-        builder.ToTable("Deal");
+        builder.ToTable("Deals");
         builder.HasKey(k => k.Id);
         builder.HasOne(x => x.CompanyProfile).WithMany().HasForeignKey(x => x.CompanyProfileId).IsRequired().OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);

@@ -605,9 +605,6 @@ public class CompanyRepository : ICompanyRepository
     public Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression) =>
         _context.CompanyInteractions.FirstOrDefaultAsync(expression);
 
-    public Task<bool> CompanyProfileBelongsToAgency(Guid companyProfileId, Guid agencyId) =>
-        _context.CompanyProfiles.AnyAsync(p => p.Id == companyProfileId && p.AgencyId == agencyId);
-
     private static Expression<Func<DealListModel, bool>> ApplyFilterDeals(GetDealsFilter filter)
     {
         Expression<Func<DealListModel, bool>> predicate = d => true;

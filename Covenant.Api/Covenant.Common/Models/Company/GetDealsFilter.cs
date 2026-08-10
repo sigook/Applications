@@ -2,6 +2,14 @@ using Covenant.Common.Enums;
 
 namespace Covenant.Common.Models.Company;
 
+public enum GetDealsSortBy : byte
+{
+    Date,
+    Company,
+    Value,
+    Status
+}
+
 public class GetDealsFilter : Pagination
 {
     public Guid? CompanyProfileId { get; set; }

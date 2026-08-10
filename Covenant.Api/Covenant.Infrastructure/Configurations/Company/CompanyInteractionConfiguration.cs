@@ -8,7 +8,7 @@ public class CompanyInteractionConfiguration : IEntityTypeConfiguration<CompanyI
 {
     public void Configure(EntityTypeBuilder<CompanyInteraction> builder)
     {
-        builder.ToTable("CompanyInteraction");
+        builder.ToTable("CompanyInteractions");
         builder.HasKey(k => k.Id);
         builder.HasOne(x => x.CompanyProfile).WithMany().HasForeignKey(x => x.CompanyProfileId).IsRequired().OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);

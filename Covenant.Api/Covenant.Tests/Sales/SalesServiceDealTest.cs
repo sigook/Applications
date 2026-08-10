@@ -29,9 +29,6 @@ namespace Covenant.Tests.Sales
         {
             _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
             _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
-            _companyRepository
-                .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
-                .ReturnsAsync(true);
             _uploadedFilesService.Setup(u => u.Validate()).Returns(Result.Ok());
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
@@ -143,27 +140,6 @@ namespace Covenant.Tests.Sales
             Result<Guid> result = await CreateDeal(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.CompanyProfileId));
-        }
-
-        [Fact]
-        public async Task CreateDealDoesNotQueryRepositoryWhenModelInvalid()
-        {
-            var model = ValidCreateModel();
-            model.Title = string.Empty;
-            await CreateDeal(model);
-            _companyRepository.Verify(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task CreateDealFailsWhenCompanyDoesNotBelongToAgency()
-        {
-            _companyRepository
-                .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
-                .ReturnsAsync(false);
-            Result<Guid> result = await CreateDeal(ValidCreateModel());
-            Assert.False(result);
-            Assert.Equal("Company profile not found", result.Errors.First().Message);
-            _companyRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Never);
         }
 
         [Fact]

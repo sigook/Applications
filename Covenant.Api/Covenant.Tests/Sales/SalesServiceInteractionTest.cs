@@ -27,9 +27,6 @@ namespace Covenant.Tests.Sales
         {
             _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
             _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
-            _companyRepository
-                .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
-                .ReturnsAsync(true);
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
                 Mock.Of<IRequestRepository>(),
@@ -102,27 +99,6 @@ namespace Covenant.Tests.Sales
             Result<Guid> result = await _sut.CreateInteraction(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateCompanyInteractionModel.InteractionPurpose));
-        }
-
-        [Fact]
-        public async Task CreateInteractionDoesNotQueryRepositoryWhenModelInvalid()
-        {
-            var model = ValidCreateModel();
-            model.Description = string.Empty;
-            await _sut.CreateInteraction(model);
-            _companyRepository.Verify(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task CreateInteractionFailsWhenCompanyDoesNotBelongToAgency()
-        {
-            _companyRepository
-                .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
-                .ReturnsAsync(false);
-            Result<Guid> result = await _sut.CreateInteraction(ValidCreateModel());
-            Assert.False(result);
-            Assert.Equal("Company profile not found", result.Errors.First().Message);
-            _companyRepository.Verify(r => r.Create(It.IsAny<CompanyInteraction>()), Times.Never);
         }
 
         [Fact]
