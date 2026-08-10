@@ -15,6 +15,15 @@
         <span class="sd-deal-stage">{{ DEAL_STATUS_LABELS[item.status] }}</span>
       </template>
       <template #trailing>
+        <a
+          v-if="item.documentName"
+          class="sd-deal-doc"
+          href="#"
+          :title="item.documentName || 'Open document'"
+          @click.stop.prevent="openDocument(item)"
+        >
+          <b-icon icon="paperclip" size="is-small"></b-icon>
+        </a>
         <span class="sd-deal-value">{{ compactMoney(item.value) }}</span>
       </template>
     </sales-list-row>
@@ -27,12 +36,25 @@ import SalesListRow from './SalesListRow.vue';
 import { DEAL_STATUS_LABELS } from '@/types/company';
 import type { Deal } from '@/types/company';
 import { compactMoney } from '@/utils/salesDashboardFormat';
+import { getDealDocument } from '@/api/dealApi';
+import { showAlertError } from '@/utils/toast';
 
 defineProps<{
   items: readonly Deal[];
 }>();
 
 const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
+
+async function openDocument(deal: Deal): Promise<void> {
+  try {
+    const blob = await getDealDocument(deal.id);
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (error) {
+    await showAlertError(error);
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -60,6 +82,19 @@ const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
   border-radius: 999px;
   background: #eef0f3;
   color: #666;
+}
+
+.sd-deal-doc {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.4rem;
+  color: $primary;
+
+  &:hover {
+    color: $primary;
+    filter: brightness(0.9);
+  }
 }
 
 .sd-deal-value {

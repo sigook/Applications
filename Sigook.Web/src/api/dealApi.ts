@@ -1,4 +1,5 @@
 import { api } from '@/security/apiService';
+import { buildMultipartFormData } from '@/utils/multipart';
 import type { PaginatedList } from '@/types/common';
 import type { Deal, DealFilter, CreateDealModel, UpdateDealModel } from '@/types/company';
 
@@ -8,8 +9,16 @@ export function getDeals(filter: DealFilter): Promise<PaginatedList<Deal>> {
   return api.get<PaginatedList<Deal>>(base, { params: { ...filter } });
 }
 
-export function createDeal(model: CreateDealModel): Promise<string> {
-  return api.post<string>(base, model);
+export function createDeal(model: CreateDealModel, file?: File | null): Promise<string> {
+  return api.post<string>(
+    base,
+    buildMultipartFormData(model, file && model.fileName ? { [model.fileName]: file } : {}),
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+}
+
+export function getDealDocument(id: string): Promise<Blob> {
+  return api.get<Blob>(`${base}/${id}/document`, { responseType: 'blob' });
 }
 
 export function updateDeal(id: string, model: UpdateDealModel): Promise<void> {

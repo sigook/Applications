@@ -6813,26 +6813,6 @@
           "Deals"
         ],
         "summary": "Creates a deal for a company profile, owned by the current sales user.",
-        "requestBody": {
-          "description": "Deal data: company profile, title, date, value, type, status and optional document.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateDealModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateDealModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateDealModel"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK",
@@ -25579,39 +25559,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.Company.CreateDealModel": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "companyProfileId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "value": {
-            "type": "number",
-            "format": "double"
-          },
-          "type": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.DealType"
-          },
-          "status": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
-          },
-          "documentId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.Company.DealListModel": {
         "type": "object",
         "properties": {
@@ -25659,6 +25606,10 @@
             "nullable": true
           },
           "documentName": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentPath": {
             "type": "string",
             "nullable": true
           },

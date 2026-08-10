@@ -567,6 +567,7 @@ public class CompanyRepository : ICompanyRepository
                 Status = d.Status,
                 DocumentId = d.DocumentId,
                 DocumentName = d.Document.FileName,
+                DocumentPath = d.DocumentId == null ? null : filesConfiguration.FilesPath + d.Document.FileName,
                 CreatedAt = d.CreatedAt,
                 UpdatedAt = d.UpdatedAt
             });
@@ -576,7 +577,7 @@ public class CompanyRepository : ICompanyRepository
     }
 
     public Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression) =>
-        _context.Deals.FirstOrDefaultAsync(expression);
+        _context.Deals.Include(d => d.Document).FirstOrDefaultAsync(expression);
 
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter)
     {

@@ -5,6 +5,7 @@ using Covenant.Common.Models.Company;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.Sales;
 
@@ -26,11 +27,12 @@ public class DealsController(ISalesService salesService) : ControllerBase
     /// <summary>Creates a deal for a company profile, owned by the current sales user.</summary>
     /// <param name="model">Deal data: company profile, title, date, value, type, status and optional document.</param>
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromBody] CreateDealModel model)
+    public async Task<IActionResult> Post()
     {
-        var result = await salesService.CreateDeal(model);
+        var result = await salesService.CreateDeal();
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
     }
@@ -46,6 +48,20 @@ public class DealsController(ISalesService salesService) : ControllerBase
         var result = await salesService.UpdateDeal(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
+    }
+
+    /// <summary>Downloads the document attached to a deal. Sales users can only access their own deals.</summary>
+    /// <param name="id">Identifier of the deal.</param>
+    [HttpGet("{id}/document")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetDocument([FromRoute] Guid id)
+    {
+        var result = await salesService.GetDealDocument(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        if (!new FileExtensionContentTypeProvider().TryGetContentType(result.Value.FileName, out var contentType))
+            contentType = "application/octet-stream";
+        return File(result.Value.Content, contentType);
     }
 
     /// <summary>Deletes a deal. Sales users can only delete the deals they own.</summary>

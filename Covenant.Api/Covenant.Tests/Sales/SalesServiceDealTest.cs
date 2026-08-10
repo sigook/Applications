@@ -1,8 +1,10 @@
 using Covenant.Api.Validators.Company;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -18,6 +20,7 @@ namespace Covenant.Tests.Sales
     {
         private readonly Mock<ICompanyRepository> _companyRepository = new();
         private readonly Mock<IIdentityServerService> _identityServerService = new();
+        private readonly Mock<IUploadedFilesService> _uploadedFilesService = new();
         private readonly ISalesService _sut;
         private readonly Guid _agencyId = Guid.NewGuid();
         private readonly Guid _userId = Guid.NewGuid();
@@ -29,11 +32,14 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
                 .ReturnsAsync(true);
+            _uploadedFilesService.Setup(u => u.Validate()).Returns(Result.Ok());
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
                 Mock.Of<IRequestRepository>(),
                 _companyRepository.Object,
                 _identityServerService.Object,
+                _uploadedFilesService.Object,
+                Mock.Of<IFilesContainer>(),
                 new CreateCompanyInteractionModelValidator(),
                 new UpdateCompanyInteractionModelValidator(),
                 new CreateDealModelValidator(),
@@ -64,10 +70,16 @@ namespace Covenant.Tests.Sales
         private Deal OwnedDeal(Guid ownerId) =>
             new("Existing", ownerId, Guid.NewGuid(), new DateTime(2026, 1, 1), 1, DealType.Temporal, DealStatus.ToSend, null);
 
+        private Task<Result<Guid>> CreateDeal(CreateDealModel model)
+        {
+            _uploadedFilesService.Setup(u => u.GetModel<CreateDealModel>()).Returns(model);
+            return _sut.CreateDeal();
+        }
+
         [Fact]
         public async Task CreateDealSucceedsWhenModelValid()
         {
-            Result<Guid> result = await _sut.CreateDeal(ValidCreateModel());
+            Result<Guid> result = await CreateDeal(ValidCreateModel());
             Assert.True(result);
             Assert.Empty(result.Errors);
             _companyRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Once);
@@ -75,11 +87,29 @@ namespace Covenant.Tests.Sales
         }
 
         [Fact]
+        public async Task CreateDealWithFileCreatesAndLinksDocument()
+        {
+            Deal created = null;
+            _companyRepository
+                .Setup(r => r.Create(It.IsAny<Deal>()))
+                .Callback<Deal>(d => created = d)
+                .Returns(Task.CompletedTask);
+            var model = ValidCreateModel();
+            model.FileName = "Deal_abc123.pdf";
+            Result<Guid> result = await CreateDeal(model);
+            Assert.True(result);
+            _companyRepository.Verify(r => r.Create(It.IsAny<CovenantFile>()), Times.Once);
+            Assert.NotNull(created.Document);
+            Assert.Equal("Deal_abc123.pdf", created.Document.FileName);
+            _uploadedFilesService.Verify(u => u.Upload(It.IsAny<IEnumerable<string>>()), Times.Once);
+        }
+
+        [Fact]
         public async Task CreateDealFailsWhenTitleEmpty()
         {
             var model = ValidCreateModel();
             model.Title = string.Empty;
-            Result<Guid> result = await _sut.CreateDeal(model);
+            Result<Guid> result = await CreateDeal(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.Title));
             _companyRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Never);
@@ -90,7 +120,7 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidCreateModel();
             model.Value = -1;
-            Result<Guid> result = await _sut.CreateDeal(model);
+            Result<Guid> result = await CreateDeal(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.Value));
         }
@@ -100,7 +130,7 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidCreateModel();
             model.Type = (DealType)99;
-            Result<Guid> result = await _sut.CreateDeal(model);
+            Result<Guid> result = await CreateDeal(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.Type));
         }
@@ -110,7 +140,7 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidCreateModel();
             model.CompanyProfileId = Guid.Empty;
-            Result<Guid> result = await _sut.CreateDeal(model);
+            Result<Guid> result = await CreateDeal(model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.CompanyProfileId));
         }
@@ -120,7 +150,7 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidCreateModel();
             model.Title = string.Empty;
-            await _sut.CreateDeal(model);
+            await CreateDeal(model);
             _companyRepository.Verify(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()), Times.Never);
         }
 
@@ -130,7 +160,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.CompanyProfileBelongsToAgency(It.IsAny<Guid>(), It.IsAny<Guid>()))
                 .ReturnsAsync(false);
-            Result<Guid> result = await _sut.CreateDeal(ValidCreateModel());
+            Result<Guid> result = await CreateDeal(ValidCreateModel());
             Assert.False(result);
             Assert.Equal("Company profile not found", result.Errors.First().Message);
             _companyRepository.Verify(r => r.Create(It.IsAny<Deal>()), Times.Never);

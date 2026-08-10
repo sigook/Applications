@@ -414,6 +414,7 @@ export interface Deal {
   status: DealStatus;
   documentId?: string | null;
   documentName?: string | null;
+  documentPath?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -441,6 +442,7 @@ export interface CreateDealModel {
   type: DealType;
   status: DealStatus;
   documentId?: string | null;
+  fileName?: string | null;
 }
 
 // Body for PUT .../{id}. Mirrors backend UpdateDealModel.

@@ -16,6 +16,7 @@ public class DealListModel
     public DealStatus Status { get; set; }
     public Guid? DocumentId { get; set; }
     public string DocumentName { get; set; }
+    public string DocumentPath { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

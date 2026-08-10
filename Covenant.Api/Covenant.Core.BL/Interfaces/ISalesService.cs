@@ -19,7 +19,8 @@ public interface ISalesService
     Task<Result> DeleteInteraction(Guid id);
 
     Task<PaginatedList<DealListModel>> GetDeals(GetDealsFilter filter);
-    Task<Result<Guid>> CreateDeal(CreateDealModel model);
+    Task<Result<Guid>> CreateDeal();
     Task<Result> UpdateDeal(Guid id, UpdateDealModel model);
     Task<Result> DeleteDeal(Guid id);
+    Task<Result<DealDocumentModel>> GetDealDocument(Guid id);
 }

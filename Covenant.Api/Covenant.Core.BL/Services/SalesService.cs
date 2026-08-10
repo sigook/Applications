@@ -1,6 +1,8 @@
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Request;
@@ -17,6 +19,8 @@ public class SalesService(
     IRequestRepository requestRepository,
     ICompanyRepository companyRepository,
     IIdentityServerService identityServerService,
+    IUploadedFilesService uploadedFilesService,
+    IFilesContainer filesContainer,
     IValidator<CreateCompanyInteractionModel> createInteractionValidator,
     IValidator<UpdateCompanyInteractionModel> updateInteractionValidator,
     IValidator<CreateDealModel> createDealValidator,
@@ -60,9 +64,6 @@ public class SalesService(
     {
         var validationResult = await createInteractionValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Guid>();
-        var agencyId = identityServerService.GetAgencyId();
-        if (!await companyRepository.CompanyProfileBelongsToAgency(model.CompanyProfileId, agencyId))
-            return Result.Fail<Guid>("Company profile not found");
         var userId = identityServerService.GetUserId();
         var interaction = new CompanyInteraction(model.Description, userId, model.CompanyProfileId,
             model.InteractionPurpose, model.InteractionType, model.InteractionStatus);
@@ -99,18 +100,27 @@ public class SalesService(
         return await companyRepository.GetDeals(agencyId, filter);
     }
 
-    public async Task<Result<Guid>> CreateDeal(CreateDealModel model)
+    public async Task<Result<Guid>> CreateDeal()
     {
+        var validation = uploadedFilesService.Validate();
+        if (!validation) return Result.Fail<Guid>(validation.Errors);
+        var model = uploadedFilesService.GetModel<CreateDealModel>();
         var validationResult = await createDealValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Guid>();
-        var agencyId = identityServerService.GetAgencyId();
-        if (!await companyRepository.CompanyProfileBelongsToAgency(model.CompanyProfileId, agencyId))
-            return Result.Fail<Guid>("Company profile not found");
         var userId = identityServerService.GetUserId();
         var deal = new Deal(model.Title, userId, model.CompanyProfileId, model.Date, model.Value,
             model.Type, model.Status, model.DocumentId);
+        if (!string.IsNullOrWhiteSpace(model.FileName))
+        {
+            var file = CovenantFile.Create(model.FileName);
+            if (!file) return Result.Fail<Guid>(file.Errors);
+            await companyRepository.Create(file.Value);
+            deal.Document = file.Value;
+        }
         await companyRepository.Create(deal);
         await companyRepository.SaveChangesAsync();
+        if (!string.IsNullOrWhiteSpace(model.FileName))
+            await uploadedFilesService.Upload([model.FileName]);
         return Result.Ok(deal.Id);
     }
 
@@ -133,6 +143,17 @@ public class SalesService(
         companyRepository.Delete(result.Value);
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
+    }
+
+    public async Task<Result<DealDocumentModel>> GetDealDocument(Guid id)
+    {
+        var result = await GetOwnedDeal(id);
+        if (!result) return Result.Fail<DealDocumentModel>(result.Errors);
+        var document = result.Value.Document;
+        if (document is null) return Result.Fail<DealDocumentModel>("Deal has no document");
+        var content = await filesContainer.Download(document.FileName);
+        if (content is null) return Result.Fail<DealDocumentModel>("Document not found");
+        return Result.Ok(new DealDocumentModel { Content = content, FileName = document.FileName });
     }
 
     private void ApplyScope(GetRequestForAgencyFilter filter)

@@ -11,4 +11,5 @@ public class CreateDealModel
     public DealType Type { get; set; }
     public DealStatus Status { get; set; }
     public Guid? DocumentId { get; set; }
+    public string FileName { get; set; }
 }

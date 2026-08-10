@@ -42,6 +42,28 @@
         @active-change="onPickerActive"
       ></b-datepicker>
     </b-field>
+
+    <b-field v-if="!isEditing" label="Document">
+      <b-upload v-model="documentFile" expanded>
+        <a class="button is-fullwidth sd-upload">
+          <b-icon icon="paperclip" size="is-small"></b-icon>
+          <span>{{ documentFile ? documentFile.name : 'Attach a document (optional)' }}</span>
+        </a>
+      </b-upload>
+    </b-field>
+
+    <b-field v-else label="Document">
+      <a
+        v-if="deal?.documentName"
+        class="sd-document sd-document--link"
+        href="#"
+        @click.prevent="openDocument"
+      >
+        <b-icon icon="paperclip" size="is-small"></b-icon>
+        {{ deal.documentName }}
+      </a>
+      <p v-else class="sd-document">No document attached</p>
+    </b-field>
   </form>
 </template>
 
@@ -50,7 +72,7 @@ import { computed, onMounted, ref } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import { getSalesCompanies } from '@/api/salesApi';
 import { useDropdownReveal } from '@/composables/useDropdownReveal';
-import { createDeal, updateDeal } from '@/api/dealApi';
+import { createDeal, updateDeal, getDealDocument } from '@/api/dealApi';
 import {
   DealType,
   DealStatus,
@@ -62,6 +84,7 @@ import {
 import type { Deal } from '@/types/company';
 import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
+import { generateFileName } from '@/utils/fileNaming';
 import SearchSelect from './SearchSelect.vue';
 
 const props = defineProps<{ deal?: Deal | null }>();
@@ -81,12 +104,25 @@ const date = ref<Date | null>(null);
 const value = ref<number | null>(null);
 const type = ref<DealType>(DealType.Temporal);
 const status = ref<DealStatus>(DealStatus.ToSend);
+const documentFile = ref<File | null>(null);
 
 const datePicker = ref<ComponentPublicInstance | null>(null);
 const { reveal } = useDropdownReveal();
 
 function onPickerActive(active: boolean): void {
   reveal(datePicker.value?.$el as HTMLElement | undefined, active);
+}
+
+async function openDocument(): Promise<void> {
+  if (!props.deal) return;
+  try {
+    const blob = await getDealDocument(props.deal.id);
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (error) {
+    await showAlertError(error);
+  }
 }
 
 onMounted(() => {
@@ -117,6 +153,7 @@ function resetForm(): void {
   value.value = null;
   type.value = DealType.Temporal;
   status.value = DealStatus.ToSend;
+  documentFile.value = null;
 }
 
 async function submit(): Promise<boolean> {
@@ -149,6 +186,7 @@ async function submit(): Promise<boolean> {
       });
       showAlertSuccess('Deal updated');
     } else {
+      const file = documentFile.value;
       await createDeal({
         title: title.value.trim(),
         companyProfileId: companyProfileId.value,
@@ -157,7 +195,8 @@ async function submit(): Promise<boolean> {
         type: type.value,
         status: status.value,
         documentId: null,
-      });
+        fileName: file ? generateFileName('Deal', file.name) : null,
+      }, file);
       showAlertSuccess('Deal created');
       resetForm();
     }
@@ -211,6 +250,26 @@ defineExpose({ submit });
   color: #333;
   padding: 0.35rem 0;
   font-weight: 600;
+}
+
+.sd-document {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: #333;
+  padding: 0.35rem 0;
+  word-break: break-all;
+}
+
+.sd-document--link {
+  color: $primary;
+  text-decoration: underline;
+
+  &:hover {
+    color: $primary;
+    filter: brightness(0.9);
+  }
 }
 
 .sd-form__row {
