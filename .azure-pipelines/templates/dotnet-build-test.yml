@@ -57,7 +57,7 @@ steps:
       inputs:
         command: 'test'
         projects: ${{ parameters.unitTestProjects }}
-        arguments: '--logger "console;verbosity=detailed" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }}'
         testRunTitle: 'Unit Tests'
         publishTestResults: true
 
@@ -68,6 +68,6 @@ steps:
       inputs:
         command: 'test'
         projects: ${{ parameters.integrationTestProjects }}
-        arguments: '--logger "console;verbosity=detailed" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }}'
         testRunTitle: 'Integration Tests'
         publishTestResults: true
