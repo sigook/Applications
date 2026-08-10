@@ -6,8 +6,7 @@
 |----------|-------------|
 | [BUSINESS_MODEL.md](./business/BUSINESS_MODEL.md) | Business model, actors, value proposition, and system flow |
 | [BILLING_RULES.md](./business/BILLING_RULES.md) | Invoice generation, HST/GST, rates, markup calculations |
-| [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) | Payroll calculations, deductions (CPP, EI), federal and provincial taxes |
-| [PAYSTUB_GENERATION.md](./business/PAYSTUB_GENERATION.md) | Step-by-step pay stub generation flow (`GeneratePayStubForWorker`) |
+| [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) | Pay stub generation flow, payroll calculations, deductions (CPP, EI), federal and provincial taxes |
 | [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) | Hours calculations (regular, overtime, night shift, holiday), validations |
 | [WORKFLOWS.md](./business/WORKFLOWS.md) | Detailed step-by-step flows (Worker Registration, Job Matching, Payroll, etc.) |
 | [REQUEST_STATE_MANAGEMENT.md](./business/REQUEST_STATE_MANAGEMENT.md) | Request lifecycle and state transitions |

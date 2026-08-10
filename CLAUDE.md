@@ -18,8 +18,7 @@ Before implementing any feature, read the relevant document from `.docs/`:
 |------|----------|
 | Business model & actors | `.docs/business/BUSINESS_MODEL.md` |
 | Billing (rates, HST/GST) | `.docs/business/BILLING_RULES.md` |
-| Payroll (CPP, EI, taxes) | `.docs/business/PAYROLL_RULES.md` |
-| Pay stub generation flow | `.docs/business/PAYSTUB_GENERATION.md` |
+| Payroll (pay stub flow, CPP, EI, taxes) | `.docs/business/PAYROLL_RULES.md` |
 | Timesheets (OT, night, holiday) | `.docs/business/TIMESHEET_RULES.md` |
 | Workflows step-by-step | `.docs/business/WORKFLOWS.md` |
 | Request state management | `.docs/business/REQUEST_STATE_MANAGEMENT.md` |

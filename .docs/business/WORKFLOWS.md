@@ -193,7 +193,7 @@ Regular / overtime / holiday hour classification is computed by `TimesheetCalcul
 
 ## 5. Payroll & Invoicing Flow
 
-Both run from the agency accounting screens. Calculation detail is NOT duplicated here — see `.docs/business/PAYSTUB_GENERATION.md`, `.docs/business/PAYROLL_RULES.md`, and `.docs/business/BILLING_RULES.md`.
+Both run from the agency accounting screens. Calculation detail is NOT duplicated here — see `.docs/business/PAYROLL_RULES.md` and `.docs/business/BILLING_RULES.md`.
 
 ### 5.1 Pay stub generation
 
