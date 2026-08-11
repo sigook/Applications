@@ -73,7 +73,7 @@ import { computed, onMounted, ref } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import { getSalesCompanies } from '@/api/salesApi';
 import { useDropdownReveal } from '@/composables/useDropdownReveal';
-import { createDeal, updateDeal } from '@/api/dealApi';
+import { createDeal, updateDeal } from '@/api/companyApi';
 import {
   DealType,
   DealStatus,

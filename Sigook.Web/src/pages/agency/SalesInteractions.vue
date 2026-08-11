@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getCompanyInteractions } from '@/api/companyInteractionApi';
+import { getCompanyInteractions } from '@/api/companyApi';
 import {
   CompanyInteractionSortBy,
   INTERACTION_TYPE_LABELS,

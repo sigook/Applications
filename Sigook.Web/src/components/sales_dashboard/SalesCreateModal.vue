@@ -62,8 +62,7 @@
 import { computed, ref, watch } from 'vue';
 import type { SalesCreateKind } from '@/types/sales';
 import type { CompanyInteraction, Deal } from '@/types/company';
-import { deleteCompanyInteraction } from '@/api/companyInteractionApi';
-import { deleteDeal } from '@/api/dealApi';
+import { deleteCompanyInteraction, deleteDeal } from '@/api/companyApi';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import SalesInteractionForm from './SalesInteractionForm.vue';
 import SalesClientForm from './SalesClientForm.vue';

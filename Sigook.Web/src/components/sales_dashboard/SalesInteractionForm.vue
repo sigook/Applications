@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { getSalesCompanies } from '@/api/salesApi';
-import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyInteractionApi';
+import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyApi';
 import {
   InteractionType,
   InteractionPurpose,

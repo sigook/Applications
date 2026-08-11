@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getDeals } from '@/api/dealApi';
+import { getDeals } from '@/api/companyApi';
 import { DealSortBy, DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/types/company';
 import type { Deal } from '@/types/company';
 import { currency, date } from '@/utils/filters';
