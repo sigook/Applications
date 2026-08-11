@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Covenant.Infrastructure.Migrations
 {
     [DbContext(typeof(CovenantContext))]
-    [Migration("20260811131845_AddDealsAndInteractions")]
+    [Migration("20260811133554_AddDealsAndInteractions")]
     partial class AddDealsAndInteractions
     {
         /// <inheritdoc />
