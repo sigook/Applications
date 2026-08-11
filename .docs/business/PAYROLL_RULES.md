@@ -103,7 +103,7 @@ TotalEarnings = GrossPayment + Vacations
 Evaluated per week in `GeneratePayStubForWorker` (PayStubService.cs:346-366) against the `Holiday` catalog table (`CatalogRepository.GetHolidaysInWeek`). For each holiday in the week:
 
 1. **Entitlement flags** from `payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays)`: `HolidayWasPaid` (already paid in a prior pay stub — `PayStubPublicHolidays` lookup), `CustomPublicHolidayValue` (per-WorkerProfile × per-holiday override from `WorkerProfileHolidays.StatPaidWorker`, `PayStubRepository.cs:114-117`), `IsEntitledToReceiveHolidayPay` (worked at least one qualifying day around the holiday — day before, the holiday, or day after; `DateExtensions.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`).
-2. **Base wage** (`HolidayPayBase`) from `TimesheetCalculatorService.CalculateHolidayPayBase`: the worker's gross earnings (regular + other-regular + overtime + worked-holiday + missing + missing-overtime; `TimesheetCalculatorService.cs:226-232`) **plus 4% vacation pay** over the **four work weeks before** the holiday's work week. The window is computed with `holiday.GetEnd()` (last Saturday of the week before the holiday's Sunday–Saturday week) and `.GetStart()` (four weeks earlier). Source is the approved timesheets, not previously generated pay stubs, so the amount does not depend on generation order.
+2. **Base wage** (`HolidayPayBase`) from `TimesheetCalculatorService.CalculateHolidayPayBase`: the worker's **regular wages** (regular + other-regular + missing hours at regular rate) over the **four work weeks before** the holiday's work week, **plus 4% vacation pay** computed over the full gross of that window (including overtime and worked-holiday premium, since vacation pay accrues on all wages). Per the Ontario ESA definition of "regular wages", **overtime pay, worked-holiday premium pay (1.5×) and missing-overtime pay are excluded** from the base — hours above the weekly threshold drop out entirely, they are not re-added at straight time. The window is computed with `holiday.GetEnd()` (last Saturday of the week before the holiday's Sunday–Saturday week) and `.GetStart()` (four weeks earlier). Source is the approved timesheets, not previously generated pay stubs, so the amount does not depend on generation order.
 3. **Resolution** via `RegularWageWorker.CalculateAmount()` (Covenant.Common/Models/Accounting/PayStub/RegularWageWorker.cs:16-35), evaluated in order:
    1. Holiday already paid on a previous pay stub → $0.
    2. Custom value > 0 configured → that amount.
@@ -114,7 +114,7 @@ Evaluated per week in `GeneratePayStubForWorker` (PayStubService.cs:346-366) aga
 
 The resulting amount (when > 0) becomes a `PayStubPublicHoliday` entity and a `StatutoryHoliday` `PayStubItem`.
 
-Example: worker earned $3,000 gross + $120 vacation in the prior four weeks → $3,120 / 20 = **$156.00**.
+Example: worker earned $880 regular + $120 overtime in the prior four weeks → vacation pay = 4% × $1,000 = $40 → ($880 + $40) / 20 = **$46.00** (the $120 of overtime pay is excluded from the base).
 
 Working ON the holiday is a separate flow: those hours are paid as StatutoryWorkedHoliday at 1.5× (see table above).
 

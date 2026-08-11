@@ -200,7 +200,8 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
     public async Task<decimal> CalculateHolidayPayBase(Guid workerProfileId, DateTime lookbackStart, DateTime holidayWeekEnd)
     {
         var timesheets = await _timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
-        var gross = decimal.Zero;
+        var regularWages = decimal.Zero;
+        var totalWages = decimal.Zero;
         foreach (var week in timesheets.GroupBy(t => t.Week))
         {
             foreach (var request in week.GroupBy(t => t.RequestId))
@@ -223,19 +224,22 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
                     var missingRate = ts.MissingRateWorker <= decimal.Zero ? ts.WorkerRate : ts.MissingRateWorker;
 
-                    gross = gross
+                    regularWages = regularWages
                         .Add(CalculateRegularAmount(ts.WorkerRate, hoursBreakdown.RegularHours.TotalHours))
                         .Add(CalculateRegularAmount(ts.WorkerRate, hoursBreakdown.OtherRegularHours.TotalHours))
+                        .Add(CalculateMissingAmount(missingRate, ts.MissingHours.TotalHours));
+
+                    totalWages = totalWages
                         .Add(CalculateOvertimeAmount(ts.WorkerRate, _rates.OverTime, hoursBreakdown.OvertimeHours.TotalHours))
                         .Add(CalculateHolidayAmount(ts.WorkerRate, _rates.Holiday, hoursBreakdown.HolidayHours.TotalHours))
-                        .Add(CalculateMissingAmount(missingRate, ts.MissingHours.TotalHours))
                         .Add(CalculateOvertimeAmount(missingRate, _rates.OverTime, ts.MissingHoursOvertime.TotalHours));
                 }
             }
         }
-        gross = gross.DefaultMoneyRound();
-        var vacations = CalculateVacationsAmount(gross, _rates.Vacations);
-        return gross.Add(vacations).DefaultMoneyRound();
+        totalWages = totalWages.Add(regularWages).DefaultMoneyRound();
+        regularWages = regularWages.DefaultMoneyRound();
+        var vacations = CalculateVacationsAmount(totalWages, _rates.Vacations);
+        return regularWages.Add(vacations).DefaultMoneyRound();
     }
 
     #endregion

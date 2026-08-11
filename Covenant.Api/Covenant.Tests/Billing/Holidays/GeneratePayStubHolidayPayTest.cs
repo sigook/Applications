@@ -79,7 +79,36 @@ public class GeneratePayStubHolidayPayTest
 
         Assert.True(result);
         var holidayPay = Assert.Single(_captured.Holidays);
-        Assert.True(holidayPay.Amount > 0);
+        Assert.Equal(8.32m, holidayPay.Amount);
+    }
+
+    [Fact]
+    public async Task Excludes_Overtime_Pay_From_The_Holiday_Pay_Base()
+    {
+        SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = true });
+        var requestId = Guid.NewGuid();
+        SetupWindow(Enumerable.Range(0, 6)
+            .Select(day => WorkedDay(rate: 20, hours: 8, date: new DateTime(2026, 04, 20).AddDays(day), requestId: requestId))
+            .ToArray());
+
+        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+
+        Assert.True(result);
+        var holidayPay = Assert.Single(_captured.Holidays);
+        Assert.Equal(46m, holidayPay.Amount);
+    }
+
+    [Fact]
+    public async Task Excludes_Worked_Holiday_Premium_From_The_Holiday_Pay_Base()
+    {
+        SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = true });
+        SetupWindow(WorkedDay(rate: 20, hours: 8, isHoliday: true));
+
+        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+
+        Assert.True(result);
+        var holidayPay = Assert.Single(_captured.Holidays);
+        Assert.Equal(0.48m, holidayPay.Amount);
     }
 
     [Fact]
@@ -130,27 +159,32 @@ public class GeneratePayStubHolidayPayTest
             .Setup(r => r.GetApprovedTimeSheetsInRange(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(timesheets.ToList());
 
-    private static TimeSheetApprovedPayrollModel WorkedDay(decimal rate, double hours)
+    private static TimeSheetApprovedPayrollModel WorkedDay(
+        decimal rate,
+        double hours,
+        DateTime? date = null,
+        Guid? requestId = null,
+        bool isHoliday = false)
     {
-        var date = new DateTime(2026, 05, 19);
+        var day = date ?? new DateTime(2026, 05, 19);
         return new TimeSheetApprovedPayrollModel(
             overtimeStartsAfter: TimeLimits.DefaultTimeLimits.MaxHoursWeek,
-            requestId: Guid.NewGuid(),
+            requestId: requestId ?? Guid.NewGuid(),
             workerRate: rate,
             breakIsPaid: false,
             durationBreak: TimeSpan.Zero,
-            holidayIsPaid: false,
+            holidayIsPaid: isHoliday,
             workerId: WorkerId,
             workerProfileId: Guid.NewGuid(),
             timeSheetId: Guid.NewGuid(),
             week: 1,
-            date: date,
-            timeInApproved: date.Date.AddHours(9),
-            timeOutApproved: date.Date.AddHours(9 + hours),
+            date: day,
+            timeInApproved: day.Date.AddHours(9),
+            timeOutApproved: day.Date.AddHours(9 + hours),
             missingHours: TimeSpan.Zero,
             missingHoursOvertime: TimeSpan.Zero,
             missingRateWorker: 0,
-            isHoliday: false,
+            isHoliday: isHoliday,
             bonusOrOthers: 0,
             bonusOrOthersDescription: null,
             deductionsOthers: 0,
