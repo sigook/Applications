@@ -82,9 +82,9 @@ Decision order (`RegularWageWorker.CalculateAmount`, Covenant.Common/Models/Acco
 3. Worker did not work any qualifying day (day before, the holiday, or day after — `DateExtensions.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`) → $0, not entitled.
 4. Otherwise: `Amount = HolidayPayBase / 20`.
 
-`HolidayPayBase` = gross earnings + 4% vacation over the **four work weeks before** the holiday's work week, recomputed from approved timesheets by `TimesheetCalculatorService.CalculateHolidayPayBase` (not from previous pay stubs, so it does not depend on generation order).
+`HolidayPayBase` = the worker's **regular wages** (regular + other-regular + missing hours at regular rate) over the **four work weeks before** the holiday's work week, **plus 4% vacation pay** computed over the full gross of that window (including overtime and worked-holiday premium, since vacation pay accrues on all wages). Per the Ontario ESA definition of "regular wages", **overtime pay, worked-holiday premium pay (1.5×) and missing-overtime pay are excluded** from the base — hours above the weekly threshold drop out entirely, they are not re-added at straight time. Recomputed from approved timesheets by `TimesheetCalculatorService.CalculateHolidayPayBase` (not from previous pay stubs, so it does not depend on generation order).
 
-Example: worker earned $3,000 gross + $120 vacation in the prior four weeks → $3,120 / 20 = **$156.00**.
+Example: worker earned $880 regular + $120 overtime in the prior four weeks → vacation pay = 4% × $1,000 = $40 → ($880 + $40) / 20 = **$46.00** (the $120 of overtime pay is excluded from the base).
 
 Working ON the holiday is a separate flow: those hours are paid as StatutoryWorkedHoliday at 1.5× (see table above).
 
