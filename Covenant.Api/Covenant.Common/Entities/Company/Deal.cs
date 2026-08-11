@@ -31,8 +31,8 @@ public class Deal
     public DealStatus Status { get; set; }
     public Guid? DocumentId { get; set; }
     public CovenantFile Document { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     public void Update(string title, DateTime date, decimal value, DealType type, DealStatus status, Guid? documentId)
     {
@@ -42,6 +42,6 @@ public class Deal
         Type = type;
         Status = status;
         DocumentId = documentId;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.Now;
     }
 }

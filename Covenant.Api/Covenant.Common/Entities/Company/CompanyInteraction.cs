@@ -21,8 +21,8 @@ public class CompanyInteraction
     public string Description { get; set; } = string.Empty;
     public Guid UserId { get; set; }
     public User User { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
     public Guid CompanyProfileId { get; set; }
     public CompanyProfile CompanyProfile { get; set; }
     public InteractionPurpose InteractionPurpose { get; set; }
@@ -35,6 +35,6 @@ public class CompanyInteraction
         InteractionPurpose = purpose;
         InteractionType = type;
         InteractionStatus = status;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.Now;
     }
 }
