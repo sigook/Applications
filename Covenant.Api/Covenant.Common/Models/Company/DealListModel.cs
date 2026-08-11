@@ -9,7 +9,7 @@ public class DealListModel
     public Guid CompanyProfileId { get; set; }
     public string CompanyName { get; set; }
     public Guid OwnerId { get; set; }
-    public string OwnerName { get; set; }
+    public string Owner { get; set; }
     public DateTime Date { get; set; }
     public decimal Value { get; set; }
     public DealType Type { get; set; }

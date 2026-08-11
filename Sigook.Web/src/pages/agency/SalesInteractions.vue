@@ -37,7 +37,7 @@
           {{ INTERACTION_STATUS_LABELS[props.row.interactionStatus] }}
         </b-table-column>
         <b-table-column field="owner" label="Owner" v-slot="props">
-          {{ props.row.ownerName }}
+          {{ props.row.owner }}
         </b-table-column>
         <b-table-column field="date" label="Date" sortable v-slot="props">
           {{ date(props.row.createdAt) }}

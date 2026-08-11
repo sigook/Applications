@@ -407,7 +407,7 @@ export interface Deal {
   companyProfileId: string;
   companyName: string;
   ownerId: string;
-  ownerName?: string;
+  owner?: string;
   date: string;
   value: number;
   type: DealType;
@@ -547,7 +547,7 @@ export interface CompanyInteraction {
   companyProfileId: string;
   companyName: string;
   ownerId: string;
-  ownerName?: string;
+  owner?: string;
   description: string;
   interactionPurpose: InteractionPurpose;
   interactionType: InteractionType;

@@ -8,7 +8,7 @@ public class CompanyInteractionListModel
     public Guid CompanyProfileId { get; set; }
     public string CompanyName { get; set; }
     public Guid OwnerId { get; set; }
-    public string OwnerName { get; set; }
+    public string Owner { get; set; }
     public string Description { get; set; }
     public InteractionPurpose InteractionPurpose { get; set; }
     public InteractionType InteractionType { get; set; }
