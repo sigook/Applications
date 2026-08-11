@@ -54,10 +54,11 @@
 
     <b-field v-else label="Document">
       <a
-        v-if="deal?.documentName"
+        v-if="deal?.documentPath"
         class="sd-document sd-document--link"
-        href="#"
-        @click.prevent="openDocument"
+        :href="deal.documentPath"
+        target="_blank"
+        rel="noopener"
       >
         <b-icon icon="paperclip" size="is-small"></b-icon>
         {{ deal.documentName }}
@@ -72,7 +73,7 @@ import { computed, onMounted, ref } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import { getSalesCompanies } from '@/api/salesApi';
 import { useDropdownReveal } from '@/composables/useDropdownReveal';
-import { createDeal, updateDeal, getDealDocument } from '@/api/dealApi';
+import { createDeal, updateDeal } from '@/api/dealApi';
 import {
   DealType,
   DealStatus,
@@ -111,18 +112,6 @@ const { reveal } = useDropdownReveal();
 
 function onPickerActive(active: boolean): void {
   reveal(datePicker.value?.$el as HTMLElement | undefined, active);
-}
-
-async function openDocument(): Promise<void> {
-  if (!props.deal) return;
-  try {
-    const blob = await getDealDocument(props.deal.id);
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank', 'noopener');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
-  } catch (error) {
-    await showAlertError(error);
-  }
 }
 
 onMounted(() => {

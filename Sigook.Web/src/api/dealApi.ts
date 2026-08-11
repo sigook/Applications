@@ -17,10 +17,6 @@ export function createDeal(model: CreateDealModel, file?: File | null): Promise<
   );
 }
 
-export function getDealDocument(id: string): Promise<Blob> {
-  return api.get<Blob>(`${base}/${id}/document`, { responseType: 'blob' });
-}
-
 export function updateDeal(id: string, model: UpdateDealModel): Promise<void> {
   return api.put(`${base}/${id}`, model);
 }

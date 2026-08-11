@@ -2,7 +2,6 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Request;
@@ -20,7 +19,6 @@ public class SalesService(
     ICompanyRepository companyRepository,
     IIdentityServerService identityServerService,
     IUploadedFilesService uploadedFilesService,
-    IFilesContainer filesContainer,
     IValidator<CreateCompanyInteractionModel> createInteractionValidator,
     IValidator<UpdateCompanyInteractionModel> updateInteractionValidator,
     IValidator<CreateDealModel> createDealValidator,
@@ -143,17 +141,6 @@ public class SalesService(
         companyRepository.Delete(result.Value);
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
-    }
-
-    public async Task<Result<DealDocumentModel>> GetDealDocument(Guid id)
-    {
-        var result = await GetOwnedDeal(id);
-        if (!result) return Result.Fail<DealDocumentModel>(result.Errors);
-        var document = result.Value.Document;
-        if (document is null) return Result.Fail<DealDocumentModel>("Deal has no document");
-        var content = await filesContainer.Download(document.FileName);
-        if (content is null) return Result.Fail<DealDocumentModel>("Document not found");
-        return Result.Ok(new DealDocumentModel { Content = content, FileName = document.FileName });
     }
 
     private void ApplyScope(GetRequestForAgencyFilter filter)

@@ -16,11 +16,13 @@
       </template>
       <template #trailing>
         <a
-          v-if="item.documentName"
+          v-if="item.documentPath"
           class="sd-deal-doc"
-          href="#"
+          :href="item.documentPath"
+          target="_blank"
+          rel="noopener"
           :title="item.documentName || 'Open document'"
-          @click.stop.prevent="openDocument(item)"
+          @click.stop
         >
           <b-icon icon="paperclip" size="is-small"></b-icon>
         </a>
@@ -36,25 +38,12 @@ import SalesListRow from './SalesListRow.vue';
 import { DEAL_STATUS_LABELS } from '@/types/company';
 import type { Deal } from '@/types/company';
 import { compactMoney } from '@/utils/salesDashboardFormat';
-import { getDealDocument } from '@/api/dealApi';
-import { showAlertError } from '@/utils/toast';
 
 defineProps<{
   items: readonly Deal[];
 }>();
 
 const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
-
-async function openDocument(deal: Deal): Promise<void> {
-  try {
-    const blob = await getDealDocument(deal.id);
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank', 'noopener');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
-  } catch (error) {
-    await showAlertError(error);
-  }
-}
 </script>
 
 <style scoped lang="scss">

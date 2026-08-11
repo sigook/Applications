@@ -3,7 +3,6 @@ using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -33,7 +32,6 @@ namespace Covenant.Tests.Sales
                 _companyRepository.Object,
                 _identityServerService.Object,
                 Mock.Of<IUploadedFilesService>(),
-                Mock.Of<IFilesContainer>(),
                 new CreateCompanyInteractionModelValidator(),
                 new UpdateCompanyInteractionModelValidator(),
                 new CreateDealModelValidator(),

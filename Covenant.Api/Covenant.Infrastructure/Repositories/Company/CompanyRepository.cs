@@ -577,7 +577,7 @@ public class CompanyRepository : ICompanyRepository
     }
 
     public Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression) =>
-        _context.Deals.Include(d => d.Document).FirstOrDefaultAsync(expression);
+        _context.Deals.FirstOrDefaultAsync(expression);
 
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter)
     {

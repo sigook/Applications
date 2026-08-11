@@ -22,5 +22,4 @@ public interface ISalesService
     Task<Result<Guid>> CreateDeal();
     Task<Result> UpdateDeal(Guid id, UpdateDealModel model);
     Task<Result> DeleteDeal(Guid id);
-    Task<Result<DealDocumentModel>> GetDealDocument(Guid id);
 }
