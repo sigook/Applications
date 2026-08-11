@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Covenant.Infrastructure.Migrations
 {
     [DbContext(typeof(CovenantContext))]
-    [Migration("20260806143015_AddDealsAndCompanyInteractions")]
-    partial class AddDealsAndCompanyInteractions
+    [Migration("20260811131845_AddDealsAndInteractions")]
+    partial class AddDealsAndInteractions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1282,7 +1282,7 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1300,19 +1300,19 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<int>("InteractionType")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("CompanyProfileId");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("CompanyInteraction", (string)null);
+                    b.ToTable("CompanyInteractions", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
@@ -1687,16 +1687,16 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
+                    b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("DocumentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Status")
@@ -1708,18 +1708,24 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal>("Value")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("CompanyProfileId");
 
                     b.HasIndex("DocumentId");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("Deal", (string)null);
+                    b.ToTable("Deals", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Country", b =>
@@ -3904,21 +3910,21 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyInteraction", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "Company")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
+                        .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.User", "Owner")
+                    b.HasOne("Covenant.Common.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Company");
+                    b.Navigation("CompanyProfile");
 
-                    b.Navigation("Owner");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
@@ -4097,9 +4103,9 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.Deal", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "Company")
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
+                        .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -4108,17 +4114,17 @@ namespace Covenant.Infrastructure.Migrations
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Covenant.Common.Entities.User", "Owner")
+                    b.HasOne("Covenant.Common.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Company");
+                    b.Navigation("CompanyProfile");
 
                     b.Navigation("Document");
 
-                    b.Navigation("Owner");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Location", b =>

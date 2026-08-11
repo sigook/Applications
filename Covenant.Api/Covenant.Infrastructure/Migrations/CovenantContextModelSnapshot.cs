@@ -1309,7 +1309,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CompanyInteraction", (string)null);
+                    b.ToTable("CompanyInteractions", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
@@ -1722,7 +1722,7 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Deal", (string)null);
+                    b.ToTable("Deals", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Country", b =>

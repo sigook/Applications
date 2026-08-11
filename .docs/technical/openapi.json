@@ -2772,7 +2772,7 @@
             "name": "SortBy",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Enums.GetCompanyInteractionsSortBy"
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetCompanyInteractionsSortBy"
             }
           },
           {
@@ -6759,7 +6759,7 @@
             "name": "SortBy",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Enums.GetDealsSortBy"
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetDealsSortBy"
             }
           },
           {
@@ -6930,6 +6930,58 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/sales/Deals/{id}/document": {
+      "get": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "Downloads the document attached to a deal. Sales users can only access their own deals.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the deal.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -23422,25 +23474,6 @@
         "type": "integer",
         "format": "int32"
       },
-      "Covenant.Common.Enums.GetCompanyInteractionsSortBy": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
-      "Covenant.Common.Enums.GetDealsSortBy": {
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ],
-        "type": "integer",
-        "format": "int32"
-      },
       "Covenant.Common.Enums.InteractionPurpose": {
         "enum": [
           0,
@@ -25631,6 +25664,25 @@
           2,
           3,
           4
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Models.Company.GetCompanyInteractionsSortBy": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Models.Company.GetDealsSortBy": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
         ],
         "type": "integer",
         "format": "int32"
