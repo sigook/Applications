@@ -1,5 +1,5 @@
 import dashboardData from '@/data/sales/salesDashboard.json';
-import type { SalesDashboardModel } from '@/types/salesDashboard';
+import type { SalesDashboardModel } from '@/types/sales';
 
 // ---------------------------------------------------------------------------
 // Sales dashboard

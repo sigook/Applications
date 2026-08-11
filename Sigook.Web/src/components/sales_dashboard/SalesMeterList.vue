@@ -26,7 +26,7 @@
 import { computed } from 'vue';
 import { scaleLinear } from 'd3-scale';
 import { max as d3max } from 'd3-array';
-import type { SalesMeter } from '@/types/salesDashboard';
+import type { SalesMeter } from '@/types/sales';
 
 const props = defineProps<{ title: string; items: readonly SalesMeter[] }>();
 

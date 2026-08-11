@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { SalesCreateKind } from '@/types/salesDashboard';
+import type { SalesCreateKind } from '@/types/sales';
 import type { CompanyInteraction, Deal } from '@/types/company';
 import { deleteCompanyInteraction } from '@/api/companyInteractionApi';
 import { deleteDeal } from '@/api/dealApi';

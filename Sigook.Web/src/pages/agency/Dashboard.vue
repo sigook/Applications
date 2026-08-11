@@ -108,7 +108,7 @@ import type {
   SalesDashboardModel,
   SalesMeter,
   SalesRangeKey,
-} from '@/types/salesDashboard';
+} from '@/types/sales';
 
 const { agentName, loadAgentName } = useCurrentAgent();
 

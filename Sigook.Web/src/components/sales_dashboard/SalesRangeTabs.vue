@@ -14,8 +14,8 @@
 </template>
 
 <script setup lang="ts">
-import type { SalesRangeKey } from '@/types/salesDashboard';
-import { SALES_RANGE_TABS } from '@/types/salesDashboard';
+import type { SalesRangeKey } from '@/types/sales';
+import { SALES_RANGE_TABS } from '@/types/sales';
 
 defineProps<{ modelValue: SalesRangeKey }>();
 

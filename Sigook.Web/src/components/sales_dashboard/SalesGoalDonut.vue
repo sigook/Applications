@@ -28,7 +28,7 @@
 import { computed } from 'vue';
 import { arc } from 'd3-shape';
 import { scaleLinear } from 'd3-scale';
-import type { SalesGoal } from '@/types/salesDashboard';
+import type { SalesGoal } from '@/types/sales';
 import { compactMoney } from '@/utils/salesDashboardFormat';
 import { useTween } from '@/composables/useTween';
 

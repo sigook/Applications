@@ -14,7 +14,7 @@
 import { computed } from 'vue';
 import { scaleBand, scaleLinear } from 'd3-scale';
 import { max as d3max } from 'd3-array';
-import type { SalesSeriesPoint } from '@/types/salesDashboard';
+import type { SalesSeriesPoint } from '@/types/sales';
 import { compactMoney } from '@/utils/salesDashboardFormat';
 import { useElementSize } from '@/composables/useElementSize';
 

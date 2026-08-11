@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import SalesList from './SalesList.vue';
 import SalesListRow from './SalesListRow.vue';
-import type { SalesClient } from '@/types/salesDashboard';
+import type { SalesClient } from '@/types/sales';
 import { initialsOf } from '@/utils/salesDashboardFormat';
 
 defineProps<{
