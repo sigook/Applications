@@ -89,14 +89,24 @@ export default {
       icon: "cart-outline",
       items: [
         {
-          to: "/sales/requests",
-          icon: "calendar-month",
-          label: "Requests",
+          to: "/sales/dashboard",
+          icon: "view-dashboard-outline",
+          label: "Dashboard",
+        },
+        {
+          to: "/sales/interactions",
+          icon: "message-text-outline",
+          label: "Interactions",
         },
         {
           to: "/sales/companies",
           icon: "domain",
           label: "Clients",
+        },
+        {
+          to: "/sales/deals",
+          icon: "handshake-outline",
+          label: "Deals",
         },
       ],
     };

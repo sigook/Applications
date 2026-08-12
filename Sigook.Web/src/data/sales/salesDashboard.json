@@ -1,0 +1,80 @@
+{
+  "period": {
+    "label": "Q3 2026",
+    "asOf": "2026-07-12T17:00:00Z"
+  },
+  "clients": {
+    "totalItems": 34,
+    "activeCount": 34,
+    "newThisMonth": 3,
+    "items": [
+      {
+        "id": "a1f4c9d2-6b83-4e07-9c15-3d8a2f6e0b11",
+        "name": "Acme Logistics",
+        "industry": "Logistics"
+      },
+      {
+        "id": "b2e5d0a3-7c94-4f18-8d26-4e9b3a7f1c12",
+        "name": "Vertex Manufacturing",
+        "industry": "Manufacturing"
+      },
+      {
+        "id": "c3d6e1b4-8a05-4029-9e37-5f0c4b8a2d13",
+        "name": "Harbor Foods",
+        "industry": "Food Service"
+      },
+      {
+        "id": "d4c7f2a5-9b16-4130-8f48-6a1d5c9b3e14",
+        "name": "Northwind Traders",
+        "industry": "Retail"
+      },
+      {
+        "id": "e5b8a3c6-0c27-4241-9a59-7b2e6d0c4f15",
+        "name": "Beacon Retail",
+        "industry": "Retail"
+      }
+    ]
+  },
+  "deals": {
+    "totalItems": 57,
+    "pipelineValue": 612000
+  },
+  "dealsClosed": {
+    "week": [
+      { "label": "Mon", "value": 12000 },
+      { "label": "Tue", "value": 18000 },
+      { "label": "Wed", "value": 9000 },
+      { "label": "Thu", "value": 22000 },
+      { "label": "Fri", "value": 15000 },
+      { "label": "Sat", "value": 27000 },
+      { "label": "Sun", "value": 20000 }
+    ],
+    "month": [
+      { "label": "W1", "value": 78000 },
+      { "label": "W2", "value": 64000 },
+      { "label": "W3", "value": 92000 },
+      { "label": "W4", "value": 110000 }
+    ],
+    "quarter": [
+      { "label": "Jul", "value": 230000 },
+      { "label": "Aug", "value": 285000 },
+      { "label": "Sep", "value": 312000 }
+    ]
+  },
+  "goal": {
+    "actual": 612000,
+    "target": 850000
+  },
+  "pipeline": [
+    { "status": 0, "count": 24 },
+    { "status": 1, "count": 16 },
+    { "status": 2, "count": 5 },
+    { "status": 3, "count": 12 }
+  ],
+  "activity": [
+    { "type": 0, "count": 42 },
+    { "type": 1, "count": 68 },
+    { "type": 2, "count": 15 },
+    { "type": 3, "count": 9 }
+  ]
+}

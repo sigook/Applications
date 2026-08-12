@@ -240,6 +240,7 @@ async function handleFormSubmit() {
     })
     submitted.value = true
     resetAll()
+    captchaToken.value = ''
   } catch {
     submitError.value = 'Something went wrong. Please try again later.'
   } finally {

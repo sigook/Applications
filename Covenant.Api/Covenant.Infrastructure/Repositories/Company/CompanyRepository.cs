@@ -1,5 +1,6 @@
 ﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Location;
@@ -547,4 +548,113 @@ public class CompanyRepository : ICompanyRepository
         await _context.AddRangeAsync(companyLocations);
 
     }
+
+    public async Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, GetDealsFilter filter)
+    {
+        var query = _context.Deals
+            .Where(d => d.CompanyProfile.AgencyId == agencyId)
+            .Select(d => new DealListModel
+            {
+                Id = d.Id,
+                Title = d.Title,
+                CompanyProfileId = d.CompanyProfileId,
+                CompanyName = d.CompanyProfile.FullName,
+                OwnerId = d.UserId,
+                Owner = d.User.Email,
+                Date = d.Date,
+                Value = d.Value,
+                Type = d.Type,
+                Status = d.Status,
+                DocumentId = d.DocumentId,
+                DocumentName = d.Document.FileName,
+                DocumentPath = d.DocumentId == null ? null : filesConfiguration.FilesPath + d.Document.FileName,
+                CreatedAt = d.CreatedAt,
+                UpdatedAt = d.UpdatedAt
+            });
+        query = query.Where(ApplyFilterDeals(filter));
+        query = ApplySortDeals(query, filter);
+        return await query.ToPaginatedList(filter);
+    }
+
+    public Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression) =>
+        _context.Deals.FirstOrDefaultAsync(expression);
+
+    public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter)
+    {
+        var query = _context.CompanyInteractions
+            .Where(i => i.CompanyProfile.AgencyId == agencyId)
+            .Select(i => new CompanyInteractionListModel
+            {
+                Id = i.Id,
+                CompanyProfileId = i.CompanyProfileId,
+                CompanyName = i.CompanyProfile.FullName,
+                OwnerId = i.UserId,
+                Owner = i.User.Email,
+                Description = i.Description,
+                InteractionPurpose = i.InteractionPurpose,
+                InteractionType = i.InteractionType,
+                InteractionStatus = i.InteractionStatus,
+                CreatedAt = i.CreatedAt,
+                UpdatedAt = i.UpdatedAt
+            });
+        query = query.Where(ApplyFilterCompanyInteractions(filter));
+        query = ApplySortCompanyInteractions(query, filter);
+        return await query.ToPaginatedList(filter);
+    }
+
+    public Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression) =>
+        _context.CompanyInteractions.FirstOrDefaultAsync(expression);
+
+    private static Expression<Func<DealListModel, bool>> ApplyFilterDeals(GetDealsFilter filter)
+    {
+        Expression<Func<DealListModel, bool>> predicate = d => true;
+        if (filter.CompanyProfileId.HasValue)
+            predicate = predicate.And(d => d.CompanyProfileId == filter.CompanyProfileId.Value);
+        if (filter.OwnerId.HasValue)
+            predicate = predicate.And(d => d.OwnerId == filter.OwnerId.Value);
+        if (filter.Type.HasValue)
+            predicate = predicate.And(d => d.Type == filter.Type.Value);
+        if (filter.Statuses != null && filter.Statuses.Any())
+            predicate = predicate.And(d => filter.Statuses.Contains(d.Status));
+        if (filter.DateFrom.HasValue && filter.DateTo.HasValue)
+            predicate = predicate.And(d => d.Date.Date >= filter.DateFrom.Value.Date && d.Date.Date <= filter.DateTo.Value.Date);
+        return predicate;
+    }
+
+    private static IQueryable<DealListModel> ApplySortDeals(IQueryable<DealListModel> query, GetDealsFilter filter) =>
+        filter.SortBy switch
+        {
+            GetDealsSortBy.Company => query.AddOrderBy(filter, d => d.CompanyName),
+            GetDealsSortBy.Value => query.AddOrderBy(filter, d => d.Value),
+            GetDealsSortBy.Status => query.AddOrderBy(filter, d => d.Status),
+            GetDealsSortBy.Date => query.AddOrderBy(filter, d => d.Date),
+            _ => query.AddOrderBy(filter, d => d.Date)
+        };
+
+    private static Expression<Func<CompanyInteractionListModel, bool>> ApplyFilterCompanyInteractions(GetCompanyInteractionsFilter filter)
+    {
+        Expression<Func<CompanyInteractionListModel, bool>> predicate = i => true;
+        if (filter.CompanyProfileId.HasValue)
+            predicate = predicate.And(i => i.CompanyProfileId == filter.CompanyProfileId.Value);
+        if (filter.OwnerId.HasValue)
+            predicate = predicate.And(i => i.OwnerId == filter.OwnerId.Value);
+        if (filter.InteractionPurpose.HasValue)
+            predicate = predicate.And(i => i.InteractionPurpose == filter.InteractionPurpose.Value);
+        if (filter.InteractionType.HasValue)
+            predicate = predicate.And(i => i.InteractionType == filter.InteractionType.Value);
+        if (filter.Statuses != null && filter.Statuses.Any())
+            predicate = predicate.And(i => filter.Statuses.Contains(i.InteractionStatus));
+        if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
+            predicate = predicate.And(i => i.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && i.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
+        return predicate;
+    }
+
+    private static IQueryable<CompanyInteractionListModel> ApplySortCompanyInteractions(IQueryable<CompanyInteractionListModel> query, GetCompanyInteractionsFilter filter) =>
+        filter.SortBy switch
+        {
+            GetCompanyInteractionsSortBy.Company => query.AddOrderBy(filter, i => i.CompanyName),
+            GetCompanyInteractionsSortBy.Status => query.AddOrderBy(filter, i => i.InteractionStatus),
+            GetCompanyInteractionsSortBy.CreatedAt => query.AddOrderBy(filter, i => i.CreatedAt),
+            _ => query.AddOrderBy(filter, i => i.CreatedAt)
+        };
 }
