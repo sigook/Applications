@@ -14,6 +14,7 @@ UI library is `buefy` 3.x (official Vue 3 release, successor of `@ntohq/buefy-ne
 
 - `.docs/technical/SIGOOK_WEB_API_MAP.md` — every `src/api/*.ts` file → backend endpoint, types, Pinia wiring
 - `.docs/technical/SIGOOK_WEB_STRUCTURE.md` — folder layout, routes, views by feature, global plumbing
+- `.docs/technical/SIGOOK_WEB_SALES_DASHBOARD.md` — sales dashboard: layout, CRUD flows, static-JSON prototype seam
 
 ## Code Navigation
 
