@@ -14,7 +14,7 @@ Sigook.Web/
 │   ├── components/         # Reusable Vue components by domain
 │   ├── composables/        # Composition API utilities
 │   ├── constants/          # Enums and static constants
-│   ├── data/               # Static JSON for landing pages
+│   ├── data/               # Static JSON (landing pages, sales dashboard)
 │   ├── directives/         # Custom Vue directives
 │   ├── filters/            # Formatter functions (imported, not Vue 2 filters)
 │   ├── lang/               # VeeValidate rules + English error messages
@@ -63,12 +63,13 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | agencyTimeSheetApi.ts | TimeSheet CRUD per request/worker, usages |
 | agencyWorkerApi.ts | Worker (agency view): list, flags (DNU, contractor), tax, email, holidays |
 | catalogApi.ts | Enums: gender, ID type, availability, skills, industries, sources, tax categories |
-| companyApi.ts | Company portal: profile, requests, workers, timesheet, users, contacts, invoices |
+| companyApi.ts | Company portal: profile, requests, workers, timesheet, users, contacts, invoices + sales deals & interactions CRUD |
 | downloadApi.ts | Invoice PDF, payroll Excel (various groupings) |
 | locationApi.ts | Countries, provinces, cities, provincial settings, location tax |
 | notificationApi.ts | Aggregated agency notification bell payload |
 | requestApi.ts | Shift lookup only |
 | salesApi.ts | Sales-scoped request/company lists + Excel export |
+| salesDashboardApi.ts | Sales dashboard summary — static JSON prototype (see SIGOOK_WEB_SALES_DASHBOARD.md) |
 | sharedApi.ts | Email preferences unsubscribe |
 | userNotificationApi.ts | In-app user notifications |
 | websiteApi.ts | Public: job search, contact form, candidate apply |
@@ -77,7 +78,7 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 
 ---
 
-## src/types/ — TypeScript Interfaces (11 files)
+## src/types/ — TypeScript Interfaces (12 files)
 
 | File | Contains |
 |------|----------|
@@ -85,9 +86,10 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | agency.ts | `AgencyDetail`, `AgencyLocation*`, `AgencyPersonnel*`, `AgencyRequest*`, `AgencyWorker*`, `AgencyCompany*`, `Note*`, invoice notes/recipients models |
 | accounting.ts | `PayStub*`, `AgencyInvoice*`, `CreateAgencyInvoiceModel`, `InvoiceSummaryModel`, `PayrollSubContractor*`, `SkipPayrollNumber*`, `AgencyReportFilter`, `WeeklyPayrollItem` |
 | candidate.ts | `Candidate`, `CandidateDocument`, `AgencyCandidateFilter`, phone/skill models |
-| company.ts | `CompanyProfile*`, `CompanyRequest*`, `TimeSheet*`, `ClockIn*`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*` |
+| company.ts | `CompanyProfile*`, `CompanyRequest*`, `TimeSheet*`, `ClockIn*`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*`, sales `Deal*`/`CompanyInteraction*` enums + models |
 | notification.ts | `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` |
 | runner.ts | `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, interview models, `RunnerStartingToday` |
+| sales.ts | `SalesDashboardModel` + dashboard blocks, `SalesRangeKey`, `SalesCreateKind`, `SALES_RANGE_TABS` |
 | security.ts | `ChangeEmailRequest`, `GetEmailResponse`, `UserProfile` |
 | website.ts | `JobSearchFilter`, `JobViewModel`, `ContactForm` |
 | weeklyBoard.ts | `WeeklyBoard`, `RecruiterWeeklyBoard`, assignment/runner payloads |
@@ -124,6 +126,7 @@ Agency route map (from `routesAgency.ts`):
 - `/recruiting/weekly-board`, `/recruiting/attendance-review`
 - `/recruiting/workers[/register | /:id]`, `/recruiting/candidates`
 - `/recruiting/companies[/create | /update/:companyProfileId | /:id]`
+- `/sales/dashboard`, `/sales/interactions`, `/sales/deals` (see SIGOOK_WEB_SALES_DASHBOARD.md)
 - `/sales/requests[...]`, `/sales/companies[...]`, `/sales/agencies[/create | /:id]`
 - `/accounting/invoices[/create]`, `/accounting/paystubs[/create]`, `/accounting/reports`
 
@@ -146,6 +149,8 @@ Agency route map (from `routesAgency.ts`):
 | Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail |
 | Candidates.vue | Candidate pool; convert to worker, bulk import |
 | Agencies.vue / CreateAgency.vue / DetailAgency.vue | Sub-agencies (sales) |
+| Dashboard.vue | Sales dashboard — snapshot cards + deals/interactions CRUD (see SIGOOK_WEB_SALES_DASHBOARD.md) |
+| SalesInteractions.vue / SalesDeals.vue | Interaction and deal grids reusing the dashboard's create/edit modal |
 | AgencyProfile.vue | Own agency profile, locations, personnel |
 | accounting/Invoices.vue / accounting/CreateInvoice.vue | Invoice list and creation (preview → generate) |
 | accounting/PayStubs.vue / accounting/CreatePayStub.vue | Pay stub list and manual creation |
@@ -202,6 +207,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | notifications/ | NotificationBell (agency sidebar bell, uses `useNotifications`) |
 | request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
+| sales_dashboard/ | 15 components for the sales dashboard: SalesCard/List/ListRow shells, Interaction/Client/Deal lists, SalesBarChart + SalesGoalDonut + SalesMeterList + SalesRangeTabs charts, SalesCreateModal + Interaction/Deal/Client forms, SearchSelect (see SIGOOK_WEB_SALES_DASHBOARD.md) |
 | weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
 | worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 
@@ -231,7 +237,7 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 
 ---
 
-## src/utils/ (14 files)
+## src/utils/ (17 files)
 
 | File | Purpose |
 |------|---------|
@@ -247,6 +253,7 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | filters.ts | Formatter helpers |
 | locationLabel.ts | Location display label formatting |
 | phoneFormat.ts | Phone number formatting |
+| salesDashboardFormat.ts | Sales dashboard formatters: `compactMoney`, `relativeTime`, `shortDate`, `initialsOf` |
 | timeSheetApprove.ts | Timesheet approval workflow |
 | toast.ts | Toast notification helper (replaces the old toastMixin) |
 | validation.ts | Shared validation helpers |
@@ -256,7 +263,7 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 
 ---
 
-## src/composables/ (13 files)
+## src/composables/ (18 files)
 
 | File | Purpose |
 |------|---------|
@@ -264,7 +271,11 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | useBodyScrollLock.ts | `lockScroll`/`unlockScroll` for modals |
 | useCarousel.ts | Generic carousel state (landing) |
 | useCreateWorker.ts | Worker registration flow |
+| useCurrentAgent.ts | Current agent display name (OIDC claims + personnel lookup; sales dashboard header) |
+| useDropdownReveal.ts | Scrolls open dropdowns/datepickers into view inside modal scroll containers |
+| useElementSize.ts | ResizeObserver-based element size (responsive SVG charts) |
 | useFocusTrap.ts | Focus trap for modal accessibility |
+| useGridSort.ts | Sortable-column state for paginated grids (sales interactions/deals tables) |
 | useJobs.ts | Public job search state (landing) |
 | useModuleBase.ts | Resolves `/sales` vs `/recruiting` path prefix for shared pages |
 | useNotifications.ts | Loads notification bell payload; maps typed lists → `AppNotification[]` grouped by type |
@@ -273,6 +284,7 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | useRunnerActions.ts | Runner menu state (status/interview/history modals) + delete with confirm; shared by the Runners tab and the weekly board |
 | useRevealOnScroll.ts | Reveal-on-scroll animation (landing) |
 | useStickyForm.ts | Persists in-progress form state |
+| useTween.ts | Numeric tween animation (sales goal donut) |
 
 ---
 
@@ -291,7 +303,7 @@ Plain functions imported where needed (Vue 3 removed template filters):
 - **directives/**: `status-directive.ts` only (registered as `v-status` in main.ts) — status badge rendering.
 - **constants/**: `enums.ts` (6 numeric enums used by agency/company pages, incl. `ClockType`), `catalog.ts` (`maximumHoursPerDay` from `VUE_APP_MAXIMUM_HOURS_DAY`, `residencyList`), `workerFeatures.ts` (worker status feature list).
 - **lang/**: NOT i18n translations — a single `validator.ts` registers VeeValidate rules (built-in + custom `cvn-postal-code` and `phoneCustom` via google-libphonenumber) with English messages inline. The app is English-only; no vue-i18n.
-- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json).
+- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json) + `sales/salesDashboard.json` (frozen sales dashboard summary payload — see SIGOOK_WEB_SALES_DASHBOARD.md).
 
 ---
 

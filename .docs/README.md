@@ -23,6 +23,7 @@
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
 | [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every `src/api/*.ts` file mapped to backend endpoints, types, and Pinia stores |
 | [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature, Pinia stores, global plumbing |
+| [SIGOOK_WEB_SALES_DASHBOARD.md](./technical/SIGOOK_WEB_SALES_DASHBOARD.md) | Sigook.Web — sales dashboard: cards, deals/interactions CRUD, static-JSON prototype seam and go-live path |
 
 ---
 
@@ -48,6 +49,10 @@
 **Modify timesheets:**
 1. [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) — hours calculation rules
 2. Code: `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs`
+
+**Modify the sales dashboard:**
+1. [SIGOOK_WEB_SALES_DASHBOARD.md](./technical/SIGOOK_WEB_SALES_DASHBOARD.md) — layout, data flow, static-vs-live split
+2. Code: `Sigook.Web/src/pages/agency/Dashboard.vue` + `Sigook.Web/src/components/sales_dashboard/`
 
 ---
 

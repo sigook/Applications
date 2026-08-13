@@ -322,7 +322,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `postAgencyRequestReportTo(id, personId)` | POST | `/api/agency/requests/{id}/ReportTo/{personId}` | — | `void` | |
 | `deleteAgencyRequestReportTo(id, personId)` | DELETE | `/api/agency/requests/{id}/ReportTo/{personId}` | — | `void` | |
 
-> Recruiter assignment is no longer done from the request. It lives in the **Recruiting → Weekly Board** feature (per work day). See section 21.
+> Recruiter assignment is no longer done from the request. It lives in the **Recruiting → Weekly Board** feature (per work day). See section 22.
 
 ### Skills
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -444,7 +444,7 @@ Reference data (lookup tables).
 
 ## 14. companyApi.ts
 
-Company portal (client) view of their profile, requests and workers.
+Company portal (client) view of their profile, requests and workers — plus the agency sales module's deals & company-interactions CRUD (bases `/api/agency/sales/deals`, `/api/agency/sales/companyinteractions`).
 
 ### Profile & Locations
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -509,11 +509,29 @@ Company portal (client) view of their profile, requests and workers.
 | `getCompanyInvoiceDetail(id)` | GET | `/api/CompanyInvoice/{id}` | — | `InvoiceSummaryModel` | |
 | `getCompanyRequestTimeSheetFile(requestId)` | GET | `/api/CompanyRequest/{requestId}/TimeSheets/File` | — | Blob | Excel punch-card export, ownership-checked server-side |
 
-**Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`)
+### Sales — Deals
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `getDeals(filter)` | GET | `/api/agency/sales/deals` | `DealFilter` (params) | `PaginatedList<Deal>` | Sales users only see deals they own |
+| `createDeal(model, file?)` | POST | `/api/agency/sales/deals` | `CreateDealModel` (multipart: `data` + optional document) | `string` (id) | `OwnerId` forced server-side |
+| `updateDeal(id, model)` | PUT | `/api/agency/sales/deals/{id}` | `UpdateDealModel` | `void` | Owner-checked for sales |
+| `deleteDeal(id)` | DELETE | `/api/agency/sales/deals/{id}` | — | `void` | Owner-checked for sales |
+
+### Sales — Company Interactions
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `getCompanyInteractions(filter)` | GET | `/api/agency/sales/companyinteractions` | `CompanyInteractionFilter` (params) | `PaginatedList<CompanyInteraction>` | Sales users only see interactions they own |
+| `createCompanyInteraction(model)` | POST | `/api/agency/sales/companyinteractions` | `CreateCompanyInteractionModel` | `string` (id) | `OwnerId` forced server-side |
+| `updateCompanyInteraction(id, model)` | PUT | `/api/agency/sales/companyinteractions/{id}` | `UpdateCompanyInteractionModel` | `void` | Owner-checked for sales |
+| `deleteCompanyInteraction(id)` | DELETE | `/api/agency/sales/companyinteractions/{id}` | — | `void` | Owner-checked for sales |
+
+**Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`); deals/interactions enums + models at `src/types/company.ts:344-589` (numeric enum mirror of `Covenant.Common`)
 
 **Pinia:** `companyRequestFilter` in `useCompanyStore`.
 
-**Business Logic:** timesheet validation by the company feeds invoicing; clock-in captures GPS + time.
+**UI (sales sections):** `pages/agency/Dashboard.vue`, `pages/agency/SalesDeals.vue`, `pages/agency/SalesInteractions.vue` + `components/sales_dashboard/SalesCreateModal.vue`. See SIGOOK_WEB_SALES_DASHBOARD.md.
+
+**Business Logic:** timesheet validation by the company feeds invoicing; clock-in captures GPS + time. Deals/interactions are owner-scoped end-to-end for sales users (admin/superadmin unscoped) — stricter than the list-only scoping of orders/clients (ROLES_PERMISSIONS.md).
 
 ---
 
@@ -580,11 +598,25 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyReques
 
 **Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyCompanyFilter`, `AgencyCompanyListItem` (`src/types/agency`)
 
-**Usage:** `/sales/requests` and `/sales/companies` pages; shared detail pages resolve their base path via `useModuleBase`.
+**Usage:** `/sales/requests` and `/sales/companies` pages; shared detail pages resolve their base path via `useModuleBase`. `getSalesCompanies` is also the client picker in the sales dashboard's interaction/deal forms (`components/sales_dashboard/`).
 
 ---
 
-## 20. sharedApi.ts
+## 20. salesDashboardApi.ts
+
+**Static prototype — no backend endpoint yet.** Serves the sales dashboard summary from `src/data/sales/salesDashboard.json`; the live call is commented in-file, ready to swap.
+
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `getSalesDashboard()` | — | — (resolves `src/data/sales/salesDashboard.json`) | — | `SalesDashboardModel` | Future endpoint `GET /api/agency/sales/dashboard` is commented in the file header and does **not** exist in the backend |
+
+**Types:** `SalesDashboardModel` + blocks (`src/types/sales`)
+
+**UI:** `pages/agency/Dashboard.vue`. Full feature doc: SIGOOK_WEB_SALES_DASHBOARD.md.
+
+---
+
+## 21. sharedApi.ts
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -592,7 +624,7 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyReques
 
 ---
 
-## 21. weeklyBoardApi.ts — Recruiting Weekly Board
+## 22. weeklyBoardApi.ts — Recruiting Weekly Board
 
 Board where the agency assigns orders to recruiters per work day, and each recruiter records the runners they sent. Replaces the old per-request recruiter assignment. Admin board (`getWeeklyBoard`) shows all recruiters with counts; recruiter board (`getRecruiterWeeklyBoard`) is scoped to the recruiter from the token and includes the runners sent. Base: `/api/agency/recruiting/WeeklyBoard`.
 
@@ -612,7 +644,7 @@ Board where the agency assigns orders to recruiters per work day, and each recru
 
 ---
 
-## 22. userNotificationApi.ts
+## 23. userNotificationApi.ts
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -623,7 +655,7 @@ Board where the agency assigns orders to recruiters per work day, and each recru
 
 ---
 
-## 23. websiteApi.ts
+## 24. websiteApi.ts
 
 Public landing site endpoints (no auth).
 
@@ -637,7 +669,7 @@ Public landing site endpoints (no auth).
 
 ---
 
-## 24. workerApi.ts
+## 25. workerApi.ts
 
 **Large.** Worker portal: profile build, applications, timesheet.
 
@@ -741,7 +773,7 @@ Public landing site endpoints (no auth).
 | **Request** | agencyRequestApi.ts | Workers, applicants, skills, shift, sources, bulk cancel |
 | **Runner** | agencyRunnerApi.ts | Recruiting pipeline per request: status, interviews |
 | **WeeklyBoard** | weeklyBoardApi.ts | Recruiter day assignments + runners sent |
-| **Sales** | salesApi.ts | Sales-scoped request/company lists + Excel export |
+| **Sales** | salesApi.ts, salesDashboardApi.ts, companyApi.ts (deals/interactions) | Sales-scoped lists + Excel export; dashboard (static prototype); deals + interactions CRUD (owner-scoped) |
 | **Worker** (agency view) | agencyWorkerApi.ts | Flags (DNU, contractor), tax, holidays, request history |
 | **Worker** (self) | workerApi.ts | Profile build, applications, timesheet, wage history |
 | **Invoice** | agencyInvoiceApi.ts | Preview, PDF, email, linked pay stubs |

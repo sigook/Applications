@@ -28,6 +28,7 @@ Before implementing any feature, read the relevant document from `.docs/`:
 | Data model & relationships | `.docs/technical/ENTITIES_RELATIONSHIPS.md` |
 | Development commands | `.docs/technical/DEVELOPMENT_COMMANDS.md` |
 | CI/CD pipelines | `.docs/technical/PIPELINES.md` |
+| Sales dashboard (Sigook.Web) | `.docs/technical/SIGOOK_WEB_SALES_DASHBOARD.md` |
 | Full index | `.docs/README.md` |
 
 If you change business rules, update the corresponding `.docs/` file.
