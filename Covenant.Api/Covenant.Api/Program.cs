@@ -38,10 +38,6 @@ if (!string.IsNullOrEmpty(keyVaultUrl))
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
-if (!builder.Environment.IsDevelopment())
-{
-    builder.Logging.AddApplicationInsights();
-}
 
 var logger = LoggerFactory.Create(config =>
 {
