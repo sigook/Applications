@@ -108,26 +108,9 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       const SizedBox(height: 40),
 
                       Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryBlue,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.primaryBlue.withValues(
-                                  alpha: 0.3,
-                                ),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.lock_outline,
-                            size: 48,
-                            color: Colors.white,
-                          ),
+                        child: Image.asset(
+                          'assets/images/logo/sigook-logo.png',
+                          width: 220,
                         ),
                       ),
                       const SizedBox(height: 32),
