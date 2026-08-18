@@ -44,41 +44,64 @@ void main() {
   // ── signIn ────────────────────────────────────────────────────────────────
 
   group('signIn', () {
+    const tEmail = 'test@example.com';
+    const tPassword = 'password123';
+
     test('returns NetworkFailure when device is offline', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => false);
 
-      final result = await repository.signIn();
+      final result = await repository.signIn(
+        email: tEmail,
+        password: tPassword,
+      );
 
       expect(result.isLeft(), true);
       result.fold(
         (f) => expect(f, isA<NetworkFailure>()),
         (_) => fail('Expected Left'),
       );
-      verifyNever(() => mockRemote.signIn());
+      verifyNever(() => mockRemote.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ));
     });
 
     test('returns AuthToken and caches it on success', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
-      when(() => mockRemote.signIn()).thenAnswer((_) async => _tTokenModel);
+      when(() => mockRemote.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          )).thenAnswer((_) async => _tTokenModel);
 
-      final result = await repository.signIn();
+      final result = await repository.signIn(
+        email: tEmail,
+        password: tPassword,
+      );
 
       expect(result, isA<Right>());
       result.fold(
         (_) => fail('Expected Right'),
         (token) => expect(token.accessToken, 'access-123'),
       );
+      verify(() => mockRemote.signIn(email: tEmail, password: tPassword))
+          .called(1);
       verify(() => mockLocal.cacheToken(_tTokenModel)).called(1);
     });
 
     test('returns ServerFailure when datasource throws ServerException',
         () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
-      when(() => mockRemote.signIn()).thenThrow(
-        ServerException(message: 'auth failed', statusCode: 401),
+      when(() => mockRemote.signIn(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          )).thenThrow(
+        ServerException(message: 'Invalid credentials', statusCode: 401),
       );
 
-      final result = await repository.signIn();
+      final result = await repository.signIn(
+        email: tEmail,
+        password: tPassword,
+      );
 
       expect(result.isLeft(), true);
       result.fold(

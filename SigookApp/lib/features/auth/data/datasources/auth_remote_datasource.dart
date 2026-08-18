@@ -1,14 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import '../../../../core/config/environment.dart';
+import '../../../../core/constants/error_messages.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/network/dio_error_interceptor.dart';
 import '../../../../core/network/network_info.dart';
 import '../models/auth_token_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthTokenModel> signIn();
+  Future<AuthTokenModel> signIn({required String email, required String password});
   Future<void> logout(String idToken);
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
   Future<bool> validateToken(String accessToken);
@@ -18,63 +19,47 @@ abstract class AuthRemoteDataSource {
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio dio;
+  final Dio anonymousDio;
   final NetworkInfo networkInfo;
   final FlutterAppAuth appAuth;
 
   AuthRemoteDataSourceImpl({
     required this.dio,
+    required this.anonymousDio,
     required this.networkInfo,
     required this.appAuth,
   });
 
   @override
-  Future<AuthTokenModel> signIn() async {
+  Future<AuthTokenModel> signIn({
+    required String email,
+    required String password,
+  }) async {
     if (!(await networkInfo.isConnected)) {
       throw NetworkException('No internet connection');
     }
 
     try {
-      final AuthorizationTokenRequest request = AuthorizationTokenRequest(
-        EnvironmentConfig.clientId,
-        EnvironmentConfig.redirectUri,
-        issuer: EnvironmentConfig.authority,
-        scopes: EnvironmentConfig.scopes,
-        // Always require credential entry. flutter_appauth uses Chrome Custom
-        // Tabs (Chrome cookie store) while LogoutWebviewPage uses the Android
-        // WebView (a separate cookie store), so Chrome may still hold a valid
-        // SSO session after logout. This prompt forces re-authentication.
-        promptValues: ['login'],
+      // Placeholder endpoint: the backend does not expose it yet. Assumed
+      // contract — 200 { accessToken, idToken, refreshToken, expiresIn,
+      // tokenType, scopes }; 400/401 = invalid credentials.
+      final response = await anonymousDio.post(
+        '/Account/Login',
+        data: {'email': email, 'password': password},
       );
 
-      final AuthorizationTokenResponse result = await appAuth
-          .authorizeAndExchangeCode(request);
-
-      return AuthTokenModel.fromResponse(result);
-    } on PlatformException catch (e) {
-      debugPrint('⚠️ PlatformException during sign-in: ${e.code}');
-      debugPrint('   Details: ${e.details}');
-
-      // Handle user cancellation (webview closed)
-      if (e.code == 'authorize_and_exchange_code_failed' ||
-          e.code == 'CANCELED' ||
-          e.message?.toLowerCase().contains('user cancel') == true) {
-        final details = e.details is Map
-            ? Map<String, dynamic>.from(e.details as Map)
-            : null;
-        final userCancelled = details?['user_did_cancel'] == true;
-
-        debugPrint('   User cancelled: $userCancelled');
-        debugPrint('   Error code: ${e.code}');
-
-        if (userCancelled || e.code == 'CANCELED') {
-          debugPrint(
-            '✅ User cancelled sign-in (closed webview) - treating as user action',
-          );
-          throw ServerException(message: 'User cancelled authentication');
-        }
+      return AuthTokenModel.fromLoginResponse(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 400 || statusCode == 401) {
+        throw ServerException(
+          message: ErrorMessages.invalidCredentials,
+          statusCode: statusCode,
+        );
       }
-
-      throw ServerException(message: 'Authentication failed: ${e.message}');
+      handleDioException(e);
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Authentication error: ${e.toString()}');

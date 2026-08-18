@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class WelcomePage extends ConsumerStatefulWidget {
   const WelcomePage({super.key});
@@ -133,8 +132,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
     _navigateWithExit(AppRoutes.registration);
   }
 
-  Future<void> _signIn() async {
-    await ref.read(authViewModelProvider.notifier).signIn();
+  void _navigateToSignIn() {
+    if (_isNavigating || !mounted) return;
+    context.push(AppRoutes.signIn);
   }
 
   void _showLegalModal() {
@@ -202,33 +202,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authViewModelProvider);
     final size = MediaQuery.of(context).size;
-
-    ref.listen(authViewModelProvider, (previous, next) {
-      if (next.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.error!),
-            backgroundColor: AppTheme.errorRed,
-          ),
-        );
-      }
-
-      if (previous?.isAuthenticated != true &&
-          next.isAuthenticated &&
-          next.token != null &&
-          next.token!.accessToken != null &&
-          next.token!.accessToken!.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sign in successful!'),
-            backgroundColor: AppTheme.successGreen,
-          ),
-        );
-        _navigateWithExit(AppRoutes.jobs);
-      }
-    });
 
     return Scaffold(
       body: Stack(
@@ -463,9 +437,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                                   ),
                                 ),
                                 TextButton(
-                                    onPressed: authState.isLoading
-                                        ? null
-                                        : _signIn,
+                                    onPressed: _navigateToSignIn,
                                     style: TextButton.styleFrom(
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
@@ -476,25 +448,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
-                                    child: authState.isLoading
-                                        ? const SizedBox(
-                                            width: 18,
-                                            height: 18,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                    Colors.white,
-                                                  ),
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Sign In',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
+                                    child: const Text(
+                                      'Sign In',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),

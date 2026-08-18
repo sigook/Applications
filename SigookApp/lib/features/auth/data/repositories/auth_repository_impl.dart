@@ -20,10 +20,13 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Either<Failure, AuthToken>> signIn() async {
+  Future<Either<Failure, AuthToken>> signIn({
+    required String email,
+    required String password,
+  }) async {
     try {
       if (!await networkInfo.isConnected) return Left(NetworkFailure());
-      final tokenModel = await remote.signIn();
+      final tokenModel = await remote.signIn(email: email, password: password);
       await local.cacheToken(tokenModel);
       return Right(tokenModel.toEntity());
     } on ServerException catch (e) {

@@ -5,6 +5,7 @@ import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/auth_token.dart';
 import '../../domain/usecases/refresh_token.dart';
+import '../../domain/usecases/sign_in.dart';
 import '../providers/auth_providers.dart';
 
 part 'auth_viewmodel.freezed.dart';
@@ -76,29 +77,26 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
-  Future<void> signIn() async {
+  Future<void> signIn({required String email, required String password}) async {
     state = state.copyWith(isLoading: true, error: null);
 
-    final signIn = ref.read(signInProvider);
-    final result = await signIn(NoParams());
+    final signInUseCase = ref.read(signInProvider);
+    final result = await signInUseCase(
+      SignInParams(email: email, password: password),
+    );
 
-    // Guard: provider may have been disposed while OAuth browser was open
     if (!ref.mounted) return;
 
     await result.fold(
       (failure) async {
-        if (failure.message.contains('User cancelled')) {
-          state = state.copyWith(isLoading: false, error: null);
-        } else {
-          state = state.copyWith(isLoading: false, error: failure.message);
-          ref.read(analyticsServiceProvider).logEvent(
-            name: 'sign_in_failed',
-            parameters: {
-              'error': failure.message,
-              'timestamp': DateTime.now().toIso8601String(),
-            },
-          );
-        }
+        state = state.copyWith(isLoading: false, error: failure.message);
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'sign_in_failed',
+          parameters: {
+            'error': failure.message,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        );
       },
       (token) async {
         debugPrint(
@@ -240,7 +238,7 @@ class AuthViewModel extends _$AuthViewModel {
       ref.read(analyticsServiceProvider).setUserId(subject);
       ref.read(crashReportingServiceProvider).setUserId(subject);
     }
-    ref.read(analyticsServiceProvider).logLogin(method: 'oidc');
+    ref.read(analyticsServiceProvider).logLogin(method: 'password');
   }
 
   Future<void> logout() async {

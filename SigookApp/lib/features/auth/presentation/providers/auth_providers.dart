@@ -2,6 +2,7 @@ import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:riverpod/riverpod.dart';
 import '../../../../core/providers/core_providers.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/network/auth_interceptor.dart';
 
 import '../../data/datasources/auth_local_datasource.dart';
@@ -51,6 +52,7 @@ final flutterAppAuthProvider = Provider<FlutterAppAuth>((ref) {
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   return AuthRemoteDataSourceImpl(
     dio: ref.read(apiClientProvider).dio,
+    anonymousDio: ApiClient().dio,
     networkInfo: ref.read(networkInfoProvider),
     appAuth: ref.read(flutterAppAuthProvider),
   );

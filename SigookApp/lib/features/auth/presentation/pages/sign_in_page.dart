@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/buttons/action_button.dart';
+import '../../../../core/widgets/inputs/custom_text_field.dart';
+import '../../../registration/domain/entities/value_objects/email.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class SignInPage extends ConsumerStatefulWidget {
@@ -13,13 +16,46 @@ class SignInPage extends ConsumerStatefulWidget {
 }
 
 class _SignInPageState extends ConsumerState<SignInPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _emailError;
+  String? _passwordError;
+  bool _obscurePassword = true;
+
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  bool _validate() {
+    final email = Email(_emailController.text.trim());
+    setState(() {
+      _emailError = email.errorMessage;
+      _passwordError = _passwordController.text.isEmpty
+          ? 'Password is required'
+          : null;
+    });
+    return _emailError == null && _passwordError == null;
   }
 
   Future<void> _signIn() async {
-    await ref.read(authViewModelProvider.notifier).signIn();
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (!_validate()) return;
+
+    await ref.read(authViewModelProvider.notifier).signIn(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+  }
+
+  void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.welcome);
+    }
   }
 
   @override
@@ -29,7 +65,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     final authState = ref.watch(authViewModelProvider);
 
     ref.listen(authViewModelProvider, (previous, next) {
-      if (next.error != null) {
+      if (next.error != null && previous?.error != next.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
@@ -38,7 +74,8 @@ class _SignInPageState extends ConsumerState<SignInPage> {
         );
       }
 
-      if (next.isAuthenticated &&
+      if (previous?.isAuthenticated != true &&
+          next.isAuthenticated &&
           next.token != null &&
           next.token!.accessToken != null &&
           next.token!.accessToken!.isNotEmpty) {
@@ -70,25 +107,27 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                     children: [
                       const SizedBox(height: 40),
 
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryBlue.withValues(
-                                alpha: 0.3,
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryBlue,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryBlue.withValues(
+                                  alpha: 0.3,
+                                ),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
                               ),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.lock_outline,
-                          size: 48,
-                          color: Colors.white,
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.lock_outline,
+                            size: 48,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -104,85 +143,64 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Sign in with your Sigook account',
+                        'Sign in to your Sigook account',
                         style: TextStyle(
                           fontSize: 16,
                           color: AppTheme.textLight,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 40),
 
-                      SizedBox(
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: authState.isLoading ? null : _signIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryBlue,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 3,
-                            shadowColor: AppTheme.primaryBlue.withValues(
-                              alpha: 0.4,
-                            ),
-                          ),
-                          icon: authState.isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                )
-                              : const Icon(Icons.login),
-                          label: Text(
-                            authState.isLoading
-                                ? 'Signing In...'
-                                : 'Sign In with Sigook',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
+                      CustomTextField(
+                        label: 'Email',
+                        hint: 'example@email.com',
+                        controller: _emailController,
+                        errorText: _emailError,
+                        prefixIcon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        onChanged: (_) {
+                          if (_emailError != null) {
+                            setState(() => _emailError = null);
+                          }
+                        },
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: AppTheme.spacing16),
 
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.blue.shade200,
-                            width: 1,
+                      CustomTextField(
+                        label: 'Password',
+                        hint: 'Enter your password',
+                        controller: _passwordController,
+                        errorText: _passwordError,
+                        obscureText: _obscurePassword,
+                        prefixIcon: Icons.lock_outline,
+                        textInputAction: TextInputAction.done,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: AppTheme.textLight,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: AppTheme.primaryBlue,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'You will be redirected to a secure sign-in page',
-                                style: TextStyle(
-                                  color: AppTheme.textDark,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        onChanged: (_) {
+                          if (_passwordError != null) {
+                            setState(() => _passwordError = null);
+                          }
+                        },
+                      ),
+                      SizedBox(height: AppTheme.spacing24),
+
+                      ActionButton(
+                        label: 'Sign In',
+                        isLoading: authState.isLoading,
+                        onPressed: _signIn,
+                        backgroundColor: AppTheme.primaryBlue,
+                        foregroundColor: Colors.white,
                       ),
                       const SizedBox(height: 32),
 
@@ -253,7 +271,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
               top: 16,
               left: 16,
               child: IconButton(
-                onPressed: () => context.go(AppRoutes.welcome),
+                onPressed: _goBack,
                 icon: const Icon(Icons.arrow_back),
                 style: IconButton.styleFrom(backgroundColor: Colors.white),
               ),

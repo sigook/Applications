@@ -45,6 +45,47 @@ abstract class AuthTokenModel with _$AuthTokenModel {
     );
   }
 
+  factory AuthTokenModel.fromLoginResponse(Map<String, dynamic> json) {
+    final idToken = json['idToken'] as String?;
+    UserInfoModel? userInfo;
+    if (idToken != null && idToken.isNotEmpty) {
+      try {
+        final decodedToken = JwtDecoder.decode(idToken);
+        userInfo = UserInfoModel.fromIdTokenClaims(decodedToken);
+      } catch (e) {
+        userInfo = null;
+      }
+    }
+
+    DateTime? expiration;
+    final expirationRaw = json['expirationDateTime'];
+    if (expirationRaw is String) {
+      expiration = DateTime.tryParse(expirationRaw);
+    }
+    final expiresIn = json['expiresIn'];
+    if (expiration == null && expiresIn is num) {
+      expiration = DateTime.now().add(Duration(seconds: expiresIn.toInt()));
+    }
+
+    List<String>? scopes;
+    final scopesRaw = json['scopes'] ?? json['scope'];
+    if (scopesRaw is List) {
+      scopes = scopesRaw.map((e) => e.toString()).toList();
+    } else if (scopesRaw is String && scopesRaw.isNotEmpty) {
+      scopes = scopesRaw.split(' ');
+    }
+
+    return AuthTokenModel(
+      accessToken: json['accessToken'] as String?,
+      idToken: idToken,
+      refreshToken: json['refreshToken'] as String?,
+      expirationDateTime: expiration,
+      tokenType: json['tokenType'] as String? ?? 'Bearer',
+      scopes: scopes,
+      userInfo: userInfo,
+    );
+  }
+
   bool get isValid =>
       (accessToken != null && accessToken!.isNotEmpty) &&
       (expirationDateTime != null);

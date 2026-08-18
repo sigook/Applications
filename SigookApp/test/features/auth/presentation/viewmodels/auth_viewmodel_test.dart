@@ -25,6 +25,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(NoParams());
     registerFallbackValue(RefreshTokenParams(refreshToken: ''));
+    registerFallbackValue(SignInParams(email: '', password: ''));
   });
 
   late MockSignIn mockSignIn;
@@ -83,7 +84,9 @@ void main() {
       when(() => mockAuthRepo.getUserRole(any()))
           .thenAnswer((_) async => const Right('worker'));
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, true);
@@ -100,7 +103,9 @@ void main() {
       when(() => mockLogout.call(any()))
           .thenAnswer((_) async => const Right(null));
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, false);
@@ -115,7 +120,9 @@ void main() {
       when(() => mockAuthRepo.getUserRole(any()))
           .thenAnswer((_) async => const Left(ServerFailure(message: 'role error')));
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, true);
@@ -123,28 +130,17 @@ void main() {
 
     test('sets error and stays unauthenticated on signIn failure', () async {
       final container = buildTestContainer();
-      when(() => mockSignIn.call(any()))
-          .thenAnswer((_) async => const Left(ServerFailure(message: 'OIDC error')));
-
-      await container.read(authViewModelProvider.notifier).signIn();
-
-      final state = container.read(authViewModelProvider);
-      expect(state.isAuthenticated, false);
-      expect(state.error, 'OIDC error');
-      expect(state.isLoading, false);
-    });
-
-    test('clears error but does not set error on user cancellation', () async {
-      final container = buildTestContainer();
       when(() => mockSignIn.call(any())).thenAnswer(
-        (_) async => const Left(UserCancelledFailure(message: 'User cancelled')),
+        (_) async => const Left(ServerFailure(message: 'Invalid credentials')),
       );
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, false);
-      expect(state.error, isNull);
+      expect(state.error, 'Invalid credentials');
       expect(state.isLoading, false);
     });
   });

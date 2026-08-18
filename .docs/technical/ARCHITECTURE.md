@@ -77,7 +77,9 @@ State:      Riverpod (flutter_riverpod ^3.0.3); DI: Riverpod + get_it ^9.0.5
 Routing:    GoRouter ^17.0.0 (lib/core/routing/app_router.dart)
 HTTP:       Dio ^5.7.0 (lib/core/network/api_client.dart + auth_interceptor.dart: bearer
             injection, 401 refresh + retry)
-Auth:       flutter_appauth ^11.0.0; tokens in FlutterSecureStorage
+Auth:       native email/password screen → POST /Account/Login (placeholder, backend
+            pending); flutter_appauth ^11.0.0 kept for token refresh; tokens in
+            FlutterSecureStorage
 Codegen:    build_runner, freezed ^3.2.3, json_serializable; Dartz for Either/Option
 Flavors:    staging / production (main_staging.dart / main_production.dart, .env.* configs)
 ```
@@ -310,8 +312,10 @@ rather than constructing clients directly.
 
 ## Authentication & Authorization
 
-- All apps authenticate against Covenant.IdentityServer via OIDC: Sigook.Web with
-  `oidc-client-ts` (`src/security/`), SigookApp with `flutter_appauth` (tokens in secure
+- Sigook.Web authenticates against Covenant.IdentityServer via OIDC with `oidc-client-ts`
+  (`src/security/`). SigookApp signs in with a native email/password screen that POSTs to
+  a placeholder API endpoint (`POST /Account/Login`, backend pending) and keeps
+  `flutter_appauth` only for token refresh against IdentityServer (tokens in secure
   storage). Covenant.Api validates the JWT Bearer token on every request.
 - **Roles** (exactly 7, lowercase, defined in `Covenant.Common/Constants/CovenantConstants.cs`):
   `superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker`. Role groups:
