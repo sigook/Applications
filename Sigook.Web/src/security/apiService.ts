@@ -44,8 +44,8 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
       originalRequest.headers['accept-language'] = localStorage.getItem('language') && localStorage.getItem('language') !== 'en' ? localStorage.getItem('language') : 'en-US';
       return http(originalRequest);
     } catch (e) {
-      const securityStore = useSecurityStore(pinia);
-      securityStore.signIn();
+      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.assign(`/login?returnUrl=${returnUrl}`);
       return Promise.reject(e);
     }
   } else {

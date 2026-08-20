@@ -173,7 +173,7 @@ function isGroupActive(group: MenuGroup): boolean {
 
 function logout() {
   isLoading.value = true;
-  securityStore.signOut().then(() => router.push('/callback'));
+  securityStore.signOut().then(() => router.push('/'));
 }
 
 async function getAgencyInfo() {

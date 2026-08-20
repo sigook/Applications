@@ -11,6 +11,8 @@ namespace Covenant.IdentityServer.Data
 
         public DbSet<InactiveUser> InactiveUsers { get; set; }
 
+        public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<CovenantUser>().ToTable("User");
@@ -21,6 +23,7 @@ namespace Covenant.IdentityServer.Data
             builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaim");
             builder.Entity<IdentityUserToken<Guid>>().ToTable("UserToken").HasKey(ut => ut.UserId);
             builder.Entity<InactiveUser>().HasKey(iu => iu.InactiveUserId);
+            builder.Entity<PasswordResetCode>().ToTable("PasswordResetCode").HasIndex(prc => prc.UserId);
         }
     }
 }

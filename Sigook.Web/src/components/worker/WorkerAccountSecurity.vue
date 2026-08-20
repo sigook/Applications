@@ -117,7 +117,7 @@ function onDeactivateAccount() {
       isLoading.value = false;
       showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
       setTimeout(() => {
-        securityStore.signOut();
+        securityStore.signOut().then(() => window.location.assign('/'));
       }, 2000);
     })
     .catch((error) => {

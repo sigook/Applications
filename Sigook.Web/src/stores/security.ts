@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia';
-import mgr from '@/security/securityService';
+import mgr, {
+  signInWithMicrosoft as microsoftSignIn,
+  signInWithPassword as passwordSignIn,
+} from '@/security/securityService';
 import type { UserProfile } from '@/types/security';
 
 interface SecurityState {
@@ -59,13 +62,17 @@ export const useSecurityStore = defineStore('security', {
         this.isReady = true;
       }
     },
-    signIn(): void {
-      mgr.signinRedirect().then();
+    async signInWithPassword(email: string, password: string): Promise<void> {
+      await passwordSignIn(email, password);
+      await this.getUser();
+    },
+    async signInWithMicrosoft(): Promise<void> {
+      await microsoftSignIn();
     },
     async signOut(): Promise<void> {
+      await mgr.revokeTokens(['refresh_token']).catch(() => undefined);
       await mgr.removeUser();
       this.setUser(null);
-      await mgr.signoutRedirect();
     },
     silentSignin(): Promise<UserProfile | null> {
       if (!silentRenewPromise) {

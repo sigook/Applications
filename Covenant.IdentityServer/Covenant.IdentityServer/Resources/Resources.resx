@@ -148,6 +148,9 @@
   <data name="PasswordDoNotMatch" xml:space="preserve">
     <value>Password and confirm password do not match</value>
   </data>
+  <data name="PasswordResetCode" xml:space="preserve">
+    <value>Your password reset code</value>
+  </data>
   <data name="ResetPassword" xml:space="preserve">
     <value>Reset Password</value>
   </data>
