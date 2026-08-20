@@ -99,6 +99,12 @@ namespace Covenant.IdentityServer.Resources {
             }
         }
         
+        public static string PasswordResetCode {
+            get {
+                return ResourceManager.GetString("PasswordResetCode", resourceCulture);
+            }
+        }
+
         public static string ResetPassword {
             get {
                 return ResourceManager.GetString("ResetPassword", resourceCulture);

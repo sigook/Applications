@@ -52,7 +52,7 @@ const securityStore = useSecurityStore();
 const isANewVersion = ref(false);
 const isLogged = ref(false);
 
-const isCallback = computed(() => route.name === 'callback');
+const isCallback = computed(() => route.name === 'callback' || route.meta?.layout === 'auth');
 const isLandingRoute = computed(() => route.meta?.layout === 'landing');
 
 const MOBILE_REGEX = /Android|iPhone|iPod|BlackBerry/i;
