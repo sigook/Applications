@@ -1,10 +1,12 @@
 <template>
   <section
     class="testimonials"
-    @mouseenter="stopTimer"
-    @mouseleave="startTimer"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
     @focusin="stopTimer"
     @focusout="startTimer"
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
   >
     <div class="testimonials__back" aria-hidden="true"></div>
 
@@ -67,6 +69,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
+import { useSwipe } from '@/composables/useSwipe'
 
 interface Testimonial {
   bg: string
@@ -115,6 +118,10 @@ function nextSlide() {
   currentSlide.value = (currentSlide.value + 1) % testimonials.length
 }
 
+function prevSlide() {
+  currentSlide.value = (currentSlide.value - 1 + testimonials.length) % testimonials.length
+}
+
 function prefersReducedMotion(): boolean {
   return (
     typeof window !== 'undefined' &&
@@ -140,6 +147,27 @@ function resetTimer() {
   startTimer()
 }
 
+const hoverCapable = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches
+
+function onMouseEnter() {
+  if (hoverCapable) stopTimer()
+}
+
+function onMouseLeave() {
+  if (hoverCapable) startTimer()
+}
+
+const { onPointerDown, onPointerUp } = useSwipe(
+  () => {
+    nextSlide()
+    resetTimer()
+  },
+  () => {
+    prevSlide()
+    resetTimer()
+  },
+)
+
 onMounted(startTimer)
 onUnmounted(stopTimer)
 </script>
@@ -152,6 +180,8 @@ onUnmounted(stopTimer)
   margin-top: -700px;
   z-index: 3;
   isolation: isolate;
+  overflow-x: clip;
+  touch-action: pan-y;
 }
 
 .testimonials__back {
@@ -387,7 +417,7 @@ onUnmounted(stopTimer)
   background-color: #fff;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (max-height: 899px) {
   .testimonials {
     height: auto;
     min-height: 500px;
@@ -441,7 +471,9 @@ onUnmounted(stopTimer)
   .testimonials__card {
     position: static;
     transform: none;
-    max-width: 100%;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 36px 28px 32px;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;

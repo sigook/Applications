@@ -165,3 +165,62 @@ Agency request controllers live in `Covenant.Api/Controllers/Sigook/Agency/Reque
 - `PUT    /api/agency/requests/{id}/Cancel` — Cancel (only valid when `Open` + no workers; also `PUT /bulk-cancel`)
 - `PUT    /api/agency/requests/{id:guid}/Open` — Reopen
 - `GET    /api/CompanyRequest` — Same listing from the company's perspective (`CompanyModule/CompanyRequest`)
+
+---
+
+## Request Applicant States
+
+Each applicant on an order (`RequestApplicant`, worker or candidate) has its own lifecycle, independent of the order's `RequestStatus`. Enum `RequestApplicantStatus` (stored as string, column default `Pending`):
+
+| Value | Int | Meaning |
+|---|---|---|
+| `Pending` | 1 | Applied on their own (web/app/anonymous apply, website form via bus); nobody has reviewed them yet |
+| `InProgress` | 2 | Being worked by the agency; compliance items can be checked and documents uploaded |
+| `Confirmed` | 3 | Manually confirmed; terminal unless deleted |
+| `Cancelled` | 4 | Discarded, reversible |
+
+### State diagram
+
+```
+                 (apply / bus)               (manual add / CSV bulk)
+                      │                                │
+                      ▼                                ▼
+                  ┌─────────┐   Start            ┌────────────┐
+                  │ Pending │ ────────────────►  │ InProgress │
+                  └─────────┘                    └────────────┘
+                      │                            │        ▲ │
+                      │ Cancel              Cancel │ Reopen │ │ Confirm
+                      ▼                            ▼        │ ▼
+                  ┌───────────┐◄───────────────────┘   ┌───────────┐
+                  │ Cancelled │ ───────────────────────│ Confirmed │
+                  └───────────┘        (none)          └───────────┘
+```
+
+### Transition rules (`RequestApplicant`, validated by `RequestApplicantService.ChangeStatus`)
+
+- `MoveToInProgress()` — from `Pending` (Start) or `Cancelled` (Reopen). Compliance checks are kept across Cancel/Reopen.
+- `Cancel()` — from `Pending` or `InProgress`; fails from `Confirmed`/`Cancelled`.
+- `Confirm()` — only from `InProgress`, only for **worker** applicants (candidates must be converted to worker first), and the service additionally requires **every mandatory compliance item completed** (optional items don't block). `Pending` is never a valid target (validator rejects it).
+
+### Per-applicant compliance & document routing
+
+Completions live in `RequestApplicantComplianceItems` (unique per applicant+item; cascade with the applicant, restrict on the checklist item — deleting an item from the order's checklist explicitly deletes its completions during reconcile). Completing an item may upload a document routed by the item's `ComplianceDocumentTarget` to the worker profile:
+
+| Target | Lands in | Extra data required |
+|---|---|---|
+| `Identification1` / `Identification2` | Identification slot 1 / 2 | Number + identification type (duplicate-checked) |
+| `SocialInsurance` | SIN document | SIN number |
+| `Resume` | Resume | — |
+| `PoliceCheck` | Police check (sets the flag) | — |
+| `OtherDocument` | Other Documents (description = item name) | — |
+| `None` | No upload allowed | — |
+
+For worker applicants a **mandatory** item with target ≠ `None` **requires** the document to be completed (manual check rejected); optional items and candidates complete by check alone. Unchecking deletes the completion row; documents already uploaded stay on the profile. All of it is driven from the portal's Compliance modal (see `WORKFLOWS.md` §6.2).
+
+When an Identification item is completed with a **SIN/SSN-typed** identification (`IdentificationTypeCode.SinSsn` on the catalog row), the upload also fills the worker's `SocialInsurance` + SIN document (same blob) after validating the number as a SIN — length 9-15 and not owned by another profile. If the profile already holds a **different** SIN it is **replaced** and a `WorkerProfileNote` records the change (masked old → masked new, author = the acting user); this applies to the documents form flow too. Pending checklist items with target `SocialInsurance` are **auto-completed** in the same save (same `CompletedBy`). Each compliance item row also exposes `ExistingFileUrl` — the document currently on the profile for that slot — so the agent can review the current file before replacing it.
+
+### Test coverage
+
+- `Covenant.Tests/Request/RequestApplicantTest.cs` — entity transitions.
+- `Covenant.Tests/Request/RequestApplicantServiceTest.cs` — mandatory gating, document routing, idempotence.
+- `Covenant.Integration.Tests/.../ApplicantsControllerTest.cs` — endpoints, status filter, candidate-confirm rejection.

@@ -79,6 +79,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IRunnerService, RunnerService>();
+        services.AddScoped<IRequestApplicantService, RequestApplicantService>();
         services.AddScoped<IWeeklyBoardService, WeeklyBoardService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ICandidateService, CandidateService>();
@@ -124,6 +125,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<ICandidateAdapter, CandidateAdapter>();
         services.AddScoped<ICompanyAdapter, CompanyAdapter>();
         services.AddScoped<IWorkerAdapter, WorkerAdapter>();
+        services.AddScoped<IRequestAdapter, RequestAdapter>();
         return services;
     }
 

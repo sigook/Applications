@@ -42,6 +42,7 @@ import ContactForm from '@/components/layout/ContactForm.vue'
   box-sizing: border-box;
   padding-top: 150px;
   padding-bottom: 50px;
+  overflow: hidden;
 }
 
 /* bloque azul oscuro donde vive el círculo verde */
@@ -134,6 +135,14 @@ import ContactForm from '@/components/layout/ContactForm.vue'
 }
 
 /* responsive */
+@media (max-width: 1023px) {
+  .ind-contact__circle::before,
+  .ind-contact__circle::after {
+    width: min(820px, 100vw);
+    height: min(820px, 100vw);
+  }
+}
+
 @media (max-width: 768px) {
   .ind-contact__circle {
     padding-inline: 16px;

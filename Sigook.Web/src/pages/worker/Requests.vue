@@ -84,6 +84,7 @@ import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWorkerStore } from '@/stores/worker';
 import { getJobs } from '@/api/workerApi';
+import type { WorkerRequestFilter, WorkerRequestListItem } from '@/types/worker';
 import { dateMonth, splitCapital, currency } from '@/utils/filters';
 import { appGlobals } from '@/varaibles';
 
@@ -92,9 +93,8 @@ const workerStore = useWorkerStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const serverParams = reactive<any>({
-  sortBy: 0,
+const rows = ref<WorkerRequestListItem[]>([]);
+const serverParams = reactive<WorkerRequestFilter>({
   isDescending: false,
   pageIndex: 1,
   pageSize: 30,
@@ -118,7 +118,7 @@ function onPageChange(params: number) {
   getWorkerRequests();
 }
 
-function onRowClick(row: any) {
+function onRowClick(row: WorkerRequestListItem) {
   switch (row.status) {
     case appGlobals.$statusApply:
     case appGlobals.$statusBook:
@@ -132,7 +132,7 @@ function onRowClick(row: any) {
 function getWorkerRequests() {
   isLoading.value = true;
   getJobs(serverParams)
-    .then((response: any) => {
+    .then((response) => {
       rows.value = response.items;
       totalItems.value = response.totalItems;
       isLoading.value = false;

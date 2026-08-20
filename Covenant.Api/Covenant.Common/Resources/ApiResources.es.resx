@@ -534,6 +534,12 @@
   <data name="SocialInsuranceAlreadyTaken">
     <value>The social insurance is already taken. Please choose another one.</value>
   </data>
+  <data name="SocialInsuranceConflict">
+    <value>El perfil ya tiene un número de seguro social distinto. Corríjalo primero desde la sección de seguro social.</value>
+  </data>
+  <data name="SocialInsuranceReplacedNote">
+    <value>Número de seguro social reemplazado ({0} a {1}) desde la subida de un documento de identificación SIN/SSN.</value>
+  </data>
   <data name="InclusiveBetweenValidator">
     <value>'{0}' must be between {1} and {2}. You entered {3}.</value>
   </data>

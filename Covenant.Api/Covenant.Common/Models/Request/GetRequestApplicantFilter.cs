@@ -1,4 +1,6 @@
-﻿namespace Covenant.Common.Models.Request
+﻿using Covenant.Common.Enums;
+
+namespace Covenant.Common.Models.Request
 {
     public enum GetRequestApplicantSortBy : byte
     {
@@ -13,6 +15,7 @@
         public string CreatedBy { get; set; }
         public DateTime? CreatedAtFrom { get; set; }
         public DateTime? CreatedAtTo { get; set; }
+        public List<RequestApplicantStatus> Statuses { get; set; } = [];
         public GetRequestApplicantSortBy SortBy { get; set; }
     }
 }

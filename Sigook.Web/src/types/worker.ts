@@ -140,11 +140,9 @@ export interface WorkerFilter {
 
 // Worker Request types
 export interface WorkerRequestFilter {
-  page: number;
-  pageSize: number;
-  searchTerm?: string;
-  sortBy?: string;
-  sortDesc?: boolean;
+  pageIndex?: number;
+  pageSize?: number;
+  isDescending?: boolean;
 }
 
 export interface WorkerRequestApplyModel {
@@ -258,16 +256,23 @@ export interface WorkerRequestListItem {
   id: string;
   numberId?: number;
   jobTitle?: string;
-  companyFullName?: string;
+  agencyFullName?: string;
   location?: string;
-  startWorking?: string;
-  finishWorking?: string;
+  entrance?: string;
+  workersQuantity?: number;
   status?: string;
   isAsap?: boolean;
-  logo?: string;
+  workerApprovedToWork?: string;
+  workerRate?: number | null;
+  workerSalary?: number | null;
+  createdAt?: string;
+  startAt?: string;
+  finishAt?: string | null;
+  durationTerm?: number;
 }
 
 export interface WorkerRequestDetail extends WorkerRequestListItem {
+  agencyLogo?: string;
   description?: string;
   requirements?: string;
   responsibilities?: string;

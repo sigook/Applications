@@ -80,7 +80,7 @@ import SecondaryCard from '@/components/landing/shared/cards/SecondaryCard.vue'
   margin-top: clamp(40px, 6vw, 96px);
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   .about-mission__cards { grid-template-columns: 1fr; }
 
   .about-mission__card--offset { margin-top: 0; }

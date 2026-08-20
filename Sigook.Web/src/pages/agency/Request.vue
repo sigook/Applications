@@ -5,6 +5,7 @@
     <div v-if="request && !request.canEdit && request.cancellationDetail" class="alert-warning">
       <b>Cancellation detail: </b> {{ request.cancellationDetail }}
     </div>
+    <Breadcrumbs :crumbs="crumbs" :back-to="requestBase" />
     <section class="wrapper-request-top" v-if="request">
       <div>
         <router-link :to="companyBase + '/' + request.companyProfileId">
@@ -73,7 +74,7 @@
         <runners v-if="visitedTabs.includes('Runners')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
       <b-tab-item label="Workers" value="Workers">
-        <workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
+        <workers v-if="visitedTabs.includes('Workers')" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
       </b-tab-item>
       <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiringComputed">
         <punch-card v-if="visitedTabs.includes('PunchCard')" :request="request" class="p-2 p-sm-0" />
@@ -108,6 +109,8 @@ import {
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { breakWord, dateFromNow } from '@/utils/filters';
 import { useModuleBase } from '@/composables/useModuleBase';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import type { PageBreadcrumb } from '@/types/common';
 import { useRecruitingAccess } from '@/composables/useRecruitingAccess';
 import Detail from '@/components/agency_request/AgencyRequestDetail.vue';
 import Workers from '@/components/agency/AgencyWorkers.vue';
@@ -120,7 +123,8 @@ import ShiftModal from '@/components/request/ShiftEditModal.vue';
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
-const { requestBase, companyBase } = useModuleBase();
+const { requestBase, companyBase, moduleCrumbs } = useModuleBase();
+const crumbs = computed<PageBreadcrumb[]>(() => [...moduleCrumbs.value, { label: 'Requests', to: requestBase.value }]);
 const { hasRecruitingAccess } = useRecruitingAccess();
 
 const isLoading = ref(true);

@@ -305,7 +305,7 @@ watch(showApplyDialog, (newValue) => {
   flex-direction: column;
   gap: 15px;
   /* Altura fija con scroll para la lista, así el detalle se mantiene visible */
-  height: 800px;
+  height: min(800px, calc(100vh - 120px));
   overflow-y: auto;
   padding-right: 5px;
 }
@@ -380,7 +380,7 @@ watch(showApplyDialog, (newValue) => {
   /* Sticky para que siga al usuario si la lista es muy larga */
   position: sticky;
   top: 100px;
-  max-height: 800px;
+  max-height: min(800px, calc(100vh - 120px));
   overflow-y: auto; /* Scroll interno también para el detalle si es muy largo */
 }
 

@@ -354,7 +354,7 @@ public class AgencyService : IAgencyService
         if (!result) return result;
         await requestRepository.Update(request);
         var applicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == workerProfileId);
-        if (applicant != null) requestRepository.Delete(applicant);
+        if (applicant != null) requestRepository.Delete([applicant]);
         await requestRepository.SaveChangesAsync();
         var data = await notificationDataRepository.GetWorkerData(requestId, workerProfileId, NotificationType.WorkerHasBeenBooked.Id);
         if (data != null && data.EmailNotification)

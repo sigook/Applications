@@ -560,6 +560,12 @@ onUnmounted(() => {
   }
 }
 
+@media (min-width: 1200px) and (max-width: 1279px) {
+  .nav__links {
+    gap: 18px;
+  }
+}
+
 @media (max-width: 1199px) {
   .nav__inner {
     height: 64px;

@@ -341,7 +341,7 @@ defineExpose({ WorkerRequestStatus });
 }
 
 .day-number.isToday {
-  color: #ff9800;
+  color: #b35c00;
 }
 
 .day-number.notCurrentMonth {
@@ -480,12 +480,12 @@ defineExpose({ WorkerRequestStatus });
     }
 
     .isToday {
-      color: #00adef;
+      color: #1575bb;
       font-weight: bold;
     }
 
     .notCurrentMonth {
-      color: #bebebe;
+      color: #767676;
     }
     tr:hover {
       background: white !important;
@@ -506,7 +506,7 @@ defineExpose({ WorkerRequestStatus });
     border-radius: 5px;
     margin: 0 5px;
     font-weight: bold;
-    color: #b5b5b5;
+    color: #6b6b6b;
     font-size: 14px;
     padding: 3px 8px;
   }

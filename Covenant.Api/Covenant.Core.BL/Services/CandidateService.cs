@@ -278,7 +278,7 @@ public class CandidateService : ICandidateService
         {
             foreach (var requestApplicant in requestApplicatns)
             {
-                requestRepository.Delete(requestApplicant);
+                requestRepository.Delete([requestApplicant]);
             }
         }
         candidateRepository.Delete(candidate);

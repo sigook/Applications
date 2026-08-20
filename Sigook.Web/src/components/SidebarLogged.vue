@@ -245,6 +245,8 @@ init();
 </script>
 
 <style lang="scss">
+@import "../assets/scss/variables";
+
 $sidebar-width: 250px;
 $sidebar-width-collapsed: 100px;
 
@@ -373,7 +375,7 @@ $sidebar-width-collapsed: 100px;
 
       &.is-active {
         background-color: rgba(0, 173, 239, 0.12);
-        color: #00adef;
+        color: $blue-dark;
       }
     }
 

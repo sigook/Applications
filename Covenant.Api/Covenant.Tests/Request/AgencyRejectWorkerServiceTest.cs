@@ -11,6 +11,7 @@ using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
+using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -45,7 +46,8 @@ namespace Covenant.Tests.Request
                 Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>(),
                 new RequestCreateModelValidator(),
-                new RequestUpdateRequirementsModelValidator());
+                new RequestUpdateRequirementsModelValidator(),
+                new RequestAdapter());
 
             Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
             Assert.True(result);
@@ -75,7 +77,8 @@ namespace Covenant.Tests.Request
                 Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>(),
                 new RequestCreateModelValidator(),
-                new RequestUpdateRequirementsModelValidator());
+                new RequestUpdateRequirementsModelValidator(),
+                new RequestAdapter());
             Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
             Assert.False(result);
         }

@@ -1,4 +1,5 @@
 import type { App } from 'vue';
+import type { AgencyTypeOption } from '@/types/agency';
 
 export const appGlobals = {
   // Request Status — string values returned by worker-facing endpoints
@@ -97,7 +98,7 @@ export const appGlobals = {
   $agencyTypes: [
     { value: 2, label: 'Regular' },
     { value: 3, label: 'Business Partner' },
-  ] as { value: number; label: string }[],
+  ] as AgencyTypeOption[],
 };
 
 export function registerAppGlobals(app: App): void {

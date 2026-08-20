@@ -11,8 +11,8 @@ namespace Covenant.Common.Repositories.Request;
 
 public interface IRequestRepository
 {
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
+    Task Create<T>(IEnumerable<T> entities) where T : class;
+    void Delete<T>(IEnumerable<T> entities) where T : class;
     Task Update<T>(T entity) where T : class;
     Task<Entities.Request.Request> GetRequest(Expression<Func<Entities.Request.Request, bool>> condition);
     Task<IEnumerable<Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids);
@@ -59,6 +59,10 @@ public interface IRequestRepository
     Task<List<ApplicantSearchResultModel>> SearchRunnerProspects(Guid agencyId, Guid requestId, string searchTerm);
     Task<RequestComission> GetRequestComission(Guid requestId);
     Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId);
+    Task<IEnumerable<RequestComplianceItem>> GetComplianceItems(Guid requestId);
+    Task<RequestApplicantComplianceItem> GetApplicantComplianceItem(Guid applicantId, Guid complianceItemId);
+    Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceItems(Guid applicantId);
+    Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceCompletions(IEnumerable<Guid> complianceItemIds);
     Task SaveChangesAsync();
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
     Task<bool> ExistsRequestByNumber(int requestId);

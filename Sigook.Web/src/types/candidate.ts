@@ -23,6 +23,10 @@ export interface Candidate {
   sourceId?: string | null;
 }
 
+export interface CandidateRow extends Candidate {
+  showNotes?: boolean;
+}
+
 // Document attached to a candidate. Mirrors backend CovenantFileModel.
 export interface CandidateDocument {
   id: string;

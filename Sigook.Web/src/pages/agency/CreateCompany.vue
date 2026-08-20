@@ -1,129 +1,168 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <h2 v-if="isUpdate" class="has-text-centered main-title">Update Client</h2>
-    <h2 v-else class="has-text-centered main-title">Create Client</h2>
-    <span class="line-orange"></span>
-    <form class="form-md" @submit.prevent="validateForm">
-      <div class="columns is-multiline">
-        <div class="column is-12">
-          <div class="container-image mx-auto my-2">
-            <UploadImage @imageSelected="(img) => (company.logo.fileName = img)" :required="false"
-              @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
-          </div>
-        </div>
-        <div v-if="isAdmin" class="column is-12">
-          <b-field>
-            <b-checkbox v-model="company.requiresPermissionToSeeRequests">
-              Requires permission to see requests?
-            </b-checkbox>
-          </b-field>
-        </div>
-        <div class="column is-6">
-          <b-field :type="formErrors.fullName ? 'is-danger' : ''"
-            :message="formErrors.fullName || ''">
-            <template #label>Full name <span class="has-text-danger">*</span></template>
-            <b-input type="text" v-model="fullName" name="full name" />
-          </b-field>
-        </div>
-        <div class="column is-6">
-          <b-field :type="formErrors.industry ? 'is-danger' : ''"
-            :message="formErrors.industry || ''">
-            <template #label>Type of industry <span class="has-text-danger">*</span></template>
-            <b-autocomplete v-model="industry" :data="filteredIndustries" open-on-focus field="value"
-              name="industry" placeholder="Industry" selectable-footer
-              @select="selectIndustry" @select-footer="onAddIndustry">
-              <template #footer>
-                <a><span> Add new... </span></a>
-              </template>
-              <template #empty>You don't have any industry created</template>
-            </b-autocomplete>
-          </b-field>
-        </div>
-        <div class="column is-6">
-          <b-field :type="formErrors.companyStatus ? 'is-danger' : ''"
-            :message="formErrors.companyStatus || ''">
-            <template #label>Status <span class="has-text-danger">*</span></template>
-            <b-select v-model="companyStatus" placeholder="Select option" name="state" expanded>
-              <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.value }}</option>
-            </b-select>
-          </b-field>
-        </div>
-        <div class="column is-6">
-          <b-field :type="formErrors.salesRepresentative ? 'is-danger' : ''"
-            :message="formErrors.salesRepresentative || ''">
-            <template #label>Sales Representative <span class="has-text-danger">*</span></template>
-            <b-autocomplete :data="filteredSalesRepresentative" :placeholder="'Select'"
-              v-model="salesRepresentative" open-on-focus name="salesRepresentative"
-              :custom-formatter="(option) => `${option.name} - ${option.email}`"
-              @select="onSalesRepresentativeSelected">
-            </b-autocomplete>
-          </b-field>
-        </div>
-        <div class="column is-12">
-          <b-field :type="formErrors.about ? 'is-danger' : ''" :label="'About'"
-            :message="formErrors.about || ''">
-            <b-input type="textarea" v-model="about" name="about" />
-          </b-field>
-        </div>
-        <div class="column is-12">
-          <b-field label="Internal Info">
-            <div class="vue-trix-editor">
-              <div>
-                <QuillEditor theme="snow" content-type="html" v-model:content="company.internalInfo" />
+    <form class="page-form" @submit.prevent="validateForm">
+      <PageHeader :title="isUpdate ? 'Update Client' : 'Create Client'" :crumbs="crumbs" :back-to="companyBase" />
+
+      <div class="columns">
+        <div class="column is-8-desktop">
+          <div class="card section-card">
+            <div class="card-header">
+              <p class="card-header-title">General</p>
+            </div>
+            <div class="card-content">
+              <div class="columns is-multiline">
+                <div class="column is-6">
+                  <b-field :type="formErrors.fullName ? 'is-danger' : ''"
+                    :message="formErrors.fullName || ''">
+                    <template #label>Full name <span class="has-text-danger">*</span></template>
+                    <b-input type="text" v-model="fullName" name="full name" />
+                  </b-field>
+                </div>
+                <div class="column is-6">
+                  <b-field :type="formErrors.industry ? 'is-danger' : ''"
+                    :message="formErrors.industry || ''">
+                    <template #label>Type of industry <span class="has-text-danger">*</span></template>
+                    <b-autocomplete v-model="industry" :data="filteredIndustries" open-on-focus field="value"
+                      name="industry" placeholder="Industry" selectable-footer
+                      @select="selectIndustry" @select-footer="onAddIndustry">
+                      <template #footer>
+                        <a><span> Add new... </span></a>
+                      </template>
+                      <template #empty>You don't have any industry created</template>
+                    </b-autocomplete>
+                  </b-field>
+                </div>
+                <div class="column is-6">
+                  <b-field :type="formErrors.companyStatus ? 'is-danger' : ''"
+                    :message="formErrors.companyStatus || ''">
+                    <template #label>Status <span class="has-text-danger">*</span></template>
+                    <b-select v-model="companyStatus" placeholder="Select option" name="state" expanded>
+                      <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.value }}</option>
+                    </b-select>
+                  </b-field>
+                </div>
+                <div class="column is-6">
+                  <b-field :type="formErrors.salesRepresentative ? 'is-danger' : ''"
+                    :message="formErrors.salesRepresentative || ''">
+                    <template #label>Sales Representative <span class="has-text-danger">*</span></template>
+                    <b-autocomplete :data="filteredSalesRepresentative" :placeholder="'Select'"
+                      v-model="salesRepresentative" open-on-focus name="salesRepresentative"
+                      :custom-formatter="(option) => `${option.name} - ${option.email}`"
+                      @select="onSalesRepresentativeSelected">
+                    </b-autocomplete>
+                  </b-field>
+                </div>
               </div>
             </div>
-          </b-field>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">
+              <p class="card-header-title">Content</p>
+            </div>
+            <div class="card-content">
+              <div class="columns is-multiline">
+                <div class="column is-12 is-6-desktop">
+                  <b-field :type="formErrors.about ? 'is-danger' : ''" :label="'About'"
+                    :message="formErrors.about || ''">
+                    <b-input type="textarea" v-model="about" name="about" />
+                  </b-field>
+                </div>
+                <div class="column is-12 is-6-desktop">
+                  <b-field label="Internal Info">
+                    <div class="vue-trix-editor">
+                      <div>
+                        <QuillEditor theme="snow" content-type="html" v-model:content="company.internalInfo" />
+                      </div>
+                    </div>
+                  </b-field>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">
+              <p class="card-header-title">Contact Information</p>
+            </div>
+            <div class="card-content">
+              <div class="columns is-multiline">
+                <div class="column is-6 is-3-desktop">
+                  <PhoneInput :required="false" :defaultValue="company.phone" label="Phone"
+                    @formattedPhone="(phone) => (company.phone = phone)"></PhoneInput>
+                </div>
+                <div class="column is-6 is-3-desktop">
+                  <b-field :type="formErrors.phoneExt ? 'is-danger' : ''" label="Phone Ext"
+                    :message="formErrors.phoneExt || ''">
+                    <b-input type="text" v-model="phoneExt" name="phoneExt" />
+                  </b-field>
+                </div>
+                <div class="column is-6 is-3-desktop">
+                  <PhoneInput :required="false" :defaultValue="company.fax" label="Fax"
+                    @formattedPhone="(phone) => (company.fax = phone)"></PhoneInput>
+                </div>
+                <div class="column is-6 is-3-desktop">
+                  <b-field :type="formErrors.faxExt ? 'is-danger' : ''" label="Fax Ext"
+                    :message="formErrors.faxExt || ''">
+                    <b-input type="text" v-model="faxExt" name="faxExt" />
+                  </b-field>
+                </div>
+                <div v-if="!isUpdate" class="column is-6 is-4-desktop">
+                  <b-field :type="formErrors.email ? 'is-danger' : ''"
+                    :message="formErrors.email || ''">
+                    <template #label>Email <span class="has-text-danger">*</span></template>
+                    <b-input type="email" v-model="email" name="email" />
+                  </b-field>
+                </div>
+                <div v-if="displayPassword" class="column is-6 is-4-desktop">
+                  <b-field :type="formErrors.password ? 'is-danger' : ''"
+                    :message="formErrors.password || ''">
+                    <template #label>Password <span class="has-text-danger">*</span></template>
+                    <b-input type="password" v-model="password" name="password" />
+                  </b-field>
+                </div>
+                <div class="column is-6 is-4-desktop">
+                  <b-field :type="formErrors.website ? 'is-danger' : ''" :label="'Website'"
+                    :message="formErrors.website || ''">
+                    <b-input type="text" v-model="website" name="website"
+                      placeholder="www.example.com" />
+                  </b-field>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4-desktop">
+          <div class="card settings-card">
+            <div class="card-header">
+              <p class="card-header-title">Settings</p>
+            </div>
+            <div class="card-content">
+              <div class="container-image mx-auto mb-4">
+                <UploadImage @imageSelected="(img) => (company.logo.fileName = img)" :required="false"
+                  @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
+              </div>
+              <div class="settings-list" v-if="isAdmin">
+                <b-switch v-model="company.requiresPermissionToSeeRequests">
+                  Requires permission to see requests
+                </b-switch>
+              </div>
+              <div class="settings-actions">
+                <b-button type="is-primary" native-type="submit" expanded>
+                  {{ isUpdate ? 'Update' : 'Create' }}
+                </b-button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <h3 class="fz1">Contact Information</h3>
-      <div class="columns is-multiline">
-        <div class="column is-6">
-          <PhoneInput :required="false" :defaultValue="company.phone" label="Phone"
-            @formattedPhone="(phone) => (company.phone = phone)"></PhoneInput>
-        </div>
-        <div class="column is-6">
-          <b-field :type="formErrors.phoneExt ? 'is-danger' : ''" label="Phone Ext"
-            :message="formErrors.phoneExt || ''">
-            <b-input type="text" v-model="phoneExt" name="phoneExt" />
-          </b-field>
-        </div>
-        <div class="column is-6">
-          <PhoneInput :required="false" :defaultValue="company.fax" label="Fax"
-            @formattedPhone="(phone) => (company.fax = phone)"></PhoneInput>
-        </div>
-        <div class="column is-6">
-          <b-field :type="formErrors.faxExt ? 'is-danger' : ''" label="Fax Ext"
-            :message="formErrors.faxExt || ''">
-            <b-input type="text" v-model="faxExt" name="faxExt" />
-          </b-field>
-        </div>
-        <div v-if="!isUpdate" class="column is-6">
-          <b-field :type="formErrors.email ? 'is-danger' : ''"
-            :message="formErrors.email || ''">
-            <template #label>Email <span class="has-text-danger">*</span></template>
-            <b-input type="email" v-model="email" name="email" />
-          </b-field>
-        </div>
-        <div v-if="displayPassword" class="column is-6">
-          <b-field :type="formErrors.password ? 'is-danger' : ''"
-            :message="formErrors.password || ''">
-            <template #label>Password <span class="has-text-danger">*</span></template>
-            <b-input type="password" v-model="password" name="password" />
-          </b-field>
-        </div>
-        <div
-          :class="displayPassword ? 'column is-12' : 'column is-6'">
-          <b-field :type="formErrors.website ? 'is-danger' : ''" :label="'Website'"
-            :message="formErrors.website || ''">
-            <b-input type="text" v-model="website" name="website"
-              placeholder="www.example.com" />
-          </b-field>
-        </div>
-        <div class="column is-12 mt-5">
-          <b-button v-if="isUpdate" type="is-primary" native-type="submit">Update</b-button>
-          <b-button v-else type="is-primary" native-type="submit">Create</b-button>
-        </div>
+
+      <div class="mobile-submit is-hidden-desktop">
+        <b-button type="is-primary" native-type="submit" expanded>
+          {{ isUpdate ? 'Update' : 'Create' }}
+        </b-button>
       </div>
     </form>
   </div>
@@ -144,12 +183,19 @@ import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '
 import { getAgencyPersonnel } from '@/api/agencyApi';
 import { createAgencyCompany, updateAgencyCompany } from '@/api/agencyCompanyApi';
 import { useModuleBase } from '@/composables/useModuleBase';
+import PageHeader from '@/components/PageHeader.vue';
+import type { PageBreadcrumb } from '@/types/common';
 
 const route = useRoute();
 const router = useRouter();
-const { companyBase } = useModuleBase();
+const { isSalesView, companyBase } = useModuleBase();
 const { isAdmin } = useAdmin();
 const pubSub = usePubSub();
+
+const crumbs = computed<PageBreadcrumb[]>(() => [
+  { label: isSalesView.value ? 'Sales' : 'Recruiting' },
+  { label: 'Clients', to: companyBase.value },
+]);
 
 const numericExt = yup
   .string()

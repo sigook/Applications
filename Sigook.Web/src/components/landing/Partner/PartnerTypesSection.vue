@@ -164,7 +164,7 @@ const TRACKS: readonly PartnerTrack[] = [
   flex-direction: column;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   .partner-types__cards { grid-template-columns: 1fr; }
 }
 </style>

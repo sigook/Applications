@@ -1,14 +1,7 @@
 <template>
   <div class="company-requests">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title columns is-multiline mb-5">
-      <h2 class="fz1 pt-3 column is-7-mobile is-5">
-        {{ "Staff Requests" }}
-        <span class="has-text-weight-light fz-1">
-          ({{ totalItems }})
-        </span>
-      </h2>
-    </div>
+    <PageHeader title="Staff Requests" :count="totalItems" />
     <div>
       <b-field grouped position="is-right">
         <b-button tag="router-link" to="/company-requests/create" icon-left="plus">Create Request</b-button>
@@ -90,18 +83,21 @@ import { useRouter } from 'vue-router';
 import { useCompanyStore } from '@/stores/company';
 import { showAlertError } from '@/utils/toast';
 import { getRequests } from '@/api/companyApi';
+import type { CompanyRequestFilter, CompanyRequestListItem } from '@/types/company';
+import type { TableColumnRef } from '@/types/common';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { dateFromNow } from '@/utils/filters';
 import { useGridSort } from '@/composables/useGridSort';
 import AgencyShift from '@/components/agency_request/AgencyShiftDetail.vue';
+import PageHeader from '@/components/PageHeader.vue';
 
 const router = useRouter();
 const companyStore = useCompanyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const serverParams = reactive<any>({
+const rows = ref<CompanyRequestListItem[]>([]);
+const serverParams = reactive<CompanyRequestFilter>({
   sortBy: 0,
   isDescending: true,
   pageIndex: 1,
@@ -116,14 +112,14 @@ const { defaultSort, onSortChange } = useGridSort(serverParams, {
 
 const totalQuantityWorking = computed(() => {
   if (rows.value.length > 0) {
-    return rows.value.map((r: any) => r.workersQuantityWorking).reduce((a: number, b: number) => a + b);
+    return rows.value.map((r) => r.workersQuantityWorking).reduce((a, b) => a + b);
   }
   return 0;
 });
 
 const totalQuantity = computed(() => {
   if (rows.value.length > 0) {
-    return rows.value.map((r: any) => r.workersQuantity).reduce((a: number, b: number) => a + b);
+    return rows.value.map((r) => r.workersQuantity).reduce((a, b) => a + b);
   }
   return 0;
 });
@@ -132,7 +128,7 @@ function getCompanyRequests() {
   isLoading.value = true;
   companyStore.setCompanyRequestFilter(serverParams);
   getRequests(serverParams)
-    .then((requests: any) => {
+    .then((requests) => {
       rows.value = requests.items;
       totalItems.value = requests.totalItems;
       isLoading.value = false;
@@ -148,7 +144,7 @@ function onPageChange(params: number) {
   getCompanyRequests();
 }
 
-function onCellClick(row: any, column: any) {
+function onCellClick(row: CompanyRequestListItem, column: TableColumnRef) {
   switch (column.field) {
     case 'displayShift':
       break;
@@ -169,7 +165,7 @@ function onInputEntered(event: KeyboardEvent) {
   }
 }
 
-function getStatusClass(row: any) {
+function getStatusClass(row: CompanyRequestListItem) {
   if (row.requestStatus === RequestStatus.Open &&
     row.workersQuantityWorking > 0 &&
     row.workersQuantityWorking < row.workersQuantity) {

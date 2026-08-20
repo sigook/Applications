@@ -467,6 +467,12 @@ public class WorkerRepository : IWorkerRepository
         return result;
     }
 
+    public async Task<bool> SocialInsuranceIsAlreadyTaken(string socialInsurance, Guid? excludeProfileId = null)
+    {
+        if (string.IsNullOrEmpty(socialInsurance)) return false;
+        return await InfoIsAlreadyTaken(x => (excludeProfileId == null || x.Id != excludeProfileId) && x.SocialInsurance == socialInsurance);
+    }
+
     public Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination) =>
         _context.WorkerProfileNotes.Where(e => e.WorkerProfileId == workerProfileId)
             .Select(e => new WorkerProfileNoteListModel

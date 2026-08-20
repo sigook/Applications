@@ -231,6 +231,10 @@ export interface PayrollSubContractorListItem {
   weekEndingDisplay: string;
 }
 
+export interface PayrollSubContractorRow extends PayrollSubContractorListItem {
+  reportDownloading?: boolean;
+}
+
 // Payload for POST /api/v4/accounting/PayStub. Mirrors backend CreatePayStubModel.
 export interface CreatePayStubPayload {
   workerProfileId: string;
@@ -277,6 +281,11 @@ export interface AgencyInvoiceFilter {
   createdAtTo?: string | null;
   companyFullName?: string;
   salesRepresentative?: string;
+}
+
+export interface AgencyPayStubRow extends AgencyPayStubListItem {
+  emailSending?: boolean;
+  emailSent?: boolean;
 }
 
 // Item returned inside the list response. Mirrors backend InvoiceListModel.

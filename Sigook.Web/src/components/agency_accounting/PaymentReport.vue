@@ -37,10 +37,11 @@ import { showAlertError } from "@/utils/toast";
 import { downloadFile } from '@/utils/downloadFile';
 import { date, currency } from '@/utils/filters';
 import { getPaymentReport, downloadWeeklyPayrollReport } from "@/api/agencyReportApi";
+import type { WeeklyPayrollRow } from '@/types/agency';
 
 const isLoading = ref(false);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
+const rows = ref<WeeklyPayrollRow[]>([]);
 const serverParams = ref({
   pageIndex: 1,
   pageSize: 30
@@ -55,7 +56,7 @@ function getReport() {
   isLoading.value = true;
   getPaymentReport(serverParams.value)
     .then((response) => {
-      rows.value = response.items.map((i: any) => ({ ...i, actions: null, reportDownloading: false }));
+      rows.value = response.items.map((i) => ({ ...i, reportDownloading: false }));
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
@@ -65,7 +66,7 @@ function getReport() {
     });
 }
 
-function onDownloadWeeklyPayrollReport(row: any) {
+function onDownloadWeeklyPayrollReport(row: WeeklyPayrollRow) {
   row.reportDownloading = true;
   downloadWeeklyPayrollReport(row.displayWeekEnding)
     .then(response => {

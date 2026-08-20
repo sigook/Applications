@@ -37,6 +37,16 @@
               </i>
             </template>
           </b-table-column>
+          <b-table-column field="status" label="Status" searchable>
+            <template v-slot:searchable>
+              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statusOptions" open-on-focus
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusChange"
+                append-to-body />
+            </template>
+            <template v-slot="props">
+              <b-tag :type="statusTagType(props.row.status)">{{ statusLabel(props.row.status) }}</b-tag>
+            </template>
+          </b-table-column>
           <b-table-column field="phoneNumber" label="Phone" searchable>
             <template v-slot:searchable>
               <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
@@ -90,6 +100,9 @@
                 @click="showAddRunner(props.row)">
                 Add Runner
               </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="openCompliance(toActionTarget(props.row))">
+                Compliance
+              </b-dropdown-item>
               <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
                 Delete
               </b-dropdown-item>
@@ -117,6 +130,8 @@
       <EditTextarea v-if="currentItem" :title="'Comments'" subtitle="Comments" :min-length="0" :data="currentItem.comments"
         @updateContent="(data) => saveApplicantComment(data)"></EditTextarea>
     </b-modal>
+
+    <applicant-action-modals :target="target" v-model:compliance-open="showCompliance" @updated="loadApplicants" />
   </div>
 </template>
 <script setup lang="ts">
@@ -134,6 +149,16 @@ import {
 import { convertCandidateToWorker } from "@/api/agencyCandidateApi";
 import { createAgencyRunner } from "@/api/agencyRunnerApi";
 import type { RunnerType } from '@/types/runner';
+import type { CatalogItem } from '@/types/common';
+import {
+  REQUEST_APPLICANT_STATUSES,
+  REQUEST_APPLICANT_STATUS_LABELS,
+  RequestApplicantStatus,
+  requestApplicantStatusLabel,
+  requestApplicantStatusTagType,
+} from '@/types/requestApplicant';
+import { useApplicantActions, type ApplicantActionTarget } from '@/composables/useApplicantActions';
+import ApplicantActionModals from '@/components/agency_request/ApplicantActionModals.vue';
 import ManageTabs from './ManageApplicantsModal.vue';
 import SelectRunnerTypeModal from '@/components/runner/SelectRunnerTypeModal.vue';
 import EditTextarea from '@/components/agency_request/EditTextarea.vue';
@@ -162,6 +187,30 @@ const serverParams = reactive<any>({
   pageSize: 30,
   isDescending: true
 });
+
+const statusOptions: CatalogItem<RequestApplicantStatus>[] =
+  REQUEST_APPLICANT_STATUSES.map(s => ({ id: s, value: REQUEST_APPLICANT_STATUS_LABELS[s] }));
+const statusesSelected = ref<CatalogItem<RequestApplicantStatus>[]>([]);
+const statusLabel = requestApplicantStatusLabel;
+const statusTagType = requestApplicantStatusTagType;
+
+const { target, showCompliance, openCompliance } = useApplicantActions();
+
+function toActionTarget(row: any): ApplicantActionTarget {
+  return {
+    requestId: serverParams.requestId,
+    applicantId: row.id,
+    name: row.name,
+    status: row.status,
+    workerProfileId: row.workerProfileId,
+    candidateId: row.candidateId,
+  };
+}
+
+function onStatusChange() {
+  serverParams.statuses = statusesSelected.value.length ? statusesSelected.value.map(s => s.id) : undefined;
+  loadApplicants();
+}
 
 function onPageChange(params: any) {
   serverParams.pageIndex = params;

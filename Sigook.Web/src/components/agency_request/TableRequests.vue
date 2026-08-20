@@ -208,6 +208,10 @@
             <template #trigger>
               <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
             </template>
+            <b-dropdown-item v-if="props.row.requestStatus !== RequestStatus.Cancelled" aria-role="listitem"
+              @click="router.push({ path: requestDetailBase + '/update/' + props.row.companyProfileId + '/' + props.row.id })">
+              Edit Request
+            </b-dropdown-item>
             <b-dropdown-item aria-role="listitem"
               @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'Applicants' } })">
               Applicants
@@ -590,7 +594,6 @@ loadRequests();
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  color: #fff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   // convex right-pointing arrow; the tip pokes into the next (solid) flag,
@@ -599,11 +602,13 @@ loadRequests();
 
   &--asap {
     background: #ff9932;
+    color: #1e1e1e;
     z-index: 2;
   }
 
   &--dh {
     background: #1d4ed8;
+    color: #fff;
     z-index: 1;
   }
 

@@ -21,9 +21,9 @@
         </div>
       </div>
     </div>
-    <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="sizeComments"
-      @changePage="(index) => changePage(index)">
-    </pagination>
+    <b-pagination v-if="data.totalItems > sizeComments" v-model="currentPage" :total="data.totalItems"
+      :per-page="sizeComments" size="is-small" rounded @change="changePage">
+    </b-pagination>
 
 
 
@@ -47,7 +47,6 @@ import { companyCommentWorker } from "@/api/companyApi";
 import type { WorkerCommentCreateModel } from '@/types/worker';
 import iconAgency from '@/assets/images/icon_agency.svg';
 import DialogComment from "./DialogWorkerComment.vue";
-import Pagination from "./Paginator.vue";
 
 const props = defineProps<{
   workerProfileId?: string;
@@ -66,6 +65,7 @@ const securityStore = useSecurityStore();
 const isLoading = ref(false);
 const commentary = ref({ comment: '', rate: 0 });
 const modalValidation = ref(false);
+const currentPage = ref(1);
 
 function alertComment() {
   modalValidation.value = true;

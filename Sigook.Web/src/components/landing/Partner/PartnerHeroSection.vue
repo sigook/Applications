@@ -53,7 +53,7 @@ import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vu
   position: relative;
   width: 100%;
   height: auto;
-  min-height: max(100vh, 1080px);
+  min-height: max(100svh, 42rem);
   overflow: hidden;
   isolation: isolate;
 }
@@ -71,7 +71,7 @@ import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vu
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: max(100vh, 1080px);
+  min-height: max(100svh, 42rem);
   padding:
     clamp(80px, 12vw, 140px)
     clamp(20px, 3vw, 32px)
@@ -175,14 +175,6 @@ import ScrollIndicator from '@/components/landing/shared/hero/ScrollIndicator.vu
 }
 
 @media (max-width: 1023px) {
-  .partner-hero {
-    min-height: 100svh;
-  }
-
-  .partner-hero__content {
-    min-height: 100svh;
-  }
-
   .partner-hero__scroll {
     display: none;
   }

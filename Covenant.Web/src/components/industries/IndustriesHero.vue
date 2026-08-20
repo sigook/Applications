@@ -3,7 +3,7 @@
     <!-- Fondo con imagen y gradiente -->
     <div class="ind-hero__bg">
       <picture>
-        <source media="(max-width: 768px)" srcset="@/assets/images/industries-bg-movil.png" />
+        <source media="(max-width: 1023px)" srcset="@/assets/images/industries-bg-movil.png" />
         <img src="@/assets/images/industries-hero.png" alt="Industries" />
       </picture>
       <div class="ind-hero__overlay"></div>
@@ -124,6 +124,13 @@
   max-width: 540px;
   margin: 0 auto;
   opacity: 0.85;
+}
+
+@media (max-width: 1023px) {
+  .ind-hero__content {
+    padding-top: 250px;
+    padding-bottom: 60px;
+  }
 }
 
 @media (max-width: 768px) {

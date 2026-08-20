@@ -17,13 +17,55 @@ html:root {
 
   --bulma-danger-h: 2deg;
   --bulma-danger-s: 79%;
-  --bulma-danger-l: 53%;
+  --bulma-danger-l: 48%;
+
+  --bulma-info-invert-l: 100%;
+  --bulma-danger-invert-l: 100%;
+
+  --bulma-link-on-scheme-l: 41%;
 }
 
-html .menu {
-  --bulma-menu-item-selected-h: var(--bulma-primary-h);
-  --bulma-menu-item-selected-s: var(--bulma-primary-s);
-  --bulma-menu-item-selected-l: var(--bulma-primary-l);
+html .tabs {
+  --bulma-tabs-link-color: #{$grey-font};
+  --bulma-tabs-link-active-border-bottom-color: #{$primary};
+  --bulma-tabs-border-bottom-width: 2px;
+  --bulma-tabs-link-hover-border-bottom-color: #{$gray-border};
+}
+
+// Buefy declares its `*-focus-*` tab variables on `.b-tabs` but defines their
+// source variables on the descendant `.tabs`, so every one of them resolves to
+// the guaranteed-invalid value. A focused tab therefore drops its background
+// and border and keeps only the active text colour — near-white on white.
+// Redeclare them on `.b-tabs` pointing at values that resolve at that level.
+html .b-tabs {
+  --bulma-tabs-link-focus-active-border-bottom-color: #{$primary};
+  --bulma-tabs-link-focus-border-bottom-color: #{$gray-border};
+  --bulma-tabs-toggle-link-focus-active-background-color: var(--bulma-link);
+  --bulma-tabs-toggle-link-focus-active-border-color: var(--bulma-link);
+  --bulma-tabs-toggle-link-focus-background-color: var(--bulma-background);
+  --bulma-tabs-toggle-link-focus-border-color: var(--bulma-border-hover);
+  --bulma-tabs-boxed-link-focus-active-background-color: var(--bulma-scheme-main);
+  --bulma-tabs-boxed-link-focus-active-border-bottom-color: transparent;
+  --bulma-tabs-boxed-link-focus-background-color: var(--bulma-background);
+  --bulma-tabs-boxed-link-focus-border-bottom-color: var(--bulma-border);
+}
+
+html .pagination {
+  justify-content: center;
+
+  .pagination-previous {
+    order: 1;
+  }
+
+  .pagination-list {
+    flex-grow: 0;
+    justify-content: center;
+    order: 2;
+  }
+
+  .pagination-next {
+    order: 3;
+  }
 }
 
 // Bulma forces `html { overflow-y: scroll }`, which paints a permanent
@@ -68,6 +110,18 @@ html:root {
     height: auto;
     width: 100%;
   }
+}
+
+// Buefy ships `.collapse .collapse-trigger { display: inline }`, so every
+// trigger shrinks to its text and a trailing chevron sits glued to it. Full
+// width with the chevron pushed right is what every collapse in this app wants.
+// `html` prefix outranks buefy's rule regardless of stylesheet order.
+html .collapse .collapse-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
 }
 
 .notices .toast {

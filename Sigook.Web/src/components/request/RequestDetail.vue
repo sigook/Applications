@@ -49,13 +49,6 @@
         </p>
       </div>
       <div class="item">
-        <span class="has-text-weight-bold">Visible Punch Card</span>
-        <p class="w-50">
-          <b-checkbox v-model="localRequest.punchCardOptionEnabled"
-            @update:modelValue="onTogglePunchCardVisibility()"></b-checkbox>
-        </p>
-      </div>
-      <div class="item">
         <span class="has-text-weight-bold">Vaccination</span>
         <router-link :to="companyBase + '/' + request.companyProfileId">
           <p>
@@ -118,8 +111,7 @@ import { useModuleBase } from '@/composables/useModuleBase';
 import {
   increaseWorkersQuantityByOne,
   reduceWorkersQuantityByOne,
-  updateAgencyRequestIsAsap,
-  updateAgencyPunchCardVisibilityStatusInApp
+  updateAgencyRequestIsAsap
 } from "@/api/agencyRequestApi";
 import {
   DurationTerm,
@@ -171,18 +163,6 @@ function onReduceWorkersQuantity() {
 function onToggleIsAsap() {
   isLoading.value = true;
   updateAgencyRequestIsAsap(props.request.id)
-    .then(() => {
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
-}
-
-function onTogglePunchCardVisibility() {
-  isLoading.value = true;
-  updateAgencyPunchCardVisibilityStatusInApp(props.request.id)
     .then(() => {
       isLoading.value = false;
     })

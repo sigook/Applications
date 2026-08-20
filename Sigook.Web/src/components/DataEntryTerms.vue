@@ -1,8 +1,9 @@
 <template>
-  <div>
-    <u class="color-primary" @click="expandOrColapse">Data Entry Terms</u>
-    <div v-if="expanded">
-      <br />
+  <b-collapse :model-value="false">
+    <template #trigger>
+      <u class="color-primary">Data Entry Terms</u>
+    </template>
+    <div class="terms-body">
       <div v-if="isCompanyProfile">
         <h1 class="is-capitalized fz1 has-text-weight-bold">Business Owner Data Entry</h1>
         <p>
@@ -41,19 +42,14 @@
           Information to any third party for marketing purposes.
         </p>
     </div>
-  </div>
+  </b-collapse>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useSecurityStore } from '@/stores/security';
 import roles from "@/security/roles";
 
 const securityStore = useSecurityStore();
-const expanded = ref(false);
-
-function expandOrColapse() {
-  expanded.value = !expanded.value;
-}
 
 const isCompanyProfile = computed(() =>
   securityStore.userRoles.some((ur) => ur === roles.company || ur === roles.companyUser)
@@ -65,5 +61,9 @@ const isWorkerProfile = computed(() =>
 <style lang="scss" scoped>
 u {
   cursor: pointer;
+}
+
+.terms-body {
+  margin-top: 1rem;
 }
 </style>

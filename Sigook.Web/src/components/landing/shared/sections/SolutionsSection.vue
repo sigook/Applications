@@ -194,7 +194,7 @@ const tempExpanded = ref(false)
   pointer-events: none;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   .solutions-section__cards {
     grid-template-columns: 1fr;
   }

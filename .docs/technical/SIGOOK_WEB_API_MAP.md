@@ -687,7 +687,7 @@ Public landing site endpoints (no auth).
 |----------|------------|----------|--------------|---------------|-------|
 | `workerRegisterTime(requestId, lat, lon)` | POST | `/api/WorkerRequest/{requestId}/TimeSheet` | `{ latitude, longitude }` | `void` | Clock-in with GPS |
 | `workerGetTimeSheet(requestId)` | GET | `/api/WorkerRequest/{requestId}/TimeSheet` | — | `WorkerTimeSheetItem[]` | |
-| `getClockType(requestId, date)` | GET | `/api/WorkerRequest/{requestId}/TimeSheet/clock-type` | `date` (param) | `ClockType` (enum, `src/constants/enums`) | Can clock in/out? |
+| `getClockType(requestId, latitude, longitude, date)` | GET | `/api/WorkerRequest/{requestId}/TimeSheet/clock-type/{latitude}/{longitude}` | `date` (param) | `ClockType` (enum, `src/constants/enums`) | Can clock in/out? Coordinates resolve the time zone |
 
 ### Comments
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |

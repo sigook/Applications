@@ -166,7 +166,7 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   text-transform: uppercase;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (max-height: 899px) {
   .numbers {
     height: 1280px;
     margin-top: -100px;

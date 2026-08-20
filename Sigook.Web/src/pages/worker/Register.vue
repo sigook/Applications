@@ -1042,6 +1042,18 @@ function isCanadaSelected(value: boolean) {
 </script>
 
 <style lang="scss" scoped>
+.form-md {
+  width: 80%;
+  min-width: 800px;
+  margin: 30px auto;
+
+  @media (max-width: 900px) {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+}
+
 .container-files {
   padding: 10px 0;
 }

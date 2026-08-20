@@ -2,6 +2,7 @@
   <div class="company-wrapper">
     <b-loading v-model="isLoading"></b-loading>
 
+    <Breadcrumbs :crumbs="agenciesCrumbs" back-to="/sales/agencies" />
     <section class="company-top" v-if="agency">
       <div class="hover-actions">
         <h2 class="is-capitalized fz1 has-text-weight-bold">
@@ -27,6 +28,8 @@ import { showAlertError } from '@/utils/toast';
 import { getAgency } from '@/api/agencyApi';
 import { lowercase } from '@/utils/filters';
 import AgencyRequests from '@/components/agency/AgencyRequests.vue';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import { agenciesCrumbs } from '@/constants/breadcrumbs';
 
 const route = useRoute();
 const router = useRouter();

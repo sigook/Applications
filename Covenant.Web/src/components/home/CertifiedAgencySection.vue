@@ -50,7 +50,7 @@
 <style scoped>
 .cert-section {
   width: 100%;
-  height: 30rem;
+  min-height: 30rem;
   background: #062338;
   background: linear-gradient(180deg,rgba(6, 35, 56, 1) 43%, rgba(255, 255, 255, 1) 61%);      /* azul de fondo general */
   display: flex;
@@ -170,7 +170,7 @@
 
 @media (max-width: 768px) {
   .cert-section {
-    height: 34rem;
+    min-height: 34rem;
     padding: 60px 0 70px;
   }
 
@@ -194,9 +194,9 @@
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 769px) {
   .cert-section {
-    height: 26rem;
+    min-height: 26rem;
     padding: 60px 0 70px;
   }
 

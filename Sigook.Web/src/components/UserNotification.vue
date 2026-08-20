@@ -153,7 +153,7 @@ loadNotifications();
   align-items: center;
   text-transform: uppercase;
   font-weight: 400;
-  color: #b3b2b2;
+  color: #6b6b6b;
   margin-bottom: 40px;
   font-size: 12px;
   label {

@@ -88,7 +88,7 @@ defineProps<{
   margin-top: clamp(36px, 5vw, 72px);
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   .valley-cards__grid { grid-template-columns: 1fr; }
 
   .valley-cards__card--offset { margin-top: 0; }

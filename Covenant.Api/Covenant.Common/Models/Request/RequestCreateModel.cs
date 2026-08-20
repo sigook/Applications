@@ -30,9 +30,10 @@ namespace Covenant.Common.Models.Request
         public DateTime StartAt { get; set; }
         public DateTime? FinishAt { get; set; }
         public ShiftModel Shift { get; set; }
-        public bool PunchCardOptionEnabled { get; set; }
+        public bool PunchCardOptionEnabled { get; set; } = true;
         public decimal? WorkerSalary { get; set; }
         public Guid? SalesRepresentativeId { get; set; }
         public IEnumerable<Guid> CompanyUserIds { get; set; }
+        public IEnumerable<RequestComplianceItemModel> ComplianceItems { get; set; }
     }
 }

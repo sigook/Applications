@@ -451,7 +451,8 @@ formulas**; EI is the only computed one. Non-unique lookup indexes: `CppDeductio
 | `CovenantNote.cs` | shared note entity with author/soft-delete (used by Candidate/Company/Request notes) |
 | `Source.cs` | catalog of candidate/job-board sources; `IsAvailableForRequests` gates job-board use; `Value` unique |
 | `Shift.cs` | shift definition attached to job position rates and requests |
-| `Gender.cs`, `Language.cs`, `IdentificationType.cs`, `Lift.cs`, `Day.cs`, `Availability*` | catalogs |
+| `IdentificationType.cs` | identification-type catalog; `Code` (`IdentificationTypeCode` enum, stored as string, default `None`) gives each row a typed identity — `SinSsn` drives the SIN auto-fill on identification uploads. Rows added by hand default to `None` (feature off for them) |
+| `Gender.cs`, `Language.cs`, `Lift.cs`, `Day.cs`, `Availability*` | catalogs |
 | `WsibGroup.cs` | WSIB classification catalog |
 | `User.cs` | see [User anchor](#the-user-anchor-critical-gotcha) |
 | `Notification/` | `NotificationType`, `UserNotificationType` (per-user notification prefs); `NotificationType.Id` is a hand-assigned `int` — the only non-Guid PK |

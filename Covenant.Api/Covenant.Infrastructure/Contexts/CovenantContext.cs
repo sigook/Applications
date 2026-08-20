@@ -52,7 +52,9 @@ public class CovenantContext : DbContext
     public DbSet<RequestRecruiter> RequestRecruiters { get; set; }
     public DbSet<RequestSource> RequestSources { get; set; }
     public DbSet<RequestSkill> RequestSkills { get; set; }
+    public DbSet<RequestComplianceItem> RequestComplianceItems { get; set; }
     public DbSet<RequestApplicant> RequestApplicants { get; set; }
+    public DbSet<RequestApplicantComplianceItem> RequestApplicantComplianceItems { get; set; }
     public DbSet<RequestComission> RequestComissions { get; set; }
     public DbSet<RequestCompanyUser> RequestCompanyUsers { get; set; }
     public DbSet<Location> Locations { get; set; }

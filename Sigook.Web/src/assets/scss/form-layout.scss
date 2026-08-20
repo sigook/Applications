@@ -1,0 +1,86 @@
+.page-form {
+  max-width: 1600px;
+  margin: 24px auto;
+  padding: 0 16px;
+
+  .section-card {
+    margin-bottom: 1.25rem;
+  }
+
+  .settings-card {
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  .settings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .setting-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    .switch {
+      margin-right: 0;
+    }
+  }
+
+  .compliance-configure-link {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .setting-row-control {
+    width: 110px;
+
+    .timepicker.control {
+      height: auto;
+    }
+
+    .dropdown,
+    .dropdown-trigger,
+    .control {
+      width: 100%;
+    }
+
+    .input {
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      text-align: center;
+    }
+  }
+
+  .settings-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e5e5e5;
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  .page-form {
+    margin: 0;
+    padding: 0;
+
+    > .columns {
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .settings-card {
+      position: static;
+    }
+
+    .settings-actions {
+      display: none;
+    }
+
+    .mobile-submit {
+      padding: 0 0.75rem 1.5rem;
+    }
+  }
+}

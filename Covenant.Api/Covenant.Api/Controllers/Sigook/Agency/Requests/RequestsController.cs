@@ -103,18 +103,6 @@ public class RequestsController(IRequestService requestService, IAgencyService a
         return Ok();
     }
 
-    /// <summary>Toggles the punch card visibility status of a request in the mobile app.</summary>
-    /// <param name="id">Identifier of the request.</param>
-    [HttpPut("{id}/PunchCardVisibilityStatusInApp")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> PunchCardVisibilityStatusInApp([FromRoute] Guid id)
-    {
-        var result = await requestService.PunchCardUpdateVisibilityStatusInApp(id);
-        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        return Ok();
-    }
-
     /// <summary>Cancels a request.</summary>
     /// <param name="id">Identifier of the request to cancel.</param>
     /// <param name="model">Cancellation detail.</param>

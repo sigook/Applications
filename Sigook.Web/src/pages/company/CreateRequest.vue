@@ -1,160 +1,194 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <form class="form-md" @submit.prevent="onSubmit">
-      <div class="">
-        <div>
-          <h2 class="main-title">{{ "Create Candidate Request" }}</h2>
-          <span class="line-orange"></span>
+    <form class="page-form" @submit.prevent="onSubmit">
+      <PageHeader title="Create Request" :crumbs="crumbs" back-to="/company-requests" />
+
+      <div class="columns">
+        <div class="column is-8-desktop">
+          <div class="card section-card">
+            <div class="card-header">
+              <p class="card-header-title">Position</p>
+            </div>
+            <div class="card-content">
+              <div class="columns is-multiline">
+                <div class="column is-6 is-4-desktop">
+                  <b-field :label="`${'Job title'} *`" :message="formErrors.jobTitle || ''"
+                    :type="formErrors.jobTitle ? 'is-danger' : ''">
+                    <b-input v-model="jobTitle" name="job title" />
+                  </b-field>
+                </div>
+                <div class="column is-6 is-4-desktop" v-if="directHiring">
+                  <b-field :type="formErrors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
+                    :message="formErrors.workerSalary || ''">
+                    <b-numberinput v-model="workerSalary" name="workerSalary" controls-alignment="right"></b-numberinput>
+                  </b-field>
+                </div>
+                <div class="column is-6 is-4-desktop">
+                  <b-field :type="formErrors.workersQuantity ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
+                    :message="formErrors.workersQuantity || ''">
+                    <b-numberinput v-model="workersQuantity" name="worker quantity" controls-alignment="right" expanded></b-numberinput>
+                  </b-field>
+                </div>
+                <div class="column is-6 is-4-desktop" v-if="!directHiring">
+                  <b-field :label="`${'Rol'} *`" :message="formErrors.jobPosition || ''"
+                    :type="formErrors.jobPosition ? 'is-danger' : ''">
+                    <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="jobPosition"
+                      open-on-focus name="rol" @select="onJobPositionSelected">
+                      <template #empty>You don't have any roles created</template>
+                    </b-autocomplete>
+                  </b-field>
+                  <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
+                </div>
+                <div class="column is-6 is-4-desktop">
+                  <b-field :label="`${'Branch office'} *`"
+                    :message="formErrors.branchOffice || ''"
+                    :type="formErrors.branchOffice ? 'is-danger' : ''">
+                    <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="branchOffice" open-on-focus
+                      name="branchOffice" selectable-footer field="formattedAddress"
+                      @select="onLocationSelected" @select-footer="() => showLocationModal = true">
+                      <template #footer>
+                        <a><span> Add new... </span></a>
+                      </template>
+                      <template #empty>You don't have any location created</template>
+                    </b-autocomplete>
+                  </b-field>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">
+              <p class="card-header-title">Content</p>
+            </div>
+            <div class="card-content">
+              <div class="columns is-multiline">
+                <div class="column is-12 is-6-desktop">
+                  <b-field :label="`${'Description'} *`" :message="formErrors.description || ''"
+                    :type="formErrors.description ? 'is-danger' : ''">
+                    <div class="vue-trix-editor">
+                      <QuillEditor theme="snow" content-type="html" v-model:content="description" />
+                    </div>
+                  </b-field>
+                </div>
+                <div class="column is-12 is-6-desktop">
+                  <b-field label="Responsibilities">
+                    <div class="vue-trix-editor">
+                      <QuillEditor theme="snow" content-type="html" v-model:content="request.responsibilities" />
+                    </div>
+                  </b-field>
+                </div>
+                <div class="column is-12 is-6-desktop">
+                  <b-field :label="`${'Requirements'} *`" :message="formErrors.requirements || ''"
+                    :type="formErrors.requirements ? 'is-danger' : ''">
+                    <div class="vue-trix-editor">
+                      <QuillEditor theme="snow" content-type="html" v-model:content="requirements" />
+                    </div>
+                  </b-field>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card section-card">
+            <div class="card-header">
+              <p class="card-header-title">Terms &amp; Schedule</p>
+            </div>
+            <div class="card-content">
+              <div class="columns is-multiline">
+                <div class="column is-6 is-3-desktop">
+                  <b-field :type="formErrors.incentive ? 'is-danger' : ''" :label="'Incentive'"
+                    :message="formErrors.incentive || ''">
+                    <b-numberinput controls-alignment="right" v-model="incentive" name="incentive" step="0.01" />
+                  </b-field>
+                </div>
+                <div class="column is-6 is-9-desktop">
+                  <b-field :type="formErrors.incentiveDescription ? 'is-danger' : ''" :label="'Incentive Description'"
+                    :message="formErrors.incentiveDescription || ''">
+                    <b-input v-model="incentiveDescription" name="incentiveDes" :disabled="!incentive" />
+                  </b-field>
+                </div>
+                <div class="column is-6 is-3-desktop">
+                  <b-field label="Duration Term">
+                    <b-select v-model="request.durationTerm" expanded>
+                      <option :value="DurationTerm.LongTerm">
+                        {{ DurationTermLabels[DurationTerm.LongTerm] }}
+                      </option>
+                      <option :value="DurationTerm.ShortTerm">
+                        {{ DurationTermLabels[DurationTerm.ShortTerm] }}
+                      </option>
+                    </b-select>
+                  </b-field>
+                </div>
+                <div class="column is-6 is-3-desktop">
+                  <b-field label="Employment Type">
+                    <b-select v-model="request.employmentType" expanded>
+                      <option :value="EmploymentType.FullTime">
+                        {{ EmploymentTypeLabels[EmploymentType.FullTime] }}
+                      </option>
+                      <option :value="EmploymentType.PartTime">
+                        {{ EmploymentTypeLabels[EmploymentType.PartTime] }}
+                      </option>
+                      <option :value="EmploymentType.Contractor">
+                        {{ EmploymentTypeLabels[EmploymentType.Contractor] }}
+                      </option>
+                      <option :value="EmploymentType.Temporary">
+                        {{ EmploymentTypeLabels[EmploymentType.Temporary] }}
+                      </option>
+                    </b-select>
+                  </b-field>
+                </div>
+                <div class="column is-6 is-3-desktop">
+                  <b-field label="Start *" :type="formErrors.startAt ? 'is-danger' : ''"
+                    :message="formErrors.startAt || ''">
+                    <b-datepicker v-model="startAt" name="from" :min-date="timeZero">
+                    </b-datepicker>
+                  </b-field>
+                </div>
+                <div class="column is-6 is-3-desktop" v-if="request.durationTerm === DurationTerm.ShortTerm">
+                  <b-field label="Finish">
+                    <b-datepicker v-model="request.finishAt" name="from" :min-date="startAt" :max-date="finishDate">
+                    </b-datepicker>
+                  </b-field>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-4-desktop">
+          <div class="card settings-card">
+            <div class="card-header">
+              <p class="card-header-title">Settings</p>
+            </div>
+            <div class="card-content">
+              <div class="settings-list">
+                <b-switch v-model="directHiring">Direct Hiring</b-switch>
+                <b-switch v-model="request.isAsap">Is Asap</b-switch>
+                <div class="setting-row" v-if="!directHiring">
+                  <b-switch v-model="request.breakIsPaid">Duration break is paid</b-switch>
+                  <div class="setting-row-control">
+                    <b-timepicker v-model="request.durationBreak" :max-time="maxBreak" hour-format="24"
+                      :disabled="!request.breakIsPaid">
+                    </b-timepicker>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-actions">
+                <b-button type="is-primary" native-type="submit" expanded>
+                  {{ "Create" }}
+                </b-button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="columns is-multiline">
-        <div class="column is-12">
-          <b-field>
-            <b-checkbox v-model="directHiring">Direct Hiring</b-checkbox>
-            <b-checkbox v-model="request.isAsap">Is Asap?</b-checkbox>
-          </b-field>
-        </div>
-        <div
-          :class="[directHiring ? 'column is-6 is-4-desktop' : 'column is-8']">
-          <b-field :label="`${'Job title'} *`" :message="formErrors.jobTitle || ''"
-            :type="formErrors.jobTitle ? 'is-danger' : ''">
-            <b-input v-model="jobTitle" name="job title" />
-          </b-field>
-        </div>
-        <div class="column is-6 is-4-desktop" v-if="directHiring">
-          <b-field :type="formErrors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
-            :message="formErrors.workerSalary || ''">
-            <b-numberinput v-model="workerSalary" name="workerSalary" controls-alignment="right"></b-numberinput>
-          </b-field>
-        </div>
-        <div class="column is-6 is-4-desktop">
-          <b-field :type="formErrors.workersQuantity ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
-            :message="formErrors.workersQuantity || ''">
-            <b-numberinput v-model="workersQuantity" name="worker quantity" controls-alignment="right" expanded></b-numberinput>
-          </b-field>
-        </div>
-        <div class="column is-6" v-if="!directHiring">
-          <b-field :label="`${'Rol'} *`" :message="formErrors.jobPosition || ''"
-            :type="formErrors.jobPosition ? 'is-danger' : ''">
-            <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="jobPosition"
-              open-on-focus name="rol" @select="onJobPositionSelected">
-              <template #empty>You don't have any roles created</template>
-            </b-autocomplete>
-          </b-field>
-          <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
-        </div>
-        <div :class="[directHiring ? 'column is-12' : 'column is-6']">
-          <b-field :label="`${'Branch office'} *`"
-            :message="formErrors.branchOffice || ''"
-            :type="formErrors.branchOffice ? 'is-danger' : ''">
-            <b-autocomplete :data="filteredLocations" placeholder="Location" v-model="branchOffice" open-on-focus
-              name="branchOffice" selectable-footer field="formattedAddress"
-              @select="onLocationSelected" @select-footer="() => showLocationModal = true">
-              <template #footer>
-                <a><span> Add new... </span></a>
-              </template>
-              <template #empty>You don't have any location created</template>
-            </b-autocomplete>
-          </b-field>
-        </div>
-        <div class="column is-12 is-4-desktop">
-          <b-field :label="`${'Description'} *`" :message="formErrors.description || ''"
-            :type="formErrors.description ? 'is-danger' : ''">
-            <div class="vue-trix-editor">
-              <QuillEditor theme="snow" content-type="html" v-model:content="description" />
-            </div>
-          </b-field>
-        </div>
-        <div class="column is-12 is-4-desktop">
-          <b-field label="Responsibilities">
-            <div class="vue-trix-editor">
-              <QuillEditor theme="snow" content-type="html" v-model:content="request.responsibilities" />
-            </div>
-          </b-field>
-        </div>
-        <div class="column is-12 is-4-desktop">
-          <b-field :label="`${'Requirements'} *`" :message="formErrors.requirements || ''"
-            :type="formErrors.requirements ? 'is-danger' : ''">
-            <div class="vue-trix-editor">
-              <QuillEditor theme="snow" content-type="html" v-model:content="requirements" />
-            </div>
-          </b-field>
-        </div>
-        <div class="column is-6 is-3-desktop" disabled="!directHiring">
-          <b-field :type="formErrors.incentive ? 'is-danger' : ''" :label="'Incentive'"
-            :message="formErrors.incentive || ''">
-            <b-numberinput controls-alignment="right" v-model="incentive" name="incentive" step="0.01" />
-          </b-field>
-        </div>
-        <div class="column is-6 is-9-desktop">
-          <b-field :type="formErrors.incentiveDescription ? 'is-danger' : ''" :label="'Incentive Description'"
-            :message="formErrors.incentiveDescription || ''">
-            <b-input v-model="incentiveDescription" name="incentiveDes" :disabled="!incentive" />
-          </b-field>
-        </div>
-        <div class="column is-6 is-3-desktop" v-if="!directHiring">
-          <b-field :label="'Duration break is paid'">
-            <b-switch v-model="request.breakIsPaid" :true-value="true" :false-value="false">
-              {{ request.breakIsPaid ? "Yes" : "No" }}
-            </b-switch>
-          </b-field>
-        </div>
-        <div class="column is-6 is-9-desktop" v-if="!directHiring">
-          <b-field label="Duration Break">
-            <b-timepicker v-model="request.durationBreak" :max-time="maxBreak" hour-format="24"
-              :disabled="!request.breakIsPaid">
-            </b-timepicker>
-          </b-field>
-        </div>
-        <div class="column is-6 is-3-desktop">
-          <b-field label="Duration Term">
-            <b-select v-model="request.durationTerm" expanded>
-              <option :value="DurationTerm.LongTerm">
-                {{ DurationTermLabels[DurationTerm.LongTerm] }}
-              </option>
-              <option :value="DurationTerm.ShortTerm">
-                {{ DurationTermLabels[DurationTerm.ShortTerm] }}
-              </option>
-            </b-select>
-          </b-field>
-        </div>
-        <div class="column is-6 is-3-desktop">
-          <b-field label="Employment Type">
-            <b-select v-model="request.employmentType" expanded>
-              <option :value="EmploymentType.FullTime">
-                {{ EmploymentTypeLabels[EmploymentType.FullTime] }}
-              </option>
-              <option :value="EmploymentType.PartTime">
-                {{ EmploymentTypeLabels[EmploymentType.PartTime] }}
-              </option>
-              <option :value="EmploymentType.Contractor">
-                {{ EmploymentTypeLabels[EmploymentType.Contractor] }}
-              </option>
-              <option :value="EmploymentType.Temporary">
-                {{ EmploymentTypeLabels[EmploymentType.Temporary] }}
-              </option>
-            </b-select>
-          </b-field>
-        </div>
-        <div class="column is-6 is-3-desktop">
-          <b-field label="Start *" :type="formErrors.startAt ? 'is-danger' : ''"
-            :message="formErrors.startAt || ''">
-            <b-datepicker v-model="startAt" name="from" :min-date="timeZero">
-            </b-datepicker>
-          </b-field>
-        </div>
-        <div class="column is-6 is-3-desktop" v-if="request.durationTerm === DurationTerm.ShortTerm">
-          <b-field label="Finish">
-            <b-datepicker v-model="request.finishAt" name="from" :min-date="startAt" :max-date="finishDate">
-            </b-datepicker>
-          </b-field>
-        </div>
-        <div class="column is-12 mt-5">
-          <b-button type="is-primary" native-type="submit">
-            {{ "Create" }}
-          </b-button>
-        </div>
+
+      <div class="mobile-submit is-hidden-desktop">
+        <b-button type="is-primary" native-type="submit" expanded>
+          Create
+        </b-button>
       </div>
     </form>
 
@@ -179,6 +213,10 @@ import {
 } from '@/constants/enums';
 import { getLocations, getCompanyJobPositions, createRequest } from '@/api/companyApi';
 import LocationForm from '@/components/agency_company/LocationForm.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import type { PageBreadcrumb } from '@/types/common';
+
+const crumbs: PageBreadcrumb[] = [{ label: 'Requests', to: '/company-requests' }];
 
 const router = useRouter();
 const errorMessage = 'Please make sure all required fields are filled out correctly';
@@ -251,6 +289,7 @@ const request = reactive<any>({
   durationBreak: dayjs().startOf('day').toDate(),
   durationTerm: DurationTerm.LongTerm,
   employmentType: EmploymentType.FullTime,
+  punchCardOptionEnabled: true,
 });
 const jobPositionSelected = ref<any>(null);
 const locationSelected = ref<any>(null);

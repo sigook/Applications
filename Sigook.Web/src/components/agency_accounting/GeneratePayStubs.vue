@@ -21,12 +21,13 @@
 import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getWorkersReadyForPayStub, generatePayStubs } from "@/api/agencyPayStubApi";
+import type { WorkerReadyForPayStubModel } from '@/types/accounting';
 
 const emit = defineEmits<{(e: 'pay-stubs-generated'): void}>();
 
 const isLoading = ref(false);
-const rows = ref<any[]>([]);
-const selectedWorkers = ref<any[]>([]);
+const rows = ref<WorkerReadyForPayStubModel[]>([]);
+const selectedWorkers = ref<WorkerReadyForPayStubModel[]>([]);
 
 function loadWorkers() {
   isLoading.value = true;

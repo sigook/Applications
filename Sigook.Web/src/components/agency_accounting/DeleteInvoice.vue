@@ -40,13 +40,14 @@ import {
   getPayStubsByInvoice,
   deleteAgencyInvoice
 } from "@/api/agencyInvoiceApi";
+import type { AgencyInvoiceListItem, PayStubDeleteWarningItem } from '@/types/accounting';
 
-const props = defineProps<{ invoice: any }>();
+const props = defineProps<{ invoice: AgencyInvoiceListItem }>();
 const emit = defineEmits<{(e: 'deleted'): void}>();
 
 const isLoading = ref(true);
-const rows = ref<any[]>([]);
-const selectedPayStubs = ref<any[]>([]);
+const rows = ref<PayStubDeleteWarningItem[]>([]);
+const selectedPayStubs = ref<PayStubDeleteWarningItem[]>([]);
 
 async function loadPayStubs() {
   rows.value = await getPayStubsByInvoice(props.invoice.id);
@@ -56,7 +57,7 @@ async function submitDeleteInvoice() {
   isLoading.value = true;
   await deleteAgencyInvoice({
     invoiceId: props.invoice.id,
-    payStubs: selectedPayStubs.value.map((payStub: any) => payStub.payStubId),
+    payStubs: selectedPayStubs.value.map((payStub) => payStub.payStubId),
   }).catch((error: unknown) => {
     isLoading.value = false;
     showAlertError(error);

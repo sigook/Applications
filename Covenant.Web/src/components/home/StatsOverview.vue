@@ -6,7 +6,7 @@
         <!-- 🔹 Imagen para móviles -->
         <source
           srcset="@/assets/images/Section-OurNumbers.svg"
-          media="(max-width: 768px)"
+          media="(max-width: 1023px)"
         />
         <!-- 🔹 Imagen por defecto (desktop / tablet) -->
         <img

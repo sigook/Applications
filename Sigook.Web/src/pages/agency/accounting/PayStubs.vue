@@ -1,11 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title columns is-multiline mb-2">
-      <h2 class="fz1 pt-3 column is-7-mobile is-5">
-        PayStubs
-      </h2>
-    </div>
+    <PageHeader title="PayStubs" :crumbs="accountingCrumbs" />
     <div>
       <export :url="'/api/agency/accounting/PayStubs/file'" :params="serverParams" :fileName="'PayStubs'"
         @onDataLoading="(value) => isLoading = value">
@@ -135,15 +131,18 @@ import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import GeneratePayStubs from '@/components/agency_accounting/GeneratePayStubs.vue';
 import SkipPayrollNumber from '@/components/agency_accounting/SkipPayrollNumber.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { accountingCrumbs } from '@/constants/breadcrumbs';
+import type { AgencyPayStubFilter, AgencyPayStubRow } from '@/types/accounting';
 
 const agencyStore = useAgencyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const checkedRows = ref<any[]>([]);
-const createdAtDatesSelected = ref<any[]>([]);
-const serverParams = ref<any>({
+const rows = ref<AgencyPayStubRow[]>([]);
+const checkedRows = ref<AgencyPayStubRow[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const serverParams = ref<AgencyPayStubFilter>({
   sortBy: 0,
   pageIndex: 1,
   pageSize: 30,
@@ -164,8 +163,8 @@ const showSkipPayrollNumberModal = ref(false);
 if (agencyStore.agencyPayStubFilter) {
   serverParams.value = agencyStore.agencyPayStubFilter;
   if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
-    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
   }
 }
 loadPayStubs();
@@ -182,8 +181,8 @@ function onInputEntered(event: KeyboardEvent) {
 }
 
 function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadPayStubs();
 }
 
@@ -196,8 +195,8 @@ function loadPayStubs() {
   isLoading.value = true;
   agencyStore.updateAgencyPayStubFilter(serverParams.value);
   getAgencyPayStubs(serverParams.value)
-    .then((response: any) => {
-      rows.value = response.items.map((i: any) => ({ ...i, emailSending: false, actions: null }));
+    .then((response) => {
+      rows.value = response.items.map((i) => ({ ...i, emailSending: false }));
       checkedRows.value = [];
       totalItems.value = response.totalItems;
       isLoading.value = false;
@@ -208,7 +207,7 @@ function loadPayStubs() {
     });
 }
 
-function onDownloadPayStubPdf(payStub: any) {
+function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
   isLoading.value = true;
   downloadPayStubPdf(payStub.id)
     .then((response) => {
@@ -221,7 +220,7 @@ function onDownloadPayStubPdf(payStub: any) {
     });
 }
 
-function onSendPayStubEmail(payStub: any) {
+function onSendPayStubEmail(payStub: AgencyPayStubRow) {
   payStub.emailSending = true;
   sendPayStubEmail(payStub.id)
     .then(() => {
@@ -245,7 +244,7 @@ function onSendSelectedEmails() {
     hasIcon: true,
     onConfirm: () => {
       isLoading.value = true;
-      const payStubIds = checkedRows.value.map((p: any) => p.id);
+      const payStubIds = checkedRows.value.map((p) => p.id);
       sendPayStubEmailBulk(payStubIds)
         .then(() => {
           isLoading.value = false;
@@ -260,7 +259,7 @@ function onSendSelectedEmails() {
   });
 }
 
-function onDeletePayStub(payStub: any) {
+function onDeletePayStub(payStub: AgencyPayStubRow) {
   const message = `You are about to delete the pay stub <b>${payStub.payStubNumber}</b>
         <br>
         <br>

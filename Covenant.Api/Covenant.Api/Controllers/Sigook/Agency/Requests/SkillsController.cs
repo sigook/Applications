@@ -27,7 +27,7 @@ public class SkillsController(IRequestRepository repository) : Controller
         if (!ModelState.IsValid || string.IsNullOrEmpty(model?.Skill)) return BadRequest(ModelState);
         var result = RequestSkill.Create(requestId, model.Skill);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await repository.Create(result.Value);
+        await repository.Create<RequestSkill>([result.Value]);
         await repository.SaveChangesAsync();
         model.Id = result.Value.Id;
         return Ok(model);
@@ -49,7 +49,7 @@ public class SkillsController(IRequestRepository repository) : Controller
     {
         var entity = await repository.GetSkill(requestId, id);
         if (entity is null) return BadRequest();
-        repository.Delete(entity);
+        repository.Delete<RequestSkill>([entity]);
         await repository.SaveChangesAsync();
         return Ok();
     }

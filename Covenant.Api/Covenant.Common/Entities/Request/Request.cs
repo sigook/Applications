@@ -69,6 +69,7 @@ namespace Covenant.Common.Entities.Request
         public string CreatedBy { get; set; }
         public RequestComission RequestComission { get; set; }
         public IEnumerable<RequestCompanyUser> RequestCompanyUser { get; set; }
+        public IEnumerable<RequestComplianceItem> ComplianceItems { get; set; }
         public IEnumerable<RequestNote> Notes { get; set; } = new List<RequestNote>();
         public ICollection<RequestSource> Sources { get; set; } = new List<RequestSource>();
         public IReadOnlyCollection<RequestRecruiter> Recruiters => _recruiters;
@@ -295,11 +296,10 @@ namespace Covenant.Common.Entities.Request
             return Result.Ok();
         }
 
-        public Result UpdatePunchCardVisibilityStatusInApp(bool? visibleInApp = null)
+        public Result UpdatePunchCardVisibilityStatusInApp(bool visibleInApp)
         {
             if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
-            if (visibleInApp.HasValue) PunchCardOptionEnabled = visibleInApp.Value;
-            else PunchCardOptionEnabled = !PunchCardOptionEnabled;
+            PunchCardOptionEnabled = visibleInApp;
             UpdatedAt = DateTime.Now;
             return Result.Ok();
         }
@@ -395,7 +395,7 @@ namespace Covenant.Common.Entities.Request
             decimal? incentive = null,
             string incentiveDescription = null,
             string createdBy = null,
-            bool isPunchCardOptionEnabled = false)
+            bool isPunchCardOptionEnabled = true)
         {
             return Result.Ok(new Request
             {
@@ -442,7 +442,7 @@ namespace Covenant.Common.Entities.Request
             decimal? incentive = null,
             string incentiveDescription = null,
             string createdBy = null,
-            bool isPunchCardOptionEnabled = false)
+            bool isPunchCardOptionEnabled = true)
         {
             return Result.Ok(new Request
             {

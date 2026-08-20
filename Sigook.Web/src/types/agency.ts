@@ -1,3 +1,5 @@
+import type { CompanyStatus } from '@/constants/enums';
+import type { ComplianceDocumentTarget, RequestApplicantStatus } from './requestApplicant';
 import type {
   CatalogItem,
   City,
@@ -59,12 +61,18 @@ export interface AgencyPersonnel {
 }
 
 // Filter used by Agencies list page
+export interface AgencyTypeOption {
+  value: number;
+  label: string;
+}
+
 export interface AgencyListFilter {
-  page: number;
-  pageSize: number;
-  searchTerm?: string;
-  orderBy?: string;
+  pageIndex?: number;
+  pageSize?: number;
+  sortBy?: number;
   isDescending?: boolean;
+  fullName?: string;
+  email?: string;
   agencyTypes?: number[];
 }
 
@@ -257,7 +265,6 @@ export interface AgencyWorkerRequestHistoryItem {
   jobTitle: string;
   companyFullName: string;
   agencyFullName?: string;
-  agencyLogo?: string;
   logo?: string;
   location: string;
   entrance?: string;
@@ -294,8 +301,9 @@ export interface AgencyCompanyFilter {
   updatedBy?: string;
   updatedAtFrom?: string | null;
   updatedAtTo?: string | null;
-  companyStatuses?: string[];
+  companyStatuses?: CompanyStatus[];
   salesRepresentative?: string;
+  salesPersonnelId?: string;
 }
 
 // Item returned by GET /api/v2/AgencyCompanyProfile.
@@ -516,6 +524,43 @@ export interface AgencyRequestDetail {
   internalRequirements?: string;
   salesRepresentativeId?: string | null;
   companyUserIds?: string[];
+  complianceItems?: RequestComplianceItem[];
+}
+
+// Compliance requirement configured on a request. Mirrors backend RequestComplianceItemModel.
+export interface RequestComplianceItem {
+  id?: string | null;
+  name: string;
+  isMandatory: boolean;
+  documentTarget: ComplianceDocumentTarget;
+}
+
+// Compliance item with the completion state of one applicant.
+// Mirrors backend ApplicantComplianceItemModel.
+export interface ApplicantComplianceItem {
+  id: string;
+  name: string;
+  isMandatory: boolean;
+  documentTarget: ComplianceDocumentTarget;
+  isCompleted: boolean;
+  completedAt?: string | null;
+  completedBy?: string;
+  canUpload: boolean;
+  existingFileUrl?: string | null;
+}
+
+// Body for PUT .../Applicants/{id}/Status. Mirrors backend ChangeRequestApplicantStatusModel.
+export interface ChangeRequestApplicantStatusModel {
+  status: RequestApplicantStatus;
+}
+
+// JSON "data" part for POST .../Applicants/{id}/ComplianceItems/{itemId} (multipart).
+// Mirrors backend CompleteApplicantComplianceItemModel.
+export interface CompleteApplicantComplianceItemModel {
+  fileName?: string;
+  identificationNumber?: string;
+  identificationTypeId?: string | null;
+  socialInsuranceNumber?: string;
 }
 
 // Payload for POST/PUT /api/AgencyRequest.
@@ -550,6 +595,7 @@ export interface CreateAgencyRequestModel {
   workerSalary?: number | null;
   salesRepresentativeId?: string | null;
   companyUserIds?: string[];
+  complianceItems?: RequestComplianceItem[];
 }
 
 // Payload for PUT /api/AgencyRequest/{id}/Shift. Mirrors backend ShiftModel.
@@ -678,6 +724,7 @@ export interface AgencyRequestApplicantFilter {
   createdBy?: string;
   createdAtFrom?: string | null;
   createdAtTo?: string | null;
+  statuses?: RequestApplicantStatus[];
 }
 
 // Body for POST /api/AgencyRequest/{requestId}/Applicant. Mirrors RequestApplicantModel.
@@ -710,6 +757,7 @@ export interface AgencyRequestApplicant {
   comments?: string;
   createdAt: string;
   createdBy?: string;
+  status: RequestApplicantStatus;
 }
 
 // Body for PUT /api/AgencyRequest/{requestId}/Applicant/{id}. Mirrors CommentsModel.
@@ -864,6 +912,10 @@ export interface HoursWorkedResume {
   detail: HoursWorkedResponseItem[];
 }
 
+export interface HoursWorkedReportView extends Partial<HoursWorkedResume> {
+  rows: HoursWorkedResponseItem[];
+}
+
 // Detail row inside HoursWorkedResume.detail (mirrors backend HoursWorkedResponse).
 export interface HoursWorkedResponseItem {
   workerName: string;
@@ -889,4 +941,8 @@ export interface WeeklyPayrollItem {
   weekEnding: string;
   numberOfPayStubs: number;
   displayWeekEnding: string;
+}
+
+export interface WeeklyPayrollRow extends WeeklyPayrollItem {
+  reportDownloading?: boolean;
 }

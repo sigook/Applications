@@ -395,7 +395,7 @@ const { el: sectionRef, visible } = useRevealOnScroll()
   max-width: 360px;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (max-height: 899px) {
   .why {
     margin-top: -100px;
   }

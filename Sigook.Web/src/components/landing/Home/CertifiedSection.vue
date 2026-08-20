@@ -184,7 +184,7 @@ import DecoMagnifier from '@/components/landing/shared/hero/DecoMagnifier.vue'
   max-width: 560px;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (max-height: 899px) {
   .certified-wrap {
     margin-top: -160px;
     padding-top: 0;
