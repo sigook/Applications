@@ -1,7 +1,9 @@
+import 'package:geolocator/geolocator.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sigook_app_flutter/core/network/network_info.dart';
 import 'package:sigook_app_flutter/core/services/analytics_service.dart';
 import 'package:sigook_app_flutter/core/services/crash_reporting_service.dart';
+import 'package:sigook_app_flutter/core/services/location_service.dart';
 import 'package:sigook_app_flutter/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:sigook_app_flutter/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:sigook_app_flutter/features/auth/domain/repositories/auth_repository.dart';
@@ -18,6 +20,10 @@ class MockNetworkInfo extends Mock implements NetworkInfo {}
 class MockAnalyticsService extends Mock implements AnalyticsService {}
 
 class MockCrashReportingService extends Mock implements CrashReportingService {}
+
+class MockGeolocatorPlatform extends Mock implements GeolocatorPlatform {}
+
+class MockLocationService extends Mock implements LocationService {}
 
 // ── Auth ────────────────────────────────────────────────────────────────────
 class MockAuthRepository extends Mock implements AuthRepository {}

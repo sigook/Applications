@@ -22,13 +22,20 @@ class TimesheetRepositoryImpl implements TimesheetRepository {
   Future<Either<Failure, ClockType>> getClockType({
     required DateTime date,
     required String requestId,
+    required double latitude,
+    required double longitude,
   }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
 
     try {
-      final result = await remoteDataSource.getClockType(date, requestId);
+      final result = await remoteDataSource.getClockType(
+        date,
+        requestId,
+        latitude,
+        longitude,
+      );
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message));

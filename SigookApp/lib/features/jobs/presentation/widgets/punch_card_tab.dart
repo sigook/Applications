@@ -10,6 +10,8 @@ import 'package:permission_handler/permission_handler.dart'
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/enums.dart';
 import '../../../../core/providers/analytics_providers.dart';
+import '../../../../core/providers/location_provider.dart';
+import '../../../../core/services/location_service.dart';
 import '../../domain/usecases/get_clock_type.dart';
 import '../../domain/usecases/submit_timesheet.dart';
 import '../providers/timesheet_providers.dart';
@@ -42,23 +44,34 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       }
     });
     _loadClockType();
-    _requestLocationPermission();
-  }
-
-  Future<void> _requestLocationPermission() async {
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
-
-    final permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      await Geolocator.requestPermission();
-    }
   }
 
   Future<void> _loadClockType() async {
     final useCase = ref.read(getClockTypeUseCaseProvider);
+    final position = await ref
+        .read(locationServiceProvider)
+        .getCurrentPosition();
+
+    if (position == null) {
+      if (!mounted) return;
+      _showErrorSnackBar(
+        'Failed to get location. Please enable location services.',
+        action: SnackBarAction(
+          label: 'Retry',
+          textColor: Colors.white,
+          onPressed: _loadClockType,
+        ),
+      );
+      return;
+    }
+
     final result = await useCase(
-      GetClockTypeParams(date: _selectedDay, requestId: widget.jobId),
+      GetClockTypeParams(
+        date: _selectedDay,
+        requestId: widget.jobId,
+        latitude: position.latitude,
+        longitude: position.longitude,
+      ),
     );
 
     if (!mounted) return;
@@ -334,7 +347,35 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     });
 
     try {
-      final position = await _getCurrentLocation();
+      final locationService = ref.read(locationServiceProvider);
+
+      if (!await locationService.ensurePermissions()) {
+        if (!mounted) return;
+        setState(() {
+          _isSubmitting = false;
+        });
+        _showErrorSnackBar(
+          'Failed to get location. Please enable location services.',
+          action: SnackBarAction(
+            label: 'Settings',
+            textColor: Colors.white,
+            onPressed: _openLocationSettings,
+          ),
+        );
+        return;
+      }
+
+      final precision = await locationService.resolveLocationPrecision();
+      if (precision == LocationPrecision.reduced) {
+        if (!mounted) return;
+        setState(() {
+          _isSubmitting = false;
+        });
+        await _showLocationPrecisionWarning(allowContinue: false);
+        return;
+      }
+
+      final position = await locationService.getFreshPosition();
 
       if (position == null) {
         if (!mounted) return;
@@ -343,21 +384,24 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         });
         _showErrorSnackBar(
           'Failed to get location. Please enable location services.',
+          action: SnackBarAction(
+            label: 'Settings',
+            textColor: Colors.white,
+            onPressed: _openLocationSettings,
+          ),
         );
         return;
       }
 
-      // Check location precision
       if (!mounted) return;
       final locationAccuracy = position.accuracy;
-      final isPrecise = locationAccuracy <= 20.0; // 20 meters threshold
-
+      final isPrecise = locationAccuracy <= 20.0;
       if (!isPrecise) {
         setState(() {
           _isSubmitting = false;
         });
         final shouldContinue = await _showLocationPrecisionWarning(
-          locationAccuracy,
+          accuracy: locationAccuracy,
         );
         if (shouldContinue != true) {
           return;
@@ -367,7 +411,6 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         });
       }
 
-      // Show confirmation modal
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
@@ -415,6 +458,9 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
               _clockType == ClockType.clockOut;
 
           if (isTooFarFromCheckpoint) {
+            final fixAgeMs = DateTime.now()
+                .difference(position.timestamp)
+                .inMilliseconds;
             // Track location error for monitoring
             ref
                 .read(analyticsServiceProvider)
@@ -423,6 +469,9 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                   parameters: {
                     'job_id': widget.jobId,
                     'error_type': 'too_far_from_checkpoint',
+                    'location_accuracy_m': position.accuracy,
+                    'fix_age_ms': fixAgeMs < 0 ? 0 : fixAgeMs,
+                    'is_mocked': position.isMocked,
                   },
                 );
             _showTooFarFromCheckpointError();
@@ -443,12 +492,22 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
           }
         },
         (response) {
-          ref.read(analyticsServiceProvider).logEvent(
-            name: _clockType == ClockType.clockIn
-                ? 'clock_in_success'
-                : 'clock_out_success',
-            parameters: {'job_id': widget.jobId},
-          );
+          final fixAgeMs = DateTime.now()
+              .difference(position.timestamp)
+              .inMilliseconds;
+          ref
+              .read(analyticsServiceProvider)
+              .logEvent(
+                name: _clockType == ClockType.clockIn
+                    ? 'clock_in_success'
+                    : 'clock_out_success',
+                parameters: {
+                  'job_id': widget.jobId,
+                  'location_accuracy_m': position.accuracy,
+                  'fix_age_ms': fixAgeMs < 0 ? 0 : fixAgeMs,
+                  'is_mocked': position.isMocked,
+                },
+              );
           _showSuccessSnackBar(response.workerFullName, response.finish);
           _loadClockType();
         },
@@ -460,34 +519,6 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       });
       _showErrorSnackBar('An error occurred: $e');
     }
-  }
-
-  Future<Position?> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return null;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return null;
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return null;
-    }
-
-    return await Geolocator.getCurrentPosition(
-      locationSettings: Platform.isAndroid
-          ? AndroidSettings(accuracy: LocationAccuracy.high)
-          : AppleSettings(accuracy: LocationAccuracy.high),
-    );
   }
 
   void _showSuccessSnackBar(String workerName, bool finish) {
@@ -525,7 +556,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
-  void _showErrorSnackBar(String message) {
+  void _showErrorSnackBar(String message, {SnackBarAction? action}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -537,6 +568,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             ),
           ],
         ),
+        action: action,
         backgroundColor: AppTheme.errorRed,
         duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
@@ -586,11 +618,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
-            Icon(
-              Icons.location_off,
-              color: AppTheme.errorRed,
-              size: 28,
-            ),
+            Icon(Icons.location_off, color: AppTheme.errorRed, size: 28),
             SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -623,16 +651,17 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                 children: [
                   Text(
                     'Please make sure you are:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   SizedBox(height: 8),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.check_circle, size: 16, color: AppTheme.primaryBlue),
+                      Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: AppTheme.primaryBlue,
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -646,7 +675,11 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.check_circle, size: 16, color: AppTheme.primaryBlue),
+                      Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: AppTheme.primaryBlue,
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -660,7 +693,11 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.check_circle, size: 16, color: AppTheme.primaryBlue),
+                      Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: AppTheme.primaryBlue,
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -680,10 +717,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text(
               'OK',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -817,70 +851,85 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
-  Future<bool?> _showLocationPrecisionWarning(double accuracy) async {
+  Future<bool?> _showLocationPrecisionWarning({
+    double? accuracy,
+    bool allowContinue = true,
+  }) async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.warning_amber_rounded,
               color: AppTheme.warningOrange,
               size: 28,
             ),
-            SizedBox(width: 12),
-            Text('Location Not Precise'),
+            const SizedBox(width: 12),
+            Text(
+              accuracy == null
+                  ? 'Precise Location Off'
+                  : 'Location Not Precise',
+            ),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Your location accuracy is not precise enough for clock in/out.',
-              style: TextStyle(fontSize: 16),
+            Text(
+              accuracy == null
+                  ? 'Precise Location is turned off for this app. Clock in/out requires your exact location.'
+                  : 'Your location accuracy is not precise enough for clock in/out.',
+              style: const TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.warningOrange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppTheme.warningOrange.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.location_searching,
-                    color: AppTheme.warningOrange,
-                    size: 20,
+            if (accuracy != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.warningOrange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppTheme.warningOrange.withValues(alpha: 0.3),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Current accuracy: ±${accuracy.toStringAsFixed(0)} meters',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.warningOrange,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.location_searching,
+                      color: AppTheme.warningOrange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Current accuracy: ±${accuracy.toStringAsFixed(0)} meters',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.warningOrange,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 12),
             const Text(
               'For accurate attendance tracking, please:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '• Enable High Accuracy location mode\n• Ensure GPS is enabled\n• Move to an open area with clear sky view',
-              style: TextStyle(fontSize: 13, height: 1.5),
+            Text(
+              accuracy == null
+                  ? (Platform.isIOS
+                        ? '• Open Settings › Privacy & Security › Location Services › SIGOOK\n• Turn on Precise Location'
+                        : '• Open App info › Permissions › Location\n• Turn on Use precise location')
+                  : '• Enable High Accuracy location mode\n• Ensure GPS is enabled\n• Move to an open area with clear sky view',
+              style: const TextStyle(fontSize: 13, height: 1.5),
             ),
           ],
         ),
@@ -909,25 +958,27 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                   elevation: 2,
                 ),
               ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.warningOrange,
-                  side: const BorderSide(
-                    color: AppTheme.warningOrange,
-                    width: 2,
+              if (allowContinue) ...[
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.warningOrange,
+                    side: const BorderSide(
+                      color: AppTheme.warningOrange,
+                      width: 2,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  child: const Text(
+                    'Continue Anyway',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
-                child: const Text(
-                  'Continue Anyway',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
+              ],
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
