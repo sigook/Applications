@@ -66,6 +66,9 @@ const isEntryTime = ref(false);
 const position = ref<GeolocationPosition | null>(null);
 const canBeRegistered = ref(false);
 
+let markPositionReady: () => void = () => undefined;
+const positionReady = new Promise<void>((resolve) => (markPositionReady = resolve));
+
 const highlights = computed(() => {
   if (props.timesheet && props.timesheet.items && props.timesheet.items.length > 0) {
     return props.timesheet.items.map((i: any) => new Date(i.day));
@@ -85,8 +88,26 @@ function getTimeFromNow() {
   currentHour.value = dayjs().format('HH:mm:ss');
 }
 
-async function getClockType() {
-  return await getClockTypeApi(props.requestId, dayjs(dateSelected.value).format('YYYY-MM-DD'));
+async function getClockType(): Promise<ClockType | null> {
+  await positionReady;
+  if (!position.value) return null;
+  return await getClockTypeApi(
+    props.requestId,
+    position.value.coords.latitude,
+    position.value.coords.longitude,
+    dayjs(dateSelected.value).format('YYYY-MM-DD')
+  );
+}
+
+async function refreshClockType() {
+  const clockType = await getClockType();
+  if (clockType === null) {
+    canBeRegistered.value = false;
+    showAlertError('Please enable to know your location in the browser');
+    return;
+  }
+  isEntryTime.value = clockType === ClockType.ClockIn;
+  canBeRegistered.value = clockType !== ClockType.None;
 }
 
 function registerHour() {
@@ -95,9 +116,7 @@ function registerHour() {
   return workerRegisterTime(props.requestId, position.value.coords.latitude, position.value.coords.longitude)
     .then(async () => {
       emit('refreshTimeSheet');
-      const clockType = await getClockType();
-      isEntryTime.value = clockType === ClockType.ClockIn;
-      canBeRegistered.value = clockType !== ClockType.None;
+      await refreshClockType();
       isLoading.value = false;
       if (isEntryTime.value) {
         showAlertSuccess('Enjoy your shift!');
@@ -137,8 +156,15 @@ const timerId = setInterval(getTimeFromNow, 1000);
 (async () => {
   dateSelected.value = await appStore.getCurrentDate();
   navigator.geolocation.watchPosition(
-    (p) => (position.value = p),
-    () => (position.value = null)
+    (p) => {
+      position.value = p;
+      markPositionReady();
+    },
+    () => {
+      position.value = null;
+      markPositionReady();
+    },
+    { timeout: 10000 }
   );
 })();
 
@@ -149,9 +175,7 @@ onUnmounted(() => {
 watch(dateSelected, async (value) => {
   if (value) {
     isLoading.value = true;
-    const clockType = await getClockType();
-    isEntryTime.value = clockType === 1;
-    canBeRegistered.value = clockType !== 0;
+    await refreshClockType();
     isLoading.value = false;
   }
 });

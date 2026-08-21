@@ -979,6 +979,16 @@
             }
           },
           {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Covenant.Common.Enums.RequestApplicantStatus"
+              }
+            }
+          },
+          {
             "name": "SortBy",
             "in": "query",
             "schema": {
@@ -1205,6 +1215,258 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/requests/{requestId}/Applicants/{id}/Status": {
+      "put": {
+        "tags": [
+          "Applicants"
+        ],
+        "summary": "Changes the status of a request applicant.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the request applicant.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Target status.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.ChangeRequestApplicantStatusModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.ChangeRequestApplicantStatusModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.ChangeRequestApplicantStatusModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems": {
+      "get": {
+        "tags": [
+          "Applicants"
+        ],
+        "summary": "Gets the compliance checklist of the request with the completion state of the specified applicant.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the request applicant.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Request.ApplicantComplianceItemModel"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Request.ApplicantComplianceItemModel"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Request.ApplicantComplianceItemModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems/{itemId}": {
+      "post": {
+        "tags": [
+          "Applicants"
+        ],
+        "summary": "Completes a compliance item for an applicant, optionally uploading a document to the worker profile.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the request applicant.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "Identifier of the compliance item.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Applicants"
+        ],
+        "summary": "Unchecks a compliance item for an applicant. Documents already uploaded stay on the worker profile.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the request applicant.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "description": "Identifier of the compliance item.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "500": {
             "description": "Internal Server Error"
@@ -14635,50 +14897,6 @@
         }
       }
     },
-    "/api/agency/requests/{id}/PunchCardVisibilityStatusInApp": {
-      "put": {
-        "tags": [
-          "Requests"
-        ],
-        "summary": "Toggles the punch card visibility status of a request in the mobile app.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/agency/requests/{id}/Cancel": {
       "put": {
         "tags": [
@@ -21233,7 +21451,7 @@
         }
       }
     },
-    "/api/WorkerRequest/{requestId}/TimeSheet/clock-type": {
+    "/api/WorkerRequest/{requestId}/TimeSheet/clock-type/{latitude}/{longitude}": {
       "get": {
         "tags": [
           "WorkerRequestTimeSheet"
@@ -21248,6 +21466,26 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "latitude",
+            "in": "path",
+            "description": "Current latitude of the worker.",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "path",
+            "description": "Current longitude of the worker.",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
             }
           },
           {
@@ -23373,6 +23611,19 @@
         "type": "integer",
         "format": "int32"
       },
+      "Covenant.Common.Enums.ComplianceDocumentTarget": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "Covenant.Common.Enums.DealStatus": {
         "enum": [
           0,
@@ -23492,6 +23743,16 @@
           8,
           9,
           10
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.RequestApplicantStatus": {
+        "enum": [
+          1,
+          2,
+          3,
+          4
         ],
         "type": "integer",
         "format": "int32"
@@ -26860,6 +27121,13 @@
               "format": "uuid"
             },
             "nullable": true
+          },
+          "complianceItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestComplianceItemModel"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -27125,6 +27393,45 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.ApplicantComplianceItemModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "isMandatory": {
+            "type": "boolean"
+          },
+          "documentTarget": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.ComplianceDocumentTarget"
+          },
+          "isCompleted": {
+            "type": "boolean"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "canUpload": {
+            "type": "boolean"
+          },
+          "existingFileUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Request.ApplicantSearchResultModel": {
         "type": "object",
         "properties": {
@@ -27214,6 +27521,15 @@
               "format": "uuid"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.ChangeRequestApplicantStatusModel": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RequestApplicantStatus"
           }
         },
         "additionalProperties": false
@@ -27396,6 +27712,9 @@
             "type": "string",
             "format": "uuid"
           },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RequestApplicantStatus"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -27454,6 +27773,27 @@
           "otherCancellationReason": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.RequestComplianceItemModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "isMandatory": {
+            "type": "boolean"
+          },
+          "documentTarget": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.ComplianceDocumentTarget"
           }
         },
         "additionalProperties": false
@@ -27650,6 +27990,13 @@
               "format": "uuid"
             },
             "nullable": true
+          },
+          "complianceItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestComplianceItemModel"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -27699,10 +28046,6 @@
             "nullable": true
           },
           "agencyFullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "agencyLogo": {
             "type": "string",
             "nullable": true
           },
@@ -29755,10 +30098,6 @@
             "nullable": true
           },
           "agencyFullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "agencyLogo": {
             "type": "string",
             "nullable": true
           },

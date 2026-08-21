@@ -244,7 +244,7 @@ const getCardIcon = (fileName: string) => {
   .main-section { width: 100%; position: relative; background-color: #ffffff; }
   .container { max-width: 100%; margin: 0; padding: 0; }
 
-  .hero-top { position: relative; width: 100%; height: 90vh; min-height: 1000px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; z-index: 2; padding-bottom: 80px; }
+  .hero-top { position: relative; width: 100%; height: 90vh; min-height: min(1000px, 90svh); display: flex; justify-content: center; align-items: center; text-align: center; color: white; z-index: 2; padding-bottom: 80px; }
   .hero-bg { 
   position: absolute; 
   inset: 0; 

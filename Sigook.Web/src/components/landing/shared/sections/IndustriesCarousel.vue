@@ -17,8 +17,8 @@
 
     <div
       class="industries-carousel__row"
-      @mouseenter="stop"
-      @mouseleave="start"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
       @focusin="stop"
       @focusout="start"
     >
@@ -31,7 +31,11 @@
         <LandingIcon name="chevron-left" />
       </button>
 
-      <div class="industries-carousel__viewport">
+      <div
+        class="industries-carousel__viewport"
+        @pointerdown="onPointerDown"
+        @pointerup="onPointerUp"
+      >
         <div
           class="industries-carousel__track"
           :style="trackStyle"
@@ -103,6 +107,7 @@ import SliderDots from '@/components/landing/shared/ui/SliderDots.vue'
 import TertiaryCard, { type TertiaryCardVariant } from '@/components/landing/shared/cards/TertiaryCard.vue'
 import IndustryIcon, { type IndustryIconName } from '@/components/landing/shared/icons/IndustryIcon.vue'
 import { useCarousel } from '@/composables/useCarousel'
+import { useSwipe } from '@/composables/useSwipe'
 
 interface IndustryCard {
   readonly kind: 'industry'
@@ -177,6 +182,24 @@ function prev(): void {
   currentIndex.value = (currentIndex.value - 1 + total) % total
   start()
 }
+
+const hoverCapable = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches
+
+function onMouseEnter(): void {
+  if (hoverCapable) stop()
+}
+
+function onMouseLeave(): void {
+  if (hoverCapable) start()
+}
+
+const { onPointerDown, onPointerUp } = useSwipe(
+  () => {
+    next()
+    start()
+  },
+  () => prev(),
+)
 
 const trackStyle = computed(() => ({
   transform: `translateX(-${currentIndex.value * 100}%)`,
@@ -288,6 +311,7 @@ const trackStyle = computed(() => ({
 .industries-carousel__viewport {
   overflow: hidden;
   border-radius: clamp(20px, 2.5vw, 36px);
+  touch-action: pan-y;
 }
 
 .industries-carousel__track {
@@ -316,5 +340,17 @@ const trackStyle = computed(() => ({
 .industries-carousel__dots {
   position: relative;
   z-index: 2;
+}
+
+@media (max-width: 1023px) {
+  .industries-carousel__slide {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 599px) {
+  .industries-carousel__slide {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

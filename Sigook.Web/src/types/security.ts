@@ -21,6 +21,36 @@ export enum UserRole {
   Worker = 'worker',
 }
 
+export interface TokenResponse {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+  refresh_token?: string;
+  scope?: string;
+}
+
+export interface TokenErrorResponse {
+  error: string;
+  error_description?: string;
+}
+
+export interface UserInfoResponse {
+  sub: string;
+  role?: string | string[];
+  [claim: string]: unknown;
+}
+
+export interface ResetPasswordWithCodePayload {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
+export interface PasswordResetErrorResponse {
+  error: string;
+  messages?: string[];
+}
+
 export interface ChangeEmailRequest {
   newEmail: string;
   confirmNewEmail: string;

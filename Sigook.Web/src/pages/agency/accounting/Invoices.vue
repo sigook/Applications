@@ -1,15 +1,9 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title columns is-multiline mb-2">
-      <h2 class="fz1 pt-3 column is-7-mobile is-5">
-        Invoices
-        <span class="has-text-weight-light fz-1">
-          ({{ totalItems }})
-        </span>
-        <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
-      </h2>
-    </div>
+    <PageHeader title="Invoices" :count="totalItems" :crumbs="accountingCrumbs">
+      <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
+    </PageHeader>
     <div>
       <export :url="'/api/agency/accounting/Invoices/file'" :params="serverParams" :fileName="'Invoices'"
         @onDataLoading="(value) => isLoading = value">
@@ -116,15 +110,18 @@ import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import DeleteInvoice from '@/components/agency_accounting/DeleteInvoice.vue';
 import SendInvoiceEmail from '@/components/agency_accounting/SendInvoiceEmail.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { accountingCrumbs } from '@/constants/breadcrumbs';
+import type { AgencyInvoiceFilter, AgencyInvoiceListItem } from '@/types/accounting';
 
 const agencyStore = useAgencyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
 const total = ref(0);
-const rows = ref<any[]>([]);
-const createdAtDatesSelected = ref<any[]>([]);
-const serverParams = ref<any>({
+const rows = ref<AgencyInvoiceListItem[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const serverParams = ref<AgencyInvoiceFilter>({
   sortBy: 0,
   pageIndex: 1,
   pageSize: 30,
@@ -139,14 +136,14 @@ const { defaultSort, onSortChange } = useGridSort(serverParams, {
 }, () => loadInvoices());
 
 const showDeleteModal = ref(false);
-const currentInvoice = ref<any>(null);
+const currentInvoice = ref<AgencyInvoiceListItem | null>(null);
 const showSendEmailModal = ref(false);
 
 if (agencyStore.agencyInvoiceFilter) {
   serverParams.value = agencyStore.agencyInvoiceFilter;
   if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
-    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
   }
 }
 loadInvoices();
@@ -163,8 +160,8 @@ function onInputEntered(event: KeyboardEvent) {
 }
 
 function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadInvoices();
 }
 
@@ -177,8 +174,8 @@ function loadInvoices() {
   isLoading.value = true;
   agencyStore.updateAgencyInvoiceFilter(serverParams.value);
   getAgencyInvoices(serverParams.value)
-    .then((response: any) => {
-      rows.value = response.detail.items.map((i: any) => ({ ...i, actions: null }));
+    .then((response) => {
+      rows.value = response.detail.items;
       totalItems.value = response.detail.totalItems;
       total.value = response.total;
       isLoading.value = false;
@@ -189,7 +186,7 @@ function loadInvoices() {
     });
 }
 
-function onDownloadInvoicePdf(invoice: any) {
+function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
   isLoading.value = true;
   downloadInvoicePdf(invoice.id)
     .then((response) => {
@@ -202,7 +199,7 @@ function onDownloadInvoicePdf(invoice: any) {
     });
 }
 
-function openSendEmailModal(invoice: any) {
+function openSendEmailModal(invoice: AgencyInvoiceListItem) {
   currentInvoice.value = invoice;
   showSendEmailModal.value = true;
 }
@@ -212,7 +209,7 @@ function onSendInvoiceEmail() {
   loadInvoices();
 }
 
-function openDeleteModal(invoice: any) {
+function openDeleteModal(invoice: AgencyInvoiceListItem) {
   currentInvoice.value = invoice;
   showDeleteModal.value = true;
 }

@@ -34,10 +34,11 @@ import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { date, currency } from '@/utils/filters';
 import { getPayrollSubcontractors, downloadSubcontractorReport } from "@/api/agencyPayStubApi";
+import type { PayrollSubContractorRow } from '@/types/accounting';
 
 const isLoading = ref(false);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
+const rows = ref<PayrollSubContractorRow[]>([]);
 const serverParams = ref({
   sortBy: 3,
   isDescending: true,
@@ -54,7 +55,7 @@ function loadSubcontractors() {
   isLoading.value = true;
   getPayrollSubcontractors(serverParams.value)
     .then((response) => {
-      rows.value = response.items.map((item: any) => ({ ...item, actions: null, reportDownloading: false }));
+      rows.value = response.items.map((item) => ({ ...item, reportDownloading: false }));
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
@@ -64,7 +65,7 @@ function loadSubcontractors() {
     });
 }
 
-function downloadSubcontractor(subcontractor: any) {
+function downloadSubcontractor(subcontractor: PayrollSubContractorRow) {
   const weekEnding = dayjs(subcontractor.weekEnding).format('MM-DD-YYYY');
   subcontractor.reportDownloading = true;
   downloadSubcontractorReport(weekEnding)

@@ -15,7 +15,6 @@ public class RequestListModel
     public string Entrance { get; set; }
     public string CompanyFullName { get; set; }
     public string AgencyFullName { get; set; }
-    public string AgencyLogo { get; set; }
     public string Logo { get; set; }
     public RequestStatus RequestStatus { get; set; }
     public bool IsAsap { get; set; }

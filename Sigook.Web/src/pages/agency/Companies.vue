@@ -1,14 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title columns is-multiline mb-2">
-      <h2 class="fz1 pt-3 column is-7-mobile is-5">
-        {{ 'Clients' }}
-        <span class="has-text-weight-light fz-1">
-          ({{ totalItems }})
-        </span>
-      </h2>
-    </div>
+    <PageHeader title="Clients" :count="totalItems" :crumbs="moduleCrumbs" />
     <div>
       <export :url="exportUrl" :params="serverParams" :fileName="'Companies'"
         @onDataLoading="(value) => isLoading = value">
@@ -122,7 +115,7 @@
               </b-field>
             </template>
             <template v-slot="props">
-              <div v-if="props.row.companyStatus === 5 && !props.row.updatedAt">
+              <div v-if="props.row.companyStatus === CompanyStatus.Client && !props.row.updatedAt">
                 Existing client
               </div>
               <div v-else-if="props.row.updatedAt">
@@ -152,6 +145,18 @@
               </b-tag>
             </template>
           </b-table-column>
+          <b-table-column field="actions" v-slot="props">
+            <b-dropdown v-if="props.row.companyStatus === CompanyStatus.Client" aria-role="list"
+              position="is-bottom-left" append-to-body>
+              <template #trigger>
+                <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
+              </template>
+              <b-dropdown-item aria-role="listitem"
+                @click="router.push({ path: requestBase + '/create/' + props.row.id })">
+                Create Request
+              </b-dropdown-item>
+            </b-dropdown>
+          </b-table-column>
         </template>
       </b-table>
     </div>
@@ -175,15 +180,19 @@ import { downloadAgencyReport } from '@/api/agencyReportApi';
 import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from '@/api/agencyNoteApi';
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/types/agency';
 import { dateMonth } from '@/utils/filters';
+import { CompanyStatus } from '@/constants/enums';
+import type { AgencyCompanyFilter, AgencyCompanyListItem } from '@/types/agency';
+import type { CatalogItem, TableColumnRef } from '@/types/common';
 import { useModuleBase } from '@/composables/useModuleBase';
 import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import NotesPopover from '@/components/notes/NotesPopover.vue';
 import BulkData from '@/components/agency/BulkData.vue';
+import PageHeader from '@/components/PageHeader.vue';
 
 const route = useRoute();
 const router = useRouter();
-const { isSalesView, companyBase: companyDetailBase } = useModuleBase();
+const { isSalesView, requestBase, companyBase: companyDetailBase, moduleCrumbs } = useModuleBase();
 const exportUrl = computed(() =>
   isSalesView.value ? '/api/agency/sales/companyprofiles/File' : '/api/agency/recruiting/companyprofiles/File');
 const agencyStore = useAgencyStore();
@@ -192,13 +201,13 @@ const { isAdmin } = useAdmin();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const statuses = ref<any[]>([]);
-const statusesSelected = ref<any[]>([]);
-const createdAtDatesSelected = ref<any[]>([]);
-const updatedAtDatesSelected = ref<any[]>([]);
-const rows = ref<any[]>([]);
+const statuses = ref<CatalogItem<CompanyStatus>[]>([]);
+const statusesSelected = ref<CatalogItem<CompanyStatus>[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const updatedAtDatesSelected = ref<Date[]>([]);
+const rows = ref<AgencyCompanyListItem[]>([]);
 const addFile = ref(false);
-const serverParams = ref<any>({
+const serverParams = ref<AgencyCompanyFilter>({
   sortBy: 3,
   isDescending: true,
   pageIndex: 1,
@@ -219,15 +228,15 @@ const deleteCompanyNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCo
 
 const isMobile = computed(() => appStore.isMobile);
 
-statuses.value = route.meta.companyStatuses as unknown[];
+statuses.value = route.meta.companyStatuses as CatalogItem<CompanyStatus>[];
 if (agencyStore.agencyCompanyProfileFilter) {
   serverParams.value = agencyStore.agencyCompanyProfileFilter;
   if (serverParams.value.companyStatuses) {
-    statusesSelected.value = statuses.value.filter((s: any) => serverParams.value.companyStatuses.some((sps: any) => sps == s.id));
+    statusesSelected.value = statuses.value.filter((s) => serverParams.value.companyStatuses?.includes(s.id));
   }
   if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
-    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
   }
 }
 loadCompanies();
@@ -254,8 +263,8 @@ function onCreatedAtCleared() {
 }
 
 function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadCompanies();
 }
 
@@ -265,15 +274,16 @@ function onUpdatedAtCleared() {
 }
 
 function onUpdatedAtSelected() {
-  serverParams.value.updatedAtFrom = updatedAtDatesSelected.value[0];
-  serverParams.value.updatedAtTo = updatedAtDatesSelected.value[1];
+  serverParams.value.updatedAtFrom = updatedAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.updatedAtTo = updatedAtDatesSelected.value[1]?.toISOString() ?? null;
   loadCompanies();
 }
 
-function onCellClick(row: any, column: any) {
+function onCellClick(row: AgencyCompanyListItem, column: TableColumnRef) {
   switch (column.field) {
     case 'notesCount':
     case 'email':
+    case 'actions':
       break;
     default:
       router.push({ path: `${companyDetailBase.value}/${row.id}` });
@@ -296,8 +306,8 @@ function loadCompanies() {
   agencyStore.updateAgencyCompanyProfileFilter(serverParams.value);
   const fetchCompanies = isSalesView.value ? getSalesCompanies : getAgencyCompanies;
   fetchCompanies(serverParams.value)
-    .then((companies: any) => {
-      rows.value = companies.items.map((c: any) => ({ ...c }));
+    .then((companies) => {
+      rows.value = companies.items;
       totalItems.value = companies.totalItems;
       isLoading.value = false;
     })

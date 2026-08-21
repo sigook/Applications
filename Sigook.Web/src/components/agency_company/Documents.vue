@@ -39,9 +39,9 @@
 
         <b-button type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
 
-        <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="size"
-          @changePage="(index) => loadDocuments(index)">
-        </pagination>
+        <b-pagination v-if="data.totalItems > size" v-model="currentPage" :total="data.totalItems" :per-page="size"
+          size="is-small" rounded @change="loadDocuments">
+        </b-pagination>
       </div>
     </transition>
 
@@ -58,7 +58,6 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toas
 import { filename } from "@/utils/filters";
 import { getAgencyCompanyDocument, deleteAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 import DocumentsForm from "../../components/agency_company/DocumentsForm.vue";
-import Pagination from "../../components/Paginator.vue";
 
 const route = useRoute();
 
@@ -68,12 +67,12 @@ const showModal = ref(false);
 const data = ref<any>(null);
 const profileId = route.params.id as string;
 const size = 10;
-const currentPage = 1;
+const currentPage = ref(1);
 
 function onShowDocuments() {
   if (!showDocuments.value) {
     showDocuments.value = true;
-    loadDocuments(currentPage);
+    loadDocuments(currentPage.value);
   } else {
     showDocuments.value = false;
   }
@@ -94,7 +93,7 @@ function loadDocuments(index: number) {
 
 function onCreateDocument() {
   showModal.value = false;
-  loadDocuments(currentPage);
+  loadDocuments(currentPage.value);
 }
 
 function onDeleteDocument(id: any, index: number) {

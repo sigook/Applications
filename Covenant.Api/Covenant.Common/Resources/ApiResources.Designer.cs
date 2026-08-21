@@ -1256,6 +1256,24 @@ namespace Covenant.Common.Resources {
                 return ResourceManager.GetString("SocialInsuranceAlreadyTaken", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The profile already has a different social insurance number. Correct it from the social insurance section first..
+        /// </summary>
+        public static string SocialInsuranceConflict {
+            get {
+                return ResourceManager.GetString("SocialInsuranceConflict", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Social insurance number replaced ({0} to {1}) from a SIN/SSN identification document upload..
+        /// </summary>
+        public static string SocialInsuranceReplacedNote {
+            get {
+                return ResourceManager.GetString("SocialInsuranceReplacedNote", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Social Insurance Date.

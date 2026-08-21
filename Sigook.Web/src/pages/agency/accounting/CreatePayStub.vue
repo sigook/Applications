@@ -1,11 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title columns is-multiline mb-2">
-      <h2 class="fz1 pt-3 column is-7-mobile is-5">
-        Create PayStub
-      </h2>
-    </div>
+    <PageHeader title="Create PayStub" :crumbs="payStubsCrumbs" back-to="/accounting/paystubs" />
     <div>
       <div class="columns is-multiline">
         <div class="column is-4">
@@ -155,6 +151,8 @@ import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { getAgencyWorkersDropdown } from '@/api/agencyWorkerApi';
 import { createAgencyPayStub } from '@/api/agencyPayStubApi';
 import { useStickyForm } from '@/composables/useStickyForm';
+import PageHeader from '@/components/PageHeader.vue';
+import { payStubsCrumbs } from '@/constants/breadcrumbs';
 
 const PayStubItemType = {
   Regular: 0,

@@ -1,4 +1,5 @@
 ﻿using Covenant.Common.Entities;
+using Covenant.Common.Enums;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories;
@@ -118,6 +119,9 @@ namespace Covenant.Infrastructure.Repositories
 
         public Task<List<BaseModel<Guid>>> GetIdentificationType() =>
             _context.IdentificationTypes.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+
+        public Task<IdentificationTypeCode> GetIdentificationTypeCode(Guid id) =>
+            _context.IdentificationTypes.Where(c => c.Id == id).Select(c => c.Code).FirstOrDefaultAsync();
 
         public Task<List<BaseModel<Guid>>> GetLanguage() =>
             _context.Languages.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();

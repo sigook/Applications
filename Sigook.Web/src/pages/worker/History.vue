@@ -10,11 +10,6 @@
           <p class="container has-text-centered">No records available</p>
         </template>
         <template>
-          <b-table-column field="agencyLogo" width="50" v-slot="props">
-            <img v-if="props.row.agencyLogo" :src="props.row.agencyLogo" alt="profile image" class="img-30" />
-            <default-image v-else :name="props.row.agencyFullName" class="img-30"></default-image>
-            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
-          </b-table-column>
           <b-table-column field="numberId" label="Request ID" v-slot="props">
             {{ props.row.numberId }}
           </b-table-column>
@@ -64,14 +59,14 @@
 import { ref, reactive } from 'vue';
 import { showAlertError } from '@/utils/toast';
 import { getWorkerRequestHistory } from '@/api/workerApi';
+import type { WorkerRequestFilter, WorkerRequestListItem } from '@/types/worker';
 import { dateMonth, splitCapital, currency } from '@/utils/filters';
 import { appGlobals } from '@/varaibles';
 
 const isLoading = ref(false);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const serverParams = reactive<any>({
-  sortBy: 0,
+const rows = ref<WorkerRequestListItem[]>([]);
+const serverParams = reactive<WorkerRequestFilter>({
   isDescending: false,
   pageIndex: 1,
   pageSize: 30,
@@ -80,7 +75,7 @@ const serverParams = reactive<any>({
 function fetchWorkerRequestHistory() {
   isLoading.value = true;
   getWorkerRequestHistory(serverParams)
-    .then((response: any) => {
+    .then((response) => {
       rows.value = response.items;
       totalItems.value = response.totalItems;
       isLoading.value = false;

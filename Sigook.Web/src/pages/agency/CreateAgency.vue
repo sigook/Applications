@@ -1,9 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title is-flex is-flex-wrap-wrap mb-5">
-      <h2 class="fz1 pt-3">Create Agency</h2>
-    </div>
+    <PageHeader title="Create Agency" :crumbs="agenciesCrumbs" back-to="/sales/agencies" />
     <form @submit.prevent="validateForm">
       <div class="columns is-multiline">
         <div class="column is-6 is-3-desktop">
@@ -54,6 +52,8 @@ import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { createAgency } from '@/api/agencyApi';
 import { appGlobals } from '@/varaibles';
 import PhoneInput from '@/components/PhoneInput.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { agenciesCrumbs } from '@/constants/breadcrumbs';
 
 const router = useRouter();
 

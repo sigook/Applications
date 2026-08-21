@@ -2,6 +2,7 @@
   <div class="contain-worker has-menu-bottom" v-if="worker">
     <b-loading v-model="isLoading"></b-loading>
 
+    <Breadcrumbs :crumbs="crumbs" back-to="/recruiting/workers" />
     <section class="wrapper-worker-top mb-0">
       <div>
         <image-detail class="is-inline-block align-text-top" :data="worker" @updateProfile="() => loadWorker()" />
@@ -138,6 +139,9 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useAdmin } from '@/composables/useAdmin';
+import { useModuleBase } from '@/composables/useModuleBase';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import type { PageBreadcrumb } from '@/types/common';
 import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
 import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
@@ -171,6 +175,8 @@ import otherDocuments from '@/components/worker/WorkerOtherDocumentsDetail.vue';
 
 const route = useRoute();
 const router = useRouter();
+const { moduleCrumbs } = useModuleBase();
+const crumbs = computed<PageBreadcrumb[]>(() => [...moduleCrumbs.value, { label: 'Workers', to: '/recruiting/workers' }]);
 const { isAdmin } = useAdmin();
 
 const currentJobEx = ref(0);

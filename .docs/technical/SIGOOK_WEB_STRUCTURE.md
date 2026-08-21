@@ -115,7 +115,7 @@ Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold
 
 | File | Prefixes | Notes |
 |------|----------|-------|
-| index.ts | `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group), scroll behavior, canonical link, page titles |
+| index.ts | `/login`, `/forgot-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group → unauthenticated users go to `/login?returnUrl=`), scroll behavior, canonical link, page titles. `/login` and `/forgot-password` use `meta.layout: "auth"` (rendered without chrome by `App.vue`, styles in `assets/scss/auth.scss`) |
 | routesAgency.ts | `/recruiting/*`, `/sales/*`, `/accounting/*`, `/agency-profile` | Legacy `/agency-*` paths kept as redirects |
 | routesCompany.ts | `/company-requests`, `/company-invoices`, `/company-profile`, `/company-user-profile` | |
 | routesWorker.ts | `/register-worker`, `/worker-requests`, `/punch-card`, `/timesheet`, `/worker-history`, `/worker-profile`, `/worker-apply` | |
@@ -229,7 +229,7 @@ Exports the **`api` wrapper** (`get`, `post`, `put`, `patch`, `del`) that return
 
 ### securityService.ts
 
-oidc-client-ts `UserManager` configured from `VUE_APP_SECURITY_SERVER` / `VUE_APP_CLIENT`; user loaded/unloaded/token-expired events wired to the security store in `main.ts`.
+oidc-client-ts `UserManager` configured from `VUE_APP_SECURITY_SERVER` / `VUE_APP_CLIENT`; user loaded/unloaded/token-expired events wired to the security store in `main.ts`. Also exports `signInWithPassword(email, password)` (password grant via `api/authApi.ts` → `/connect/userinfo` → `mgr.storeUser` + `mgr.events.load`, so the axios interceptor and silent renew keep working) and `signInWithMicrosoft()` (`signinRedirect({ acr_values: 'idp:oidc' })`). Error-code → message map lives in `security/authErrors.ts`.
 
 ### menu.ts
 
@@ -339,9 +339,10 @@ assets/
 
 ### Authentication
 
-1. Login via IdentityServer (oidc-client-ts); `/callback` completes sign-in, `/silent-refresh` renews tokens in a hidden iframe.
-2. On 401, `apiService` retries once after `silentSignin`; on failure redirects to login.
-3. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
+1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" still redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`.
+2. On 401, `apiService` retries once after `silentSignin`; on failure sends the browser to `/login?returnUrl=`.
+3. Logout (`securityStore.signOut`) revokes the refresh token, clears the local user and routes to `/` — it never hits IdentityServer's end-session page.
+4. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
 
 ### Patterns
 

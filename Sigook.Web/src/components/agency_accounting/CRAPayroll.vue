@@ -22,6 +22,7 @@ import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { getCraPayrollReport } from "@/api/agencyReportApi";
 import { useStickyForm } from '@/composables/useStickyForm';
+import type { AgencyReportFilter } from '@/types/agency';
 
 const schema = yup.object({
   dates: yup.array().of(yup.date()).min(2, 'Dates are required').required('Dates are required'),
@@ -35,7 +36,7 @@ const { dates } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const serverParams = ref<any>({});
+const serverParams = ref<AgencyReportFilter>({});
 
 function onDatesSelected() {
   if (dates.value && dates.value.length === 2) {

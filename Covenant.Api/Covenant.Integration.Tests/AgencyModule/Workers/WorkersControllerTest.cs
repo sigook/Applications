@@ -202,9 +202,9 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             sinInfo.SetupGet(s => s.SocialInsurance).Returns("987-654-321");
             sinInfo.SetupGet(s => s.SocialInsuranceExpire).Returns(false);
             sinInfo.SetupGet(s => s.SocialInsuranceFile).Returns(new CovenantFileModel("sin.pdf", "sin"));
-            worker.OnNewDocumentAdded += async (sender, args) => await context.CovenantFiles.AddAsync(args);
             worker.PatchSinInformation(sinInfo.Object);
             worker.PatchProfileImage(new CovenantFile("worker.png", "profile"));
+            await context.CovenantFiles.AddRangeAsync(worker.SocialInsuranceFile, worker.ProfileImage);
 
             response = await _client.PutAsync(requestUri, new StringContent(string.Empty));
             response.EnsureSuccessStatusCode();

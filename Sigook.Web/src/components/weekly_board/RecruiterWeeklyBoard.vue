@@ -80,9 +80,12 @@
             </span>
           </div>
 
-          <collapse-section v-if="assignment.runners.length > 0" class="sent-workers" variant="compact"
+          <b-collapse v-if="assignment.runners.length > 0" class="sent-workers collapse-compact"
             :model-value="false">
-            <template #title>RUNNERS ({{ assignment.runners.length }})</template>
+            <template #trigger="{ open }">
+              <span>RUNNERS ({{ assignment.runners.length }})</span>
+              <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small"></b-icon>
+            </template>
             <div v-for="worker in assignment.runners" :key="worker.runnerId" class="sent-worker">
               <div class="sent-worker-info">
                 <span class="sent-worker-avatar">{{ workerInitials(worker.fullName) }}</span>
@@ -108,7 +111,7 @@
                 </template>
               </runner-actions-dropdown>
             </div>
-          </collapse-section>
+          </b-collapse>
 
           <b-button v-if="!isPastDay(assignment.workDate) && assignment.usesRunners" type="is-primary" expanded
             icon-left="account-plus" class="add-worker-btn" @click="openAdd(assignment)">
@@ -144,7 +147,6 @@ import type { CreateRunnerModel } from '@/types/runner';
 import CreateRunner from '@/components/runner/CreateRunner.vue';
 import RunnerActionsDropdown from '@/components/runner/RunnerActionsDropdown.vue';
 import RunnerActionModals from '@/components/runner/RunnerActionModals.vue';
-import CollapseSection from '@/components/CollapseSection.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 
@@ -450,7 +452,7 @@ watch(range, loadBoard, { immediate: true });
         color: $grey-font;
 
         &:hover {
-          color: $primary;
+          color: $blue;
           text-decoration: underline;
         }
       }

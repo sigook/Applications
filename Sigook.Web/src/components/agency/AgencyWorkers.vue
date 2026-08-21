@@ -183,15 +183,22 @@ import {
   updateAgencyRequestWorkerNote,
   deleteAgencyRequestWorkerNote
 } from "@/api/agencyNoteApi";
-import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/types/agency';
+import type {
+  AgencyRequestWorker,
+  AgencyRequestWorkerFilter,
+  RequestNotesFetchPayload,
+  RequestNotesCreatePayload,
+  RequestNotesUpdatePayload,
+  RequestNotesDeletePayload,
+} from '@/types/agency';
+import type { CatalogItem, TableColumnRef } from '@/types/common';
 import WorkersList from "./AgencyWorkersList.vue";
 import NotesPopover from "../../components/notes/NotesPopover.vue";
 import EditTextarea from "../../components/agency_request/EditTextarea.vue";
 import DatepickerModal from "@/components/agency_request/DatepickerModal.vue";
 
 const props = defineProps<{
-  request?: any;
-  id?: any;
+  id?: string;
   showTitle?: boolean;
 }>();
 
@@ -202,17 +209,17 @@ const router = useRouter();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const statuses = ref<any[]>([
+const rows = ref<AgencyRequestWorker[]>([]);
+const statuses = ref<CatalogItem<number>[]>([
   { id: 2, value: 'Rejected' },
   { id: 3, value: 'Booked' },
 ]);
-const statusesSelected = ref<any[]>([]);
-const startWorkingDatesSelected = ref<any[]>([]);
-const createdAtDatesSelected = ref<any[]>([]);
-const rejectedAtDatesSelected = ref<any[]>([]);
+const statusesSelected = ref<CatalogItem<number>[]>([]);
+const startWorkingDatesSelected = ref<Date[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const rejectedAtDatesSelected = ref<Date[]>([]);
 const modalManageWorkers = ref(false);
-const currentWorker = ref<any>(null);
+const currentWorker = ref<AgencyRequestWorker | null>(null);
 const modalRejectWorker = ref(false);
 const modalStartWorking = ref(false);
 
@@ -221,15 +228,15 @@ const createNote = ({ requestId, userId, model }: RequestNotesCreatePayload) => 
 const updateNote = ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model);
 const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id);
 
-const serverParams = reactive<any>({
+const serverParams = reactive<AgencyRequestWorkerFilter>({
   sortBy: 2,
-  requestId: props.id || route.params.id,
+  requestId: (props.id || route.params.id) as string,
   pageIndex: 1,
   pageSize: 30,
   isDescending: true,
 });
 
-function onCellClick(row: any, column: any) {
+function onCellClick(row: AgencyRequestWorker, column: TableColumnRef) {
   switch (column.field) {
     case 'startWorking':
       onShowModalStartWorking(row);
@@ -242,7 +249,7 @@ function onCellClick(row: any, column: any) {
   }
 }
 
-function onPageChange(params: any) {
+function onPageChange(params: number) {
   serverParams.pageIndex = params;
   loadRequestWorkers();
 }
@@ -287,8 +294,8 @@ function onStatusSelected() {
 }
 
 function onStartWorkingSelected() {
-  serverParams.startWorkingFrom = startWorkingDatesSelected.value[0];
-  serverParams.startWorkingTo = startWorkingDatesSelected.value[1];
+  serverParams.startWorkingFrom = startWorkingDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.startWorkingTo = startWorkingDatesSelected.value[1]?.toISOString() ?? null;
   loadRequestWorkers();
 }
 
@@ -298,8 +305,8 @@ function onStartWorkingCleared() {
 }
 
 function onCreatedAtSelected() {
-  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadRequestWorkers();
 }
 
@@ -309,8 +316,8 @@ function onCreatedAtCleared() {
 }
 
 function onRejectedAtSelected() {
-  serverParams.rejectedAtFrom = rejectedAtDatesSelected.value[0];
-  serverParams.rejectedAtTo = rejectedAtDatesSelected.value[1];
+  serverParams.rejectedAtFrom = rejectedAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.rejectedAtTo = rejectedAtDatesSelected.value[1]?.toISOString() ?? null;
   loadRequestWorkers();
 }
 
@@ -337,7 +344,7 @@ function loadRequestWorkers() {
     });
 }
 
-function confirmDelete(worker: any) {
+function confirmDelete(worker: AgencyRequestWorker) {
   currentWorker.value = worker;
   modalRejectWorker.value = true;
 }
@@ -355,15 +362,15 @@ function rejectWorker(comments: string) {
   });
 }
 
-function onShowModalStartWorking(worker: any) {
+function onShowModalStartWorking(worker: AgencyRequestWorker) {
   currentWorker.value = worker;
   modalStartWorking.value = true;
 }
 
-function onUpdateRequestWorkerStartDate(date: any) {
+function onUpdateRequestWorkerStartDate(date: Date) {
   modalStartWorking.value = false;
   isLoading.value = true;
-  updateAgencyRequestWorkerStartDate(serverParams.requestId, currentWorker.value.id, { startWorking: date }).then(() => {
+  updateAgencyRequestWorkerStartDate(serverParams.requestId, currentWorker.value?.id ?? '', { startWorking: date.toISOString() }).then(() => {
     isLoading.value = false;
     loadRequestWorkers();
   }).catch((error) => {

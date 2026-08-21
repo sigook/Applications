@@ -1,6 +1,6 @@
 # Sigook.Web API Map
 
-Maps every file in `src/api/*.ts` (24 files) to its backend endpoints, request/response types, and Pinia store integrations.
+Maps every file in `src/api/*.ts` (26 files) to its backend endpoints, request/response types, and Pinia store integrations.
 
 **Key Patterns (stated once, apply everywhere):**
 - API functions are plain TypeScript functions — components import and call them directly; there are no store dispatches for HTTP.
@@ -687,7 +687,7 @@ Public landing site endpoints (no auth).
 |----------|------------|----------|--------------|---------------|-------|
 | `workerRegisterTime(requestId, lat, lon)` | POST | `/api/WorkerRequest/{requestId}/TimeSheet` | `{ latitude, longitude }` | `void` | Clock-in with GPS |
 | `workerGetTimeSheet(requestId)` | GET | `/api/WorkerRequest/{requestId}/TimeSheet` | — | `WorkerTimeSheetItem[]` | |
-| `getClockType(requestId, date)` | GET | `/api/WorkerRequest/{requestId}/TimeSheet/clock-type` | `date` (param) | `ClockType` (enum, `src/constants/enums`) | Can clock in/out? |
+| `getClockType(requestId, latitude, longitude, date)` | GET | `/api/WorkerRequest/{requestId}/TimeSheet/clock-type/{latitude}/{longitude}` | `date` (param) | `ClockType` (enum, `src/constants/enums`) | Can clock in/out? Coordinates resolve the time zone |
 
 ### Comments
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -787,3 +787,19 @@ Public landing site endpoints (no auth).
 | **Website** | websiteApi.ts | Public job search, contact form, candidate apply |
 | **Notification** | notificationApi.ts, userNotificationApi.ts | Agency bell (aggregated) / user inbox |
 | **Shared** | sharedApi.ts, requestApi.ts | Unsubscribe, shift lookup |
+
+---
+
+## 26. authApi.ts — IdentityServer (not Covenant.Api)
+
+The only API file that targets `VUE_APP_SECURITY_SERVER` instead of `VUE_APP_URL_API`. Uses its own bare axios instance (no auth interceptor, no 401 retry). Consumed by `security/securityService.ts` and `pages/auth/*`.
+
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `requestPasswordToken(email, password)` | POST | `/connect/token` | form-urlencoded `grant_type=password`, `client_id`, `scope`, `username`, `password` | `TokenResponse` | No `id_token`. 400 → `TokenErrorResponse` with `error_description` ∈ `invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out` |
+| `fetchUserInfo(tokenType, accessToken)` | GET | `/connect/userinfo` | Bearer header | `UserInfoResponse` | `role` is string or string[] |
+| `requestPasswordResetCode(email)` | POST | `/Password/forgot` | `{ email }` | `void` | Always 202; 60-s resend cooldown server-side |
+| `resetPasswordWithCode(payload)` | POST | `/Password/reset` | `ResetPasswordWithCodePayload` | `void` | 400 → `PasswordResetErrorResponse` with `error` ∈ `invalid_code`, `code_expired`, `too_many_attempts`, `password_policy` (+ `messages`) |
+| `resendConfirmationLink(email)` | POST | `/Account/ResendConfirmationLink?userName=` | query param | `void` | Existing IdS endpoint, used from the `email_not_confirmed` login error |
+
+**Types:** `TokenResponse`, `TokenErrorResponse`, `UserInfoResponse`, `ResetPasswordWithCodePayload`, `PasswordResetErrorResponse` (`src/types/security`)

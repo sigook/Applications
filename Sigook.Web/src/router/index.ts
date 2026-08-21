@@ -11,11 +11,30 @@ import routesLanding from "@/router/routesLanding";
 import pinia from "@/stores";
 import { useSecurityStore } from "@/stores/security";
 
+const Login = () => import("@/pages/auth/Login.vue");
+const ForgotPassword = () => import("@/pages/auth/ForgotPassword.vue");
+
 const routes: RouteRecordRaw[] = [
   {
     path: "/callback",
     name: 'callback',
     component: Callback
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: Login,
+    meta: {
+      layout: "auth",
+    },
+  },
+  {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: ForgotPassword,
+    meta: {
+      layout: "auth",
+    },
   },
   {
     path: "/silent-refresh",
@@ -65,8 +84,7 @@ router.beforeEach(async (to, from, next) => {
     const securityStore = useSecurityStore(pinia);
     const user = await securityStore.getUser();
     if (!user) {
-      next(false);
-      securityStore.signIn();
+      next({ path: "/login", query: { returnUrl: to.fullPath } });
     } else if (!isAllowed(to, securityStore.userRoles)) {
       next("/unauthorized");
     } else {

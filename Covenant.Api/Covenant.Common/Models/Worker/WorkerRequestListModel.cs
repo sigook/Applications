@@ -9,7 +9,6 @@
         public string Location { get; set; }
         public string Entrance { get; set; }
         public string AgencyFullName { get; set; }
-        public string AgencyLogo { get; set; }
         public string Status { get; set; }
         public bool IsAsap { get; set; }
         public string WorkerApprovedToWork { get; set; }

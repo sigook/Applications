@@ -84,7 +84,7 @@ defineProps<{
   color: rgba(255, 255, 255, 0.86);
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   .numbers-grid { grid-template-columns: 1fr 1fr; }
 }
 

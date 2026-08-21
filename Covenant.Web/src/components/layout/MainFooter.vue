@@ -255,7 +255,7 @@ const isBlueFooter = computed(() => {
   margin-top: 60px;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
   .footer__nav-2 {
     margin-top: 56px;
   }
@@ -290,7 +290,6 @@ const isBlueFooter = computed(() => {
   gap: 10px;
   align-items: flex-end;
   text-align: right;
-  margin-right: 200px;
 }
 
 /* REDES SOCIALES */
@@ -358,7 +357,21 @@ const isBlueFooter = computed(() => {
 
   .footer__grid {
     column-gap: 40px;
-    grid-template-columns: minmax(260px, 1.3fr) repeat(3, minmax(120px, 0.8fr));
+    grid-template-columns: 1fr 1fr;
+    row-gap: 32px;
+  }
+
+  .footer__col--contact {
+    margin-left: 0;
+  }
+
+  .footer__nav-3 {
+    margin-right: 0;
+  }
+
+  .footer__legal--desktop {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 

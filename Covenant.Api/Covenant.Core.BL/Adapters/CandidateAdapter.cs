@@ -1,6 +1,7 @@
 ﻿using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Request;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
@@ -65,7 +66,7 @@ public class CandidateAdapter : ICandidateAdapter
         {
             var requestSkill = CandidateSkill.Create(candidate.Id, request.JobTitle).Value;
             bulkCandidate.CandidatesSkills.Add(requestSkill);
-            bulkCandidate.RequestApplicant = RequestApplicant.CreateWithCandidate(request.Id, candidate.Id, "Sigook", string.Empty).Value;
+            bulkCandidate.RequestApplicant = RequestApplicant.CreateWithCandidate(request.Id, candidate.Id, "Sigook", string.Empty, RequestApplicantStatus.InProgress).Value;
         }
         if (!string.IsNullOrWhiteSpace(model.UrlResume))
         {

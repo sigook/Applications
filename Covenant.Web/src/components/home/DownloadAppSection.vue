@@ -386,6 +386,10 @@
   }
 
   .app-top__phone-wrapper {
+    position: relative;
+    left: auto;
+    transform: none;
+    width: 100%;
     align-self: center;
     flex: 0 0 auto;
   }

@@ -30,7 +30,7 @@ public class NotesController(IRequestRepository repository) : Controller
         Result<CovenantNote> result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         var entity = new RequestNote(requestId, result.Value);
-        await repository.Create(entity);
+        await repository.Create<RequestNote>([entity]);
         await repository.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = entity.NoteId }, new NoteModel
         {

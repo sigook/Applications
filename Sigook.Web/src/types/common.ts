@@ -1,5 +1,16 @@
 // Common types shared across the application
 
+import type { RouteLocationRaw } from 'vue-router';
+
+export interface TableColumnRef {
+  field?: string;
+}
+
+export interface PageBreadcrumb {
+  label: string;
+  to?: RouteLocationRaw;
+}
+
 // Matches API PaginatedList<T>
 export interface PaginatedList<T> {
   items: T[];

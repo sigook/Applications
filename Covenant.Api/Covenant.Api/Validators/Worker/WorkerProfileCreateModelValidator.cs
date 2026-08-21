@@ -1,4 +1,5 @@
 using Covenant.Common.Constants;
+using Covenant.Common.Enums;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Worker;
@@ -9,11 +10,19 @@ namespace Covenant.Api.Validators.Worker;
 
 public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfileCreateModel>
 {
+    private const int SocialInsuranceMinLength = 9;
+    private const int SocialInsuranceMaxLength = 15;
+
     public WorkerProfileCreateModelValidator(
             IUserRepository userRepository,
-            IWorkerRepository workerRepository
+            IWorkerRepository workerRepository,
+            ICatalogRepository catalogRepository
         )
     {
+        async Task<bool> IsSinType(Guid? identificationTypeId) =>
+            identificationTypeId.HasValue && identificationTypeId != Guid.Empty
+            && await catalogRepository.GetIdentificationTypeCode(identificationTypeId.Value) == IdentificationTypeCode.SinSsn;
+
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(c => c.FirstName)
             .NotEmpty()
@@ -111,6 +120,28 @@ public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfile
                         w => w.IdentificationNumber2 == number);
             }).WithMessage(ApiResources.IdentificationNumberAlreadyTaken)
             .When(c => !string.IsNullOrEmpty(c.IdentificationNumber2));
+
+        RuleFor(c => c.IdentificationNumber1)
+            .Length(SocialInsuranceMinLength, SocialInsuranceMaxLength)
+            .WithMessage(ValidationMessages.LengthMsg(ApiResources.SocialInsurance, SocialInsuranceMinLength, SocialInsuranceMaxLength))
+            .MustAsync(async (number, cancellation) => !await workerRepository.SocialInsuranceIsAlreadyTaken(number))
+            .WithMessage(ApiResources.SocialInsuranceAlreadyTaken)
+            .WhenAsync(async (c, cancellation) => await IsSinType(c.IdentificationType1?.Id));
+
+        RuleFor(c => c.IdentificationNumber2)
+            .Length(SocialInsuranceMinLength, SocialInsuranceMaxLength)
+            .WithMessage(ValidationMessages.LengthMsg(ApiResources.SocialInsurance, SocialInsuranceMinLength, SocialInsuranceMaxLength))
+            .MustAsync(async (number, cancellation) => !await workerRepository.SocialInsuranceIsAlreadyTaken(number))
+            .WithMessage(ApiResources.SocialInsuranceAlreadyTaken)
+            .WhenAsync(async (c, cancellation) => !string.IsNullOrEmpty(c.IdentificationNumber2) && await IsSinType(c.IdentificationType2?.Id));
+
+        RuleFor(c => c.IdentificationNumber2)
+            .Equal(c => c.IdentificationNumber1)
+            .WithMessage(ApiResources.SocialInsuranceConflict)
+            .WhenAsync(async (c, cancellation) =>
+                !string.IsNullOrEmpty(c.IdentificationNumber2)
+                && await IsSinType(c.IdentificationType1?.Id)
+                && await IsSinType(c.IdentificationType2?.Id));
 
         RuleForEach(c => c.Licenses)
             .ChildRules(license =>

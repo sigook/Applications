@@ -134,7 +134,7 @@ const AREAS: readonly FocusArea[] = [
   margin: 0 auto;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   .sp-focus__grid { grid-template-columns: 1fr; }
 }
 </style>

@@ -42,6 +42,16 @@ export const RequestStatusLabels: Record<RequestStatus, string> = {
   [RequestStatus.Cancelled]: 'Cancelled',
 };
 
+export enum CompanyStatus {
+  Lead = 1,
+  Potential = 2,
+  Prospect = 3,
+  Quoted = 4,
+  Client = 5,
+  Blocked = 6,
+  Inactive = 7,
+}
+
 export enum WorkerRequestStatus {
   Rejected = 2,
   Booked = 3,

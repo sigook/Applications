@@ -116,9 +116,12 @@
           <div class="detail-row">
             <b-tag :type="statusTagType(detail.status)" rounded>{{ statusLabel(detail.status) }}</b-tag>
           </div>
-          <collapse-section v-if="!isLoading && detailRunners.length > 0" :key="detail.requestId" class="detail-workers"
-            variant="compact" :model-value="false">
-            <template #title>Runners ({{ detailRunners.length }})</template>
+          <b-collapse v-if="!isLoading && detailRunners.length > 0" :key="detail.requestId"
+            class="detail-workers collapse-compact" :model-value="false">
+            <template #trigger="{ open }">
+              <span>Runners ({{ detailRunners.length }})</span>
+              <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small"></b-icon>
+            </template>
             <ul>
               <li v-for="(worker, index) in detailRunners" :key="`${worker.runnerId}-${index}`">
                 <div class="detail-worker-main">
@@ -144,7 +147,7 @@
                 </b-dropdown>
               </li>
             </ul>
-          </collapse-section>
+          </b-collapse>
         </section>
         <footer class="modal-card-foot is-justify-content-space-between">
           <b-button type="is-danger" icon-left="trash-can-outline" :loading="isSaving" @click="onUnassign(detail)">
@@ -183,7 +186,6 @@ import type {
   AssignPreset,
 } from '@/types/weeklyBoard';
 import AssignRecruiterModal from './AssignRecruiterModal.vue';
-import CollapseSection from '@/components/CollapseSection.vue';
 import RunnerHistoryModal from '@/components/runner/RunnerHistoryModal.vue';
 
 const dateFormat = 'YYYY-MM-DD';
@@ -495,7 +497,7 @@ watch(range, loadBoard, { immediate: true });
       }
 
       &.is-today .dom {
-        color: $primary;
+        color: $blue;
       }
     }
 
@@ -598,7 +600,7 @@ watch(range, loadBoard, { immediate: true });
 
     &:hover {
       border-color: $primary;
-      color: $primary;
+      color: $blue;
       background: transparent;
     }
   }
@@ -606,6 +608,10 @@ watch(range, loadBoard, { immediate: true });
 
 .detail-card {
   width: 100%;
+
+  .modal-card-foot {
+    gap: 0.75rem;
+  }
 
   .detail-row {
     display: flex;
@@ -647,7 +653,7 @@ watch(range, loadBoard, { immediate: true });
         text-decoration: none;
 
         &:hover {
-          color: $primary;
+          color: $blue;
           background: transparent;
         }
       }

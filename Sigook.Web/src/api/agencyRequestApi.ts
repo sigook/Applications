@@ -1,6 +1,10 @@
 import { api } from '@/security/apiService';
+import { buildMultipartFormData } from '@/utils/multipart';
 import type { PaginatedList } from '@/types/common';
 import type {
+  ApplicantComplianceItem,
+  ChangeRequestApplicantStatusModel,
+  CompleteApplicantComplianceItemModel,
   AgencyRequestFilter,
   AgencyRequestListItem,
   AgencyRequestDetail,
@@ -77,10 +81,6 @@ export function updateAgencyRequestIsAsap(requestId: string): Promise<void> {
   return api.put(`${requestsUrl}/${requestId}/IsAsap`);
 }
 
-export function updateAgencyPunchCardVisibilityStatusInApp(requestId: string): Promise<void> {
-  return api.put(`${requestsUrl}/${requestId}/PunchCardVisibilityStatusInApp`);
-}
-
 export function updateAgencyRequestShift(requestId: string, model: RequestShiftModel): Promise<{ id: string; displayShift?: string }> {
   return api.put<{ id: string; displayShift?: string }>(`${requestsUrl}/${requestId}/Shift`, model);
 }
@@ -135,6 +135,32 @@ export function deleteAgencyRequestApplicant(requestId: string, id: string): Pro
 
 export function updateAgencyRequestApplicant(requestId: string, id: string, model: UpdateApplicantCommentsPayload): Promise<void> {
   return api.put(`${requestsUrl}/${requestId}/Applicants/${id}`, model);
+}
+
+export function changeApplicantStatus(requestId: string, id: string, model: ChangeRequestApplicantStatusModel): Promise<void> {
+  return api.put(`${requestsUrl}/${requestId}/Applicants/${id}/Status`, model);
+}
+
+export function getApplicantComplianceItems(requestId: string, id: string): Promise<ApplicantComplianceItem[]> {
+  return api.get<ApplicantComplianceItem[]>(`${requestsUrl}/${requestId}/Applicants/${id}/ComplianceItems`);
+}
+
+export function completeApplicantComplianceItem(
+  requestId: string,
+  id: string,
+  itemId: string,
+  model: CompleteApplicantComplianceItemModel,
+  file?: File | null,
+): Promise<void> {
+  return api.post(
+    `${requestsUrl}/${requestId}/Applicants/${id}/ComplianceItems/${itemId}`,
+    buildMultipartFormData(model, model.fileName ? { [model.fileName]: file } : {}),
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
+}
+
+export function uncompleteApplicantComplianceItem(requestId: string, id: string, itemId: string): Promise<void> {
+  return api.del(`${requestsUrl}/${requestId}/Applicants/${id}/ComplianceItems/${itemId}`);
 }
 
 // ---------------------------------------------------------------------------

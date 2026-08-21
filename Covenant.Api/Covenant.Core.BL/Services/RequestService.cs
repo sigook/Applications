@@ -5,6 +5,7 @@ using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request;
@@ -41,6 +42,7 @@ public class RequestService : IRequestService
     private readonly ILogger<RequestService> logger;
     private readonly IValidator<RequestCreateModel> requestCreateValidator;
     private readonly IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator;
+    private readonly IRequestAdapter requestAdapter;
 
     public RequestService(
         ICompanyRepository companyRepository,
@@ -56,8 +58,10 @@ public class RequestService : IRequestService
         IOptions<ServiceBusConfiguration> serviceBusOptions,
         ILogger<RequestService> logger,
         IValidator<RequestCreateModel> requestCreateValidator,
-        IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator)
+        IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator,
+        IRequestAdapter requestAdapter)
     {
+        this.requestAdapter = requestAdapter;
         this.requestCreateValidator = requestCreateValidator;
         this.requestUpdateRequirementsValidator = requestUpdateRequirementsValidator;
         this.companyRepository = companyRepository;
@@ -83,7 +87,7 @@ public class RequestService : IRequestService
         var rRequest = await MapRequest(model);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;
-        await requestRepository.Create(request);
+        await requestRepository.Create([request]);
         if (model.SalesRepresentativeId.HasValue)
         {
             var requestComission = new RequestComission
@@ -91,7 +95,7 @@ public class RequestService : IRequestService
                 AgencyPersonnelId = model.SalesRepresentativeId.Value,
                 RequestId = request.Id,
             };
-            await requestRepository.Create(requestComission);
+            await requestRepository.Create([requestComission]);
         }
         if (model.CompanyUserIds != null && model.CompanyUserIds.Any())
         {
@@ -102,9 +106,12 @@ public class RequestService : IRequestService
                     CompanyUserId = companyUserId,
                     RequestId = request.Id
                 };
-                await requestRepository.Create(requestCompanyUser);
+                await requestRepository.Create([requestCompanyUser]);
             }
         }
+        var complianceItems = requestAdapter.MapToComplianceItems(request.Id, model.ComplianceItems);
+        if (!complianceItems) return Result.Fail<Guid>(complianceItems.Errors);
+        await requestRepository.Create(complianceItems.Value);
         await requestRepository.SaveChangesAsync();
         var location = await locationRepository.GetLocationById(model.LocationId.Value);
         var currency = location.IsUSA ? "USD" : "CAD";
@@ -147,16 +154,16 @@ public class RequestService : IRequestService
         if (!result) return result;
 
         var note = CovenantNote.Create("Request open", CovenantNote.RedColor, finalizedBy).Value;
-        await requestRepository.Create(new RequestNote(requestId, note));
+        await requestRepository.Create([new RequestNote(requestId, note)]);
         var requestFinalizationDetail = await requestRepository.GetRequestFinalizationDetail(requestId);
         if (requestFinalizationDetail != null)
         {
-            requestRepository.Delete(requestFinalizationDetail);
+            requestRepository.Delete([requestFinalizationDetail]);
         }
         var requestCancellationDetail = await requestRepository.GetRequestCancellationDetail(requestId);
         if (requestCancellationDetail != null)
         {
-            requestRepository.Delete(requestCancellationDetail);
+            requestRepository.Delete([requestCancellationDetail]);
         }
         await requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
@@ -201,6 +208,8 @@ public class RequestService : IRequestService
         request.BreakIsPaid = model.BreakIsPaid;
         request.WorkersQuantity = model.WorkersQuantity;
         request.UpdatePunchCardVisibilityStatusInApp(model.PunchCardOptionEnabled);
+        request.UpdateIsAsap(model.IsAsap);
+        request.UpdateUsesRunners(model.UsesRunners);
         request.DurationTerm = model.DurationTerm;
         request.EmploymentType = model.EmploymentType;
         request.StartAt = model.StartAt;
@@ -215,7 +224,7 @@ public class RequestService : IRequestService
                     RequestId = request.Id,
                     AgencyPersonnelId = model.SalesRepresentativeId.Value
                 };
-                await requestRepository.Create(requestComission);
+                await requestRepository.Create([requestComission]);
             }
             else if (requestComission.AgencyPersonnelId != model.SalesRepresentativeId.Value)
             {
@@ -225,7 +234,7 @@ public class RequestService : IRequestService
         var requestCompanyUsers = await requestRepository.GetRequestCompanyUsers(request.Id);
         foreach (var user in requestCompanyUsers)
         {
-            requestRepository.Delete(user);
+            requestRepository.Delete([user]);
         }
         if (model.CompanyUserIds != null && model.CompanyUserIds.Any())
         {
@@ -236,9 +245,28 @@ public class RequestService : IRequestService
                     CompanyUserId = companyUserId,
                     RequestId = request.Id
                 };
-                await requestRepository.Create(requestCompanyUser);
+                await requestRepository.Create([requestCompanyUser]);
             }
         }
+        var existingComplianceItems = await requestRepository.GetComplianceItems(request.Id);
+        var complianceItems = model.ComplianceItems ?? [];
+        var keptComplianceItemIds = complianceItems.Where(c => c.Id.HasValue).Select(c => c.Id.Value).ToList();
+        var removedComplianceItemIds = existingComplianceItems.Where(c => !keptComplianceItemIds.Contains(c.Id)).Select(c => c.Id).ToList();
+        if (removedComplianceItemIds.Count > 0)
+            requestRepository.Delete(await requestRepository.GetApplicantComplianceCompletions(removedComplianceItemIds));
+        requestRepository.Delete(existingComplianceItems.Where(c => !keptComplianceItemIds.Contains(c.Id)));
+        foreach (var existingComplianceItem in existingComplianceItems.Where(c => keptComplianceItemIds.Contains(c.Id)))
+        {
+            var complianceItem = complianceItems.First(c => c.Id == existingComplianceItem.Id);
+            var complianceItemResult = existingComplianceItem.Update(complianceItem.Name, complianceItem.IsMandatory, complianceItem.DocumentTarget);
+            if (!complianceItemResult) return complianceItemResult;
+        }
+        var existingComplianceItemIds = existingComplianceItems.Select(c => c.Id).ToList();
+        var newComplianceItems = requestAdapter.MapToComplianceItems(
+            request.Id,
+            complianceItems.Where(c => !c.Id.HasValue || !existingComplianceItemIds.Contains(c.Id.Value)));
+        if (!newComplianceItems) return Result.Fail(newComplianceItems.Errors);
+        await requestRepository.Create(newComplianceItems.Value);
         await requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
@@ -260,16 +288,6 @@ public class RequestService : IRequestService
     {
         var request = await requestRepository.GetRequest(r => r.Id == id);
         var update = request.UpdateIsAsap();
-        if (!update) return update;
-        await requestRepository.Update(request);
-        await requestRepository.SaveChangesAsync();
-        return Result.Ok();
-    }
-
-    public async Task<Result> PunchCardUpdateVisibilityStatusInApp(Guid requestId)
-    {
-        var request = await requestRepository.GetRequest(r => r.Id == requestId);
-        var update = request.UpdatePunchCardVisibilityStatusInApp();
         if (!update) return update;
         await requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
@@ -341,10 +359,10 @@ public class RequestService : IRequestService
         var existing = await requestRepository.GetRequestCancellationDetail(request.Id);
         if (existing != null)
         {
-            requestRepository.Delete(existing);
+            requestRepository.Delete([existing]);
         }
-        await requestRepository.Create(note);
-        await requestRepository.Create(entity);
+        await requestRepository.Create([note]);
+        await requestRepository.Create([entity]);
         await requestRepository.Update(request);
         return Result.Ok();
     }

@@ -312,11 +312,23 @@ rather than constructing clients directly.
 
 ## Authentication & Authorization
 
-- Sigook.Web authenticates against Covenant.IdentityServer via OIDC with `oidc-client-ts`
-  (`src/security/`). SigookApp signs in with a native email/password screen that POSTs to
-  a placeholder API endpoint (`POST /Account/Login`, backend pending) and keeps
-  `flutter_appauth` only for token refresh against IdentityServer (tokens in secure
-  storage). Covenant.Api validates the JWT Bearer token on every request.
+- All apps authenticate against Covenant.IdentityServer. Sigook.Web and SigookApp use the
+  OAuth2 **password grant** (`POST /connect/token`, `grant_type=password`) from their own
+  native login screens — no browser redirect. The custom `CovenantResourceOwnerPasswordValidator`
+  enforces the same rules as the Razor login (inactive users, unconfirmed email) plus lockout
+  (5 attempts / 5 min) and returns machine-readable `error_description` codes
+  (`invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out`). Password grant
+  issues no `id_token`; clients build the profile from `/connect/userinfo`.
+  Sigook.Web keeps `oidc-client-ts` (`src/security/`) for token storage/refresh and for the
+  "Sign in with Microsoft 365" button (`signinRedirect` with `acr_values=idp:oidc`, which skips
+  the IdentityServer login page and goes straight to the external provider via `/callback`).
+  Covenant.Api validates the JWT Bearer token on every request.
+- **Forgot password** is API-driven (`POST /Password/forgot` → 6-digit emailed code, 15-min TTL,
+  5 attempts, 60-s resend cooldown; `POST /Password/reset` with `{email, code, newPassword}`).
+  Codes live in the `PasswordResetCode` table (hashed). The Razor pages (`Login`,
+  `RequestResetPassword`, `CreatePassword`, `ConfirmEmailAddress`) remain for the
+  `accounting.sigook.com` client, older mobile builds (authorization_code is still enabled on
+  the `android`/`ios` clients) and account-activation emails.
 - **Roles** (exactly 7, lowercase, defined in `Covenant.Common/Constants/CovenantConstants.cs`):
   `superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker`. Role groups:
   `RecruitingAccess` (superadmin/admin/recruiting), `SalesAccess` (superadmin/admin/sales),

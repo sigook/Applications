@@ -10,7 +10,7 @@
           v-show="currentSlide === index"
         >
           <picture>
-            <source media="(max-width: 768px)" :srcset="slide.mobile" />
+            <source media="(max-width: 1023px)" :srcset="slide.mobile" />
             <img :src="slide.desktop" alt="Hero background" />
           </picture>
           <div class="hero__overlay"></div>
@@ -296,6 +296,7 @@ onBeforeUnmount(() => {
   .hero__content {
     align-items: center;
     text-align: center;
+    padding-top: min(40vh, 280px);
   }
 }
 

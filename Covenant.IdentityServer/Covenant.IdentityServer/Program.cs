@@ -2,6 +2,7 @@ using Covenant.IdentityServer.BackgroundServices;
 using Covenant.IdentityServer.Configuration;
 using Covenant.IdentityServer.Data;
 using Covenant.IdentityServer.Entities;
+using Covenant.IdentityServer.Security;
 using Covenant.IdentityServer.Services;
 using Covenant.IdentityServer.Services.Impl;
 using IdentityServer4.EntityFramework.DbContexts;
@@ -12,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Azure.Identity;
 using Microsoft.IdentityModel.Logging;
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +55,9 @@ builder.Services.AddIdentity<CovenantUser, CovenantRole>(options =>
     options.Password.RequiredLength = 6;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
 }).AddEntityFrameworkStores<CovenantContext>().AddDefaultTokenProviders();
 
 var issuerUri = builder.Configuration.GetValue<string>("IssuerUri") ?? "https://accounts.com";
@@ -66,6 +72,7 @@ var identityBuilder = builder.Services.AddIdentityServer(options => options.Issu
     })
     .AddAspNetIdentity<CovenantUser>()
     .AddProfileService<CustomProfileService<CovenantUser>>();
+identityBuilder.AddResourceOwnerValidator<CovenantResourceOwnerPasswordValidator>();
 
 builder.Services
     .AddAuthentication()
@@ -79,6 +86,7 @@ if (!builder.Environment.IsProduction())
 builder.Services.AddScoped<ITeamsNotification, TeamsNotification>();
 builder.Services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 if (builder.Environment.IsProduction())
 {
     builder.Services.AddScoped<IEmailService, EmailService>();
@@ -102,8 +110,6 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddHostedService<SigookIdentityBackgroundService>();
 
 var app = builder.Build();
-
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // Log configuration on startup
 var logger = app.Services.GetRequiredService<ILogger<Program>>();

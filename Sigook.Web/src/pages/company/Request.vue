@@ -2,6 +2,7 @@
   <div class="has-menu-bottom">
     <b-loading v-model="isLoading"></b-loading>
 
+    <Breadcrumbs :crumbs="crumbs" back-to="/company-requests" />
     <section class="wrapper-request-top" v-if="request">
       <div>
         <router-link :to="'/recruiting/companies/' + request.companyProfileId">
@@ -94,9 +95,12 @@ import RequestAnotherWorker from '../../components/company/DialogRequestWorker.v
 import Detail from '../../components/company_request/CompanyRequestDetail.vue';
 import Workers from '../../components/company_request/CompanyRequestWorkers.vue';
 import PunchCard from '../../components/company_request/CompanyRequestPunchCard.vue';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import type { PageBreadcrumb } from '@/types/common';
 
 const route = useRoute();
 const router = useRouter();
+const crumbs: PageBreadcrumb[] = [{ label: 'Requests', to: '/company-requests' }];
 
 const requirementsSchema = yup.object({
   requirements: yup.string().test('min-text', 'Requirements must be at least 100 characters', (v) => {

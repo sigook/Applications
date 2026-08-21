@@ -857,7 +857,7 @@ onMounted(async () => {
   transform: scaleX(-1) translateX(3px);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .reg-form__grid--2col {
     grid-template-columns: 1fr;
   }

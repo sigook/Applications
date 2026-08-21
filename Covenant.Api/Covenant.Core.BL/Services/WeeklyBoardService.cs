@@ -145,7 +145,7 @@ public class WeeklyBoardService(
         if (names.TryGetValue(model.WorkerProfileId, out var name) && !string.IsNullOrWhiteSpace(name))
         {
             var note = CovenantNote.Create($"{name} was sent", CovenantNote.RedColor, recruiter.Name).Value;
-            await requestRepository.Create(new RequestNote(model.RequestId, note));
+            await requestRepository.Create([new RequestNote(model.RequestId, note)]);
             await requestRepository.SaveChangesAsync();
         }
 

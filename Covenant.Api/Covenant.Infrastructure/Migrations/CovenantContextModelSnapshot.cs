@@ -1848,6 +1848,13 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("None");
+
                     b.Property<string>("Value")
                         .HasColumnType("text");
 
@@ -2207,6 +2214,13 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Pending");
+
                     b.Property<Guid?>("WorkerProfileId")
                         .HasColumnType("uuid");
 
@@ -2219,6 +2233,35 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WorkerProfileId");
 
                     b.ToTable("RequestApplicants", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestApplicantComplianceItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CompletedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("RequestApplicantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RequestComplianceItemId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestComplianceItemId");
+
+                    b.HasIndex("RequestApplicantId", "RequestComplianceItemId")
+                        .IsUnique();
+
+                    b.ToTable("RequestApplicantComplianceItems", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCancellationDetail", b =>
@@ -2274,6 +2317,35 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("CompanyUserId");
 
                     b.ToTable("RequestCompanyUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestComplianceItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DocumentTarget")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<bool>("IsMandatory")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("RequestComplianceItems", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestFinalizationDetail", b =>
@@ -4241,6 +4313,25 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestApplicantComplianceItem", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.RequestApplicant", "RequestApplicant")
+                        .WithMany("ComplianceItems")
+                        .HasForeignKey("RequestApplicantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.Request.RequestComplianceItem", "RequestComplianceItem")
+                        .WithMany()
+                        .HasForeignKey("RequestComplianceItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("RequestApplicant");
+
+                    b.Navigation("RequestComplianceItem");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCancellationDetail", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.ReasonCancellationRequest", "ReasonCancellationRequest")
@@ -4284,6 +4375,17 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("CompanyUser");
+
+                    b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestComplianceItem", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                        .WithMany("ComplianceItems")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Request");
                 });
@@ -4983,6 +5085,8 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
                 {
+                    b.Navigation("ComplianceItems");
+
                     b.Navigation("Notes");
 
                     b.Navigation("Recruiters");
@@ -4994,6 +5098,11 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Sources");
 
                     b.Navigation("Workers");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestApplicant", b =>
+                {
+                    b.Navigation("ComplianceItems");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>

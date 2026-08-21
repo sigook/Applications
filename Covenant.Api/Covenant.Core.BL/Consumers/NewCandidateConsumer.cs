@@ -3,6 +3,7 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
@@ -107,7 +108,7 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                             {
                                 if (request.JobLocation.City.Province.CountryId == message.CountryId)
                                 {
-                                    requestApplicant = RequestApplicant.CreateWithCandidate(message.RequestId.Value, candidateId.Value, "Sigook", string.Empty);
+                                    requestApplicant = RequestApplicant.CreateWithCandidate(message.RequestId.Value, candidateId.Value, "Sigook", string.Empty, RequestApplicantStatus.Pending);
                                     response.Body = new BinaryData(requestApplicant.Value);
                                     response.ApplicationProperties[ServiceBusSqlConstants.RequestApplication] = true;
                                 }
@@ -131,11 +132,11 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                     {
                         if (worker != null)
                         {
-                            requestApplicant = RequestApplicant.CreateWithWorker(message.RequestId.Value, worker.Id, "Sigook", string.Empty);
+                            requestApplicant = RequestApplicant.CreateWithWorker(message.RequestId.Value, worker.Id, "Sigook", string.Empty, RequestApplicantStatus.Pending);
                         }
                         else if (candidate != null)
                         {
-                            requestApplicant = RequestApplicant.CreateWithCandidate(message.RequestId.Value, candidate.Id, "Sigook", string.Empty);
+                            requestApplicant = RequestApplicant.CreateWithCandidate(message.RequestId.Value, candidate.Id, "Sigook", string.Empty, RequestApplicantStatus.Pending);
                         }
                         response.Body = new BinaryData(requestApplicant.Value);
                         response.ApplicationProperties[ServiceBusSqlConstants.RequestApplication] = true;

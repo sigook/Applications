@@ -1,11 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title columns is-multiline mb-2">
-      <h2 class="fz1 pt-3 column is-7-mobile is-5">
-        Create Invoice
-      </h2>
-    </div>
+    <PageHeader title="Create Invoice" :crumbs="invoicesCrumbs" back-to="/accounting/invoices" />
     <div>
       <div class="columns is-multiline">
         <div class="column is-12">
@@ -223,6 +219,8 @@ import { getAllAgencyRequests } from '@/api/agencyRequestApi';
 import { previewAgencyInvoice, createAgencyInvoice } from '@/api/agencyInvoiceApi';
 import { useStickyForm } from '@/composables/useStickyForm';
 import PreviewInvoice from '@/components/agency_accounting/PreviewInvoice.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { invoicesCrumbs } from '@/constants/breadcrumbs';
 
 const router = useRouter();
 

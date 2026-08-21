@@ -107,6 +107,8 @@ import { currency } from '@/utils/filters';
 import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
 import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyReportApi";
 import { useStickyForm } from '@/composables/useStickyForm';
+import type { AgencyCompanyJobPosition, AgencyReportFilter, HoursWorkedReportView } from '@/types/agency';
+import type { CompanyProfileListItem } from '@/types/company';
 import Export from "@/components/Export.vue";
 
 const schema = yup.object({
@@ -127,15 +129,15 @@ const formErrors = form.errors;
 const isLoading = ref(false);
 const isLoadingJobPositions = ref(false);
 const isLoadingReport = ref(false);
-const companies = ref<any[]>([]);
+const companies = ref<CompanyProfileListItem[]>([]);
 const companySelected = ref('');
-const jobPositions = ref<any[]>([]);
+const jobPositions = ref<AgencyCompanyJobPosition[]>([]);
 const jobPositionSelected = ref('');
 const pageIndex = ref(1);
 const pageSize = ref(30);
-const serverParams = ref<any>({});
+const serverParams = ref<AgencyReportFilter>({});
 const reportGenerated = ref(false);
-const report = ref<any>({ rows: [] });
+const report = ref<HoursWorkedReportView>({ rows: [] });
 
 async function loadCompanies() {
   isLoading.value = true;
@@ -151,29 +153,30 @@ async function onDatesSelected() {
   }
 }
 
-async function selectCompany(company: any) {
+async function selectCompany(company: CompanyProfileListItem | null) {
   if (company) {
     serverParams.value.companyProfileId = company.id;
     await loadJobPositions();
   } else {
-    serverParams.value.companyProfileId = null;
+    serverParams.value.companyProfileId = undefined;
     jobPositions.value = [];
   }
 }
 
 async function loadJobPositions() {
-  if (serverParams.value.companyProfileId && dates.value && dates.value.length === 2) {
+  const companyProfileId = serverParams.value.companyProfileId;
+  if (companyProfileId && dates.value && dates.value.length === 2) {
     isLoadingJobPositions.value = true;
-    jobPositions.value = await getJobPositionsHoursWorked(serverParams.value);
+    jobPositions.value = await getJobPositionsHoursWorked({ ...serverParams.value, companyProfileId });
     isLoadingJobPositions.value = false;
   }
 }
 
-function selectJobPosition(jobPosition: any) {
+function selectJobPosition(jobPosition: AgencyCompanyJobPosition | null) {
   if (jobPosition) {
     serverParams.value.jobPositionRateId = jobPosition.id;
   } else {
-    serverParams.value.jobPositionRateId = null;
+    serverParams.value.jobPositionRateId = undefined;
   }
 }
 
@@ -197,10 +200,10 @@ async function getReport() {
 }
 
 const filteredCompanies = computed(() =>
-  companies.value.filter((company: any) => company.fullName.toLowerCase().includes(companySelected.value.toLowerCase()))
+  companies.value.filter((company) => company.fullName.toLowerCase().includes(companySelected.value.toLowerCase()))
 );
 const filteredJobPositions = computed(() =>
-  jobPositions.value.filter((jp: any) => (jp.jobPosition || '').toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
+  jobPositions.value.filter((jp) => (jp.jobPosition || '').toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
 );
 
 (async () => {

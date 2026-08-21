@@ -14,6 +14,8 @@ public class RequestCreateModelValidator : AbstractValidator<RequestCreateModel>
     private const int MaximumLengthIncentiveDescription = 5000;
     private const int MinimumDurationBreakMinutes = 0;
     private const int MaximumDurationBreakMinutes = 60;
+    private const int MaximumLengthComplianceItemName = 200;
+    private const int MaximumComplianceItems = 50;
 
     public RequestCreateModelValidator()
     {
@@ -44,5 +46,25 @@ public class RequestCreateModelValidator : AbstractValidator<RequestCreateModel>
             .InclusiveBetween(
                 TimeSpan.FromMinutes(MinimumDurationBreakMinutes),
                 TimeSpan.FromMinutes(MaximumDurationBreakMinutes));
+        RuleFor(m => m.ComplianceItems)
+            .Must(items => items == null || items.Count() <= MaximumComplianceItems)
+            .WithMessage($"A maximum of {MaximumComplianceItems} compliance items is allowed.");
+        RuleFor(m => m.ComplianceItems)
+            .Must(HasUniqueNames)
+            .WithMessage("Compliance items must be unique.");
+        RuleForEach(m => m.ComplianceItems).ChildRules(item =>
+        {
+            item.RuleFor(i => i.Name)
+                .NotEmpty()
+                .MaximumLength(MaximumLengthComplianceItemName);
+            item.RuleFor(i => i.DocumentTarget)
+                .IsInEnum();
+        });
     }
+
+    private static bool HasUniqueNames(IEnumerable<RequestComplianceItemModel> items) =>
+        items == null || items
+            .Select(i => i.Name?.Trim().ToLowerInvariant())
+            .Distinct()
+            .Count() == items.Count();
 }
