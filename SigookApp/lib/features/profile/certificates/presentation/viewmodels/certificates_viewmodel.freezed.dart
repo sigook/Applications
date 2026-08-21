@@ -60,6 +60,8 @@ class _$CertificatesStateCopyWithImpl<$Res>
   final CertificatesState _self;
   final $Res Function(CertificatesState) _then;
 
+/// Create a copy of CertificatesState
+/// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isUploading = null,Object? uploadError = freezed,Object? justUploaded = null,Object? isDeleting = null,Object? deleteError = freezed,Object? justDeleted = null,}) {
   return _then(_self.copyWith(
 isUploading: null == isUploading ? _self.isUploading : isUploading // ignore: cast_nullable_to_non_nullable
@@ -77,6 +79,18 @@ as bool,
 
 /// Adds pattern-matching-related methods to [CertificatesState].
 extension CertificatesStatePatterns on CertificatesState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
 @optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CertificatesState value)?  $default,{required TResult orElse(),}){
 final _that = this;
 switch (_that) {
@@ -86,6 +100,18 @@ return $default(_that);case _:
 
 }
 }
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
 
 @optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CertificatesState value)  $default,){
 final _that = this;
@@ -96,6 +122,17 @@ return $default(_that);case _:
 
 }
 }
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
 @optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CertificatesState value)?  $default,){
 final _that = this;
@@ -106,6 +143,17 @@ return $default(_that);case _:
 
 }
 }
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
 @optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isUploading,  String? uploadError,  bool justUploaded,  bool isDeleting,  String? deleteError,  bool justDeleted)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
@@ -115,6 +163,18 @@ return $default(_that.isUploading,_that.uploadError,_that.justUploaded,_that.isD
 
 }
 }
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
 
 @optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isUploading,  String? uploadError,  bool justUploaded,  bool isDeleting,  String? deleteError,  bool justDeleted)  $default,) {final _that = this;
 switch (_that) {
@@ -124,6 +184,17 @@ return $default(_that.isUploading,_that.uploadError,_that.justUploaded,_that.isD
 
 }
 }
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
 @optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isUploading,  String? uploadError,  bool justUploaded,  bool isDeleting,  String? deleteError,  bool justDeleted)?  $default,) {final _that = this;
 switch (_that) {
@@ -141,7 +212,7 @@ return $default(_that.isUploading,_that.uploadError,_that.justUploaded,_that.isD
 
 class _CertificatesState implements CertificatesState {
   const _CertificatesState({this.isUploading = false, this.uploadError, this.justUploaded = false, this.isDeleting = false, this.deleteError, this.justDeleted = false});
-
+  
 
 @override@JsonKey() final  bool isUploading;
 @override final  String? uploadError;
@@ -150,6 +221,8 @@ class _CertificatesState implements CertificatesState {
 @override final  String? deleteError;
 @override@JsonKey() final  bool justDeleted;
 
+/// Create a copy of CertificatesState
+/// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
 _$CertificatesStateCopyWith<_CertificatesState> get copyWith => __$CertificatesStateCopyWithImpl<_CertificatesState>(this, _$identity);
@@ -193,6 +266,8 @@ class __$CertificatesStateCopyWithImpl<$Res>
   final _CertificatesState _self;
   final $Res Function(_CertificatesState) _then;
 
+/// Create a copy of CertificatesState
+/// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? isUploading = null,Object? uploadError = freezed,Object? justUploaded = null,Object? isDeleting = null,Object? deleteError = freezed,Object? justDeleted = null,}) {
   return _then(_CertificatesState(
 isUploading: null == isUploading ? _self.isUploading : isUploading // ignore: cast_nullable_to_non_nullable

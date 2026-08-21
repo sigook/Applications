@@ -49,47 +49,6 @@ final class SignInProvider extends $FunctionalProvider<SignIn, SignIn, SignIn>
 
 String _$signInHash() => r'22614f11f9564296d0cb7bdf5e3a0064602a9f75';
 
-@ProviderFor(refreshToken)
-const refreshTokenProvider = RefreshTokenProvider._();
-
-final class RefreshTokenProvider
-    extends $FunctionalProvider<RefreshToken, RefreshToken, RefreshToken>
-    with $Provider<RefreshToken> {
-  const RefreshTokenProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'refreshTokenProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$refreshTokenHash();
-
-  @$internal
-  @override
-  $ProviderElement<RefreshToken> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  RefreshToken create(Ref ref) {
-    return refreshToken(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(RefreshToken value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<RefreshToken>(value),
-    );
-  }
-}
-
-String _$refreshTokenHash() => r'61f13c03571f269236663bf6681ffa5df3c78619';
-
 @ProviderFor(logout)
 const logoutProvider = LogoutProvider._();
 
@@ -130,84 +89,139 @@ final class LogoutProvider extends $FunctionalProvider<Logout, Logout, Logout>
 
 String _$logoutHash() => r'3f851dcbb9e8569c953ef50df79359f905c186c8';
 
-@ProviderFor(validateToken)
-const validateTokenProvider = ValidateTokenProvider._();
+@ProviderFor(requestPasswordResetCode)
+const requestPasswordResetCodeProvider = RequestPasswordResetCodeProvider._();
 
-final class ValidateTokenProvider
-    extends $FunctionalProvider<ValidateToken, ValidateToken, ValidateToken>
-    with $Provider<ValidateToken> {
-  const ValidateTokenProvider._()
+final class RequestPasswordResetCodeProvider
+    extends
+        $FunctionalProvider<
+          RequestPasswordResetCode,
+          RequestPasswordResetCode,
+          RequestPasswordResetCode
+        >
+    with $Provider<RequestPasswordResetCode> {
+  const RequestPasswordResetCodeProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'validateTokenProvider',
+        name: r'requestPasswordResetCodeProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$validateTokenHash();
+  String debugGetCreateSourceHash() => _$requestPasswordResetCodeHash();
 
   @$internal
   @override
-  $ProviderElement<ValidateToken> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<RequestPasswordResetCode> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
-  ValidateToken create(Ref ref) {
-    return validateToken(ref);
+  RequestPasswordResetCode create(Ref ref) {
+    return requestPasswordResetCode(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ValidateToken value) {
+  Override overrideWithValue(RequestPasswordResetCode value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<ValidateToken>(value),
+      providerOverride: $SyncValueProvider<RequestPasswordResetCode>(value),
     );
   }
 }
 
-String _$validateTokenHash() => r'4ea639ebd1bf545ce21df6fa36ae01638579dad4';
+String _$requestPasswordResetCodeHash() =>
+    r'f31a43d35951eaf0a455661f166c85500ed71014';
 
-@ProviderFor(currentAuthToken)
-const currentAuthTokenProvider = CurrentAuthTokenProvider._();
+@ProviderFor(resetPassword)
+const resetPasswordProvider = ResetPasswordProvider._();
 
-final class CurrentAuthTokenProvider
-    extends $FunctionalProvider<AuthToken?, AuthToken?, AuthToken?>
-    with $Provider<AuthToken?> {
-  const CurrentAuthTokenProvider._()
+final class ResetPasswordProvider
+    extends $FunctionalProvider<ResetPassword, ResetPassword, ResetPassword>
+    with $Provider<ResetPassword> {
+  const ResetPasswordProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'currentAuthTokenProvider',
+        name: r'resetPasswordProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$currentAuthTokenHash();
+  String debugGetCreateSourceHash() => _$resetPasswordHash();
 
   @$internal
   @override
-  $ProviderElement<AuthToken?> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<ResetPassword> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  AuthToken? create(Ref ref) {
-    return currentAuthToken(ref);
+  ResetPassword create(Ref ref) {
+    return resetPassword(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AuthToken? value) {
+  Override overrideWithValue(ResetPassword value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AuthToken?>(value),
+      providerOverride: $SyncValueProvider<ResetPassword>(value),
     );
   }
 }
 
-String _$currentAuthTokenHash() => r'3df1e536fe7e48ff406f7d9c1ec1d83c1076ec05';
+String _$resetPasswordHash() => r'9d7a2211899fe2d3dd0ddee1ed97bebf623b03fd';
+
+@ProviderFor(resendConfirmationLink)
+const resendConfirmationLinkProvider = ResendConfirmationLinkProvider._();
+
+final class ResendConfirmationLinkProvider
+    extends
+        $FunctionalProvider<
+          ResendConfirmationLink,
+          ResendConfirmationLink,
+          ResendConfirmationLink
+        >
+    with $Provider<ResendConfirmationLink> {
+  const ResendConfirmationLinkProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'resendConfirmationLinkProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$resendConfirmationLinkHash();
+
+  @$internal
+  @override
+  $ProviderElement<ResendConfirmationLink> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ResendConfirmationLink create(Ref ref) {
+    return resendConfirmationLink(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ResendConfirmationLink value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ResendConfirmationLink>(value),
+    );
+  }
+}
+
+String _$resendConfirmationLinkHash() =>
+    r'6cd8d4c4f3c6be5e4aae98aba3cdf8da5bb9a45e';

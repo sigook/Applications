@@ -77,7 +77,12 @@ State:      Riverpod (flutter_riverpod ^3.0.3); DI: Riverpod + get_it ^9.0.5
 Routing:    GoRouter ^17.0.0 (lib/core/routing/app_router.dart)
 HTTP:       Dio ^5.7.0 (lib/core/network/api_client.dart + auth_interceptor.dart: bearer
             injection, 401 refresh + retry)
-Auth:       flutter_appauth ^11.0.0; tokens in FlutterSecureStorage
+Auth:       native email/password screen → OAuth2 password grant (POST {authority}/connect/token,
+            form-urlencoded, no id_token — role via /connect/userinfo; scopes
+            openid profile api1 roles offline_access); in-app 2-step forgot-password
+            (/forgot-password → POST /Password/forgot + /Password/reset, 6-digit code,
+            60-s resend cooldown); flutter_appauth ^11.0.0 kept for token refresh;
+            tokens in FlutterSecureStorage
 Codegen:    build_runner, freezed ^3.2.3, json_serializable; Dartz for Either/Option
 Flavors:    staging / production (main_staging.dart / main_production.dart, .env.* configs)
 ```
@@ -323,7 +328,10 @@ rather than constructing clients directly.
   Covenant.Api validates the JWT Bearer token on every request.
 - **Forgot password** is API-driven (`POST /Password/forgot` → 6-digit emailed code, 15-min TTL,
   5 attempts, 60-s resend cooldown; `POST /Password/reset` with `{email, code, newPassword}`).
-  Codes live in the `PasswordResetCode` table (hashed). The Razor pages (`Login`,
+  Codes live in the `PasswordResetCode` table (hashed). Both Sigook.Web (`/forgot-password`)
+  and SigookApp (`/forgot-password` route, 2-step screen) consume it; SigookApp also offers a
+  resend-confirmation action when login fails with `email_not_confirmed`
+  (`POST /Account/ResendConfirmationLink`). The Razor pages (`Login`,
   `RequestResetPassword`, `CreatePassword`, `ConfirmEmailAddress`) remain for the
   `accounting.sigook.com` client, older mobile builds (authorization_code is still enabled on
   the `android`/`ios` clients) and account-activation emails.
