@@ -98,6 +98,7 @@ extension DioExceptionMessage on DioException {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
+      case DioExceptionType.transformTimeout:
         return ErrorMessages.connectionTimeout;
       case DioExceptionType.connectionError:
         return ErrorMessages.networkError;
