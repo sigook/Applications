@@ -8,6 +8,8 @@ abstract class TimesheetRepository {
   Future<Either<Failure, ClockType>> getClockType({
     required DateTime date,
     required String requestId,
+    required double latitude,
+    required double longitude,
   });
 
   Future<Either<Failure, TimesheetResponse>> submitTimesheet({
