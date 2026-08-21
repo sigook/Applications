@@ -110,9 +110,7 @@ Evaluated per week in `GeneratePayStubForWorker` (PayStubService.cs:346-366) aga
    3. Worker not entitled (no qualifying day worked) → $0.
    4. Otherwise: `Amount = HolidayPayBase / 20`.
 
-   Because the custom-value check runs **before** the entitlement check, a configured custom value is paid even to a non-entitled worker.
-
-The resulting amount (when > 0) becomes a `PayStubPublicHoliday` entity and a `StatutoryHoliday` `PayStubItem`.
+`HolidayPayBase` = the worker's **regular wages** (regular + other-regular + missing hours at regular rate) over the **four work weeks before** the holiday's work week, **plus 4% vacation pay** computed over the full gross of that window (including overtime and worked-holiday premium, since vacation pay accrues on all wages). Per the Ontario ESA definition of "regular wages", **overtime pay, worked-holiday premium pay (1.5×) and missing-overtime pay are excluded** from the base — hours above the weekly threshold drop out entirely, they are not re-added at straight time. Recomputed from approved timesheets by `TimesheetCalculatorService.CalculateHolidayPayBase` (not from previous pay stubs, so it does not depend on generation order).
 
 Example: worker earned $880 regular + $120 overtime in the prior four weeks → vacation pay = 4% × $1,000 = $40 → ($880 + $40) / 20 = **$46.00** (the $120 of overtime pay is excluded from the base).
 

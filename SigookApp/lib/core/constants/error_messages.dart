@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'auth_error_codes.dart';
 
 class ErrorMessages {
   ErrorMessages._();
@@ -31,6 +32,57 @@ class ErrorMessages {
   static String get invalidCredentials =>
       _messages?['authentication']?['invalid_credentials'] ??
       'Invalid credentials';
+  static String get inactiveUser =>
+      _messages?['authentication']?['inactive_user'] ??
+      'Your account is inactive';
+  static String get emailNotConfirmed =>
+      _messages?['authentication']?['email_not_confirmed'] ??
+      'Your email address has not been confirmed yet';
+  static String get lockedOut =>
+      _messages?['authentication']?['locked_out'] ??
+      'Too many failed attempts. Try again later';
+
+  static String get invalidResetCode =>
+      _messages?['password_reset']?['invalid_code'] ?? 'Invalid code';
+  static String get resetCodeExpired =>
+      _messages?['password_reset']?['code_expired'] ?? 'The code has expired';
+  static String get tooManyResetAttempts =>
+      _messages?['password_reset']?['too_many_attempts'] ??
+      'Too many attempts. Request a new code';
+  static String get passwordPolicy =>
+      _messages?['password_reset']?['password_policy'] ??
+      'The new password was rejected';
+  static String get resetCodeSendFailed =>
+      _messages?['password_reset']?['send_failed'] ??
+      'Could not send the code. Try again later';
+
+  static String signInErrorFromCode(String? code) {
+    switch (code) {
+      case AuthErrorCodes.inactiveUser:
+        return inactiveUser;
+      case AuthErrorCodes.emailNotConfirmed:
+        return emailNotConfirmed;
+      case AuthErrorCodes.lockedOut:
+        return lockedOut;
+      default:
+        return invalidCredentials;
+    }
+  }
+
+  static String resetErrorFromCode(String? code) {
+    switch (code) {
+      case AuthErrorCodes.invalidCode:
+        return invalidResetCode;
+      case AuthErrorCodes.codeExpired:
+        return resetCodeExpired;
+      case AuthErrorCodes.tooManyAttempts:
+        return tooManyResetAttempts;
+      case AuthErrorCodes.passwordPolicy:
+        return passwordPolicy;
+      default:
+        return unknownError;
+    }
+  }
 
   static String get requiredField =>
       _messages?['validation']?['required_field'] ?? 'Required field';
