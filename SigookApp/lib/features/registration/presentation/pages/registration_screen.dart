@@ -300,9 +300,7 @@ class _RegistrationFormScreenState
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
               ),
               TextButton(
-                onPressed: () {
-                  ref.read(authViewModelProvider.notifier).signIn();
-                },
+                onPressed: () => context.push(AppRoutes.signIn),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(0, 0),

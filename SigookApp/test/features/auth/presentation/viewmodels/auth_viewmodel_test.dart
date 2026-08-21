@@ -7,7 +7,7 @@ import 'package:sigook_app_flutter/features/auth/data/models/auth_token_model.da
 import 'package:sigook_app_flutter/features/auth/domain/entities/auth_token.dart';
 import 'package:sigook_app_flutter/core/usecases/usecase.dart';
 import 'package:sigook_app_flutter/features/auth/domain/usecases/logout.dart';
-import 'package:sigook_app_flutter/features/auth/domain/usecases/refresh_token.dart';
+import 'package:sigook_app_flutter/features/auth/domain/usecases/resend_confirmation_link.dart';
 import 'package:sigook_app_flutter/features/auth/domain/usecases/sign_in.dart';
 import 'package:sigook_app_flutter/features/auth/presentation/providers/auth_providers.dart';
 import 'package:sigook_app_flutter/features/auth/presentation/viewmodels/auth_viewmodel.dart';
@@ -19,17 +19,19 @@ import '../../../../helpers/riverpod_test_helpers.dart';
 // ── Mock use cases ───────────────────────────────────────────────────────────
 class MockSignIn extends Mock implements SignIn {}
 class MockLogout extends Mock implements Logout {}
-class MockRefreshToken extends Mock implements RefreshToken {}
+class MockResendConfirmationLink extends Mock
+    implements ResendConfirmationLink {}
 
 void main() {
   setUpAll(() {
     registerFallbackValue(NoParams());
-    registerFallbackValue(RefreshTokenParams(refreshToken: ''));
+    registerFallbackValue(SignInParams(email: '', password: ''));
+    registerFallbackValue(ResendConfirmationLinkParams(email: ''));
   });
 
   late MockSignIn mockSignIn;
   late MockLogout mockLogout;
-  late MockRefreshToken mockRefreshToken;
+  late MockResendConfirmationLink mockResend;
   late MockAuthRepository mockAuthRepo;
   late MockAuthLocalDataSource mockLocal;
   late MockAnalyticsService mockAnalytics;
@@ -41,7 +43,7 @@ void main() {
   setUp(() {
     mockSignIn = MockSignIn();
     mockLogout = MockLogout();
-    mockRefreshToken = MockRefreshToken();
+    mockResend = MockResendConfirmationLink();
     mockAuthRepo = MockAuthRepository();
     mockLocal = MockAuthLocalDataSource();
     mockAnalytics = MockAnalyticsService();
@@ -65,7 +67,7 @@ void main() {
     return buildContainer(ProviderContainer(overrides: [
       signInProvider.overrideWithValue(mockSignIn),
       logoutProvider.overrideWithValue(mockLogout),
-      refreshTokenProvider.overrideWithValue(mockRefreshToken),
+      resendConfirmationLinkProvider.overrideWithValue(mockResend),
       authRepositoryProvider.overrideWithValue(mockAuthRepo),
       authLocalDataSourceProvider.overrideWithValue(mockLocal),
       analyticsServiceProvider.overrideWithValue(mockAnalytics),
@@ -83,7 +85,9 @@ void main() {
       when(() => mockAuthRepo.getUserRole(any()))
           .thenAnswer((_) async => const Right('worker'));
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, true);
@@ -100,7 +104,9 @@ void main() {
       when(() => mockLogout.call(any()))
           .thenAnswer((_) async => const Right(null));
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, false);
@@ -115,7 +121,9 @@ void main() {
       when(() => mockAuthRepo.getUserRole(any()))
           .thenAnswer((_) async => const Left(ServerFailure(message: 'role error')));
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, true);
@@ -123,29 +131,88 @@ void main() {
 
     test('sets error and stays unauthenticated on signIn failure', () async {
       final container = buildTestContainer();
-      when(() => mockSignIn.call(any()))
-          .thenAnswer((_) async => const Left(ServerFailure(message: 'OIDC error')));
+      when(() => mockSignIn.call(any())).thenAnswer(
+        (_) async => const Left(ServerFailure(message: 'Invalid credentials')),
+      );
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
       expect(state.isAuthenticated, false);
-      expect(state.error, 'OIDC error');
+      expect(state.error, 'Invalid credentials');
       expect(state.isLoading, false);
     });
 
-    test('clears error but does not set error on user cancellation', () async {
+    test('exposes the failure code in errorCode', () async {
       final container = buildTestContainer();
       when(() => mockSignIn.call(any())).thenAnswer(
-        (_) async => const Left(UserCancelledFailure(message: 'User cancelled')),
+        (_) async => const Left(
+          ServerFailure(
+            message: 'Email not confirmed',
+            statusCode: 400,
+            code: 'email_not_confirmed',
+          ),
+        ),
       );
 
-      await container.read(authViewModelProvider.notifier).signIn();
+      await container
+          .read(authViewModelProvider.notifier)
+          .signIn(email: 'test@example.com', password: 'password123');
 
       final state = container.read(authViewModelProvider);
-      expect(state.isAuthenticated, false);
-      expect(state.error, isNull);
-      expect(state.isLoading, false);
+      expect(state.errorCode, 'email_not_confirmed');
+      expect(state.error, 'Email not confirmed');
+    });
+  });
+
+  // ── resendConfirmationLink ─────────────────────────────────────────────────
+
+  group('resendConfirmationLink', () {
+    test('pulses justConfirmationSent on success', () async {
+      final container = buildTestContainer();
+      when(() => mockResend.call(any()))
+          .thenAnswer((_) async => const Right(null));
+
+      var pulsed = false;
+      container.listen(authViewModelProvider, (previous, next) {
+        if (previous?.justConfirmationSent != true &&
+            next.justConfirmationSent) {
+          pulsed = true;
+        }
+      });
+
+      await container
+          .read(authViewModelProvider.notifier)
+          .resendConfirmationLink('test@example.com');
+
+      expect(pulsed, true);
+      expect(
+        container.read(authViewModelProvider).justConfirmationSent,
+        false,
+      );
+      verify(() => mockResend.call(any())).called(1);
+    });
+
+    test('pulses error on failure', () async {
+      final container = buildTestContainer();
+      when(() => mockResend.call(any())).thenAnswer(
+        (_) async => const Left(ServerFailure(message: 'send failed')),
+      );
+
+      var errorSeen = false;
+      container.listen(authViewModelProvider, (previous, next) {
+        if (next.error == 'send failed') {
+          errorSeen = true;
+        }
+      });
+
+      await container
+          .read(authViewModelProvider.notifier)
+          .resendConfirmationLink('test@example.com');
+
+      expect(errorSeen, true);
     });
   });
 
@@ -176,22 +243,6 @@ void main() {
       final state = container.read(authViewModelProvider);
       expect(state.error, 'logout failed');
       expect(state.isLoading, false);
-    });
-  });
-
-  // ── tryAutoLogin ───────────────────────────────────────────────────────────
-
-  group('tryAutoLogin', () {
-    test('does nothing when no token in state', () async {
-      final container = buildTestContainer();
-
-      // Let build() complete
-      await Future<void>.delayed(Duration.zero);
-
-      await container.read(authViewModelProvider.notifier).tryAutoLogin();
-
-      // No refresh call expected
-      verifyNever(() => mockRefreshToken.call(any()));
     });
   });
 

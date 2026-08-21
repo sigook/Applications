@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/auth_token.dart';
-import '../../domain/usecases/refresh_token.dart';
+import '../../domain/usecases/resend_confirmation_link.dart';
+import '../../domain/usecases/sign_in.dart';
 import '../providers/auth_providers.dart';
 
 part 'auth_viewmodel.freezed.dart';
@@ -15,8 +18,10 @@ sealed class AuthState with _$AuthState {
   const factory AuthState({
     @Default(false) bool isLoading,
     String? error,
+    String? errorCode,
     AuthToken? token,
     @Default(false) bool isAuthenticated,
+    @Default(false) bool justConfirmationSent,
   }) = _AuthState;
 }
 
@@ -51,8 +56,8 @@ class AuthViewModel extends _$AuthViewModel {
         );
         final cachedToken = cachedTokenModel.toEntity();
 
-        // Simply load the token into state
-        // Validation will be done by the backend via validateToken API
+        // Simply load the token into state; the splash screen validates the
+        // session against /connect/userinfo before entering the app
         state = state.copyWith(token: cachedToken, isAuthenticated: true);
         debugPrint('🔑 [AUTH] Token loaded from cache and set in state');
       } else {
@@ -76,29 +81,30 @@ class AuthViewModel extends _$AuthViewModel {
     }
   }
 
-  Future<void> signIn() async {
-    state = state.copyWith(isLoading: true, error: null);
+  Future<void> signIn({required String email, required String password}) async {
+    state = state.copyWith(isLoading: true, error: null, errorCode: null);
 
-    final signIn = ref.read(signInProvider);
-    final result = await signIn(NoParams());
+    final signInUseCase = ref.read(signInProvider);
+    final result = await signInUseCase(
+      SignInParams(email: email, password: password),
+    );
 
-    // Guard: provider may have been disposed while OAuth browser was open
     if (!ref.mounted) return;
 
     await result.fold(
       (failure) async {
-        if (failure.message.contains('User cancelled')) {
-          state = state.copyWith(isLoading: false, error: null);
-        } else {
-          state = state.copyWith(isLoading: false, error: failure.message);
-          ref.read(analyticsServiceProvider).logEvent(
-            name: 'sign_in_failed',
-            parameters: {
-              'error': failure.message,
-              'timestamp': DateTime.now().toIso8601String(),
-            },
-          );
-        }
+        state = state.copyWith(
+          isLoading: false,
+          error: failure.message,
+          errorCode: failure is ServerFailure ? failure.code : null,
+        );
+        ref.read(analyticsServiceProvider).logEvent(
+          name: 'sign_in_failed',
+          parameters: {
+            'error': failure.message,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        );
       },
       (token) async {
         debugPrint(
@@ -174,41 +180,21 @@ class AuthViewModel extends _$AuthViewModel {
     );
   }
 
-  Future<void> tryAutoLogin() async {
-    if (state.token != null && state.token!.refreshToken != null) {
-      await refreshAuthToken();
-    }
-  }
+  Future<void> resendConfirmationLink(String email) async {
+    final useCase = ref.read(resendConfirmationLinkProvider);
+    final result = await useCase(ResendConfirmationLinkParams(email: email));
 
-  Future<void> refreshAuthToken() async {
-    final currentToken = state.token;
-    if (currentToken?.refreshToken == null) {
-      state = state.copyWith(
-        error: 'No refresh token available',
-        isAuthenticated: false,
-      );
-      return;
-    }
-
-    state = state.copyWith(isLoading: true, error: null);
-
-    final refreshToken = ref.read(refreshTokenProvider);
-    final result = await refreshToken(
-      RefreshTokenParams(refreshToken: currentToken!.refreshToken!),
-    );
+    if (!ref.mounted) return;
 
     result.fold(
-      (failure) => state = state.copyWith(
-        isLoading: false,
-        error: failure.message,
-        isAuthenticated: false,
-      ),
-      (token) => state = state.copyWith(
-        isLoading: false,
-        token: token,
-        isAuthenticated: true,
-        error: null,
-      ),
+      (failure) {
+        state = state.copyWith(error: failure.message, errorCode: null);
+        state = state.copyWith(error: null);
+      },
+      (_) {
+        state = state.copyWith(justConfirmationSent: true);
+        state = state.copyWith(justConfirmationSent: false);
+      },
     );
   }
 
@@ -235,12 +221,22 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   void _trackLogin(AuthToken token) {
-    final subject = token.userInfo?.sub ?? token.accessToken ?? '';
+    final subject =
+        token.userInfo?.sub ?? _subjectFromAccessToken(token.accessToken);
     if (subject.isNotEmpty) {
       ref.read(analyticsServiceProvider).setUserId(subject);
       ref.read(crashReportingServiceProvider).setUserId(subject);
     }
-    ref.read(analyticsServiceProvider).logLogin(method: 'oidc');
+    ref.read(analyticsServiceProvider).logLogin(method: 'password');
+  }
+
+  String _subjectFromAccessToken(String? accessToken) {
+    if (accessToken == null || accessToken.isEmpty) return '';
+    try {
+      return JwtDecoder.decode(accessToken)['sub']?.toString() ?? '';
+    } catch (_) {
+      return '';
+    }
   }
 
   Future<void> logout() async {

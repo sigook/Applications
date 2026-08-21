@@ -67,6 +67,11 @@
 	<string>We need your location to record your timesheet punch in/out</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We need your location to record your timesheet punch in/out</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>TimesheetPunch</key>
+		<string>Your precise location is needed to verify you are at the job site when clocking in or out.</string>
+	</dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 </dict>

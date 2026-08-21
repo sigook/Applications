@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/auth_error_codes.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../registration/domain/entities/value_objects/email.dart';
+import '../../../registration/presentation/widgets/custom_text_field.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class SignInPage extends ConsumerStatefulWidget {
@@ -13,13 +16,48 @@ class SignInPage extends ConsumerStatefulWidget {
 }
 
 class _SignInPageState extends ConsumerState<SignInPage> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _emailError;
+  String? _passwordError;
+  bool _obscurePassword = true;
+  String _lastAttemptedEmail = '';
+
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  bool _validate() {
+    final email = Email(_emailController.text.trim());
+    setState(() {
+      _emailError = email.errorMessage;
+      _passwordError = _passwordController.text.isEmpty
+          ? 'Password is required'
+          : null;
+    });
+    return _emailError == null && _passwordError == null;
   }
 
   Future<void> _signIn() async {
-    await ref.read(authViewModelProvider.notifier).signIn();
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (!_validate()) return;
+
+    _lastAttemptedEmail = _emailController.text.trim();
+    await ref.read(authViewModelProvider.notifier).signIn(
+          email: _lastAttemptedEmail,
+          password: _passwordController.text,
+        );
+  }
+
+  void _goBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.welcome);
+    }
   }
 
   @override
@@ -29,16 +67,41 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     final authState = ref.watch(authViewModelProvider);
 
     ref.listen(authViewModelProvider, (previous, next) {
-      if (next.error != null) {
+      if (next.error != null && previous?.error != next.error) {
+        final isEmailNotConfirmed =
+            next.errorCode == AuthErrorCodes.emailNotConfirmed;
+        final notifier = ref.read(authViewModelProvider.notifier);
+        final attemptedEmail = _lastAttemptedEmail;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
             backgroundColor: AppTheme.errorRed,
+            duration: isEmailNotConfirmed
+                ? const Duration(seconds: 8)
+                : const Duration(seconds: 4),
+            action: isEmailNotConfirmed
+                ? SnackBarAction(
+                    label: 'Resend',
+                    textColor: Colors.white,
+                    onPressed: () =>
+                        notifier.resendConfirmationLink(attemptedEmail),
+                  )
+                : null,
           ),
         );
       }
 
-      if (next.isAuthenticated &&
+      if (previous?.justConfirmationSent != true && next.justConfirmationSent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Confirmation email sent. Check your inbox.'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+      }
+
+      if (previous?.isAuthenticated != true &&
+          next.isAuthenticated &&
           next.token != null &&
           next.token!.accessToken != null &&
           next.token!.accessToken!.isNotEmpty) {
@@ -60,7 +123,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
             Center(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 24 : 48,
+                  horizontal: isMobile ? 16 : 48,
                   vertical: 32,
                 ),
                 child: Container(
@@ -68,124 +131,120 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 40),
-
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryBlue,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.primaryBlue.withValues(
-                                alpha: 0.3,
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Image.asset(
+                          'assets/images/logo/sigook-logo.png',
+                          width: 200,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Card(
+                        elevation: 0,
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome Back',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.lock_outline,
-                          size: 48,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      Text(
-                        'Welcome Back',
-                        style: TextStyle(
-                          fontSize: isMobile ? 28 : 32,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Sign in with your Sigook account',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: AppTheme.textLight,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 48),
-
-                      SizedBox(
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: authState.isLoading ? null : _signIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryBlue,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 3,
-                            shadowColor: AppTheme.primaryBlue.withValues(
-                              alpha: 0.4,
-                            ),
-                          ),
-                          icon: authState.isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Sign in to your Sigook account',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(color: Colors.grey.shade600),
+                              ),
+                              const SizedBox(height: 32),
+                              CustomTextField(
+                                label: 'Email',
+                                hint: 'example@email.com',
+                                controller: _emailController,
+                                errorText: _emailError,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                onChanged: (_) {
+                                  if (_emailError != null) {
+                                    setState(() => _emailError = null);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              CustomTextField(
+                                label: 'Password',
+                                hint: 'Enter your password',
+                                controller: _passwordController,
+                                errorText: _passwordError,
+                                obscureText: _obscurePassword,
+                                textInputAction: TextInputAction.done,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
                                   ),
-                                )
-                              : const Icon(Icons.login),
-                          label: Text(
-                            authState.isLoading
-                                ? 'Signing In...'
-                                : 'Sign In with Sigook',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
+                                ),
+                                onChanged: (_) {
+                                  if (_passwordError != null) {
+                                    setState(() => _passwordError = null);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    context.push(AppRoutes.forgotPassword);
+                                  },
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: const Text('Forgot password?'),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      authState.isLoading ? null : _signIn,
+                                  child: authState.isLoading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                          ),
+                                        )
+                                      : const Text('Sign In'),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                       const SizedBox(height: 24),
-
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.blue.shade200,
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: AppTheme.primaryBlue,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'You will be redirected to a secure sign-in page',
-                                style: TextStyle(
-                                  color: AppTheme.textDark,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
                       Row(
                         children: [
                           Expanded(
@@ -212,8 +271,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -236,7 +294,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                             child: const Text(
                               'Sign Up',
                               style: TextStyle(
-                                color: AppTheme.primaryBlue,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -253,7 +310,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
               top: 16,
               left: 16,
               child: IconButton(
-                onPressed: () => context.go(AppRoutes.welcome),
+                onPressed: _goBack,
                 icon: const Icon(Icons.arrow_back),
                 style: IconButton.styleFrom(backgroundColor: Colors.white),
               ),

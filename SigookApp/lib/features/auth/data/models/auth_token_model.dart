@@ -45,6 +45,28 @@ abstract class AuthTokenModel with _$AuthTokenModel {
     );
   }
 
+  factory AuthTokenModel.fromTokenResponse(Map<String, dynamic> json) {
+    DateTime? expiration;
+    final expiresIn = json['expires_in'];
+    if (expiresIn is num) {
+      expiration = DateTime.now().add(Duration(seconds: expiresIn.toInt()));
+    }
+
+    List<String>? scopes;
+    final scope = json['scope'];
+    if (scope is String && scope.isNotEmpty) {
+      scopes = scope.split(' ');
+    }
+
+    return AuthTokenModel(
+      accessToken: json['access_token'] as String?,
+      refreshToken: json['refresh_token'] as String?,
+      expirationDateTime: expiration,
+      tokenType: json['token_type'] as String? ?? 'Bearer',
+      scopes: scopes,
+    );
+  }
+
   bool get isValid =>
       (accessToken != null && accessToken!.isNotEmpty) &&
       (expirationDateTime != null);
