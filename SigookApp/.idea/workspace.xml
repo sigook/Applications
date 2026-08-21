@@ -5,7 +5,64 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6b40d5e8-4a24-454e-b6d5-bfa77ee6bea6" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/i18n/error_messages_en.json" beforeDir="false" afterPath="$PROJECT_DIR$/assets/i18n/error_messages_en.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/constants/error_messages.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/constants/error_messages.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/error/exceptions.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/error/exceptions.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/error/failures.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/error/failures.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/network/api_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/network/api_client.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/providers/analytics_providers.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/providers/analytics_providers.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/routing/app_router.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/routing/app_router.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/data/datasources/auth_remote_datasource.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/data/datasources/auth_remote_datasource.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/data/models/auth_token_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/data/models/auth_token_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/data/repositories/auth_repository_impl.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/data/repositories/auth_repository_impl.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/domain/repositories/auth_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/domain/repositories/auth_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/domain/usecases/refresh_token.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/domain/usecases/validate_token.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/pages/sign_in_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/presentation/pages/sign_in_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/providers/auth_providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/presentation/providers/auth_providers.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/providers/auth_providers.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/presentation/providers/auth_providers.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/comments/data/models/worker_comment_model.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/comments/data/models/worker_comment_model.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/comments/data/models/worker_comment_model.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/comments/data/models/worker_comment_model.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/account_settings/presentation/viewmodels/account_settings_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/account_settings/presentation/viewmodels/account_settings_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/account_settings/presentation/viewmodels/account_settings_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/account_settings/presentation/viewmodels/account_settings_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/certificates/presentation/viewmodels/certificates_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/certificates/presentation/viewmodels/certificates_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/certificates/presentation/viewmodels/certificates_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/certificates/presentation/viewmodels/certificates_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/contact_info/presentation/viewmodels/contact_info_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/contact_info/presentation/viewmodels/contact_info_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/contact_info/presentation/viewmodels/contact_info_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/contact_info/presentation/viewmodels/contact_info_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/documents/presentation/viewmodels/documents_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/documents/presentation/viewmodels/documents_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/documents/presentation/viewmodels/documents_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/documents/presentation/viewmodels/documents_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/emergency/presentation/viewmodels/emergency_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/emergency/presentation/viewmodels/emergency_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/emergency/presentation/viewmodels/emergency_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/emergency/presentation/viewmodels/emergency_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/job_experience/presentation/viewmodels/job_experience_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/job_experience/presentation/viewmodels/job_experience_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/job_experience/presentation/viewmodels/job_experience_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/job_experience/presentation/viewmodels/job_experience_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/licenses/presentation/viewmodels/licenses_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/licenses/presentation/viewmodels/licenses_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/licenses/presentation/viewmodels/licenses_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/licenses/presentation/viewmodels/licenses_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/personal_details/presentation/viewmodels/personal_details_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/personal_details/presentation/viewmodels/personal_details_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/personal_details/presentation/viewmodels/personal_details_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/personal_details/presentation/viewmodels/personal_details_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/preferences/presentation/viewmodels/preferences_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/preferences/presentation/viewmodels/preferences_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/preferences/presentation/viewmodels/preferences_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/preferences/presentation/viewmodels/preferences_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/profile_image/presentation/viewmodels/profile_image_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/profile_image/presentation/viewmodels/profile_image_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/profile_image/presentation/viewmodels/profile_image_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/profile_image/presentation/viewmodels/profile_image_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/resume/presentation/viewmodels/resume_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/resume/presentation/viewmodels/resume_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/resume/presentation/viewmodels/resume_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/resume/presentation/viewmodels/resume_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/sin/presentation/viewmodels/sin_viewmodel.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/sin/presentation/viewmodels/sin_viewmodel.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/sin/presentation/viewmodels/sin_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/sin/presentation/viewmodels/sin_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/registration/presentation/viewmodels/registration_viewmodel.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/registration/presentation/viewmodels/registration_viewmodel.g.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/registration/presentation/widgets/custom_text_field.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/registration/presentation/widgets/custom_text_field.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/welcome/presentation/pages/welcome_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/welcome/presentation/pages/welcome_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sigook_app_flutter.iml" beforeDir="false" afterPath="$PROJECT_DIR$/sigook_app_flutter.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/features/auth/data/datasources/auth_remote_datasource_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/features/auth/data/datasources/auth_remote_datasource_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/features/auth/data/models/auth_token_model_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/features/auth/data/models/auth_token_model_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/features/auth/data/repositories/auth_repository_impl_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/features/auth/data/repositories/auth_repository_impl_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/features/auth/domain/usecases/refresh_token_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/features/auth/domain/usecases/validate_token_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/features/auth/presentation/viewmodels/auth_viewmodel_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/features/auth/presentation/viewmodels/auth_viewmodel_test.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +107,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Flutter.main.dart.executor": "Run",
     "Flutter.staging.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
@@ -66,7 +124,13 @@
     "show.migrate.to.gradle.popup": "false"
   }
 }]]></component>
-  <component name="RunManager" selected="Flutter.staging" />
+  <component name="RunManager" selected="Flutter.staging">
+    <list>
+      <item itemvalue="Flutter.main.dart" />
+      <item itemvalue="Flutter.staging" />
+      <item itemvalue="Flutter.staging (profile)" />
+    </list>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="6b40d5e8-4a24-454e-b6d5-bfa77ee6bea6" name="Changes" comment="" />

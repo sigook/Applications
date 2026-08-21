@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/auth_error_codes.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/buttons/action_button.dart';
-import '../../../../core/widgets/inputs/custom_text_field.dart';
 import '../../../registration/domain/entities/value_objects/email.dart';
+import '../../../registration/presentation/widgets/custom_text_field.dart';
 import '../viewmodels/auth_viewmodel.dart';
 
 class SignInPage extends ConsumerStatefulWidget {
@@ -21,6 +21,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
   String? _emailError;
   String? _passwordError;
   bool _obscurePassword = true;
+  String _lastAttemptedEmail = '';
 
   @override
   void dispose() {
@@ -44,8 +45,9 @@ class _SignInPageState extends ConsumerState<SignInPage> {
     FocusManager.instance.primaryFocus?.unfocus();
     if (!_validate()) return;
 
+    _lastAttemptedEmail = _emailController.text.trim();
     await ref.read(authViewModelProvider.notifier).signIn(
-          email: _emailController.text.trim(),
+          email: _lastAttemptedEmail,
           password: _passwordController.text,
         );
   }
@@ -66,10 +68,34 @@ class _SignInPageState extends ConsumerState<SignInPage> {
 
     ref.listen(authViewModelProvider, (previous, next) {
       if (next.error != null && previous?.error != next.error) {
+        final isEmailNotConfirmed =
+            next.errorCode == AuthErrorCodes.emailNotConfirmed;
+        final notifier = ref.read(authViewModelProvider.notifier);
+        final attemptedEmail = _lastAttemptedEmail;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
             backgroundColor: AppTheme.errorRed,
+            duration: isEmailNotConfirmed
+                ? const Duration(seconds: 8)
+                : const Duration(seconds: 4),
+            action: isEmailNotConfirmed
+                ? SnackBarAction(
+                    label: 'Resend',
+                    textColor: Colors.white,
+                    onPressed: () =>
+                        notifier.resendConfirmationLink(attemptedEmail),
+                  )
+                : null,
+          ),
+        );
+      }
+
+      if (previous?.justConfirmationSent != true && next.justConfirmationSent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Confirmation email sent. Check your inbox.'),
+            backgroundColor: AppTheme.successGreen,
           ),
         );
       }
@@ -97,7 +123,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
             Center(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 24 : 48,
+                  horizontal: isMobile ? 16 : 48,
                   vertical: 32,
                 ),
                 child: Container(
@@ -105,88 +131,120 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 40),
-
+                      const SizedBox(height: 24),
                       Center(
                         child: Image.asset(
                           'assets/images/logo/sigook-logo.png',
-                          width: 220,
+                          width: 200,
                         ),
                       ),
-                      const SizedBox(height: 32),
-
-                      Text(
-                        'Welcome Back',
-                        style: TextStyle(
-                          fontSize: isMobile ? 28 : 32,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
+                      const SizedBox(height: 24),
+                      Card(
+                        elevation: 0,
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Sign in to your Sigook account',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: AppTheme.textLight,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 40),
-
-                      CustomTextField(
-                        label: 'Email',
-                        hint: 'example@email.com',
-                        controller: _emailController,
-                        errorText: _emailError,
-                        prefixIcon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        onChanged: (_) {
-                          if (_emailError != null) {
-                            setState(() => _emailError = null);
-                          }
-                        },
-                      ),
-                      SizedBox(height: AppTheme.spacing16),
-
-                      CustomTextField(
-                        label: 'Password',
-                        hint: 'Enter your password',
-                        controller: _passwordController,
-                        errorText: _passwordError,
-                        obscureText: _obscurePassword,
-                        prefixIcon: Icons.lock_outline,
-                        textInputAction: TextInputAction.done,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: AppTheme.textLight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome Back',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Sign in to your Sigook account',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(color: Colors.grey.shade600),
+                              ),
+                              const SizedBox(height: 32),
+                              CustomTextField(
+                                label: 'Email',
+                                hint: 'example@email.com',
+                                controller: _emailController,
+                                errorText: _emailError,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                onChanged: (_) {
+                                  if (_emailError != null) {
+                                    setState(() => _emailError = null);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              CustomTextField(
+                                label: 'Password',
+                                hint: 'Enter your password',
+                                controller: _passwordController,
+                                errorText: _passwordError,
+                                obscureText: _obscurePassword,
+                                textInputAction: TextInputAction.done,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
+                                ),
+                                onChanged: (_) {
+                                  if (_passwordError != null) {
+                                    setState(() => _passwordError = null);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    context.push(AppRoutes.forgotPassword);
+                                  },
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: const Text('Forgot password?'),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      authState.isLoading ? null : _signIn,
+                                  child: authState.isLoading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                          ),
+                                        )
+                                      : const Text('Sign In'),
+                                ),
+                              ),
+                            ],
                           ),
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
                         ),
-                        onChanged: (_) {
-                          if (_passwordError != null) {
-                            setState(() => _passwordError = null);
-                          }
-                        },
                       ),
-                      SizedBox(height: AppTheme.spacing24),
-
-                      ActionButton(
-                        label: 'Sign In',
-                        isLoading: authState.isLoading,
-                        onPressed: _signIn,
-                        backgroundColor: AppTheme.primaryBlue,
-                        foregroundColor: Colors.white,
-                      ),
-                      const SizedBox(height: 32),
-
+                      const SizedBox(height: 24),
                       Row(
                         children: [
                           Expanded(
@@ -213,8 +271,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -237,7 +294,6 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                             child: const Text(
                               'Sign Up',
                               style: TextStyle(
-                                color: AppTheme.primaryBlue,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),

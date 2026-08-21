@@ -30,7 +30,13 @@ class AuthRepositoryImpl implements AuthRepository {
       await local.cacheToken(tokenModel);
       return Right(tokenModel.toEntity());
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+          code: e.code,
+        ),
+      );
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     }
@@ -53,20 +59,67 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> validateToken(String accessToken) async {
+  Future<Either<Failure, void>> requestPasswordResetCode(String email) async {
     try {
-      if (!await networkInfo.isConnected) {
-        return Left(NetworkFailure(message: 'No internet connection'));
-      }
-
-      final isValid = await remote.validateToken(accessToken);
-      return Right(isValid);
+      if (!await networkInfo.isConnected) return Left(NetworkFailure());
+      await remote.requestPasswordResetCode(email);
+      return Right(null);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+          code: e.code,
+        ),
+      );
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
-    } catch (e) {
-      return Left(ServerFailure(message: 'Validation error: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      if (!await networkInfo.isConnected) return Left(NetworkFailure());
+      await remote.resetPassword(
+        email: email,
+        code: code,
+        newPassword: newPassword,
+      );
+      return Right(null);
+    } on ServerException catch (e) {
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+          code: e.code,
+        ),
+      );
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> resendConfirmationLink(String email) async {
+    try {
+      if (!await networkInfo.isConnected) return Left(NetworkFailure());
+      await remote.resendConfirmationLink(email);
+      return Right(null);
+    } on ServerException catch (e) {
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+          code: e.code,
+        ),
+      );
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
     }
   }
 

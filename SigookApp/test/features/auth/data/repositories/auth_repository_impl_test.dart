@@ -88,14 +88,17 @@ void main() {
       verify(() => mockLocal.cacheToken(_tTokenModel)).called(1);
     });
 
-    test('returns ServerFailure when datasource throws ServerException',
-        () async {
+    test('returns ServerFailure preserving statusCode and code', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
       when(() => mockRemote.signIn(
             email: any(named: 'email'),
             password: any(named: 'password'),
           )).thenThrow(
-        ServerException(message: 'Invalid credentials', statusCode: 401),
+        ServerException(
+          message: 'Invalid credentials',
+          statusCode: 400,
+          code: 'invalid_credentials',
+        ),
       );
 
       final result = await repository.signIn(
@@ -105,7 +108,12 @@ void main() {
 
       expect(result.isLeft(), true);
       result.fold(
-        (f) => expect(f, isA<ServerFailure>()),
+        (f) {
+          expect(f, isA<ServerFailure>());
+          final failure = f as ServerFailure;
+          expect(failure.statusCode, 400);
+          expect(failure.code, 'invalid_credentials');
+        },
         (_) => fail('Expected Left'),
       );
     });
@@ -137,25 +145,117 @@ void main() {
     });
   });
 
-  // ── validateToken ─────────────────────────────────────────────────────────
+  // ── password reset ───────────────────────────────────────────────────────
 
-  group('validateToken', () {
-    const tAccessToken = 'access-token-abc';
+  group('requestPasswordResetCode', () {
+    const tEmail = 'test@example.com';
 
-    test('returns Right(true) when token is valid', () async {
+    test('returns Right(null) on success', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
-      when(() => mockRemote.validateToken(tAccessToken))
-          .thenAnswer((_) async => true);
+      when(() => mockRemote.requestPasswordResetCode(tEmail))
+          .thenAnswer((_) async {});
 
-      final result = await repository.validateToken(tAccessToken);
+      final result = await repository.requestPasswordResetCode(tEmail);
 
-      expect(result, const Right(true));
+      expect(result.isRight(), true);
+      verify(() => mockRemote.requestPasswordResetCode(tEmail)).called(1);
     });
 
     test('returns NetworkFailure when offline', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => false);
 
-      final result = await repository.validateToken(tAccessToken);
+      final result = await repository.requestPasswordResetCode(tEmail);
+
+      expect(result.isLeft(), true);
+      result.fold((f) => expect(f, isA<NetworkFailure>()), (_) => fail(''));
+      verifyNever(() => mockRemote.requestPasswordResetCode(any()));
+    });
+  });
+
+  group('resetPassword', () {
+    const tEmail = 'test@example.com';
+
+    test('returns Right(null) on success', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockRemote.resetPassword(
+            email: any(named: 'email'),
+            code: any(named: 'code'),
+            newPassword: any(named: 'newPassword'),
+          )).thenAnswer((_) async {});
+
+      final result = await repository.resetPassword(
+        email: tEmail,
+        code: '123456',
+        newPassword: 'newPass1',
+      );
+
+      expect(result.isRight(), true);
+      verify(() => mockRemote.resetPassword(
+            email: tEmail,
+            code: '123456',
+            newPassword: 'newPass1',
+          )).called(1);
+    });
+
+    test('returns ServerFailure preserving code', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockRemote.resetPassword(
+            email: any(named: 'email'),
+            code: any(named: 'code'),
+            newPassword: any(named: 'newPassword'),
+          )).thenThrow(
+        ServerException(
+          message: 'Invalid code',
+          statusCode: 400,
+          code: 'invalid_code',
+        ),
+      );
+
+      final result = await repository.resetPassword(
+        email: tEmail,
+        code: '000000',
+        newPassword: 'newPass1',
+      );
+
+      expect(result.isLeft(), true);
+      result.fold(
+        (f) => expect((f as ServerFailure).code, 'invalid_code'),
+        (_) => fail('Expected Left'),
+      );
+    });
+
+    test('returns NetworkFailure when offline', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => false);
+
+      final result = await repository.resetPassword(
+        email: tEmail,
+        code: '123456',
+        newPassword: 'newPass1',
+      );
+
+      expect(result.isLeft(), true);
+      result.fold((f) => expect(f, isA<NetworkFailure>()), (_) => fail(''));
+    });
+  });
+
+  group('resendConfirmationLink', () {
+    const tEmail = 'test@example.com';
+
+    test('returns Right(null) on success', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockRemote.resendConfirmationLink(tEmail))
+          .thenAnswer((_) async {});
+
+      final result = await repository.resendConfirmationLink(tEmail);
+
+      expect(result.isRight(), true);
+      verify(() => mockRemote.resendConfirmationLink(tEmail)).called(1);
+    });
+
+    test('returns NetworkFailure when offline', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => false);
+
+      final result = await repository.resendConfirmationLink(tEmail);
 
       expect(result.isLeft(), true);
       result.fold((f) => expect(f, isA<NetworkFailure>()), (_) => fail(''));

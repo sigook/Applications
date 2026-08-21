@@ -18,7 +18,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   late AnimationController _controller;
   late AnimationController _exitController;
   late Animation<double> _panelsFade;
-  late Animation<double> _taglineFade;
   late Animation<double> _buttonsFade;
   late Animation<Offset> _buttonsSlide;
   late Animation<Offset> _panelsSlide;
@@ -47,14 +46,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
-      ),
-    );
-
-    // Tagline appears after a short delay
-    _taglineFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.15, 0.55, curve: Curves.easeOut),
       ),
     );
 

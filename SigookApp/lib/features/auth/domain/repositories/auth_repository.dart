@@ -8,8 +8,14 @@ abstract class AuthRepository {
     required String password,
   });
   Future<Either<Failure, AuthToken>> refreshToken(String refreshToken);
-  Future<Either<Failure, bool>> validateToken(String accessToken);
   Future<Either<Failure, String>> getUserRole(String accessToken);
   Future<Either<Failure, void>> logout();
   Future<Either<Failure, void>> deactivateAccount(String accessToken);
+  Future<Either<Failure, void>> requestPasswordResetCode(String email);
+  Future<Either<Failure, void>> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  });
+  Future<Either<Failure, void>> resendConfirmationLink(String email);
 }

@@ -45,44 +45,25 @@ abstract class AuthTokenModel with _$AuthTokenModel {
     );
   }
 
-  factory AuthTokenModel.fromLoginResponse(Map<String, dynamic> json) {
-    final idToken = json['idToken'] as String?;
-    UserInfoModel? userInfo;
-    if (idToken != null && idToken.isNotEmpty) {
-      try {
-        final decodedToken = JwtDecoder.decode(idToken);
-        userInfo = UserInfoModel.fromIdTokenClaims(decodedToken);
-      } catch (e) {
-        userInfo = null;
-      }
-    }
-
+  factory AuthTokenModel.fromTokenResponse(Map<String, dynamic> json) {
     DateTime? expiration;
-    final expirationRaw = json['expirationDateTime'];
-    if (expirationRaw is String) {
-      expiration = DateTime.tryParse(expirationRaw);
-    }
-    final expiresIn = json['expiresIn'];
-    if (expiration == null && expiresIn is num) {
+    final expiresIn = json['expires_in'];
+    if (expiresIn is num) {
       expiration = DateTime.now().add(Duration(seconds: expiresIn.toInt()));
     }
 
     List<String>? scopes;
-    final scopesRaw = json['scopes'] ?? json['scope'];
-    if (scopesRaw is List) {
-      scopes = scopesRaw.map((e) => e.toString()).toList();
-    } else if (scopesRaw is String && scopesRaw.isNotEmpty) {
-      scopes = scopesRaw.split(' ');
+    final scope = json['scope'];
+    if (scope is String && scope.isNotEmpty) {
+      scopes = scope.split(' ');
     }
 
     return AuthTokenModel(
-      accessToken: json['accessToken'] as String?,
-      idToken: idToken,
-      refreshToken: json['refreshToken'] as String?,
+      accessToken: json['access_token'] as String?,
+      refreshToken: json['refresh_token'] as String?,
       expirationDateTime: expiration,
-      tokenType: json['tokenType'] as String? ?? 'Bearer',
+      tokenType: json['token_type'] as String? ?? 'Bearer',
       scopes: scopes,
-      userInfo: userInfo,
     );
   }
 

@@ -5,6 +5,7 @@ import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/welcome/presentation/pages/welcome_page.dart';
 import '../../features/registration/presentation/pages/registration_screen.dart';
 import '../../features/auth/presentation/pages/sign_in_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
 import '../../features/jobs/presentation/pages/job_page.dart';
 import '../../features/profile/presentation/pages/user_profile_page.dart';
@@ -18,9 +19,9 @@ class AppRoutes {
   static const String splash = '/';
   static const String welcome = '/welcome';
   static const String signIn = '/sign-in';
+  static const String forgotPassword = '/forgot-password';
   static const String registration = '/registration';
   static const String registrationConfirmation = '/registration-confirmation';
-  static const String tokenInfo = '/token-info';
   static const String jobs = '/jobs';
   static const String jobDetails = '/jobs/details';
   static const String profile = '/profile';
@@ -97,6 +98,26 @@ class AppRouter {
           key: state.pageKey,
           name: state.name ?? state.matchedLocation,
           child: const SignInPage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+            var tween = Tween(
+              begin: begin,
+              end: end,
+            ).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
+            return SlideTransition(position: offsetAnimation, child: child);
+          },
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        name: 'forgotPassword',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          name: state.name ?? state.matchedLocation,
+          child: const ForgotPasswordPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;

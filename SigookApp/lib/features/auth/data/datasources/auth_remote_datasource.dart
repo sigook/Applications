@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import '../../../../core/config/environment.dart';
+import '../../../../core/constants/auth_error_codes.dart';
 import '../../../../core/constants/error_messages.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/dio_error_interceptor.dart';
@@ -12,9 +13,15 @@ abstract class AuthRemoteDataSource {
   Future<AuthTokenModel> signIn({required String email, required String password});
   Future<void> logout(String idToken);
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
-  Future<bool> validateToken(String accessToken);
   Future<String> getUserRole(String accessToken);
   Future<void> deactivateAccount(String accessToken);
+  Future<void> requestPasswordResetCode(String email);
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  });
+  Future<void> resendConfirmationLink(String email);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -40,29 +47,142 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
 
     try {
-      // Placeholder endpoint: the backend does not expose it yet. Assumed
-      // contract — 200 { accessToken, idToken, refreshToken, expiresIn,
-      // tokenType, scopes }; 400/401 = invalid credentials.
       final response = await anonymousDio.post(
-        '/Account/Login',
-        data: {'email': email, 'password': password},
+        _authorityUrl('/connect/token'),
+        data: {
+          'grant_type': 'password',
+          'client_id': EnvironmentConfig.clientId,
+          'scope': EnvironmentConfig.scopes.join(' '),
+          'username': email,
+          'password': password,
+        },
+        options: Options(contentType: Headers.formUrlEncodedContentType),
       );
 
-      return AuthTokenModel.fromLoginResponse(
+      return AuthTokenModel.fromTokenResponse(
         Map<String, dynamic>.from(response.data as Map),
       );
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       if (statusCode == 400 || statusCode == 401) {
+        final data = e.response?.data;
+        final code = data is Map ? data['error_description']?.toString() : null;
         throw ServerException(
-          message: ErrorMessages.invalidCredentials,
+          message: ErrorMessages.signInErrorFromCode(code),
           statusCode: statusCode,
+          code: code,
         );
       }
       handleDioException(e);
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Authentication error: ${e.toString()}');
+    }
+  }
+
+  String _extractRole(dynamic roleClaim) {
+    if (roleClaim is String) return roleClaim;
+    if (roleClaim is List) {
+      final roles = roleClaim.map((r) => r.toString()).toList();
+      return roles.firstWhere(
+        (r) => r.toLowerCase() == 'worker',
+        orElse: () => roles.isEmpty ? '' : roles.first,
+      );
+    }
+    return '';
+  }
+
+  String _authorityUrl(String path) {
+    final authority = EnvironmentConfig.authority;
+    final base = authority.endsWith('/')
+        ? authority.substring(0, authority.length - 1)
+        : authority;
+    return '$base$path';
+  }
+
+  @override
+  Future<void> requestPasswordResetCode(String email) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      await anonymousDio.post(
+        _authorityUrl('/Password/forgot'),
+        data: {'email': email},
+      );
+    } on DioException catch (e) {
+      handleDioException(e);
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(
+        message: 'Password reset request error: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      await anonymousDio.post(
+        _authorityUrl('/Password/reset'),
+        data: {'email': email, 'code': code, 'newPassword': newPassword},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final data = e.response?.data;
+        String? errorCode;
+        var messages = const <String>[];
+        if (data is Map) {
+          errorCode = data['error']?.toString();
+          final rawMessages = data['messages'];
+          if (rawMessages is List) {
+            messages = rawMessages.map((m) => m.toString()).toList();
+          }
+        }
+        var message = ErrorMessages.resetErrorFromCode(errorCode);
+        if (errorCode == AuthErrorCodes.passwordPolicy && messages.isNotEmpty) {
+          message = '$message\n${messages.join('\n')}';
+        }
+        throw ServerException(
+          message: message,
+          statusCode: 400,
+          code: errorCode,
+        );
+      }
+      handleDioException(e);
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Password reset error: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> resendConfirmationLink(String email) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      await anonymousDio.post(
+        _authorityUrl('/Account/ResendConfirmationLink'),
+        queryParameters: {'userName': email},
+      );
+    } on DioException catch (e) {
+      handleDioException(e);
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(
+        message: 'Resend confirmation error: ${e.toString()}',
+      );
     }
   }
 
@@ -107,7 +227,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
 
     try {
-      final userInfoUrl = '${EnvironmentConfig.authority}/connect/userinfo';
+      final userInfoUrl = _authorityUrl('/connect/userinfo');
       debugPrint('🔐 [AUTH] Fetching user role from $userInfoUrl');
 
       final response = await dio.get(
@@ -118,7 +238,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       final data = response.data as Map<String, dynamic>;
-      final role = data['role'] as String? ?? '';
+      final role = _extractRole(data['role']);
       debugPrint('🔐 [AUTH] User role: $role');
       return role;
     } on DioException catch (e) {
@@ -147,30 +267,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         message: 'Failed to deactivate account: ${e.message}',
         statusCode: e.response?.statusCode,
       );
-    }
-  }
-
-  @override
-  Future<bool> validateToken(String accessToken) async {
-    if (!(await networkInfo.isConnected)) {
-      throw NetworkException('No internet connection');
-    }
-
-    try {
-      final response = await dio.get(
-        '/auth/validate',
-        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-      );
-
-      return response.statusCode == 200;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
-        return false;
-      }
-      throw ServerException(message: 'Token validation error: ${e.message}');
-    } catch (e) {
-      if (e is ServerException || e is NetworkException) rethrow;
-      throw ServerException(message: 'Token validation error: ${e.toString()}');
     }
   }
 }
