@@ -67,20 +67,49 @@ done
 
 echo "All environment variables are present ✅"
 
-# ---------------------------------------
-# Setup Flutter
-# ---------------------------------------
-echo "Checking Flutter installation..."
+# The app resolves the worker role from /connect/userinfo, which only returns
+# the role claim when the 'roles' scope was requested. Without it sign-in still
+# succeeds but the worker-only gate silently degrades, so fail the build here.
+for REQUIRED_SCOPE in openid profile api1 roles offline_access; do
+  if [[ ",${SCOPES}," != *",${REQUIRED_SCOPE},"* ]]; then
+    echo "❌ ERROR: SCOPES is missing '${REQUIRED_SCOPE}' (current: ${SCOPES})"
+    echo "   Expected: openid,profile,api1,roles,offline_access"
+    exit 1
+  fi
+done
+echo "SCOPES validated ✅"
 
-if ! command -v flutter >/dev/null 2>&1; then
-  echo "Flutter not found – installing stable Flutter SDK..."
-  git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$HOME/flutter"
-  export PATH="$PATH:$HOME/flutter/bin"
+# ---------------------------------------
+# Setup Flutter (pinned - do NOT use 'stable')
+# ---------------------------------------
+# Pinned on purpose: an unpinned 'stable' clone silently upgraded CI to a
+# Flutter release whose engine requires a higher iOS deployment target than
+# the one declared in ios/Podfile, breaking pod install. Bump this only
+# together with the iOS deployment target.
+FLUTTER_VERSION="3.41.3"
+FLUTTER_HOME="$HOME/flutter"
+
+echo "Ensuring Flutter $FLUTTER_VERSION is installed..."
+
+if [ ! -x "$FLUTTER_HOME/bin/flutter" ]; then
+  echo "Installing Flutter $FLUTTER_VERSION..."
+  rm -rf "$FLUTTER_HOME"
+  git clone https://github.com/flutter/flutter.git --depth 1 -b "$FLUTTER_VERSION" "$FLUTTER_HOME"
 else
-  echo "Flutter already available"
+  echo "Reusing existing Flutter at $FLUTTER_HOME"
 fi
 
+# Prepend so the pinned SDK wins over any preinstalled Flutter on the runner
+export PATH="$FLUTTER_HOME/bin:$PATH"
+
 flutter --version
+
+INSTALLED_VERSION="$(flutter --version --machine | grep -o '"frameworkVersion":[^,]*' | head -1 | cut -d'"' -f4)"
+if [ "$INSTALLED_VERSION" != "$FLUTTER_VERSION" ]; then
+  echo "❌ ERROR: expected Flutter $FLUTTER_VERSION but found ${INSTALLED_VERSION:-unknown}"
+  exit 1
+fi
+echo "✅ Flutter $FLUTTER_VERSION confirmed"
 
 # ---------------------------------------
 # Pre-build steps
@@ -105,16 +134,27 @@ echo "✅ Flutter tests passed"
 pod_install_with_retry() {
   local attempt=1
   local max_attempts=3
-  until (cd "$PROJECT_PATH/ios" && pod install) ; do
+  local output
+  while true; do
+    if output="$(cd "$PROJECT_PATH/ios" && pod install 2>&1)"; then
+      echo "$output"
+      echo "✅ pod install succeeded (attempt $attempt)"
+      return 0
+    fi
+    echo "$output"
+    # Dependency-resolution errors are deterministic: retrying only wastes time
+    if ! echo "$output" | grep -qiE "timed out|timeout|502|503|could not connect|network is unreachable|failed to fetch|temporarily unavailable"; then
+      echo "❌ pod install failed with a non-transient error - not retrying"
+      exit 1
+    fi
     if [ $attempt -ge $max_attempts ]; then
       echo "❌ pod install failed after $max_attempts attempts"
       exit 1
     fi
-    echo "⚠️  pod install failed (attempt $attempt/$max_attempts), retrying in 15s..."
+    echo "⚠️  transient pod install failure (attempt $attempt/$max_attempts), retrying in 15s..."
     attempt=$((attempt + 1))
     sleep 15
   done
-  echo "✅ pod install succeeded (attempt $attempt)"
 }
 
 pod_install_with_retry

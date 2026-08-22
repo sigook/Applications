@@ -118,6 +118,68 @@ void main() {
       expect(result!.accuracy, 50);
     });
 
+    test('returns the freshest fix when the best one aged past maxFixAge', () async {
+      stubPositionStream(() async* {
+        yield makePosition(accuracy: 30);
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        yield makePosition(accuracy: 60);
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+        yield makePosition(accuracy: 70);
+      }());
+
+      final result = await service.getFreshPosition(
+        targetAccuracyMeters: 5,
+        maxFixAge: const Duration(milliseconds: 100),
+        overallTimeout: const Duration(milliseconds: 250),
+        fixDroughtTimeout: const Duration(milliseconds: 500),
+      );
+
+      expect(result, isNotNull);
+      expect(result!.accuracy, isNot(30));
+      expect(
+        DateTime.now().difference(result.timestamp),
+        lessThanOrEqualTo(const Duration(milliseconds: 100)),
+      );
+    });
+
+    test('returns null when every fix aged out before the stream ended', () async {
+      final controller = StreamController<Position>();
+      stubPositionStream(controller.stream);
+      controller.add(makePosition(accuracy: 50));
+
+      final result = await service.getFreshPosition(
+        targetAccuracyMeters: 5,
+        maxFixAge: const Duration(milliseconds: 50),
+        overallTimeout: const Duration(seconds: 5),
+        fixDroughtTimeout: const Duration(milliseconds: 200),
+      );
+
+      expect(result, isNull);
+      await controller.close();
+    });
+
+    test('never returns a fix older than maxFixAge on the deadline path', () async {
+      stubPositionStream(
+        Stream.periodic(
+          const Duration(milliseconds: 40),
+          (_) => makePosition(accuracy: 90),
+        ).take(20),
+      );
+
+      final result = await service.getFreshPosition(
+        targetAccuracyMeters: 5,
+        maxFixAge: const Duration(milliseconds: 120),
+        overallTimeout: const Duration(milliseconds: 300),
+        fixDroughtTimeout: const Duration(milliseconds: 500),
+      );
+
+      expect(result, isNotNull);
+      expect(
+        DateTime.now().difference(result!.timestamp),
+        lessThanOrEqualTo(const Duration(milliseconds: 120)),
+      );
+    });
+
     test('returns null on fix drought', () async {
       final controller = StreamController<Position>();
       stubPositionStream(controller.stream);

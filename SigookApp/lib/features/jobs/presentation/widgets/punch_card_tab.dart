@@ -32,6 +32,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
   Timer? _timer;
   ClockType _clockType = ClockType.none;
   bool _isSubmitting = false;
+  int _clockTypeRequestId = 0;
 
   @override
   void initState() {
@@ -47,13 +48,18 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
   }
 
   Future<void> _loadClockType() async {
+    final requestId = ++_clockTypeRequestId;
     final useCase = ref.read(getClockTypeUseCaseProvider);
     final position = await ref
         .read(locationServiceProvider)
         .getCurrentPosition();
 
+    if (!mounted || requestId != _clockTypeRequestId) return;
+
     if (position == null) {
-      if (!mounted) return;
+      setState(() {
+        _clockType = ClockType.none;
+      });
       _showErrorSnackBar(
         'Failed to get location. Please enable location services.',
         action: SnackBarAction(
@@ -74,7 +80,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       ),
     );
 
-    if (!mounted) return;
+    if (!mounted || requestId != _clockTypeRequestId) return;
 
     result.fold(
       (failure) {
@@ -423,23 +429,34 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         _isSubmitting = true;
       });
 
+      var submitPosition = position;
+      if (DateTime.now().difference(submitPosition.timestamp) >
+          const Duration(seconds: 10)) {
+        final refreshed = await locationService.getFreshPosition();
+        if (refreshed != null &&
+            (refreshed.accuracy <= 20.0 ||
+                refreshed.accuracy <= submitPosition.accuracy)) {
+          submitPosition = refreshed;
+        }
+      }
+
+      if (!mounted) return;
       final useCase = ref.read(submitTimesheetUseCaseProvider);
       final result = await useCase(
         SubmitTimesheetParams(
           jobId: widget.jobId,
-          latitude: position.latitude,
-          longitude: position.longitude,
+          latitude: submitPosition.latitude,
+          longitude: submitPosition.longitude,
         ),
       );
 
       if (!mounted) return;
 
-      setState(() {
-        _isSubmitting = false;
-      });
-
-      result.fold(
-        (failure) {
+      await result.fold<Future<void>>(
+        (failure) async {
+          setState(() {
+            _isSubmitting = false;
+          });
           final errorMessage = failure.message.toLowerCase();
 
           // Check for "too far from checkpoint" error
@@ -459,7 +476,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
 
           if (isTooFarFromCheckpoint) {
             final fixAgeMs = DateTime.now()
-                .difference(position.timestamp)
+                .difference(submitPosition.timestamp)
                 .inMilliseconds;
             // Track location error for monitoring
             ref
@@ -469,9 +486,9 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                   parameters: {
                     'job_id': widget.jobId,
                     'error_type': 'too_far_from_checkpoint',
-                    'location_accuracy_m': position.accuracy,
+                    'location_accuracy_m': submitPosition.accuracy,
                     'fix_age_ms': fixAgeMs < 0 ? 0 : fixAgeMs,
-                    'is_mocked': position.isMocked,
+                    'is_mocked': submitPosition.isMocked,
                   },
                 );
             _showTooFarFromCheckpointError();
@@ -491,9 +508,9 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             _showErrorSnackBar(failure.message);
           }
         },
-        (response) {
+        (response) async {
           final fixAgeMs = DateTime.now()
-              .difference(position.timestamp)
+              .difference(submitPosition.timestamp)
               .inMilliseconds;
           ref
               .read(analyticsServiceProvider)
@@ -503,13 +520,17 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                     : 'clock_out_success',
                 parameters: {
                   'job_id': widget.jobId,
-                  'location_accuracy_m': position.accuracy,
+                  'location_accuracy_m': submitPosition.accuracy,
                   'fix_age_ms': fixAgeMs < 0 ? 0 : fixAgeMs,
-                  'is_mocked': position.isMocked,
+                  'is_mocked': submitPosition.isMocked,
                 },
               );
           _showSuccessSnackBar(response.workerFullName, response.finish);
-          _loadClockType();
+          await _loadClockType();
+          if (!mounted) return;
+          setState(() {
+            _isSubmitting = false;
+          });
         },
       );
     } catch (e) {
