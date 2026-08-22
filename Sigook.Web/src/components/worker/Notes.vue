@@ -1,16 +1,16 @@
 <template>
     <div class="notes-container">
-        <div class="container-flex justify-content-between mb-4">
-            <h3 class="fw-bold mt-0 mb-0">Notes</h3>
-            <b-button type="is-primary" size="is-small" outlined rounded class="align-self-center"
+        <div class="is-flex is-flex-wrap-wrap is-justify-content-space-between mb-4">
+            <h3 class="has-text-weight-bold mt-0 mb-0">Notes</h3>
+            <b-button type="is-primary" size="is-small" outlined rounded class="is-align-self-center"
                 @click="showModalNotes = true">Add</b-button>
         </div>
 
         <div class="mb-5">
             <ul v-if="notesList && notesList.items.length > 0" class="container-shadow container-notes" >
                 <li v-for="item in notesList.items" :key="item.id">
-                    <p class="fw-normal">
-                        <span :style="{backgroundColor: item.color}" class="note-color-icon" :class="{'border': item.color === '#fefefe'}"></span>
+                    <p class="has-text-weight-normal">
+                        <span :style="{backgroundColor: item.color}" class="note-color-icon" :class="{'has-border': item.color === '#fefefe'}"></span>
                         {{ item.note }}
                         <br><i class="fz-2" v-if="item.createdBy">By: {{emailName(item.createdBy)}} | </i>
                         <i class="fz-2" v-if="item.createdAt">{{dateFromNow(item.createdAt)}}</i>
@@ -19,7 +19,7 @@
             </ul>
         </div>
 
-        <b-modal v-model="showModalNotes" width="500px" :destroy-on-hide="true" @close="onCloseModalNotes">
+        <b-modal has-modal-card v-model="showModalNotes" width="500px" :destroy-on-hide="true" @close="onCloseModalNotes">
             <div class="modal-card" style="width: 100%">
                 <section class="modal-card-body">
                     <modal-notes :user-id="workerId"

@@ -105,8 +105,6 @@ public class WorkerProfile :
     public List<WorkerProfileJobExperience> JobExperiences { get; set; } = [];
     public List<Request.WorkerRequest> WorkerRequests { get; set; } = [];
 
-    public event EventHandler<CovenantFile> OnNewDocumentAdded;
-
     public string FullName =>
         FirstName +
         (string.IsNullOrWhiteSpace(MiddleName) ? string.Empty : $" {MiddleName}") +
@@ -196,20 +194,44 @@ public class WorkerProfile :
         {
             SocialInsuranceFile = null;
             SocialInsuranceFileId = null;
+            return Result.Ok();
+        }
+
+        return PatchSocialInsuranceDocument(sinInformation.SocialInsurance, sinInformation.SocialInsuranceFile);
+    }
+
+    public Result<bool> PatchSocialInsuranceFromIdentification(string socialInsurance, ICovenantFile socialInsuranceFile)
+    {
+        if (string.IsNullOrEmpty(socialInsurance)) return Result.Fail<bool>(ValidationMessages.RequiredMsg(ApiResources.SocialInsurance));
+        int length = socialInsurance.Length;
+        if (length < SocialInsuranceMinLength || length > SocialInsuranceMaxLength)
+            return Result.Fail<bool>(ValidationMessages.LengthMsg(ApiResources.SocialInsurance, SocialInsuranceMinLength, SocialInsuranceMaxLength));
+        var replaced = !string.IsNullOrEmpty(SocialInsurance) && SocialInsurance != socialInsurance;
+        var patch = PatchSocialInsuranceDocument(socialInsurance, socialInsuranceFile);
+        if (!patch) return Result.Fail<bool>(patch.Errors);
+        return Result.Ok(replaced);
+    }
+
+    public Result PatchSocialInsuranceDocument(string socialInsurance, ICovenantFile socialInsuranceFile)
+    {
+        if (!string.IsNullOrEmpty(socialInsurance))
+        {
+            int length = socialInsurance.Length;
+            if (length < SocialInsuranceMinLength || length > SocialInsuranceMaxLength)
+                return Result.Fail(ValidationMessages.LengthMsg(ApiResources.SocialInsurance, SocialInsuranceMinLength, SocialInsuranceMaxLength));
+            SocialInsurance = socialInsurance;
+        }
+
+        if (string.IsNullOrEmpty(socialInsuranceFile?.FileName)) return Result.Ok();
+        if (SocialInsuranceFile is null)
+        {
+            SocialInsuranceFile = new CovenantFile(socialInsuranceFile.FileName, socialInsuranceFile.Description);
+            SocialInsuranceFileId = SocialInsuranceFile.Id;
         }
         else
         {
-            if (SocialInsuranceFile is null)
-            {
-                SocialInsuranceFile = new CovenantFile(sinInformation.SocialInsuranceFile.FileName, sinInformation.SocialInsuranceFile.Description);
-                SocialInsuranceFileId = SocialInsuranceFile.Id;
-                OnNewDocumentAdded?.Invoke(this, SocialInsuranceFile);
-            }
-            else
-            {
-                SocialInsuranceFile.FileName = sinInformation.SocialInsuranceFile.FileName;
-                SocialInsuranceFile.Description = sinInformation.SocialInsuranceFile.Description;
-            }
+            SocialInsuranceFile.FileName = socialInsuranceFile.FileName;
+            SocialInsuranceFile.Description = socialInsuranceFile.Description;
         }
 
         return Result.Ok();
@@ -220,7 +242,6 @@ public class WorkerProfile :
         if (string.IsNullOrEmpty(profileImage?.FileName)) return Result.Ok();
         ProfileImage = new CovenantFile(profileImage.FileName, profileImage.Description);
         ProfileImageId = ProfileImage.Id;
-        OnNewDocumentAdded?.Invoke(this, ProfileImage);
         return Result.Ok();
     }
 
@@ -228,105 +249,100 @@ public class WorkerProfile :
         where TTypeOfDocument : ICatalog<Guid> where TFile : ICovenantFile
     {
         ArgumentNullException.ThrowIfNull(documentsInformation);
-        IdentificationNumber1 = documentsInformation.IdentificationNumber1;
-        IdentificationType1Id = documentsInformation.IdentificationType1?.Id;
         if (string.IsNullOrEmpty(documentsInformation.IdentificationType1File?.FileName))
         {
             IdentificationType1File = null;
             IdentificationType1FileId = null;
         }
-        else
-        {
-            if (IdentificationType1File is null)
-            {
-                IdentificationType1File = new CovenantFile();
-                IdentificationType1File.Update(documentsInformation.IdentificationType1File);
-                IdentificationType1FileId = IdentificationType1File.Id;
-                OnNewDocumentAdded?.Invoke(this, IdentificationType1File);
-            }
-            else
-            {
-                IdentificationType1File.Update(documentsInformation.IdentificationType1File);
-            }
-        }
+        var identification1 = PatchIdentification1(documentsInformation.IdentificationNumber1, documentsInformation.IdentificationType1?.Id, documentsInformation.IdentificationType1File);
+        if (!identification1) return identification1;
 
-        IdentificationNumber2 = documentsInformation.IdentificationNumber2;
-        IdentificationType2Id = documentsInformation.IdentificationType2?.Id;
         if (string.IsNullOrEmpty(documentsInformation.IdentificationType2File?.FileName))
         {
             IdentificationType2File = null;
             IdentificationType2FileId = null;
         }
-        else
-        {
-            if (IdentificationType2File is null)
-            {
-                IdentificationType2File = new CovenantFile();
-                IdentificationType2File.Update(documentsInformation.IdentificationType2File);
-                IdentificationType2FileId = IdentificationType2File.Id;
-                OnNewDocumentAdded?.Invoke(this, IdentificationType2File);
-            }
-            else
-            {
-                IdentificationType2File.Update(documentsInformation.IdentificationType2File);
-            }
-        }
+        var identification2 = PatchIdentification2(documentsInformation.IdentificationNumber2, documentsInformation.IdentificationType2?.Id, documentsInformation.IdentificationType2File);
+        if (!identification2) return identification2;
 
-        HavePoliceCheckBackground = documentsInformation.HavePoliceCheckBackground;
         if (string.IsNullOrEmpty(documentsInformation.PoliceCheckBackGround?.FileName))
         {
             PoliceCheckBackGround = null;
             PoliceCheckBackGroundId = null;
         }
+        var policeCheck = PatchPoliceCheck(documentsInformation.PoliceCheckBackGround);
+        if (!policeCheck) return policeCheck;
+        HavePoliceCheckBackground = documentsInformation.HavePoliceCheckBackground;
+
+        return PatchResume(documentsInformation.Resume);
+    }
+
+    public Result PatchIdentification1(string identificationNumber, Guid? identificationTypeId, ICovenantFile file)
+    {
+        IdentificationNumber1 = identificationNumber;
+        IdentificationType1Id = identificationTypeId;
+        if (string.IsNullOrEmpty(file?.FileName)) return Result.Ok();
+        if (IdentificationType1File is null)
+        {
+            IdentificationType1File = new CovenantFile();
+            IdentificationType1File.Update(file);
+            IdentificationType1FileId = IdentificationType1File.Id;
+        }
         else
         {
-            if (PoliceCheckBackGround is null)
-            {
-                PoliceCheckBackGround = new CovenantFile();
-                PoliceCheckBackGround.Update(documentsInformation.PoliceCheckBackGround);
-                PoliceCheckBackGroundId = PoliceCheckBackGround.Id;
-                OnNewDocumentAdded?.Invoke(this, PoliceCheckBackGround);
-            }
-            else
-            {
-                PoliceCheckBackGround.Update(documentsInformation.PoliceCheckBackGround);
-            }
-        }
-
-        if (!string.IsNullOrEmpty(documentsInformation.Resume?.FileName))
-        {
-            if (Resume is null)
-            {
-                Resume = new CovenantFile();
-                Resume.Update(documentsInformation.Resume);
-                ResumeId = Resume.Id;
-                OnNewDocumentAdded?.Invoke(this, Resume);
-            }
-            else
-            {
-                Resume.Update(documentsInformation.Resume);
-            }
+            IdentificationType1File.Update(file);
         }
         return Result.Ok();
     }
 
-    public Result PatchResume(CovenantFileModel resume)
+    public Result PatchIdentification2(string identificationNumber, Guid? identificationTypeId, ICovenantFile file)
     {
-        if (!string.IsNullOrEmpty(resume?.FileName))
+        IdentificationNumber2 = identificationNumber;
+        IdentificationType2Id = identificationTypeId;
+        if (string.IsNullOrEmpty(file?.FileName)) return Result.Ok();
+        if (IdentificationType2File is null)
         {
-            if (Resume is null)
-            {
-                Resume = new CovenantFile();
-                Resume.Update(resume);
-                ResumeId = Resume.Id;
-                OnNewDocumentAdded?.Invoke(this, Resume);
-            }
-            else
-            {
-                Resume.Update(resume);
-            }
+            IdentificationType2File = new CovenantFile();
+            IdentificationType2File.Update(file);
+            IdentificationType2FileId = IdentificationType2File.Id;
         }
+        else
+        {
+            IdentificationType2File.Update(file);
+        }
+        return Result.Ok();
+    }
 
+    public Result PatchPoliceCheck(ICovenantFile file)
+    {
+        if (string.IsNullOrEmpty(file?.FileName)) return Result.Ok();
+        if (PoliceCheckBackGround is null)
+        {
+            PoliceCheckBackGround = new CovenantFile();
+            PoliceCheckBackGround.Update(file);
+            PoliceCheckBackGroundId = PoliceCheckBackGround.Id;
+        }
+        else
+        {
+            PoliceCheckBackGround.Update(file);
+        }
+        HavePoliceCheckBackground = true;
+        return Result.Ok();
+    }
+
+    public Result PatchResume(ICovenantFile resume)
+    {
+        if (string.IsNullOrEmpty(resume?.FileName)) return Result.Ok();
+        if (Resume is null)
+        {
+            Resume = new CovenantFile();
+            Resume.Update(resume);
+            ResumeId = Resume.Id;
+        }
+        else
+        {
+            Resume.Update(resume);
+        }
         return Result.Ok();
     }
 

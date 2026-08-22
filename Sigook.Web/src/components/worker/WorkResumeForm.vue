@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field :label="'Resume'">
           <div v-if="resume && resume.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
@@ -20,7 +20,7 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()" :disabled="isLoading">
           {{ "Save" }}
         </b-button>
@@ -33,7 +33,7 @@
 import { ref, reactive } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/fileNaming";
 import { createWorkerResume } from '@/api/workerApi';
 
 const props = defineProps<{ data?: any }>();

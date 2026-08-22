@@ -11,18 +11,45 @@ How pay stubs are generated and how earnings and deductions are actually compute
 
 ---
 
+## Entry Points
+
+- `PayStubService.Generate(agencyIds, workerIds)` iterates sequentially (plain `foreach`, no locking) over each worker and calls `GeneratePayStubForWorker`. The whole batch aborts on the first worker failure (`PayStubService.cs:217-222`: `if (!result) return result;`) — remaining workers are skipped.
+- `PayStubService.CreateManualPayStub` — independent path that builds a pay stub from manually entered items (supports a `PayVacations` flag and an explicit `Vacations` item type) instead of approved timesheets. Unlike the timesheet path (`PayStubService.cs:423`), it does **not** add reimbursements back into net (`PayStubService.cs:174`: `totalPaid = totalEarnings - totalDeductions`) — an asymmetry, possibly a bug.
+
+---
+
 ## Generation Flow
 
 `PayStubService.GeneratePayStubForWorker`:
 
-1. Load approved timesheets for the worker (`TimesheetRepository.GetTimeSheetForCreatingPayStubs`).
-2. Group by week (Sunday–Saturday), then by `RequestId`. Overtime accumulates **per request per week**, never across requests.
-3. For each timesheet, `TimesheetCalculatorService.CalculateHoursBreakdown` splits hours into Regular / OtherRegular / Overtime / Holiday (see `TIMESHEET_RULES.md`).
-4. Hours are accumulated into dictionaries **keyed by rate**; one `PayStubItem` is created per (item type, rate) pair.
-5. Public-holiday entitlement is evaluated per week (see below).
-6. Totals, deductions, net pay; save.
+1. Load approved timesheets for the worker (`TimesheetRepository.GetTimeSheetForCreatingPayStubs`). If none exist, return early.
+2. Get the next sequential pay stub number (`payStubRepository.GetNextPayStubNumbers(1)`). Format: `PS-{number:0000}-{yy}` (`PayStubService.GeneratePayStubNumber`, PayStubService.cs:836).
+3. Main loop — timesheets are processed as:
 
-Pay stub number format: `PS-{number:0000}-{yy}` (`PayStubService.GeneratePayStubNumber`, PayStubService.cs:836).
+   ```
+   Week groups (Sunday–Saturday, ordered by week number)
+     └── Request groups (grouped by RequestId within each week)
+          └── Days (ordered by date within each request)
+   ```
+
+   Overtime accumulates **per request per week**, never across requests: the `ref accumulatedHours` variable resets for each request group.
+
+   For each day:
+   1. `TimesheetCalculatorService.CalculateHoursBreakdown` splits hours into Regular / OtherRegular / Overtime / Holiday (see `TIMESHEET_RULES.md`), tracking the weekly threshold via `ref accumulatedHours`.
+   2. Wage amounts per hour type (`missingRate` falls back to `workerRate` when not set or ≤ 0; all amounts rounded via `DefaultMoneyRound()`):
+      - `regularAmount = workerRate * regularHours`
+      - `otherRegularAmount = workerRate * otherRegularHours`
+      - `overtimeAmount = workerRate * overtimeMultiplier * overtimeHours`
+      - `holidayAmount = workerRate * holidayMultiplier * holidayHours`
+      - `missingAmount = missingRate * missingHours`
+      - `missingOvertimeAmount = missingRate * overtimeMultiplier * missingOvertimeHours`
+   3. A `TimeSheetTotalPayroll` entity is created (`calculatorService.CreateTimeSheetTotalPayrollEntity`) storing the hours breakdown, linked back to the original TimeSheet.
+   4. Hours are accumulated into dictionaries **keyed by rate** (only when the corresponding amount > 0), so workers with multiple rates get separate line items — one `PayStubItem` per (item type, rate) pair is created later.
+   5. Extras accumulate per day: **bonuses** grouped by description, **reimbursements** grouped by description, and one `PayStubOtherDeduction` per timesheet with `DeductionsOthers > 0`.
+   6. One `PayStubWageDetail` is created per day/timesheet — per-day traceability used downstream for queries that navigate PayStub → WageDetail → TimeSheetTotal → TimeSheet → WorkerRequest.
+4. Public-holiday entitlement is evaluated per week (see below).
+5. Dictionaries and extras become `PayStubItem`s; zero-total items are filtered out.
+6. Totals, deductions, net pay, payment date; save (`payStubRepository.Create` + `SaveChangesAsync`).
 
 ---
 
@@ -73,14 +100,15 @@ TotalEarnings = GrossPayment + Vacations
 
 ## Public Holiday Pay (holiday not worked)
 
-Evaluated per week in `GeneratePayStubForWorker` (PayStubService.cs:346-366) against the `Holiday` catalog table (`CatalogRepository.GetHolidaysInWeek`).
+Evaluated per week in `GeneratePayStubForWorker` (PayStubService.cs:346-366) against the `Holiday` catalog table (`CatalogRepository.GetHolidaysInWeek`). For each holiday in the week:
 
-Decision order (`RegularWageWorker.CalculateAmount`, Covenant.Common/Models/Accounting/PayStub/RegularWageWorker.cs):
-
-1. Holiday already paid on a previous pay stub → $0.
-2. Custom per-worker value configured (`WorkerProfileHoliday.StatPaidWorker`) → that amount.
-3. Worker did not work any qualifying day (day before, the holiday, or day after — `DateExtensions.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`) → $0, not entitled.
-4. Otherwise: `Amount = HolidayPayBase / 20`.
+1. **Entitlement flags** from `payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays)`: `HolidayWasPaid` (already paid in a prior pay stub — `PayStubPublicHolidays` lookup), `CustomPublicHolidayValue` (per-WorkerProfile × per-holiday override from `WorkerProfileHolidays.StatPaidWorker`, `PayStubRepository.cs:114-117`), `IsEntitledToReceiveHolidayPay` (worked at least one qualifying day around the holiday — day before, the holiday, or day after; `DateExtensions.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`).
+2. **Base wage** (`HolidayPayBase`) from `TimesheetCalculatorService.CalculateHolidayPayBase`: the worker's **regular wages** (regular + other-regular + missing hours at regular rate) over the **four work weeks before** the holiday's work week, **plus 4% vacation pay** computed over the full gross of that window (including overtime and worked-holiday premium, since vacation pay accrues on all wages). Per the Ontario ESA definition of "regular wages", **overtime pay, worked-holiday premium pay (1.5×) and missing-overtime pay are excluded** from the base — hours above the weekly threshold drop out entirely, they are not re-added at straight time. The window is computed with `holiday.GetEnd()` (last Saturday of the week before the holiday's Sunday–Saturday week) and `.GetStart()` (four weeks earlier). Source is the approved timesheets, not previously generated pay stubs, so the amount does not depend on generation order.
+3. **Resolution** via `RegularWageWorker.CalculateAmount()` (Covenant.Common/Models/Accounting/PayStub/RegularWageWorker.cs:16-35), evaluated in order:
+   1. Holiday already paid on a previous pay stub → $0.
+   2. Custom value > 0 configured → that amount.
+   3. Worker not entitled (no qualifying day worked) → $0.
+   4. Otherwise: `Amount = HolidayPayBase / 20`.
 
 `HolidayPayBase` = the worker's **regular wages** (regular + other-regular + missing hours at regular rate) over the **four work weeks before** the holiday's work week, **plus 4% vacation pay** computed over the full gross of that window (including overtime and worked-holiday premium, since vacation pay accrues on all wages). Per the Ontario ESA definition of "regular wages", **overtime pay, worked-holiday premium pay (1.5×) and missing-overtime pay are excluded** from the base — hours above the weekly threshold drop out entirely, they are not re-added at straight time. Recomputed from approved timesheets by `TimesheetCalculatorService.CalculateHolidayPayBase` (not from previous pay stubs, so it does not depend on generation order).
 
@@ -96,7 +124,7 @@ All computed by `TimesheetCalculatorService.CalculateDeductions` (TimesheetCalcu
 
 ### Payment frequency
 
-Derived from the pay stub's week span (`DateExtensions.GetNumberOfWeeksIn` between `dateWorkBegins` and `dateWorkEnd`):
+Derived from the pay stub's week span (`DateExtensions.GetNumberOfWeeksIn` between `dateWorkBegins` and `dateWorkEnd`, adjusted to Sunday–Saturday week boundaries):
 
 | numberOfWeeks | `PayPeriod` used |
 |---------------|------------------|
@@ -142,13 +170,63 @@ TotalDeductions = Cpp + Ei + FederalTax + ProvincialTax + Σ DeductionsOthers (f
 TotalPaid       = TotalEarnings − TotalDeductions + Σ Reimbursements
 ```
 
-`TimeSheet.AddDeductionsOthers` validates each deduction to the 0–1000 range.
+Reimbursements are added back because they are not taxable income. `TimeSheet.AddDeductionsOthers` validates each deduction to the 0–1000 range.
 
 ---
 
 ## Payment Date
 
 PayStubService.cs:426-428: if the pay stub has wage details (timesheet-driven) → `DateExtensions.GetPaymentDateForExternalWorkers` (Friday of the week **after** the last work week); otherwise `GetPaymentDateForInternalWorkers` (Friday of the work week itself).
+
+---
+
+## Key Entities
+
+| Entity | Granularity | Purpose |
+|--------|-------------|---------|
+| `PayStub` | One per worker per pay period | The pay stub itself with all totals |
+| `PayStubItem` | One per type per unique rate | Line items shown on the pay stub (consolidated) |
+| `PayStubWageDetail` | One per day/timesheet | Per-day breakdown for traceability back to timesheets |
+| `TimeSheetTotalPayroll` | One per day/timesheet | Hours breakdown stored per timesheet |
+| `PayStubPublicHoliday` | One per statutory holiday | Holiday pay calculated from regular wages |
+| `PayStubOtherDeduction` | One per timesheet with deductions | Additional deductions from timesheets |
+
+## Data Flow Diagram
+
+```
+Approved Timesheets
+       │
+       ▼
+┌─────────────────────────────────────┐
+│  Loop: Week → Request → Day        │
+│                                     │
+│  For each day:                      │
+│  ├─ CalculateHoursBreakdown()       │
+│  ├─ Calculate amounts per type      │
+│  ├─ CreateTimeSheetTotalPayroll()   │
+│  ├─ Accumulate hours by rate ───────┼──► Dictionaries (rate → hours)
+│  ├─ Accumulate extras ──────────────┼──► bonusGroups, reimbursementGroups, otherDeductions
+│  └─ Create PayStubWageDetail ───────┼──► allWageDetails (per-day trace)
+│                                     │
+│  For each week:                     │
+│  └─ Get public holidays ────────────┼──► publicHolidays
+└─────────────────────────────────────┘
+       │
+       ▼
+Dictionaries + extras ──► PayStubItems (consolidated line items)
+       │
+       ▼
+Calculate: gross (excl. reimbursements) → vacations → totalEarnings
+       │
+       ▼
+calculatorService.CalculateDeductions(totalEarnings, weeks, year, worker)
+       │
+       ▼
+Net pay = totalEarnings - totalDeductions + reimbursements
+       │
+       ▼
+Build PayStub entity with all children → Save
+```
 
 ---
 

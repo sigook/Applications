@@ -85,6 +85,9 @@ flutter --version
 # ---------------------------------------
 # Pre-build steps
 # ---------------------------------------
+echo "Cleaning and resetting dependencies to fix enum matching..."
+flutter clean
+flutter pub cache clean --force
 flutter config --enable-ios
 flutter precache --ios
 flutter pub get
@@ -143,8 +146,6 @@ flutter build ios --release \
   --dart-define=SCOPES="$SCOPES" \
   --dart-define=APP_NAME="$APP_NAME" \
   --dart-define=APP_INSIGHTS_CONNECTION_STRING="$APP_INSIGHTS_CONNECTION_STRING"
-
-
 
 echo "================================"
 echo " Flutter iOS build completed ✅"

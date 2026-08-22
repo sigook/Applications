@@ -1,14 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        Agencies
-        <span class="fw-light fz-1">
-          ({{ totalItems }})
-        </span>
-      </h2>
-    </div>
+    <PageHeader title="Agencies" :count="totalItems" :crumbs="moduleCrumbs" />
     <div>
       <b-field grouped position="is-right">
         <b-button tag="router-link" to="/sales/agencies/create" icon-left="plus">
@@ -19,7 +12,7 @@
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="fullName" label="Name" sortable searchable>
@@ -29,7 +22,7 @@
             </template>
             <template v-slot="props">
               <router-link :to="{ path: '/sales/agencies/' + props.row.id }">
-                <span class="d-block">{{ props.row.fullName }}</span>
+                <span class="is-block">{{ props.row.fullName }}</span>
                 <template v-for="(location, index) in props.row.locations">
                   <p v-if="index < 2" :key="location">
                     <i class="fz-2 block">{{ location }}</i>
@@ -47,7 +40,7 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ props.row.email }}</span>
+              <span class="is-block">{{ props.row.email }}</span>
             </template>
           </b-table-column>
           <b-table-column field="agencyType" label="Type" sortable searchable>
@@ -72,17 +65,21 @@ import { ref } from 'vue';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError } from '@/utils/toast';
 import { getAgenciesList } from '@/api/agencyApi';
+import type { AgencyListFilter, AgencyListItem, AgencyTypeOption } from '@/types/agency';
 import { agencyType } from '@/utils/filters';
 import { useGridSort } from '@/composables/useGridSort';
 import { appGlobals } from '@/varaibles';
+import PageHeader from '@/components/PageHeader.vue';
+import { useModuleBase } from '@/composables/useModuleBase';
 
+const { moduleCrumbs } = useModuleBase();
 const agencyStore = useAgencyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const agencyTypesSelected = ref<any[]>([]);
-const serverParams = ref<any>({
+const rows = ref<AgencyListItem[]>([]);
+const agencyTypesSelected = ref<AgencyTypeOption[]>([]);
+const serverParams = ref<AgencyListFilter>({
   sortBy: 0,
   isDescending: false,
   pageIndex: 1,
@@ -120,7 +117,7 @@ function getAgencies() {
   isLoading.value = true;
   agencyStore.updateAgencyListFilter(serverParams.value);
   getAgenciesList(serverParams.value)
-    .then((agencies: any) => {
+    .then((agencies) => {
       rows.value = agencies.items;
       totalItems.value = agencies.totalItems;
       isLoading.value = false;

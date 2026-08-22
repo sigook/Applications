@@ -1,27 +1,27 @@
 <template>
   <div class="mt-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-6 is-3-desktop">
         <b-field label="External ID">
           <b-input v-model="localWorker.externalId" placeholder="External ID" @keypress.enter="updateExternalId">
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="WC Code">
           <b-input v-model="localWorker.wcCode" placeholder="WC Code" @keypress.enter="updateWcCode">
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="&nbsp;" class="checkbox-field">
           <b-checkbox v-model="localWorker.isContractor" @update:modelValue="updateIsContractor">
             Is Contractor
           </b-checkbox>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="&nbsp;" class="checkbox-field">
           <b-checkbox v-model="localWorker.isSubcontractor" @update:modelValue="updateIsSubContractor">
             Is Subcontractor
@@ -29,7 +29,7 @@
         </b-field>
       </div>
       <span class="line-gray"></span>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="Federal Category">
           <b-select v-model="localWorker.federalTaxCategory" @update:modelValue="updateTaxCategory" expanded>
             <option :value="null">Select</option>
@@ -39,7 +39,7 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="Provincial Category">
           <b-select v-model="localWorker.provincialTaxCategory" @update:modelValue="updateTaxCategory" expanded>
             <option :value="null">Select</option>
@@ -49,7 +49,7 @@
           </b-select>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="CPP" :type="formErrors.cpp ? 'is-danger' : ''"
           :message="formErrors.cpp || ''">
           <b-numberinput v-model="cpp" name="cpp" :step="0.01" :controls="false" expanded
@@ -57,7 +57,7 @@
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="column is-6 is-3-desktop">
         <b-field label="EI" :type="formErrors.ei ? 'is-danger' : ''"
           :message="formErrors.ei || ''">
           <b-numberinput v-model="ei" name="ei" :step="0.01" :controls="false" expanded
@@ -66,16 +66,16 @@
         </b-field>
       </div>
       <span class="line-gray"></span>
-      <div class="col-12 col-padding d-flex align-items-center justify-content-between">
-        <span class="fw-bold">Holidays</span>
+      <div class="column is-12 is-flex is-align-items-center is-justify-content-space-between">
+        <span class="has-text-weight-bold">Holidays</span>
         <b-button type="is-ghost" icon-left="plus" @click="addHoliday">Add Holiday</b-button>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-4 col-padding">
+      <div class="column is-6 is-4-desktop">
         <b-datepicker inline :selectable-dates="selectableDates" @update:modelValue="onHolidaySelected"
           :unselectable-days-of-week="[0, 1, 2, 3, 4, 5, 6]">
         </b-datepicker>
       </div>
-      <div v-if="workerHolidaySelected" class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div v-if="workerHolidaySelected" class="column is-6 is-3-desktop">
         <b-field label="Amount to pay">
           <b-input v-model="workerHolidaySelected.statPaidWorker" expanded></b-input>
           <p class="control">

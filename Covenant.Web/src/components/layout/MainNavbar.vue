@@ -330,9 +330,13 @@
 /* Ajustes específicos para Portátiles / Laptops de baja resolución (aprox 1024px - 1280px) */
 @media (max-width: 1280px) and (min-width: 991px) {
   .navbar {
-    padding-inline: 2vw; /* Reducir padding lateral para ganar espacio */
+    padding-inline: 1vw; /* Reducir padding lateral para ganar espacio */
   }
-  
+
+  .navbar__inner {
+    gap: 20px;
+  }
+
   .navbar__logo-img {
     height: 32px; /* Logo un poco más pequeño */
   }
@@ -343,8 +347,15 @@
   }
 
   .navbar__menu {
-    gap: clamp(1rem, 1.5vw, 2rem); /* Gap ajustado: ni muy pegado ni desbordado */
+    gap: clamp(0.5rem, 1vw, 2rem); /* Gap ajustado: ni muy pegado ni desbordado */
     margin-left: 20px; /* Separación explícita del logo por si acaso */
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 991px) {
+  .navbar__link {
+    font-size: 0.65rem;
+    letter-spacing: 0.03em;
   }
 }
 

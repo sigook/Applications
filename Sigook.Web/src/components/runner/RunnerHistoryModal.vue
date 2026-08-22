@@ -4,14 +4,18 @@
       <div class="runner-head">
         <div>
           <p class="modal-card-title">{{ detail?.name || 'History' }}</p>
-          <i v-if="detail?.email" class="fz-2 text-lowercase">{{ detail.email }}</i>
+          <i v-if="detail?.email" class="fz-2 is-lowercase">{{ detail.email }}</i>
         </div>
       </div>
     </header>
     <section class="modal-card-body" style="min-width: 620px; position: relative">
       <b-loading v-model="isLoading" :is-full-page="false" />
       <template v-if="detail">
-        <collapse-section v-model="historyOpen" title="History">
+        <b-collapse v-model="historyOpen" class="collapse-card">
+          <template #trigger="{ open }">
+            <span class="collapse-card__title">History</span>
+            <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small" />
+          </template>
           <ul v-if="detail.statusHistory.length" class="status-timeline">
             <li v-for="h in detail.statusHistory" :key="h.id" class="status-timeline__item">
               <span class="status-timeline__dot" :class="statusType(h.newStatus)" />
@@ -23,9 +27,13 @@
             </li>
           </ul>
           <p v-else class="op3">No history yet</p>
-        </collapse-section>
+        </b-collapse>
 
-        <collapse-section v-model="interviewsOpen" title="Interviews">
+        <b-collapse v-model="interviewsOpen" class="collapse-card">
+          <template #trigger="{ open }">
+            <span class="collapse-card__title">Interviews</span>
+            <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small" />
+          </template>
           <div v-if="canAddInterview(detail.status)" class="has-text-right mb-2">
             <b-button type="is-primary" size="is-small" icon-left="plus" @click="showAddInterview = true">
               Add interview
@@ -33,7 +41,7 @@
           </div>
           <b-table :data="detail.interviews" narrowed hoverable :mobile-cards="false">
           <template #empty>
-            <p class="text-center op3">No interviews yet</p>
+            <p class="has-text-centered op3">No interviews yet</p>
           </template>
           <b-table-column field="scheduledDate" label="Scheduled" v-slot="props">
             {{ dateMonth(props.row.scheduledDate) }}
@@ -51,14 +59,14 @@
             </b-button>
           </b-table-column>
         </b-table>
-        </collapse-section>
+        </b-collapse>
       </template>
     </section>
     <footer class="modal-card-foot">
       <b-button @click="emit('close')">Close</b-button>
     </footer>
 
-    <b-modal v-model="showAddInterview" width="540px">
+    <b-modal has-modal-card v-model="showAddInterview" width="540px">
       <runner-interview-modal :request-id="requestId" :runner-id="runnerId"
         @updated="onInterviewAdded" @close="showAddInterview = false" />
     </b-modal>
@@ -81,7 +89,6 @@ import {
   canAddInterview,
 } from '@/types/runner';
 import type { RunnerDetail } from '@/types/runner';
-import CollapseSection from '@/components/CollapseSection.vue';
 import RunnerInterviewModal from '@/components/runner/RunnerInterviewModal.vue';
 
 const props = defineProps<{ requestId: string; runnerId: string }>();
@@ -164,6 +171,31 @@ load();
 </script>
 
 <style scoped lang="scss">
+.collapse-card {
+  border: 1px solid #ededed;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: #fcfcfc;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  :deep(.collapse-trigger) {
+    padding: 12px 16px;
+  }
+
+  :deep(.collapse-content) {
+    padding: 14px 16px 16px;
+    border-top: 1px solid #ededed;
+  }
+}
+
 .runner-head {
   display: flex;
   align-items: center;

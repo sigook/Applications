@@ -181,7 +181,7 @@ const employerBenefits: string[] = [
   padding-right: 130px;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (max-height: 899px) {
   .dual-cta-wrap {
     margin-top: -100px;
   }

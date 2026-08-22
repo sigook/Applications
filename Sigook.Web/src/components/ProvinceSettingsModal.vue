@@ -4,8 +4,8 @@
 
     <h3 class="title is-4 mb-4">Province Settings - {{ provinceName }}</h3>
 
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field>
           <b-checkbox v-model="paidHolidays">
             Paid Holidays
@@ -13,14 +13,14 @@
         </b-field>
       </div>
 
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field label="Overtime Starts After" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
           :message="formErrors.overtimeStartsAfter">
           <b-input v-model="overtimeStartsAfter" name="overtimeStartsAfter" type="number" step="1"></b-input>
         </b-field>
       </div>
 
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="saveSettings">
           Save
         </b-button>

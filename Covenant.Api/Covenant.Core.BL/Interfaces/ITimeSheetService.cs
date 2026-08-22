@@ -18,7 +18,7 @@ public interface ITimesheetService
     Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter);
     Task<ResultGenerateDocument<MemoryStream>> GetHoursWorkedFile(HoursWorkedFilter filter);
     Task<ResultGenerateDocument<MemoryStream>> GetTimesheetsReportFile(TimesheetsReportFilter filter);
-    Task<Result<ClockType>> GetClockType(Guid requestId, DateTime? date);
+    Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude, DateTime? date);
     Task<Result> RemoveTimeSheet(Guid id);
     Task<ResultGenerateDocument<MemoryStream>> GetRequestTimesheetFile(Guid requestId);
     Task<Result<ResultGenerateDocument<MemoryStream>>> GetCompanyRequestTimesheetFile(Guid requestId, Guid companyId);

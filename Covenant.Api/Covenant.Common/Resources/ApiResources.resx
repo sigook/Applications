@@ -189,6 +189,12 @@
   <data name="SocialInsuranceAlreadyTaken">
     <value>The social insurance is already taken. Please choose another one.</value>
   </data>
+  <data name="SocialInsuranceConflict">
+    <value>The profile already has a different social insurance number. Correct it from the social insurance section first.</value>
+  </data>
+  <data name="SocialInsuranceReplacedNote">
+    <value>Social insurance number replaced ({0} to {1}) from a SIN/SSN identification document upload.</value>
+  </data>
   <data name="IdentificationNumberAlreadyTaken">
     <value>The identification number {0} is already taken. Please choose another one.</value>
   </data>

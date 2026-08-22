@@ -1,22 +1,22 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field :label="'Vaccination Required'">
           <b-switch v-model="required" :value="true" :false-value="false">
             {{ required ? 'Yes' : 'No' }}
           </b-switch>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-field label="Comments" :message="formErrors.comments || ''"
           :type="formErrors.comments ? 'is-danger' : ''">
           <b-input type="textarea" v-model="comments" name="vaccinationComments">
           </b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding text-end">
+      <div class="column is-12 has-text-right">
         <b-button type="is-primary" @click="saveVaccinationRequired">
           {{ 'Save' }}
         </b-button>

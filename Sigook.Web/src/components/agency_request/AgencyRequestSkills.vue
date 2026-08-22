@@ -1,7 +1,7 @@
 <template>
-  <section>
+  <section class="columns is-multiline">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="col-8 col-padding">
+    <div class="column is-8-mobile is-8">
       <b-field label="Skills">
         <skills-form :existingSkills="data" v-if="props.request.canEdit" @onPressAdd="(item) => addSkill(item)"
           @onDelete="(item) => removeSkill(item)" />

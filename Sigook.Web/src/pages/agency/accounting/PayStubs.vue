@@ -1,11 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        PayStubs
-      </h2>
-    </div>
+    <PageHeader title="PayStubs" :crumbs="accountingCrumbs" />
     <div>
       <export :url="'/api/agency/accounting/PayStubs/file'" :params="serverParams" :fileName="'PayStubs'"
         @onDataLoading="(value) => isLoading = value">
@@ -34,7 +30,7 @@
         checkable checkbox-position="left" v-model:checked-rows="checkedRows"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="payStubNumber" label="PayStub Number" sortable searchable>
@@ -87,13 +83,13 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
                   @click="onDownloadPayStubPdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
                 <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
-                  class="me-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
+                  class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
                   @click="onSendPayStubEmail(props.row)">
                 </b-button>
               </b-tooltip>
@@ -107,11 +103,11 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showGeneratePayStubsModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showGeneratePayStubsModal" width="800px">
       <generate-pay-stubs @pay-stubs-generated="onPayStubsGenerated" />
     </b-modal>
 
-    <b-modal v-model="showSkipPayrollNumberModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showSkipPayrollNumberModal" width="500px">
       <skip-payroll-number></skip-payroll-number>
     </b-modal>
   </div>
@@ -135,15 +131,18 @@ import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import GeneratePayStubs from '@/components/agency_accounting/GeneratePayStubs.vue';
 import SkipPayrollNumber from '@/components/agency_accounting/SkipPayrollNumber.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { accountingCrumbs } from '@/constants/breadcrumbs';
+import type { AgencyPayStubFilter, AgencyPayStubRow } from '@/types/accounting';
 
 const agencyStore = useAgencyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const checkedRows = ref<any[]>([]);
-const createdAtDatesSelected = ref<any[]>([]);
-const serverParams = ref<any>({
+const rows = ref<AgencyPayStubRow[]>([]);
+const checkedRows = ref<AgencyPayStubRow[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const serverParams = ref<AgencyPayStubFilter>({
   sortBy: 0,
   pageIndex: 1,
   pageSize: 30,
@@ -164,8 +163,8 @@ const showSkipPayrollNumberModal = ref(false);
 if (agencyStore.agencyPayStubFilter) {
   serverParams.value = agencyStore.agencyPayStubFilter;
   if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
-    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
   }
 }
 loadPayStubs();
@@ -182,8 +181,8 @@ function onInputEntered(event: KeyboardEvent) {
 }
 
 function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadPayStubs();
 }
 
@@ -196,8 +195,8 @@ function loadPayStubs() {
   isLoading.value = true;
   agencyStore.updateAgencyPayStubFilter(serverParams.value);
   getAgencyPayStubs(serverParams.value)
-    .then((response: any) => {
-      rows.value = response.items.map((i: any) => ({ ...i, emailSending: false, actions: null }));
+    .then((response) => {
+      rows.value = response.items.map((i) => ({ ...i, emailSending: false }));
       checkedRows.value = [];
       totalItems.value = response.totalItems;
       isLoading.value = false;
@@ -208,7 +207,7 @@ function loadPayStubs() {
     });
 }
 
-function onDownloadPayStubPdf(payStub: any) {
+function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
   isLoading.value = true;
   downloadPayStubPdf(payStub.id)
     .then((response) => {
@@ -221,7 +220,7 @@ function onDownloadPayStubPdf(payStub: any) {
     });
 }
 
-function onSendPayStubEmail(payStub: any) {
+function onSendPayStubEmail(payStub: AgencyPayStubRow) {
   payStub.emailSending = true;
   sendPayStubEmail(payStub.id)
     .then(() => {
@@ -245,7 +244,7 @@ function onSendSelectedEmails() {
     hasIcon: true,
     onConfirm: () => {
       isLoading.value = true;
-      const payStubIds = checkedRows.value.map((p: any) => p.id);
+      const payStubIds = checkedRows.value.map((p) => p.id);
       sendPayStubEmailBulk(payStubIds)
         .then(() => {
           isLoading.value = false;
@@ -260,7 +259,7 @@ function onSendSelectedEmails() {
   });
 }
 
-function onDeletePayStub(payStub: any) {
+function onDeletePayStub(payStub: AgencyPayStubRow) {
   const message = `You are about to delete the pay stub <b>${payStub.payStubNumber}</b>
         <br>
         <br>

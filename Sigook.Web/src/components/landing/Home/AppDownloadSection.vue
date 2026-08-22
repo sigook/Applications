@@ -173,7 +173,7 @@ const features = [
 .app__badges {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 14px;
 }
 
@@ -351,7 +351,7 @@ const features = [
   margin-top: 2px;
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (max-height: 899px) {
   .app {
     min-height: 0;
     margin-top: -120px;
@@ -400,6 +400,9 @@ const features = [
   .app__badges {
     justify-content: center;
     gap: 10px;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .app__badge {

@@ -1,15 +1,15 @@
 <template>
-  <div class="container-flex detail-split">
+  <div class="columns is-multiline detail-split">
     <b-loading v-model="isLoading"></b-loading>
     <!-- Detail -->
-    <section class="col-md-8 col-sm-12 p-3 detail-split-main">
+    <section class="column is-8 p-3 detail-split-main">
       <!-- Highlight -->
       <contact-information v-if="props.company" :company="props.company" @update:company="$emit('update:company', $event)" />
 
       <!-- Detail -->
       <table class="table-detail" v-if="props.company">
         <tr v-if="props.company.industry">
-          <td><span class="fw-bold">Industry </span></td>
+          <td><span class="has-text-weight-bold">Industry </span></td>
           <td>
             <span>
               {{ props.company.industry.industry ? props.company.industry.industry.value : props.company.industry.otherIndustry }}
@@ -20,12 +20,12 @@
 
       <!-- About -->
       <section class="mt-3 mb-4" v-if="props.company">
-        <span class="fw-bold">About</span>
+        <span class="has-text-weight-bold">About</span>
         <pre class="long-description">{{ props.company.about }} </pre>
       </section>
 
       <section class="mt-3 mb-4" v-if="props.company">
-        <span class="fw-bold">Internal Info</span>
+        <span class="has-text-weight-bold">Internal Info</span>
         <pre class="long-description" v-html="props.company.internalInfo"></pre>
       </section>
 
@@ -38,8 +38,8 @@
       </section>
 
       <div class="mb-5">
-        <div class="d-flex align-items-center justify-content-between">
-          <span class="fw-bold">{{ "Invoice notes " }}</span>
+        <div class="is-flex is-align-items-center is-justify-content-space-between">
+          <span class="has-text-weight-bold">{{ "Invoice notes " }}</span>
           <button class="show-notes-btn" @click="showNotesEditor()">
             <img src="../../assets/images/right-arrow.svg" alt="edit" :class="{ open: showEditor }" />
           </button>
@@ -59,8 +59,8 @@
       </div>
 
       <div>
-        <div class="d-flex align-items-center justify-content-between">
-          <span class="fw-bold">Invoice Recipients</span>
+        <div class="is-flex is-align-items-center is-justify-content-space-between">
+          <span class="has-text-weight-bold">Invoice Recipients</span>
           <button class="show-notes-btn" @click="loadCompanyInvoiceRecipients()">
             <img src="../../assets/images/right-arrow.svg" :class="{ open: showRecipients }" />
           </button>
@@ -110,7 +110,7 @@
       </i>
     </section>
 
-    <aside class="col-md-4 col-sm-12 p-3 detail-split-aside">
+    <aside class="column is-4 p-3 detail-split-aside">
       <notes />
       <location />
     </aside>

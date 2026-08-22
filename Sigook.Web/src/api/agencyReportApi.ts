@@ -8,7 +8,7 @@ import type {
 } from '@/types/agency';
 
 // Query-string values passed to the generic blob report downloader.
-export type ReportQueryParams = Record<string, string | number | boolean | null | undefined>;
+export type ReportQueryParams = Record<string, string | number | boolean | null | undefined | readonly (string | number)[]>;
 
 // Generic blob report downloader (used by Export.vue and Companies.vue)
 export function downloadAgencyReport(url: string, filter: ReportQueryParams): Promise<Blob> {

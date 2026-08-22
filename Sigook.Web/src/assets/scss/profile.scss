@@ -93,7 +93,6 @@
       display: inline-block;
       vertical-align: middle;
       line-height: 1.6;
-      // line-height: 2;
     }
     p {
       width: 70%;
@@ -128,7 +127,7 @@
   .section-title {
     font-size: 1rem;
     font-weight: 700;
-    color: $accent;
+    color: $accent-text;
     margin-bottom: 15px;
   }
 }
@@ -284,14 +283,6 @@
     & > div {
       margin: 10px 0;
       width: calc(60% - 10px);
-      input,
-      select {
-        ;
-        // text-align: right;
-        // border-width: 0 0 1px;
-      };
-      // select { text-align-last: right; }
-      // option { direction: rtl; }
     }
 
     input {

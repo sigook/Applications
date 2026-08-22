@@ -47,5 +47,6 @@ namespace Covenant.Common.Models.Request
         public string InternalRequirements { get; set; }
         public Guid? SalesRepresentativeId { get; set; }
         public IEnumerable<Guid> CompanyUserIds { get; set; }
+        public IEnumerable<RequestComplianceItemModel> ComplianceItems { get; set; }
     }
 }

@@ -1,42 +1,49 @@
 <template>
-  <div>
+  <div class="p-4">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title">Document</h2>
-    <div class="form container-flex">
-      <div class="col-12 col-padding">
-        <div class="fz-1 fw-normal">
-          Document
-          <span class="sign-required"></span>
-          <div class="input-file-edited input-block" v-if="fileName">
-            <span>{{ filename(fileName) }}</span>
-            <button v-if="fileName" @click="deleteDocument()" class="button cross-button" type="button" />
-          </div>
-          <upload-file v-else id="documentButton" class="input-block inline-100"
-            @fileSelected="(file) => addDocument(file)" :format="'document'" :name="'Company_'" :required="true"
-            @onUpload="() => subscribe('file')" @finishUpload="() => unsubscribe()" />
-        </div>
-      </div>
-      <div class="col-12 col-padding">
-        <label class="fz-1 fw-normal sign-required d-block">Description</label>
-        <input type="text" v-model="description" class="input-border input-block" name="Description"
-          :class="{ 'is-danger': formErrors.description }"
-          autocomplete="nope" />
-        <span v-show="formErrors.description" class="help is-danger no-margin">
-          {{ formErrors.description }}
-        </span>
-      </div>
-      <div class="col-12 col-padding">
-        <label class="fz-1 fw-normal d-block">Document Type</label>
-        <b-select v-model="documentType" placeholder="Select Document Type" expanded>
-          <option value="1">Contract</option>
-        </b-select>
-      </div>
-    </div>
+    <h2 class="has-text-centered fz1 mb-4">Document</h2>
 
-    <div class="text-end pe-3">
-      <b-button type="is-primary" rounded class="mt-3 mb-3" @click="validateForm" :disabled="disableButton">
-        Save
-      </b-button>
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <b-field :type="fileError ? 'is-danger' : ''" :message="fileError">
+          <template #label>
+            Document <span class="has-text-danger">*</span>
+          </template>
+          <div class="file is-primary" :class="{ 'has-name': !!documentFile }">
+            <b-upload v-model="documentFile" class="file-label" :accept="UPLOAD_ACCEPT" name="fileCompany"
+              @update:modelValue="onFileSelected">
+              <span class="file-cta">
+                <b-icon class="file-icon" icon="upload"></b-icon>
+                <span class="file-label">Click to upload</span>
+              </span>
+              <span class="file-name" v-if="documentFile">{{ documentFile.name }}</span>
+            </b-upload>
+          </div>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field :type="formErrors.description ? 'is-danger' : ''" :message="formErrors.description">
+          <template #label>
+            Description <span class="has-text-danger">*</span>
+          </template>
+          <b-input type="text" v-model="description" name="Description" autocomplete="nope" />
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field label="Document Type">
+          <b-select v-model="documentType" placeholder="Select Document Type" expanded>
+            <option value="1">Contract</option>
+          </b-select>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-button type="is-primary" @click="validateForm">
+          Save
+        </b-button>
+      </div>
     </div>
   </div>
 </template>
@@ -45,21 +52,17 @@
 import { ref } from 'vue';
 import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
-import { usePubSub } from "@/composables/usePubSub";
-import { deleteFile } from "@/utils/fileUpload";
-import { filename } from "@/utils/filters";
+import { generateFileName } from "@/utils/fileNaming";
+import { UPLOAD_ACCEPT, validateUploadFile } from "@/utils/fileValidation";
 import { createAgencyCompanyDocument } from "@/api/agencyCompanyApi";
 import { useStickyForm } from '@/composables/useStickyForm';
-import UploadFile from "../../components/UploadFiles.vue";
 
 const schema = yup.object({
   description: yup.string().required('Description is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
 });
 
-const props = defineProps<{ profileId: any }>();
-const emit = defineEmits<{ (e: 'onCreateDocument', value: any): void }>();
-
-const { subscribe, unsubscribe } = usePubSub();
+const props = defineProps<{ profileId: string }>();
+const emit = defineEmits<{ (e: 'onCreateDocument'): void }>();
 
 const form = useStickyForm<{ description: string }>({
   schema,
@@ -69,14 +72,20 @@ const { description } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const disableButton = ref(false);
-const fileName = ref<string | null>(null);
+const documentFile = ref<File | null>(null);
 const documentType = ref<string | null>(null);
+const fileError = ref('');
+
+function onFileSelected(file: File | null) {
+  fileError.value = validateUploadFile(file);
+  if (fileError.value) documentFile.value = null;
+}
 
 async function validateForm() {
   form.markInteracted();
   const { valid } = await form.validate();
-  if (!valid) {
+  fileError.value = validateUploadFile(documentFile.value);
+  if (!valid || fileError.value) {
     showAlertError("Please make sure all required fields are filled out correctly");
     return;
   }
@@ -84,22 +93,17 @@ async function validateForm() {
 }
 
 function submitDocument() {
+  if (!documentFile.value) return;
   isLoading.value = true;
   const model = {
-    fileName: fileName.value,
+    fileName: generateFileName('Company', documentFile.value.name),
     description: description.value,
-    documentType: documentType.value,
+    documentType: documentType.value ?? undefined,
   };
-  createAgencyCompanyDocument(props.profileId, model)
-    .then((response) => {
+  createAgencyCompanyDocument(props.profileId, model, documentFile.value)
+    .then(() => {
       isLoading.value = false;
-      const newDocument = {
-        id: response.id,
-        fileName: fileName.value,
-        description: description.value,
-        pathFile: response.pathFile,
-      };
-      emit("onCreateDocument", newDocument);
+      emit("onCreateDocument");
       showAlertSuccess("Created");
     })
     .catch((error) => {
@@ -107,16 +111,4 @@ function submitDocument() {
       showAlertError(error);
     });
 }
-
-function addDocument(file: any) {
-  fileName.value = file;
-}
-
-function deleteDocument() {
-  isLoading.value = true;
-  deleteFile(fileName.value)
-    .then(() => { fileName.value = null; })
-    .finally(() => { isLoading.value = false; });
-}
-
 </script>

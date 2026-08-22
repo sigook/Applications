@@ -1,13 +1,13 @@
 <template>
   <div class="p-3">
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="Start Working">
           <b-datepicker v-model="localStartWorking" name="start" inline :focused-date="today" :min-date="minDate">
           </b-datepicker>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="bookWorker">Save</b-button>
       </div>
     </div>

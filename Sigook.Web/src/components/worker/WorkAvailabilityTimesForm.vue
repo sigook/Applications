@@ -2,8 +2,8 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field label="Availability Times">
           <b-checkbox v-for="item in availabilityTimes" :key="item.id" v-model="worker.availabilityTimes"
               :native-value="item" class="mb-2">
@@ -11,7 +11,7 @@
             </b-checkbox>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveWorkerAvailabilityTimes()">
           {{ "Save" }}
         </b-button>

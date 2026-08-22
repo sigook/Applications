@@ -151,13 +151,13 @@ const ctaLabel = computed(() => (securityStore.user ? 'Go to Portal' : 'Sign In'
 
 const authReady = computed(() => securityStore.isReady);
 
-async function onSignIn(): Promise<void> {
+function onSignIn(): void {
   mobileOpen.value = false;
   if (securityStore.user) {
     const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
     router.push(homePageUrl);
   } else {
-    await securityStore.signIn();
+    router.push('/login');
   }
 }
 
@@ -557,6 +557,12 @@ onUnmounted(() => {
   .nav-drawer-enter-active .nav__drawer,
   .nav-drawer-leave-active .nav__drawer {
     transition: none;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1279px) {
+  .nav__links {
+    gap: 18px;
   }
 }
 

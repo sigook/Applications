@@ -1,47 +1,47 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-33">
+    <div class="columns is-multiline">
+      <div class="column is-one-third-mobile is-one-third col-min-250">
         <b-field label="Dates (From - To)" :type="formErrors.dates ? 'is-danger' : ''"
           :message="formErrors.dates">
           <b-datepicker v-model="dates" name="dates" range
             @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
-      <div class="col-33">
+      <div class="column is-one-third-mobile is-one-third col-min-250">
         <b-field label="Company">
           <b-autocomplete v-model="companySelected" :data="filteredCompanies" open-on-focus
             field="fullName" name="company" placeholder="Company" @select="selectCompany">
           </b-autocomplete>
         </b-field>
       </div>
-      <div class="col-33">
+      <div class="column is-one-third-mobile is-one-third col-min-250">
         <b-field label="Job Position">
           <b-autocomplete v-model="jobPositionSelected" :data="filteredJobPositions" open-on-focus
             field="jobPosition" :loading="isLoadingJobPositions" name="jobPosition" placeholder="Job Position"
             @select="selectJobPosition">
             <template v-slot:empty>
-              <p class="container text-center">No records available</p>
+              <p class="container has-text-centered">No records available</p>
             </template>
           </b-autocomplete>
         </b-field>
       </div>
     </div>
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-button type="is-primary" @click="getReport" :loading="isLoadingReport">Generate</b-button>
       </div>
     </div>
-    <div v-if="reportGenerated" class="container-flex">
-      <div class="col-12 col-padding">
+    <div v-if="reportGenerated" class="columns is-multiline">
+      <div class="column is-12">
         <Export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
           :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
         </Export>
         <b-table sticky-header height="var(--grid-height)" :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated pagination-size="is-small" :per-page="pageSize"
           v-model:current-page="pageIndex" pagination-rounded>
           <template v-slot:empty>
-            <p class="container text-center">No records available</p>
+            <p class="container has-text-centered">No records available</p>
           </template>
           <template>
             <b-table-column field="workerName" label="Worker Name" v-slot="props">
@@ -107,6 +107,8 @@ import { currency } from '@/utils/filters';
 import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
 import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyReportApi";
 import { useStickyForm } from '@/composables/useStickyForm';
+import type { AgencyCompanyJobPosition, AgencyReportFilter, HoursWorkedReportView } from '@/types/agency';
+import type { CompanyProfileListItem } from '@/types/company';
 import Export from "@/components/Export.vue";
 
 const schema = yup.object({
@@ -127,15 +129,15 @@ const formErrors = form.errors;
 const isLoading = ref(false);
 const isLoadingJobPositions = ref(false);
 const isLoadingReport = ref(false);
-const companies = ref<any[]>([]);
+const companies = ref<CompanyProfileListItem[]>([]);
 const companySelected = ref('');
-const jobPositions = ref<any[]>([]);
+const jobPositions = ref<AgencyCompanyJobPosition[]>([]);
 const jobPositionSelected = ref('');
 const pageIndex = ref(1);
 const pageSize = ref(30);
-const serverParams = ref<any>({});
+const serverParams = ref<AgencyReportFilter>({});
 const reportGenerated = ref(false);
-const report = ref<any>({ rows: [] });
+const report = ref<HoursWorkedReportView>({ rows: [] });
 
 async function loadCompanies() {
   isLoading.value = true;
@@ -151,29 +153,30 @@ async function onDatesSelected() {
   }
 }
 
-async function selectCompany(company: any) {
+async function selectCompany(company: CompanyProfileListItem | null) {
   if (company) {
     serverParams.value.companyProfileId = company.id;
     await loadJobPositions();
   } else {
-    serverParams.value.companyProfileId = null;
+    serverParams.value.companyProfileId = undefined;
     jobPositions.value = [];
   }
 }
 
 async function loadJobPositions() {
-  if (serverParams.value.companyProfileId && dates.value && dates.value.length === 2) {
+  const companyProfileId = serverParams.value.companyProfileId;
+  if (companyProfileId && dates.value && dates.value.length === 2) {
     isLoadingJobPositions.value = true;
-    jobPositions.value = await getJobPositionsHoursWorked(serverParams.value);
+    jobPositions.value = await getJobPositionsHoursWorked({ ...serverParams.value, companyProfileId });
     isLoadingJobPositions.value = false;
   }
 }
 
-function selectJobPosition(jobPosition: any) {
+function selectJobPosition(jobPosition: AgencyCompanyJobPosition | null) {
   if (jobPosition) {
     serverParams.value.jobPositionRateId = jobPosition.id;
   } else {
-    serverParams.value.jobPositionRateId = null;
+    serverParams.value.jobPositionRateId = undefined;
   }
 }
 
@@ -197,10 +200,10 @@ async function getReport() {
 }
 
 const filteredCompanies = computed(() =>
-  companies.value.filter((company: any) => company.fullName.toLowerCase().includes(companySelected.value.toLowerCase()))
+  companies.value.filter((company) => company.fullName.toLowerCase().includes(companySelected.value.toLowerCase()))
 );
 const filteredJobPositions = computed(() =>
-  jobPositions.value.filter((jp: any) => (jp.jobPosition || '').toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
+  jobPositions.value.filter((jp) => (jp.jobPosition || '').toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
 );
 
 (async () => {

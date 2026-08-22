@@ -30,7 +30,7 @@
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="numberId"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @click="onRowClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="numberId" label="Request ID" v-slot="props">
@@ -46,8 +46,8 @@
           </b-table-column>
           <b-table-column field="startAt">
             <template v-slot:header>
-              <p class="fw-semibold">Duration</p>
-              <p class="fw-semibold">(Start - End)</p>
+              <p class="has-text-weight-semibold">Duration</p>
+              <p class="has-text-weight-semibold">(Start - End)</p>
             </template>
             <template v-slot="props">
               {{ dateMonth(props.row.startAt) }}
@@ -68,7 +68,7 @@
             {{ props.row.workersQuantity }}
           </b-table-column>
           <b-table-column field="status" v-slot="props">
-            <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized fw-bold text-center"
+            <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized has-text-weight-bold has-text-centered"
               :class="props.row.status">
               {{ props.row.status }}
             </div>
@@ -84,6 +84,7 @@ import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWorkerStore } from '@/stores/worker';
 import { getJobs } from '@/api/workerApi';
+import type { WorkerRequestFilter, WorkerRequestListItem } from '@/types/worker';
 import { dateMonth, splitCapital, currency } from '@/utils/filters';
 import { appGlobals } from '@/varaibles';
 
@@ -92,9 +93,8 @@ const workerStore = useWorkerStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const serverParams = reactive<any>({
-  sortBy: 0,
+const rows = ref<WorkerRequestListItem[]>([]);
+const serverParams = reactive<WorkerRequestFilter>({
   isDescending: false,
   pageIndex: 1,
   pageSize: 30,
@@ -118,7 +118,7 @@ function onPageChange(params: number) {
   getWorkerRequests();
 }
 
-function onRowClick(row: any) {
+function onRowClick(row: WorkerRequestListItem) {
   switch (row.status) {
     case appGlobals.$statusApply:
     case appGlobals.$statusBook:
@@ -132,7 +132,7 @@ function onRowClick(row: any) {
 function getWorkerRequests() {
   isLoading.value = true;
   getJobs(serverParams)
-    .then((response: any) => {
+    .then((response) => {
       rows.value = response.items;
       totalItems.value = response.totalItems;
       isLoading.value = false;

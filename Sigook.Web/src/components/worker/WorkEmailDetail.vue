@@ -1,6 +1,6 @@
 <template>
   <section>
-    <div class="d-flex align-items-center justify-content-between">
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
       <h3 class="section-title">{{ "Account" }}</h3>
       <b-button type="is-info" outlined rounded icon-right="pencil" @click="modalEmail = true"></b-button>
     </div>
@@ -8,11 +8,11 @@
       <div>
         <span>{{ 'Email' }}</span>
         <span>
-          <p class="fw-light m-0">{{ props.worker.email }}</p>
+          <p class="has-text-weight-light m-0">{{ props.worker.email }}</p>
         </span>
       </div>
     </div>
-    <b-modal v-model="modalEmail" width="500px">
+    <b-modal custom-content-class="card" v-model="modalEmail" width="500px">
       <email-edit :data="props.worker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </section>

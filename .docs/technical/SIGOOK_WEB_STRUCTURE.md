@@ -1,6 +1,6 @@
 # Sigook.Web Codebase Structure
 
-Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `@ntohq/buefy-next`, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
+Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `buefy` 3.x, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
 
 ---
 
@@ -14,7 +14,7 @@ Sigook.Web/
 │   ├── components/         # Reusable Vue components by domain
 │   ├── composables/        # Composition API utilities
 │   ├── constants/          # Enums and static constants
-│   ├── data/               # Static JSON for landing pages
+│   ├── data/               # Static JSON (landing pages, sales dashboard)
 │   ├── directives/         # Custom Vue directives
 │   ├── filters/            # Formatter functions (imported, not Vue 2 filters)
 │   ├── lang/               # VeeValidate rules + English error messages
@@ -63,12 +63,13 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | agencyTimeSheetApi.ts | TimeSheet CRUD per request/worker, usages |
 | agencyWorkerApi.ts | Worker (agency view): list, flags (DNU, contractor), tax, email, holidays |
 | catalogApi.ts | Enums: gender, ID type, availability, skills, industries, sources, tax categories |
-| companyApi.ts | Company portal: profile, requests, workers, timesheet, users, contacts, invoices |
+| companyApi.ts | Company portal: profile, requests, workers, timesheet, users, contacts, invoices + sales deals & interactions CRUD |
 | downloadApi.ts | Invoice PDF, payroll Excel (various groupings) |
 | locationApi.ts | Countries, provinces, cities, provincial settings, location tax |
 | notificationApi.ts | Aggregated agency notification bell payload |
 | requestApi.ts | Shift lookup only |
 | salesApi.ts | Sales-scoped request/company lists + Excel export |
+| salesDashboardApi.ts | Sales dashboard summary — static JSON prototype (see SIGOOK_WEB_SALES_DASHBOARD.md) |
 | sharedApi.ts | Email preferences unsubscribe |
 | userNotificationApi.ts | In-app user notifications |
 | websiteApi.ts | Public: job search, contact form, candidate apply |
@@ -77,7 +78,7 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 
 ---
 
-## src/types/ — TypeScript Interfaces (11 files)
+## src/types/ — TypeScript Interfaces (12 files)
 
 | File | Contains |
 |------|----------|
@@ -85,9 +86,10 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | agency.ts | `AgencyDetail`, `AgencyLocation*`, `AgencyPersonnel*`, `AgencyRequest*`, `AgencyWorker*`, `AgencyCompany*`, `Note*`, invoice notes/recipients models |
 | accounting.ts | `PayStub*`, `AgencyInvoice*`, `CreateAgencyInvoiceModel`, `InvoiceSummaryModel`, `PayrollSubContractor*`, `SkipPayrollNumber*`, `AgencyReportFilter`, `WeeklyPayrollItem` |
 | candidate.ts | `Candidate`, `CandidateDocument`, `AgencyCandidateFilter`, phone/skill models |
-| company.ts | `CompanyProfile*`, `CompanyRequest*`, `TimeSheet*`, `ClockIn*`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*` |
+| company.ts | `CompanyProfile*`, `CompanyRequest*`, `TimeSheet*`, `ClockIn*`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*`, sales `Deal*`/`CompanyInteraction*` enums + models |
 | notification.ts | `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` |
 | runner.ts | `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, interview models, `RunnerStartingToday` |
+| sales.ts | `SalesDashboardModel` + dashboard blocks, `SalesRangeKey`, `SalesCreateKind`, `SALES_RANGE_TABS` |
 | security.ts | `ChangeEmailRequest`, `GetEmailResponse`, `UserProfile` |
 | website.ts | `JobSearchFilter`, `JobViewModel`, `ContactForm` |
 | weeklyBoard.ts | `WeeklyBoard`, `RecruiterWeeklyBoard`, assignment/runner payloads |
@@ -113,7 +115,7 @@ Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold
 
 | File | Prefixes | Notes |
 |------|----------|-------|
-| index.ts | `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group), scroll behavior, canonical link, page titles |
+| index.ts | `/login`, `/forgot-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group → unauthenticated users go to `/login?returnUrl=`), scroll behavior, canonical link, page titles. `/login` and `/forgot-password` use `meta.layout: "auth"` (rendered without chrome by `App.vue`, styles in `assets/scss/auth.scss`) |
 | routesAgency.ts | `/recruiting/*`, `/sales/*`, `/accounting/*`, `/agency-profile` | Legacy `/agency-*` paths kept as redirects |
 | routesCompany.ts | `/company-requests`, `/company-invoices`, `/company-profile`, `/company-user-profile` | |
 | routesWorker.ts | `/register-worker`, `/worker-requests`, `/punch-card`, `/timesheet`, `/worker-history`, `/worker-profile`, `/worker-apply` | |
@@ -124,6 +126,7 @@ Agency route map (from `routesAgency.ts`):
 - `/recruiting/weekly-board`, `/recruiting/attendance-review`
 - `/recruiting/workers[/register | /:id]`, `/recruiting/candidates`
 - `/recruiting/companies[/create | /update/:companyProfileId | /:id]`
+- `/sales/dashboard`, `/sales/interactions`, `/sales/deals` (see SIGOOK_WEB_SALES_DASHBOARD.md)
 - `/sales/requests[...]`, `/sales/companies[...]`, `/sales/agencies[/create | /:id]`
 - `/accounting/invoices[/create]`, `/accounting/paystubs[/create]`, `/accounting/reports`
 
@@ -146,6 +149,8 @@ Agency route map (from `routesAgency.ts`):
 | Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail |
 | Candidates.vue | Candidate pool; convert to worker, bulk import |
 | Agencies.vue / CreateAgency.vue / DetailAgency.vue | Sub-agencies (sales) |
+| Dashboard.vue | Sales dashboard — snapshot cards + deals/interactions CRUD (see SIGOOK_WEB_SALES_DASHBOARD.md) |
+| SalesInteractions.vue / SalesDeals.vue | Interaction and deal grids reusing the dashboard's create/edit modal |
 | AgencyProfile.vue | Own agency profile, locations, personnel |
 | accounting/Invoices.vue / accounting/CreateInvoice.vue | Invoice list and creation (preview → generate) |
 | accounting/PayStubs.vue / accounting/CreatePayStub.vue | Pay stub list and manual creation |
@@ -188,13 +193,13 @@ Domain folders + shared root-level components. Components take function refs (e.
 
 | Folder | Contents |
 |--------|----------|
-| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged, UploadFiles, UserNotification |
+| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged, UserNotification |
 | agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
 | agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4, TimesheetsReport |
 | agency_company/ | CompanyDetailTab, CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
 | agency_request/ | AgencyRequestDetail, AgencyRequestSkills, timesheet detail/modal, AgencyShiftDetail, Applicants, ManageApplicantsModal, ContactListModal, DatepickerModal, EditTextarea, JobBoardsModal, MassivePunchCard, punch-card container, ReportTo, RequestedBy, RequestNotes(+Table), Runners, TableRequests, WorkerStatusFilter |
 | calendar/ | CalendarPunchCard |
-| candidate/ | CreateCandidate, DetailAddress, DetailCandidate, ModalCandidateRequests, ModalDocuments |
+| candidate/ | CreateCandidate, DetailAddress, DetailCandidate, DocumentsForm, ModalCandidateRequests, ModalDocuments |
 | company/ | CompanyCancelList, CompanyInvoices, CompanyUsers(+Update), DialogCompanyUpdateEmail, DialogReplaceWorker, DialogRequestWorker, ProfileBusiness/Contact/Location |
 | company_request/ | CompanyRequestDetail, punch card components, timesheet detail/modal, CompanyRequestWorkers |
 | landing/ | Section components per page (About/, Employers/, Home/, Industries/, OpenPositions/, Partner/, SpecialProjects/, Talents/) + `shared/` (cards, forms incl. CandidateApplyForm/Modal + WorkerRegisterForm, hero, icons, layout Header/Footer/GlobalBackground/AppVersionToast, sections, ui) |
@@ -202,6 +207,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | notifications/ | NotificationBell (agency sidebar bell, uses `useNotifications`) |
 | request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
+| sales_dashboard/ | 15 components for the sales dashboard: SalesCard/List/ListRow shells, Interaction/Client/Deal lists, SalesBarChart + SalesGoalDonut + SalesMeterList + SalesRangeTabs charts, SalesCreateModal + Interaction/Deal/Client forms, SearchSelect (see SIGOOK_WEB_SALES_DASHBOARD.md) |
 | weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
 | worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 
@@ -223,7 +229,7 @@ Exports the **`api` wrapper** (`get`, `post`, `put`, `patch`, `del`) that return
 
 ### securityService.ts
 
-oidc-client-ts `UserManager` configured from `VUE_APP_SECURITY_SERVER` / `VUE_APP_CLIENT`; user loaded/unloaded/token-expired events wired to the security store in `main.ts`.
+oidc-client-ts `UserManager` configured from `VUE_APP_SECURITY_SERVER` / `VUE_APP_CLIENT`; user loaded/unloaded/token-expired events wired to the security store in `main.ts`. Also exports `signInWithPassword(email, password)` (password grant via `api/authApi.ts` → `/connect/userinfo` → `mgr.storeUser` + `mgr.events.load`, so the axios interceptor and silent renew keep working) and `signInWithMicrosoft()` (`signinRedirect({ acr_values: 'idp:oidc' })`). Error-code → message map lives in `security/authErrors.ts`.
 
 ### menu.ts
 
@@ -231,7 +237,7 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 
 ---
 
-## src/utils/ (14 files)
+## src/utils/ (17 files)
 
 | File | Purpose |
 |------|---------|
@@ -241,10 +247,13 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | directHiring.ts | Direct-hire specific logic |
 | distributeHours.ts | Timesheet hour distribution |
 | downloadFile.ts | Blob download helper |
-| fileUpload.ts | File upload helper |
+| fileNaming.ts | Generates the `Prefix_<guid>.ext` blob name sent in multipart uploads |
+| fileValidation.ts | Shared `accept` string + extension/size check for `b-upload` pickers |
+| multipart.ts | Builds the `data` JSON + file parts FormData for multipart endpoints |
 | filters.ts | Formatter helpers |
 | locationLabel.ts | Location display label formatting |
 | phoneFormat.ts | Phone number formatting |
+| salesDashboardFormat.ts | Sales dashboard formatters: `compactMoney`, `relativeTime`, `shortDate`, `initialsOf` |
 | timeSheetApprove.ts | Timesheet approval workflow |
 | toast.ts | Toast notification helper (replaces the old toastMixin) |
 | validation.ts | Shared validation helpers |
@@ -254,7 +263,7 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 
 ---
 
-## src/composables/ (13 files)
+## src/composables/ (18 files)
 
 | File | Purpose |
 |------|---------|
@@ -262,7 +271,11 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | useBodyScrollLock.ts | `lockScroll`/`unlockScroll` for modals |
 | useCarousel.ts | Generic carousel state (landing) |
 | useCreateWorker.ts | Worker registration flow |
+| useCurrentAgent.ts | Current agent display name (OIDC claims + personnel lookup; sales dashboard header) |
+| useDropdownReveal.ts | Scrolls open dropdowns/datepickers into view inside modal scroll containers |
+| useElementSize.ts | ResizeObserver-based element size (responsive SVG charts) |
 | useFocusTrap.ts | Focus trap for modal accessibility |
+| useGridSort.ts | Sortable-column state for paginated grids (sales interactions/deals tables) |
 | useJobs.ts | Public job search state (landing) |
 | useModuleBase.ts | Resolves `/sales` vs `/recruiting` path prefix for shared pages |
 | useNotifications.ts | Loads notification bell payload; maps typed lists → `AppNotification[]` grouped by type |
@@ -271,6 +284,7 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | useRunnerActions.ts | Runner menu state (status/interview/history modals) + delete with confirm; shared by the Runners tab and the weekly board |
 | useRevealOnScroll.ts | Reveal-on-scroll animation (landing) |
 | useStickyForm.ts | Persists in-progress form state |
+| useTween.ts | Numeric tween animation (sales goal donut) |
 
 ---
 
@@ -289,7 +303,7 @@ Plain functions imported where needed (Vue 3 removed template filters):
 - **directives/**: `status-directive.ts` only (registered as `v-status` in main.ts) — status badge rendering.
 - **constants/**: `enums.ts` (6 numeric enums used by agency/company pages, incl. `ClockType`), `catalog.ts` (`maximumHoursPerDay` from `VUE_APP_MAXIMUM_HOURS_DAY`, `residencyList`), `workerFeatures.ts` (worker status feature list).
 - **lang/**: NOT i18n translations — a single `validator.ts` registers VeeValidate rules (built-in + custom `cvn-postal-code` and `phoneCustom` via google-libphonenumber) with English messages inline. The app is English-only; no vue-i18n.
-- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json).
+- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json) + `sales/salesDashboard.json` (frozen sales dashboard summary payload — see SIGOOK_WEB_SALES_DASHBOARD.md).
 
 ---
 
@@ -325,16 +339,17 @@ assets/
 
 ### Authentication
 
-1. Login via IdentityServer (oidc-client-ts); `/callback` completes sign-in, `/silent-refresh` renews tokens in a hidden iframe.
-2. On 401, `apiService` retries once after `silentSignin`; on failure redirects to login.
-3. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
+1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" still redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`.
+2. On 401, `apiService` retries once after `silentSignin`; on failure sends the browser to `/login?returnUrl=`.
+3. Logout (`securityStore.signOut`) revokes the refresh token, clears the local user and routes to `/` — it never hits IdentityServer's end-session page.
+4. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
 
 ### Patterns
 
 - **No API data caching in Pinia** — components fetch directly via `src/api` functions; stores keep list filters so pagination/search survive route changes.
 - **Forms:** VeeValidate 4 + Yup schemas; toasts via `src/utils/toast.ts`.
 - **Reusable components take function props** (API functions passed in) instead of dispatch strings.
-- **Styling:** Bootstrap 5 CSS + `@ntohq/buefy-next` (Bulma-based) + global SCSS partials in `src/assets/scss/`.
+- **Styling:** Bootstrap 5 CSS + `buefy` 3.x (Bulma 1.x) + global SCSS partials in `src/assets/scss/`. `index.html` pins `data-theme="light"` to block Bulma 1's automatic dark mode.
 - Naming conventions: see `Sigook.Web/CLAUDE.md`.
 
 ### Build & Deploy

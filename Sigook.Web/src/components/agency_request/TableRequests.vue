@@ -43,7 +43,7 @@
       focuseable :default-sort="defaultSort" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
       @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="numberId" label="ID" sortable searchable>
@@ -105,7 +105,7 @@
           </template>
           <template v-slot="props">
             {{ dateMonth(props.row.createdAt) }}
-            <AgencyShift class="fz-2 d-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
+            <AgencyShift class="fz-2 is-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
           </template>
         </b-table-column>
         <b-table-column field="displayRecruiters" label="Recruiter" sortable searchable>
@@ -114,7 +114,7 @@
               @keypress="onInputEntered"></b-input>
           </template>
           <template v-slot="props">
-            <div v-if="props.row.displayRecruiters" class="text-capitalize is-inline-block align-middle">
+            <div v-if="props.row.displayRecruiters" class="is-capitalized is-inline-block valign-middle">
               {{ breakWord(props.row.displayRecruiters) }}
             </div>
             <span v-else class="op3">—</span>
@@ -145,8 +145,8 @@
         </b-table-column>
         <b-table-column field="workersQuantityWorking" sortable>
           <template v-slot:header>
-            <p class="fw-semibold">Workers</p>
-            <p class="fw-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+            <p class="has-text-weight-semibold">Workers</p>
+            <p class="has-text-weight-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
           </template>
           <template v-slot="props">
             {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
@@ -192,7 +192,7 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <div class="text-center">
+            <div class="has-text-centered">
               <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
@@ -208,6 +208,10 @@
             <template #trigger>
               <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
             </template>
+            <b-dropdown-item v-if="props.row.requestStatus !== RequestStatus.Cancelled" aria-role="listitem"
+              @click="router.push({ path: requestDetailBase + '/update/' + props.row.companyProfileId + '/' + props.row.id })">
+              Edit Request
+            </b-dropdown-item>
             <b-dropdown-item aria-role="listitem"
               @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'Applicants' } })">
               Applicants
@@ -230,12 +234,12 @@
     </b-table>
 
     <!-- bulk cancel -->
-    <b-modal v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
       <CancelList @sendReason="onBulkCancelConfirmed" />
     </b-modal>
 
     <!-- bulk recruiters -->
-    <b-modal v-model="showBulkRecruitersModal" @close="showBulkRecruitersModal = false" width="500px" :destroy-on-hide="true">
+    <b-modal custom-content-class="card" v-model="showBulkRecruitersModal" @close="showBulkRecruitersModal = false" width="500px" :destroy-on-hide="true">
       <BulkRecruiterModal :request-count="checkedRows.length"
         @submit="onBulkRecruitersConfirmed"
         @cancel="showBulkRecruitersModal = false" />
@@ -590,7 +594,6 @@ loadRequests();
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  color: #fff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   // convex right-pointing arrow; the tip pokes into the next (solid) flag,
@@ -599,11 +602,13 @@ loadRequests();
 
   &--asap {
     background: #ff9932;
+    color: #1e1e1e;
     z-index: 2;
   }
 
   &--dh {
     background: #1d4ed8;
+    color: #fff;
     z-index: 1;
   }
 

@@ -1,10 +1,11 @@
 <template>
-  <div>
-    <u class="color-primary" @click="expandOrColapse">Data Entry Terms</u>
-    <div v-if="expanded">
-      <br />
+  <b-collapse :model-value="false">
+    <template #trigger>
+      <u class="color-primary">Data Entry Terms</u>
+    </template>
+    <div class="terms-body">
       <div v-if="isCompanyProfile">
-        <h1 class="text-capitalize fz1 fw-bold">Business Owner Data Entry</h1>
+        <h1 class="is-capitalized fz1 has-text-weight-bold">Business Owner Data Entry</h1>
         <p>
           If you are a Business Owner, by clicking the submit button, you
           acknowledge your receipt and approval of the time report. You
@@ -14,7 +15,7 @@
         </p>
       </div>
       <div v-else-if="isWorkerProfile">
-        <h1 class="text-capitalize fz1 fw-bold">Worker Data Entry</h1>
+        <h1 class="is-capitalized fz1 has-text-weight-bold">Worker Data Entry</h1>
         <p>
           If you are a Worker, you certify that the days and hours entered
           on the time report through the System are correct, complete, and were
@@ -23,7 +24,7 @@
           the removal of your account from the System.
         </p>
       </div>
-      <h1 class="text-capitalize fz1 fw-bold">Data Entry Terms</h1>
+      <h1 class="is-capitalized fz1 has-text-weight-bold">Data Entry Terms</h1>
         <p>
           By submitting your hours, comments, data and/or approval of time
           report information to the System (the "Time Report Information"), you
@@ -41,19 +42,14 @@
           Information to any third party for marketing purposes.
         </p>
     </div>
-  </div>
+  </b-collapse>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useSecurityStore } from '@/stores/security';
 import roles from "@/security/roles";
 
 const securityStore = useSecurityStore();
-const expanded = ref(false);
-
-function expandOrColapse() {
-  expanded.value = !expanded.value;
-}
 
 const isCompanyProfile = computed(() =>
   securityStore.userRoles.some((ur) => ur === roles.company || ur === roles.companyUser)
@@ -65,5 +61,9 @@ const isWorkerProfile = computed(() =>
 <style lang="scss" scoped>
 u {
   cursor: pointer;
+}
+
+.terms-body {
+  margin-top: 1rem;
 }
 </style>

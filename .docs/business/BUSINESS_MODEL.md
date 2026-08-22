@@ -100,6 +100,6 @@ Request state machine (Open/Filled/Cancelled — `RequestStatus` values 1, 3, 4;
 ## Related Documents
 
 - `.docs/business/BILLING_RULES.md` — invoice composition, HST
-- `.docs/business/PAYROLL_RULES.md` / `.docs/business/PAYSTUB_GENERATION.md` — deductions and pay stub flow
+- `.docs/business/PAYROLL_RULES.md` — deductions and pay stub flow
 - `.docs/business/TIMESHEET_RULES.md` — hours breakdown (OT, holiday)
 - `.docs/technical/ENTITIES_RELATIONSHIPS.md` — data model

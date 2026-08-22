@@ -9,7 +9,17 @@
     "failed": "Authentication failed. Please sign in again.",
     "token_expired": "Your session has expired. Please sign in again.",
     "user_cancelled": "Sign in was cancelled.",
-    "invalid_credentials": "Invalid credentials. Please check and try again."
+    "invalid_credentials": "Invalid credentials. Please check and try again.",
+    "inactive_user": "Your account is inactive. Please contact support.",
+    "email_not_confirmed": "Your email address has not been confirmed yet.",
+    "locked_out": "Too many failed attempts. Try again in a few minutes."
+  },
+  "password_reset": {
+    "invalid_code": "Invalid code. Please check it and try again.",
+    "code_expired": "The code has expired. Request a new one.",
+    "too_many_attempts": "Too many attempts. Request a new code.",
+    "password_policy": "The new password was rejected.",
+    "send_failed": "Could not send the code. Try again later."
   },
   "validation": {
     "required_field": "This field is required.",

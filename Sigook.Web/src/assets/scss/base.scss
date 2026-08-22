@@ -159,7 +159,6 @@ button {
   background: url('../images/edit-button.svg') no-repeat 50%;
   -webkit-background-size: 60%;
   background-size: 60%;
-  // background-color: #e4f5e4;
 }
 
 .btn-icon-delete {
@@ -167,14 +166,12 @@ button {
   -webkit-background-size: 60%;
   background-size: 60%;
   margin-left: 10px;
-  // background-color: #fbe4e6;
 }
 
 .btn-icon-reject {
   background: url('../images/reject.png') no-repeat 50%;
   -webkit-background-size: 55%;
   background-size: 55%;
-  // background-color: #fbe4e6;
 }
 
 .btn-icon-worker-plus {
@@ -208,13 +205,12 @@ button {
   }
 
   .bg-dark {
-    background: #333333;
+    background: $navy;
     color: white;
     text-align: left;
     padding: 12px 20px;
     font-weight: 400;
     font-size: 22px;
-    // margin-top: -12px;
     margin-bottom: 0;
   }
 
@@ -270,7 +266,6 @@ button {
     transition: all 0.3s ease;
     max-height: 84vh;
     overflow: auto;
-    // font-family: Helvetica, Arial, sans-serif;
   }
 
 
@@ -328,33 +323,29 @@ button {
 // forms
 ::-webkit-input-placeholder {
   /* Chrome/Opera/Safari */
-  color: #b9b9b9;
+  color: #767676;
   font-weight: 300;
   font-family: 'Open Sans', "Helvetica Neue", sans-serif;
-  opacity: .7;
 }
 
 ::-moz-placeholder {
   /* Firefox 19+ */
-  color: #b9b9b9;
+  color: #767676;
   font-weight: 300;
-  opacity: .7;
   font-family: 'Open Sans', "Helvetica Neue", sans-serif;
 }
 
 :-ms-input-placeholder {
   /* IE 10+ */
-  color: #b9b9b9;
+  color: #767676;
   font-weight: 300;
-  opacity: .7;
   font-family: 'Open Sans', "Helvetica Neue", sans-serif;
 }
 
 :-moz-placeholder {
   /* Firefox 18- */
-  color: #b9b9b9;
+  color: #767676;
   font-weight: 300;
-  opacity: .7;
   font-family: 'Open Sans', "Helvetica Neue", sans-serif;
 }
 
@@ -364,13 +355,13 @@ button {
   padding: 0 10px;
 
   &.is-danger {
-    border-color: #da3025;
+    border-color: $danger;
   }
 }
 
 span.help.is-danger {
   display: block;
-  color: #d93025;
+  color: $danger;
   font-size: 14px;
   font-weight: normal;
   margin-left: calc(35% + 10px);
@@ -408,19 +399,15 @@ input[type="file"] {
 
 // color
 .color-primary {
-  color: $primary !important;
+  color: $blue !important;
 }
 
 .color-green {
-  color: $green;
-}
-
-.color-green-dark {
-  color: #469a1f;
+  color: $green-text;
 }
 
 .color-gray-light {
-  color: #adadad;
+  color: $grey-light;
 }
 
 .color-gray-dark {
@@ -428,13 +415,47 @@ input[type="file"] {
 }
 
 .color-danger {
-  color: #f57f6c;
+  color: $danger;
+}
+
+.border-0 {
+  border: 0 !important;
+}
+
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+.align-text-top {
+  vertical-align: text-top !important;
+}
+
+.h-auto {
+  height: auto !important;
+}
+
+.w-50 {
+  width: 50% !important;
+}
+
+.col-min-250 {
+  min-width: 250px;
+}
+
+@media (min-width: 576px) {
+  .p-sm-0 {
+    padding: 0 !important;
+  }
+
+  .p-sm-4 {
+    padding: 1.5rem !important;
+  }
 }
 
 .line-orange {
   display: block;
   width: 100px;
-  border-top: 3px solid $accent;
+  border-top: 3px solid $primary;
   margin: 8px auto 30px;
 }
 
@@ -454,13 +475,11 @@ input[type="file"] {
   opacity: .3;
 }
 
-// ========================================
-// STATUS DOTS (Small circular indicators)
-// ========================================
+// status dots
 .status-open,
 .status-apply,
 .status-applied {
-  background-color: #ff9932; // Orange - more vibrant
+  background-color: #ff9932;
   box-shadow: 0 0 0 4px rgba(255, 153, 50, 0.3);
   transition: all 0.3s ease;
 }
@@ -469,28 +488,26 @@ input[type="file"] {
 .status-inprogress,
 .status-inqueue,
 .status-working {
-  background-color: #0da7ff; // Brighter blue
-  box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
+  background-color: $primary;
+  box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.3);
   transition: all 0.3s ease;
-
-  // Subtle pulse animation for active states
   animation: pulse-blue 2s infinite;
 }
 
 .status-filled,
 .status-book,
 .status-booked {
-  background-color: #3eb800; // More saturated green
-  box-shadow: 0 0 0 4px rgba(62, 184, 0, 0.3);
+  background-color: $green;
+  box-shadow: 0 0 0 4px rgba(72, 199, 142, 0.3);
   transition: all 0.3s ease;
 }
 
 .status-cancelled,
 .status-reject,
 .status-rejected {
-  background-color: #e02020; // Brighter red
+  background-color: $danger;
   opacity: 0.8;
-  box-shadow: 0 0 0 4px rgba(224, 32, 32, 0.2);
+  box-shadow: 0 0 0 4px rgba(229, 45, 39, 0.2);
   transition: all 0.3s ease;
 }
 
@@ -501,16 +518,15 @@ input[type="file"] {
   opacity: 0.6;
 }
 
-// Pulse animation for active states (pending, inqueue, working)
 @keyframes pulse-blue {
 
   0%,
   100% {
-    box-shadow: 0 0 0 4px rgba(13, 167, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(0, 173, 239, 0.3);
   }
 
   50% {
-    box-shadow: 0 0 0 6px rgba(13, 167, 255, 0.4);
+    box-shadow: 0 0 0 6px rgba(0, 173, 239, 0.4);
   }
 }
 
@@ -520,30 +536,29 @@ input[type="file"] {
 .Cancelled,
 .Reject,
 .Rejected {
-  color: $red;
+  color: $danger;
 }
 
 .Filled {
-  color: $green;
+  color: $green-text;
 }
 
 .Open,
 .Apply,
 .applied {
-  color: $accent;
+  color: $accent-text;
 }
 
-// .InProgress, // REMOVED (2026-01-28) - InProgress state eliminated
 .Book {
-  color: $primary;
+  color: $blue;
 }
 
 .Booked {
-  color: $green;
+  color: $green-text;
 }
 
 .InQueue {
-  color: $green;
+  color: $green-text;
 }
 
 .Decline,
@@ -615,10 +630,7 @@ input[type="file"] {
 }
 
 .fade-enter,
-.fade-leave-to
-
-/* .fade-leave-active below version 2.1.8 */
-  {
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -721,7 +733,6 @@ input[type="checkbox"] {
 
 .vue-modal.header-fixed {
   .modal-container {
-    // max-height: none;
     overflow: hidden;
   }
 }
@@ -778,7 +789,7 @@ input[type="checkbox"] {
 }
 
 .tag_primary_absolute {
-  background: #1fb7ff;
+  background: $primary;
   color: white;
   font-weight: 400;
   align-items: center;
@@ -888,10 +899,10 @@ i.margin-left {
     font-weight: 700;
     text-transform: uppercase;
     font-size: 18px;
-    color: #a5a5a5;
+    color: $grey-light;
 
     &.apply {
-      color: #88d412;
+      color: #4a7d00;
     }
 
     &.decline {
@@ -928,7 +939,7 @@ i.margin-left {
 
       div {
         font-size: 14px;
-        color: #a0a0a0;
+        color: $grey-light;
         margin-right: 80px;
       }
     }
@@ -968,68 +979,6 @@ i.margin-left {
 
 .block {
   display: block;
-}
-
-/*
-Pagination
-*/
-.pagination {
-  text-align: center;
-  margin-top: 30px;
-  margin-bottom: 10px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  display: flex;
-  justify-content: center;
-  font-size: 14px;
-
-  ul li {
-    display: inline-block;
-    margin: 0 7px;
-    color: #b5b5b5;
-    cursor: pointer;
-    font-weight: 600;
-    text-align: center;
-
-    &:hover {
-      color: #949494;
-    }
-
-    &.active {
-      color: $primary;
-      border-color: $primary;
-      background: #21b7ff2e;
-      width: 24px;
-      height: 21px;
-    }
-  }
-
-  button {
-    background-image: url('../images/right-arrow.svg');
-    width: 9px;
-    height: 9px;
-    background-size: contain;
-    display: inline-block;
-    vertical-align: middle;
-    margin: 0 5px;
-    border: 0;
-    position: relative;
-    top: -1px;
-
-    &.btn-prev {
-      -webkit-transform: rotateY(-180deg);
-      -moz-transform: rotateY(-180deg);
-      -ms-transform: rotateY(-180deg);
-      -o-transform: rotateY(-180deg);
-      transform: rotateY(-180deg);
-    }
-  }
-
-  button[disabled] {
-    opacity: .5;
-  }
 }
 
 .list-item-border-bottom {
@@ -1160,21 +1109,21 @@ label.superscript {
   background: #a8a8a8;
 }
 
-.expandable-section-list .container-flex:nth-child(even) {
+.expandable-section-list .columns:nth-child(even) {
   background: #f9f9f9;
 }
 
-.expandable-section-list .container-flex:nth-child(odd) {
+.expandable-section-list .columns:nth-child(odd) {
   background: #ffffff;
 }
 
-.expandable-section-list .container-flex {
+.expandable-section-list .columns {
   margin: 0;
   padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.expandable-section-list .container-flex:last-child {
+.expandable-section-list .columns:last-child {
   border-bottom: none;
 }
 
@@ -1215,12 +1164,6 @@ body {
 .main {
   display: block;
   flex: 1 0 auto;
-}
-
-.form-md {
-  width: 80%;
-  min-width: 800px;
-  margin: 30px auto;
 }
 
 .input-block {
@@ -1297,7 +1240,7 @@ body {
   }
 
   &.is-danger {
-    border-color: #da3025;
+    border-color: $danger;
   }
 }
 
@@ -1305,11 +1248,11 @@ body {
 
   input,
   button {
-    border-color: #da3025 !important;
+    border-color: $danger !important;
   }
 
   &+button {
-    border-color: #da3025 !important;
+    border-color: $danger !important;
   }
 }
 
@@ -1320,20 +1263,7 @@ body {
   background-size: 10px;
 }
 
-@media (max-width: 900px) {
-  .form-md {
-    width: 100%;
-    min-width: 0;
-    margin: 0;
-  }
-}
-
 @media (max-width: 767px) {
-  .form-md {
-    width: 100%;
-    margin: 0;
-  }
-
   .update-image {
     margin: 10px auto;
     display: block;

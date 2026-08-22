@@ -1,14 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        Workers
-        <span class="fw-light fz-1">
-          ({{ totalItems }})
-        </span>
-      </h2>
-    </div>
+    <PageHeader title="Workers" :count="totalItems" :crumbs="moduleCrumbs" />
     <div>
       <export :url="'/api/agency/workers/File'" :params="serverParams" :fileName="'Workers'"
         @onDataLoading="(value) => isLoading = value">
@@ -23,7 +16,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="profileImage" width="50" v-slot="props">
@@ -52,7 +45,7 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <span class="d-block">
+              <span class="is-block">
                 <router-link :to="{ path: '/recruiting/workers/' + props.row.id }">
                   {{ props.row.fullName }}
                 </router-link>
@@ -60,7 +53,7 @@
                 <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
               </span>
               <p>
-                <i class="fz-2 text-lowercase block">
+                <i class="fz-2 is-lowercase block">
                   <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
                 </i>
               </p>
@@ -94,7 +87,7 @@
                   </b-tag>
                 </b-taglist>
               </div>
-              <span v-else class="op3 is-inline-block align-middle pe-0">Request ID</span>
+              <span v-else class="op3 is-inline-block valign-middle pr-0">Request ID</span>
             </template>
           </b-table-column>
           <b-table-column field="createdAt" label="Created At" sortable searchable>
@@ -164,22 +157,27 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
-import { workerFeatures as features } from '@/constants/workerFeatures';
+import { workerFeatures as features, type WorkerFeature } from '@/constants/workerFeatures';
+import type { AgencyWorkerFilter, AgencyWorkerListItem } from '@/types/agency';
+import type { TableColumnRef } from '@/types/common';
 import { formatPhone } from '@/utils/phoneFormat';
 import { getAgencyWorkers, updateApprovedToWork } from '@/api/agencyWorkerApi';
 import { dateMonth } from '@/utils/filters';
 import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { useModuleBase } from '@/composables/useModuleBase';
 
+const { moduleCrumbs } = useModuleBase();
 const router = useRouter();
 const agencyStore = useAgencyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const createdAtDatesSelected = ref<any[]>([]);
-const featuresSelected = ref<any[]>([]);
-const rows = ref<any[]>([]);
-const serverParams = ref<any>({
+const createdAtDatesSelected = ref<Date[]>([]);
+const featuresSelected = ref<WorkerFeature[]>([]);
+const rows = ref<AgencyWorkerListItem[]>([]);
+const serverParams = ref<AgencyWorkerFilter>({
   sortBy: 0,
   isDescending: false,
   pageIndex: 1,
@@ -198,11 +196,11 @@ const { defaultSort, onSortChange } = useGridSort(serverParams, {
 if (agencyStore.agencyWorkerProfileFilter) {
   serverParams.value = agencyStore.agencyWorkerProfileFilter;
   if (serverParams.value.features) {
-    featuresSelected.value = features.filter((s: any) => serverParams.value.features.some((sps: any) => sps == s.id));
+    featuresSelected.value = features.filter((s) => serverParams.value.features?.includes(s.id));
   }
   if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
-    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
   }
 }
 loadWorkers();
@@ -212,7 +210,7 @@ function onPageChange(params: number) {
   loadWorkers();
 }
 
-function onCellClick(row: any, column: any) {
+function onCellClick(row: AgencyWorkerListItem, column: TableColumnRef) {
   switch (column.field) {
     case 'actions':
       break;
@@ -230,8 +228,8 @@ function onInputEntered(event: KeyboardEvent) {
 }
 
 function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadWorkers();
 }
 
@@ -241,11 +239,11 @@ function onCreatedAtCleared() {
 }
 
 function onFeatureChange() {
-  serverParams.value.features = featuresSelected.value.map((fs: any) => fs.id);
+  serverParams.value.features = featuresSelected.value.map((fs) => fs.id);
   loadWorkers();
 }
 
-function goToApplicants(item: any) {
+function goToApplicants(item: { id: string }) {
   router.push({
     path: `/recruiting/requests/${item.id}`,
     query: { tab: 'Applicants' },
@@ -256,8 +254,8 @@ function loadWorkers() {
   isLoading.value = true;
   agencyStore.updateAgencyWorkerProfileFilter(serverParams.value);
   getAgencyWorkers(serverParams.value)
-    .then((workers: any) => {
-      rows.value = workers.items.map((w: any) => ({ ...w, actions: null }));
+    .then((workers) => {
+      rows.value = workers.items;
       totalItems.value = workers.totalItems;
       isLoading.value = false;
     })
@@ -266,7 +264,7 @@ function loadWorkers() {
     });
 }
 
-function deleteWorker(worker: any) {
+function deleteWorker(worker: AgencyWorkerListItem) {
   isLoading.value = true;
   updateApprovedToWork(worker.id)
     .then(() => {
@@ -281,7 +279,7 @@ function deleteWorker(worker: any) {
     });
 }
 
-function confirmDelete(worker: any) {
+function confirmDelete(worker: AgencyWorkerListItem) {
   showAlertConfirm(
     'Are you sure?',
     'You want to disable the worker' + '. ' + 'This worker will not be able to apply to new requests',

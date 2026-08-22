@@ -6,7 +6,7 @@
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" default-sort="invoiceNumberId"
         v-model:current-page="serverParams.pageIndex">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column label="Invoice Number" field="invoiceNumberId" v-slot="props">

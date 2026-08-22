@@ -28,9 +28,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 {
     private readonly FilesConfiguration filesConfiguration = options.Value;
 
-    public async Task Create<T>(T entity) where T : class => await context.Set<T>().AddAsync(entity);
+    public async Task Create<T>(IEnumerable<T> entities) where T : class => await context.Set<T>().AddRangeAsync(entities);
 
-    public void Delete<T>(T entity) where T : class => context.Set<T>().Remove(entity);
+    public void Delete<T>(IEnumerable<T> entities) where T : class => context.Set<T>().RemoveRange(entities);
 
     public Task Update<T>(T entity) where T : class => Task.FromResult(context.Set<T>().Update(entity));
 
@@ -312,6 +312,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         InternalRequirements = r.InternalRequirements,
                         SalesRepresentativeId = r.RequestComission != null ? r.RequestComission.AgencyPersonnelId : null,
                         CompanyUserIds = r.RequestCompanyUser.Select(rcu => rcu.CompanyUserId),
+                        ComplianceItems = r.ComplianceItems.Select(ci => new RequestComplianceItemModel
+                        {
+                            Id = ci.Id,
+                            Name = ci.Name,
+                            IsMandatory = ci.IsMandatory,
+                            DocumentTarget = ci.DocumentTarget
+                        }),
                         JobLocation = new LocationDetailModel
                         {
                             Id = r.JobLocation.Id,
@@ -629,7 +636,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
              NumberId = r.NumberId,
              IsAsap = r.IsAsap,
              AgencyFullName = r.CompanyProfile.Agency.FullName,
-             AgencyLogo = r.CompanyProfile.Agency.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Agency.Logo.FileName}",
              CreatedAt = r.CreatedAt,
              JobTitle = r.JobTitle,
              WorkerRate = r.WorkerRate,
@@ -788,7 +794,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         CompanyFullName = r.CompanyProfile.FullName,
                         Logo = r.CompanyProfile.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Logo.FileName}",
                         AgencyFullName = r.CompanyProfile.Agency.FullName,
-                        AgencyLogo = r.CompanyProfile.Agency.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Agency.Logo.FileName}",
                         CreatedAt = r.CreatedAt,
                         JobTitle = r.JobTitle,
                         Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
@@ -1088,7 +1093,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         PhoneNumber = rc.Candidate != null
                             ? rc.Candidate.PhoneNumbers.FirstOrDefault().PhoneNumber
                             : rc.WorkerProfile.MobileNumber != null ? rc.WorkerProfile.MobileNumber : rc.WorkerProfile.Phone,
-                        Email = rc.Candidate != null ? rc.Candidate.Email : rc.WorkerProfile.Worker.Email
+                        Email = rc.Candidate != null ? rc.Candidate.Email : rc.WorkerProfile.Worker.Email,
+                        Status = rc.Status
                     };
         var predicateNew = ApplyFilterRequestApplicants(filter);
         query = query.Where(predicateNew);
@@ -1119,6 +1125,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             predicate = predicate.And(ra => ra.CreatedBy.ToLower().Contains(filter.CreatedBy.ToLower()));
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(ra => ra.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && ra.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
+        if (filter.Statuses is { Count: > 0 })
+            predicate = predicate.And(ra => filter.Statuses.Contains(ra.Status));
         return predicate;
     }
 
@@ -1247,6 +1255,22 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     public async Task<RequestComission> GetRequestComission(Guid requestId) => await context.RequestComissions.FirstOrDefaultAsync(rc => rc.RequestId == requestId);
 
     public async Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId) => await context.RequestCompanyUsers.Where(rcu => rcu.RequestId == requestId).ToListAsync();
+
+    public async Task<IEnumerable<RequestComplianceItem>> GetComplianceItems(Guid requestId) => await context.RequestComplianceItems.Where(ci => ci.RequestId == requestId).ToListAsync();
+
+    public async Task<RequestApplicantComplianceItem> GetApplicantComplianceItem(Guid applicantId, Guid complianceItemId) =>
+        await context.RequestApplicantComplianceItems
+            .FirstOrDefaultAsync(ci => ci.RequestApplicantId == applicantId && ci.RequestComplianceItemId == complianceItemId);
+
+    public async Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceItems(Guid applicantId) =>
+        await context.RequestApplicantComplianceItems
+            .Where(ci => ci.RequestApplicantId == applicantId)
+            .ToListAsync();
+
+    public async Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceCompletions(IEnumerable<Guid> complianceItemIds) =>
+        await context.RequestApplicantComplianceItems
+            .Where(ci => complianceItemIds.Contains(ci.RequestComplianceItemId))
+            .ToListAsync();
 
     public async Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds)
     {

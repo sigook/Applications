@@ -9,12 +9,14 @@
             </container-request>
         </div>
 
-        <pagination v-if="data"
-                    :total-pages="data.totalPages"
-                    :index-page="data.pageIndex"
-                    :size-page="size"
-                    @changePage="(index) => loadRequestHistory(index)">
-        </pagination>
+        <b-pagination v-if="data && data.totalItems > size"
+                      v-model="currentPage"
+                      :total="data.totalItems"
+                      :per-page="size"
+                      size="is-small"
+                      rounded
+                      @change="loadRequestHistory">
+        </b-pagination>
     </div>
 </template>
 
@@ -22,7 +24,6 @@
 import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getAgencyWorkerProfileRequestHistory } from '@/api/agencyWorkerApi';
-import Pagination from "../../components/Paginator.vue";
 import ContainerRequest from "../agency/AgencyWorkerRequestHistoryContainer.vue";
 
 const props = defineProps<{ workerId: any }>();

@@ -173,7 +173,7 @@
   color: #44545f;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .disclaimer__sheet {
     border-radius: 14px;
   }

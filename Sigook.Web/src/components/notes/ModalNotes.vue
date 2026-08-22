@@ -1,8 +1,8 @@
 <template>
   <div class="notes-panel">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex align-items-center justify-content-between mb-3">
-      <h3 class="fw-bold mt-0 mb-0">Notes</h3>
+    <div class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-space-between mb-3">
+      <h3 class="has-text-weight-bold mt-0 mb-0">Notes</h3>
       <b-button v-if="showClose" icon-right="close" type="is-ghost" size="is-small" @click="onNoteClose"></b-button>
     </div>
     <note-form @onSave="addNote" />
@@ -11,7 +11,7 @@
         <li v-for="(item, index) in notes.items" :key="item.id">
           <div class="color-black">
             <span :style="{ backgroundColor: item.color }" class="note-color-icon"
-              :class="{ 'border': item.color === '#fefefe' }"></span>
+              :class="{ 'has-border': item.color === '#fefefe' }"></span>
             {{ item.note }}
             <br><i class="fz-2" v-if="item.createdBy">By: {{ emailName(item.createdBy) }} | </i>
             <i class="fz-2" v-if="item.createdAt">{{ dateFromNow(item.createdAt) }} | </i>
@@ -31,16 +31,14 @@
       </b-pagination>
     </div>
 
-    <b-modal v-model="showModalUpdate" width="420px" :destroy-on-hide="true">
-      <div class="modal-card" style="width: 100%">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Edit note</p>
-        </header>
-        <section class="modal-card-body">
+    <Teleport to="body">
+      <b-modal custom-content-class="card" v-model="showModalUpdate" width="420px" :destroy-on-hide="true">
+        <div class="p-4">
+          <h2 class="has-text-centered fz1 mb-4">Edit note</h2>
           <note-form :current-note="editNoteModel" @onSave="updateNote" />
-        </section>
-      </div>
-    </b-modal>
+        </div>
+      </b-modal>
+    </Teleport>
   </div>
 </template>
 <script setup lang="ts">

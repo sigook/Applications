@@ -5,27 +5,28 @@
     <div v-if="request && !request.canEdit && request.cancellationDetail" class="alert-warning">
       <b>Cancellation detail: </b> {{ request.cancellationDetail }}
     </div>
+    <Breadcrumbs :crumbs="crumbs" :back-to="requestBase" />
     <section class="wrapper-request-top" v-if="request">
       <div>
         <router-link :to="companyBase + '/' + request.companyProfileId">
           <img v-if="request.companyLogo" :src="request.companyLogo" alt="logo" />
         </router-link>
-        <h2 class="text-capitalize fz1 fw-bold">
+        <h2 class="is-capitalized fz1 has-text-weight-bold">
           <span v-if="request.isAsap || isDirectHiringComputed" class="request-flags">
             <span v-if="request.isAsap" class="request-flag request-flag--asap">Asap</span>
             <span v-if="isDirectHiringComputed" class="request-flag request-flag--dh">DH</span>
           </span>
-          <span class="fw-normal fz-0">{{ request.numberId }}</span>
+          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
           {{ request.jobTitle }}
           <i class="fz-2 block">{{ billingTitle }}</i>
         </h2>
       </div>
       <div>
-        <div class="d-inline-block option-request-top">
+        <div class="is-inline-block option-request-top">
           {{ breakWord(request.displayRecruiters) }}
         </div>
         <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top text-uppercase fw-bold is-inline-block" :class="getStatusColorClass(request)">
+          class="option-request-top is-uppercase has-text-weight-bold is-inline-block" :class="getStatusColorClass(request)">
           {{ RequestStatusLabels[request.status] }}
         </div>
         <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="request.canEdit">
@@ -73,7 +74,7 @@
         <runners v-if="visitedTabs.includes('Runners')" :request="request" class="p-2 p-sm-0" />
       </b-tab-item>
       <b-tab-item label="Workers" value="Workers">
-        <workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
+        <workers v-if="visitedTabs.includes('Workers')" class="p-2 p-sm-0" @refreshRequest="onRefreshRequest" />
       </b-tab-item>
       <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiringComputed">
         <punch-card v-if="visitedTabs.includes('PunchCard')" :request="request" class="p-2 p-sm-0" />
@@ -82,11 +83,11 @@
 
     <div v-if="request">
 
-      <b-modal v-model="cancelRequestModal" width="500px">
+      <b-modal custom-content-class="card" v-model="cancelRequestModal" width="500px">
         <cancel-list @sendReason="(reason) => onCancelRequest(reason)"></cancel-list>
       </b-modal>
 
-       <b-modal v-model="showShiftModal" width="800px">
+       <b-modal custom-content-class="card" v-model="showShiftModal" width="800px">
         <shift-modal @onUpdateShift="(val) => updateShift(val)" />
       </b-modal>
     </div>
@@ -108,6 +109,8 @@ import {
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { breakWord, dateFromNow } from '@/utils/filters';
 import { useModuleBase } from '@/composables/useModuleBase';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import type { PageBreadcrumb } from '@/types/common';
 import { useRecruitingAccess } from '@/composables/useRecruitingAccess';
 import Detail from '@/components/agency_request/AgencyRequestDetail.vue';
 import Workers from '@/components/agency/AgencyWorkers.vue';
@@ -120,7 +123,8 @@ import ShiftModal from '@/components/request/ShiftEditModal.vue';
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
-const { requestBase, companyBase } = useModuleBase();
+const { requestBase, companyBase, moduleCrumbs } = useModuleBase();
+const crumbs = computed<PageBreadcrumb[]>(() => [...moduleCrumbs.value, { label: 'Requests', to: requestBase.value }]);
 const { hasRecruitingAccess } = useRecruitingAccess();
 
 const isLoading = ref(true);

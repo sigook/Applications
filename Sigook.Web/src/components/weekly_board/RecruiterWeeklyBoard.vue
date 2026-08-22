@@ -70,19 +70,22 @@
             <b-tag :type="statusTagType(assignment.status)" rounded>{{ statusLabel(assignment.status) }}</b-tag>
           </div>
           <p class="card-position">{{ assignment.jobTitle }}</p>
-          <div class="card-meta container-flex">
-            <span class="col-12"><b-icon icon="office-building-outline" size="is-small"></b-icon>
+          <div class="card-meta columns is-multiline">
+            <span class="column is-12"><b-icon icon="office-building-outline" size="is-small"></b-icon>
               {{ assignment.companyName }}
             </span>
-            <span v-if="locationLabel(assignment)" class="col-12"><b-icon icon="map-marker-outline"
+            <span v-if="locationLabel(assignment)" class="column is-12"><b-icon icon="map-marker-outline"
                 size="is-small"></b-icon>
               {{ locationLabel(assignment) }}
             </span>
           </div>
 
-          <collapse-section v-if="assignment.runners.length > 0" class="sent-workers" variant="compact"
+          <b-collapse v-if="assignment.runners.length > 0" class="sent-workers collapse-compact"
             :model-value="false">
-            <template #title>RUNNERS ({{ assignment.runners.length }})</template>
+            <template #trigger="{ open }">
+              <span>RUNNERS ({{ assignment.runners.length }})</span>
+              <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small"></b-icon>
+            </template>
             <div v-for="worker in assignment.runners" :key="worker.runnerId" class="sent-worker">
               <div class="sent-worker-info">
                 <span class="sent-worker-avatar">{{ workerInitials(worker.fullName) }}</span>
@@ -108,7 +111,7 @@
                 </template>
               </runner-actions-dropdown>
             </div>
-          </collapse-section>
+          </b-collapse>
 
           <b-button v-if="!isPastDay(assignment.workDate) && assignment.usesRunners" type="is-primary" expanded
             icon-left="account-plus" class="add-worker-btn" @click="openAdd(assignment)">
@@ -118,7 +121,7 @@
       </div>
     </div>
 
-    <b-modal v-model="showAdd" :width="560" scroll="keep" :destroy-on-hide="true">
+    <b-modal has-modal-card v-model="showAdd" :width="560" scroll="keep" :destroy-on-hide="true">
       <create-runner v-if="activeAssignment" :request-id="activeAssignment.requestId" @create="onSend"
         @close="showAdd = false" />
     </b-modal>
@@ -144,7 +147,6 @@ import type { CreateRunnerModel } from '@/types/runner';
 import CreateRunner from '@/components/runner/CreateRunner.vue';
 import RunnerActionsDropdown from '@/components/runner/RunnerActionsDropdown.vue';
 import RunnerActionModals from '@/components/runner/RunnerActionModals.vue';
-import CollapseSection from '@/components/CollapseSection.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 
@@ -406,7 +408,7 @@ watch(range, loadBoard, { immediate: true });
       margin-bottom: 0.75rem;
       row-gap: 0.25rem;
 
-      .col-6 {
+      .column {
         min-width: 0;
       }
     }
@@ -450,7 +452,7 @@ watch(range, loadBoard, { immediate: true });
         color: $grey-font;
 
         &:hover {
-          color: $primary;
+          color: $blue;
           text-decoration: underline;
         }
       }

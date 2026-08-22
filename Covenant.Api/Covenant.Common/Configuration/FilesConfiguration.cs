@@ -1,10 +1,10 @@
-﻿namespace Covenant.Common.Configuration
+namespace Covenant.Common.Configuration;
+
+public class FilesConfiguration
 {
-    public class FilesConfiguration
-    {
-        public string FilesPath { get; set; }
-        public string FilesUrl { get; set; }
-        public string TemplatesReportsPath { get; set; }
-        public long MaximumFileSize { get; set; }
-    }
+    public string FilesPath { get; set; }
+    public string FilesUrl { get; set; }
+    public string TemplatesReportsPath { get; set; }
+    public long MaximumFileSize { get; set; }
+    public string[] DocumentFormats { get; set; } = [];
 }

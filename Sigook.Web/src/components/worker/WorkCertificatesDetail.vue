@@ -2,8 +2,8 @@
   <section>
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="d-flex align-items-center justify-content-between">
-      <h3 class="fw-bold fz-0">{{ 'Certificates' }}</h3>
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
+      <h3 class="has-text-weight-bold fz-0">{{ 'Certificates' }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalCertificate = true">
         Add Certificate
       </b-button>
@@ -12,11 +12,11 @@
       <div class="container-license hover-actions" v-for="(item, index) in localWorker.certificates"
         v-bind:key="'certificates' + index">
 
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="is-flex is-align-items-center is-justify-content-space-between">
           <a :href="item.pathFile" target="_blank" download>
-            <h4 class="fw-normal">{{ filename(item.fileName) }} <span class="download-button"></span></h4>
+            <h4 class="has-text-weight-normal">{{ filename(item.fileName) }} <span class="download-button"></span></h4>
           </a>
-          <div class="actions text-end">
+          <div class="actions has-text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete bg-transparent" type="button" @click="confirmDelete(item)">
                 {{ "Delete" }}
@@ -26,12 +26,12 @@
         </div>
         <div class="fz-1">
           <p>
-            <strong class="fw-normal">{{ item.description }}</strong>
+            <strong class="has-text-weight-normal">{{ item.description }}</strong>
           </p>
         </div>
       </div>
     </div>
-    <b-modal v-model="modalCertificate" width="500px">
+    <b-modal custom-content-class="card" v-model="modalCertificate" width="500px">
       <certificate-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </section>

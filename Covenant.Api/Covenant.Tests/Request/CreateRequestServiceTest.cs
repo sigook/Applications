@@ -2,6 +2,8 @@
 using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Request;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Request;
@@ -13,6 +15,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
 using Covenant.Api.Validators.Request;
+using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Covenant.Tests.Utils;
@@ -79,7 +82,8 @@ namespace Covenant.Tests.Accounting
                 Options.Create(new ServiceBusConfiguration()),
                 Mock.Of<ILogger<RequestService>>(),
                 new RequestCreateModelValidator(),
-                new RequestUpdateRequirementsModelValidator());
+                new RequestUpdateRequirementsModelValidator(),
+                new RequestAdapter());
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel
             {
@@ -101,8 +105,44 @@ namespace Covenant.Tests.Accounting
             Result<Guid> result = await _sut.CreateRequest(_model);
             Assert.True(result);
             Assert.Empty(result.Errors);
-            _requestRepository.Verify(r => r.Create(It.IsAny<Covenant.Common.Entities.Request.Request>()), Times.Once);
+            _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<Covenant.Common.Entities.Request.Request>>()), Times.Once);
             _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateRequestWithComplianceItems()
+        {
+            _model.ComplianceItems = new[]
+            {
+                new RequestComplianceItemModel { Name = "ID", IsMandatory = true, DocumentTarget = ComplianceDocumentTarget.Identification1 },
+                new RequestComplianceItemModel { Name = "WP", IsMandatory = false, DocumentTarget = ComplianceDocumentTarget.OtherDocument }
+            };
+            Result<Guid> result = await _sut.CreateRequest(_model);
+            Assert.True(result);
+            _requestRepository.Verify(r => r.Create(It.Is<List<RequestComplianceItem>>(items =>
+                items.Count == 2
+                && items.Any(i => i.Name == "ID" && i.IsMandatory && i.DocumentTarget == ComplianceDocumentTarget.Identification1)
+                && items.Any(i => i.Name == "WP" && !i.IsMandatory && i.DocumentTarget == ComplianceDocumentTarget.OtherDocument))), Times.Once);
+        }
+
+        [Fact]
+        public async Task ErrorWhenComplianceItemHasNoName()
+        {
+            _model.ComplianceItems = new[] { new RequestComplianceItemModel { Name = " ", IsMandatory = true } };
+            Result<Guid> result = await _sut.CreateRequest(_model);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task ErrorWhenComplianceItemsAreDuplicated()
+        {
+            _model.ComplianceItems = new[]
+            {
+                new RequestComplianceItemModel { Name = "ID", IsMandatory = true },
+                new RequestComplianceItemModel { Name = "id", IsMandatory = false }
+            };
+            Result<Guid> result = await _sut.CreateRequest(_model);
+            Assert.False(result);
         }
 
         [Fact]

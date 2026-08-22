@@ -1,12 +1,12 @@
 <template>
   <div>
-    <div class="container-flex">
-      <div class="col-12 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated pagination-size="is-small" backend-pagination
           backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
           v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
           <template v-slot:empty>
-            <p class="container text-center">No records available</p>
+            <p class="container has-text-centered">No records available</p>
           </template>
           <template>
             <b-table-column field="weekEnding" label="Payment Date" v-slot="props">
@@ -37,10 +37,11 @@ import { showAlertError } from "@/utils/toast";
 import { downloadFile } from '@/utils/downloadFile';
 import { date, currency } from '@/utils/filters';
 import { getPaymentReport, downloadWeeklyPayrollReport } from "@/api/agencyReportApi";
+import type { WeeklyPayrollRow } from '@/types/agency';
 
 const isLoading = ref(false);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
+const rows = ref<WeeklyPayrollRow[]>([]);
 const serverParams = ref({
   pageIndex: 1,
   pageSize: 30
@@ -55,7 +56,7 @@ function getReport() {
   isLoading.value = true;
   getPaymentReport(serverParams.value)
     .then((response) => {
-      rows.value = response.items.map((i: any) => ({ ...i, actions: null, reportDownloading: false }));
+      rows.value = response.items.map((i) => ({ ...i, reportDownloading: false }));
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
@@ -65,7 +66,7 @@ function getReport() {
     });
 }
 
-function onDownloadWeeklyPayrollReport(row: any) {
+function onDownloadWeeklyPayrollReport(row: WeeklyPayrollRow) {
   row.reportDownloading = true;
   downloadWeeklyPayrollReport(row.displayWeekEnding)
     .then(response => {

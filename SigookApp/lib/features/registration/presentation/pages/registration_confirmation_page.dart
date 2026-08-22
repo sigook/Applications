@@ -62,9 +62,7 @@ class RegistrationConfirmationPage extends ConsumerWidget {
               ),
               const SizedBox(height: 48),
               ElevatedButton(
-                onPressed: () {
-                  ref.read(authViewModelProvider.notifier).signIn();
-                },
+                onPressed: () => context.push(AppRoutes.signIn),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),

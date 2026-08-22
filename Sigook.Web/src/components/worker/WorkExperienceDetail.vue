@@ -1,10 +1,10 @@
 <template>
     <div class="experience-item">
-        <div class="d-flex align-items-center justify-content-between">
-            <h4>{{props.item.company}}  | <span class="fw-light"> {{props.item.supervisor}} </span>
+        <div class="is-flex is-align-items-center is-justify-content-space-between">
+            <h4>{{props.item.company}}  | <span class="has-text-weight-light"> {{props.item.supervisor}} </span>
             </h4>
-            <div class="actions text-end">
-                <b-button type="is-info" outlined rounded icon-right="pencil" class="me-2"
+            <div class="actions has-text-right">
+                <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
                     @click="modalEdit = true"></b-button>
                 <b-button type="is-danger" outlined rounded icon-right="delete"
                     @click="confirmDelete()"></b-button>
@@ -21,7 +21,7 @@
             <p class="m-0 duties-text">{{props.item.duties}}</p>
         </div>
 
-        <b-modal v-model="modalEdit" width="800px">
+        <b-modal custom-content-class="card" v-model="modalEdit" width="800px">
             <work-experience-form :workerId="props.workerId" :data="props.item" @updateExperience="updateExperience" />
         </b-modal>
 

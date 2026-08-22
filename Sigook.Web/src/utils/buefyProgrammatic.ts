@@ -1,5 +1,5 @@
 import type { App } from 'vue';
-import { ToastProgrammatic, DialogProgrammatic } from '@ntohq/buefy-next';
+import { ToastProgrammatic, DialogProgrammatic } from 'buefy';
 
 interface ToastConfig {
   message: string;

@@ -1,15 +1,15 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title"> Contacts </h2>
+    <h2 class="has-text-centered main-title"> Contacts </h2>
     <ul v-if="data" class="border-top-gray">
       <li v-for="item in data" :key="item.id"
-        class="list-item-border-bottom content-flex-between align-items-center mb-0">
+        class="list-item-border-bottom content-flex-between is-align-items-center mb-0">
         <div>
           <b>{{ item.title }} {{ item.firstName }} {{ item.lastName }}</b> <span> | {{ item.position }}</span>
-          <span class="d-block fz-1">{{ item.mobileNumber }}</span>
-          <span class="d-block fz-1">{{ item.officeNumber }} {{ item.officeNumberExt }}</span>
-          <span class="d-block fz-1">{{ item.email }}</span>
+          <span class="is-block fz-1">{{ item.mobileNumber }}</span>
+          <span class="is-block fz-1">{{ item.officeNumber }} {{ item.officeNumberExt }}</span>
+          <span class="is-block fz-1">{{ item.email }}</span>
         </div>
         <div>
           <b-button v-if="item.active" type="is-danger" size="is-small" outlined rounded

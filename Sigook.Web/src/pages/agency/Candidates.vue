@@ -1,14 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        Candidates
-        <span class="fw-light fz-1">
-          ({{ totalItems }})
-        </span>
-      </h2>
-    </div>
+    <PageHeader title="Candidates" :count="totalItems" :crumbs="moduleCrumbs" />
     <div>
       <export :url="'/api/agency/candidates/File'" :params="serverParams" :fileName="'Candidates'"
         @onDataLoading="(value) => isLoading = value">
@@ -27,7 +20,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="name" label="Name" sortable searchable>
@@ -41,14 +34,14 @@
               </b-field>
             </template>
             <template v-slot="props">
-              <span class="d-block">
+              <span class="is-block">
                 {{ props.row.name }}
                 <b-icon v-if="props.row.hasVehicle" icon="car-back" size="is-small"></b-icon>
                 <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
                 <b-icon v-if="props.row.hasDocuments" icon="file-download" size="is-small"
                   class="cursor-poiner"></b-icon>
               </span>
-              <i class="fz-2 ellipsis-150 text-lowercase">
+              <i class="fz-2 ellipsis-150 is-lowercase">
                 <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
               </i>
             </template>
@@ -71,8 +64,8 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <p class="text-capitalize">{{ props.row.address }}</p>
-              <i class="fz-2 d-block ps-1">
+              <p class="is-capitalized">{{ props.row.address }}</p>
+              <i class="fz-2 is-block pl-1">
                 {{ props.row.postalCode }}
               </i>
             </template>
@@ -115,7 +108,7 @@
               </b-taginput>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ props.row.source }}</span>
+              <span class="is-block">{{ props.row.source }}</span>
             </template>
           </b-table-column>
           <b-table-column field="createdAt" label="Created At" sortable searchable>
@@ -127,7 +120,7 @@
               </b-datepicker>
             </template>
             <template v-slot="props">
-              <span class="d-block">{{ dateMonth(props.row.createdAt) }}</span>
+              <span class="is-block">{{ dateMonth(props.row.createdAt) }}</span>
             </template>
           </b-table-column>
           <b-table-column field="recruiter" label="Recruiter" sortable searchable>
@@ -136,13 +129,13 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <div class="text-capitalize is-inline-block align-middle pe-0" v-if="props.row.recruiter">
+              <div class="is-capitalized is-inline-block valign-middle pr-0" v-if="props.row.recruiter">
                 {{ emailName(props.row.recruiter) }}
               </div>
-              <div v-else class="op3 is-inline-block align-middle pe-0">
+              <div v-else class="op3 is-inline-block valign-middle pr-0">
                 Recruiter
               </div>
-              <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block align-middle"
+              <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block valign-middle"
                 @click="updateCandidateRecruiter(props.row.id)" style="position: relative; top: 2px"></button>
             </template>
           </b-table-column>
@@ -195,25 +188,26 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showDocuments" @close="showDocuments = false" width="500px">
-      <modal-documents :candidateId="detailId" />
+    <b-modal custom-content-class="card" v-model="showDocuments" @close="showDocuments = false" width="500px"
+      :destroy-on-hide="true">
+      <modal-documents :candidateId="detailId" @close="showDocuments = false" />
     </b-modal>
 
 
-    <b-modal v-model="showCreateCandidate" @close="showCreateCandidate = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showCreateCandidate" @close="showCreateCandidate = false" width="500px">
       <create-candidate @onClose="onCandidateCreated()"></create-candidate>
     </b-modal>
 
-    <b-modal v-model="showDetailCandidate" @close="showDetailCandidate = false" width="500px">
+    <b-modal custom-content-class="card" v-model="showDetailCandidate" @close="showDetailCandidate = false" width="500px">
       <detail-candidate :candidate-id="detailId" @onUpdateWorker="() => updateCandidate()"></detail-candidate>
     </b-modal>
 
-    <b-modal v-model="addFile" @close="addFile = false" width="500px">
+    <b-modal custom-content-class="card" v-model="addFile" @close="addFile = false" width="500px">
       <bulk-data :upload-fn="bulkAgencyCandidates" :error-file-name="'BulkCandidatesError'"
         :title="'Bulk Candidates'" :file-label="'Candidates File'" @close="addFile = false" />
     </b-modal>
 
-    <b-modal v-model="showRequestModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showRequestModal" width="500px">
       <candidate-request :candidate-id="detailId" @onSelectRequest="onSelectRequest" />
     </b-modal>
   </div>
@@ -225,6 +219,13 @@ import { useAgencyStore } from '@/stores/agency';
 import { showAlertConfirm, showAlertError } from '@/utils/toast';
 import { formatPhone } from '@/utils/phoneFormat';
 import { residencyList } from '@/constants/catalog';
+import type {
+  AgencyCandidateFilter,
+  CandidatePhoneNumberModel,
+  CandidateSkillModel,
+  CandidateRow,
+} from '@/types/candidate';
+import type { TableColumnRef } from '@/types/common';
 import {
   getAgencyCandidates,
   addCandidatePhoneNumber,
@@ -240,6 +241,8 @@ import { getSources } from '@/api/catalogApi';
 import type { Source } from '@/types/common';
 import { dateMonth, emailName } from '@/utils/filters';
 import { useGridSort } from '@/composables/useGridSort';
+import { useModuleBase } from '@/composables/useModuleBase';
+import PageHeader from '@/components/PageHeader.vue';
 import {
   getCandidateNotes,
   createCandidateNote,
@@ -257,19 +260,20 @@ import Export from '@/components/Export.vue';
 
 const router = useRouter();
 const agencyStore = useAgencyStore();
+const { moduleCrumbs } = useModuleBase();
 
 const isLoading = ref(false);
 const totalItems = ref(0);
-const createdAtDatesSelected = ref<any[]>([]);
-const statusesSelected = ref<any[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const statusesSelected = ref<string[]>([]);
 const showCreateCandidate = ref(false);
 const addFile = ref(false);
 const showDetailCandidate = ref(false);
-const detailId = ref<any>(null);
+const detailId = ref<string | null>(null);
 const showDocuments = ref(false);
 const showRequestModal = ref(false);
-const rows = ref<any[]>([]);
-const serverParams = ref<any>({
+const rows = ref<CandidateRow[]>([]);
+const serverParams = ref<AgencyCandidateFilter>({
   sortBy: 0,
   isDescending: false,
   pageIndex: 1,
@@ -294,7 +298,7 @@ getSources()
   .then((sources) => {
     sourceList.value = sources;
     if (serverParams.value.sources) {
-      sourcesSelected.value = sources.filter((s) => serverParams.value.sources.includes(s.value));
+      sourcesSelected.value = sources.filter((s) => serverParams.value.sources?.includes(s.value));
     }
   })
   .catch((error) => {
@@ -308,16 +312,16 @@ const deleteCandidateNoteFn = ({ userId, id }: NotesDeletePayload) => deleteCand
 if (agencyStore.agencyCandidateFilter) {
   serverParams.value = agencyStore.agencyCandidateFilter;
   if (serverParams.value.statuses) {
-    statusesSelected.value = residencyList.filter((s: any) => serverParams.value.statuses.some((sps: any) => sps == s));
+    statusesSelected.value = residencyList.filter((s) => serverParams.value.statuses?.includes(s));
   }
   if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
-    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
   }
 }
 loadCandidates();
 
-function onCellClick(row: any, column: any) {
+function onCellClick(row: CandidateRow, column: TableColumnRef) {
   if (column.field === 'name' && row.hasDocuments) {
     showDocumentsCandidate(row.id);
   }
@@ -329,8 +333,8 @@ function onPageChange(params: number) {
 }
 
 function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadCandidates();
 }
 
@@ -349,7 +353,7 @@ function onStatusSelected() {
   loadCandidates();
 }
 
-function onInputEntered(event: any) {
+function onInputEntered(event: KeyboardEvent | boolean) {
   if (typeof event === 'boolean') {
     loadCandidates();
   } else if (event.key === 'Enter') {
@@ -361,8 +365,8 @@ function loadCandidates() {
   isLoading.value = true;
   agencyStore.updateAgencyCandidateFilter(serverParams.value);
   getAgencyCandidates(serverParams.value)
-    .then((candidates: any) => {
-      rows.value = candidates.items.map((c: any) => ({ ...c, actions: null, showNotes: false, notesCount: c.notesCount || 0 }));
+    .then((candidates) => {
+      rows.value = candidates.items.map((c) => ({ ...c, showNotes: false, notesCount: c.notesCount || 0 }));
       totalItems.value = candidates.totalItems;
       isLoading.value = false;
     })
@@ -372,27 +376,27 @@ function loadCandidates() {
     });
 }
 
-function showCandidateDetail(id: any) {
+function showCandidateDetail(id: string) {
   detailId.value = id;
   showDetailCandidate.value = true;
 }
 
-function onNote(row: any, status: boolean) {
+function onNote(row: CandidateRow, status: boolean) {
   const index = rows.value.findIndex((r) => r.id === row.id);
   rows.value[index].showNotes = status;
 }
 
-function onUpdateNote(row: any, size: number) {
+function onUpdateNote(row: CandidateRow, size: number) {
   const index = rows.value.findIndex((r) => r.id === row.id);
   rows.value[index].notesCount = size;
 }
 
-function showDocumentsCandidate(id: any) {
+function showDocumentsCandidate(id: string) {
   detailId.value = id;
   showDocuments.value = true;
 }
 
-function showCandidateRequests(id: any) {
+function showCandidateRequests(id: string) {
   detailId.value = id;
   showRequestModal.value = true;
 }
@@ -402,7 +406,7 @@ function onSelectRequest() {
   loadCandidates();
 }
 
-function addCandidatePhoneNumberHandler(candidateId: any, phone: any) {
+function addCandidatePhoneNumberHandler(candidateId: string, phone: string) {
   isLoading.value = true;
   addCandidatePhoneNumber(candidateId, { phoneNumber: phone })
     .then(() => {
@@ -414,9 +418,9 @@ function addCandidatePhoneNumberHandler(candidateId: any, phone: any) {
     });
 }
 
-function deleteCandidateNumber(candidateId: any, number: any) {
+function deleteCandidateNumber(candidateId: string, number: CandidatePhoneNumberModel) {
   isLoading.value = true;
-  deleteCandidatePhoneNumber(candidateId, number.id)
+  deleteCandidatePhoneNumber(candidateId, number.id ?? '')
     .then(() => {
       isLoading.value = false;
       loadCandidates();
@@ -427,7 +431,7 @@ function deleteCandidateNumber(candidateId: any, number: any) {
     });
 }
 
-function addCandidateSkills(id: any, model: any) {
+function addCandidateSkills(id: string, model: CandidateSkillModel) {
   isLoading.value = true;
   addCandidateSkill(id, model)
     .then(() => {
@@ -440,9 +444,9 @@ function addCandidateSkills(id: any, model: any) {
     });
 }
 
-function onDeleteCandidateSkill(candidateId: any, skill: any) {
+function onDeleteCandidateSkill(candidateId: string, skill: CandidateSkillModel) {
   isLoading.value = true;
-  deleteCandidateSkill(candidateId, skill.id)
+  deleteCandidateSkill(candidateId, skill.id ?? '')
     .then(() => {
       isLoading.value = false;
       loadCandidates();
@@ -453,7 +457,7 @@ function onDeleteCandidateSkill(candidateId: any, skill: any) {
     });
 }
 
-function onDeleteCandidate(candidateId: any) {
+function onDeleteCandidate(candidateId: string) {
   showAlertConfirm('Are you sure', 'You want to delete this candidate')
     .then((response) => {
       if (response) {
@@ -474,7 +478,7 @@ function onDeleteCandidate(candidateId: any) {
     });
 }
 
-function updateCandidateRecruiter(candidateId: any) {
+function updateCandidateRecruiter(candidateId: string) {
   showAlertConfirm('Do you want to manage this candidate?', '')
     .then((response) => {
       if (response) {
@@ -495,7 +499,7 @@ function updateCandidateRecruiter(candidateId: any) {
     });
 }
 
-function convertToWorker(candidateId: any) {
+function convertToWorker(candidateId: string) {
   isLoading.value = true;
   convertCandidateToWorker(candidateId)
     .then(() => {
@@ -508,7 +512,7 @@ function convertToWorker(candidateId: any) {
     });
 }
 
-function goToApplicants(item: any) {
+function goToApplicants(item: { id: string }) {
   router.push({
     path: `/recruiting/requests/${item.id}`,
     query: { tab: 'Applicants' },

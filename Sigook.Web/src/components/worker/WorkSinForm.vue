@@ -1,8 +1,8 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex">
-      <div class="col-12">
+    <div class="columns is-multiline">
+      <div class="column is-12">
         <b-field :type="formErrors.socialInsurance ? 'is-danger' : ''"
           :message="formErrors.socialInsurance || ''">
           <template #label>
@@ -12,7 +12,7 @@
           </b-input>
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="column is-12">
         <b-field :label="'SIN/SSN (Upload file)'">
           <div v-if="sin.socialInsuranceFile && sin.socialInsuranceFile.fileName" class="selected-file-display">
             <b-icon icon="file-document" size="is-small"></b-icon>
@@ -30,14 +30,14 @@
           </b-field>
         </b-field>
       </div>
-      <div class="col-12">
+      <div class="column is-12">
         <b-field :label="'Expire'" class="has-text-weight-normal">
           <b-switch v-model="sin.socialInsuranceExpire" :true-value="true" :false-value="false">
             {{ sin.socialInsuranceExpire ? "Yes" : "No" }}
           </b-switch>
         </b-field>
       </div>
-      <div class="col-12" v-if="sin.socialInsuranceExpire === true">
+      <div class="column is-12" v-if="sin.socialInsuranceExpire === true">
         <b-field :type="formErrors.dueDate ? 'is-danger' : ''"
           :message="formErrors.dueDate || ''">
           <template #label>
@@ -47,7 +47,7 @@
           </b-datepicker>
         </b-field>
       </div>
-      <div class="col-12 mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()">
           {{ "Save" }}
         </b-button>
@@ -62,7 +62,7 @@ import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError } from "@/utils/toast";
 import { filename } from '@/utils/filters';
-import { generateFileName } from "@/utils/buildWorkerFormData";
+import { generateFileName } from "@/utils/fileNaming";
 import { createWorkerSin } from '@/api/workerApi';
 
 interface SinForm {

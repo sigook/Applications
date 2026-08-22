@@ -1,8 +1,8 @@
 import { computed, isRef, type ComputedRef, type Ref } from 'vue';
 
 export interface SortableParams {
-  sortBy: number;
-  isDescending: boolean;
+  sortBy?: number;
+  isDescending?: boolean;
 }
 
 export interface UseGridSort {

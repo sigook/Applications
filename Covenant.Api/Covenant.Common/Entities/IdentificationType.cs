@@ -1,9 +1,12 @@
-﻿namespace Covenant.Common.Entities
+using Covenant.Common.Enums;
+
+namespace Covenant.Common.Entities
 {
     public class IdentificationType : ICatalog<Guid>
     {
         public Guid Id { get; set; }
         public string Value { get; set; }
+        public IdentificationTypeCode Code { get; set; }
         public IdentificationType()
         {
         }

@@ -41,6 +41,7 @@ public class CandidateService : ICandidateService
     private readonly IIdentityServerService identityServerService;
     private readonly IDocumentService documentService;
     private readonly IValidator<CandidateCsvModel> bulkCandidateValidator;
+    private readonly IUploadedFilesService uploadedFilesService;
     private readonly ILogger<CandidateService> logger;
 
     public CandidateService(
@@ -53,6 +54,7 @@ public class CandidateService : ICandidateService
         IIdentityServerService identityServerService,
         IDocumentService documentService,
         IValidator<CandidateCsvModel> bulkCandidateValidator,
+        IUploadedFilesService uploadedFilesService,
         ILogger<CandidateService> logger)
     {
         this.userRepository = userRepository;
@@ -64,6 +66,7 @@ public class CandidateService : ICandidateService
         this.identityServerService = identityServerService;
         this.documentService = documentService;
         this.bulkCandidateValidator = bulkCandidateValidator;
+        this.uploadedFilesService = uploadedFilesService;
         this.logger = logger;
     }
 
@@ -237,8 +240,22 @@ public class CandidateService : ICandidateService
         return Result.Ok(candidate.Value.Id);
     }
 
-    public async Task<Result<Guid>> CreateCandidateDocument(Guid id, CovenantFileModel model)
+    public async Task<Result<Guid>> CreateCandidateWithResume(Guid agencyId)
     {
+        var validation = uploadedFilesService.Validate();
+        if (!validation) return Result.Fail<Guid>(validation.Errors);
+        var model = uploadedFilesService.GetModel<CandidateCreateModel>();
+        var result = await CreateCandidate(model, agencyId);
+        if (!result) return result;
+        await uploadedFilesService.Upload([model.FileName]);
+        return result;
+    }
+
+    public async Task<Result<Guid>> CreateCandidateDocument(Guid id)
+    {
+        var validation = uploadedFilesService.Validate();
+        if (!validation) return Result.Fail<Guid>(validation.Errors);
+        var model = uploadedFilesService.GetModel<CovenantFileModel>();
         var file = CovenantFile.Create(model);
         if (!file)
         {
@@ -248,6 +265,7 @@ public class CandidateService : ICandidateService
         await candidateRepository.Create(file.Value);
         await candidateRepository.Create(entity);
         await candidateRepository.SaveChangesAsync();
+        await uploadedFilesService.Upload([model.FileName]);
         return Result.Ok(entity.DocumentId);
     }
 
@@ -260,7 +278,7 @@ public class CandidateService : ICandidateService
         {
             foreach (var requestApplicant in requestApplicatns)
             {
-                requestRepository.Delete(requestApplicant);
+                requestRepository.Delete([requestApplicant]);
             }
         }
         candidateRepository.Delete(candidate);

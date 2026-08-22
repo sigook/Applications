@@ -1,35 +1,35 @@
 <template>
   <div class="p-3 time-sheet-input">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="text-center main-title"> {{ dateMonth(localEditableDay.day) }} </h2>
-    <div class="text-center">
+    <h2 class="has-text-centered main-title"> {{ dateMonth(localEditableDay.day) }} </h2>
+    <div class="has-text-centered">
       <div class="container-worker-report">
         <h3 class="fz-0">Worker Report</h3>
-        <div class="d-flex justify-content-between">
-          <div class="ps-2 pe-2">
+        <div class="is-flex is-justify-content-space-between">
+          <div class="pl-2 pr-2">
             <div>
-              <span class="fz-2 fw-bold d-block">Clock In</span>
+              <span class="fz-2 has-text-weight-bold is-block">Clock In</span>
               <span v-if="localEditableDay.clockIn">{{ dateHHmm(localEditableDay.clockIn) }}</span>
               <span v-else class="fz-1">No reported</span>
             </div>
             <div class="mt-2" v-if="localEditableDay.clockInRounded">
-              <span class="fz-2 fw-bold d-block">Rounded</span>
+              <span class="fz-2 has-text-weight-bold is-block">Rounded</span>
               <span>{{ dateHHmm(localEditableDay.clockInRounded) }}</span>
             </div>
           </div>
-          <div class="ps-2 pe-2">
+          <div class="pl-2 pr-2">
             <div>
-              <span class="fz-2 fw-bold d-block">Clock Out</span>
+              <span class="fz-2 has-text-weight-bold is-block">Clock Out</span>
               <span v-if="localEditableDay.clockOut">{{ dateHHmm(localEditableDay.clockOut) }}</span>
               <span v-else class="fz-1">No reported</span>
             </div>
             <div class="mt-2" v-if="localEditableDay.clockInRounded">
-              <span class="fz-2 fw-bold d-block">Rounded</span>
+              <span class="fz-2 has-text-weight-bold is-block">Rounded</span>
               <span>{{ dateHHmm(localEditableDay.clockOutRounded) }}</span>
             </div>
           </div>
-          <div class="ps-2 pe-2">
-            <span class="fz-2 fw-bold d-block">Hours</span>
+          <div class="pl-2 pr-2">
+            <span class="fz-2 has-text-weight-bold is-block">Hours</span>
             <span v-if="localEditableDay.clockOut && localEditableDay.totalHours">
               {{ hour(localEditableDay.totalHours) }}
             </span>
@@ -41,8 +41,8 @@
     <b-message type="is-info" v-if="localEditableDay.clockIn && !localEditableDay.clockOut" has-icon>
         The worker didn't clock out. Please enter the total hours worked in the "Hours Approved" field.
     </b-message>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-4">
         <b-field label="Hours Approved" :type="formErrors.hoursApproved ? 'is-danger' : ''"
           :message="formErrors.hoursApproved">
           <b-timepicker v-model="hoursApproved" hour-format="24"
@@ -50,78 +50,78 @@
           </b-timepicker>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div class="column is-4">
         <b-field label="Missing Hours">
           <b-timepicker v-model="missinghours" hour-format="24" :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+      <div class="column is-4">
         <b-field label="Missing Hours Overtime">
           <b-timepicker v-model="missingHoursOvertime" hour-format="24" :max-time="maximumMissing">
           </b-timepicker>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Missing Worker Rate" :type="formErrors.deductionsW ? 'is-danger' : ''"
           :message="formErrors.deductionsW">
           <b-numberinput v-model="deductionsW" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Missing Agency Rate" :type="formErrors.deductionsC ? 'is-danger' : ''"
           :message="formErrors.deductionsC">
           <b-numberinput v-model="deductionsC" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Deductions Others" :type="formErrors.deductions ? 'is-danger' : ''"
           :message="formErrors.deductions">
           <b-numberinput v-model="deductions" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Deductions Others Description" :type="formErrors.deductionsDes ? 'is-danger' : ''"
           :message="formErrors.deductionsDes">
           <b-input v-model="deductionsDes" type="text"></b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Bonus or others" :type="formErrors.bonus ? 'is-danger' : ''"
           :message="formErrors.bonus">
           <b-numberinput v-model="bonus" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Bonus or others Description" :type="formErrors.bonusDes ? 'is-danger' : ''"
           :message="formErrors.bonusDes">
           <b-input v-model="bonusDes" type="text"></b-input>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Reimbursements" :type="formErrors.reimbursements ? 'is-danger' : ''"
           :message="formErrors.reimbursements">
           <b-numberinput v-model="reimbursements" step="0.01" controls-alignment="right">
           </b-numberinput>
         </b-field>
       </div>
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field label="Reimbursements Description" :type="formErrors.reimbursementsDes ? 'is-danger' : ''"
           :message="formErrors.reimbursementsDes">
           <b-input v-model="reimbursementsDes" type="text"></b-input>
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-field label="Comments" :type="formErrors.comments ? 'is-danger' : ''"
           :message="formErrors.comments">
           <b-input v-model="comments" type="textarea"></b-input>
         </b-field>
       </div>
-      <div class="col-12 col-padding mt-5">
+      <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="saveHours">Save</b-button>
       </div>
     </div>

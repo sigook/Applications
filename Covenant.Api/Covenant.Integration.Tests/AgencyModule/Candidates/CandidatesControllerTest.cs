@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
@@ -61,7 +62,11 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                 };
             }
 
-            HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri, model);
+            using var content = new MultipartFormDataContent
+            {
+                { new StringContent(JsonSerializer.Serialize(model)), "data" }
+            };
+            HttpResponseMessage response = await _client.PostAsync(RequestUri, content);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<CandidateDetailModel>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();

@@ -2,8 +2,8 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <form @submit.prevent="validateAll">
-      <div class="container-flex">
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-6">
           <b-field :type="formErrors.firstName ? 'is-danger' : ''"
             :message="formErrors.firstName || ''">
             <template #label>
@@ -12,13 +12,13 @@
             <b-input type="text" v-model="firstName" name="name" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.middleName ? 'is-danger' : ''" :label="'Middle Name'"
             :message="formErrors.middleName || ''">
             <b-input type="text" v-model="middleName" name="middle name" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.lastName ? 'is-danger' : ''"
             :message="formErrors.lastName || ''">
             <template #label>
@@ -27,14 +27,14 @@
             <b-input type="text" v-model="lastName" name="lastname" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.secondLastName ? 'is-danger' : ''"
             :label="'Other Family Name'"
             :message="formErrors.secondLastName || ''">
             <b-input type="text" v-model="secondLastName" name="second lastname" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.birthDay ? 'is-danger' : ''"
             :message="formErrors.birthDay || ''">
             <template #label>
@@ -44,7 +44,7 @@
             </b-datepicker>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field :type="formErrors.gender ? 'is-danger' : ''"
             :message="formErrors.gender || ''">
             <template #label>
@@ -55,14 +55,14 @@
             </b-select>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div class="column is-12">
           <b-field :label="'Do you have your own vehicle?'">
             <b-switch v-model="hasVehicle" :true-value="true" :false-value="false">
               {{ hasVehicle ? "Yes" : "No" }}
             </b-switch>
           </b-field>
         </div>
-        <div class="col-12 mt-5">
+        <div class="column is-12 mt-5">
           <b-button type="is-primary" native-type="submit">{{ "Save" }}</b-button>
         </div>
       </div>

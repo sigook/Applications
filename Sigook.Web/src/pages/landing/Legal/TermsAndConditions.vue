@@ -1014,7 +1014,7 @@
 .landing-legal__sheet u { text-decoration: underline; }
 .landing-legal__sheet .superscript { vertical-align: super; font-size: 0.7em; }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .landing-legal__sheet { border-radius: 12px; }
 }
 </style>

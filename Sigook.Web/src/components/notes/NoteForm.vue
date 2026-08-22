@@ -4,7 +4,7 @@
       <b-input type="textarea" v-model="newNote.note" :rows="2" placeholder="Write a note..."
         @update:model-value="onEditingNote"></b-input>
     </b-field>
-    <div class="container-flex align-items-center justify-content-between">
+    <div class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-space-between">
       <color-picker v-model="newNote.color"></color-picker>
       <b-button type="is-primary" size="is-small" rounded @click="addNote">Save</b-button>
     </div>

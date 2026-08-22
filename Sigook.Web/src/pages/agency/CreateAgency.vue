@@ -1,28 +1,26 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3">Create Agency</h2>
-    </div>
+    <PageHeader title="Create Agency" :crumbs="agenciesCrumbs" back-to="/sales/agencies" />
     <form @submit.prevent="validateForm">
-      <div class="container-flex">
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-6 is-3-desktop">
           <b-field label="Full Name" :type="formErrors.fullName ? 'is-danger' : ''"
             :message="formErrors.fullName || ''">
             <b-input type="text" v-model="fullName" name="full name" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <div class="column is-6 is-3-desktop">
           <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email"
             :message="formErrors.email || ''">
             <b-input type="email" v-model="email" name="email" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <div class="column is-6 is-3-desktop">
           <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="phoneNumber"
             @formattedPhone="(phone) => phoneNumber = phone"></phone-input>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <div class="column is-6 is-3-desktop">
           <b-field :type="formErrors.agencyType ? 'is-danger' : ''" label="Agency Type"
             :message="formErrors.agencyType || ''">
             <b-select v-model="agencyType" name="agency type" placeholder="Select agency type" expanded>
@@ -32,13 +30,13 @@
             </b-select>
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-3 col-padding">
+        <div class="column is-6 is-3-desktop">
           <b-field :type="formErrors.password ? 'is-danger' : ''" label="Password"
             :message="formErrors.password || ''">
             <b-input type="password" v-model="password" name="password" password-reveal />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+        <div class="column is-12">
           <b-button type="is-primary" native-type="submit">{{ 'Create' }}</b-button>
         </div>
       </div>
@@ -54,6 +52,8 @@ import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { createAgency } from '@/api/agencyApi';
 import { appGlobals } from '@/varaibles';
 import PhoneInput from '@/components/PhoneInput.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { agenciesCrumbs } from '@/constants/breadcrumbs';
 
 const router = useRouter();
 

@@ -24,7 +24,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (/[\\/]node_modules[\\/](vue|vue-router|pinia|@vue)[\\/]/.test(id)) return 'vue-vendor';
-            if (/[\\/]node_modules[\\/](@ntohq[\\/]buefy-next|bootstrap|@fortawesome)[\\/]/.test(id)) return 'ui-vendor';
+            if (/[\\/]node_modules[\\/](buefy|bulma|@fortawesome)[\\/]/.test(id)) return 'ui-vendor';
             if (/[\\/]node_modules[\\/]@vueup[\\/]vue-quill[\\/]/.test(id)) return 'editor-vendor';
             if (/[\\/]node_modules[\\/](cropperjs|vue-cropperjs|image-compressor\.js)[\\/]/.test(id)) return 'image-vendor';
             if (/[\\/]node_modules[\\/]google-libphonenumber[\\/]/.test(id)) return 'phone-vendor';

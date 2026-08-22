@@ -1,15 +1,9 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-2">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        Invoices
-        <span class="fw-light fz-1">
-          ({{ totalItems }})
-        </span>
-        <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
-      </h2>
-    </div>
+    <PageHeader title="Invoices" :count="totalItems" :crumbs="accountingCrumbs">
+      <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
+    </PageHeader>
     <div>
       <export :url="'/api/agency/accounting/Invoices/file'" :params="serverParams" :fileName="'Invoices'"
         @onDataLoading="(value) => isLoading = value">
@@ -23,7 +17,7 @@
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="invoiceNumber" label="Invoice Number" sortable searchable>
@@ -76,12 +70,12 @@
           <b-table-column field="actions" v-slot="props">
             <b-field>
               <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="me-2"
+                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
                   @click="onDownloadInvoicePdf(props.row)">
                 </b-button>
               </b-tooltip>
               <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-info" outlined rounded icon-right="email" class="me-2"
+                <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
                   @click="openSendEmailModal(props.row)">
                 </b-button>
               </b-tooltip>
@@ -95,11 +89,11 @@
       </b-table>
     </div>
 
-    <b-modal v-model="showDeleteModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showDeleteModal" width="800px">
       <delete-invoice v-if="currentInvoice" :invoice="currentInvoice" @deleted="onDeleteInvoice" />
     </b-modal>
 
-    <b-modal v-model="showSendEmailModal" width="500px">
+    <b-modal custom-content-class="card" v-model="showSendEmailModal" width="500px">
       <send-invoice-email v-if="currentInvoice" :invoice="currentInvoice" @sent="onSendInvoiceEmail" />
     </b-modal>
   </div>
@@ -116,15 +110,18 @@ import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';
 import DeleteInvoice from '@/components/agency_accounting/DeleteInvoice.vue';
 import SendInvoiceEmail from '@/components/agency_accounting/SendInvoiceEmail.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import { accountingCrumbs } from '@/constants/breadcrumbs';
+import type { AgencyInvoiceFilter, AgencyInvoiceListItem } from '@/types/accounting';
 
 const agencyStore = useAgencyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
 const total = ref(0);
-const rows = ref<any[]>([]);
-const createdAtDatesSelected = ref<any[]>([]);
-const serverParams = ref<any>({
+const rows = ref<AgencyInvoiceListItem[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const serverParams = ref<AgencyInvoiceFilter>({
   sortBy: 0,
   pageIndex: 1,
   pageSize: 30,
@@ -139,14 +136,14 @@ const { defaultSort, onSortChange } = useGridSort(serverParams, {
 }, () => loadInvoices());
 
 const showDeleteModal = ref(false);
-const currentInvoice = ref<any>(null);
+const currentInvoice = ref<AgencyInvoiceListItem | null>(null);
 const showSendEmailModal = ref(false);
 
 if (agencyStore.agencyInvoiceFilter) {
   serverParams.value = agencyStore.agencyInvoiceFilter;
   if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = serverParams.value.createdAtFrom;
-    createdAtDatesSelected.value[1] = serverParams.value.createdAtTo;
+    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
   }
 }
 loadInvoices();
@@ -163,8 +160,8 @@ function onInputEntered(event: KeyboardEvent) {
 }
 
 function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadInvoices();
 }
 
@@ -177,8 +174,8 @@ function loadInvoices() {
   isLoading.value = true;
   agencyStore.updateAgencyInvoiceFilter(serverParams.value);
   getAgencyInvoices(serverParams.value)
-    .then((response: any) => {
-      rows.value = response.detail.items.map((i: any) => ({ ...i, actions: null }));
+    .then((response) => {
+      rows.value = response.detail.items;
       totalItems.value = response.detail.totalItems;
       total.value = response.total;
       isLoading.value = false;
@@ -189,7 +186,7 @@ function loadInvoices() {
     });
 }
 
-function onDownloadInvoicePdf(invoice: any) {
+function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
   isLoading.value = true;
   downloadInvoicePdf(invoice.id)
     .then((response) => {
@@ -202,7 +199,7 @@ function onDownloadInvoicePdf(invoice: any) {
     });
 }
 
-function openSendEmailModal(invoice: any) {
+function openSendEmailModal(invoice: AgencyInvoiceListItem) {
   currentInvoice.value = invoice;
   showSendEmailModal.value = true;
 }
@@ -212,7 +209,7 @@ function onSendInvoiceEmail() {
   loadInvoices();
 }
 
-function openDeleteModal(invoice: any) {
+function openDeleteModal(invoice: AgencyInvoiceListItem) {
   currentInvoice.value = invoice;
   showDeleteModal.value = true;
 }

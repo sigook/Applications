@@ -164,8 +164,10 @@ POST api/WorkerRequest/{requestId}/TimeSheet
 → WorkerRequestTimeSheetController.Post (WorkerModule/WorkerRequestTimeSheet/Controllers/WorkerRequestTimeSheetController.cs)
 → TimesheetService.Register(requestId, WorkerLocationModel)     (payload = GPS location of the punch)
 
-GET api/WorkerRequest/{requestId}/TimeSheet/clock-type
+GET api/WorkerRequest/{requestId}/TimeSheet/clock-type/{latitude}/{longitude}
 → TimesheetService.GetClockType     (next expected punch: clock-in or clock-out)
+  The day boundary is evaluated in the job site's time zone (Request.JobLocation), falling back
+  to the caller's coordinates when the job has no location. Never in server time.
 
 GET api/WorkerRequest/{requestId}/TimeSheet
 → ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list)
@@ -193,7 +195,7 @@ Regular / overtime / holiday hour classification is computed by `TimesheetCalcul
 
 ## 5. Payroll & Invoicing Flow
 
-Both run from the agency accounting screens. Calculation detail is NOT duplicated here — see `.docs/business/PAYSTUB_GENERATION.md`, `.docs/business/PAYROLL_RULES.md`, and `.docs/business/BILLING_RULES.md`.
+Both run from the agency accounting screens. Calculation detail is NOT duplicated here — see `.docs/business/PAYROLL_RULES.md` and `.docs/business/BILLING_RULES.md`.
 
 ### 5.1 Pay stub generation
 
@@ -260,6 +262,8 @@ DELETE api/agency/accounting/Invoices/{id}                  → IInvoiceService.
 A **Runner** is a Worker actively submitted to a specific order (Request). Candidates cannot be runners — they must be converted to a worker first (`CandidateService.ConvertToWorker`).
 
 **`Request.UsesRunners`** (set when the order is created, default `true`) decides whether the order works with runners. When it is `false` the Runners tab is still visible but **read-only**, and the weekly board hides its "Add runner" button; `RunnerService` rejects create/status/interview on such an order. The recruiter creates the runner, advances it through the recruiting pipeline and schedules interviews, until the client hires or rejects it. Runners live in a tab inside the order detail (next to Applicants/Workers).
+
+Orders **without** runners instead configure a **compliance checklist** — see [§6.1](#61-compliance-checklist-orders-without-runners).
 
 Controller: `Controllers/Sigook/Agency/Requests/RunnersController.cs` (`[Authorize(Policy = Recruiting)]`) → `RunnerService`. Domain rules live in the `Runner` entity.
 
@@ -336,3 +340,61 @@ GET api/agency/Notifications      → NotificationsController → NotificationSe
 - **3-day window:** the DB does a generous prefilter; `DayNumber = (today − StartDate).Days + 1` is computed in the service and is authoritative (kept only when `1..3`). This avoids a `timestamptz` timezone off-by-one between the window and the day count.
 - **Aggregated, multi-type:** a single endpoint returns `NotificationsModel` (a container with one list per notification kind — today only `WorkersToReview`). The web bell shows a per-type summary + count; clicking opens the **Attendance Review** page (`/recruiting/attendance-review`), and each row links to that order's **Punch Card** tab where the recruiter enters `0` to mark attendance.
 - **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` composable, used in `AgencyPunchCardWorkerContainer.vue` via `v-if="isAdmin"` / `:disabled="!isAdmin || ..."`); the attendance `0` is entered by whoever may edit.
+
+### 6.1 Compliance checklist (orders without runners)
+
+When `Request.UsesRunners == false`, the order instead carries a **compliance checklist**: the requirements a worker must meet to be placed on it. Each item is a free-text name plus a mandatory/optional flag plus a **document target** (which worker-profile section a document uploaded for it lands in), so the list is fully dynamic — the agency can add anything beyond the defaults.
+
+The agency configures it from the **Configure** link next to the *Uses Runners* switch on the create/edit order page (`AgencyCreateRequest.vue` → `RequestComplianceModal.vue`). The link is hidden while the order uses runners; the items are kept, not deleted, if the switch is turned back on.
+
+**Default list**, pre-filled the first time the switch is turned off (`Sigook.Web/src/constants/compliance.ts`; frontend-only — the API persists exactly what it receives and never seeds):
+
+| Requirement | Default | Document target |
+|---|---|---|
+| ID | Mandatory | Identification 1 |
+| SSN | Mandatory | Social insurance |
+| WP | Optional | Other documents |
+| W4 | Mandatory | Other documents |
+| I9 | Mandatory | Other documents |
+| Banking | Mandatory | Other documents |
+
+Storage is a child table `RequestComplianceItems` (`RequestComplianceItem` entity, cascade-deleted with the order), not a JSON column. There is no dedicated endpoint: the items ride inside `RequestCreateModel.ComplianceItems` on create and update, and come back on `AgencyRequestDetailModel.ComplianceItems`.
+
+```
+POST api/agency/requests        → RequestService.CreateRequest  (creates the items)
+PUT  api/agency/requests/{id}   → RequestService.UpdateRequest  (reconciles the items)
+```
+
+On update the list is **reconciled by id, never wiped and recreated**: items sent with their `id` are updated in place, items sent without one are created, and items missing from the payload are deleted (together with any per-applicant completions referencing them). Item ids therefore stay stable across edits — per-applicant completions reference them. Validation (`RequestCreateModelValidator`): name required, max 200 chars, max 50 items, names unique case-insensitively, document target a valid enum value.
+
+Per-applicant fulfilment is tracked through the applicant lifecycle — see [§6.2](#62-applicant-states--per-applicant-compliance).
+
+### 6.2 Applicant states & per-applicant compliance
+
+Each `RequestApplicant` carries a **status** (`RequestApplicantStatus`, stored as string with DB default `Pending`) and a set of **completions** (`RequestApplicantComplianceItems`: one row per checklist item fulfilled by that applicant, with `CompletedAt`/`CompletedBy`; unique per applicant+item, cascade-deleted with the applicant). Detailed state rules live in `REQUEST_STATE_MANAGEMENT.md` → *Request Applicant States*.
+
+Initial status by origin:
+
+| Origin | Status |
+|---|---|
+| Worker applies (web/app/anonymous apply) | Pending |
+| Website form via bus (`NewCandidateConsumer`) | Pending |
+| Manual add from the portal | In progress |
+| CSV bulk import (`CandidateAdapter`) | In progress |
+
+Everything runs through `RequestApplicantService` (the `ApplicantsController` only delegates):
+
+```
+PUT    api/agency/requests/{requestId}/Applicants/{id}/Status                    → change status (Start / Cancel / Reopen / Confirm)
+GET    api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems           → checklist + per-applicant completion state
+POST   api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems/{itemId}  → complete an item (multipart; optional document)
+DELETE api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems/{itemId}  → uncheck an item (document stays on the profile)
+```
+
+In the portal the **Compliance** action on an applicant row opens the modal (`ApplicantComplianceModal.vue`) which is the single hub: checks, uploads and the status buttons (Start / Cancel applicant / Reopen / Confirm) all live there. The applicants list shows a status tag column and a multi-status filter.
+
+Completing an item can attach a document that lands in the worker-profile section named by the item's `DocumentTarget` (identification slots require number + type and check for duplicates; social insurance requires the number; WP/W4/I9/Banking-style items land in *Other Documents* with the item name as description). For **worker** applicants, a **mandatory** item with a document target can **only** be completed by uploading the document — the check cannot be marked manually (enforced in the service and mirrored in the UI, where attaching auto-completes the item); optional items can be checked without a document. Candidates can check items but never upload — convert to worker first. **Confirm** requires all mandatory items completed (optional ones don't block) and a worker applicant.
+
+**SIN/SSN-typed identifications** (identification type with `IdentificationTypeCode.SinSsn`): completing an Identification item with that type validates the number as a SIN (9-15 chars, not another profile's SIN, not different from the profile's existing SIN) and **also fills the worker's `SocialInsurance` + SIN document from the same upload** (one blob, no double attachment), then **auto-completes** any pending checklist item with target *Social insurance* for that applicant. The same auto-fill applies at worker registration (web and app) when a SIN/SSN-typed identification is provided — SIN is never captured directly at registration. SIN duplicate validation runs in every flow that sets it: registration, the worker documents/SIN forms, and both compliance branches.
+
+Note: `BookWorker` still deletes the applicant row; its completions go with it by cascade.

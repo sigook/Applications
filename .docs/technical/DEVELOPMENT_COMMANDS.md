@@ -41,7 +41,7 @@ pnpm run format                  # Prettier
 pnpm run preview                 # Preview production build
 ```
 
-Note: output dir is `wwwroot/` (not `dist/`). Build tool is Vite; state is Pinia; UI is `@ntohq/buefy-next`.
+Note: output dir is `wwwroot/` (not `dist/`). Build tool is Vite; state is Pinia; UI is `buefy` 3.x.
 
 ## Covenant.Web (Vue.js 3) - Requires Node ^20.19.0 or >=22.12.0
 

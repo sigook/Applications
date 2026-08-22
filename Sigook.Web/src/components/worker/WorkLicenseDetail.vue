@@ -1,8 +1,8 @@
 <template>
   <section>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="d-flex align-items-center justify-content-between">
-      <h3 class="fw-bold fz-0">{{ "Licenses" }}</h3>
+    <div class="is-flex is-align-items-center is-justify-content-space-between">
+      <h3 class="has-text-weight-bold fz-0">{{ "Licenses" }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="modalLicense = true">
         Add License
       </b-button>
@@ -10,14 +10,14 @@
     <div class="profile-licenses profile-experience">
       <div class="container-license hover-actions" v-for="(item, index) in localWorker.licenses"
         v-bind:key="'licences' + index">
-        <div class="d-flex align-items-center justify-content-between">
+        <div class="is-flex is-align-items-center is-justify-content-space-between">
           <a :href="item.license.pathFile" target="_blank" download>
-            <h4 class="fw-normal">
+            <h4 class="has-text-weight-normal">
               {{ filename(item.license.fileName) }}
               <span class="download-button"></span>
             </h4>
           </a>
-          <div class="actions text-end">
+          <div class="actions has-text-right">
             <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
               <button class="btn-icon-sm btn-icon-delete" type="button" @click="confirmDelete(item.license)">
                 {{ "Delete" }}
@@ -28,8 +28,8 @@
 
         <div class="fz-1">
           <p>
-            <strong class="fw-normal">{{ item.license.description }}</strong>
-            <strong class="fw-normal" v-if="item.number">
+            <strong class="has-text-weight-normal">{{ item.license.description }}</strong>
+            <strong class="has-text-weight-normal" v-if="item.number">
               # {{ item.number }}</strong>
           </p>
           <span v-if="item.issued">Issued: {{ dateMonth(item.issued) }} | </span>
@@ -37,7 +37,7 @@
         </div>
       </div>
     </div>
-    <b-modal v-model="modalLicense" width="500px">
+    <b-modal custom-content-class="card" v-model="modalLicense" width="500px">
       <license-edit :data="localWorker" @closeModal="() => closeModalEdit()" />
     </b-modal>
   </section>

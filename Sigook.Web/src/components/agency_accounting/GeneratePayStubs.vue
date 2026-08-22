@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" v-model:checked-rows="selectedWorkers" checkable>
       <template v-slot:empty>
-        <p class="container text-center">No records available</p>
+        <p class="container has-text-centered">No records available</p>
       </template>
       <template>
         <b-table-column field="firstName" label="Worker" v-slot="props">
@@ -21,12 +21,13 @@
 import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getWorkersReadyForPayStub, generatePayStubs } from "@/api/agencyPayStubApi";
+import type { WorkerReadyForPayStubModel } from '@/types/accounting';
 
 const emit = defineEmits<{(e: 'pay-stubs-generated'): void}>();
 
 const isLoading = ref(false);
-const rows = ref<any[]>([]);
-const selectedWorkers = ref<any[]>([]);
+const rows = ref<WorkerReadyForPayStubModel[]>([]);
+const selectedWorkers = ref<WorkerReadyForPayStubModel[]>([]);
 
 function loadWorkers() {
   isLoading.value = true;

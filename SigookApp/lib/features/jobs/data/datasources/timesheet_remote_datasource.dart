@@ -9,7 +9,12 @@ import 'package:sigook_app_flutter/features/jobs/data/models/paginated_timesheet
 import 'dart:convert';
 
 abstract class TimesheetRemoteDatasource {
-  Future<ClockType> getClockType(DateTime date, String requestId);
+  Future<ClockType> getClockType(
+    DateTime date,
+    String requestId,
+    double latitude,
+    double longitude,
+  );
   Future<TimesheetResponseModel> submitTimesheet({
     required String jobId,
     required double latitude,
@@ -28,10 +33,15 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
   TimesheetRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<ClockType> getClockType(DateTime date, String requestId) async {
+  Future<ClockType> getClockType(
+    DateTime date,
+    String requestId,
+    double latitude,
+    double longitude,
+  ) async {
     try {
       final response = await apiClient.dio.get(
-        '/WorkerRequest/$requestId/TimeSheet/clock-type?date=${date.toIso8601String()}',
+        '/WorkerRequest/$requestId/TimeSheet/clock-type/$latitude/$longitude?date=${date.toIso8601String()}',
       );
       if (response.statusCode == 200) {
         return clockTypeFromInt(response.data);
@@ -116,14 +126,22 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
         }
 
         // Check for common error message keys
-        for (final key in ['error', 'message', 'Message', 'Error', 'title', 'Title']) {
+        for (final key in [
+          'error',
+          'message',
+          'Message',
+          'Error',
+          'title',
+          'Title',
+        ]) {
           if (responseData.containsKey(key) && responseData[key] != null) {
             return responseData[key].toString();
           }
         }
 
         // Check for errors object (ASP.NET ModelState format)
-        if (responseData.containsKey('errors') && responseData['errors'] is Map) {
+        if (responseData.containsKey('errors') &&
+            responseData['errors'] is Map) {
           final errors = responseData['errors'] as Map;
           for (final value in errors.values) {
             if (value is List && value.isNotEmpty) {

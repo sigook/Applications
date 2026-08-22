@@ -11,7 +11,7 @@
         <div class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container modal-light small-container worker-profile-modal">
-              <span class="fz1 fw-bold ">Profile Photo</span>
+              <span class="fz1 has-text-weight-bold ">Profile Photo</span>
               <button @click="showEditModal = false" type="button" class="cross-icon">
                 {{ 'Close' }}
               </button>
@@ -20,8 +20,8 @@
                 :edited-image="props.data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
                 @finishUpload="() => pubSub.unsubscribe()" class="mx-auto my-2">
               </upload-image>
-              <div class="text-center">
-                <b-button type="is-danger" rounded class="mt-3 me-2" @click="showEditModal = false">Cancel</b-button>
+              <div class="has-text-centered">
+                <b-button type="is-danger" rounded class="mt-3 mr-2" @click="showEditModal = false">Cancel</b-button>
                 <b-button type="is-primary" rounded class="mt-3" @click="createWorkerImageHandler()">Save</b-button>
               </div>
             </div>
@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { showAlertError } from '@/utils/toast';
-import { generateFileName } from '@/utils/buildWorkerFormData';
+import { generateFileName } from '@/utils/fileNaming';
 import { compressFile } from '@/utils/compressFile';
 import { usePubSub } from '@/composables/usePubSub';
 import { createWorkerImage } from '@/api/workerApi';

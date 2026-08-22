@@ -195,7 +195,6 @@
   padding: 30px 0 0 0;
   border-radius: 0 65px 65px 0;
   background: #ffffff;
-  min-height: 850px; /* Altura fija mínima para evitar saltos */
 }
 
 .partner-types__title {
@@ -415,6 +414,12 @@
   transform: translateY(-2px);
   background: #24a654;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 1023px) {
+  .partner-types__cta {
+    padding: 18px 60px;
+  }
 }
 
 

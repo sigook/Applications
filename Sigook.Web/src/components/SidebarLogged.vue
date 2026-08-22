@@ -36,7 +36,7 @@
               @update:expanded="expandedGroups[i] = $event">
               <template #label="{ expanded }">
                 <span class="sidebar-group-label">
-                  <b-icon :icon="group.icon" size="is-medium" class="me-2"></b-icon>
+                  <b-icon :icon="group.icon" size="is-medium" class="mr-2"></b-icon>
                   <span>{{ group.label }}</span>
                 </span>
                 <b-icon :icon="expanded ? 'chevron-up' : 'chevron-down'" size="is-small"
@@ -52,7 +52,7 @@
             <b-menu-item v-else v-for="item in group.items" :key="item.to + item.label" tag="router-link"
               :to="item.to" :model-value="isActive(item.to)" :title="item.label">
               <template #label>
-                <b-icon :icon="item.icon" size="is-medium" class="me-2"></b-icon>
+                <b-icon :icon="item.icon" size="is-medium" class="mr-2"></b-icon>
                 <span>{{ item.label }}</span>
               </template>
             </b-menu-item>
@@ -173,7 +173,7 @@ function isGroupActive(group: MenuGroup): boolean {
 
 function logout() {
   isLoading.value = true;
-  securityStore.signOut().then(() => router.push('/callback'));
+  securityStore.signOut().then(() => router.push('/'));
 }
 
 async function getAgencyInfo() {
@@ -245,6 +245,8 @@ init();
 </script>
 
 <style lang="scss">
+@import "../assets/scss/variables";
+
 $sidebar-width: 250px;
 $sidebar-width-collapsed: 100px;
 
@@ -253,7 +255,7 @@ $sidebar-width-collapsed: 100px;
   top: 0;
   align-self: flex-start;
   flex: 0 0 auto;
-  z-index: 30;
+  z-index: 40;
   display: flex;
   flex-direction: column;
   width: $sidebar-width;
@@ -347,8 +349,8 @@ $sidebar-width-collapsed: 100px;
       font-weight: 800;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: #21b7ff;
-      background-color: rgba(33, 183, 255, 0.1);
+      color: #00adef;
+      background-color: rgba(0, 173, 239, 0.1);
       border-radius: 6px;
       padding: 4px 6px;
       margin-bottom: 6px;
@@ -372,8 +374,8 @@ $sidebar-width-collapsed: 100px;
       }
 
       &.is-active {
-        background-color: rgba(33, 183, 255, 0.12);
-        color: #21b7ff;
+        background-color: rgba(0, 173, 239, 0.12);
+        color: $blue-dark;
       }
     }
 

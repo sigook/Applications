@@ -5,20 +5,20 @@
     <!-- Change Email Section -->
     <section>
       <h3 class="section-title">Change Email</h3>
-      <div class="container-flex">
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="columns is-multiline">
+        <div class="column is-6">
           <b-field label="Email" :type="formErrors.userEmail ? 'is-danger' : ''"
             :message="formErrors.userEmail || ''">
             <b-input v-model="userEmail" name="email" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-field label="Confirm Email" :type="formErrors.confirmNewEmail ? 'is-danger' : ''"
             :message="formErrors.confirmNewEmail || ''">
             <b-input v-model="confirmNewEmail" name="confirmNewEmail" />
           </b-field>
         </div>
-        <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+        <div class="column is-6">
           <b-button type="is-primary" @click="onChangeEmail">Save</b-button>
         </div>
       </div>
@@ -29,11 +29,11 @@
       <h3 class="section-title">Notifications</h3>
       <div v-for="item in notifications" :key="'notification' + item.id">
         <h4 class="notification-title">{{ item.title }}</h4>
-        <div class="container-flex">
-          <div class="col-sm-12 col-md-8 col-lg-8 col-padding">
+        <div class="columns is-multiline">
+          <div class="column is-8">
             <span>{{ item.description }}</span>
           </div>
-          <div class="col-sm-12 col-md-4 col-lg-4 col-padding">
+          <div class="column is-4">
             <b-switch v-model="item.emailNotification" @update:modelValue="saveNotification(item)">
               {{ item.emailNotification ? 'Yes' : 'No' }}
             </b-switch>
@@ -117,7 +117,7 @@ function onDeactivateAccount() {
       isLoading.value = false;
       showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
       setTimeout(() => {
-        securityStore.signOut();
+        securityStore.signOut().then(() => window.location.assign('/'));
       }, 2000);
     })
     .catch((error) => {

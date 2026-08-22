@@ -22,17 +22,13 @@ public class DocumentsController(
 
     /// <summary>Creates a new document for the specified candidate.</summary>
     /// <param name="candidateId">Identifier of the candidate.</param>
-    /// <param name="model">Document file data.</param>
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Post([FromRoute] Guid candidateId, [FromBody] CovenantFileModel model)
+    public async Task<ActionResult> Post([FromRoute] Guid candidateId)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        var result = await candidateService.CreateCandidateDocument(candidateId, model);
+        var result = await candidateService.CreateCandidateDocument(candidateId);
         if (!result)
         {
             return BadRequest(ModelState.AddErrors(result.Errors));

@@ -2,7 +2,7 @@
   <div>
     <b-table sticky-header height="var(--grid-height)" :data="data.items || []" narrowed hoverable :mobile-cards="true">
       <template v-slot:empty>
-        <p class="container text-center">{{ "No records available" }}</p>
+        <p class="container has-text-centered">{{ "No records available" }}</p>
       </template>
       <template>
         <b-table-column field="day" :label="'Day'" v-slot="props">

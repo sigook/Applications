@@ -1,16 +1,16 @@
 <template>
   <div>
-    <b-modal v-model="statusOpen" width="520px" :destroy-on-hide="true">
+    <b-modal has-modal-card v-model="statusOpen" width="520px" :destroy-on-hide="true">
       <runner-status-modal v-if="target" :request-id="target.requestId" :runner-id="target.runnerId"
         :current-status="target.status" @updated="emit('updated')" @close="statusOpen = false" />
     </b-modal>
 
-    <b-modal v-model="interviewOpen" width="540px" :destroy-on-hide="true">
+    <b-modal has-modal-card v-model="interviewOpen" width="540px" :destroy-on-hide="true">
       <runner-interview-modal v-if="target" :request-id="target.requestId" :runner-id="target.runnerId"
         @updated="emit('updated')" @close="interviewOpen = false" />
     </b-modal>
 
-    <b-modal v-model="historyOpen" width="760px" :destroy-on-hide="true">
+    <b-modal has-modal-card v-model="historyOpen" width="760px" :destroy-on-hide="true">
       <runner-history-modal v-if="target" :request-id="target.requestId" :runner-id="target.runnerId"
         @updated="emit('updated')" @close="historyOpen = false" />
     </b-modal>

@@ -10,7 +10,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="profileImage" width="50" v-slot="props">
@@ -23,7 +23,7 @@
                 @keypress="onInputEntered"></b-input>
             </template>
             <template v-slot="props">
-              <span class="d-block">
+              <span class="is-block">
                 {{ props.row.name }}
                 <b-tooltip label="Candidate" type="is-dark" append-to-body>
                   <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
@@ -32,9 +32,19 @@
                   <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
                 </b-tooltip>
               </span>
-              <i class="fz-2 ellipsis-150 text-lowercase">
+              <i class="fz-2 ellipsis-150 is-lowercase">
                 <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
               </i>
+            </template>
+          </b-table-column>
+          <b-table-column field="status" label="Status" searchable>
+            <template v-slot:searchable>
+              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statusOptions" open-on-focus
+                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusChange"
+                append-to-body />
+            </template>
+            <template v-slot="props">
+              <b-tag :type="statusTagType(props.row.status)">{{ statusLabel(props.row.status) }}</b-tag>
             </template>
           </b-table-column>
           <b-table-column field="phoneNumber" label="Phone" searchable>
@@ -61,7 +71,7 @@
               </b-field>
             </template>
             <template v-slot="props">
-              <div class="text-capitalize" v-if="props.row.createdBy">
+              <div class="is-capitalized" v-if="props.row.createdBy">
                 <p>{{ emailName(props.row.createdBy) }}</p>
               </div>
               <div v-else class="op3">Added by</div>
@@ -90,6 +100,9 @@
                 @click="showAddRunner(props.row)">
                 Add Runner
               </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="openCompliance(toActionTarget(props.row))">
+                Compliance
+              </b-dropdown-item>
               <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
                 Delete
               </b-dropdown-item>
@@ -99,24 +112,26 @@
       </b-table>
     </div>
 
-    <b-modal v-model="modalManageWorkers" width="800px">
+    <b-modal custom-content-class="card" v-model="modalManageWorkers" width="800px">
       <ManageTabs @updateApplicants="(args) => addApplicant(args.model)" />
     </b-modal>
 
-    <b-modal v-model="modalCandidateDetail" width="500px">
+    <b-modal custom-content-class="card" v-model="modalCandidateDetail" width="500px">
       <detail-candidate v-if="candidateDetailId" :candidate-id="candidateDetailId"
         @onUpdateWorker="onCandidateUpdated"></detail-candidate>
     </b-modal>
 
-    <b-modal v-model="modalAddRunner" width="420px">
+    <b-modal has-modal-card v-model="modalAddRunner" width="420px">
       <select-runner-type-modal v-if="runnerApplicant" :name="runnerApplicant.name" @select="addRunner"
         @close="modalAddRunner = false" />
     </b-modal>
 
-    <b-modal v-model="modalComment" width="500px">
+    <b-modal custom-content-class="card" v-model="modalComment" width="500px">
       <EditTextarea v-if="currentItem" :title="'Comments'" subtitle="Comments" :min-length="0" :data="currentItem.comments"
         @updateContent="(data) => saveApplicantComment(data)"></EditTextarea>
     </b-modal>
+
+    <applicant-action-modals :target="target" v-model:compliance-open="showCompliance" @updated="loadApplicants" />
   </div>
 </template>
 <script setup lang="ts">
@@ -134,6 +149,16 @@ import {
 import { convertCandidateToWorker } from "@/api/agencyCandidateApi";
 import { createAgencyRunner } from "@/api/agencyRunnerApi";
 import type { RunnerType } from '@/types/runner';
+import type { CatalogItem } from '@/types/common';
+import {
+  REQUEST_APPLICANT_STATUSES,
+  REQUEST_APPLICANT_STATUS_LABELS,
+  RequestApplicantStatus,
+  requestApplicantStatusLabel,
+  requestApplicantStatusTagType,
+} from '@/types/requestApplicant';
+import { useApplicantActions, type ApplicantActionTarget } from '@/composables/useApplicantActions';
+import ApplicantActionModals from '@/components/agency_request/ApplicantActionModals.vue';
 import ManageTabs from './ManageApplicantsModal.vue';
 import SelectRunnerTypeModal from '@/components/runner/SelectRunnerTypeModal.vue';
 import EditTextarea from '@/components/agency_request/EditTextarea.vue';
@@ -162,6 +187,30 @@ const serverParams = reactive<any>({
   pageSize: 30,
   isDescending: true
 });
+
+const statusOptions: CatalogItem<RequestApplicantStatus>[] =
+  REQUEST_APPLICANT_STATUSES.map(s => ({ id: s, value: REQUEST_APPLICANT_STATUS_LABELS[s] }));
+const statusesSelected = ref<CatalogItem<RequestApplicantStatus>[]>([]);
+const statusLabel = requestApplicantStatusLabel;
+const statusTagType = requestApplicantStatusTagType;
+
+const { target, showCompliance, openCompliance } = useApplicantActions();
+
+function toActionTarget(row: any): ApplicantActionTarget {
+  return {
+    requestId: serverParams.requestId,
+    applicantId: row.id,
+    name: row.name,
+    status: row.status,
+    workerProfileId: row.workerProfileId,
+    candidateId: row.candidateId,
+  };
+}
+
+function onStatusChange() {
+  serverParams.statuses = statusesSelected.value.length ? statusesSelected.value.map(s => s.id) : undefined;
+  loadApplicants();
+}
 
 function onPageChange(params: any) {
   serverParams.pageIndex = params;

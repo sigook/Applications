@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="col-12 col-padding highlight-content" v-if="company">
+    <div class="w-100 highlight-content" v-if="company">
       <div class="item">
-        <span class="fw-bold">{{ 'Phone' }}</span>
+        <span class="has-text-weight-bold">{{ 'Phone' }}</span>
         <p v-if="company.phone">
           {{ company.phone }}
           <i v-show="company.phoneExt">
@@ -13,7 +13,7 @@
       </div>
 
       <div class="item" v-if="company.fax">
-        <span class="fw-bold">{{ 'Fax' }}</span>
+        <span class="has-text-weight-bold">{{ 'Fax' }}</span>
         <p>{{ company.fax }}
           <i v-show="company.faxExt">
             {{ 'Ext.' }} {{ company.faxExt }}</i>
@@ -21,40 +21,40 @@
       </div>
 
       <div class="item" v-if="company.website">
-        <span class="fw-bold">{{ 'Website' }}</span>
-        <p class="d-flex align-items-center">
+        <span class="has-text-weight-bold">{{ 'Website' }}</span>
+        <p class="is-flex is-align-items-center">
           <a :href="getFullUrl(company.website)" target="_blank">{{ company.website }}</a>
-          <b-button type="is-ghost" icon-left="pencil" class="ms-1" @click="showModal = true" />
+          <b-button type="is-ghost" icon-left="pencil" class="ml-1" @click="showModal = true" />
         </p>
       </div>
 
       <div class="item">
-        <span class="fw-bold">{{ 'Email' }}</span>
-        <p class="d-flex align-items-center">
+        <span class="has-text-weight-bold">{{ 'Email' }}</span>
+        <p class="is-flex is-align-items-center">
           {{ company.email }}
-          <b-button type="is-ghost" icon-left="pencil" class="ms-1" @click="showModalUpdateEmail = true" />
+          <b-button type="is-ghost" icon-left="pencil" class="ml-1" @click="showModalUpdateEmail = true" />
         </p>
       </div>
 
       <div class="item">
-        <span class="fw-bold">{{ 'Vaccination Required' }}</span>
-        <p class="d-flex align-items-center">
+        <span class="has-text-weight-bold">{{ 'Vaccination Required' }}</span>
+        <p class="is-flex is-align-items-center">
           {{ getLabelVaccinationRequired(company.vaccinationRequired) }}
-          <b-button type="is-ghost" icon-left="pencil" class="ms-1" @click="showEditVaccinationRequired = true" />
+          <b-button type="is-ghost" icon-left="pencil" class="ml-1" @click="showEditVaccinationRequired = true" />
         </p>
       </div>
     </div>
 
-    <b-modal v-model="showModal" width="800px">
+    <b-modal custom-content-class="card" v-model="showModal" width="800px">
       <contact-information-form :model="company" @update:model="$emit('update:company', $event)" @save="closeEditModal" />
     </b-modal>
 
 
-    <b-modal v-model="showModalUpdateEmail" width="500px">
+    <b-modal custom-content-class="card" v-model="showModalUpdateEmail" width="500px">
       <dialog-company-update-email :company-profile-id="company.id" @closeModal="closeEditEmailModal" />
     </b-modal>
 
-    <b-modal v-model="showEditVaccinationRequired" width="500px" v-if="company">
+    <b-modal custom-content-class="card" v-model="showEditVaccinationRequired" width="500px" v-if="company">
       <edit-vaccination-required :company-profile-id="company.id" :vaccination-required="company.vaccinationRequired"
         :vaccination-comments="company.vaccinationRequiredComments" @updated="vaccinationRequiredUpdated" />
     </b-modal>

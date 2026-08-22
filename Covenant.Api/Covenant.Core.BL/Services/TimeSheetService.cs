@@ -21,39 +21,26 @@ using Microsoft.Extensions.Configuration;
 
 namespace Covenant.Core.BL.Services;
 
-public class TimesheetService : ITimesheetService
+public class TimesheetService(
+    ITimeService timeService,
+    IWorkerRequestRepository workerRequestRepository,
+    ITimesheetRepository timeSheetRepository,
+    IRequestRepository requestRepository,
+    ICatalogRepository catalogRepository,
+    IConfiguration configuration,
+    IIdentityServerService identityServerService,
+    IMediator mediator,
+    TelemetryClient telemetryClient) : ITimesheetService
 {
-    private readonly ITimeService timeService;
-    private readonly IWorkerRequestRepository workerRequestRepository;
-    private readonly ITimesheetRepository timeSheetRepository;
-    private readonly IRequestRepository requestRepository;
-    private readonly ICatalogRepository catalogRepository;
-    private readonly IConfiguration configuration;
-    private readonly IIdentityServerService identityServerService;
-    private readonly IMediator mediator;
-    private readonly TelemetryClient telemetryClient;
-
-    public TimesheetService(
-        ITimeService timeService,
-        IWorkerRequestRepository workerRequestRepository,
-        ITimesheetRepository timeSheetRepository,
-        IRequestRepository requestRepository,
-        ICatalogRepository catalogRepository,
-        IConfiguration configuration,
-        IIdentityServerService identityServerService,
-        IMediator mediator,
-        TelemetryClient telemetryClient)
-    {
-        this.timeService = timeService;
-        this.workerRequestRepository = workerRequestRepository;
-        this.timeSheetRepository = timeSheetRepository;
-        this.requestRepository = requestRepository;
-        this.catalogRepository = catalogRepository;
-        this.configuration = configuration;
-        this.identityServerService = identityServerService;
-        this.mediator = mediator;
-        this.telemetryClient = telemetryClient;
-    }
+    private readonly ITimeService timeService = timeService;
+    private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
+    private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
+    private readonly IRequestRepository requestRepository = requestRepository;
+    private readonly ICatalogRepository catalogRepository = catalogRepository;
+    private readonly IConfiguration configuration = configuration;
+    private readonly IIdentityServerService identityServerService = identityServerService;
+    private readonly IMediator mediator = mediator;
+    private readonly TelemetryClient telemetryClient = telemetryClient;
 
     public async Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerProfileId, TimeSpan clockIn)
     {
@@ -278,14 +265,18 @@ public class TimesheetService : ITimesheetService
         return result;
     }
 
-    public async Task<Result<ClockType>> GetClockType(Guid requestId, DateTime? date)
+    public async Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude, DateTime? date)
     {
         if (!date.HasValue)
         {
             return Result.Ok(ClockType.None);
         }
         var workerId = identityServerService.GetUserId();
-        var now = timeService.GetCurrentDateTime();
+        var workerNow = timeService.GetCurrentLocalDateTime(latitude, longitude).DateTime;
+        var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, workerNow);
+        var now = info is not null && info.Latitude.HasValue && info.Longitude.HasValue
+            ? timeService.GetCurrentLocalDateTime(info.Latitude.Value, info.Longitude.Value).DateTime
+            : workerNow;
         var timeSheet = await timeSheetRepository.GetLatestTimesheet(workerId, requestId, date.Value);
         if (date.Value.Date != now.Date && timeSheet == null)
         {
@@ -300,7 +291,7 @@ public class TimesheetService : ITimesheetService
             return Result.Ok(ClockType.None);
         }
         var totalHours = now - timeSheet.ClockIn.GetValueOrDefault();
-        if (totalHours.Hours <= TimeLimits.DefaultTimeLimits.MaximumHoursDay)
+        if (totalHours.TotalHours <= TimeLimits.DefaultTimeLimits.MaximumHoursDay)
         {
             return Result.Ok(ClockType.ClockOut);
         }

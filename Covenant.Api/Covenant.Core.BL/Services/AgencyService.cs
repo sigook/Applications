@@ -52,6 +52,7 @@ public class AgencyService : IAgencyService
     private readonly IDocumentService documentService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
+    private readonly IUploadedFilesService uploadedFilesService;
     private readonly ILogger<AgencyService> logger;
     private readonly IServiceProvider serviceProvider;
 
@@ -70,6 +71,7 @@ public class AgencyService : IAgencyService
         IDocumentService documentService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
+        IUploadedFilesService uploadedFilesService,
         ILogger<AgencyService> logger,
         IServiceProvider serviceProvider)
     {
@@ -87,6 +89,7 @@ public class AgencyService : IAgencyService
         this.documentService = documentService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
+        this.uploadedFilesService = uploadedFilesService;
         this.logger = logger;
         this.serviceProvider = serviceProvider;
     }
@@ -351,7 +354,7 @@ public class AgencyService : IAgencyService
         if (!result) return result;
         await requestRepository.Update(request);
         var applicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == workerProfileId);
-        if (applicant != null) requestRepository.Delete(applicant);
+        if (applicant != null) requestRepository.Delete([applicant]);
         await requestRepository.SaveChangesAsync();
         var data = await notificationDataRepository.GetWorkerData(requestId, workerProfileId, NotificationType.WorkerHasBeenBooked.Id);
         if (data != null && data.EmailNotification)
@@ -474,8 +477,11 @@ public class AgencyService : IAgencyService
         await workerRepository.SaveChangesAsync();
     }
 
-    public async Task<Result<CompanyProfileDocument>> CreateCompanyDocument(Guid companyProfileId, CompanyProfileDocumentModel model)
+    public async Task<Result<CompanyProfileDocument>> CreateCompanyDocument(Guid companyProfileId)
     {
+        var validation = uploadedFilesService.Validate();
+        if (!validation) return Result.Fail<CompanyProfileDocument>(validation.Errors);
+        var model = uploadedFilesService.GetModel<CompanyProfileDocumentModel>();
         var covenantFile = CovenantFile.Create(model);
         if (!covenantFile)
         {
@@ -485,6 +491,7 @@ public class AgencyService : IAgencyService
         entity.DocumentType = model.DocumentType;
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
+        await uploadedFilesService.Upload([model.FileName]);
         return Result.Ok(entity);
     }
 

@@ -1,15 +1,15 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <div class="container-flex justify-content-between">
-      <h3 class="fw-bold">Requested by</h3>
+    <div class="is-flex is-flex-wrap-wrap is-justify-content-space-between">
+      <h3 class="has-text-weight-bold">Requested by</h3>
       <b-button v-if="canEdit" type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
     </div>
     <div>
       <ul v-if="data" class="p-1">
         <li v-for="(item) in data.items" :key="item.id"
-          class="content-flex-between align-items-center mb-0 hover-actions fz-14">
-          <span class="d-inline-block valign-middle">{{ item.firstName }} {{ item.lastName }}</span>
+          class="content-flex-between is-align-items-center mb-0 hover-actions fz-14">
+          <span class="is-inline-block valign-middle">{{ item.firstName }} {{ item.lastName }}</span>
           <button class="btn-icon-sm btn-icon-reject valign-middle actions" @click="removeRequestedBy(item)"
             v-if="canEdit">DELETE</button>
         </li>

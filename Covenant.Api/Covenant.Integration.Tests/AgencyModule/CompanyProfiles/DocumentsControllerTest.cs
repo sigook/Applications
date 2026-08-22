@@ -2,8 +2,10 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
+using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -14,6 +16,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 {
@@ -34,8 +37,18 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
         [Fact]
         public async Task Post()
         {
-            var model = new CovenantFileModel("contract.pdf", "Contract 2021");
-            HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
+            var model = new CompanyProfileDocumentModel
+            {
+                FileName = "contract.pdf",
+                Description = "Contract 2021",
+                DocumentType = CompanyProfileDocumentType.Contract
+            };
+            using var content = new MultipartFormDataContent
+            {
+                { new StringContent(JsonSerializer.Serialize(model)), "data" },
+                { new ByteArrayContent("contract content"u8.ToArray()), model.FileName, model.FileName }
+            };
+            HttpResponseMessage response = await _client.PostAsync(RequestUri(), content);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<Guid>();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
@@ -44,6 +57,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             Assert.True(entity.CreatedAt <= DateTime.Now);
             Assert.Equal(model.FileName, entity.Document.FileName);
             Assert.Equal(model.Description, entity.Document.Description);
+            Assert.Equal(model.DocumentType, entity.DocumentType);
         }
 
         [Fact]
@@ -51,14 +65,14 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
         {
             HttpResponseMessage response = await _client.GetAsync(RequestUri());
             response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadFromJsonAsync<PaginatedList<CovenantFileModel>>();
+            var list = await response.Content.ReadFromJsonAsync<PaginatedList<CompanyProfileDocumentModel>>();
             Assert.NotEmpty(list.Items);
             var entity = Startup.FakeDocument;
             var model = list.Items.Single(c => c.Id == entity.DocumentId);
             AssertDetailAndEntity(model, entity);
         }
 
-        private static void AssertDetailAndEntity(CovenantFileModel model, CompanyProfileDocument entity)
+        private static void AssertDetailAndEntity(CompanyProfileDocumentModel model, CompanyProfileDocument entity)
         {
             Assert.Equal(model.Id, entity.DocumentId);
             Assert.Equal(model.FileName, entity.Document.FileName);

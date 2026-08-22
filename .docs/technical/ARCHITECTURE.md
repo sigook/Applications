@@ -6,7 +6,7 @@ Monorepo with seven applications. Each has its own `CLAUDE.md` with app-specific
 |---|---|---|
 | `Covenant.Api/` | .NET 8 Web API | Backend for the whole platform |
 | `Covenant.IdentityServer/` | .NET 6 + IdentityServer4 4.1.2 | OIDC/OAuth2 authentication server |
-| `Sigook.Web/` | Vue 3 + Pinia + buefy-next | Agency web portal (main platform) |
+| `Sigook.Web/` | Vue 3 + Pinia + buefy 3 | Agency web portal (main platform) |
 | `Covenant.Web/` | Vue 3 + Vuetify | Public marketing website |
 | `SigookApp/` | Flutter | Worker mobile app |
 | `Sigook.Functions/` | Azure Functions v4 (.NET 8 isolated) | Scheduled background triggers |
@@ -48,7 +48,7 @@ reference `Covenant.Common` (see [Covenant.Common sharing](#covenantcommon-shari
 ```
 Framework:  Vue 3.5.x + Vite 8 (Node 20+), TypeScript 6.x
 State:      Pinia 3.x (+ pinia-plugin-persistedstate)
-UI:         @ntohq/buefy-next 0.2.x (Buefy port for Vue 3 / Bulma)
+UI:         buefy 3.x (official Buefy for Vue 3, bundles Bulma 1.x)
 Auth:       oidc-client-ts 3.x
 HTTP:       Axios 1.10.0 (API calls live in src/api/*.ts)
 Validation: VeeValidate 4.x + Yup 1.x; i18n: vue-i18n
@@ -77,7 +77,12 @@ State:      Riverpod (flutter_riverpod ^3.0.3); DI: Riverpod + get_it ^9.0.5
 Routing:    GoRouter ^17.0.0 (lib/core/routing/app_router.dart)
 HTTP:       Dio ^5.7.0 (lib/core/network/api_client.dart + auth_interceptor.dart: bearer
             injection, 401 refresh + retry)
-Auth:       flutter_appauth ^11.0.0; tokens in FlutterSecureStorage
+Auth:       native email/password screen → OAuth2 password grant (POST {authority}/connect/token,
+            form-urlencoded, no id_token — role via /connect/userinfo; scopes
+            openid profile api1 roles offline_access); in-app 2-step forgot-password
+            (/forgot-password → POST /Password/forgot + /Password/reset, 6-digit code,
+            60-s resend cooldown); flutter_appauth ^11.0.0 kept for token refresh;
+            tokens in FlutterSecureStorage
 Codegen:    build_runner, freezed ^3.2.3, json_serializable; Dartz for Either/Option
 Flavors:    staging / production (main_staging.dart / main_production.dart, .env.* configs)
 ```
@@ -166,7 +171,7 @@ Two coexisting layouts:
 
 | Path | Controllers |
 |---|---|
-| `Controllers/Sigook/` | `CatalogController`, `LocationController`, `FileController` |
+| `Controllers/Sigook/` | `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint) |
 | `Controllers/Sigook/Agency/` | `AgencyController`, `AgencyLocationController`, `NotificationsController` |
 | `Controllers/Sigook/Agency/Accounting/` | `InvoicesController`, `PayStubsController`, `ReportsController`, `LocationTaxController`, `DeductionsController` |
 | `Controllers/Sigook/Agency/CompanyProfiles/` | company detail: profile, contacts, documents, invoice notes/recipients, job positions, locations, logo, notes, users |
@@ -310,9 +315,26 @@ rather than constructing clients directly.
 
 ## Authentication & Authorization
 
-- All apps authenticate against Covenant.IdentityServer via OIDC: Sigook.Web with
-  `oidc-client-ts` (`src/security/`), SigookApp with `flutter_appauth` (tokens in secure
-  storage). Covenant.Api validates the JWT Bearer token on every request.
+- All apps authenticate against Covenant.IdentityServer. Sigook.Web and SigookApp use the
+  OAuth2 **password grant** (`POST /connect/token`, `grant_type=password`) from their own
+  native login screens — no browser redirect. The custom `CovenantResourceOwnerPasswordValidator`
+  enforces the same rules as the Razor login (inactive users, unconfirmed email) plus lockout
+  (5 attempts / 5 min) and returns machine-readable `error_description` codes
+  (`invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out`). Password grant
+  issues no `id_token`; clients build the profile from `/connect/userinfo`.
+  Sigook.Web keeps `oidc-client-ts` (`src/security/`) for token storage/refresh and for the
+  "Sign in with Microsoft 365" button (`signinRedirect` with `acr_values=idp:oidc`, which skips
+  the IdentityServer login page and goes straight to the external provider via `/callback`).
+  Covenant.Api validates the JWT Bearer token on every request.
+- **Forgot password** is API-driven (`POST /Password/forgot` → 6-digit emailed code, 15-min TTL,
+  5 attempts, 60-s resend cooldown; `POST /Password/reset` with `{email, code, newPassword}`).
+  Codes live in the `PasswordResetCode` table (hashed). Both Sigook.Web (`/forgot-password`)
+  and SigookApp (`/forgot-password` route, 2-step screen) consume it; SigookApp also offers a
+  resend-confirmation action when login fails with `email_not_confirmed`
+  (`POST /Account/ResendConfirmationLink`). The Razor pages (`Login`,
+  `RequestResetPassword`, `CreatePassword`, `ConfirmEmailAddress`) remain for the
+  `accounting.sigook.com` client, older mobile builds (authorization_code is still enabled on
+  the `android`/`ios` clients) and account-activation emails.
 - **Roles** (exactly 7, lowercase, defined in `Covenant.Common/Constants/CovenantConstants.cs`):
   `superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker`. Role groups:
   `RecruitingAccess` (superadmin/admin/recruiting), `SalesAccess` (superadmin/admin/sales),

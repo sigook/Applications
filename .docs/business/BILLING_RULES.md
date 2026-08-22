@@ -35,7 +35,7 @@ Markup     = AgencyRate − WorkerRate (Agency's profit)
 
 The holidays of an invoice come from the date range of the timesheets being invoiced, so a late-approved timesheet from the holiday's week pulls that holiday back into a later invoice. To keep it from being charged twice, `GetCompanyRegularCharges` excludes any worker that already has an `InvoiceHoliday` row for the same holiday date under that company profile. Scope is **per company**: a worker placed at two companies of the same agency is entitled to holiday pay from each.
 
-> This is the invoice counterpart of `PayStubRepository.GetWorkerRegularWages` → `HolidayWasPaid`, which guards the pay-stub side against the same duplicate (`PayStubPublicHolidays` lookup). Both flows must keep their own guard — see `PAYSTUB_GENERATION.md`.
+> This is the invoice counterpart of `PayStubRepository.GetWorkerRegularWages` → `HolidayWasPaid`, which guards the pay-stub side against the same duplicate (`PayStubPublicHolidays` lookup). Both flows must keep their own guard — see `PAYROLL_RULES.md`.
 
 ---
 
@@ -132,7 +132,7 @@ Notes:
 
 ### Overtime accumulation scope
 
-Overtime accumulates **per Worker + Week + Request**, not per worker globally. A worker on two requests in the same week is evaluated against `OvertimeStartsAfter` independently per request: 40h on Request A + 40h on Request B produces **no** overtime. Same rule on pay stubs (see `PAYSTUB_GENERATION.md`) and subcontractor reports (where the accumulator resets per request inside the worker-week group).
+Overtime accumulates **per Worker + Week + Request**, not per worker globally. A worker on two requests in the same week is evaluated against `OvertimeStartsAfter` independently per request: 40h on Request A + 40h on Request B produces **no** overtime. Same rule on pay stubs (see `PAYROLL_RULES.md`) and subcontractor reports (where the accumulator resets per request inside the worker-week group).
 
 ---
 
@@ -166,14 +166,14 @@ AmountToPay = HoursToPay × AgencyRate         (≈ Regular charges / 20)
 
 **Example:** worker's look-back Regular charges = $925.00 at AgencyRate $25.00 → `TotalHours = 37` (under the 176 cap) → `HoursToPay = 1.85` → `AmountToPay = $46.25` billed for the holiday.
 
-Both flows mirror the dual-guard design on the payroll side — see `PAYSTUB_GENERATION.md`. Summary of the invoice/pay-stub differences for holidays:
+Both flows mirror the dual-guard design on the payroll side — see `PAYROLL_RULES.md`. Summary of the invoice/pay-stub differences for holidays:
 
 | Aspect | Invoice (company charge) | Pay stub (worker pay) |
 |--------|--------------------------|----------------------|
 | Worked holiday honors `HolidayIsPaid`? | No — hardcoded `holidayIsPaid: true` | Yes — uses `ts.HolidayIsPaid` |
 | Not-worked base | `Regular + OtherRegular` **company charges** (AgencyRate) / 20, capped 176h | Full worker gross incl. OT/holiday/missing + 4% vacations, / 20 |
 | Rate preserved | AgencyRate (markup kept) | WorkerRate |
-| Double-billing guard | `alreadyBilled` `InvoiceHoliday` exclusion (plus `TimeSheetTotal == null` on qualifying timesheets) | Dual guard on payroll side (see `PAYSTUB_GENERATION.md`) |
+| Double-billing guard | `alreadyBilled` `InvoiceHoliday` exclusion (plus `TimeSheetTotal == null` on qualifying timesheets) | Dual guard on payroll side (see `PAYROLL_RULES.md`) |
 
 ---
 
@@ -255,6 +255,5 @@ Deleting an invoice clears the `TimeSheetTotal` link, which re-qualifies its tim
 
 ## Related Documents
 
-- `PAYSTUB_GENERATION.md` — worker-side flow; shares the hours breakdown, the per-request overtime scope, and the two-flow holiday design (with a *worker-wage* holiday base instead of company charges).
+- `PAYROLL_RULES.md` — worker-side flow and CPP/EI/tax deductions (pay-stub only, never on invoices); shares the hours breakdown, the per-request overtime scope, and the two-flow holiday design (with a *worker-wage* holiday base instead of company charges).
 - `TIMESHEET_RULES.md` — how approved hours, breaks, missing hours and the two-threshold system are captured.
-- `PAYROLL_RULES.md` — CPP/EI/tax deductions (pay-stub only, never on invoices).

@@ -313,8 +313,10 @@
 
   .hc-contact-circle {
     position: relative;
-    width: 920px;
-    height: 920px;
+    width: min(920px, 92vw);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
     border-radius: 50%;
     background: #45d86e;
     display: flex;
@@ -398,6 +400,12 @@
   }
 
   /* ================== RESPONSIVE ================== */
+
+  @media (max-width: 1023px) {
+    .hc-contact-circle::before {
+      transform: translateX(30px);
+    }
+  }
 
   @media (max-width: 768px) {
     .hc-section {

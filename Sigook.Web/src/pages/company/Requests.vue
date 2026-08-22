@@ -1,14 +1,7 @@
 <template>
   <div class="company-requests">
     <b-loading v-model="isLoading"></b-loading>
-    <div class="section-top-title container-flex mb-5">
-      <h2 class="fz1 pt-3 col-6 col-md-5 col-sm-7">
-        {{ "Staff Requests" }}
-        <span class="fw-light fz-1">
-          ({{ totalItems }})
-        </span>
-      </h2>
-    </div>
+    <PageHeader title="Staff Requests" :count="totalItems" />
     <div>
       <b-field grouped position="is-right">
         <b-button tag="router-link" to="/company-requests/create" icon-left="plus">Create Request</b-button>
@@ -18,7 +11,7 @@
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
-          <p class="container text-center">No records available</p>
+          <p class="container has-text-centered">No records available</p>
         </template>
         <template>
           <b-table-column field="numberId" label="Request ID" sortable searchable>
@@ -55,20 +48,20 @@
             </template>
           </b-table-column>
           <b-table-column field="displayShift" label="Shift" v-slot="props">
-            <AgencyShift class="d-block" :requestId="props.row.id"
+            <AgencyShift class="is-block" :requestId="props.row.id"
               :displayShift="props.row.displayShift"></AgencyShift>
           </b-table-column>
           <b-table-column field="workersQuantityWorking" sortable>
             <template v-slot:header>
-              <p class="fw-semibold">Workers</p>
-              <p class="fw-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+              <p class="has-text-weight-semibold">Workers</p>
+              <p class="has-text-weight-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
             </template>
             <template v-slot="props">
               {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
             </template>
           </b-table-column>
           <b-table-column field="requestStatus" label="Status" v-slot="props">
-            <div class="text-center">
+            <div class="has-text-centered">
               <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
                 <div class="status-dot-container">
                   <img v-if="props.row.requestStatus === RequestStatus.Filled"
@@ -90,18 +83,21 @@ import { useRouter } from 'vue-router';
 import { useCompanyStore } from '@/stores/company';
 import { showAlertError } from '@/utils/toast';
 import { getRequests } from '@/api/companyApi';
+import type { CompanyRequestFilter, CompanyRequestListItem } from '@/types/company';
+import type { TableColumnRef } from '@/types/common';
 import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
 import { dateFromNow } from '@/utils/filters';
 import { useGridSort } from '@/composables/useGridSort';
 import AgencyShift from '@/components/agency_request/AgencyShiftDetail.vue';
+import PageHeader from '@/components/PageHeader.vue';
 
 const router = useRouter();
 const companyStore = useCompanyStore();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const serverParams = reactive<any>({
+const rows = ref<CompanyRequestListItem[]>([]);
+const serverParams = reactive<CompanyRequestFilter>({
   sortBy: 0,
   isDescending: true,
   pageIndex: 1,
@@ -116,14 +112,14 @@ const { defaultSort, onSortChange } = useGridSort(serverParams, {
 
 const totalQuantityWorking = computed(() => {
   if (rows.value.length > 0) {
-    return rows.value.map((r: any) => r.workersQuantityWorking).reduce((a: number, b: number) => a + b);
+    return rows.value.map((r) => r.workersQuantityWorking).reduce((a, b) => a + b);
   }
   return 0;
 });
 
 const totalQuantity = computed(() => {
   if (rows.value.length > 0) {
-    return rows.value.map((r: any) => r.workersQuantity).reduce((a: number, b: number) => a + b);
+    return rows.value.map((r) => r.workersQuantity).reduce((a, b) => a + b);
   }
   return 0;
 });
@@ -132,7 +128,7 @@ function getCompanyRequests() {
   isLoading.value = true;
   companyStore.setCompanyRequestFilter(serverParams);
   getRequests(serverParams)
-    .then((requests: any) => {
+    .then((requests) => {
       rows.value = requests.items;
       totalItems.value = requests.totalItems;
       isLoading.value = false;
@@ -148,7 +144,7 @@ function onPageChange(params: number) {
   getCompanyRequests();
 }
 
-function onCellClick(row: any, column: any) {
+function onCellClick(row: CompanyRequestListItem, column: TableColumnRef) {
   switch (column.field) {
     case 'displayShift':
       break;
@@ -169,7 +165,7 @@ function onInputEntered(event: KeyboardEvent) {
   }
 }
 
-function getStatusClass(row: any) {
+function getStatusClass(row: CompanyRequestListItem) {
   if (row.requestStatus === RequestStatus.Open &&
     row.workersQuantityWorking > 0 &&
     row.workersQuantityWorking < row.workersQuantity) {

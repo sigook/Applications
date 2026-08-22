@@ -2,6 +2,7 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
@@ -14,6 +15,7 @@ using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
+using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -64,6 +66,7 @@ namespace Covenant.Tests.Request
                 Mock.Of<IDocumentService>(),
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
+                Mock.Of<IUploadedFilesService>(),
                 Mock.Of<ILogger<AgencyService>>(),
                 Mock.Of<IServiceProvider>());
         }
@@ -81,14 +84,14 @@ namespace Covenant.Tests.Request
         [Fact]
         public async Task Book_IfWorkerWasApplicantItMustBeRemovedFromApplicants()
         {
-            var requestApplicant = RequestApplicant.CreateWithWorker(request.Id, _worker.Id, default, default).Value;
+            var requestApplicant = RequestApplicant.CreateWithWorker(request.Id, _worker.Id, default, default, RequestApplicantStatus.Pending).Value;
             requestRepository.Setup(r => r.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>())).ReturnsAsync(requestApplicant);
 
             Result result = await _sut.BookWorker(request.Id, _worker.Id, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
             Assert.True(result);
 
             requestRepository.Verify(c => c.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>()), Times.Once);
-            requestRepository.Verify(c => c.Delete(It.IsAny<RequestApplicant>()), Times.Once);
+            requestRepository.Verify(c => c.Delete(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Once);
             requestRepository.Verify(c => c.Update(request), Times.Once);
             requestRepository.Verify(c => c.SaveChangesAsync(), Times.Once);
         }

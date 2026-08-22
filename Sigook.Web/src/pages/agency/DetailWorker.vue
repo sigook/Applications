@@ -2,12 +2,13 @@
   <div class="contain-worker has-menu-bottom" v-if="worker">
     <b-loading v-model="isLoading"></b-loading>
 
+    <Breadcrumbs :crumbs="crumbs" back-to="/recruiting/workers" />
     <section class="wrapper-worker-top mb-0">
       <div>
-        <image-detail class="d-inline-block align-text-top" :data="worker" @updateProfile="() => loadWorker()" />
-        <div class="d-inline-block ps-4 align-text-top">
-          <h2 class="fz1 fw-bold">
-            <span class="fw-normal" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
+        <image-detail class="is-inline-block align-text-top" :data="worker" @updateProfile="() => loadWorker()" />
+        <div class="is-inline-block pl-4 align-text-top">
+          <h2 class="fz1 has-text-weight-bold">
+            <span class="has-text-weight-normal" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
               {{ worker.numberId }}
             </span>
             {{ lowercase(worker.firstName) }}
@@ -37,8 +38,8 @@
     <b-tabs v-model="currentTab" @update:modelValue="changeTab">
       <b-tab-item label="Profile" value="profile">
         <div v-if="visitedTabs.includes('profile')" class="wrapper-request">
-        <div class="container-flex">
-          <section class="col-md-9 col-sm-12">
+        <div class="columns is-multiline">
+          <section class="column is-9">
             <basic-information :worker="worker" @updateProfile="() => loadWorker()" />
 
             <span class="line-gray" />
@@ -88,8 +89,8 @@
 
             <span class="line-gray" />
             <section class="worker-experience" id="experience">
-              <div class="d-flex align-items-center justify-content-between">
-                <h3 class="fw-bold fz-0">{{ "Work Experience" }}</h3>
+              <div class="is-flex is-align-items-center is-justify-content-space-between">
+                <h3 class="has-text-weight-bold fz-0">{{ "Work Experience" }}</h3>
                 <b-button type="is-primary" icon-right="plus" @click="modalWorkExperience = true">
                   Add experience
                 </b-button>
@@ -101,7 +102,7 @@
                 </li>
               </ul>
 
-              <b-modal v-model="modalWorkExperience" width="500px">
+              <b-modal custom-content-class="card" v-model="modalWorkExperience" width="500px">
                 <work-experience-form :workerId="worker.id" @updateExperience="() => updateExperience()" />
               </b-modal>
             </section>
@@ -110,7 +111,7 @@
             <comments v-if="commentsData" :worker-profile-id="worker.id" :data="commentsData" :size-comments="commentSize"
               @newComment="() => updateComments()" @changePage="(page) => changePageComments(page)" />
           </section>
-          <aside class="col-md-3 col-sm-12 section-right">
+          <aside class="column is-3 section-right">
             <notes />
           </aside>
         </div>
@@ -138,6 +139,9 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useAdmin } from '@/composables/useAdmin';
+import { useModuleBase } from '@/composables/useModuleBase';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import type { PageBreadcrumb } from '@/types/common';
 import { workerColor } from '@/utils/workerStatus';
 import { getCommentsWorker } from '@/api/workerApi';
 import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
@@ -171,6 +175,8 @@ import otherDocuments from '@/components/worker/WorkerOtherDocumentsDetail.vue';
 
 const route = useRoute();
 const router = useRouter();
+const { moduleCrumbs } = useModuleBase();
+const crumbs = computed<PageBreadcrumb[]>(() => [...moduleCrumbs.value, { label: 'Workers', to: '/recruiting/workers' }]);
 const { isAdmin } = useAdmin();
 
 const currentJobEx = ref(0);

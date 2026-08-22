@@ -1,39 +1,39 @@
 <template>
   <div class="p-3">
-    <h2 class="text-center main-title">{{ 'Contact Information' }}</h2>
-    <div class="container-flex">
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+    <h2 class="has-text-centered main-title">{{ 'Contact Information' }}</h2>
+    <div class="columns is-multiline">
+      <div class="column is-6">
         <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="localModel.phone"
           @formattedPhone="(phone) => localModel.phone = phone" />
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.phoneExt ? 'is-danger' : ''" label="Phone Ext"
           :message="formErrors.phoneExt || ''">
           <b-input type="text" v-model="phoneExt" name="phoneExt" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <phone-input ref="faxComponent" :required="false" model="Fax" :defaultValue="localModel.fax"
           @formattedPhone="(phone) => localModel.fax = phone" />
       </div>
 
-      <div class="col-sm-12 col-md-6 col-lg-6 col-padding">
+      <div class="column is-6">
         <b-field :type="formErrors.faxExt ? 'is-danger' : ''" label="Fax Ext"
           :message="formErrors.faxExt || ''">
           <b-input type="text" v-model="faxExt" name="faxExt" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-field :type="formErrors.website ? 'is-danger' : ''" label="Website"
           :message="formErrors.website || ''">
           <b-input type="text" v-model="website" name="website" placeholder="www.example.com" />
         </b-field>
       </div>
 
-      <div class="col-sm-12 col-md-12 col-lg-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="validateForm">
           {{ 'Save' }}
         </b-button>

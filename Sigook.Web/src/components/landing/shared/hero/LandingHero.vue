@@ -51,7 +51,7 @@ withDefaults(
   position: relative;
   width: 100%;
   height: auto;
-  min-height: max(100vh, 1080px);
+  min-height: max(100svh, 42rem);
   overflow: hidden;
   isolation: isolate;
 }
@@ -70,7 +70,7 @@ withDefaults(
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: max(100vh, 1080px);
+  min-height: max(100svh, 42rem);
   padding:
     clamp(80px, 12vw, 140px)
     clamp(20px, 3vw, 32px)
@@ -116,14 +116,6 @@ withDefaults(
 }
 
 @media (max-width: 1023px) {
-  .landing-hero {
-    min-height: 100svh;
-  }
-
-  .landing-hero__content {
-    min-height: 100svh;
-  }
-
   .landing-hero__scroll {
     display: none;
   }

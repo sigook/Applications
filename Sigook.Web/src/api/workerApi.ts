@@ -52,8 +52,15 @@ export function workerGetTimeSheet(requestId: string): Promise<WorkerTimeSheetIt
   return api.get<WorkerTimeSheetItem[]>(`/api/WorkerRequest/${requestId}/TimeSheet`);
 }
 
-export function getClockType(requestId: string, date: string): Promise<ClockType> {
-  return api.get<ClockType>(`/api/WorkerRequest/${requestId}/TimeSheet/clock-type`, { params: { date } });
+export function getClockType(
+  requestId: string,
+  latitude: number,
+  longitude: number,
+  date: string
+): Promise<ClockType> {
+  return api.get<ClockType>(`/api/WorkerRequest/${requestId}/TimeSheet/clock-type/${latitude}/${longitude}`, {
+    params: { date }
+  });
 }
 
 // Comments

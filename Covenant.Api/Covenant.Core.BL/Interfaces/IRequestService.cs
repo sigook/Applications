@@ -15,7 +15,6 @@ namespace Covenant.Core.BL.Interfaces
         Task<Result> UpdateRequirements(Guid id, RequestUpdateRequirementsModel model);
         Task<Result> UpdateIsAsap(Guid id);
         Task<Result> UpdateIsAsapRequests(RequestsQuickUpdate requestsQuickUpdate);
-        Task<Result> PunchCardUpdateVisibilityStatusInApp(Guid requestId);
         Task<Result> CancelRequest(Guid requestId, RequestCancellationDetailModel reason);
         Task<Result<BulkRequestCancellationResult>> BulkCancelRequests(BulkRequestCancellation model);
         Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model);

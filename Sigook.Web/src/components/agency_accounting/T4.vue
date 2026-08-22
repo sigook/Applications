@@ -1,14 +1,14 @@
 <template>
   <div>
-    <div class="container-flex">
-      <div class="col-3 col-padding">
+    <div class="columns is-multiline">
+      <div class="column is-3-mobile is-3">
         <b-field label="Dates (From - To)" :type="formErrors.dates ? 'is-danger' : ''"
           :message="formErrors.dates">
           <b-datepicker v-model="dates" name="dates" range
             @update:modelValue="onDatesSelected" />
         </b-field>
       </div>
-      <div class="col-12 col-padding">
+      <div class="column is-12">
         <b-button type="is-primary" @click="getReport" :loading="isLoading">Generate</b-button>
       </div>
     </div>
@@ -22,6 +22,7 @@ import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { getT4Report } from "@/api/agencyReportApi";
 import { useStickyForm } from '@/composables/useStickyForm';
+import type { AgencyReportFilter } from '@/types/agency';
 
 const schema = yup.object({
   dates: yup.array().of(yup.date()).min(2, 'Dates are required').required('Dates are required'),
@@ -35,7 +36,7 @@ const { dates } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const serverParams = ref<any>({});
+const serverParams = ref<AgencyReportFilter>({});
 
 function onDatesSelected() {
   if (dates.value && dates.value.length === 2) {

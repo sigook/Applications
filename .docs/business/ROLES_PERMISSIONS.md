@@ -60,6 +60,15 @@ Concretely:
   knows the id of another rep's order can open and edit it. **This is accepted on purpose** — the
   list is the boundary, not the record.
 
+### Exception: deals & interactions are owner-scoped end-to-end
+
+The sales module's deals and company interactions (`api/agency/sales/deals`,
+`api/agency/sales/companyinteractions`) do **not** follow the list-is-the-boundary rule: a sales
+user lists, updates and deletes only the records they own, and `OwnerId` is overwritten server-side
+on create. Admin and superadmin hit the same endpoints unscoped. Controllers:
+`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs`
+(Policy `Sales`). See `.docs/technical/SIGOOK_WEB_SALES_DASHBOARD.md`.
+
 ## Sales auto-assignment
 
 **A sales user who creates an order or a client is always assigned to themselves as the sales

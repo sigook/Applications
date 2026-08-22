@@ -1,19 +1,19 @@
-﻿using Covenant.Common.Functionals;
+using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using Microsoft.AspNetCore.Http;
 
-namespace Covenant.Core.BL.Interfaces
+namespace Covenant.Core.BL.Interfaces;
+
+public interface ICandidateService
 {
-    public interface ICandidateService
-    {
-        Task<Result<Guid>> CreateCandidate(CandidateCreateModel model, Guid agencyId, bool validatePhone = true);
-        Task<Result> UpdateCandidate(Guid id, CandidateCreateModel model);
-        Task<Result> UpdateRecruiterCandidate(Guid id);
-        Task<Result> DeleteCandidate(Guid id);
-        Task<Result> DeleteCandidateByEmail(string email);
-        Task<Result> ConvertToWorker(Guid id);
-        Task<Result<Guid>> CreateCandidateDocument(Guid id, CovenantFileModel model);
-        Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, IFormFile file);
-    }
+    Task<Result<Guid>> CreateCandidate(CandidateCreateModel model, Guid agencyId, bool validatePhone = true);
+    Task<Result<Guid>> CreateCandidateWithResume(Guid agencyId);
+    Task<Result> UpdateCandidate(Guid id, CandidateCreateModel model);
+    Task<Result> UpdateRecruiterCandidate(Guid id);
+    Task<Result> DeleteCandidate(Guid id);
+    Task<Result> DeleteCandidateByEmail(string email);
+    Task<Result> ConvertToWorker(Guid id);
+    Task<Result<Guid>> CreateCandidateDocument(Guid id);
+    Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, IFormFile file);
 }

@@ -2,8 +2,8 @@
   <section class="worker-comments" id="comments">
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="d-flex align-items-center justify-content-between" v-if="!onlyView">
-      <h3 class="fw-bold fz-0">{{ 'Comments & Qualification' }}</h3>
+    <div class="is-flex is-align-items-center is-justify-content-space-between" v-if="!onlyView">
+      <h3 class="has-text-weight-bold fz-0">{{ 'Comments & Qualification' }}</h3>
       <b-button type="is-primary" icon-right="plus" @click="alertComment">{{ 'Add Comment' }}</b-button>
     </div>
     <div>
@@ -21,14 +21,14 @@
         </div>
       </div>
     </div>
-    <pagination :total-pages="data.totalPages" :index-page="data.pageIndex" :size-page="sizeComments"
-      @changePage="(index) => changePage(index)">
-    </pagination>
+    <b-pagination v-if="data.totalItems > sizeComments" v-model="currentPage" :total="data.totalItems"
+      :per-page="sizeComments" size="is-small" rounded @change="changePage">
+    </b-pagination>
 
 
 
 
-    <b-modal v-model="modalValidation" width="500px">
+    <b-modal custom-content-class="card" v-model="modalValidation" width="500px">
       <dialog-comment @createComment="(data) => getComment(data)"></dialog-comment>
     </b-modal>
 
@@ -47,7 +47,6 @@ import { companyCommentWorker } from "@/api/companyApi";
 import type { WorkerCommentCreateModel } from '@/types/worker';
 import iconAgency from '@/assets/images/icon_agency.svg';
 import DialogComment from "./DialogWorkerComment.vue";
-import Pagination from "./Paginator.vue";
 
 const props = defineProps<{
   workerProfileId?: string;
@@ -66,6 +65,7 @@ const securityStore = useSecurityStore();
 const isLoading = ref(false);
 const commentary = ref({ comment: '', rate: 0 });
 const modalValidation = ref(false);
+const currentPage = ref(1);
 
 function alertComment() {
   modalValidation.value = true;

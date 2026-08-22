@@ -5,8 +5,8 @@
       :status="request.status" :worker="worker" @onMonthChange="(args) => onMonthChange(args.startDate, args.endDate)">
       <template v-slot:punch-input="slotProps">
         <div v-if="slotProps.item.id !== null" class="mt-1">
-          <div class="container-flex">
-            <div class="col-12 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-12">
               <div v-if="slotProps.item.clockIn">
                 <b-tag type="is-info is-light">
                   <strong>Clock in:</strong> {{ dateHHmm(slotProps.item.clockIn) }}
@@ -28,7 +28,7 @@
                   <strong>Hours Approved:</strong> {{ hour(slotProps.item.totalHoursApproved) }}
                 </b-tag>
               </div>
-              <div class="d-flex gap-2 justify-content-center align-items-center">
+              <div class="is-flex is-gap-1 is-justify-content-center is-align-items-center">
                 <b-tooltip label="Detail" type="is-dark" append-to-body>
                   <b-button type="is-ghost" @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
                 </b-tooltip>
@@ -41,7 +41,7 @@
                     @click="timeSheetFastApprove(slotProps.item, requestId, workerProfileId)">
                   </b-button>
                 </b-tooltip>
-                <div class="d-flex" v-if="slotProps.item.id && !slotProps.item.canUpdate">
+                <div class="is-flex" v-if="slotProps.item.id && !slotProps.item.canUpdate">
                   <b-tooltip :triggers="['click']" :auto-close="['outside', 'escape']" type="is-dark" size="is-medium"
                     position="is-top" multilined append-to-body>
                     <template #content>
@@ -69,8 +69,8 @@
           </div>
         </div>
         <div class="mt-2" v-else>
-          <div class="container-flex">
-            <div class="col-12 col-padding">
+          <div class="columns is-multiline">
+            <div class="column is-12">
               <b-field :type="itemErrors[slotProps.index] ? 'is-danger' : ''"
                 :message="itemErrors[slotProps.index] || ''">
                 <b-numberinput v-model="slotProps.item.totalHoursApproved" placeholder="Hours"
@@ -87,13 +87,13 @@
     </Calendar>
 
     <!-- Modal para punch card -->
-    <b-modal v-model="showModalPunchCard">
+    <b-modal custom-content-class="card" v-model="showModalPunchCard">
       <TimeSheetModal v-if="editableDay" :worker="{ workerProfileId: workerProfileId }" v-model:editable-day="editableDay"
         @updateData="updateCell" />
     </b-modal>
 
     <!-- Modal para detalle -->
-    <b-modal v-model="showDetailPunchCard" width="500px">
+    <b-modal custom-content-class="card" v-model="showDetailPunchCard" width="500px">
       <TimeSheetDetail v-if="editableDay" :editable-day="editableDay" />
     </b-modal>
   </div>

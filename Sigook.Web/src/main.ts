@@ -4,7 +4,7 @@ import router from './router';
 import pinia from './stores';
 import VueScrollTo from 'vue-scrollto';
 import { registerAppGlobals } from './varaibles';
-import Buefy from '@ntohq/buefy-next';
+import Buefy from 'buefy';
 import { QuillEditor } from '@vueup/vue-quill';
 import VueLazyload from 'vue-lazyload';
 import errorImage from '@/assets/images/default/error.svg';
@@ -16,8 +16,7 @@ import { useSecurityStore } from '@/stores/security';
 import type { UserProfile } from '@/types/security';
 
 // import the styles
-import 'bootstrap/dist/css/bootstrap.min.css';
-import '@ntohq/buefy-next/dist/buefy.css';
+import 'buefy/dist/css/buefy.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 import statusDirective from './directives/status-directive';

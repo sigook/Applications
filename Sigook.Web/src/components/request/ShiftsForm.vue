@@ -1,6 +1,6 @@
 <template>
   <div class="mt-4 w-100">
-    <div class="fz-1 fw-bold mb-3">
+    <div class="fz-1 has-text-weight-bold mb-3">
       Shift
     </div>
     <div class="shifts-grid">
@@ -47,7 +47,7 @@
       </div>
     </div>
 
-    <div class="col-sm-12 col-md-12 col-lg-12 col-padding pt-1">
+    <div class="pt-1">
       <b-field label="Comments">
         <b-input type="textarea" v-model="comments" name="description" @update:modelValue="updateModel" />
       </b-field>

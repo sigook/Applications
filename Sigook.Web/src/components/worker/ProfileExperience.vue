@@ -14,7 +14,7 @@
         :workerId="props.worker.id"
         @getWorker="() => updateExperience()" />
 
-      <b-modal v-model="modalWorkExperience" width="800px">
+      <b-modal custom-content-class="card" v-model="modalWorkExperience" width="800px">
         <work-experience :workerId="props.worker.id" @updateExperience="() => updateExperience()" />
       </b-modal>
     </div>

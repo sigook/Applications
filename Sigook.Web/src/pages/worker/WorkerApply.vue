@@ -1,8 +1,8 @@
 <template>
   <div class="apply-container">
     <b-loading v-model="isLoading"></b-loading>
-    <p class="alert-warning-red text-center" v-if="errorMessage" v-html="errorMessage"></p>
-    <p class="alert-success text-center" v-if="successMessage">
+    <p class="alert-warning-red has-text-centered" v-if="errorMessage" v-html="errorMessage"></p>
+    <p class="alert-success has-text-centered" v-if="successMessage">
       {{ successMessage }}
     </p>
     <div>

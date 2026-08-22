@@ -57,14 +57,14 @@ public class CandidatesController(
         return Ok(candidate);
     }
 
-    /// <summary>Creates a new candidate for the current agency.</summary>
-    /// <param name="model">Candidate data.</param>
+    /// <summary>Creates a new candidate for the current agency, with an optional resume file.</summary>
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(CandidateDetailModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromBody] CandidateCreateModel model)
+    public async Task<IActionResult> Post()
     {
-        var candidateId = await candidateService.CreateCandidate(model, User.GetAgencyId());
+        var candidateId = await candidateService.CreateCandidateWithResume(User.GetAgencyId());
         if (!candidateId) return BadRequest(candidateId.Errors);
         return CreatedAtAction(nameof(GetCandidateById), new { id = candidateId.Value }, new CandidateDetailModel { Id = candidateId.Value });
     }
