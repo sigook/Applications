@@ -84,19 +84,33 @@ echo "SCOPES validated ✅"
 # ---------------------------------------
 # Pinned on purpose: an unpinned 'stable' clone silently upgraded CI to a
 # Flutter release whose engine requires a higher iOS deployment target than
-# the one declared in ios/Podfile, breaking pod install. Bump this only
-# together with the iOS deployment target.
+# the one declared in ios/Podfile, breaking pod install.
+#
+# The iOS deployment target is now 15.0, which satisfies Flutter 3.47.x.
+# Bumping this pin past 3.44 additionally switches iOS plugins to Swift
+# Package Manager and applies the UIScene migration: both rewrite the Xcode
+# project, so run the first build on a Mac and commit the generated diff
+# instead of letting CI mutate an unreviewed checkout.
 FLUTTER_VERSION="3.41.3"
 FLUTTER_HOME="$HOME/flutter"
 
 echo "Ensuring Flutter $FLUTTER_VERSION is installed..."
 
-if [ ! -x "$FLUTTER_HOME/bin/flutter" ]; then
-  echo "Installing Flutter $FLUTTER_VERSION..."
+CACHED_VERSION=""
+if [ -x "$FLUTTER_HOME/bin/flutter" ]; then
+  CACHED_VERSION="$(git -C "$FLUTTER_HOME" describe --tags --abbrev=0 2>/dev/null || echo "")"
+fi
+
+if [ "$CACHED_VERSION" != "$FLUTTER_VERSION" ]; then
+  if [ -n "$CACHED_VERSION" ]; then
+    echo "Cached Flutter is $CACHED_VERSION, need $FLUTTER_VERSION - reinstalling..."
+  else
+    echo "Installing Flutter $FLUTTER_VERSION..."
+  fi
   rm -rf "$FLUTTER_HOME"
   git clone https://github.com/flutter/flutter.git --depth 1 -b "$FLUTTER_VERSION" "$FLUTTER_HOME"
 else
-  echo "Reusing existing Flutter at $FLUTTER_HOME"
+  echo "Reusing cached Flutter $CACHED_VERSION at $FLUTTER_HOME"
 fi
 
 # Prepend so the pinned SDK wins over any preinstalled Flutter on the runner
