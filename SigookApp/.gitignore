@@ -7,6 +7,9 @@
 # Miscellaneous
 *.class
 *.lock
+# Dart/Flutter apps commit their lockfile so CI resolves the exact same
+# dependency versions as the developer machine.
+!pubspec.lock
 *.log
 *.pyc
 *.swp

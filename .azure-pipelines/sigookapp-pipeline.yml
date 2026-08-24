@@ -338,6 +338,21 @@ stages:
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory"
           fi
 
+          # Validate auth scopes: the app reads the worker role from
+          # /connect/userinfo, which only returns it when 'roles' was requested.
+          # Without it sign-in succeeds but the worker-only gate degrades.
+          for REQUIRED_SCOPE in openid profile api1 roles offline_access; do
+            case ",$(SCOPES)," in
+              *",${REQUIRED_SCOPE},"*) ;;
+              *)
+                echo "ERROR: SCOPES is missing '${REQUIRED_SCOPE}' (current: $(SCOPES))"
+                echo "Expected: openid,profile,api1,roles,offline_access"
+                exit 1
+                ;;
+            esac
+          done
+          echo "SCOPES validated"
+
           # Use calculated version from CalculateVersion step
           VERSION_NAME="$(CalculateVersion.appVersionName)"
           VERSION_CODE="$(CalculateVersion.appVersionCode)"
@@ -357,7 +372,7 @@ stages:
             --dart-define="REDIRECT_URI=$(REDIRECT_URI)" \
             --dart-define="POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
             --dart-define="SCOPES=$(SCOPES)" \
-            --dart-define="APP_NAME=$(APP_NAME)"
+            --dart-define="APP_NAME=$(APP_NAME)" \
             --dart-define="APP_INSIGHTS_CONNECTION_STRING=$(APP_INSIGHTS_CONNECTION_STRING)"
 
           echo "✅ Android AAB built successfully for $(environment)"
