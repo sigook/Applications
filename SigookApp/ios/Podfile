@@ -43,6 +43,14 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
 
     target.build_configurations.each do |config|
+      # flutter_additional_ios_build_settings only clears the deployment
+      # target on pods that depend on Flutter, so transitive Obj-C pods
+      # (SDWebImage, SwiftyGif, DKImagePickerController...) and resource
+      # bundles keep their own 9.0/11.0 and trip Xcode's minimum. Pin every
+      # target to the same floor as Runner. Keep this in sync with
+      # 'platform :ios' above.
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+
       # Suppress all warnings on Pod targets — none of this is our code.
       # Covers: analyzer warnings, deprecation warnings, Swift warnings, compiler warnings.
       config.build_settings['RUN_CLANG_STATIC_ANALYZER'] = 'NO'
