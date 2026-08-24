@@ -309,10 +309,12 @@ public class WorkerService : IWorkerService
         }
         var socialInsuranceValidation = await ValidateSocialInsuranceFromIdentification(model, profileId);
         if (!socialInsuranceValidation) return Result.Fail<IEnumerable<string>>(socialInsuranceValidation.Errors);
+        var previousFiles = ProfileFiles(entity);
         var result = entity.PatchDocuments(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
         var socialInsuranceFill = await ApplySocialInsuranceFromIdentification(entity, model);
         if (!socialInsuranceFill) return Result.Fail<IEnumerable<string>>(socialInsuranceFill.Errors);
+        await TrackFilesCreatedByPatch(entity, previousFiles);
         return Result.Ok<IEnumerable<string>>(
         [
             model.IdentificationType1File?.FileName,
@@ -399,9 +401,26 @@ public class WorkerService : IWorkerService
         var model = form.DeserializeData<SinInformationModel>();
         if (!string.IsNullOrEmpty(model?.SocialInsurance) && await workerRepository.SocialInsuranceIsAlreadyTaken(model.SocialInsurance, entity.Id))
             return Result.Fail<IEnumerable<string>>(ApiResources.SocialInsuranceAlreadyTaken);
+        var previousFiles = ProfileFiles(entity);
         var result = entity.PatchSinInformation(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
+        await TrackFilesCreatedByPatch(entity, previousFiles);
         return Result.Ok<IEnumerable<string>>([model.SocialInsuranceFile?.FileName]);
+    }
+
+    private static List<CovenantFile> ProfileFiles(WorkerProfile entity) =>
+    [
+        entity.IdentificationType1File,
+        entity.IdentificationType2File,
+        entity.SocialInsuranceFile,
+        entity.PoliceCheckBackGround,
+        entity.Resume
+    ];
+
+    private async Task TrackFilesCreatedByPatch(WorkerProfile entity, List<CovenantFile> previousFiles)
+    {
+        var createdFiles = ProfileFiles(entity).Where(f => f is not null && !previousFiles.Contains(f));
+        foreach (var file in createdFiles) await workerRepository.Create(file);
     }
 
     private async Task NotifyAgencyAndSubscribe(Common.Entities.Agency.Agency agency, WorkerProfile workerProfile)
