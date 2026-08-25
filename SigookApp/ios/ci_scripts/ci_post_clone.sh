@@ -67,13 +67,13 @@ done
 
 echo "All environment variables are present ✅"
 
-# The app resolves the worker role from /connect/userinfo, which only returns
-# the role claim when the 'roles' scope was requested. Without it sign-in still
-# succeeds but the worker-only gate silently degrades, so fail the build here.
-for REQUIRED_SCOPE in openid profile api1 roles offline_access; do
+# The worker role travels in the access token via the api1 scope. Do NOT add
+# 'roles' here: the android/ios clients are not granted that identity scope and
+# IdentityServer answers invalid_scope, breaking sign-in entirely.
+for REQUIRED_SCOPE in openid profile api1 offline_access; do
   if [[ ",${SCOPES}," != *",${REQUIRED_SCOPE},"* ]]; then
     echo "❌ ERROR: SCOPES is missing '${REQUIRED_SCOPE}' (current: ${SCOPES})"
-    echo "   Expected: openid,profile,api1,roles,offline_access"
+    echo "   Expected: openid,profile,api1,offline_access"
     exit 1
   fi
 done
