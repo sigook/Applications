@@ -338,15 +338,15 @@ stages:
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory"
           fi
 
-          # Validate auth scopes: the app reads the worker role from
-          # /connect/userinfo, which only returns it when 'roles' was requested.
-          # Without it sign-in succeeds but the worker-only gate degrades.
-          for REQUIRED_SCOPE in openid profile api1 roles offline_access; do
+          # Validate auth scopes. The worker role travels in the access token
+          # via api1; do NOT add 'roles' - the native clients are not granted
+          # that identity scope and IdentityServer answers invalid_scope.
+          for REQUIRED_SCOPE in openid profile api1 offline_access; do
             case ",$(SCOPES)," in
               *",${REQUIRED_SCOPE},"*) ;;
               *)
                 echo "ERROR: SCOPES is missing '${REQUIRED_SCOPE}' (current: $(SCOPES))"
-                echo "Expected: openid,profile,api1,roles,offline_access"
+                echo "Expected: openid,profile,api1,offline_access"
                 exit 1
                 ;;
             esac
