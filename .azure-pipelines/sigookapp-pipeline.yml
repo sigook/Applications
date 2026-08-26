@@ -338,20 +338,17 @@ stages:
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory"
           fi
 
-          # Validate auth scopes. The worker role travels in the access token
-          # via api1; do NOT add 'roles' - the native clients are not granted
-          # that identity scope and IdentityServer answers invalid_scope.
-          for REQUIRED_SCOPE in openid profile api1 offline_access; do
-            case ",$(SCOPES)," in
-              *",${REQUIRED_SCOPE},"*) ;;
-              *)
-                echo "ERROR: SCOPES is missing '${REQUIRED_SCOPE}' (current: $(SCOPES))"
-                echo "Expected: openid,profile,api1,offline_access"
-                exit 1
-                ;;
-            esac
-          done
-          echo "SCOPES validated"
+          # Validate auth scopes EXACTLY. An extra scope is as fatal as a
+          # missing one: 'roles' is not granted to the native clients and
+          # IdentityServer answers invalid_scope, which the app surfaces as a
+          # generic "invalid credentials" message.
+          EXPECTED_SCOPES="openid,profile,api1,offline_access"
+          if [ "$(SCOPES)" != "$EXPECTED_SCOPES" ]; then
+            echo "ERROR: SCOPES must be exactly <$EXPECTED_SCOPES>"
+            echo "   got: <$(SCOPES)>"
+            exit 1
+          fi
+          echo "SCOPES validated <$(SCOPES)>"
 
           # Use calculated version from CalculateVersion step
           VERSION_NAME="$(CalculateVersion.appVersionName)"

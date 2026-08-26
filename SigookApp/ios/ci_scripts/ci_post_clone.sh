@@ -70,14 +70,16 @@ echo "All environment variables are present ✅"
 # The worker role travels in the access token via the api1 scope. Do NOT add
 # 'roles' here: the android/ios clients are not granted that identity scope and
 # IdentityServer answers invalid_scope, breaking sign-in entirely.
-for REQUIRED_SCOPE in openid profile api1 offline_access; do
-  if [[ ",${SCOPES}," != *",${REQUIRED_SCOPE},"* ]]; then
-    echo "❌ ERROR: SCOPES is missing '${REQUIRED_SCOPE}' (current: ${SCOPES})"
-    echo "   Expected: openid,profile,api1,offline_access"
-    exit 1
-  fi
-done
-echo "SCOPES validated ✅"
+EXPECTED_SCOPES="openid,profile,api1,offline_access"
+if [[ "$SCOPES" != "$EXPECTED_SCOPES" ]]; then
+  echo "❌ ERROR: SCOPES must be exactly <$EXPECTED_SCOPES>"
+  echo "   got: <$SCOPES>"
+  echo "   An EXTRA scope is as fatal as a missing one: 'roles' is not granted"
+  echo "   to the android/ios clients and IdentityServer answers invalid_scope,"
+  echo "   which the app surfaces as a generic 'invalid credentials' message."
+  exit 1
+fi
+echo "SCOPES validated ✅ <$SCOPES>"
 
 # ---------------------------------------
 # Setup Flutter (pinned - do NOT use 'stable')
