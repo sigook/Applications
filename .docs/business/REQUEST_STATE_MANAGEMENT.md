@@ -208,14 +208,16 @@ Completions live in `RequestApplicantComplianceItems` (unique per applicant+item
 
 | Target | Lands in | Extra data required |
 |---|---|---|
-| `Identification1` / `Identification2` | Identification slot 1 / 2 | Number + identification type (duplicate-checked) |
-| `SocialInsurance` | SIN document | SIN number |
+| `Identification1` / `Identification2` | Identification slot 1 / 2 | Number + identification type — **only when the item is mandatory** (always duplicate-checked when a number is present) |
+| `SocialInsurance` | SIN document | SIN number — **only when the item is mandatory** |
 | `Resume` | Resume | — |
 | `PoliceCheck` | Police check (sets the flag) | — |
 | `OtherDocument` | Other Documents (description = item name) | — |
 | `None` | No upload allowed | — |
 
 For worker applicants a **mandatory** item with target ≠ `None` **requires** the document to be completed (manual check rejected); optional items and candidates complete by check alone. Unchecking deletes the completion row; documents already uploaded stay on the profile. All of it is driven from the portal's Compliance modal (see `WORKFLOWS.md` §6.2).
+
+**Optional items never force the extra inputs.** On an optional item the document can be attached with the number/type fields empty: the identification slot then keeps the number and type already on the profile (they are never wiped) and only the file is patched. Conversely the profile is also patched when the inputs are filled **without** a file, so nothing typed is silently dropped — the completion runs the routing branch whenever there is a file **or** any identification/SIN value in the payload. Duplicate and SIN checks only run when a number is actually resolved.
 
 When an Identification item is completed with a **SIN/SSN-typed** identification (`IdentificationTypeCode.SinSsn` on the catalog row), the upload also fills the worker's `SocialInsurance` + SIN document (same blob) after validating the number as a SIN — length 9-15 and not owned by another profile. If the profile already holds a **different** SIN it is **replaced** and a `WorkerProfileNote` records the change (masked old → masked new, author = the acting user); this applies to the documents form flow too. Pending checklist items with target `SocialInsurance` are **auto-completed** in the same save (same `CompletedBy`). Each compliance item row also exposes `ExistingFileUrl` — the document currently on the profile for that slot — so the agent can review the current file before replacing it.
 
