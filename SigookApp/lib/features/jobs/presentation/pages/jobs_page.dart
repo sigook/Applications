@@ -5,8 +5,8 @@ import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
-import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../auth/presentation/widgets/logout_confirmation_dialog.dart';
 import '../viewmodels/jobs_viewmodel.dart';
 import '../widgets/job_card.dart';
 import '../widgets/app_drawer.dart';
@@ -45,15 +45,8 @@ class _JobsPageState extends ConsumerState<JobsPage> {
   }
 
   Future<void> _handleSignOut() async {
-    final idToken = ref.read(authViewModelProvider).token?.idToken;
-    if (mounted) {
-      await Navigator.of(context).push(
-        MaterialPageRoute<bool>(
-          builder: (_) => LogoutWebviewPage(idToken: idToken),
-        ),
-      );
-    }
-    if (!mounted) return;
+    final shouldLogout = await showLogoutConfirmationDialog(context);
+    if (!shouldLogout || !mounted) return;
     await ref.read(authViewModelProvider.notifier).logout();
     if (mounted) context.go(AppRoutes.welcome);
   }

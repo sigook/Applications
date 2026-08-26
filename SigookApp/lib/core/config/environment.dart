@@ -21,8 +21,6 @@ class EnvironmentConfig {
       String.fromEnvironment('CLIENT_ID');
   static const String _redirectUri =
       String.fromEnvironment('REDIRECT_URI');
-  static const String _postLogoutRedirectUri =
-      String.fromEnvironment('POST_LOGOUT_REDIRECT_URI');
   static const String _scopes =
       String.fromEnvironment('SCOPES');
   static const String _appName =
@@ -41,8 +39,6 @@ class EnvironmentConfig {
   static String get clientId => _clientId.trim();
 
   static String get redirectUri => _redirectUri.trim();
-
-  static String get postLogoutRedirectUri => _postLogoutRedirectUri.trim();
 
   static List<String> get scopes {
     if (_scopes.isEmpty) return [];
@@ -119,7 +115,6 @@ class EnvironmentConfig {
     _printConfigLine('API_BASE_URL', apiBaseUrl);
     _printConfigLine('CLIENT_ID', clientId);
     _printConfigLine('REDIRECT_URI', redirectUri);
-    _printConfigLine('POST_LOGOUT_URI', postLogoutRedirectUri);
     _printConfigLine('SCOPES', scopes.join(','));
     _printConfigLine('APP_NAME', appName);
     debugPrint(' APP_INSIGHTS_CONNECTION_STRING: ${_appInsightsConnectionString.isNotEmpty ? '[set]' : '[not set]'}');

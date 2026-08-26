@@ -5,8 +5,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
-import '../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../auth/presentation/widgets/logout_confirmation_dialog.dart';
 import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -297,46 +297,16 @@ class AppDrawer extends ConsumerWidget {
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
     if (ref.read(authViewModelProvider).isLoading) return;
 
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryRed,
-            ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldLogout != true || !context.mounted) return;
+    final shouldLogout = await showLogoutConfirmationDialog(context);
+    if (!shouldLogout || !context.mounted) return;
 
     // Capture everything before any async operations that may unmount the drawer.
     final navigator = Navigator.of(context);
     final router = GoRouter.of(context);
-    final idToken = ref.read(authViewModelProvider).token?.idToken;
     final notifier = ref.read(authViewModelProvider.notifier);
 
     navigator.pop(); // Close the drawer
 
-    // Server-side logout first: WebView calls the identity server end-session
-    // endpoint so the server clears the session before we wipe the local token.
-    await navigator.push(
-      MaterialPageRoute<bool>(
-        builder: (_) => LogoutWebviewPage(idToken: idToken),
-      ),
-    );
-
-    // Clear local token after server session has been cleared.
     await notifier.logout();
 
     router.go(AppRoutes.welcome);
