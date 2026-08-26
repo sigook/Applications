@@ -412,43 +412,33 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 7),
-                            // Already have an account row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Already have an account?',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(
-                                      alpha: 0.85,
-                                    ),
-                                    fontSize: 16,
+                            const SizedBox(height: 14),
+                            // Sign In — outlined, white border on red
+                            SizedBox(
+                              width: 300,
+                              height: 56,
+                              child: OutlinedButton(
+                                onPressed: _navigateToSignIn,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
-                                TextButton(
-                                    onPressed: _navigateToSignIn,
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: const Text(
-                                      'Sign In',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                                child: const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.3,
                                   ),
-                                ],
+                                ),
                               ),
+                            ),
                           ],
                         ),
                       ),
