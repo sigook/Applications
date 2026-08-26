@@ -1,4 +1,4 @@
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
@@ -173,12 +173,14 @@ public class RequestApplicantService(
         var hasFile = !string.IsNullOrEmpty(model?.FileName);
         if (!hasFile && entity.WorkerProfileId.HasValue && item.IsMandatory && item.DocumentTarget != ComplianceDocumentTarget.None)
             return Result.Fail("A document is required to complete this item");
+        var hasProfileData = hasFile
+            || (entity.WorkerProfileId.HasValue && item.DocumentTarget != ComplianceDocumentTarget.None && HasProfileData(model));
         var socialInsurancePopulated = false;
-        if (hasFile)
+        if (hasProfileData)
         {
-            var upload = await UploadDocument(entity, item, model);
-            if (!upload) return Result.Fail(upload.Errors);
-            socialInsurancePopulated = upload.Value;
+            var applied = await ApplyDocument(entity, item, model);
+            if (!applied) return Result.Fail(applied.Errors);
+            socialInsurancePopulated = applied.Value;
         }
 
         var completedBy = identityServerService.GetNickname();
@@ -264,7 +266,12 @@ public class RequestApplicantService(
             : Result.Fail($"All mandatory compliance items must be completed before confirming. Pending: {string.Join(", ", pending)}");
     }
 
-    private async Task<Result<bool>> UploadDocument(RequestApplicant applicant, RequestComplianceItem item, CompleteApplicantComplianceItemModel model)
+    private static bool HasProfileData(CompleteApplicantComplianceItemModel model) =>
+        !string.IsNullOrEmpty(model?.IdentificationNumber)
+        || (model?.IdentificationTypeId is not null && model.IdentificationTypeId != Guid.Empty)
+        || !string.IsNullOrEmpty(model?.SocialInsuranceNumber);
+
+    private async Task<Result<bool>> ApplyDocument(RequestApplicant applicant, RequestComplianceItem item, CompleteApplicantComplianceItemModel model)
     {
         if (!applicant.WorkerProfileId.HasValue) return Result.Fail<bool>("Only workers can upload documents, convert the candidate to a worker first");
         if (item.DocumentTarget == ComplianceDocumentTarget.None) return Result.Fail<bool>("The compliance item does not accept documents");
@@ -277,41 +284,51 @@ public class RequestApplicantService(
         {
             case ComplianceDocumentTarget.Identification1:
             case ComplianceDocumentTarget.Identification2:
-                var identificationValidation = await ValidateIdentification(profile.Id, item.DocumentTarget, model);
+                var isFirstSlot = item.DocumentTarget == ComplianceDocumentTarget.Identification1;
+                var identificationNumber = string.IsNullOrEmpty(model.IdentificationNumber)
+                    ? (isFirstSlot ? profile.IdentificationNumber1 : profile.IdentificationNumber2)
+                    : model.IdentificationNumber;
+                var identificationTypeId = model.IdentificationTypeId is null || model.IdentificationTypeId == Guid.Empty
+                    ? (isFirstSlot ? profile.IdentificationType1Id : profile.IdentificationType2Id)
+                    : model.IdentificationTypeId;
+                var identificationValidation = await ValidateIdentification(profile.Id, item, identificationNumber, identificationTypeId);
                 if (!identificationValidation) return Result.Fail<bool>(identificationValidation.Errors);
-                var isSocialInsuranceType = await catalogRepository.GetIdentificationTypeCode(model.IdentificationTypeId.Value) == IdentificationTypeCode.SinSsn;
-                if (isSocialInsuranceType && await workerRepository.SocialInsuranceIsAlreadyTaken(model.IdentificationNumber, profile.Id))
+                var isSocialInsuranceType = !string.IsNullOrEmpty(identificationNumber)
+                    && await GetIdentificationTypeCode(identificationTypeId) == IdentificationTypeCode.SinSsn;
+                if (isSocialInsuranceType && await workerRepository.SocialInsuranceIsAlreadyTaken(identificationNumber, profile.Id))
                     return Result.Fail<bool>(ApiResources.SocialInsuranceAlreadyTaken);
-                var existingIdentificationFile = item.DocumentTarget == ComplianceDocumentTarget.Identification1
+                var existingIdentificationFile = isFirstSlot
                     ? profile.IdentificationType1File
                     : profile.IdentificationType2File;
                 var existingSocialInsuranceFile = profile.SocialInsuranceFile;
                 var previousMaskedSocialInsurance = profile.MaskedSocialInsurance;
-                var identificationPatch = item.DocumentTarget == ComplianceDocumentTarget.Identification1
-                    ? profile.PatchIdentification1(model.IdentificationNumber, model.IdentificationTypeId, file)
-                    : profile.PatchIdentification2(model.IdentificationNumber, model.IdentificationTypeId, file);
+                var identificationPatch = isFirstSlot
+                    ? profile.PatchIdentification1(identificationNumber, identificationTypeId, file)
+                    : profile.PatchIdentification2(identificationNumber, identificationTypeId, file);
                 if (!identificationPatch) return Result.Fail<bool>(identificationPatch.Errors);
                 if (isSocialInsuranceType)
                 {
-                    var socialInsuranceFill = profile.PatchSocialInsuranceFromIdentification(model.IdentificationNumber, file);
+                    var socialInsuranceFill = profile.PatchSocialInsuranceFromIdentification(identificationNumber, file);
                     if (!socialInsuranceFill) return Result.Fail<bool>(socialInsuranceFill.Errors);
                     if (socialInsuranceFill.Value)
                     {
                         var note = WorkerProfileNote.Create(profile.Id,
-                            string.Format(ApiResources.SocialInsuranceReplacedNote, previousMaskedSocialInsurance, model.IdentificationNumber.MaskSIN()),
+                            string.Format(ApiResources.SocialInsuranceReplacedNote, previousMaskedSocialInsurance, identificationNumber.MaskSIN()),
                             identityServerService.GetNickname());
                         if (!note) return Result.Fail<bool>(note.Errors);
                         await requestRepository.Create([note.Value]);
                     }
                 }
-                var currentIdentificationFile = item.DocumentTarget == ComplianceDocumentTarget.Identification1
+                var currentIdentificationFile = isFirstSlot
                     ? profile.IdentificationType1File
                     : profile.IdentificationType2File;
                 await CreateNewFiles((existingIdentificationFile, currentIdentificationFile), (existingSocialInsuranceFile, profile.SocialInsuranceFile));
                 return Result.Ok(isSocialInsuranceType);
             case ComplianceDocumentTarget.SocialInsurance:
-                if (string.IsNullOrEmpty(model.SocialInsuranceNumber)) return Result.Fail<bool>(ValidationMessages.RequiredMsg(ApiResources.SocialInsurance));
-                if (await workerRepository.SocialInsuranceIsAlreadyTaken(model.SocialInsuranceNumber, profile.Id))
+                if (item.IsMandatory && string.IsNullOrEmpty(model.SocialInsuranceNumber))
+                    return Result.Fail<bool>(ValidationMessages.RequiredMsg(ApiResources.SocialInsurance));
+                if (!string.IsNullOrEmpty(model.SocialInsuranceNumber)
+                    && await workerRepository.SocialInsuranceIsAlreadyTaken(model.SocialInsuranceNumber, profile.Id))
                     return Result.Fail<bool>(ApiResources.SocialInsuranceAlreadyTaken);
                 var previousSocialInsuranceFile = profile.SocialInsuranceFile;
                 var socialInsurancePatch = profile.PatchSocialInsuranceDocument(model.SocialInsuranceNumber, file);
@@ -365,14 +382,18 @@ public class RequestApplicantService(
         if (newFiles.Count > 0) await requestRepository.Create(newFiles);
     }
 
-    private async Task<Result> ValidateIdentification(Guid profileId, ComplianceDocumentTarget target, CompleteApplicantComplianceItemModel model)
+    private async Task<Result> ValidateIdentification(Guid profileId, RequestComplianceItem item, string identificationNumber, Guid? identificationTypeId)
     {
-        var isFirstSlot = target == ComplianceDocumentTarget.Identification1;
-        if (string.IsNullOrEmpty(model.IdentificationNumber))
-            return Result.Fail(ValidationMessages.RequiredMsg(isFirstSlot ? ApiResources.IdentificationNumber1 : ApiResources.IdentificationNumber2));
-        if (model.IdentificationTypeId is null || model.IdentificationTypeId == Guid.Empty)
-            return Result.Fail(ValidationMessages.RequiredMsg(isFirstSlot ? ApiResources.IdentificationType1 : ApiResources.IdentificationType2));
-        var number = model.IdentificationNumber;
+        var isFirstSlot = item.DocumentTarget == ComplianceDocumentTarget.Identification1;
+        if (item.IsMandatory)
+        {
+            if (string.IsNullOrEmpty(identificationNumber))
+                return Result.Fail(ValidationMessages.RequiredMsg(isFirstSlot ? ApiResources.IdentificationNumber1 : ApiResources.IdentificationNumber2));
+            if (identificationTypeId is null || identificationTypeId == Guid.Empty)
+                return Result.Fail(ValidationMessages.RequiredMsg(isFirstSlot ? ApiResources.IdentificationType1 : ApiResources.IdentificationType2));
+        }
+        if (string.IsNullOrEmpty(identificationNumber)) return Result.Ok();
+        var number = identificationNumber;
         if (await workerRepository.InfoIsAlreadyTaken(x => x.Id != profileId && (x.IdentificationNumber1 == number || x.IdentificationNumber2 == number)))
             return Result.Fail(string.Format(ApiResources.IdentificationNumberAlreadyTaken, number));
         return Result.Ok();

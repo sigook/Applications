@@ -17,13 +17,17 @@
       <b-message v-else-if="isCandidate && canEdit" type="is-info" size="is-small">
         Convert to worker to upload documents. Checks can still be marked.
       </b-message>
+      <b-message v-else-if="canEdit" type="is-info" size="is-small">
+        Attach the document and fill the information, then check the item to save it.
+      </b-message>
 
       <div v-for="item in items" :key="item.id" class="compliance-item">
-        <b-checkbox :model-value="item.isCompleted"
-          :disabled="!canEdit || (!item.isCompleted && item.canUpload && item.isMandatory)"
-          @update:modelValue="(checked: boolean) => onItemToggled(item, checked)">
-          {{ item.name }}
-        </b-checkbox>
+        <b-tooltip :label="blockedReason(item)" :active="!!blockedReason(item)" type="is-dark" position="is-right">
+          <b-checkbox :model-value="checkedItems[item.id]" :disabled="!canEdit || !!blockedReason(item)"
+            @update:modelValue="(value: boolean) => onItemToggled(item, value)">
+            {{ item.name }}
+          </b-checkbox>
+        </b-tooltip>
         <b-tag v-if="item.isMandatory" type="is-warning" size="is-small">Mandatory</b-tag>
         <b-tooltip v-if="item.existingFileUrl" label="View the document currently on the profile" type="is-dark"
           position="is-top">
@@ -46,15 +50,21 @@
           <b-input v-if="isSocialInsurance(item)" v-model="drafts[item.id].socialInsuranceNumber" size="is-small"
             placeholder="Social insurance number" maxlength="15" :has-counter="false"
             class="compliance-item-right compliance-number" />
-          <b-field class="file mb-0" :class="{ 'compliance-item-right': !isIdentification(item) && !isSocialInsurance(item) }">
+          <b-field class="file mb-0"
+            :class="{ 'compliance-item-right': !isIdentification(item) && !isSocialInsurance(item), 'has-name': !!drafts[item.id].file }">
             <b-upload :model-value="null" :accept="UPLOAD_ACCEPT" class="file-label"
               @update:modelValue="(file: File | null) => onFileSelected(item, file)">
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload" size="is-small"></b-icon>
                 <span class="file-label">Attach</span>
               </span>
+              <span v-if="drafts[item.id].file" class="file-name compliance-file-name">
+                {{ drafts[item.id].file?.name }}
+              </span>
             </b-upload>
           </b-field>
+          <b-button v-if="drafts[item.id].file" type="is-text" size="is-small" icon-right="close"
+            @click="clearFile(item)" />
         </template>
       </div>
     </section>
@@ -105,6 +115,7 @@ interface ComplianceDraft {
   identificationNumber: string;
   identificationTypeId: string | null;
   socialInsuranceNumber: string;
+  file: File | null;
 }
 
 const props = defineProps<{
@@ -123,6 +134,7 @@ const currentStatus = ref<RequestApplicantStatus>(props.status);
 const items = ref<ApplicantComplianceItem[]>([]);
 const identificationTypes = ref<IdentificationType[]>([]);
 const drafts = ref<Record<string, ComplianceDraft>>({});
+const checkedItems = ref<Record<string, boolean>>({});
 
 const isCandidate = computed(() => !props.workerProfileId);
 const canEdit = computed(() => currentStatus.value === RequestApplicantStatus.InProgress);
@@ -136,6 +148,10 @@ const confirmBlockedReason = computed(() => {
   if (!mandatoryCompleted.value) return 'Complete all mandatory items first';
   return '';
 });
+
+function emptyDraft(): ComplianceDraft {
+  return { identificationNumber: '', identificationTypeId: null, socialInsuranceNumber: '', file: null };
+}
 
 function isIdentification(item: ApplicantComplianceItem): boolean {
   return item.documentTarget === ComplianceDocumentTarget.Identification1
@@ -156,7 +172,8 @@ function loadItems() {
     .then(response => {
       items.value = response;
       for (const item of response) {
-        drafts.value[item.id] ??= { identificationNumber: '', identificationTypeId: null, socialInsuranceNumber: '' };
+        drafts.value[item.id] ??= emptyDraft();
+        checkedItems.value[item.id] = item.isCompleted;
       }
       if (response.some(isIdentification) && !identificationTypes.value.length) {
         loadIdentificationTypes();
@@ -183,40 +200,60 @@ function onFileSelected(item: ApplicantComplianceItem, file: File | null) {
     showAlertError(error);
     return;
   }
+  drafts.value[item.id].file = file;
+}
+
+function clearFile(item: ApplicantComplianceItem) {
+  drafts.value[item.id].file = null;
+}
+
+function blockedReason(item: ApplicantComplianceItem): string {
+  if (item.isCompleted || !item.canUpload || !item.isMandatory) return '';
   const draft = drafts.value[item.id];
-  const model: CompleteApplicantComplianceItemModel = { fileName: generateFileName('Document', file.name) };
+  if (!draft) return '';
+  if (!draft.file) return 'Attach the document to complete this item';
+  if (isIdentification(item) && (!draft.identificationNumber || !draft.identificationTypeId)) {
+    return 'Enter the identification number and type to complete this item';
+  }
+  if (isSocialInsurance(item) && !draft.socialInsuranceNumber) {
+    return 'Enter the social insurance number to complete this item';
+  }
+  return '';
+}
+
+function buildModel(item: ApplicantComplianceItem): CompleteApplicantComplianceItemModel {
+  const model: CompleteApplicantComplianceItemModel = {};
+  if (!item.canUpload) return model;
+  const draft = drafts.value[item.id];
+  if (draft.file) model.fileName = generateFileName('Document', draft.file.name);
   if (isIdentification(item)) {
-    if (!draft.identificationNumber || !draft.identificationTypeId) {
-      showAlertError('Enter the identification number and type before attaching the document');
-      return;
-    }
-    model.identificationNumber = draft.identificationNumber;
-    model.identificationTypeId = draft.identificationTypeId;
+    if (draft.identificationNumber) model.identificationNumber = draft.identificationNumber;
+    if (draft.identificationTypeId) model.identificationTypeId = draft.identificationTypeId;
   }
-  if (isSocialInsurance(item)) {
-    if (!draft.socialInsuranceNumber) {
-      showAlertError('Enter the social insurance number before attaching the document');
-      return;
-    }
-    model.socialInsuranceNumber = draft.socialInsuranceNumber;
-  }
-  completeItem(item, model, file);
+  if (isSocialInsurance(item) && draft.socialInsuranceNumber) model.socialInsuranceNumber = draft.socialInsuranceNumber;
+  return model;
 }
 
 function onItemToggled(item: ApplicantComplianceItem, checked: boolean) {
-  if (checked) completeItem(item, {});
-  else uncompleteItem(item);
+  checkedItems.value[item.id] = checked;
+  if (!checked) {
+    uncompleteItem(item);
+    return;
+  }
+  completeItem(item, buildModel(item), drafts.value[item.id].file);
 }
 
-function completeItem(item: ApplicantComplianceItem, model: CompleteApplicantComplianceItemModel, file?: File) {
+function completeItem(item: ApplicantComplianceItem, model: CompleteApplicantComplianceItemModel, file?: File | null) {
   isLoading.value = true;
   completeApplicantComplianceItem(props.requestId, props.applicantId, item.id, model, file)
     .then(() => {
+      drafts.value[item.id] = emptyDraft();
       emit('updated');
       loadItems();
     })
     .catch(error => {
       isLoading.value = false;
+      checkedItems.value[item.id] = item.isCompleted;
       showAlertError(error);
     });
 }
@@ -230,6 +267,7 @@ function uncompleteItem(item: ApplicantComplianceItem) {
     })
     .catch(error => {
       isLoading.value = false;
+      checkedItems.value[item.id] = item.isCompleted;
       showAlertError(error);
     });
 }
@@ -306,5 +344,9 @@ loadItems();
 
 .compliance-type :deep(select) {
   max-width: 150px;
+}
+
+.compliance-file-name {
+  max-width: 140px;
 }
 </style>
