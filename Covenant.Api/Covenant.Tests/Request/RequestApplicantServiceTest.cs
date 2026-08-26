@@ -1,4 +1,4 @@
-using Covenant.Api.Validators.Request;
+﻿using Covenant.Api.Validators.Request;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
@@ -274,6 +274,78 @@ public class RequestApplicantServiceTest
         _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(new WorkerProfile { Id = workerProfileId });
         var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel { FileName = "sin.pdf" });
         Assert.False(result);
+    }
+
+    [Fact]
+    public async Task CompleteOptionalIdentificationWithoutInputsKeepsProfileValues()
+    {
+        var workerProfileId = Guid.NewGuid();
+        var applicant = SetupApplicant(RequestApplicantStatus.InProgress, workerProfileId);
+        var item = SetupComplianceItem("ID", isMandatory: false, ComplianceDocumentTarget.Identification1);
+        var identificationTypeId = Guid.NewGuid();
+        var profile = new WorkerProfile
+        {
+            Id = workerProfileId,
+            IdentificationNumber1 = "123456789",
+            IdentificationType1Id = identificationTypeId
+        };
+        _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(profile);
+        _workerRepository.Setup(r => r.InfoIsAlreadyTaken(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(false);
+        var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel { FileName = "id.pdf" });
+        Assert.True(result);
+        Assert.Equal("123456789", profile.IdentificationNumber1);
+        Assert.Equal(identificationTypeId, profile.IdentificationType1Id);
+        Assert.Equal("id.pdf", profile.IdentificationType1File.FileName);
+    }
+
+    [Fact]
+    public async Task CompleteOptionalIdentificationWithoutFileSavesTypedValues()
+    {
+        var workerProfileId = Guid.NewGuid();
+        var applicant = SetupApplicant(RequestApplicantStatus.InProgress, workerProfileId);
+        var item = SetupComplianceItem("ID", isMandatory: false, ComplianceDocumentTarget.Identification1);
+        var profile = new WorkerProfile { Id = workerProfileId };
+        _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(profile);
+        _workerRepository.Setup(r => r.InfoIsAlreadyTaken(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(false);
+        var identificationTypeId = Guid.NewGuid();
+        var model = new CompleteApplicantComplianceItemModel
+        {
+            IdentificationNumber = "123456789",
+            IdentificationTypeId = identificationTypeId
+        };
+        var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, model);
+        Assert.True(result);
+        Assert.Equal("123456789", profile.IdentificationNumber1);
+        Assert.Equal(identificationTypeId, profile.IdentificationType1Id);
+        Assert.Null(profile.IdentificationType1File);
+        _uploadedFilesService.Verify(s => s.Upload(It.IsAny<IEnumerable<string>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteOptionalSocialInsuranceWithoutNumberOnlyAttachesFile()
+    {
+        var workerProfileId = Guid.NewGuid();
+        var applicant = SetupApplicant(RequestApplicantStatus.InProgress, workerProfileId);
+        var item = SetupComplianceItem("SSN", isMandatory: false, ComplianceDocumentTarget.SocialInsurance);
+        var profile = new WorkerProfile { Id = workerProfileId };
+        _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(profile);
+        var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel { FileName = "sin.pdf" });
+        Assert.True(result);
+        Assert.Equal("sin.pdf", profile.SocialInsuranceFile.FileName);
+        Assert.Null(profile.SocialInsurance);
+        _workerRepository.Verify(r => r.SocialInsuranceIsAlreadyTaken(It.IsAny<string>(), It.IsAny<Guid?>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteOptionalItemWithDocumentTargetWithoutFileIsAllowed()
+    {
+        var workerProfileId = Guid.NewGuid();
+        var applicant = SetupApplicant(RequestApplicantStatus.InProgress, workerProfileId);
+        var item = SetupComplianceItem("Resume", isMandatory: false, ComplianceDocumentTarget.Resume);
+        SetupCompletions();
+        var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel());
+        Assert.True(result);
+        _workerRepository.Verify(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>()), Times.Never);
     }
 
     private Guid SetupSinIdentificationType()

@@ -5,8 +5,8 @@ import '../../../../../../core/routing/app_router.dart';
 import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
-import '../../../../../auth/presentation/pages/logout_webview_page.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../../../auth/presentation/widgets/logout_confirmation_dialog.dart';
 import '../../../../account_settings/presentation/viewmodels/account_settings_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 
@@ -110,38 +110,10 @@ class _AccountSettingsSectionCardState
   }
 
   Future<void> _showLogoutDialog() async {
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryRed,
-            ),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
+    final shouldLogout = await showLogoutConfirmationDialog(context);
+    if (!shouldLogout || !mounted) return;
 
-    if (shouldLogout != true || !mounted) return;
-
-    final idToken = ref.read(authViewModelProvider).token?.idToken;
     final notifier = ref.read(authViewModelProvider.notifier);
-
-    await Navigator.of(context).push(
-      MaterialPageRoute<bool>(
-        builder: (_) => LogoutWebviewPage(idToken: idToken),
-      ),
-    );
-
     await notifier.logout();
     if (mounted) context.go(AppRoutes.welcome);
   }

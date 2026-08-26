@@ -232,7 +232,7 @@ void main() {
       expect(state.error, isNull);
     });
 
-    test('sets error on failure', () async {
+    test('clears auth state even on failure', () async {
       final container = buildTestContainer();
       when(() => mockLogout.call(any())).thenAnswer(
         (_) async => const Left(ServerFailure(message: 'logout failed')),
@@ -241,7 +241,8 @@ void main() {
       await container.read(authViewModelProvider.notifier).logout();
 
       final state = container.read(authViewModelProvider);
-      expect(state.error, 'logout failed');
+      expect(state.isAuthenticated, false);
+      expect(state.token, isNull);
       expect(state.isLoading, false);
     });
   });

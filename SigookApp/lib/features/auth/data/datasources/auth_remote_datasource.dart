@@ -12,7 +12,7 @@ import '../models/auth_token_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<AuthTokenModel> signIn({required String email, required String password});
-  Future<void> logout(String idToken);
+  Future<void> revokeRefreshToken(String refreshToken);
   Future<AuthTokenModel> refreshToken(String currentRefreshToken);
   Future<String> getUserRole(String accessToken);
   Future<void> deactivateAccount(String accessToken);
@@ -197,14 +197,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout(String idToken) async {
-    // Skip browser-based endSession: the IdentityServer's registered
-    // PostLogoutRedirectUri (com.sigook:/oauth2logout) does not match the
-    // env POST_LOGOUT_REDIRECT_URI, so the server ignores the redirect
-    // parameter and lands on the Sigook web home page instead of returning
-    // to the app. For a standalone mobile app, clearing local tokens is
-    // sufficient — the user will need to re-authenticate on next login.
-    debugPrint('✅ [LOGOUT] Local logout — tokens will be cleared by repository');
+  Future<void> revokeRefreshToken(String refreshToken) async {
+    if (!(await networkInfo.isConnected)) {
+      throw NetworkException('No internet connection');
+    }
+
+    try {
+      await anonymousDio.post(
+        _authorityUrl('/connect/revocation'),
+        data: {
+          'token': refreshToken,
+          'token_type_hint': 'refresh_token',
+          'client_id': EnvironmentConfig.clientId,
+        },
+        options: Options(contentType: Headers.formUrlEncodedContentType),
+      );
+    } on DioException catch (e) {
+      handleDioException(e);
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) rethrow;
+      throw ServerException(message: 'Token revocation error: ${e.toString()}');
+    }
   }
 
   @override

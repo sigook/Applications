@@ -263,7 +263,7 @@ class AuthViewModel extends _$AuthViewModel {
               name: 'logout_failed',
               parameters: {'error': failure.message},
             );
-        state = state.copyWith(isLoading: false, error: failure.message);
+        state = const AuthState();
       },
       (success) {
         state = const AuthState();
