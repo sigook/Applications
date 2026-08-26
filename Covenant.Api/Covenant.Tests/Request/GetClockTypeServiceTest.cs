@@ -1,4 +1,4 @@
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
@@ -54,7 +54,7 @@ public class GetClockTypeServiceTest
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(null);
 
-        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude, localNow);
+        var result = await _sut.GetClockType(_requestId, localNow, TorontoLatitude, TorontoLongitude);
 
         Assert.Equal(ClockType.ClockIn, result.Value);
     }
@@ -67,7 +67,7 @@ public class GetClockTypeServiceTest
         SetJobLocation(VancouverLatitude, VancouverLongitude);
         SetLatestTimesheet(null);
 
-        var result = await _sut.GetClockType(_requestId, VancouverLatitude, VancouverLongitude, localNow);
+        var result = await _sut.GetClockType(_requestId, localNow, VancouverLatitude, VancouverLongitude);
 
         Assert.Equal(ClockType.ClockIn, result.Value);
     }
@@ -81,7 +81,7 @@ public class GetClockTypeServiceTest
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(null);
 
-        var result = await _sut.GetClockType(_requestId, VancouverLatitude, VancouverLongitude, workerNow);
+        var result = await _sut.GetClockType(_requestId, workerNow, VancouverLatitude, VancouverLongitude);
 
         Assert.Equal(ClockType.None, result.Value);
         _timeService.Verify(t => t.GetCurrentLocalDateTime(TorontoLatitude, TorontoLongitude), Times.Once);
@@ -95,7 +95,7 @@ public class GetClockTypeServiceTest
         SetJobLocation(null, null);
         SetLatestTimesheet(null);
 
-        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude, localNow);
+        var result = await _sut.GetClockType(_requestId, localNow, TorontoLatitude, TorontoLongitude);
 
         Assert.Equal(ClockType.ClockIn, result.Value);
     }
@@ -108,7 +108,7 @@ public class GetClockTypeServiceTest
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(null);
 
-        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude, localNow.AddDays(-1));
+        var result = await _sut.GetClockType(_requestId, localNow.AddDays(-1), TorontoLatitude, TorontoLongitude);
 
         Assert.Equal(ClockType.None, result.Value);
     }
@@ -123,7 +123,7 @@ public class GetClockTypeServiceTest
         timeSheet.AddClockOut(localNow.AddHours(-1));
         SetLatestTimesheet(timeSheet);
 
-        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude, localNow);
+        var result = await _sut.GetClockType(_requestId, localNow, TorontoLatitude, TorontoLongitude);
 
         Assert.Equal(ClockType.None, result.Value);
     }
@@ -136,7 +136,7 @@ public class GetClockTypeServiceTest
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddHours(-8)).Value);
 
-        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude, localNow);
+        var result = await _sut.GetClockType(_requestId, localNow, TorontoLatitude, TorontoLongitude);
 
         Assert.Equal(ClockType.ClockOut, result.Value);
     }
@@ -150,7 +150,7 @@ public class GetClockTypeServiceTest
         var beyondLimit = TimeLimits.DefaultTimeLimits.MaximumHoursDay + 1;
         SetLatestTimesheet(TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddHours(-beyondLimit)).Value);
 
-        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude, localNow);
+        var result = await _sut.GetClockType(_requestId, localNow, TorontoLatitude, TorontoLongitude);
 
         Assert.Equal(ClockType.None, result.Value);
     }
@@ -158,10 +158,37 @@ public class GetClockTypeServiceTest
     [Fact]
     public async Task WithoutDate_ReturnsNoneWithoutHittingRepositories()
     {
-        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude, null);
+        var result = await _sut.GetClockType(_requestId, null, TorontoLatitude, TorontoLongitude);
 
         Assert.Equal(ClockType.None, result.Value);
         _timeSheetRepository.Verify(r => r.GetLatestTimesheet(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task WithoutCoordinates_UsesJobTimeZone()
+    {
+        var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
+        SetLocalTime(TorontoLatitude, TorontoLongitude, localNow);
+        SetJobLocation(TorontoLatitude, TorontoLongitude);
+        SetLatestTimesheet(null);
+
+        var result = await _sut.GetClockType(_requestId, localNow);
+
+        Assert.Equal(ClockType.ClockIn, result.Value);
+        _timeService.Verify(t => t.GetCurrentLocalDateTime(TorontoLatitude, TorontoLongitude), Times.Once);
+    }
+
+    [Fact]
+    public async Task WithoutCoordinatesAndWithoutJobLocation_FallsBackToServerTime()
+    {
+        var serverNow = new DateTime(2026, 08, 17, 21, 30, 00);
+        _timeService.Setup(t => t.GetCurrentDateTime()).Returns(serverNow);
+        SetJobLocation(null, null);
+        SetLatestTimesheet(null);
+
+        var result = await _sut.GetClockType(_requestId, serverNow);
+
+        Assert.Equal(ClockType.ClockIn, result.Value);
     }
 
     private void SetLocalTime(double latitude, double longitude, DateTime localNow) =>
