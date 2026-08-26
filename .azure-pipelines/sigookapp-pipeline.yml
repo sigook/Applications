@@ -338,6 +338,18 @@ stages:
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory"
           fi
 
+          # Validate auth scopes EXACTLY. An extra scope is as fatal as a
+          # missing one: 'roles' is not granted to the native clients and
+          # IdentityServer answers invalid_scope, which the app surfaces as a
+          # generic "invalid credentials" message.
+          EXPECTED_SCOPES="openid,profile,api1,offline_access"
+          if [ "$(SCOPES)" != "$EXPECTED_SCOPES" ]; then
+            echo "ERROR: SCOPES must be exactly <$EXPECTED_SCOPES>"
+            echo "   got: <$(SCOPES)>"
+            exit 1
+          fi
+          echo "SCOPES validated <$(SCOPES)>"
+
           # Use calculated version from CalculateVersion step
           VERSION_NAME="$(CalculateVersion.appVersionName)"
           VERSION_CODE="$(CalculateVersion.appVersionCode)"
@@ -357,7 +369,7 @@ stages:
             --dart-define="REDIRECT_URI=$(REDIRECT_URI)" \
             --dart-define="POST_LOGOUT_REDIRECT_URI=$(POST_LOGOUT_REDIRECT_URI)" \
             --dart-define="SCOPES=$(SCOPES)" \
-            --dart-define="APP_NAME=$(APP_NAME)"
+            --dart-define="APP_NAME=$(APP_NAME)" \
             --dart-define="APP_INSIGHTS_CONNECTION_STRING=$(APP_INSIGHTS_CONNECTION_STRING)"
 
           echo "✅ Android AAB built successfully for $(environment)"

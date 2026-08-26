@@ -93,6 +93,7 @@ class LocationServiceImpl implements LocationService {
   }) async {
     final deadline = DateTime.now().add(overallTimeout);
     Position? best;
+    Position? latest;
     final stream = _geolocator
         .getPositionStream(
           locationSettings: _settings(
@@ -104,16 +105,28 @@ class LocationServiceImpl implements LocationService {
     try {
       await for (final position in stream) {
         final age = DateTime.now().difference(position.timestamp);
-        if (age <= maxFixAge &&
-            (best == null || position.accuracy < best.accuracy)) {
-          best = position;
+        if (age <= maxFixAge) {
+          latest = position;
+          if (best == null || position.accuracy < best.accuracy) {
+            best = position;
+          }
         }
         if (best != null && best.accuracy <= targetAccuracyMeters) break;
         if (DateTime.now().isAfter(deadline)) break;
       }
     } catch (_) {
-      return best;
+      return _freshest(best, latest, maxFixAge);
     }
-    return best;
+    return _freshest(best, latest, maxFixAge);
+  }
+
+  Position? _freshest(Position? best, Position? latest, Duration maxFixAge) {
+    if (best == null) return null;
+    if (DateTime.now().difference(best.timestamp) <= maxFixAge) return best;
+    if (latest != null &&
+        DateTime.now().difference(latest.timestamp) <= maxFixAge) {
+      return latest;
+    }
+    return null;
   }
 }

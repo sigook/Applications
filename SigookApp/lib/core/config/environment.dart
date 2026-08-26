@@ -30,15 +30,19 @@ class EnvironmentConfig {
   static const String _appInsightsConnectionString =
       String.fromEnvironment('APP_INSIGHTS_CONNECTION_STRING', defaultValue: '');
 
-  static String get authority => _authAuthority;
+  // Every value is trimmed: CI variable editors silently keep a pasted
+  // trailing space or newline, and an untrimmed client_id makes the token
+  // endpoint answer invalid_client, which surfaces as a generic
+  // 'invalid credentials' snackbar.
+  static String get authority => _authAuthority.trim();
 
-  static String get apiBaseUrl => _apiBaseUrl;
+  static String get apiBaseUrl => _apiBaseUrl.trim();
 
-  static String get clientId => _clientId;
+  static String get clientId => _clientId.trim();
 
-  static String get redirectUri => _redirectUri;
+  static String get redirectUri => _redirectUri.trim();
 
-  static String get postLogoutRedirectUri => _postLogoutRedirectUri;
+  static String get postLogoutRedirectUri => _postLogoutRedirectUri.trim();
 
   static List<String> get scopes {
     if (_scopes.isEmpty) return [];
@@ -88,6 +92,10 @@ class EnvironmentConfig {
     if (apiBaseUrl.isEmpty) missing.add('API_BASE_URL');
     if (clientId.isEmpty) missing.add('CLIENT_ID');
     if (redirectUri.isEmpty) missing.add('REDIRECT_URI');
+    // Not validating SCOPES let the app boot fine and then fail at
+    // sign-in with a generic 'invalid credentials' snackbar, because
+    // an empty scope makes IdentityServer answer invalid_scope.
+    if (scopes.isEmpty) missing.add('SCOPES');
 
     if (missing.isNotEmpty) {
       throw Exception(
@@ -124,6 +132,7 @@ class EnvironmentConfig {
     final displayValue = value.isNotEmpty
         ? (value.length > 35 ? '${value.substring(0, 35)}...' : value)
         : '(missing)';
-    debugPrint(' $status $key: $displayValue');
+    // Delimited so a stray leading/trailing space is visible in the log.
+    debugPrint(' $status $key: <$displayValue>');
   }
 }
