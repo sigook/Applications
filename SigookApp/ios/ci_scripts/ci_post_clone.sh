@@ -67,20 +67,65 @@ done
 
 echo "All environment variables are present ✅"
 
-# ---------------------------------------
-# Setup Flutter
-# ---------------------------------------
-echo "Checking Flutter installation..."
+# The worker role travels in the access token via the api1 scope. Do NOT add
+# 'roles' here: the android/ios clients are not granted that identity scope and
+# IdentityServer answers invalid_scope, breaking sign-in entirely.
+EXPECTED_SCOPES="openid,profile,api1,offline_access"
+if [[ "$SCOPES" != "$EXPECTED_SCOPES" ]]; then
+  echo "❌ ERROR: SCOPES must be exactly <$EXPECTED_SCOPES>"
+  echo "   got: <$SCOPES>"
+  echo "   An EXTRA scope is as fatal as a missing one: 'roles' is not granted"
+  echo "   to the android/ios clients and IdentityServer answers invalid_scope,"
+  echo "   which the app surfaces as a generic 'invalid credentials' message."
+  exit 1
+fi
+echo "SCOPES validated ✅ <$SCOPES>"
 
-if ! command -v flutter >/dev/null 2>&1; then
-  echo "Flutter not found – installing stable Flutter SDK..."
-  git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$HOME/flutter"
-  export PATH="$PATH:$HOME/flutter/bin"
-else
-  echo "Flutter already available"
+# ---------------------------------------
+# Setup Flutter (pinned - do NOT use 'stable')
+# ---------------------------------------
+# Pinned on purpose: an unpinned 'stable' clone silently upgraded CI to a
+# Flutter release whose engine requires a higher iOS deployment target than
+# the one declared in ios/Podfile, breaking pod install.
+#
+# The iOS deployment target is now 15.0, which satisfies Flutter 3.47.x.
+# Bumping this pin past 3.44 additionally switches iOS plugins to Swift
+# Package Manager and applies the UIScene migration: both rewrite the Xcode
+# project, so run the first build on a Mac and commit the generated diff
+# instead of letting CI mutate an unreviewed checkout.
+FLUTTER_VERSION="3.41.3"
+FLUTTER_HOME="$HOME/flutter"
+
+echo "Ensuring Flutter $FLUTTER_VERSION is installed..."
+
+CACHED_VERSION=""
+if [ -x "$FLUTTER_HOME/bin/flutter" ]; then
+  CACHED_VERSION="$(git -C "$FLUTTER_HOME" describe --tags --abbrev=0 2>/dev/null || echo "")"
 fi
 
+if [ "$CACHED_VERSION" != "$FLUTTER_VERSION" ]; then
+  if [ -n "$CACHED_VERSION" ]; then
+    echo "Cached Flutter is $CACHED_VERSION, need $FLUTTER_VERSION - reinstalling..."
+  else
+    echo "Installing Flutter $FLUTTER_VERSION..."
+  fi
+  rm -rf "$FLUTTER_HOME"
+  git clone https://github.com/flutter/flutter.git --depth 1 -b "$FLUTTER_VERSION" "$FLUTTER_HOME"
+else
+  echo "Reusing cached Flutter $CACHED_VERSION at $FLUTTER_HOME"
+fi
+
+# Prepend so the pinned SDK wins over any preinstalled Flutter on the runner
+export PATH="$FLUTTER_HOME/bin:$PATH"
+
 flutter --version
+
+INSTALLED_VERSION="$(flutter --version --machine | grep -o '"frameworkVersion":[^,]*' | head -1 | cut -d'"' -f4)"
+if [ "$INSTALLED_VERSION" != "$FLUTTER_VERSION" ]; then
+  echo "❌ ERROR: expected Flutter $FLUTTER_VERSION but found ${INSTALLED_VERSION:-unknown}"
+  exit 1
+fi
+echo "✅ Flutter $FLUTTER_VERSION confirmed"
 
 # ---------------------------------------
 # Pre-build steps
@@ -105,16 +150,27 @@ echo "✅ Flutter tests passed"
 pod_install_with_retry() {
   local attempt=1
   local max_attempts=3
-  until (cd "$PROJECT_PATH/ios" && pod install) ; do
+  local output
+  while true; do
+    if output="$(cd "$PROJECT_PATH/ios" && pod install 2>&1)"; then
+      echo "$output"
+      echo "✅ pod install succeeded (attempt $attempt)"
+      return 0
+    fi
+    echo "$output"
+    # Dependency-resolution errors are deterministic: retrying only wastes time
+    if ! echo "$output" | grep -qiE "timed out|timeout|502|503|could not connect|network is unreachable|failed to fetch|temporarily unavailable"; then
+      echo "❌ pod install failed with a non-transient error - not retrying"
+      exit 1
+    fi
     if [ $attempt -ge $max_attempts ]; then
       echo "❌ pod install failed after $max_attempts attempts"
       exit 1
     fi
-    echo "⚠️  pod install failed (attempt $attempt/$max_attempts), retrying in 15s..."
+    echo "⚠️  transient pod install failure (attempt $attempt/$max_attempts), retrying in 15s..."
     attempt=$((attempt + 1))
     sleep 15
   done
-  echo "✅ pod install succeeded (attempt $attempt)"
 }
 
 pod_install_with_retry

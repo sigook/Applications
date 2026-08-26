@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import '../../../../core/config/environment.dart';
 import '../../../../core/constants/auth_error_codes.dart';
 import '../../../../core/constants/error_messages.dart';
@@ -77,6 +78,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Authentication error: ${e.toString()}');
+    }
+  }
+
+  String _roleFromAccessToken(String accessToken) {
+    if (accessToken.isEmpty) return '';
+    try {
+      return _extractRole(JwtDecoder.decode(accessToken)['role']);
+    } catch (_) {
+      return '';
     }
   }
 
@@ -222,6 +232,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<String> getUserRole(String accessToken) async {
+    final tokenRole = _roleFromAccessToken(accessToken);
+    if (tokenRole.isNotEmpty) {
+      debugPrint('🔐 [AUTH] User role from access token: $tokenRole');
+      return tokenRole;
+    }
+
     if (!(await networkInfo.isConnected)) {
       throw NetworkException('No internet connection');
     }

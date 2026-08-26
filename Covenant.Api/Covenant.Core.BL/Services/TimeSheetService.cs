@@ -265,14 +265,16 @@ public class TimesheetService(
         return result;
     }
 
-    public async Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude, DateTime? date)
+    public async Task<Result<ClockType>> GetClockType(Guid requestId, DateTime? date, double? latitude = null, double? longitude = null)
     {
         if (!date.HasValue)
         {
             return Result.Ok(ClockType.None);
         }
         var workerId = identityServerService.GetUserId();
-        var workerNow = timeService.GetCurrentLocalDateTime(latitude, longitude).DateTime;
+        var workerNow = latitude.HasValue && longitude.HasValue
+            ? timeService.GetCurrentLocalDateTime(latitude.Value, longitude.Value).DateTime
+            : timeService.GetCurrentDateTime();
         var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, workerNow);
         var now = info is not null && info.Latitude.HasValue && info.Longitude.HasValue
             ? timeService.GetCurrentLocalDateTime(info.Latitude.Value, info.Longitude.Value).DateTime

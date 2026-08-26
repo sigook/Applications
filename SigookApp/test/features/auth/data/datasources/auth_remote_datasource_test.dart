@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -185,6 +187,59 @@ void main() {
         () => datasource.signIn(email: tEmail, password: tPassword),
         throwsA(isA<NetworkException>()),
       );
+    });
+  });
+
+  group('getUserRole', () {
+    String fakeJwt(Map<String, dynamic> claims) {
+      String seg(Map<String, dynamic> m) => base64Url
+          .encode(utf8.encode(json.encode(m)))
+          .replaceAll('=', '');
+      return '${seg({'alg': 'none'})}.${seg(claims)}.sig';
+    }
+
+    test('reads the role from the access token without calling userinfo', () async {
+      final token = fakeJwt({
+        'sub': 'user-1',
+        'role': 'worker',
+        'exp': 9999999999,
+      });
+
+      final result = await datasource.getUserRole(token);
+
+      expect(result, 'worker');
+      verifyNever(() => mockDio.get(any(), options: any(named: 'options')));
+      verifyNever(() => mockNetwork.isConnected);
+    });
+
+    test('prefers worker when the token carries multiple roles', () async {
+      final token = fakeJwt({
+        'role': ['admin', 'worker'],
+        'exp': 9999999999,
+      });
+
+      expect(await datasource.getUserRole(token), 'worker');
+    });
+
+    test('falls back to userinfo when the token has no role claim', () async {
+      final token = fakeJwt({'sub': 'user-1', 'exp': 9999999999});
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockDio.get(any(), options: any(named: 'options'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: tRequestOptions,
+          statusCode: 200,
+          data: <String, dynamic>{'role': 'worker'},
+        ),
+      );
+
+      final result = await datasource.getUserRole(token);
+
+      expect(result, 'worker');
+      final url = verify(
+        () => mockDio.get(captureAny(), options: any(named: 'options')),
+      ).captured.single as String;
+      expect(url, endsWith('/connect/userinfo'));
+      expect(url, isNot(contains('//connect')));
     });
   });
 

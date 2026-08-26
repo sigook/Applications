@@ -66,7 +66,22 @@ public class WorkerRequestTimeSheetController : ControllerBase
     [ProducesResponseType(typeof(ClockType), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromRoute] double latitude, [FromRoute] double longitude, [FromQuery] DateTime? date)
     {
-        var result = await timesheetService.GetClockType(requestId, latitude, longitude, date);
+        var result = await timesheetService.GetClockType(requestId, date, latitude, longitude);
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Gets the next expected clock type (clock-in or clock-out) for a request, without worker coordinates.
+    /// </summary>
+    /// <param name="requestId">Identifier of the request.</param>
+    /// <param name="date">Optional date to evaluate the clock type for.</param>
+    /// <remarks>Obsolete: only for app versions that do not send coordinates.</remarks>
+    [Obsolete("Backwards compatibility for mobile app versions that call clock-type without coordinates. Remove once the location-aware app release is published.")]
+    [HttpGet("clock-type")]
+    [ProducesResponseType(typeof(ClockType), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromQuery] DateTime? date)
+    {
+        var result = await timesheetService.GetClockType(requestId, date);
         return Ok(result.Value);
     }
 }
