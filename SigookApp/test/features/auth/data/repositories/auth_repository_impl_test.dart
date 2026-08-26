@@ -265,12 +265,26 @@ void main() {
   // ── logout ────────────────────────────────────────────────────────────────
 
   group('logout', () {
-    test('clears local token even when network call fails', () async {
+    test('revokes current refresh token and clears local token', () async {
       when(() => mockLocal.getCachedToken())
           .thenAnswer((_) async => _tTokenModel);
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
-      when(() => mockRemote.logout(any()))
-          .thenThrow(Exception('logout endpoint error'));
+      when(() => mockRemote.revokeRefreshToken(any()))
+          .thenAnswer((_) async {});
+
+      final result = await repository.logout();
+
+      expect(result.isRight(), true);
+      verify(() => mockRemote.revokeRefreshToken('refresh-456')).called(1);
+      verify(() => mockLocal.clearToken()).called(1);
+    });
+
+    test('clears local token even when revocation fails', () async {
+      when(() => mockLocal.getCachedToken())
+          .thenAnswer((_) async => _tTokenModel);
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockRemote.revokeRefreshToken(any()))
+          .thenThrow(Exception('revocation endpoint error'));
 
       final result = await repository.logout();
 
@@ -285,6 +299,20 @@ void main() {
       final result = await repository.logout();
 
       expect(result.isRight(), true);
+      verifyNever(() => mockRemote.revokeRefreshToken(any()));
+      verify(() => mockLocal.clearToken()).called(1);
+    });
+
+    test('clears local token when cached token has no refresh token',
+        () async {
+      when(() => mockLocal.getCachedToken()).thenAnswer(
+        (_) async => const AuthTokenModel(accessToken: 'access-123'),
+      );
+
+      final result = await repository.logout();
+
+      expect(result.isRight(), true);
+      verifyNever(() => mockRemote.revokeRefreshToken(any()));
       verify(() => mockLocal.clearToken()).called(1);
     });
 
@@ -296,7 +324,44 @@ void main() {
       final result = await repository.logout();
 
       expect(result.isRight(), true);
+      verifyNever(() => mockRemote.revokeRefreshToken(any()));
       verify(() => mockLocal.clearToken()).called(1);
+    });
+  });
+
+  // ── deactivateAccount ─────────────────────────────────────────────────────
+
+  group('deactivateAccount', () {
+    const tAccessToken = 'access-123';
+
+    test('revokes refresh token best-effort and clears local token', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockLocal.getCachedToken())
+          .thenAnswer((_) async => _tTokenModel);
+      when(() => mockRemote.deactivateAccount(any())).thenAnswer((_) async {});
+      when(() => mockRemote.revokeRefreshToken(any()))
+          .thenThrow(Exception('revocation endpoint error'));
+
+      final result = await repository.deactivateAccount(tAccessToken);
+
+      expect(result.isRight(), true);
+      verify(() => mockRemote.deactivateAccount(tAccessToken)).called(1);
+      verify(() => mockRemote.revokeRefreshToken('refresh-456')).called(1);
+      verify(() => mockLocal.clearToken()).called(1);
+    });
+
+    test('keeps token and returns failure when deactivation fails', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockLocal.getCachedToken())
+          .thenAnswer((_) async => _tTokenModel);
+      when(() => mockRemote.deactivateAccount(any()))
+          .thenThrow(ServerException(message: 'Deactivation failed'));
+
+      final result = await repository.deactivateAccount(tAccessToken);
+
+      expect(result.isLeft(), true);
+      verifyNever(() => mockRemote.revokeRefreshToken(any()));
+      verifyNever(() => mockLocal.clearToken());
     });
   });
 }

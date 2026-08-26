@@ -243,6 +243,71 @@ void main() {
     });
   });
 
+  group('revokeRefreshToken', () {
+    const tRefreshToken = 'refresh-456';
+
+    test('posts the refresh token form-urlencoded to /connect/revocation',
+        () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          )).thenAnswer(
+        (_) async => Response(
+          requestOptions: tRequestOptions,
+          statusCode: 200,
+        ),
+      );
+
+      await datasource.revokeRefreshToken(tRefreshToken);
+
+      final captured = verify(() => mockAnonymousDio.post(
+            captureAny(),
+            data: captureAny(named: 'data'),
+            options: captureAny(named: 'options'),
+          )).captured;
+      expect(captured[0] as String, endsWith('/connect/revocation'));
+      final body = captured[1] as Map;
+      expect(body['token'], tRefreshToken);
+      expect(body['token_type_hint'], 'refresh_token');
+      expect(body.containsKey('client_id'), true);
+      expect(
+        (captured[2] as Options).contentType,
+        Headers.formUrlEncodedContentType,
+      );
+    });
+
+    test('throws ServerException on server error', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          )).thenThrow(badResponse(500));
+
+      await expectLater(
+        () => datasource.revokeRefreshToken(tRefreshToken),
+        throwsA(isA<ServerException>()),
+      );
+    });
+
+    test('throws NetworkException without calling the endpoint when offline',
+        () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => false);
+
+      await expectLater(
+        () => datasource.revokeRefreshToken(tRefreshToken),
+        throwsA(isA<NetworkException>()),
+      );
+      verifyNever(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          ));
+    });
+  });
+
   group('requestPasswordResetCode', () {
     test('posts the email to /Password/forgot', () async {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => true);

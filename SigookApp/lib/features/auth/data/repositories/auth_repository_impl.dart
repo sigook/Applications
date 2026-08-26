@@ -140,7 +140,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, void>> deactivateAccount(String accessToken) async {
     try {
       if (!await networkInfo.isConnected) return Left(NetworkFailure());
+      final refreshToken = (await local.getCachedToken())?.refreshToken;
       await remote.deactivateAccount(accessToken);
+      if (refreshToken != null) {
+        try {
+          await remote.revokeRefreshToken(refreshToken);
+        } catch (e) {
+          debugPrint('Token revocation failed: $e');
+        }
+      }
       await local.clearToken();
       return Right(null);
     } on ServerException catch (e) {
@@ -153,28 +161,18 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> logout() async {
     try {
-      final cachedToken = await local.getCachedToken();
-      if (cachedToken?.idToken == null) {
-        await local.clearToken();
-        return Right(null);
-      }
+      final refreshToken = (await local.getCachedToken())?.refreshToken;
 
-      if (await networkInfo.isConnected) {
+      if (refreshToken != null && await networkInfo.isConnected) {
         try {
-          await remote.logout(cachedToken!.idToken!);
+          await remote.revokeRefreshToken(refreshToken);
         } catch (e) {
-          debugPrint('End session failed: $e');
+          debugPrint('Token revocation failed: $e');
         }
       }
 
       await local.clearToken();
       return Right(null);
-    } on ServerException catch (e) {
-      await local.clearToken();
-      return Left(ServerFailure(message: e.message));
-    } on NetworkException catch (e) {
-      await local.clearToken();
-      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       await local.clearToken();
       return Left(ServerFailure(message: 'Logout error: ${e.toString()}'));
