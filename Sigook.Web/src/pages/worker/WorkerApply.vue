@@ -16,6 +16,7 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { getErrorMessage } from '@/utils/toast';
 import { workerRequestApply } from '@/api/workerApi';
+import { candidateRequestApply } from '@/api/websiteApi';
 
 const route = useRoute();
 
@@ -30,13 +31,14 @@ function redirectToHome() {
 
 function apply() {
   const workerId = route.query.w;
+  const candidateId = route.query.c;
   const requestId = route.query.r;
-  if (!workerId || !requestId) {
+  if (!requestId || (!workerId && !candidateId)) {
     redirectToHome();
     return;
   }
 
-  const key = `${workerId}${requestId}`;
+  const key = `${(workerId ?? candidateId) as string}${requestId}`;
   const alreadyApplied = window.sessionStorage.getItem(key);
   if (alreadyApplied) {
     successMessage.value = defaultSuccessMessage;
@@ -44,7 +46,10 @@ function apply() {
   }
 
   isLoading.value = true;
-  workerRequestApply(workerId as string, requestId as string, {})
+  const applyRequest = workerId
+    ? workerRequestApply(workerId as string, requestId as string, {})
+    : candidateRequestApply(candidateId as string, requestId as string);
+  applyRequest
     .then(() => {
       isLoading.value = false;
       successMessage.value = defaultSuccessMessage;

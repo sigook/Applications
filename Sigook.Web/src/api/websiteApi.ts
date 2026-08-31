@@ -16,3 +16,7 @@ export function submitCandidate(formData: FormData): Promise<void> {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 }
+
+export function candidateRequestApply(candidateId: string, requestId: string): Promise<void> {
+  return api.post<void>(`/api/WebSite/candidate/${candidateId}/${requestId}/apply`);
+}

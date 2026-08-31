@@ -14,6 +14,7 @@ public interface ICandidateService
     Task<Result> DeleteCandidate(Guid id);
     Task<Result> DeleteCandidateByEmail(string email);
     Task<Result> ConvertToWorker(Guid id);
+    Task<Result<Guid>> Apply(Guid candidateId, Guid requestId);
     Task<Result<Guid>> CreateCandidateDocument(Guid id);
     Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, IFormFile file);
 }

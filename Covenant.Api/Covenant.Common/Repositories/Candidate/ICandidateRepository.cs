@@ -12,6 +12,7 @@ public interface ICandidateRepository
     Task<PaginatedList<CandidateListModel>> GetCandidates(Guid agencyId, GetCandidatesFilter filter);
     IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter);
     Task<CandidateDetailModel> GetCandidateDetail(Guid id);
+    Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId, string city);
     Task<PhoneNumberModel> GetPhoneNumberDetail(Guid candidateId, Guid id);
     Task<SkillModel> GetSkillDetail(Guid candidateId, Guid id);
     Task<CandidateDocument> GetDocument(Guid candidateId, Guid id);

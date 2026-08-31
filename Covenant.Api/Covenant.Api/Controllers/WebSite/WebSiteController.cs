@@ -1,5 +1,7 @@
 ﻿using Covenant.Api.Authorization;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Core.BL.Extensions;
+using Covenant.Core.BL.Interfaces;
 using Covenant.Api.Common.Models;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
@@ -25,7 +27,8 @@ public class WebSiteController(
     IRequestRepository requestRepository,
     IMemoryCache memoryCache,
     IOptions<ServiceBusConfiguration> options,
-    IFilesContainer filesContainer) : ControllerBase
+    IFilesContainer filesContainer,
+    ICandidateService candidateService) : ControllerBase
 {
     private readonly ISigookBusClient client = client;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
@@ -34,6 +37,7 @@ public class WebSiteController(
     private readonly IMemoryCache memoryCache = memoryCache;
     private readonly ServiceBusConfiguration serviceBusConfiguration = options.Value;
     private readonly IFilesContainer filesContainer = filesContainer;
+    private readonly ICandidateService candidateService = candidateService;
 
     /// <summary>Sends a contact-form email from the public website.</summary>
     /// <param name="contact">Contact form data.</param>
@@ -103,5 +107,16 @@ public class WebSiteController(
         }
         await client.SendMessageAsync(candidate, serviceBusConfiguration.ValidateCandidateQueue);
         return Ok();
+    }
+
+    /// <summary>Applies a candidate to a request from an invitation email (anonymous).</summary>
+    [HttpPost("candidate/{candidateId:guid}/{requestId:guid}/apply")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CandidateApply([FromRoute] Guid candidateId, [FromRoute] Guid requestId)
+    {
+        var result = await candidateService.Apply(candidateId, requestId);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok(result.Value);
     }
 }

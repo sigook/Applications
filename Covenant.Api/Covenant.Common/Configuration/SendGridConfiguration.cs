@@ -9,5 +9,6 @@ public class SendGridConfiguration
     public string NewApplicantTemplateId { get; set; }
     public string UnsubscribeUrl { get; set; }
     public string ApplyOnlineUrl { get; set; }
+    public string CandidateApplyOnlineUrl { get; set; }
     public bool RedirectInvitationsToTestingEmail { get; set; }
 }

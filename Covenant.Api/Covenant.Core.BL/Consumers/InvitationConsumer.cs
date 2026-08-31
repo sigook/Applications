@@ -5,6 +5,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request;
+using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
@@ -52,7 +53,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
             var notification = result
                 ? TeamsNotificationModel.CreateSuccess(
                     $"Invitations sent by {job.Nickname}",
-                    $"Sent {result.Value.SentCount} invitations for request #{result.Value.NumberId} ({result.Value.JobTitle})")
+                    $"Sent {result.Value.SentCount} invitations ({result.Value.WorkersSentCount} workers, {result.Value.CandidatesSentCount} candidates) for request #{result.Value.NumberId} ({result.Value.JobTitle})")
                 : TeamsNotificationModel.CreateWarning(
                     $"Invitations sent by {job.Nickname}",
                     string.Join(" - ", result.Errors));
@@ -71,6 +72,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
     {
         var requestRepository = serviceProvider.GetRequiredService<IRequestRepository>();
         var workerRepository = serviceProvider.GetRequiredService<IWorkerRepository>();
+        var candidateRepository = serviceProvider.GetRequiredService<ICandidateRepository>();
         var timeService = serviceProvider.GetRequiredService<ITimeService>();
         var sendGridService = serviceProvider.GetRequiredService<ISendGridService>();
         var sendGridConfiguration = serviceProvider.GetRequiredService<IOptions<SendGridConfiguration>>().Value;
@@ -82,10 +84,12 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         var canBeSent = request.CanInvitationBeSendIt(now);
         if (!canBeSent) return Result.Fail<InvitationSentResult>(canBeSent.Errors);
 
-        var sentCount = 0;
+        var workersSentCount = 0;
+        var candidatesSentCount = 0;
         var provinceId = request.JobLocation.City.ProvinceId;
         var workers = await workerRepository.GetWorkersAvailableToInvite(request.CompanyProfile.AgencyId, provinceId);
-        if (workers.Count > 0)
+        var candidates = await candidateRepository.GetCandidatesAvailableToInvite(request.CompanyProfile.AgencyId, request.Id, request.JobLocation?.City?.Value);
+        if (workers.Count > 0 || candidates.Count > 0)
         {
             var jobTitle = request.JobTitle;
             var description = request.Description;
@@ -93,7 +97,8 @@ public class InvitationConsumer : IAzureServiceBusConsumer
             var city = request.JobLocation?.City?.Value;
             var rateValue = request.WorkerRate ?? request.WorkerSalary.Value;
             var rate = request.JobLocation.IsUSA ? rateValue.ToUsMoney() : rateValue.ToCaMoney();
-            var recipients = new List<TemplateRecipient>(workers.Count);
+            var recruitmentEmail = request.CompanyProfile.Agency.RecruitmentEmail;
+            var workerRecipients = new List<TemplateRecipient>(workers.Count);
             foreach (var worker in workers)
             {
                 var unsubscribeUrl = sendGridConfiguration.UnsubscribeUrl.Replace("{{workerId}}", worker.WorkerId.ToString());
@@ -113,17 +118,47 @@ public class InvitationConsumer : IAzureServiceBusConsumer
                     city,
                     apply = applyUrl,
                 };
-                recipients.Add(new TemplateRecipient(worker.Email, worker.FullName, data));
+                workerRecipients.Add(new TemplateRecipient(worker.Email, worker.FullName, data));
             }
-            if (recipients.Count > 0)
+            var candidateRecipients = new List<TemplateRecipient>(candidates.Count);
+            foreach (var candidate in candidates)
             {
-                await sendGridService.SendTemplateBatch(request.CompanyProfile.Agency.RecruitmentEmail, recipients);
+                var unsubscribeUrl = $"mailto:{recruitmentEmail}";
+                var applyUrl = sendGridConfiguration.CandidateApplyOnlineUrl
+                    .Replace("{{requestId}}", request.Id.ToString())
+                    .Replace("{{candidateId}}", candidate.Id.ToString());
+
+                object data = new
+                {
+                    worker_name = candidate.Name,
+                    unsubscribe = unsubscribeUrl,
+                    unsubscribe_preferences = unsubscribeUrl,
+                    job_title = jobTitle,
+                    description,
+                    requirements,
+                    rate,
+                    city,
+                    apply = applyUrl,
+                };
+                candidateRecipients.Add(new TemplateRecipient(candidate.Email, candidate.Name, data));
+            }
+            if (workerRecipients.Count > 0)
+            {
+                await sendGridService.SendTemplateBatch(recruitmentEmail, workerRecipients);
+                workersSentCount = workerRecipients.Count;
+            }
+            if (candidateRecipients.Count > 0)
+            {
+                await sendGridService.SendTemplateBatch(recruitmentEmail, candidateRecipients);
+                candidatesSentCount = candidateRecipients.Count;
+            }
+            if (workersSentCount + candidatesSentCount > 0)
+            {
                 request.InvitationSentItAt = now;
                 await requestRepository.Update(request);
                 await requestRepository.SaveChangesAsync();
-                sentCount = recipients.Count;
             }
         }
-        return Result.Ok(new InvitationSentResult(sentCount, request.NumberId, request.JobTitle));
+        return Result.Ok(new InvitationSentResult(workersSentCount, candidatesSentCount, request.NumberId, request.JobTitle));
     }
 }

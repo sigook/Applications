@@ -33,6 +33,29 @@ namespace Covenant.Infrastructure.Repositories.Candidate
             return await query.ToPaginatedList(filter);
         }
 
+        public async Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId, string city)
+        {
+            var normalizedCity = city.NormalizeForComparison();
+            if (normalizedCity.Length == 0) return [];
+            var candidates = await _context.Candidates
+                .AsNoTracking()
+                .Where(c => c.AgencyId == agencyId)
+                .Where(c => !c.Dnu)
+                .Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains("@"))
+                .Where(c => !string.IsNullOrEmpty(c.Address))
+                .Where(c => !c.RequestApplicants.Any(ra => ra.RequestId == requestId))
+                .OrderBy(c => c.NumberId)
+                .Select(c => new CandidateContactInfoModel
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Email = c.Email,
+                    Address = c.Address
+                })
+                .ToListAsync();
+            return candidates.Where(c => c.Address.NormalizeForComparison().Contains(normalizedCity)).ToList();
+        }
+
         public IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter)
         {
             var candidates = _context.Candidates

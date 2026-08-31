@@ -664,6 +664,7 @@ Public landing site endpoints (no auth).
 | `getJobs(filter)` | GET | `/api/WebSite/jobs` | `JobSearchFilter` (params; `countries` defaults to `['USA','CA']`) | `JobViewModel[]` | Public job search |
 | `submitContactForm(contact)` | POST | `/api/WebSite/contact` | `ContactForm` | `void` | |
 | `submitCandidate(formData)` | POST | `/api/WebSite/candidate` | FormData (multipart) | `void` | Public candidate apply |
+| `candidateRequestApply(candidateId, requestId)` | POST | `/api/WebSite/candidate/{candidateId}/{requestId}/apply` | — | `void` | Candidate invitation-link apply (used by `/worker-apply?r=..&c=..`) |
 
 **Types:** `JobSearchFilter`, `JobViewModel`, `ContactForm` (`src/types/website`)
 

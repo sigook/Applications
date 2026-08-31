@@ -97,7 +97,7 @@ PUT api/agency/requests/{id}/Cancel                       → RequestService.Can
 PUT api/agency/requests/{id}/Open                         → RequestService.OpenRequest     (reopen)
 PUT api/agency/requests/{id}/IncreaseWorkersQuantityByOne → AgencyService.IncreaseWorkersQuantityByOne
 PUT api/agency/requests/{id}/ReduceWorkersQuantityByOne   → RequestService.ReduceWorkerQuantityByOne
-POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers)
+POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers and candidates)
 ```
 
 Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET api/agency/sales/requests` (sales rep sees only their own companies' orders).
@@ -112,6 +112,8 @@ POST api/WorkerRequest/{requestId}/Apply    → WorkerRequestController.Apply �
 ```
 
 There is no `/Available` suffix — the plain `GET api/WorkerRequest` already returns only requests the authenticated worker can apply to. An anonymous variant `POST api/WorkerRequest/{workerId}/{requestId}/Apply` exists for invitation links.
+
+The invitation job (`InvitationConsumer`) emails two audiences with the same SendGrid template: workers (same agency, matching province, subscribed to email notifications, not booked) get `worker-apply?r=..&w=..`, and candidates (same agency, non-DNU, valid email, free-text `Address` containing the order's city after normalization — skipped entirely when the order city is blank) get `worker-apply?r=..&c=..`. The candidate link posts the anonymous `POST api/WebSite/candidate/{candidateId}/{requestId}/apply` → `CandidateService.Apply`, which re-validates the city match, creates a `Pending` `RequestApplicant` with `CandidateId`, and adds the order's `JobTitle` as a candidate skill. Candidates have no user account, so their unsubscribe link is a `mailto:` to the agency's recruitment email.
 
 ### Step 2B: Agency tracks applicants
 

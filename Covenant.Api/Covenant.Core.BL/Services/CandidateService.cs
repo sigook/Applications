@@ -42,6 +42,7 @@ public class CandidateService : ICandidateService
     private readonly IDocumentService documentService;
     private readonly IValidator<CandidateCsvModel> bulkCandidateValidator;
     private readonly IUploadedFilesService uploadedFilesService;
+    private readonly ISendGridService sendGridService;
     private readonly ILogger<CandidateService> logger;
 
     public CandidateService(
@@ -55,6 +56,7 @@ public class CandidateService : ICandidateService
         IDocumentService documentService,
         IValidator<CandidateCsvModel> bulkCandidateValidator,
         IUploadedFilesService uploadedFilesService,
+        ISendGridService sendGridService,
         ILogger<CandidateService> logger)
     {
         this.userRepository = userRepository;
@@ -67,6 +69,7 @@ public class CandidateService : ICandidateService
         this.documentService = documentService;
         this.bulkCandidateValidator = bulkCandidateValidator;
         this.uploadedFilesService = uploadedFilesService;
+        this.sendGridService = sendGridService;
         this.logger = logger;
     }
 
@@ -209,6 +212,54 @@ public class CandidateService : ICandidateService
         if (!result) return Result.Fail(result.Errors);
 
         return Result.Ok();
+    }
+
+    public async Task<Result<Guid>> Apply(Guid candidateId, Guid requestId)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null || !request.IsAvailableToApply) return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
+        var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
+        if (candidate is null || candidate.Dnu) return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
+        if (candidate.AgencyId != request.CompanyProfile.AgencyId) return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
+        var normalizedCity = request.JobLocation?.City?.Value.NormalizeForComparison();
+        if (string.IsNullOrEmpty(normalizedCity) || !candidate.Address.NormalizeForComparison().Contains(normalizedCity))
+            return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
+        var existingApplicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.CandidateId == candidateId);
+        if (existingApplicant != null) return Result.Fail<Guid>("You already apply to this request");
+
+        var applicant = RequestApplicant.CreateWithCandidate(requestId, candidateId, "Sigook", string.Empty, RequestApplicantStatus.Pending);
+        if (!applicant) return Result.Fail<Guid>(applicant.Errors);
+        await requestRepository.Create([applicant.Value]);
+        var skill = candidate.AddSkill(request.JobTitle);
+        if (skill) await candidateRepository.Create(skill.Value);
+        await requestRepository.SaveChangesAsync();
+        await NotifyRecruiters(request, candidate);
+        return Result.Ok(applicant.Value.Id);
+    }
+
+    private async Task NotifyRecruiters(Request request, Candidate candidate)
+    {
+        if (!request.Recruiters.Any()) return;
+        var sendGridModel = new SendGridModel
+        {
+            Tos = request.Recruiters.Select(r => r.Recruiter.User.Email),
+            Template = "NEW_APPLICANT",
+            Data = new
+            {
+                RequestNumberId = request.NumberId,
+                request.JobTitle,
+                candidate.Email,
+                Nmae = candidate.Name,
+                WorkerNumberId = candidate.NumberId,
+                Phone = candidate.PhoneNumbers.FirstOrDefault()?.PhoneNumber,
+                MobileNumber = (string)null,
+                FormattedAddress = candidate.Address,
+                Skills = string.Join(",", candidate.Skills.Select(s => s.Skill)),
+                Sin = string.Empty,
+                SinExpire = (string)null
+            }
+        };
+        await sendGridService.SendEmail(sendGridModel);
     }
 
     public async Task<Result<Guid>> CreateCandidate(CandidateCreateModel model, Guid agencyId, bool validatePhone = true)
