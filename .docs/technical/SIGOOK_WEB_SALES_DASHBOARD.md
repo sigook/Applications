@@ -110,10 +110,12 @@ The enums mirror the backend **numerically** — the API serializes enums as int
 | Enum | Values (labels) |
 |------|-----------------|
 | `DealType` | Temporal, Permanent, Temp to Perm |
-| `DealStatus` | To Send, Sent, Rejected, Accepted |
+| `DealStatus` | To Send, Sent, Rejected, Accepted, Under Review, Closed, Completed |
 | `InteractionType` | Call, Email, SMS, LinkedIn |
 | `InteractionPurpose` | Intro, Follow-up, Proposal, Negotiation, Closing |
 | `InteractionStatus` | Not started, In progress, Completed |
+
+`DealStatus` values above are listed in numeric order (0–6, the int contract). Display order in the form select (`DEAL_STATUSES`) and the dashboard pipeline meters is lifecycle order instead: To Send → Sent → Under Review → Accepted → Rejected → Closed → Completed. Table sort-by-status remains numeric, so Under Review (4) groups after Accepted (3).
 
 **Ownership scoping.** Deals and interactions are owner-scoped **end-to-end**: a sales user lists, updates and deletes only the records they own, and `OwnerId` is forced server-side on create (admin/superadmin are unscoped). Controllers: `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs`, `[Authorize(Policy = PolicyConfiguration.Sales)]`. This is stricter than the orders/clients rule, where only the list is scoped — see the note in `../business/ROLES_PERMISSIONS.md`.
 

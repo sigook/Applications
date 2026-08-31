@@ -10,8 +10,10 @@
         v-model="companyProfileId"
         :options="clientOptions"
         :loading="isLoadingClients"
+        remote
         clearable
         placeholder="Search client…"
+        @search="searchClients"
       />
       <p v-else class="sd-readonly">{{ deal?.companyName }}</p>
     </b-field>
@@ -71,7 +73,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
-import { getSalesCompanies } from '@/api/salesApi';
+import { useSalesCompanySearch } from '@/composables/useSalesCompanySearch';
 import { useDropdownReveal } from '@/composables/useDropdownReveal';
 import { createDeal, updateDeal } from '@/api/companyApi';
 import {
@@ -83,7 +85,6 @@ import {
   DEAL_STATUS_LABELS,
 } from '@/types/company';
 import type { Deal } from '@/types/company';
-import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { generateFileName } from '@/utils/fileNaming';
 import SearchSelect from './SearchSelect.vue';
@@ -96,8 +97,7 @@ const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, la
 const typeOptions = DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }));
 const statusOptions = DEAL_STATUSES.map((s) => ({ value: s, label: DEAL_STATUS_LABELS[s] }));
 
-const clients = ref<AgencyCompanyListItem[]>([]);
-const isLoadingClients = ref(false);
+const { companies: clients, isLoading: isLoadingClients, search: searchClients } = useSalesCompanySearch();
 
 const title = ref('');
 const companyProfileId = ref<string | null>(null);
@@ -124,15 +124,7 @@ onMounted(() => {
     status.value = props.deal.status;
     return;
   }
-  isLoadingClients.value = true;
-  getSalesCompanies({ pageSize: 100 })
-    .then((result) => {
-      clients.value = result.items;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoadingClients.value = false;
-    });
+  searchClients('');
 });
 
 function resetForm(): void {

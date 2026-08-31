@@ -68,8 +68,11 @@
   "pipeline": [
     { "status": 0, "count": 24 },
     { "status": 1, "count": 16 },
+    { "status": 4, "count": 8 },
+    { "status": 3, "count": 12 },
     { "status": 2, "count": 5 },
-    { "status": 3, "count": 12 }
+    { "status": 5, "count": 3 },
+    { "status": 6, "count": 7 }
   ],
   "activity": [
     { "type": 0, "count": 42 },
