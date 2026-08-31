@@ -20,8 +20,10 @@
         v-model="companyProfileId"
         :options="clientOptions"
         :loading="isLoadingClients"
+        remote
         clearable
         placeholder="Search client…"
+        @search="searchClients"
       />
       <p v-else class="sd-readonly">{{ interaction?.companyName }}</p>
     </b-field>
@@ -46,7 +48,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { getSalesCompanies } from '@/api/salesApi';
+import { useSalesCompanySearch } from '@/composables/useSalesCompanySearch';
 import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyApi';
 import {
   InteractionType,
@@ -60,7 +62,6 @@ import {
   INTERACTION_STATUS_LABELS,
 } from '@/types/company';
 import type { CompanyInteraction } from '@/types/company';
-import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import SearchSelect from './SearchSelect.vue';
 
@@ -72,8 +73,7 @@ const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, la
 const purposeOptions = INTERACTION_PURPOSES.map((p) => ({ value: p, label: INTERACTION_PURPOSE_LABELS[p] }));
 const statusOptions = INTERACTION_STATUSES.map((s) => ({ value: s, label: INTERACTION_STATUS_LABELS[s] }));
 
-const clients = ref<AgencyCompanyListItem[]>([]);
-const isLoadingClients = ref(false);
+const { companies: clients, isLoading: isLoadingClients, search: searchClients } = useSalesCompanySearch();
 
 const type = ref<InteractionType>(InteractionType.Call);
 const companyProfileId = ref<string | null>(null);
@@ -90,15 +90,7 @@ onMounted(() => {
     description.value = props.interaction.description;
     return;
   }
-  isLoadingClients.value = true;
-  getSalesCompanies({ pageSize: 100 })
-    .then((result) => {
-      clients.value = result.items;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoadingClients.value = false;
-    });
+  searchClients('');
 });
 
 function resetForm(): void {
