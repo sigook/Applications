@@ -13225,6 +13225,7 @@
           "Requests"
         ],
         "summary": "Gets the detail of a specific company request by its identifier.",
+        "operationId": "GetCompanyRequestById",
         "parameters": [
           {
             "name": "id",
@@ -13890,6 +13891,7 @@
           "Requests"
         ],
         "summary": "Gets the detail of a request by its identifier.",
+        "operationId": "GetAgencyRequestById",
         "parameters": [
           {
             "name": "id",

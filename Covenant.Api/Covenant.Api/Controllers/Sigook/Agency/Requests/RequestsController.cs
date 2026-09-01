@@ -18,11 +18,12 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Requests;
 public class RequestsController(IRequestService requestService, IAgencyService agencyService) : ControllerBase
 {
     public const string RouteName = "api/agency/requests";
+    private const string GetByIdRouteName = "GetAgencyRequestById";
 
     /// <summary>Gets the detail of a request by its identifier.</summary>
     /// <param name="repository">Request repository.</param>
     /// <param name="id">Identifier of the request.</param>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = GetByIdRouteName)]
     [ProducesResponseType(typeof(AgencyRequestDetailModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromServices] IRequestRepository repository, Guid id) =>
@@ -37,7 +38,7 @@ public class RequestsController(IRequestService requestService, IAgencyService a
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var result = await requestService.CreateRequest(model);
-        if (result) return CreatedAtAction(nameof(GetById), new { id = result.Value }, new AgencyRequestDetailModel { Id = result.Value });
+        if (result) return CreatedAtRoute(GetByIdRouteName, new { id = result.Value }, new AgencyRequestDetailModel { Id = result.Value });
         return BadRequest(ModelState.AddErrors(result.Errors));
     }
 
@@ -51,7 +52,7 @@ public class RequestsController(IRequestService requestService, IAgencyService a
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var result = await requestService.UpdateRequest(id, model);
-        if (result) return CreatedAtAction(nameof(GetById), new { id }, new AgencyRequestDetailModel { Id = id });
+        if (result) return CreatedAtRoute(GetByIdRouteName, new { id }, new AgencyRequestDetailModel { Id = id });
         return BadRequest(ModelState.AddErrors(result.Errors));
     }
 

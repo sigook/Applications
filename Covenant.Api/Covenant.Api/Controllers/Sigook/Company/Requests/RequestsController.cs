@@ -20,6 +20,7 @@ namespace Covenant.Api.Controllers.Sigook.Company.Requests;
 public class RequestsController(IRequestService requestService) : ControllerBase
 {
     public const string RouteName = "api/company/requests";
+    private const string GetByIdRouteName = "GetCompanyRequestById";
 
     /// <summary>Gets the paginated list of requests belonging to the current company.</summary>
     /// <param name="repository">Request repository resolved from DI.</param>
@@ -39,7 +40,7 @@ public class RequestsController(IRequestService requestService) : ControllerBase
     /// <summary>Gets the detail of a specific company request by its identifier.</summary>
     /// <param name="repository">Request repository resolved from DI.</param>
     /// <param name="id">Request identifier.</param>
-    [HttpGet("{id}")]
+    [HttpGet("{id}", Name = GetByIdRouteName)]
     [ProducesResponseType(typeof(CompanyRequestDetailModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromServices] IRequestRepository repository, [FromRoute] Guid id) =>
@@ -53,7 +54,7 @@ public class RequestsController(IRequestService requestService) : ControllerBase
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         Result<Guid> result = await requestService.CompanyCreateRequest(model);
-        if (result) return CreatedAtAction(nameof(GetById), new { id = result.Value },
+        if (result) return CreatedAtRoute(GetByIdRouteName, new { id = result.Value },
             new CompanyRequestDetailModel { Id = result.Value });
         return BadRequest(ModelState.AddErrors(result.Errors));
     }
