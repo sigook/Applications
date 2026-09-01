@@ -3,6 +3,7 @@ using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.Subcontractor;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
@@ -16,7 +17,6 @@ using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Core.BL.Extensions.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
 using MediatR;
@@ -46,7 +46,8 @@ public abstract class InvoiceService(
     IMediator mediator,
     IPayStubsContainer payStubsContainer,
     ITeamsService teamsService,
-    IOptions<TeamsWebhookConfiguration> teamsOptions) : IInvoiceService
+    IOptions<TeamsWebhookConfiguration> teamsOptions,
+    IInvoiceDocumentAdapter invoiceDocumentAdapter) : IInvoiceService
 {
     private const string InvoiceHtmlTemplate = "/Views/Billing/Invoice/Invoice.cshtml";
     private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
@@ -72,23 +73,24 @@ public abstract class InvoiceService(
     private readonly IPayStubsContainer payStubsContainer = payStubsContainer;
     private readonly ITeamsService teamsService = teamsService;
     private readonly TeamsWebhookConfiguration teamsConfiguration = teamsOptions.Value;
+    private readonly IInvoiceDocumentAdapter invoiceDocumentAdapter = invoiceDocumentAdapter;
 
     public abstract Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
     public abstract Task<Result<Guid>> CreateAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
-    protected abstract Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter);
-    protected abstract Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter);
+    protected abstract Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
+    protected abstract Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
     protected abstract Task<InvoiceSummaryModel> FetchInvoiceSummary(Guid invoiceId);
     protected abstract Task<(Guid InvoiceId, string InvoiceNumber, IReadOnlyList<string> PayStubsDeleted)> DeleteInvoiceData(Guid invoiceId, DeleteInvoiceModel model);
 
     #region Invoice Orchestration
 
-    public async Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilterV2 filter)
+    public async Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilter filter)
     {
         var agencyIds = identityServerService.GetAgencyIds();
         return await FetchInvoices(agencyIds, filter);
     }
 
-    public async Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilterV2 filter)
+    public async Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilter filter)
     {
         var agencyIds = identityServerService.GetAgencyIds();
         var result = await FetchInvoicesForExport(agencyIds, filter);
@@ -130,7 +132,7 @@ public abstract class InvoiceService(
         var invoiceStream = new MemoryStream(document.Content);
         emailAttachments.Add(new EmailAttachment($"Invoice {invoice.InvoiceNumber}.pdf", MediaTypeNames.Application.Pdf, invoiceStream));
 
-        string body = await renderer.RenderViewToStringAsync(InvoiceEmailTemplate, invoice.ToInvoiceEmailViewModel(model.Message));
+        string body = await renderer.RenderViewToStringAsync(InvoiceEmailTemplate, invoiceDocumentAdapter.MapToInvoiceEmailViewModel(invoice, model.Message));
         bool wasSent = await emailService.SendCovenantEmail(new EmailParams(invoice.Email, model.Subject, body)
         {
             Cc = model.Cc?.ToList() ?? [],
@@ -155,7 +157,7 @@ public abstract class InvoiceService(
     private async Task<byte[]> UploadInvoicePdf(InvoiceSummaryModel model)
     {
         string fileName = model.Id.ToInvoiceBlobName();
-        string html = await renderer.RenderViewToStringAsync(InvoiceHtmlTemplate, model.ToInvoiceViewModel());
+        string html = await renderer.RenderViewToStringAsync(InvoiceHtmlTemplate, invoiceDocumentAdapter.MapToInvoiceViewModel(model));
         var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
         if (!pdf) return null;
         try

@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -115,7 +115,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
         public class Startup
         {
             public static readonly Gender FakeGender = new("Male");
-            public static readonly City FakeCity = new() { Province = new Province { Country = new Country() }, Value = "Toronto" };
+            public static readonly City FakeCity = new() { Province = new Province { Country = FakeData.FakeCountry("CA") }, Value = "Toronto" };
             public static readonly Availability FakeAvailability = new("Full Time");
             public static readonly AvailabilityTime FakeAvailabilityTime = new("Morning");
             public static readonly Day FakeDay = new("Monday");
@@ -133,8 +133,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                 });
                 services.AddHttpClient();
 
-                services.AddDbContext<CovenantContext>(b =>
-                    b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
 
                 var identityServerService = new Mock<IIdentityServerService>();
                 identityServerService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>()))
@@ -174,12 +173,14 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                 context.AvailabilityTimes.Add(FakeAvailabilityTime);
                 context.Days.Add(FakeDay);
                 context.Lifts.Add(FakeLift);
+                context.Languages.Add(FakeLanguage);
 
                 var agencyUser = new User(CvnEmail.Create("a@agency.com").Value, Guid.NewGuid());
                 var agency = new Covenant.Common.Entities.Agency.Agency("", "")
                 {
                     Id = agencyUser.Id,
-                    AgencyType = AgencyType.Master
+                    AgencyType = AgencyType.Master,
+                    User = agencyUser
                 };
                 agency.AddLocation(Location.Create(FakeCity.Id, "Street False 123", "A1A1A1").Value);
                 context.Agencies.Add(agency);

@@ -1,13 +1,12 @@
-﻿using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Location;
 using FluentValidation;
 
-namespace Covenant.Api.Common.Validators
+namespace Covenant.Api.Validators.Location;
+
+public class CityModelValidator : AbstractValidator<CityModel>
 {
-    public class CityValidator : AbstractValidator<CityModel>
+    public CityModelValidator()
     {
-        public CityValidator()
-        {
-            RuleFor(m => m.Id).NotEmpty();
-        }
+        RuleFor(m => m.Id).NotEmpty();
     }
 }

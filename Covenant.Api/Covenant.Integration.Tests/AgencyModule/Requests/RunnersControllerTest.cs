@@ -330,8 +330,7 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
                     o.AddAgencyPersonnelRole(AgencyId);
                     o.AddName(FakeRecruiterUser.Email);
                 });
-            services.AddDbContext<CovenantContext>(b
-                => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
             services.AddSingleton<ITimeService, TimeService>();
             services.AddSingleton<IIdentityServerService, IdentityServerService>();
             services.AddSingleton<IRequestRepository, RequestRepository>();
@@ -425,7 +424,7 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            context.Agencies.Add(FakeData.FakeAgency(AgencyId));
+            context.Agencies.AddRange(FakeData.FakeAgency(AgencyId), FakeData.FakeAgency(OtherAgencyId));
             context.Users.Add(FakeRecruiterUser);
             context.AgencyPersonnel.Add(FakeRecruiter);
             context.Requests.AddRange(FakeRequest, FakeRequestWithoutRunners);

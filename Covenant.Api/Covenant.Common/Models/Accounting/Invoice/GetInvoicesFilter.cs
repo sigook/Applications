@@ -8,7 +8,7 @@ public enum GetInvoicesFilterSortBy : byte
     SalesRepresentative
 }
 
-public class GetInvoicesFilterV2 : Pagination
+public class GetInvoicesFilter : Pagination
 {
     public string InvoiceNumber { get; set; }
     public DateTime? CreatedAtFrom { get; set; }

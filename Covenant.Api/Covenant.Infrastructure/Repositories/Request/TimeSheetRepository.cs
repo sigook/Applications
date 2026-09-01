@@ -584,7 +584,7 @@ public class TimesheetRepository : ITimesheetRepository
                     {
                         CompanyFullName = ts.WorkerRequest.Request.CompanyProfile.FullName,
                         AgencyFullName = ts.WorkerRequest.Request.CompanyProfile.Agency.FullName,
-                        WorkerFullName = $"{ts.WorkerRequest.WorkerProfile.FirstName} {ts.WorkerRequest.WorkerProfile.MiddleName} {ts.WorkerRequest.WorkerProfile.LastName} {ts.WorkerRequest.WorkerProfile.SecondLastName}",
+                        WorkerFullName = ts.WorkerRequest.WorkerProfile.FirstName + " " + ts.WorkerRequest.WorkerProfile.MiddleName + " " + ts.WorkerRequest.WorkerProfile.LastName + " " + ts.WorkerRequest.WorkerProfile.SecondLastName,
                         Date = ts.Date,
                         TimeInApproved = ts.TimeInApproved,
                         TimeOutApproved = ts.TimeOutApproved,

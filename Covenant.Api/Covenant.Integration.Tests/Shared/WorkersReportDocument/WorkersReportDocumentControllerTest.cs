@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models.Worker;
 using Covenant.Documents;
@@ -45,7 +45,7 @@ namespace Covenant.Integration.Tests.Shared.WorkersReportDocument
             services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ServicesConfiguration).Assembly));
             services.AddTestAuthenticationBuilder()
                 .AddTestAuth(o => { });
-            services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
         }
 
         public void Configure(IApplicationBuilder app, CovenantContext context)
@@ -91,12 +91,15 @@ namespace Covenant.Integration.Tests.Shared.WorkersReportDocument
                 Id = Guid.NewGuid(),
                 NumberId = 1,
                 ApprovedToWork = true,
-                AgencyId = Guid.Empty,
-            };
+                Agency = FakeData.FakeAgency(),
+             Location = FakeData.FakeLocation(),};
             workerProfile.PatchBasicInformation(basicInformation.Object);
             workerProfile.PatchSinInformation(sinInformation.Object);
             workerProfile.PatchContactInformation(contactInformation.Object);
-            var workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(workerProfile.Id, Guid.Parse("057d28b0-7d09-4e8e-aca4-a22a97943770"));
+            var request = FakeData.FakeRequest();
+            request.Id = Guid.Parse("057d28b0-7d09-4e8e-aca4-a22a97943770");
+            context.Add(request);
+            var workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(workerProfile.Id, request.Id);
             workerRequest.UpdateStartWorking(DateTime.Now);
             context.Add(workerProfile);
             context.Add(workerRequest);

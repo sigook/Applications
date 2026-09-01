@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
+using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Interfaces;
@@ -76,14 +76,13 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder()
                     .AddTestAuth(o => o.AddAgencyPersonnelRole());
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 
-            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
+            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
             public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "B Martin") { Agency = FakeAgency };
             public static readonly CandidateSkill FakeSkill = CandidateSkill.Create(FakeCandidate.Id, "Supervisor").Value;
             public static readonly CandidateSkill FakeDeleteSkill = CandidateSkill.Create(FakeCandidate.Id, "Delete").Value;

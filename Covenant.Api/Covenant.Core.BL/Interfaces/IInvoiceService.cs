@@ -7,8 +7,8 @@ namespace Covenant.Core.BL.Interfaces;
 
 public interface IInvoiceService
 {
-    Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilterV2 filter);
-    Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilterV2 filter);
+    Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilter filter);
+    Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilter filter);
     Task<Result<InvoicePreviewModel>> PreviewInvoice(CreateInvoiceModel model);
     Task<Result<Guid>> CreateInvoice(CreateInvoiceModel model);
     Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId);

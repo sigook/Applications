@@ -17,6 +17,7 @@
 
     <section class="apply-page__form-wrap">
       <div class="apply-page__form">
+        <span class="apply-page__form-glow" aria-hidden="true"></span>
         <CandidateApplyForm />
       </div>
     </section>
@@ -98,15 +99,26 @@ import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApply
     clamp(28px, 3.2vw, 40px) clamp(28px, 3.2vw, 40px)
     clamp(28px, 3.2vw, 40px) clamp(64px, 7vw, 96px);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.40);
-  overflow: hidden;
   isolation: isolate;
 }
 
-.apply-page__form::before {
+.apply-page__form > :not(.apply-page__form-glow) {
+  position: relative;
+  z-index: 1;
+}
+
+.apply-page__form-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.apply-page__form-glow::before {
   content: '';
   position: absolute;
-  pointer-events: none;
-  z-index: 0;
   bottom: 0;
   left: 0;
   width: clamp(220px, 26vw, 360px);
@@ -115,11 +127,5 @@ import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApply
     rgba(0, 173, 239, 0.32) 0%,
     rgba(0, 173, 239, 0.10) 40%,
     transparent 70%);
-  border-radius: 0 clamp(64px, 7vw, 96px) 0 0;
-}
-
-.apply-page__form > :deep(*) {
-  position: relative;
-  z-index: 1;
 }
 </style>

@@ -1,7 +1,68 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
+    <template v-if="isMobile">
+      <div class="mobile-list-toolbar">
+        <b-field>
+          <b-input v-model="serverParams.name" placeholder="Search name..." icon="magnify" expanded
+            @keypress="onInputEntered"></b-input>
+        </b-field>
+        <div class="filter-trigger">
+          <b-button icon-left="filter-variant" @click="showFilters = true" />
+          <span v-if="activeFilterCount > 0" class="filter-count-badge">{{ activeFilterCount }}</span>
+        </div>
+      </div>
+      <div class="rcard-list">
+        <div v-for="row in rows" :key="row.workerProfileId" class="rcard">
+          <div class="rcard__head">
+            <div class="rcard-worker">
+              <img v-if="row.profileImage" :src="row.profileImage" alt="profile image" class="img-30 img-rounded" />
+              <default-image v-else :name="row.fullName" class="img-30"></default-image>
+              <div>
+                <p class="rcard__title">{{ row.name }}</p>
+                <p class="rcard__sub" :class="row.isSubcontractor ? 'Blue' : ''">#{{ row.numberId }}</p>
+              </div>
+            </div>
+            <div class="rcard__actions">
+              <span class="is-uppercase has-text-weight-bold fz-1" :class="row.status">{{ row.status }}</span>
+              <b-button v-if="row.status === 'Booked'" size="is-small" type="is-danger" outlined rounded
+                icon-right="close" @click="confirmDelete(row)"></b-button>
+            </div>
+          </div>
+          <div class="rcard__rows">
+            <div class="rcard__row">
+              <span class="rcard__label">Start Working</span>
+              <span>{{ dateMonth(row.startWorking) }}</span>
+            </div>
+          </div>
+        </div>
+        <p v-if="rows.length === 0" class="has-text-centered">No records available</p>
+      </div>
+      <b-pagination v-model="serverParams.pageIndex" :total="totalItems" :per-page="serverParams.pageSize"
+        size="is-small" rounded class="mt-4" @change="onPageChange" />
+      <MobileFiltersPanel v-model="showFilters" :active-count="activeFilterCount" @apply="getWorkers"
+        @clear="clearFilters">
+        <b-field label="ID">
+          <b-input v-model="serverParams.numberId"></b-input>
+        </b-field>
+        <b-field label="Name">
+          <b-input v-model="serverParams.name"></b-input>
+        </b-field>
+        <b-field label="Start Working">
+          <b-datepicker :mobile-native="false" placeholder="Select range..."
+            :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+            @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
+            @update:modelValue="onStartWorkingSelected" append-to-body>
+          </b-datepicker>
+        </b-field>
+        <b-field label="Status">
+          <b-taginput v-model="statusesSelected" autocomplete :data="statuses" open-on-focus field="value" icon="label"
+            placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
+          </b-taginput>
+        </b-field>
+      </MobileFiltersPanel>
+    </template>
+    <b-table v-else sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
       pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
       v-model:current-page="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
       <template v-slot:empty>
@@ -81,16 +142,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import EditTextarea from "../../components/agency_request/EditTextarea.vue";
 import { showAlertError } from "@/utils/toast";
 import { dateMonth } from '@/utils/filters';
 import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
 import { WorkerRequestStatusLabels } from '@/constants/enums';
+import MobileFiltersPanel from '@/components/responsive/MobileFiltersPanel.vue';
+import { useBreakpoint } from '@/composables/useBreakpoint';
 
 const route = useRoute();
+const { isMobile } = useBreakpoint();
 
+const showFilters = ref(false);
 const isLoading = ref(false);
 const totalItems = ref(0);
 const rows = ref<any[]>([]);
@@ -153,6 +218,23 @@ function onStartWorkingSelected() {
 function onStartWorkingCleared() {
   startWorkingDatesSelected.value = [];
   onStartWorkingSelected();
+}
+
+const activeFilterCount = computed(() =>
+  [serverParams.numberId, serverParams.name].filter((v: unknown) => !!v).length +
+  (startWorkingDatesSelected.value.length > 0 ? 1 : 0) +
+  (statusesSelected.value.length > 0 ? 1 : 0),
+);
+
+function clearFilters() {
+  serverParams.numberId = undefined;
+  serverParams.name = undefined;
+  serverParams.startWorkingFrom = undefined;
+  serverParams.startWorkingTo = undefined;
+  serverParams.statuses = [];
+  startWorkingDatesSelected.value = [];
+  statusesSelected.value = [];
+  getWorkers();
 }
 
 function getWorkers() {

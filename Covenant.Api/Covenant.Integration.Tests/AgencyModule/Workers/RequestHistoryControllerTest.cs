@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -39,8 +39,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
         {
             public void ConfigureServices(IServiceCollection services)
             {
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddDefaultTestConfiguration();
@@ -50,11 +49,11 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 services.AddSingleton<AgencyIdFilter>();
             }
 
-            public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
+            public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
             public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(new User(CvnEmail.Create("w@mail").Value))
             {
                 Agency = FakeAgency
-            };
+            , Location = FakeData.FakeLocation(),};
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
             {
@@ -71,9 +70,9 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
 
                 var cp = new CompanyProfile(new User(CvnEmail.Create("c@maol.com").Value),
                     FakeAgency, "A", "6479807865", new CompanyProfileIndustry());
-                var request = new Request(cp, new CompanyProfileJobPositionRate()) 
+                var request = new Request(cp, FakeData.FakeJobPositionRate(cp)) 
                 { 
-                    JobLocation = new Location { City = new City { Province = new Province { Country = new Country() } } } 
+                    JobLocation = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("CA") } } } 
                 };
                 context.Agencies.Add(FakeAgency);
                 context.CompanyProfiles.Add(cp);

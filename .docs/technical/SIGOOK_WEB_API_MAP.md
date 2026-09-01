@@ -1,6 +1,6 @@
 # Sigook.Web API Map
 
-Maps every file in `src/api/*.ts` (26 files) to its backend endpoints, request/response types, and Pinia store integrations.
+Maps every file in `src/api/*.ts` (24 files) to its backend endpoints, request/response types, and Pinia store integrations.
 
 **Key Patterns (stated once, apply everywhere):**
 - API functions are plain TypeScript functions — components import and call them directly; there are no store dispatches for HTTP.
@@ -9,7 +9,7 @@ Maps every file in `src/api/*.ts` (26 files) to its backend endpoints, request/r
 - Pinia stores (`src/stores/`, flat: `agency.ts`, `company.ts`, `worker.ts`, `security.ts`, `app.ts`) hold list **filters** and auth only — never API response data.
 - List endpoints return `PaginatedList<T>`; filters are passed as `params: { ...filter }` (qs-serialized).
 - File uploads use `FormData` + `multipart/form-data`; PDF/Excel downloads use `responseType: 'blob'`.
-- Backend is Covenant.Api (.NET 8). Agency endpoints migrated to lowercase module bases: `/api/agency/requests`, `/api/agency/companyprofiles`, `/api/agency/recruiting/...`, `/api/agency/sales/...`, `/api/agency/accounting/...`.
+- Backend is Covenant.Api (.NET 8). Agency endpoints use lowercase module bases: `/api/agency/requests`, `/api/agency/companyprofiles`, `/api/agency/recruiting/...`, `/api/agency/sales/...`, `/api/agency/accounting/...`.
 
 ---
 
@@ -36,8 +36,9 @@ Agency profile, personnel and agency switching.
 | `getAgenciesList(filter)` | GET | `/api/Agency` | `AgencyListFilter` (params) | `PaginatedList<AgencyListItem>` | |
 | `createAgency(model)` | POST | `/api/Agency` | `CreateAgencyModel` | `{ id: string }` | |
 | `updateAgency(agency)` | PUT | `/api/Agency` | `AgencyDetail` | `void` | |
-| `getAgencyPersonnel()` | GET | `/api/agency/personnel` | — | `AgencyPersonnelListItem[]` | Back-office users |
+| `getAgencyPersonnel()` | GET | `/api/agency/personnel` | — | `AgencyPersonnelListItem[]` | Back-office users; `role` comes from IdentityServer and is null if that call fails |
 | `createAgencyPersonnel(model)` | POST | `/api/agency/personnel` | `AgencyPersonnelCreateModel` | `void` | |
+| `updateAgencyPersonnel(id, model)` | PUT | `/api/agency/personnel/{id}` | `AgencyPersonnelCreateModel` | `void` | Name, email and role. Policy `Admin` |
 | `getAssignableRoles()` | GET | `/api/agency/personnel/Roles` | — | `string[]` | Roles current user may assign |
 | `deleteAgencyPersonnel(id)` | DELETE | `/api/agency/personnel/{id}` | — | `void` | |
 | `getAgencyLocations()` | GET | `/api/Agency/Location` | — | `AgencyLocationDetail[]` | |
@@ -124,7 +125,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | `updateAgencyCompanyJobPosition(profileId, id, model)` | PUT | `/api/agency/companyprofiles/{profileId}/JobPositions/{id}` | `AgencyCompanyJobPosition` | `void` | |
 | `deleteAgencyCompanyJobPosition(profileId, id)` | DELETE | `/api/agency/companyprofiles/{profileId}/JobPositions/{id}` | — | `void` | |
 | `petitionAgencyCompanyJobPosition(id, model)` | POST | `/api/agency/companyprofiles/{id}/JobPositions/Petition` | `PetitionJobPositionPayload` | `void` | Request new position type |
-| `deleteAgencyJobPosition(companyId, posId)` | DELETE | `/api/AgencyJobPosition/{companyId}/{posId}` | — | `void` | Legacy alternate delete path |
+| `deleteAgencyJobPosition(companyId, posId)` | DELETE | `/api/AgencyJobPosition/{companyId}/{posId}` | — | `void` | Alternate delete path |
 
 ### Company Documents
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -194,7 +195,7 @@ Agency → company billing.
 
 ## 6. agencyNoteApi.ts
 
-Notes attached to Workers, Candidates, Companies, Requests. Company/request note routes use the new agency bases; worker/candidate notes keep legacy paths.
+Notes attached to Workers, Candidates, Companies, Requests and request workers. Every route hangs off the `/api/agency/...` module bases.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -291,6 +292,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `agencyRequestSendInvitation(id)` | POST | `/api/agency/requests/{id}/SendInvitation` | — | `void` | 120s timeout |
 | `updateAgencyRequestIsAsap(id)` | PUT | `/api/agency/requests/{id}/IsAsap` | — | `void` | Toggle ASAP |
 | `updateAgencyPunchCardVisibilityStatusInApp(id)` | PUT | `/api/agency/requests/{id}/PunchCardVisibilityStatusInApp` | — | `void` | |
+| `getAgencyRequestShift(id)` | GET | `/api/agency/requests/{id}/Shift` | — | `RequestShiftModel` | |
 | `updateAgencyRequestShift(id, model)` | PUT | `/api/agency/requests/{id}/Shift` | `RequestShiftModel` | `{ id; displayShift? }` | |
 | `increaseWorkersQuantityByOne(id)` | PUT | `/api/agency/requests/{id}/IncreaseWorkersQuantityByOne` | — | `void` | |
 | `reduceWorkersQuantityByOne(id)` | PUT | `/api/agency/requests/{id}/ReduceWorkersQuantityByOne` | — | `void` | |
@@ -322,7 +324,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `postAgencyRequestReportTo(id, personId)` | POST | `/api/agency/requests/{id}/ReportTo/{personId}` | — | `void` | |
 | `deleteAgencyRequestReportTo(id, personId)` | DELETE | `/api/agency/requests/{id}/ReportTo/{personId}` | — | `void` | |
 
-> Recruiter assignment is no longer done from the request. It lives in the **Recruiting → Weekly Board** feature (per work day). See section 22.
+> Recruiter assignment lives in the **Recruiting → Weekly Board** feature (per work day). See §20.
 
 ### Skills
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -449,65 +451,65 @@ Company portal (client) view of their profile, requests and workers — plus the
 ### Profile & Locations
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCompanyProfile()` | GET | `/api/CompanyProfile` | — | `CompanyProfileDetail` | Current company |
-| `updateProfile(id, company)` | PUT | `/api/CompanyProfile/{id}` | `CompanyProfileDetail` | `void` | |
-| `registerCompany(company)` | POST | `/api/CompanyProfile` | `CompanyProfileDetail` | `void` | |
-| `getProfileLocations()` | GET | `/api/CompanyProfile/Location` | — | `CompanyProfileLocationDetail[]` | |
-| `createProfileLocation(model)` | POST | `/api/CompanyProfile/Location` | `CompanyProfileLocationDetail` | `void` | |
-| `updateProfileLocation(id, model)` | PUT | `/api/CompanyProfile/Location/{id}` | `CompanyProfileLocationDetail` | `void` | |
-| `deleteProfileLocation(id)` | DELETE | `/api/CompanyProfile/Location/{id}` | — | `void` | |
-| `getLocations()` | GET | `/api/CompanyLocation` | — | `CompanyProfileLocationDetail[]` | |
+| `getCompanyProfile()` | GET | `/api/Company` | — | `CompanyProfileDetail` | Current company |
+| `updateProfile(id, company)` | PUT | `/api/Company/{id}` | `CompanyProfileDetail` | `void` | |
+| `registerCompany(company)` | POST | `/api/Company` | `CompanyProfileDetail` | `void` | |
+| `getProfileLocations()` | GET | `/api/company/profile/Locations` | — | `CompanyProfileLocationDetail[]` | |
+| `createProfileLocation(model)` | POST | `/api/company/profile/Locations` | `CompanyProfileLocationDetail` | `void` | |
+| `updateProfileLocation(id, model)` | PUT | `/api/company/profile/Locations/{id}` | `CompanyProfileLocationDetail` | `void` | |
+| `deleteProfileLocation(id)` | DELETE | `/api/company/profile/Locations/{id}` | — | `void` | |
 
 ### Job Positions
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCompanyJobPositions()` | GET | `/api/CompanyJobPosition` | — | `CompanyProfileJobPositionRate[]` | Roles + rates |
-| `getCompanyJobPositionById(id)` | GET | `/api/CompanyJobPosition/{id}` | — | `CompanyProfileJobPositionRate` | |
-| `requestNewPosition(data)` | POST | `/api/CompanyJobPosition/request-new-position` | `{ title, name, email, phone, message, subject }` | `void` | |
+| `getCompanyJobPositions()` | GET | `/api/company/profile/JobPositions` | — | `CompanyProfileJobPositionRate[]` | Roles + rates |
+| `getCompanyJobPositionById(id)` | GET | `/api/company/profile/JobPositions/{id}` | — | `CompanyProfileJobPositionRate` | |
+| `requestNewPosition(data)` | POST | `/api/company/profile/JobPositions/request-new-position` | `{ title, name, email, phone, message, subject }` | `void` | |
 
 ### Requests
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getRequests(filter)` | GET | `/api/CompanyRequest` | `CompanyRequestFilter` (params) | `PaginatedList<CompanyRequestListItem>` | |
-| `getRequest(id)` | GET | `/api/CompanyRequest/{id}` | — | `CompanyRequestListItem` | |
-| `createRequest(request)` | POST | `/api/CompanyRequest` | `CreateAgencyRequestModel` | `{ id: string }` | |
-| `editRequest(id, model)` | PUT | `/api/CompanyRequest/{id}` | `{ requirements }` | `void` | |
-| `cancelRequest(id, reasonId, otherReason)` | PUT | `/api/CompanyRequest/{id}/Cancel` | `{ cancellationReasonId, otherCancellationReason }` | `void` | |
+| `getRequests(filter)` | GET | `/api/company/requests` | `CompanyRequestFilter` (params) | `PaginatedList<CompanyRequestListItem>` | |
+| `getRequest(id)` | GET | `/api/company/requests/{id}` | — | `CompanyRequestListItem` | |
+| `createRequest(request)` | POST | `/api/company/requests` | `CreateAgencyRequestModel` | `{ id: string }` | |
+| `editRequest(id, model)` | PUT | `/api/company/requests/{id}` | `{ requirements }` | `void` | |
+| `getRequestShift(id)` | GET | `/api/company/requests/{id}/Shift` | — | `RequestShiftModel` | |
+| `cancelRequest(id, reasonId, otherReason)` | PUT | `/api/company/requests/{id}/Cancel` | `{ cancellationReasonId, otherCancellationReason }` | `void` | |
 
 ### Request Workers
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getRequestWorkers(filter)` | GET | `/api/CompanyRequest/{filter.requestId}/Worker` | `CompanyRequestWorkerFilter` (params) | `PaginatedList<CompanyRequestWorker>` | |
-| `getRequestWorker(requestId, workerId)` | GET | `/api/CompanyRequest/{requestId}/Worker/{workerId}` | — | `CompanyRequestWorker` | |
-| `rejectCompanyRequestWorker(requestId, workerId, model)` | PUT | `/api/CompanyRequest/{requestId}/Worker/{workerId}/Reject` | `CommentsModel` | `void` | |
-| `requestAnotherWorker(requestId, comment)` | POST | `/api/CompanyRequest/{requestId}/Worker/RequestNewWorker` | `CommentsModel` | `void` | Ask for replacement |
+| `getRequestWorkers(filter)` | GET | `/api/company/requests/{filter.requestId}/Workers` | `CompanyRequestWorkerFilter` (params) | `PaginatedList<CompanyRequestWorker>` | |
+| `getRequestWorker(requestId, workerId)` | GET | `/api/company/requests/{requestId}/Workers/{workerId}` | — | `CompanyRequestWorker` | |
+| `rejectCompanyRequestWorker(requestId, workerId, model)` | PUT | `/api/company/requests/{requestId}/Workers/{workerId}/Reject` | `CommentsModel` | `void` | |
+| `requestAnotherWorker(requestId, comment)` | POST | `/api/company/requests/{requestId}/Workers/RequestNewWorker` | `CommentsModel` | `void` | Ask for replacement |
 
 ### TimeSheet
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCompanyWorkerTimeSheetByDate(requestId, workerId, date)` | GET | `/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet` | `{ startDate, endDate }` (params) | `TimeSheetListItem[]` | |
-| `postCompanyWorkerTimeSheet(requestId, workerId, model)` | POST | `/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet` | `TimeSheetModel` | `{ id: string }` | |
-| `validateHoursTimeSheet(requestId, workerId, id, model)` | PUT | `/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet/{id}` | `TimeSheetModel` | `void` | |
-| `validateAllHoursTimeSheet(requestId, workerId)` | PUT | `/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet` | — | `void` | Validate all |
-| `updateCompanyRequestWorkerTimeSheet(requestId, workerId, id, model)` | PUT | `/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet/{id}` | `TimeSheetModel` | `void` | |
-| `deleteCompanyWorkerTimeSheet(requestId, workerId, id)` | DELETE | `/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet/{id}` | — | `void` | |
-| `companyTimeSheetClockIn(requestId, workerId, model)` | POST | `/api/v2/CompanyRequest/{requestId}/Worker/{workerId}/TimeSheet/ClockIn` | `ClockInModel` | `ClockInResult` | GPS clock-in |
+| `getCompanyWorkerTimeSheetByDate(requestId, workerId, date)` | GET | `/api/company/requests/{requestId}/Workers/{workerId}/TimeSheets` | `{ startDate, endDate }` (params) | `TimeSheetListItem[]` | |
+| `postCompanyWorkerTimeSheet(requestId, workerId, model)` | POST | `/api/company/requests/{requestId}/Workers/{workerId}/TimeSheets` | `TimeSheetModel` | `{ id: string }` | |
+| `validateHoursTimeSheet(requestId, workerId, id, model)` | PUT | `/api/company/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}` | `TimeSheetModel` | `void` | |
+| `validateAllHoursTimeSheet(requestId, workerId)` | PUT | `/api/company/requests/{requestId}/Workers/{workerId}/TimeSheets` | — | `void` | Validate all |
+| `updateCompanyRequestWorkerTimeSheet(requestId, workerId, id, model)` | PUT | `/api/company/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}` | `TimeSheetModel` | `void` | |
+| `deleteCompanyWorkerTimeSheet(requestId, workerId, id)` | DELETE | `/api/company/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}` | — | `void` | |
+| `companyTimeSheetClockIn(requestId, workerId, model)` | POST | `/api/company/requests/{requestId}/Workers/{workerId}/TimeSheets/ClockIn` | `ClockInModel` | `ClockInResult` | GPS clock-in |
 
 ### Comments / Users / Contacts / Invoices
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `companyCommentWorker(id, comment)` | POST | `/api/CompanyWorker/{id}/Comment` | `CommentsModel` | `void` | |
-| `getCompanyUser()` | GET | `/api/CompanyUser` | — | `CompanyUserModel[]` | |
-| `getCompanyUserDetail()` | GET | `/api/CompanyUser/detail` | — | `CompanyUserModel` | Current user |
-| `createCompanyUser(model)` | POST | `/api/CompanyUser` | `CreateCompanyUserModel` | `void` | |
-| `updateCompanyUser(id, user)` | PUT | `/api/CompanyUser/{id}` | `CompanyUserModel` | `void` | |
-| `deleteCompanyUser(id)` | DELETE | `/api/CompanyUser/{id}` | — | `void` | |
-| `getContactPeople()` | GET | `/api/CompanyProfileContactPerson` | — | `CompanyContactPersonModel[]` | |
-| `saveContactPerson(model)` | POST | `/api/CompanyProfileContactPerson` | `CompanyContactPersonModel` | `void` | Create/update |
-| `deleteContactPerson(id)` | DELETE | `/api/CompanyProfileContactPerson/{id}` | — | `void` | |
-| `getCompanyInvoice(filter)` | GET | `/api/CompanyInvoice` | `CompanyInvoiceFilter` (params) | `PaginatedList<CompanyInvoiceListItem>` | |
-| `getCompanyInvoiceDetail(id)` | GET | `/api/CompanyInvoice/{id}` | — | `InvoiceSummaryModel` | |
-| `getCompanyRequestTimeSheetFile(requestId)` | GET | `/api/CompanyRequest/{requestId}/TimeSheets/File` | — | Blob | Excel punch-card export, ownership-checked server-side |
+| `companyCommentWorker(id, comment)` | POST | `/api/company/workers/{id}/Comments` | `CommentsModel` | `void` | |
+| `getCompanyUser()` | GET | `/api/company/Users` | — | `CompanyUserModel[]` | |
+| `getCompanyUserDetail()` | GET | `/api/company/Users/detail` | — | `CompanyUserModel` | Current user |
+| `createCompanyUser(model)` | POST | `/api/company/Users` | `CreateCompanyUserModel` | `void` | |
+| `updateCompanyUser(id, user)` | PUT | `/api/company/Users/{id}` | `CompanyUserModel` | `void` | |
+| `deleteCompanyUser(id)` | DELETE | `/api/company/Users/{id}` | — | `void` | |
+| `getContactPeople()` | GET | `/api/company/profile/ContactPeople` | — | `CompanyContactPersonModel[]` | |
+| `saveContactPerson(model)` | POST | `/api/company/profile/ContactPeople` | `CompanyContactPersonModel` | `void` | Create/update |
+| `deleteContactPerson(id)` | DELETE | `/api/company/profile/ContactPeople/{id}` | — | `void` | |
+| `getCompanyInvoice(filter)` | GET | `/api/company/accounting/Invoices` | `CompanyInvoiceFilter` (params) | `PaginatedList<CompanyInvoiceListItem>` | |
+| `getCompanyInvoiceDetail(id)` | GET | `/api/company/accounting/Invoices/{id}` | — | `InvoiceSummaryModel` | |
+| `getCompanyRequestTimeSheetFile(requestId)` | GET | `/api/company/requests/{requestId}/TimeSheets/File` | — | Blob | Excel punch-card export, ownership-checked server-side |
 
 ### Sales — Deals
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -525,23 +527,27 @@ Company portal (client) view of their profile, requests and workers — plus the
 | `updateCompanyInteraction(id, model)` | PUT | `/api/agency/sales/companyinteractions/{id}` | `UpdateCompanyInteractionModel` | `void` | Owner-checked for sales |
 | `deleteCompanyInteraction(id)` | DELETE | `/api/agency/sales/companyinteractions/{id}` | — | `void` | Owner-checked for sales |
 
-**Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`); deals/interactions enums + models at `src/types/company.ts:344-589` (numeric enum mirror of `Covenant.Common`)
+**Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`); deals/interactions enums + models at `src/types/company.ts:344-589`.
+
+> **Enum mirror gotcha.** The API serializes enums as **ints** (System.Text.Json, no `JsonStringEnumConverter`), so `DealType`, `DealStatus`, `InteractionType`, `InteractionPurpose` and `InteractionStatus` in `src/types/company.ts` must match `Covenant.Common/Enums/` **numerically** — adding or reordering a member on one side without the other silently mislabels records. Label/color/icon maps (`DEAL_TYPE_LABELS`, `INTERACTION_TYPE_ICONS`, …) live next to the enums; `InteractionType.Mail` is labelled "Email" in the UI. Meaning of each value: `.docs/business/SALES_MODULE.md`.
 
 **Pinia:** `companyRequestFilter` in `useCompanyStore`.
 
-**UI (sales sections):** `pages/agency/Dashboard.vue`, `pages/agency/SalesDeals.vue`, `pages/agency/SalesInteractions.vue` + `components/sales_dashboard/SalesCreateModal.vue`. See SIGOOK_WEB_SALES_DASHBOARD.md.
+**UI (sales sections):** `pages/agency/Dashboard.vue`, `pages/agency/SalesDeals.vue`, `pages/agency/SalesInteractions.vue`. All three create/edit through `components/sales_dashboard/SalesCreateModal.vue` — a Buefy modal that switches between three forms by `kind` (`SalesCreateKind = 'interaction' | 'client' | 'deal'`, `src/types/sales.ts`), shows create vs edit titles, offers Delete behind a confirm dialog in edit mode, and emits `saved` so the host page reloads its lists:
 
-**Business Logic:** timesheet validation by the company feeds invoicing; clock-in captures GPS + time. Deals/interactions are owner-scoped end-to-end for sales users (admin/superadmin unscoped) — stricter than the list-only scoping of orders/clients (ROLES_PERMISSIONS.md).
+| Kind | Form | API functions | Notes |
+|------|------|---------------|-------|
+| `interaction` | `SalesInteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` / `deleteCompanyInteraction` (above) | Client picker via `getSalesCompanies` (salesApi.ts); client is read-only when editing |
+| `deal` | `SalesDealForm` | `createDeal` / `updateDeal` / `deleteDeal` (above) | Create is `multipart/form-data` with an optional document (`utils/multipart.ts` + `utils/fileNaming.ts`) |
+| `client` | `SalesClientForm` | `createAgencyCompany` (agencyCompanyApi.ts) | Create-only from the modal; catalogs via `getIndustries` / `getCompanyStatus` (catalogApi.ts); ordinary company endpoint, so sales auto-assignment applies |
+
+The deals/interactions CRUD lives here in `companyApi.ts`, **not** in `salesApi.ts`. Backend: `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs`, `[Authorize(Policy = PolicyConfiguration.Sales)]`; entities in ENTITIES_RELATIONSHIPS.md ("Sales entities").
+
+**Business Logic:** timesheet validation by the company feeds invoicing; clock-in captures GPS + time. Deals/interactions are owner-scoped end-to-end for sales users (admin/superadmin unscoped) — stricter than the list-only scoping of orders/clients (ROLES_PERMISSIONS.md). Concepts, catalogs and deal lifecycle: `.docs/business/SALES_MODULE.md`.
 
 ---
 
-## 15. downloadApi.ts
-
-**Removed (2026-08).** The file held 5 endpoints that never existed in the backend. Its only live caller (`fetchInvoicePdf` in `CompanyInvoices.vue`) was unreachable dead code and was removed with it; the company punch-card export now uses `getCompanyRequestTimeSheetFile` in companyApi.ts (section 14).
-
----
-
-## 16. locationApi.ts
+## 15. locationApi.ts
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -555,11 +561,11 @@ Company portal (client) view of their profile, requests and workers — plus the
 
 **Types:** `Country`, `Province`, `City`, `LocationTax` (`src/types/common`)
 
-Province settings (`ProvinceSettingsModal.vue`) persist through `updateProvinceSettings` directly — the modal calls the API on save and then emits to `Address.vue`, which only refreshes the local display model. They are **global per province** (admin-only), not part of the company-location save; the old side-effect path (`CompanyService.UpsertProvinceSettingsIfProvided`) was removed in 2026-08.
+Province settings (`ProvinceSettingsModal.vue`) persist through `updateProvinceSettings` directly — the modal calls the API on save and then emits to `Address.vue`, which only refreshes the local display model. They are **global per province** (admin-only), not part of the company-location save.
 
 ---
 
-## 17. notificationApi.ts
+## 16. notificationApi.ts
 
 In-app notification bell (agency roles). A single aggregated call returns every notification kind in one payload.
 
@@ -577,15 +583,7 @@ In-app notification bell (agency roles). A single aggregated call returns every 
 
 ---
 
-## 18. requestApi.ts
-
-| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
-|----------|------------|----------|--------------|---------------|-------|
-| `fetchRequestShift(id)` | GET | `/api/Request/{id}/Shift` | — | `RequestShiftModel` | Shift lookup only |
-
----
-
-## 19. salesApi.ts
+## 17. salesApi.ts
 
 Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyRequestApi/agencyCompanyApi). Bases: `/api/agency/sales/requests`, `/api/agency/sales/companyprofiles`.
 
@@ -602,21 +600,62 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyReques
 
 ---
 
-## 20. salesDashboardApi.ts
+## 18. salesDashboardApi.ts
 
-**Static prototype — no backend endpoint yet.** Serves the sales dashboard summary from `src/data/sales/salesDashboard.json`; the live call is commented in-file, ready to swap.
+**Static — no backend endpoint.** Serves the sales dashboard summary from `src/data/sales/salesDashboard.json`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getSalesDashboard()` | — | — (resolves `src/data/sales/salesDashboard.json`) | — | `SalesDashboardModel` | Future endpoint `GET /api/agency/sales/dashboard` is commented in the file header and does **not** exist in the backend |
+| `getSalesDashboard()` | — | — (resolves `src/data/sales/salesDashboard.json`) | — | `SalesDashboardModel` | `GET /api/agency/sales/dashboard` does **not** exist in the backend; the equivalent call sits commented in the file header |
 
-**Types:** `SalesDashboardModel` + blocks (`src/types/sales`)
+**Types:** `SalesDashboardModel` + blocks (`src/types/sales.ts:56-64`) — `period`, `clients`, `deals`, `dealsClosed.{week,month,quarter}`, `goal`, `pipeline[]` (by `DealStatus`), `activity[]` (by `InteractionType`); enum fields as numeric values.
 
-**UI:** `pages/agency/Dashboard.vue`. Full feature doc: SIGOOK_WEB_SALES_DASHBOARD.md.
+**UI:** `pages/agency/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions: `.docs/business/SALES_MODULE.md`.
+
+### Static vs live
+
+The payload above (period label, Clients card, "Deals closed" chart, goal donut, pipeline/activity meters) is frozen at Q3 2026 (`asOf` 2026-07-12). Only the Interactions and Deals lists and every create/edit/delete flow hit the backend:
+
+```
+Dashboard.vue onMounted (Dashboard.vue:209-221)
+├─ getSalesDashboard()             → src/data/sales/salesDashboard.json        [STATIC]
+├─ getCompanyInteractions({...6})  → GET /api/agency/sales/companyinteractions [LIVE]
+├─ getDeals({...6})                → GET /api/agency/sales/deals               [LIVE]
+└─ useCurrentAgent.loadAgentName() → GET /api/agency/personnel                 [LIVE]
+
+SalesCreateModal @saved → onSaved (Dashboard.vue:204-207)
+└─ reloads interactions + deals only — the static blocks never refresh
+```
+
+> **Half-live refresh.** Saving a deal or interaction does not move the pipeline meters, the goal donut, the "Deals closed" chart or the Clients card — those render the frozen JSON. The range tabs are client-side only: they index into the pre-baked `dealsClosed.{week,month,quarter}` arrays; no request is made.
+
+### Where the summary comes from
+
+`src/api/salesDashboardApi.ts` holds the whole static path:
+
+```ts
+import dashboardData from '@/data/sales/salesDashboard.json';
+import type { SalesDashboardModel } from '@/types/sales';
+
+export function getSalesDashboard(): Promise<SalesDashboardModel> {
+  return Promise.resolve(dashboardData as unknown as SalesDashboardModel);
+}
+```
+
+The file header also carries the equivalent `api.get<SalesDashboardModel>('/api/agency/sales/dashboard')` call, commented out; the JSON is shaped exactly like that response, so the function signature and every caller are independent of which body is active.
+
+`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/` contains only `CompanyProfilesController`, `RequestsController`, `DealsController` and `CompanyInteractionsController`; the dashboard endpoint is absent from `openapi.json`. The payload shape fixes two contract decisions: `dealsClosed` ships all three ranges pre-aggregated (no range query param), and `period` is computed server-side.
+
+**Consequences of the static payload:**
+- Period label and every chart render the same numbers regardless of today.
+- The quarterly target cannot be stored or configured anywhere.
+- Saves refresh only the two live lists; creating a client refreshes nothing (the Clients card reads the static JSON).
+- Range tabs never hit the network.
+- The client form is create-only from the modal (no edit/delete path).
 
 ---
 
-## 21. sharedApi.ts
+## 19. sharedApi.ts
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -624,9 +663,9 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyReques
 
 ---
 
-## 22. weeklyBoardApi.ts — Recruiting Weekly Board
+## 20. weeklyBoardApi.ts — Recruiting Weekly Board
 
-Board where the agency assigns orders to recruiters per work day, and each recruiter records the runners they sent. Replaces the old per-request recruiter assignment. Admin board (`getWeeklyBoard`) shows all recruiters with counts; recruiter board (`getRecruiterWeeklyBoard`) is scoped to the recruiter from the token and includes the runners sent. Base: `/api/agency/recruiting/WeeklyBoard`.
+Board where the agency assigns orders to recruiters per work day, and each recruiter records the runners they sent. It is the only place recruiters are assigned. Admin board (`getWeeklyBoard`) shows all recruiters with counts; recruiter board (`getRecruiterWeeklyBoard`) is scoped to the recruiter from the token and includes the runners sent. Base: `/api/agency/recruiting/WeeklyBoard`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -644,7 +683,7 @@ Board where the agency assigns orders to recruiters per work day, and each recru
 
 ---
 
-## 23. userNotificationApi.ts
+## 21. userNotificationApi.ts
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -655,7 +694,7 @@ Board where the agency assigns orders to recruiters per work day, and each recru
 
 ---
 
-## 24. websiteApi.ts
+## 22. websiteApi.ts
 
 Public landing site endpoints (no auth).
 
@@ -669,7 +708,7 @@ Public landing site endpoints (no auth).
 
 ---
 
-## 25. workerApi.ts
+## 23. workerApi.ts
 
 **Large.** Worker portal: profile build, applications, timesheet.
 
@@ -773,7 +812,7 @@ Public landing site endpoints (no auth).
 | **Request** | agencyRequestApi.ts | Workers, applicants, skills, shift, sources, bulk cancel |
 | **Runner** | agencyRunnerApi.ts | Recruiting pipeline per request: status, interviews |
 | **WeeklyBoard** | weeklyBoardApi.ts | Recruiter day assignments + runners sent |
-| **Sales** | salesApi.ts, salesDashboardApi.ts, companyApi.ts (deals/interactions) | Sales-scoped lists + Excel export; dashboard (static prototype); deals + interactions CRUD (owner-scoped) |
+| **Sales** | salesApi.ts, salesDashboardApi.ts, companyApi.ts (deals/interactions) | Sales-scoped lists + Excel export; dashboard summary from static JSON; deals + interactions CRUD (owner-scoped) |
 | **Worker** (agency view) | agencyWorkerApi.ts | Flags (DNU, contractor), tax, holidays, request history |
 | **Worker** (self) | workerApi.ts | Profile build, applications, timesheet, wage history |
 | **Invoice** | agencyInvoiceApi.ts | Preview, PDF, email, linked pay stubs |
@@ -786,11 +825,11 @@ Public landing site endpoints (no auth).
 | **Account** | accountApi.ts | Email change, deactivation |
 | **Website** | websiteApi.ts | Public job search, contact form, candidate apply |
 | **Notification** | notificationApi.ts, userNotificationApi.ts | Agency bell (aggregated) / user inbox |
-| **Shared** | sharedApi.ts, requestApi.ts | Unsubscribe, shift lookup |
+| **Shared** | sharedApi.ts | Unsubscribe |
 
 ---
 
-## 26. authApi.ts — IdentityServer (not Covenant.Api)
+## 24. authApi.ts — IdentityServer (not Covenant.Api)
 
 The only API file that targets `VUE_APP_SECURITY_SERVER` instead of `VUE_APP_URL_API`. Uses its own bare axios instance (no auth interceptor, no 401 retry). Consumed by `security/securityService.ts` and `pages/auth/*`.
 
@@ -800,6 +839,6 @@ The only API file that targets `VUE_APP_SECURITY_SERVER` instead of `VUE_APP_URL
 | `fetchUserInfo(tokenType, accessToken)` | GET | `/connect/userinfo` | Bearer header | `UserInfoResponse` | `role` is string or string[] |
 | `requestPasswordResetCode(email)` | POST | `/Password/forgot` | `{ email }` | `void` | Always 202; 60-s resend cooldown server-side |
 | `resetPasswordWithCode(payload)` | POST | `/Password/reset` | `ResetPasswordWithCodePayload` | `void` | 400 → `PasswordResetErrorResponse` with `error` ∈ `invalid_code`, `code_expired`, `too_many_attempts`, `password_policy` (+ `messages`) |
-| `resendConfirmationLink(email)` | POST | `/Account/ResendConfirmationLink?userName=` | query param | `void` | Existing IdS endpoint, used from the `email_not_confirmed` login error |
+| `resendConfirmationLink(email)` | POST | `/Account/ResendConfirmationLink?userName=` | query param | `void` | Called from the `email_not_confirmed` login error |
 
 **Types:** `TokenResponse`, `TokenErrorResponse`, `UserInfoResponse`, `ResetPasswordWithCodePayload`, `PasswordResetErrorResponse` (`src/types/security`)

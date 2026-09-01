@@ -56,8 +56,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         o.AddAgencyPersonnelRole(FakeAgencyUser.Id);
                     });
                 services.AddHttpClient();
-                services.AddDbContext<CovenantContext>(b =>
-                    b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IAgencyService, AgencyService>();
                 var identityServerService = new Mock<IIdentityServerService>();
                 identityServerService.Setup(m => m.UpdateUserEmail(It.IsAny<UpdateEmailModel>())).ReturnsAsync(Result.Ok());
@@ -71,7 +70,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             public static readonly CvnEmail OtherUserEmail = CvnEmail.Create("other.user@mail.com").Value;
             private static readonly User FakeAgencyUser = new User(CvnEmail.Create($"agency{Guid.NewGuid():N}@email.com").Value);
 
-            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("AG", "AG_NUMBER");
+            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("AG", "AG_NUMBER") { Id = FakeAgencyUser.Id, User = FakeData.FakeUser() };
 
             public static readonly CompanyProfile FakeCompany = CompanyProfile.AgencyCreateCompany(
                 new User(CvnEmail.Create("updateMyEmail@e.com").Value),

@@ -45,7 +45,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
-**Warning:** A legacy `Covenant.IdentityServer/azure-pipelines.yml` still exists alongside the documented `.azure-pipelines/covenant-identityserver-pipeline.yml`, with its own `main/master/dev` trigger. It is superseded — do not extend it; candidate for deletion.
+**Warning:** `Covenant.IdentityServer/azure-pipelines.yml` exists alongside the documented `.azure-pipelines/covenant-identityserver-pipeline.yml` and carries its own `main/master/dev` trigger. It is not the pipeline in use — do not extend it.
 
 ---
 

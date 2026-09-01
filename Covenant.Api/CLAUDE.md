@@ -10,8 +10,13 @@ Controllers:     Covenant.Api/Controllers/Sigook/                       (root: C
                  Covenant.Api/Controllers/Sigook/Agency/Candidates/     (Candidates, Notes, PhoneNumbers, Skills, Documents)
                  Covenant.Api/Controllers/Sigook/Agency/Workers/        (Workers, Notes, Comments, Holidays, RequestHistory)
                  Covenant.Api/Controllers/Sigook/Agency/Personnel/      (Personnel, Agencies)
+                 Covenant.Api/Controllers/Sigook/Company/               (Company, Users)
+                 Covenant.Api/Controllers/Sigook/Company/Accounting/    (Invoices)
+                 Covenant.Api/Controllers/Sigook/Company/Profile/       (ContactPeople, JobPositions, Locations)
+                 Covenant.Api/Controllers/Sigook/Company/Requests/      (Requests, Shift, Workers, WorkerTimeSheets)
+                 Covenant.Api/Controllers/Sigook/Company/Workers/       (Comments)
                  Covenant.Api/Controllers/Jobs/                         (ScheduleTasks — called by Sigook.Functions timers)
-Module controllers: Covenant.Api/{Module}Module/                        (CompanyModule, WorkerModule)
+Module controllers: Covenant.Api/{Module}Module/                        (WorkerModule)
 Services:        Covenant.Core.BL/Services/                             (RequestService, WorkerService, etc.)
                  Covenant.Core.BL/Services/Accounting/                  (PayStubService)
                  Covenant.Core.BL/Services/Accounting/Shared/           (TimesheetCalculatorService — hours breakdown + deductions)
@@ -62,6 +67,7 @@ Tests:           Covenant.Tests/
 - **Holiday asymmetry invoice vs pay stub:** invoices hardcode `holidayIsPaid: true` (worked holidays always billed at holiday rate); pay stubs honor the timesheet's `HolidayIsPaid` flag. Worked vs not-worked holidays are two separate flows in both.
 - **Invoices do NOT bill vacations or bonus** — `VacationsRate`/`BonusRate` are stored on the entity but never enter the totals. Vacation 4% is a pay-stub concept. HST is a single global config rate (`rates.Hst`), not per-province.
 - **Messaging is custom Azure Service Bus** (`SigookBusClient` + `SigookBackgroundService` + consumers in `Covenant.Core.BL/Consumers/`). There is no MassTransit. Locally the app connects to the staging Service Bus — inject `ISigookBusClient` (mockable).
+- **Integration tests run on real Postgres** (Testcontainers, `Covenant.Integration.Tests/Configuration/PostgresTestDatabase.cs`): one container per test assembly, a `covenant_template` database built with `EnsureCreated()` + the SQL scripts in `Covenant.Infrastructure/Scripts/`, and one cloned database per test class. There is **no `InitialCreate` migration**, so `Database.Migrate()` cannot build the schema from scratch. Seed data comes from the builders in `Covenant.Integration.Tests/Utils/FakeData.cs` — extend those instead of hand-rolling entity graphs, since Postgres enforces every FK, unique index and NOT NULL that EF InMemory ignored. Compare dates with `DateAssert.Equal` (Postgres stores microseconds, .NET ticks are 100 ns).
 - **Roles:** exactly 7, lowercase, in `Covenant.Common/Constants/CovenantConstants.cs` — `superadmin, admin, recruiting, sales, company, company.user, worker`. The old `agency`/`agency.personnel` roles were deleted; reference via `CovenantConstants.Role.*`, never string literals.
 
 ## Commands
@@ -70,8 +76,11 @@ Tests:           Covenant.Tests/
 # Build
 dotnet build Covenant.Api/Covenant.Api.csproj
 
-# Run tests
+# Run unit tests
 dotnet test Covenant.Tests/Covenant.Tests.csproj
+
+# Run integration tests (needs Docker running — spins up one postgres:16-alpine via Testcontainers)
+dotnet test Covenant.Integration.Tests/Covenant.Integration.Tests.csproj
 
 # Add migration
 dotnet ef migrations add MigrationName -p Covenant.Infrastructure -s Covenant.Api

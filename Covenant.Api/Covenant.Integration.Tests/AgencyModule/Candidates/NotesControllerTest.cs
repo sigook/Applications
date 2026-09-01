@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
+using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -19,21 +19,23 @@ using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
-    public class NotesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
+    public class NotesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<NotesControllerTest.Startup, NotesControllerTest.Data>>
     {
-        private readonly CustomWebApplicationFactory<Startup> _factory;
+        private readonly SeededWebApplicationFactory<Startup, Data> _factory;
         private readonly ITestOutputHelper _output;
         private readonly HttpClient _client;
+        private readonly Data _data;
 
-        public NotesControllerTest(CustomWebApplicationFactory<Startup> factory, ITestOutputHelper output)
+        public NotesControllerTest(SeededWebApplicationFactory<Startup, Data> factory, ITestOutputHelper output)
         {
             _factory = factory;
             _output = output;
             _client = factory.CreateClient();
+            _data = factory.Data;
         }
 
-        private static string RequestUri() => NotesController.RouteName.Replace("{candidateId}",
-            Startup.FakeCandidate.Id.ToString());
+        private string RequestUri() => NotesController.RouteName.Replace("{candidateId}",
+            _data.Candidate.Id.ToString());
 
         [Fact]
         public async Task PostNote()
@@ -48,7 +50,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Assert.Equal(model.Note, entity.Note.Note);
             Assert.Equal(model.Color, entity.Note.Color);
             Assert.NotNull(entity.Note.CreatedBy);
-            Assert.Equal(detail.CreatedAt, entity.Note.CreatedAt);
+            DateAssert.Equal(detail.CreatedAt, entity.Note.CreatedAt);
             Assert.True(entity.Note.CreatedAt <= DateTime.Now);
         }
 
@@ -59,7 +61,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             response.EnsureSuccessStatusCode();
             var list = await response.Content.ReadFromJsonAsync<PaginatedList<NoteModel>>();
             Assert.NotEmpty(list.Items);
-            var entity = Startup.FakeNote;
+            var entity = _data.Note;
             var model = list.Items.Single(c => c.Id == entity.NoteId);
             Assert.NotNull(model);
             AssertEntityAndModel(entity, model);
@@ -68,7 +70,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
         [Fact]
         public async Task GetById()
         {
-            var entity = Startup.FakeNote;
+            var entity = _data.Note;
             var response = await _client.GetAsync($"{RequestUri()}/{entity.NoteId}");
             response.EnsureSuccessStatusCode();
             var model = await response.Content.ReadFromJsonAsync<NoteModel>();
@@ -81,14 +83,14 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Assert.Equal(entity.Note.Note, model.Note);
             Assert.Equal(entity.Note.Color, model.Color);
             Assert.Equal(entity.Note.CreatedBy, model.CreatedBy);
-            Assert.Equal(entity.Note.CreatedAt, model.CreatedAt);
+            DateAssert.Equal(entity.Note.CreatedAt, model.CreatedAt);
         }
 
         [Fact]
         public async Task Put()
         {
             var model = new NoteModel("Call next week", "#FFF4444");
-            var id = Startup.FakeUpdateNote.NoteId;
+            var id = _data.UpdateNote.NoteId;
             var response = await HttpClientJsonExtensions.PutAsJsonAsync(_client, $"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
@@ -102,7 +104,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
         [Fact]
         public async Task Delete()
         {
-            var id = Startup.FakeDeleteNote.NoteId;
+            var id = _data.DeleteNote.NoteId;
             var response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
@@ -112,31 +114,54 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Assert.True(entity.Note.UpdatedAt <= DateTime.Now);
         }
 
+        public class Data : ITestData
+        {
+            public static readonly Guid AgencyId = Guid.NewGuid();
+
+            public Covenant.Common.Entities.Agency.Agency Agency { get; }
+            public Candidate Candidate { get; }
+            public CandidateNote Note { get; }
+            public CandidateNote UpdateNote { get; }
+            public CandidateNote DeleteNote { get; }
+
+            public Data()
+            {
+                Agency = FakeData.FakeAgency(AgencyId);
+                Candidate = new Candidate(Agency.Id, "Mary") { Agency = Agency };
+                Note = new CandidateNote(Candidate.Id, CovenantNote.Create("Call Later", "#CCC111", "cn@mail.com").Value);
+                UpdateNote = new CandidateNote(Candidate.Id, CovenantNote.Create("Rate 32", "#CCC111", "cn@mail.com").Value);
+                DeleteNote = new CandidateNote(Candidate.Id, CovenantNote.Create("Delete", "#BBB111", "delete@mail.com").Value);
+                Candidate.Notes.Add(Note);
+                Candidate.Notes.Add(UpdateNote);
+                Candidate.Notes.Add(DeleteNote);
+            }
+
+            public void Seed(CovenantContext context)
+            {
+                context.Candidates.Add(Candidate);
+                context.SaveChanges();
+            }
+        }
+
         public class Startup
         {
-            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
-            public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "Mary") { Agency = FakeAgency };
-            public static readonly CandidateNote FakeNote = new CandidateNote(FakeCandidate.Id, CovenantNote.Create("Call Later", "#CCC111", "cn@mail.com").Value);
-            public static readonly CandidateNote FakeUpdateNote = new CandidateNote(FakeCandidate.Id, CovenantNote.Create("Rate 32", "#CCC111", "cn@mail.com").Value);
-            public static readonly CandidateNote FakeDeleteNote = new CandidateNote(FakeCandidate.Id, CovenantNote.Create("Delete", "#BBB111", "delete@mail.com").Value);
-
             public void ConfigureServices(IServiceCollection services)
             {
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder()
                     .AddTestAuth(o =>
                     {
-                        o.AddSub(FakeAgency.Id);
+                        o.AddSub(Data.AgencyId);
                         o.AddAgencyPersonnelRole();
                         o.AddName("c@mail.com");
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 
-            public void Configure(IApplicationBuilder app, CovenantContext context)
+            public void Configure(IApplicationBuilder app)
             {
                 app.UseRouting();
                 app.UseAuthentication();
@@ -148,11 +173,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                FakeCandidate.Notes.Add(FakeNote);
-                FakeCandidate.Notes.Add(FakeUpdateNote);
-                FakeCandidate.Notes.Add(FakeDeleteNote);
-                context.Candidates.Add(FakeCandidate);
-                context.SaveChanges();
             }
         }
     }

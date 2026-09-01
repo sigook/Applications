@@ -1,30 +1,29 @@
-﻿using Covenant.Api.Shared.RequestShift.Controllers;
+using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Sigook.Company.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Request;
-using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Request;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
-namespace Covenant.Integration.Tests.Shared.RequestShift
+namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestShift
 {
-    public class RequestShiftControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestShiftControllerTest.Startup>>
+    public class CompanyRequestShiftControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyRequestShiftControllerTest.Startup>>
     {
         private readonly HttpClient _client;
-        public RequestShiftControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+        public CompanyRequestShiftControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
         [Fact]
         public async Task Get()
         {
-            HttpResponseMessage response = await _client.GetAsync(RequestShiftController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString()));
+            HttpResponseMessage response = await _client.GetAsync(ShiftController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString()));
             response.EnsureSuccessStatusCode();
             var model = await response.Content.ReadFromJsonAsync<ShiftModel>();
             Assert.Equal(Data.FakeRequest.Shift.Monday, model.Monday);
@@ -37,10 +36,11 @@ namespace Covenant.Integration.Tests.Shared.RequestShift
             public void ConfigureServices(IServiceCollection services)
             {
                 services.AddDefaultTestConfiguration();
-                services.AddTestAuthenticationBuilder().AddTestAuth(delegate { });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestAuthenticationBuilder().AddTestAuth(o => o.AddCompanyRole());
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
+                services.AddSingleton<CompanyIdFilter>();
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
@@ -61,13 +61,13 @@ namespace Covenant.Integration.Tests.Shared.RequestShift
 
         private static class Data
         {
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(Guid.NewGuid(), FakeData.FakeLocation(), new DateTime(2019, 01, 01), Guid.NewGuid()).Value;
+            public static readonly Request FakeRequest = FakeData.FakeRequest(startAt: new DateTime(2019, 01, 01));
             public static void Seed(CovenantContext context)
             {
                 var newShift = new Shift();
                 newShift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
                 FakeRequest.UpdateShift(newShift);
-                context.Requests.AddAsync(FakeRequest);
+                context.Requests.Add(FakeRequest);
                 context.SaveChanges();
             }
         }

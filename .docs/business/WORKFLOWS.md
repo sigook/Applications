@@ -78,7 +78,7 @@ POST api/agency/requests            → RequestsController.Post (Controllers/Sig
 By the company:
 
 ```
-POST api/CompanyRequest             → CompanyRequestController.Post (CompanyModule/CompanyRequest/Controllers/CompanyRequestController.cs)
+POST api/company/requests             → RequestsController.Post (Controllers/Sigook/Company/Requests/RequestsController.cs)
 → RequestService (company-side create)
 ```
 
@@ -149,7 +149,7 @@ PUT api/agency/requests/{requestId}/Workers/{id}                   → WorkerReq
 PUT api/agency/requests/{requestId}/Workers/{workerProfileId}/Reject → RequestService.RejectWorker (may reopen a Filled request)
 ```
 
-The company sees its assigned workers via `api/CompanyRequest/{requestId}/Worker` (`CompanyModule/CompanyRequestWorker/Controllers/CompanyRequestWorkerController.cs`).
+The company sees its assigned workers via `api/company/requests/{requestId}/Workers` (`Controllers/Sigook/Company/Requests/WorkersController.cs`).
 
 ---
 
@@ -189,7 +189,7 @@ A request-wide view exists at `GET api/agency/requests/{requestId}/TimeSheets` (
 
 ### Step 3: Hours breakdown
 
-Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is deprecated — it is never computed anywhere; do not add night-shift logic.
+Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is never computed anywhere; do not add night-shift logic.
 
 ---
 
@@ -399,4 +399,4 @@ Completing an item can attach a document that lands in the worker-profile sectio
 
 **SIN/SSN-typed identifications** (identification type with `IdentificationTypeCode.SinSsn`): completing an Identification item with that type validates the number as a SIN (9-15 chars, not another profile's SIN, not different from the profile's existing SIN) and **also fills the worker's `SocialInsurance` + SIN document from the same upload** (one blob, no double attachment), then **auto-completes** any pending checklist item with target *Social insurance* for that applicant. The same auto-fill applies at worker registration (web and app) when a SIN/SSN-typed identification is provided — SIN is never captured directly at registration. SIN duplicate validation runs in every flow that sets it: registration, the worker documents/SIN forms, and both compliance branches.
 
-Note: `BookWorker` still deletes the applicant row; its completions go with it by cascade.
+Note: `BookWorker` deletes the applicant row; its completions go with it by cascade.

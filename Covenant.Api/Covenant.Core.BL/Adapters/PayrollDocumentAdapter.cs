@@ -1,11 +1,12 @@
+using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Utils.Extensions;
 
-namespace Covenant.Core.BL.Extensions.Accounting;
+namespace Covenant.Core.BL.Adapters;
 
-public static class PayrollViewModelExtensions
+public class PayrollDocumentAdapter : IPayrollDocumentAdapter
 {
-    public static PayrollViewModel ToPayrollViewModel(this PayStubDetailModel model)
+    public PayrollViewModel MapToPayrollViewModel(PayStubDetailModel model)
     {
         return new PayrollViewModel
         {
@@ -37,7 +38,7 @@ public static class PayrollViewModelExtensions
         };
     }
 
-    public static PayrollEmailViewModel ToPayrollEmailViewModel(this PayStubDetailModel model)
+    public PayrollEmailViewModel MapToPayrollEmailViewModel(PayStubDetailModel model)
     {
         return new PayrollEmailViewModel
         {

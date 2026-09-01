@@ -36,6 +36,18 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             Data.FakeRequest.Id.ToString());
 
         [Fact]
+        public async Task Get()
+        {
+            HttpResponseMessage response = await _client.GetAsync(ShiftController.RouteName.Replace("{requestId}",
+                Data.FakeRequestWithShift.Id.ToString()));
+            response.EnsureSuccessStatusCode();
+            var model = await response.Content.ReadFromJsonAsync<ShiftModel>();
+            Assert.Equal(Data.FakeRequestWithShift.Shift.Monday, model.Monday);
+            Assert.Equal(Data.FakeRequestWithShift.Shift.MondayStart, model.MondayStart);
+            Assert.Equal(Data.FakeRequestWithShift.Shift.MondayFinish, model.MondayFinish);
+        }
+
+        [Fact]
         public async Task Put()
         {
             var model = new ShiftModel
@@ -98,8 +110,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder()
                     .AddTestAuth(o => o.AddAgencyPersonnelRole());
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IShiftRepository, ShiftRepository>();
@@ -121,6 +132,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 context.Agencies.Add(FakeData.FakeAgency(Data.FakeCompany.AgencyId));
                 context.CompanyProfiles.Add(Data.FakeCompany);
                 context.Requests.Add(Data.FakeRequest);
+                context.Requests.Add(Data.FakeRequestWithShift);
                 context.SaveChanges();
             }
         }
@@ -148,11 +160,17 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 null).Value;
 
             public static readonly Request FakeRequest;
+            public static readonly Request FakeRequestWithShift;
 
             static Data()
             {
                 FakeCompany.AddJobPositionRate(CompanyProfileJobPositionRate.Create(FakeCompany.Id, "Labor", 1, 1).Value);
-                FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
+                Guid rateId = FakeCompany.JobPositionRates.First().Id;
+                FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId);
+                FakeRequestWithShift = FakeData.FakeRequest(AgencyId, FakeCompany.Id, rateId);
+                var shift = new Shift();
+                shift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
+                FakeRequestWithShift.UpdateShift(shift);
             }
         }
     }

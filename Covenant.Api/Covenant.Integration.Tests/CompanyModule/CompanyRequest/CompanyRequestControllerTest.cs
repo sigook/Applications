@@ -1,5 +1,5 @@
-﻿using Covenant.Api.Authorization;
-using Covenant.Api.CompanyModule.CompanyRequest.Controllers;
+using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Sigook.Company.Requests;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -35,7 +35,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
     public class CompanyRequestControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyRequestControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
-        private const string Url = CompanyRequestController.RouteName;
+        private const string Url = RequestsController.RouteName;
         private readonly HttpClient _client;
         public CompanyRequestControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
@@ -131,7 +131,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                         o.AddCompanyRole();
                     });
                 services.AddHttpClient();
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(Data.Now);
@@ -181,10 +181,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                 Value = "Toronto",
                 Province = new Province
                 {
-                    Country = new Country
-                    {
-                        Code = "CA"
-                    }
+                    Country = FakeData.FakeCountry("CA")
                 }
             };
             public static readonly User CompanyUser = new User(CvnEmail.Create("mi@hot.com").Value, Sub);
@@ -200,7 +197,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
             {
                 Agency = Agency,
                 ApprovedToWork = true
-            };
+            , Location = FakeData.FakeLocation(),};
             public static readonly CompanyProfileJobPositionRate FakeCompanyProfileJobPositionRate = new CompanyProfileJobPositionRate
             {
                 CompanyProfileId = CompanyProfile.Id,

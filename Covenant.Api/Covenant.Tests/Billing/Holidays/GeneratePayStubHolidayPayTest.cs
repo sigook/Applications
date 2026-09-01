@@ -1,6 +1,7 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.PayStub;
@@ -66,7 +67,8 @@ public class GeneratePayStubHolidayPayTest
             Mock.Of<ISkipPayrollNumberRepository>(),
             Mock.Of<IMediator>(),
             rates,
-            timeLimits);
+            timeLimits,
+            Mock.Of<IPayrollDocumentAdapter>());
     }
 
     [Fact]

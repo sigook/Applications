@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
@@ -21,7 +21,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
     public class TestCompanyInvoiceController : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
     {
         private readonly ITestOutputHelper _output;
-        private const string ApiCompanyInvoice = "api/CompanyInvoice";
+        private const string ApiCompanyInvoice = "api/company/accounting/Invoices";
         private readonly HttpClient _client;
         public TestCompanyInvoiceController(CustomWebApplicationFactory<Startup> factory, ITestOutputHelper output)
         {
@@ -65,7 +65,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
                     o.AddSub(Data.CompanyProfile.Company.Id);
                     o.AddCompanyRole();
                 });
-            services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
         }
 
         public void Configure(IApplicationBuilder app, CovenantContext context)
@@ -86,7 +86,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyInvoice
 
     public static class Data
     {
-        public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency();
+        public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile
         {
             Company = new User(CvnEmail.Create("comp@a.com").Value),

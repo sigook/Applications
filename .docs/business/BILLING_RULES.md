@@ -183,7 +183,7 @@ Both flows mirror the dual-guard design on the payroll side — see `PAYROLL_RUL
 |---------|-----------------|
 | Vacation pay (4%) | **Never enters invoice totals.** `Invoice.VacationsRate` is stored as a snapshot but no invoice math reads it. Vacation 4% is a pay-stub concept (`rates.Vacations`, `PayStubService`). |
 | Bonus | `Invoice.BonusRate` stored only; no bonus line or multiplier in any total. |
-| Night shift | Deprecated platform-wide. `CanadaInvoiceService` sets `NightShiftRate = 0` and `TimesheetCalculatorService.CalculateHoursBreakdown` explicitly does not support it. Do not add night-shift logic. |
+| Night shift | Not billable anywhere. `CanadaInvoiceService` sets `NightShiftRate = 0` and `TimesheetCalculatorService.CalculateHoursBreakdown` explicitly does not support it. Do not add night-shift logic. |
 | Per-province HST | HST is the **single global config rate** `rates.Hst` (default 0.13) applied to every Canadian invoice, regardless of province. There is no provincial tax table in the Canadian path. Per-location tax exists only in the USA path. |
 
 ---

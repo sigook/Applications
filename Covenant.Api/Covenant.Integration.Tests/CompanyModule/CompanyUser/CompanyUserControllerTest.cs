@@ -1,5 +1,5 @@
-﻿using Covenant.Api.Authorization;
-using Covenant.Api.CompanyModule.CompanyUser.Controllers;
+using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Sigook.Company;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
@@ -34,7 +34,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
             _client = _factory.CreateClient();
         }
 
-        private static string RequestUri() => CompanyUserController.RouteName;
+        private static string RequestUri() => UsersController.RouteName;
 
         [Fact]
         public async Task Post()
@@ -72,7 +72,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
             response.EnsureSuccessStatusCode();
 
             var entity = await factory.Server.Host.Services.GetRequiredService<CovenantContext>().CompanyUsers
-                .FirstOrDefaultAsync(cu => cu.User.Email == Startup.NewUserEmail);
+                .FirstOrDefaultAsync(cu => cu.User.Email == Startup.NewUserEmail.Email);
             Assert.Equal(Startup.NewUserId, entity.Id);
             Assert.Equal(model.Email, entity.User.Email);
             Assert.Equal(model.Name, entity.Name);
@@ -115,7 +115,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
             Assert.Equal(entity.Lastname, detail.Lastname);
             Assert.Equal(entity.MobileNumber, detail.MobileNumber);
             Assert.Equal(entity.Position, detail.Position);
-            Assert.Equal(entity.CreatedAt, detail.CreatedAt);
+            DateAssert.Equal(entity.CreatedAt, detail.CreatedAt);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
             Assert.Equal(entity.Lastname, detail.Lastname);
             Assert.Equal(entity.MobileNumber, detail.MobileNumber);
             Assert.Equal(entity.Position, detail.Position);
-            Assert.Equal(entity.CreatedAt, detail.CreatedAt);
+            DateAssert.Equal(entity.CreatedAt, detail.CreatedAt);
         }
 
         [Fact]
@@ -167,7 +167,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
 
         public class Startup
         {
-            private static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("company@company.com").Value) };
+            private static readonly CompanyProfile CompanyProfile = FakeData.FakeCompanyProfile(companyEmail: "company@company.com");
             public static readonly CvnEmail NewUserEmail = CvnEmail.Create("pepe.supervisor@company.com").Value;
             public static readonly Guid NewUserId = Guid.NewGuid();
             public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUser = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("get@mail.com").Value))
@@ -191,7 +191,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
                         o.AddSub(FakeCompanyUser.Id);
                         o.AddCompanyUserRole();
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<CompanyIdFilter>();
                 services.AddSingleton<IIdentityServerService, IdentityServerService>();
@@ -209,6 +209,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
+                if (context.CompanyProfiles.Any()) return;
                 context.CompanyProfiles.Add(CompanyProfile);
                 context.CompanyUsers.AddRange(FakeCompanyUser,
                     FakeCompanyUserToUpdate, FakeCompanyUserToDelete);

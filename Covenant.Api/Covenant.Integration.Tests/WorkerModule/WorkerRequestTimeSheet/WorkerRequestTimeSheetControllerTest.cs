@@ -1,4 +1,4 @@
-﻿using Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers;
+using Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
@@ -110,7 +110,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                         o.AddSub(Data.FakeUser.Id);
                         o.AddWorkerRole();
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
@@ -138,6 +138,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
                 context.Users.Add(Data.FakeUser);
+                context.Agencies.Add(FakeData.FakeAgency(Data.AgencyId));
                 context.WorkerProfiles.Add(Data.FakeWorker);
                 context.Locations.Add(Data.FakeLocation);
                 context.Requests.Add(Data.Request);
@@ -149,11 +150,11 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
         private static class Data
         {
             public static DateTime Now = DateTime.Now;
-            private static readonly Guid AgencyId = Guid.NewGuid();
+            internal static readonly Guid AgencyId = Guid.NewGuid();
             public static readonly User FakeUser = new User(CvnEmail.Create("user_user@mail.com").Value);
-            internal static readonly WorkerProfile FakeWorker = new WorkerProfile(FakeUser, AgencyId);
+            internal static readonly WorkerProfile FakeWorker = new WorkerProfile(FakeUser, AgencyId) { Location = FakeData.FakeLocation() };
             public static Location FakeLocation = FakeData.FakeLocation();
-            public static readonly Request Request = Request.AgencyCreateRequest(Guid.NewGuid(), FakeLocation, Now, Guid.NewGuid()).Value;
+            public static readonly Request Request = FakeData.FakeRequest(AgencyId, location: FakeLocation, startAt: Now);
             internal static readonly double HoursDay2 = 2;
 
             public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorker.Id, Request.Id);

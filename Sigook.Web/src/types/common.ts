@@ -123,6 +123,8 @@ export interface Skill {
 
 export type Currency = 'CAD' | 'USD';
 
+export type ResidencyStatus = 'Citizen' | 'Work Permit' | 'Student' | 'Permanent Resident';
+
 export enum DurationTerm {
   LongTerm = 'LongTerm',
   ShortTerm = 'ShortTerm',

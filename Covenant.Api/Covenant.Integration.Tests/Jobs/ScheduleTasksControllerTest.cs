@@ -41,7 +41,7 @@ namespace Covenant.Integration.Tests.Jobs
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder().AddTestAuth(o => { });
                 services.AddSingleton(new Mock<IGeocodeService>().Object);
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+                services.AddTestDatabase();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IAgencyService, AgencyService>();
                 services.AddSingleton<ITimesheetRepository, TimesheetRepository>();

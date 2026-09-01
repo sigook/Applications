@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -20,12 +20,12 @@ using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
 {
-    public class CompanyRequestWorkerTimeSheetControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyRequestWorkerTimeSheetControllerTest.Startup>>
+    public class CompanyRequestWorkerTimeSheetApprovalControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyRequestWorkerTimeSheetApprovalControllerTest.Startup>>
     {
         private readonly HttpClient _client;
-        private readonly string _requestUri = $"api/v2/CompanyRequest/{Data.Request.Id}/Worker/{Data.WorkerProfile.Id}/TimeSheet";
+        private readonly string _requestUri = $"api/company/requests/{Data.Request.Id}/Workers/{Data.WorkerProfile.Id}/TimeSheets";
 
-        public CompanyRequestWorkerTimeSheetControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+        public CompanyRequestWorkerTimeSheetApprovalControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
         [Fact, TestOrder(1)]
         public async Task Get()
@@ -80,7 +80,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
                         o.AddSub(Data.CompanyId);
                         o.AddCompanyRole();
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
                 services.AddSingleton<CompanyIdFilter>();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
@@ -106,11 +106,13 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
         private static class Data
         {
             private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
-            public static readonly Guid CompanyId = Guid.NewGuid();
-            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { CompanyId = CompanyId, FullName = "Test Company" };
-            public static readonly Request Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, Guid.NewGuid()).Value;
+            public static readonly Covenant.Common.Entities.Agency.Agency Agency = FakeData.FakeAgency();
+            public static readonly CompanyProfile CompanyProfile = FakeData.FakeCompanyProfile(Agency);
+            public static readonly Guid CompanyId = CompanyProfile.CompanyId;
+            public static readonly CompanyProfileJobPositionRate JobPositionRate = FakeData.FakeJobPositionRate(CompanyProfile);
+            public static readonly Request Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, JobPositionRate.Id).Value;
             public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
-            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = CompanyProfile.AgencyId };
+            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = Agency.Id, Location = FakeData.FakeLocation() };
 
             private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest =
                 Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
@@ -119,7 +121,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
 
             public static void Seed(CovenantContext context)
             {
-                context.AddRange(Worker, WorkerProfile, CompanyProfile, Request, FakeWorkerRequest, TimeSheet);
+                context.AddRange(Worker, WorkerProfile, CompanyProfile, JobPositionRate, Request, FakeWorkerRequest, TimeSheet);
                 context.SaveChanges();
             }
         }

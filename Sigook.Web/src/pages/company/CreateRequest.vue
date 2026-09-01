@@ -211,7 +211,7 @@ import {
   EmploymentType,
   EmploymentTypeLabels,
 } from '@/constants/enums';
-import { getLocations, getCompanyJobPositions, createRequest } from '@/api/companyApi';
+import { getProfileLocations, getCompanyJobPositions, createRequest } from '@/api/companyApi';
 import LocationForm from '@/components/agency_company/LocationForm.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import type { PageBreadcrumb } from '@/types/common';
@@ -296,7 +296,7 @@ const locationSelected = ref<any>(null);
 const showLocationModal = ref(false);
 
 (async () => {
-  locations.value = await getLocations();
+  locations.value = await getProfileLocations();
   companyJobPositions.value = await getCompanyJobPositions();
   isLoading.value = false;
 })();
@@ -396,7 +396,7 @@ function onLocationSelected(option: any) {
 
 async function onUpdateLocationModal() {
   showLocationModal.value = false;
-  locations.value = await getLocations();
+  locations.value = await getProfileLocations();
 }
 
 watch(jobPosition, (newVal) => {

@@ -66,14 +66,13 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                     {
                         o.AddAgencyPersonnelRole(FakeAgency.Id);
                     });
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 
-            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Test", "Test");
+            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Test", "Test") { User = FakeData.FakeUser() };
             public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
                 "", "", new CompanyProfileIndustry("Company Industry"));
 
@@ -89,7 +88,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                FakeAgency.User = new User(CvnEmail.Create("c@mail.com").Value);
+                FakeAgency.User = new User(CvnEmail.Create("agency@mail.com").Value);
                 context.CompanyProfiles.Add(FakeCompanyProfile);
                 context.SaveChanges();
             }

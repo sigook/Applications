@@ -1,4 +1,4 @@
-﻿using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
+using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -16,6 +16,7 @@ using System.Net;
 using Xunit;
 using System.Net.Http.Json;
 
+using Covenant.Integration.Tests.Utils;
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest;
 
 public class WorkerRequestControllerApplyAnonymousTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerRequestControllerApplyAnonymousTest.Startup>>
@@ -52,7 +53,7 @@ public class WorkerRequestControllerApplyAnonymousTest : BaseTestOrder, IClassFi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();
-            services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
             var timeService = new Mock<ITimeService>();
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(Data.Now);
             services.AddSingleton(timeService.Object);
@@ -93,7 +94,7 @@ public class WorkerRequestControllerApplyAnonymousTest : BaseTestOrder, IClassFi
             Company = new User(CvnEmail.Create("company_apply_anon@mail.com").Value),
             Agency = FakeAgency,
             Logo = new CovenantFile()
-        };
+        , Industry = new CompanyProfileIndustry("Test") };
 
         public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(
             CompanyProfile.Id,
@@ -141,7 +142,7 @@ public class WorkerRequestControllerApplyAnonymousTest : BaseTestOrder, IClassFi
             {
                 Agency = FakeAgency,
                 ApprovedToWork = true,
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } },
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } },
                 IdentificationType1 = new IdentificationType(),
                 IdentificationType1File = new CovenantFile(),
                 IdentificationType2 = new IdentificationType(),

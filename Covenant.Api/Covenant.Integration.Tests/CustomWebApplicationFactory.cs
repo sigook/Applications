@@ -1,4 +1,6 @@
 using Covenant.Api;
+using Covenant.Integration.Tests.Configuration;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -6,11 +8,20 @@ namespace Covenant.Integration.Tests
 {
     public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
     {
+        private readonly Lazy<string> database = new(PostgresTestDatabase.CreateDatabase,
+            LazyThreadSafetyMode.ExecutionAndPublication);
+
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
             return WebHost.CreateDefaultBuilder()
-                .CaptureStartupErrors(true)
+                .CaptureStartupErrors(false)
                 .UseStartup<TStartup>();
+        }
+
+        protected override TestServer CreateServer(IWebHostBuilder builder)
+        {
+            PostgresTestDatabase.Use(database.Value);
+            return base.CreateServer(builder);
         }
     }
 
@@ -34,12 +45,5 @@ namespace Covenant.Integration.Tests
                     });
                 });
         }
-    }
-
-    public static class IntegrationTestConfiguration
-    {
-        public static readonly bool UseInMemoryDatabase = true;
-        public static readonly Func<string, string> ConnectionString = database =>
-            $"Server=localhost;Database={database};UserId=postgres;Password=BDzJ9sH4U4EWu2aj;Port=5432";
     }
 }

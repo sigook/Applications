@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities.Notification;
+using Covenant.Common.Entities.Notification;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Utils.Extensions;
@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Net.Http.Json;
 
+using Covenant.Common.Entities;
 namespace Covenant.Integration.Tests.Notifications.Tests
 {
     public class TestNotificationController : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<TestNotificationController.Startup>>
@@ -44,19 +45,21 @@ namespace Covenant.Integration.Tests.Notifications.Tests
 
         public class Startup
         {
+            public static readonly User FakeUser = FakeData.FakeUser();
+
             public void ConfigureServices(IServiceCollection services)
             {
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder()
                     .AddTestAuth(o =>
                     {
-                        o.AddSub(Guid.NewGuid());
+                        o.AddSub(FakeUser.Id);
                         o.AddWorkerRole();
                         o.AddAgencyPersonnelRole();
                         o.AddCompanyRole();
                     });
                 services.AddSingleton<INotificationRepository, NotificationRepository>();
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase("TestNotifications"), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
@@ -71,6 +74,7 @@ namespace Covenant.Integration.Tests.Notifications.Tests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
+                context.Users.Add(FakeUser);
                 context.NotificationTypes.AddRange(NotificationType.GetAll);
                 context.SaveChanges();
             }

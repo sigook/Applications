@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue'
-import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
+import { useCandidateApplyModal } from '@/composables/useCandidateApplyModal'
 import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
 
 const registerModal = useCandidateApplyModal()

@@ -242,6 +242,31 @@ public class IdentityServerService : IIdentityServerService
         }
     }
 
+    public async Task<Result<IEnumerable<UserRoleModel>>> GetUsersRoles(IEnumerable<Guid> userIds)
+    {
+        var ids = userIds?.Distinct().ToList() ?? [];
+        if (ids.Count == 0) return Result.Ok(Enumerable.Empty<UserRoleModel>());
+        try
+        {
+            var client = httpClientFactory.CreateClient(IdentityClient);
+            var content = JsonSerializer.Serialize(ids);
+            var stringContent = new StringContent(content, Encoding.UTF8, MediaTypeNames.Application.Json);
+            var response = await client.PostAsync("UsersRoles", stringContent);
+            if (response.IsSuccessStatusCode)
+            {
+                var roles = await response.Content.ReadFromJsonAsync<IEnumerable<UserRoleModel>>();
+                return Result.Ok(roles ?? Enumerable.Empty<UserRoleModel>());
+            }
+            var error = await response.Content.ReadAsStringAsync();
+            return Result.Fail<IEnumerable<UserRoleModel>>(ParseIdentityError(error));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Error getting users roles: {Error}", ex.Message);
+            return Result.Fail<IEnumerable<UserRoleModel>>("There was an error getting the roles please try again later");
+        }
+    }
+
     public string GetNickname() => httpContextAccessor.HttpContext?.User?.GetNickname();
 
     public Guid GetCompanyId() => httpContextAccessor.HttpContext.User.GetCompanyId();

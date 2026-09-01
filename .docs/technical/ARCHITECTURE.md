@@ -181,6 +181,11 @@ Two coexisting layouts:
 | `Controllers/Sigook/Agency/Candidates/` | candidate domain: `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
 | `Controllers/Sigook/Agency/Workers/` | worker-profile management: `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController` |
 | `Controllers/Sigook/Agency/Personnel/` | `PersonnelController` (agency back-office users), `AgenciesController` (agencies the caller belongs to) |
+| `Controllers/Sigook/Company/` | `CompanyController` (own profile), `UsersController` |
+| `Controllers/Sigook/Company/Accounting/` | `InvoicesController` |
+| `Controllers/Sigook/Company/Profile/` | `ContactPeopleController`, `JobPositionsController`, `LocationsController` |
+| `Controllers/Sigook/Company/Requests/` | `RequestsController`, `ShiftController`, `WorkersController`, `WorkerTimeSheetsController` |
+| `Controllers/Sigook/Company/Workers/` | `CommentsController` |
 | `Controllers/WebSite/` | `WebSiteController` (public marketing endpoints) |
 | `Controllers/Jobs/` | `ScheduleTasksController` (called by Sigook.Functions timers) |
 
@@ -188,15 +193,13 @@ Two coexisting layouts:
 
 | Module | Contents |
 |---|---|
-| `CompanyModule/` | company perspective: requests, profile, locations, job positions, request workers, timesheets, invoices, users |
 | `WorkerModule/` | worker perspective: profile, requests, request history, timesheets (clock in/out) |
 
-Routing: older controllers declare `public const string RouteName = "api/..."` +
-`[Route(RouteName)]` (grep for `RouteName =` to find an endpoint); newer ones use attribute
+Routing: some controllers declare `public const string RouteName = "api/..."` +
+`[Route(RouteName)]` (grep for `RouteName =` to find an endpoint); others use attribute
 literals like `[Route("api/agency/accounting/[controller]")]` or
 `[Route("api/agency/sales/[controller]")]`. There is no `{Module}{Resource}V{N}Controller`
-convention in production code (the single legacy `V2` name,
-`V2CompanyRequestWorkerTimeSheetController.cs`, is historical, not a system).
+convention.
 
 ### Services (business logic) — `Covenant.Core.BL/Services/`
 
@@ -303,10 +306,6 @@ Consumers live in `Covenant.Core.BL/Consumers/`; exactly **5** are registered as
 `IAzureServiceBusConsumer` singletons in `AddAzureServiceBusConsumer`
 (`ApiServicesConfiguration.cs`): `NewCandidateConsumer`, `TeamsConsumer`,
 `RequestApplicantConsumer`, `BulkPayStubEmailConsumer`, `InvitationConsumer`.
-(A stillborn `EmailConsumer` and its `EmailNotification` topic subscription were removed in
-2026-08; the orphaned subscription must also be deleted by hand in the Azure portal for staging
-and production, since removing the `CreateSubscriptionIfNotExistsAsync` call does not delete an
-existing subscription.)
 
 Local development connects to the **staging** Service Bus — inject `ISigookBusClient` (mockable)
 rather than constructing clients directly.
@@ -342,10 +341,11 @@ rather than constructing clients directly.
   `AgencyAssignable` (admin/recruiting/sales), `SuperAdminAssignable` (`CovenantConstants.cs`).
   Always reference via `CovenantConstants.Role.*`.
 - **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency`, `Recruiting`,
-  `Company`, `Worker`, `Request` (authenticated only), `Covenant` (claim `all2job`),
-  `AgencyOrCompany`, `AgencyOrWorker`, `Admin`, `SuperAdmin`, `Sales`. There is no `Accounting`
-  policy. Note `AgencyOrCompany`/`AgencyOrWorker` are built from `RecruitingAccess`, so they
-  exclude sales.
+  `Sales`, `Company`, `Worker`, `Admin`, `SuperAdmin`. Every policy requires a role — there is no
+  authenticated-only policy, no `Accounting` policy, and no cross-actor policies. An endpoint
+  reachable by two actors is exposed once per actor (`Controllers/Sigook/Agency/`, `Controllers/Sigook/Company/`,
+  `WorkerModule/`), each under its own policy, with the shared behaviour in a `Covenant.Core.BL`
+  service.
 
 ### Data isolation (multi-tenancy)
 

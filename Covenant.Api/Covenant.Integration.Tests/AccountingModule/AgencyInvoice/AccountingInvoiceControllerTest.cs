@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -22,15 +22,17 @@ using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.AccountingModule.AgencyInvoice;
 
-public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AccountingInvoiceV4ControllerTest.Startup>>
+public class AccountingInvoiceControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<AccountingInvoiceControllerTest.Startup, AccountingInvoiceControllerTest.Data>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
+    private readonly Data _data;
     private readonly HttpClient _client;
 
-    public AccountingInvoiceV4ControllerTest(CustomWebApplicationFactory<Startup> factory)
+    public AccountingInvoiceControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
+        _data = factory.Data;
     }
 
     [Fact, TestOrder(1)]
@@ -40,7 +42,7 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         {
             AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
             Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
-            CompanyProfileId = Data.FakeCompany.Id
+            CompanyProfileId = _data.CompanyProfile.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync($"api/agency/accounting/Invoices/Preview", model);
         response.EnsureSuccessStatusCode();
@@ -59,13 +61,13 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         {
             AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
             Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
-            CompanyProfileId = Data.FakeCompany.Id
+            CompanyProfileId = _data.CompanyProfile.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync("api/agency/accounting/Invoices", model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
         Assert.Single(await context.InvoicesUSA.ToListAsync());
-        Assert.Equal(Data.TimeSheets.Length, await context.TimeSheetTotals.CountAsync());
+        Assert.Equal(_data.TimeSheets.Length, await context.TimeSheetTotals.CountAsync());
         Assert.Equal(3, (await context.InvoicesUSA.SingleAsync()).Items.Count());
         Assert.Equal(model.Discounts.Count(), (await context.InvoicesUSA.SingleAsync()).Discounts.Count());
     }
@@ -77,9 +79,9 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             services.AddDefaultTestConfiguration();
             services.AddTestAuthenticationBuilder().AddTestAuth(o =>
             {
-                o.AddAdminRole(Data.FakeAgency.Id);
+                o.AddAdminRole(Data.AgencyId);
             });
-            services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
             services.AddSingleton<IInvoiceRepository, InvoiceRepositoryTest>();
             services.AddSingleton(Rates.DefaultRates);
             services.AddSingleton(TimeLimits.DefaultTimeLimits);
@@ -89,12 +91,12 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
             var payStubContainer = new Mock<IPayStubsContainer>();
             services.AddSingleton(payStubContainer.Object);
             var identityServerService = new Mock<Covenant.Common.Interfaces.IIdentityServerService>();
-            identityServerService.Setup(s => s.GetAgencyId()).Returns(Data.FakeAgency.Id);
-            identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.FakeAgency.Id });
+            identityServerService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
+            identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
             services.AddSingleton(identityServerService.Object);
         }
 
-        public void Configure(IApplicationBuilder app, CovenantContext context)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseRouting();
             app.UseAuthentication();
@@ -106,7 +108,6 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            Data.Seed(context);
         }
 
         private class InvoiceRepositoryTest : InvoiceRepository
@@ -121,50 +122,54 @@ public class AccountingInvoiceV4ControllerTest : BaseTestOrder, IClassFixture<Cu
         }
     }
 
-    private static class Data
+    public class Data : ITestData
     {
-        public static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
-        public static readonly City Toronto = new City { Province = new Province { Country = new Country { Code = "USA" } } };
-        public static readonly Location JobLocation = Location.Create(Toronto.Id, "424 Dundas", "M3P1M7").Value;
-        public static readonly LocationTax LocationTax = new LocationTax { LocationId = JobLocation.Id, Tax1 = 0.06m };
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency
+        public static readonly Guid AgencyId = Guid.NewGuid();
+        public static readonly Guid CompanyProfileId = Guid.NewGuid();
+        public static readonly DateTime FakeNow = new(2019, 01, 01);
+
+        private readonly City toronto;
+        private readonly LocationTax locationTax;
+        private readonly Request request;
+
+        public Covenant.Common.Entities.Agency.Agency Agency { get; }
+        public CompanyProfile CompanyProfile { get; }
+        public WorkerProfile Worker { get; }
+        public WorkerRequest WorkerRequest { get; }
+        public TimeSheet[] TimeSheets { get; }
+
+        public Data()
         {
-            User = new User(CvnEmail.Create("test@test.com").Value)
-        };
-        public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("wor@wor.com").Value)) { Agency = FakeAgency };
-        public static readonly CompanyProfile FakeCompany = new CompanyProfile
+            toronto = FakeData.FakeCity(FakeData.FakeProvince(FakeData.FakeCountry("USA")));
+            Agency = FakeData.FakeAgency(AgencyId, toronto);
+            CompanyProfile = FakeData.FakeCompanyProfile(Agency, city: toronto, id: CompanyProfileId);
+            Worker = FakeData.FakeWorkerProfile(Agency, "wor@wor.com", toronto);
+
+            var jobLocation = FakeData.FakeLocation(toronto);
+            locationTax = new LocationTax { LocationId = jobLocation.Id, Tax1 = 0.06m };
+
+            request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile))
+            {
+                AgencyRate = 2,
+                WorkerRate = 1
+            };
+            request.UpdateJobLocation(jobLocation, false);
+
+            WorkerRequest = WorkerRequest.AgencyBook(Worker.Id, request.Id);
+            var timeSheet = TimeSheet.CreateTimeSheet(WorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
+            var timeSheet1 = TimeSheet.CreateTimeSheet(WorkerRequest, FakeNow.AddDays(1), TimeSpan.FromHours(8), now: FakeNow).Value;
+            timeSheet.AddApprovedTime(FakeNow.AddHours(8), FakeNow.AddHours(16));
+            timeSheet1.AddApprovedTime(FakeNow.AddDays(1).AddHours(8), FakeNow.AddDays(1).AddHours(16));
+            TimeSheets = [timeSheet, timeSheet1];
+        }
+
+        public void Seed(CovenantContext context)
         {
-            Company = new User(CvnEmail.Create("com@com.com").Value),
-            Agency = FakeAgency,
-            Industry = new CompanyProfileIndustry("Test"),
-        };
-
-        private static readonly Request FakeRequest = new Request(FakeCompany, new CompanyProfileJobPositionRate { CompanyProfile = FakeCompany })
-        {
-            AgencyRate = 2,
-            WorkerRate = 1
-        };
-
-        public static readonly WorkerRequest FakeWorkerRequest = WorkerRequest.AgencyBook(FakeWorker.Id, FakeRequest.Id);
-        public static readonly TimeSheet TimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
-        public static readonly TimeSheet TimeSheet1 = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow.AddDays(1), TimeSpan.FromHours(8), now: FakeNow).Value;
-        public static readonly TimeSheet[] TimeSheets = { TimeSheet, TimeSheet1 };
-
-        public static void Seed(CovenantContext context)
-        {
-            FakeAgency.AddLocation(Location.Create(Toronto.Id, "424 Dundas", "M3P1M7").Value, true);
-            FakeRequest.UpdateJobLocation(JobLocation, false);
-            FakeCompany.AddLocation(Location.Create(Toronto.Id, "424 Dundas", "M3P1M7").Value, false);
-
-            // Approve timesheets
-            TimeSheet.AddApprovedTime(FakeNow.AddHours(8), FakeNow.AddHours(16));
-            TimeSheet1.AddApprovedTime(FakeNow.AddDays(1).AddHours(8), FakeNow.AddDays(1).AddHours(16));
-
-            context.Cities.Add(Toronto);
-            context.LocationTaxes.Add(LocationTax);
-            context.Requests.Add(FakeRequest);
+            context.Cities.Add(toronto);
+            context.LocationTaxes.Add(locationTax);
+            context.Requests.Add(request);
             context.TimeSheets.AddRange(TimeSheets);
-            context.WorkerProfiles.Add(FakeWorker);
+            context.WorkerProfiles.Add(Worker);
             context.SaveChanges();
         }
     }

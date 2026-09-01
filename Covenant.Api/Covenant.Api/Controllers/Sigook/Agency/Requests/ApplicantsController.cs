@@ -2,7 +2,6 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
-using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +11,7 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Requests;
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class ApplicantsController(IRequestApplicantService requestApplicantService) : Controller
+public class ApplicantsController(IRequestApplicantService requestApplicantService, IUploadedFilesService uploadedFilesService) : Controller
 {
     public const string RouteName = "api/agency/requests/{requestId}/Applicants";
 
@@ -106,7 +105,7 @@ public class ApplicantsController(IRequestApplicantService requestApplicantServi
     [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CompleteComplianceItem([FromServices] IUploadedFilesService uploadedFilesService, [FromRoute] Guid requestId, [FromRoute] Guid id, [FromRoute] Guid itemId)
+    public async Task<IActionResult> CompleteComplianceItem([FromRoute] Guid requestId, [FromRoute] Guid id, [FromRoute] Guid itemId)
     {
         var model = uploadedFilesService.GetModel<CompleteApplicantComplianceItemModel>();
         var result = await requestApplicantService.CompleteComplianceItem(requestId, id, itemId, model);

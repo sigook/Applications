@@ -1,11 +1,12 @@
+using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
 
-namespace Covenant.Core.BL.Extensions.Accounting;
+namespace Covenant.Core.BL.Adapters;
 
-public static class InvoiceViewModelExtensions
+public class InvoiceDocumentAdapter : IInvoiceDocumentAdapter
 {
-    public static InvoiceViewModel ToInvoiceViewModel(this InvoiceSummaryModel model)
+    public InvoiceViewModel MapToInvoiceViewModel(InvoiceSummaryModel model)
     {
         List<DescriptionTableViewModel> items = model.Items.Select(i => new DescriptionTableViewModel
         {
@@ -72,7 +73,7 @@ public static class InvoiceViewModelExtensions
         };
     }
 
-    public static InvoiceEmailViewModel ToInvoiceEmailViewModel(this InvoiceSummaryModel model, string message)
+    public InvoiceEmailViewModel MapToInvoiceEmailViewModel(InvoiceSummaryModel model, string message)
     {
         return new InvoiceEmailViewModel
         {

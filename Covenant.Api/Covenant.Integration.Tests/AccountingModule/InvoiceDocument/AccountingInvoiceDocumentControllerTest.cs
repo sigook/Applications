@@ -22,12 +22,12 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
 {
-    public class AccountingInvoiceDocumentV4ControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AccountingInvoiceDocumentV4ControllerTest.Startup>>
+    public class AccountingInvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AccountingInvoiceDocumentControllerTest.Startup>>
     {
         private readonly HttpClient _client;
         private static readonly string RouteName = $"api/agency/accounting/Invoices/{Startup.FakeInvoice.Id}";
 
-        public AccountingInvoiceDocumentV4ControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public AccountingInvoiceDocumentControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             _client = factory.CreateClient();
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
@@ -74,11 +74,12 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
         public class Startup
         {
             private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
-            private static readonly City Miami = new City { Value = "Miami", Province = new Province { Code = "FL", Country = new Country { Code = "USA" } } };
+            private static readonly City Miami = new City { Value = "Miami", Province = new Province { Code = "FL", Country = FakeData.FakeCountry("USA") } };
             private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency(
                 "XYZ USA", "98765432109")
             {
-                PhonePrincipalExt = 404
+                PhonePrincipalExt = 404,
+                User = FakeData.FakeUser()
             };
 
             private static readonly CompanyProfile FakeCompany = CompanyProfile.AgencyCreateCompany(
@@ -139,7 +140,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                 {
                     o.AddAdminRole(FakeAgency.Id);
                 });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(FakeNow);
                 services.AddSingleton(timeService.Object);
