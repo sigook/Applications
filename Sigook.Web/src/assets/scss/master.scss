@@ -1,4 +1,5 @@
 @import './variables';
+@import './breakpoints';
 
 @import "./base.scss";
 
@@ -21,6 +22,7 @@
 
 @import "./tables";
 @import "./calendar";
+@import "./responsive-cards";
 
 @import './buefy-overrides';
 

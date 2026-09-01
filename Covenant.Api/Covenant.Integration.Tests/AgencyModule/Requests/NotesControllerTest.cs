@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
+using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
@@ -45,7 +45,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             Assert.Equal(model.Note, entity.Note.Note);
             Assert.Equal(model.Color, entity.Note.Color);
             Assert.NotNull(entity.Note.CreatedBy);
-            Assert.Equal(detail.CreatedAt, entity.Note.CreatedAt);
+            DateAssert.Equal(detail.CreatedAt, entity.Note.CreatedAt);
             Assert.True(entity.Note.CreatedAt <= DateTime.Now);
         }
 
@@ -93,7 +93,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             Assert.Equal(entity.Note.Note, model.Note);
             Assert.Equal(entity.Note.Color, model.Color);
             Assert.Equal(entity.Note.CreatedBy, model.CreatedBy);
-            Assert.Equal(entity.Note.CreatedAt, model.CreatedAt);
+            DateAssert.Equal(entity.Note.CreatedAt, model.CreatedAt);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         o.AddAgencyPersonnelRole();
                         o.AddName("recruiter@mail.com");
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();

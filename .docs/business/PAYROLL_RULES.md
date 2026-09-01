@@ -67,7 +67,7 @@ How pay stubs are generated and how earnings and deductions are actually compute
 | BonusOthers | Flat amount | `TimeSheet.BonusOrOthers`, grouped by description |
 | Reimbursement | Flat amount | `TimeSheet.Reimbursements` — **excluded from gross**, added back into net |
 
-**Night shift is deprecated**: `CalculateHoursBreakdown` does not compute it (TimesheetCalculatorService.cs:80 comment) and `GeneratePayStubForWorker` hardcodes `nightShift: 0` (PayStubService.cs:336).
+**Night shift is not computed**: `CalculateHoursBreakdown` does not compute it (TimesheetCalculatorService.cs:80 comment) and `GeneratePayStubForWorker` hardcodes `nightShift: 0` (PayStubService.cs:336).
 
 ### Two-tier hours example (verified against `CalculateHoursBreakdown`)
 

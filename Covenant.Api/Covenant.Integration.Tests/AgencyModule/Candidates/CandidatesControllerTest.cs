@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
+using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -97,7 +97,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Assert.Equal(Startup.FakeCandidate.PostalCode, model.PostalCode);
             Assert.Equal(Startup.FakeCandidate.Recruiter, model.Recruiter);
             Assert.Equal(Startup.FakeCandidate.ResidencyStatus, model.ResidencyStatus);
-            Assert.Equal(Startup.FakeCandidate.CreatedAt, model.CreatedAt);
+            DateAssert.Equal(Startup.FakeCandidate.CreatedAt, model.CreatedAt);
         }
 
         [Fact]
@@ -208,7 +208,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                         o.AddAgencyPersonnelRole(FakeAgency.Id);
                         o.AddName(CurrentUser);
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<ICandidateService, CandidateService>();

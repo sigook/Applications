@@ -235,7 +235,7 @@ export interface PayrollSubContractorRow extends PayrollSubContractorListItem {
   reportDownloading?: boolean;
 }
 
-// Payload for POST /api/v4/accounting/PayStub. Mirrors backend CreatePayStubModel.
+// Payload for POST /api/agency/accounting/PayStubs. Mirrors backend CreatePayStubModel.
 export interface CreatePayStubPayload {
   workerProfileId: string;
   position?: string;

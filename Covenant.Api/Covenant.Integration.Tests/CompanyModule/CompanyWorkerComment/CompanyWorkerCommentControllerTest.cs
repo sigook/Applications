@@ -1,5 +1,5 @@
-﻿using Covenant.Api.Authorization;
-using Covenant.Api.CompanyModule.CompanyWorkerComment.Controllers;
+using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Sigook.Company.Workers;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -20,7 +20,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyWorkerComment
     public class CompanyWorkerCommentControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyWorkerCommentControllerTest.Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
-        private const string Url = CompanyWorkerCommentController.RouteName;
+        private const string Url = CommentsController.RouteName;
         private readonly HttpClient _client;
         public CompanyWorkerCommentControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
@@ -46,9 +46,9 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyWorkerComment
 
         public class Startup
         {
-            private static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency { FullName = "Covenant" };
-            public static readonly CompanyProfile FakeCompany = new CompanyProfile { Company = new User(CvnEmail.Create("company@company.com").Value), Agency = Agency };
-            public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("w@s.com").Value), Agency.Id);
+            private static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency { FullName = "Covenant" , User = FakeData.FakeUser() };
+            public static readonly CompanyProfile FakeCompany = new CompanyProfile { Company = new User(CvnEmail.Create("company@company.com").Value), Agency = Agency , Industry = new CompanyProfileIndustry("Test") };
+            public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("w@s.com").Value), Agency.Id) { Location = FakeData.FakeLocation() };
 
             public void ConfigureServices(IServiceCollection services)
             {
@@ -58,7 +58,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyWorkerComment
                     o.AddSub(FakeCompany.Company.Id);
                     o.AddCompanyRole();
                 });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<CompanyIdFilter>();

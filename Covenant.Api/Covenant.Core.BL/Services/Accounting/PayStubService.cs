@@ -5,6 +5,7 @@ using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
@@ -13,7 +14,6 @@ using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Core.BL.Extensions.Accounting;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
 using MediatR;
@@ -39,6 +39,7 @@ public class PayStubService : IPayStubService
     private readonly IMediator mediator;
     private readonly Rates rates;
     private readonly TimeLimits timeLimits;
+    private readonly IPayrollDocumentAdapter payrollDocumentAdapter;
 
     public PayStubService(
         IPayStubRepository payStubRepository,
@@ -53,7 +54,8 @@ public class PayStubService : IPayStubService
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
         IMediator mediator,
         Rates rates,
-        TimeLimits timeLimits)
+        TimeLimits timeLimits,
+        IPayrollDocumentAdapter payrollDocumentAdapter)
     {
         this.payStubRepository = payStubRepository;
         this.calculatorService = calculatorService;
@@ -68,6 +70,7 @@ public class PayStubService : IPayStubService
         this.mediator = mediator;
         this.rates = rates;
         this.timeLimits = timeLimits;
+        this.payrollDocumentAdapter = payrollDocumentAdapter;
     }
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> GenerateT4(DateTime from, DateTime to)
@@ -478,7 +481,7 @@ public class PayStubService : IPayStubService
         if (content is not { Length: > 0 }) content = await UploadPdf(model);
         if (content is not { Length: > 0 }) return null;
 
-        return new PayStubDocument(content, fileName, model.ToPayrollEmailViewModel());
+        return new PayStubDocument(content, fileName, payrollDocumentAdapter.MapToPayrollEmailViewModel(model));
     }
 
     public async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId)
@@ -532,7 +535,7 @@ public class PayStubService : IPayStubService
     private async Task<byte[]> UploadPdf(PayStubDetailModel model)
     {
         var fileName = model.Id.ToPayStubBlobName();
-        var html = await renderer.RenderViewToStringAsync(PayStubTemplatePath, model.ToPayrollViewModel());
+        var html = await renderer.RenderViewToStringAsync(PayStubTemplatePath, payrollDocumentAdapter.MapToPayrollViewModel(model));
         var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
         if (!pdf) return null;
         try

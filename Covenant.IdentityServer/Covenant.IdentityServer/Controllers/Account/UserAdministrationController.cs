@@ -212,6 +212,17 @@ public class UserAdministrationController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("UsersRoles")]
+    public async Task<IActionResult> UsersRoles([FromServices] CovenantContext context, [FromBody] IEnumerable<Guid> userIds)
+    {
+        var ids = userIds.Distinct().ToList();
+        var roles = await context.UserRoles
+            .Where(ur => ids.Contains(ur.UserId))
+            .Join(context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new UserRoleModel(ur.UserId, r.Name))
+            .ToListAsync();
+        return Ok(roles);
+    }
+
     private IActionResult ReturnIdentityResultError(IdentityResult result)
     {
         foreach (IdentityError error in result.Errors) ModelState.AddModelError(error.Code, error.Description);

@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
+using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -103,7 +103,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         o.AddSub(AgencyId);
                         o.AddAgencyPersonnelRole();
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
@@ -128,7 +128,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 "juan@covenantgroupl.com",
                 CompanyStatus.Lead,
                 null).Value;
-            private static readonly Guid JobPositionRateId = Guid.NewGuid();
+            private static readonly CompanyProfileJobPositionRate JobPositionRate = FakeData.FakeJobPositionRate(FakeCompany);
+            private static readonly Guid JobPositionRateId = JobPositionRate.Id;
             public static readonly Request FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, JobPositionRateId);
             public static readonly CompanyProfileContactPerson FakeContactPersonPost = new CompanyProfileContactPerson(FakeCompany.Id) { Title = "Sr.", FirstName = "Post" };
             public static readonly CompanyProfileContactPerson FakeContactPersonDelete = new CompanyProfileContactPerson(FakeCompany.Id) { Title = "Sr.", FirstName = "Delete" };
@@ -162,7 +163,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 FakeCompany.ContactPeople.Add(FakeContactPersonDelete);
                 context.RequestReportTos.Add(new RequestReportTo(FakeRequest.Id, FakeContactPerson.Id));
                 context.RequestReportTos.Add(new RequestReportTo(FakeRequest.Id, FakeContactPersonDelete.Id));
-                context.AddRange(FakeCompany, FakeRequest);
+                context.AddRange(FakeCompany, JobPositionRate, FakeRequest);
+                context.Agencies.Add(FakeData.FakeAgency(AgencyId));
                 context.SaveChanges();
             }
         }

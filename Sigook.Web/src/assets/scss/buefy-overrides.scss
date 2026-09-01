@@ -2,6 +2,12 @@
   --grid-height: calc(100vh - 280px);
 }
 
+@include mobile {
+  :root {
+    --grid-height: auto;
+  }
+}
+
 html:root {
   --bulma-primary-h: 197deg;
   --bulma-primary-s: 100%;
@@ -91,24 +97,43 @@ html:root {
   }
 }
 
-.logged-content:has(.table-wrapper.has-sticky-header) {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  *:has(.table-wrapper.has-sticky-header) {
+@media (min-width: 768px) {
+  .logged-content:has(.table-wrapper.has-sticky-header) {
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
+
+    *:has(.table-wrapper.has-sticky-header) {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+    }
+
+    .b-table .table-wrapper.has-sticky-header {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+      width: 100%;
+    }
+  }
+}
+
+@include mobile {
+  .b-tabs > .tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
-  .b-table .table-wrapper.has-sticky-header {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: auto;
-    width: 100%;
+  .b-tabs > .tabs ul {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .modal .modal-content,
+  .modal .modal-card {
+    max-width: calc(100vw - 24px) !important;
   }
 }
 

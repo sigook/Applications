@@ -81,6 +81,10 @@ export function updateAgencyRequestIsAsap(requestId: string): Promise<void> {
   return api.put(`${requestsUrl}/${requestId}/IsAsap`);
 }
 
+export function getAgencyRequestShift(requestId: string): Promise<RequestShiftModel> {
+  return api.get<RequestShiftModel>(`${requestsUrl}/${requestId}/Shift`);
+}
+
 export function updateAgencyRequestShift(requestId: string, model: RequestShiftModel): Promise<{ id: string; displayShift?: string }> {
   return api.put<{ id: string; displayShift?: string }>(`${requestsUrl}/${requestId}/Shift`, model);
 }

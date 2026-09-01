@@ -10,7 +10,9 @@ using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Documents;
+using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -22,6 +24,10 @@ namespace Covenant.Integration.Tests.Configuration;
 
 public static class TestStartupExtensions
 {
+    public static IServiceCollection AddTestDatabase(this IServiceCollection services) =>
+        services.AddDbContext<CovenantContext>(
+            b => b.UseNpgsql(PostgresTestDatabase.Current), ServiceLifetime.Singleton);
+
     public static void AddDefaultTestConfiguration(this IServiceCollection services)
     {
         services.AddRepositories().AddServices().AddAdapters();

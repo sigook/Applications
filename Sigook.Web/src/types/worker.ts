@@ -268,7 +268,7 @@ export interface WorkerRequestListItem {
   createdAt?: string;
   startAt?: string;
   finishAt?: string | null;
-  durationTerm?: number;
+  durationTerm?: string;
 }
 
 export interface WorkerRequestDetail extends WorkerRequestListItem {

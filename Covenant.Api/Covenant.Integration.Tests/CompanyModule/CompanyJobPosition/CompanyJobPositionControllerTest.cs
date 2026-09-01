@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Models;
@@ -26,7 +26,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => "api/CompanyJobPosition";
+        private static string RequestUri() => "api/company/profile/JobPositions";
 
         [Fact]
         public async Task Get()
@@ -89,13 +89,12 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyAgencyJobPosition
                         o.AddCompanyRole();
                         o.AddName();
                     });
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<CompanyIdFilter>();
             }
 
-            public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
+            public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
 
             private static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
                 "", "", new CompanyProfileIndustry("Company Industry"));

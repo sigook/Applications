@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
+using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -278,8 +278,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         o.AddAgencyPersonnelRole();
                         o.AddName("r@mail.com");
                     });
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
@@ -288,7 +287,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
 
             public static readonly Request FakeRequest = FakeData.FakeRequest();
 
-            private static readonly Guid AgencyId = Guid.NewGuid();
+            private static readonly Guid AgencyId = FakeRequest.CompanyProfile.AgencyId;
 
             public static readonly Candidate FakeCandidatePost = new Candidate(AgencyId, "Jhon", CvnEmail.Create("jh.post@mail.com").Value);
             private static readonly Candidate FakeCandidateDelete = new Candidate(AgencyId, "Delete", CvnEmail.Create("jh.delete@mail.com").Value);
@@ -297,28 +296,28 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             public static readonly RequestApplicant FakeRequestApplicantDelete = RequestApplicant.CreateWithCandidate(FakeRequest.Id, FakeCandidateDelete.Id, default, default, RequestApplicantStatus.Pending).Value;
             public static readonly RequestApplicant FakeRequestApplicantList1 = RequestApplicant.CreateWithCandidate(FakeRequest.Id, FakeCandidateList.Id, "me@mail.com", "My Comment", RequestApplicantStatus.Pending).Value;
             public static readonly RequestApplicant FakeRequestApplicantUpdate = RequestApplicant.CreateWithCandidate(FakeRequest.Id, FakeCandidateUpdate.Id, "me@mail.com", "To be changed", RequestApplicantStatus.Pending).Value;
-            public static readonly WorkerProfile FakeWorkerPost = new WorkerProfile(new User(CvnEmail.Create("w.post@mail.com").Value), AgencyId);
-            public static readonly WorkerProfile FakeWorkerList = new WorkerProfile(new User(CvnEmail.Create("w.list@mail.com").Value), AgencyId);
+            public static readonly WorkerProfile FakeWorkerPost = new WorkerProfile(new User(CvnEmail.Create("w.post@mail.com").Value), AgencyId) { Location = FakeData.FakeLocation() };
+            public static readonly WorkerProfile FakeWorkerList = new WorkerProfile(new User(CvnEmail.Create("w.list@mail.com").Value), AgencyId) { Location = FakeData.FakeLocation() };
             public static readonly RequestApplicant FakeRequestApplicantList2 = RequestApplicant.CreateWithWorker(FakeRequest.Id, FakeWorkerList.Id, "me@mail.com", "My 2 Comment", RequestApplicantStatus.Pending).Value;
 
             public static readonly RequestComplianceItem FakeComplianceItemW4 = RequestComplianceItem.Create(FakeRequest.Id, "W4", true, ComplianceDocumentTarget.OtherDocument).Value;
             public static readonly RequestComplianceItem FakeComplianceItemWP = RequestComplianceItem.Create(FakeRequest.Id, "WP", false, ComplianceDocumentTarget.None).Value;
 
-            public static readonly WorkerProfile FakeWorkerStart = new WorkerProfile(new User(CvnEmail.Create("w.start@mail.com").Value), AgencyId);
+            public static readonly WorkerProfile FakeWorkerStart = new WorkerProfile(new User(CvnEmail.Create("w.start@mail.com").Value), AgencyId) { Location = FakeData.FakeLocation() };
             public static readonly RequestApplicant FakeApplicantStart = RequestApplicant.CreateWithWorker(FakeRequest.Id, FakeWorkerStart.Id, "me@mail.com", null, RequestApplicantStatus.Pending).Value;
 
-            public static readonly WorkerProfile FakeWorkerConfirm = new WorkerProfile(new User(CvnEmail.Create("w.confirm@mail.com").Value), AgencyId);
+            public static readonly WorkerProfile FakeWorkerConfirm = new WorkerProfile(new User(CvnEmail.Create("w.confirm@mail.com").Value), AgencyId) { Location = FakeData.FakeLocation() };
             public static readonly RequestApplicant FakeApplicantConfirm = RequestApplicant.CreateWithWorker(FakeRequest.Id, FakeWorkerConfirm.Id, "me@mail.com", null, RequestApplicantStatus.InProgress).Value;
             public static readonly RequestApplicantComplianceItem FakeConfirmCompletion = RequestApplicantComplianceItem.Create(FakeApplicantConfirm.Id, FakeComplianceItemW4.Id, "me@mail.com").Value;
 
-            public static readonly WorkerProfile FakeWorkerComplianceGet = new WorkerProfile(new User(CvnEmail.Create("w.cget@mail.com").Value), AgencyId);
+            public static readonly WorkerProfile FakeWorkerComplianceGet = new WorkerProfile(new User(CvnEmail.Create("w.cget@mail.com").Value), AgencyId) { Location = FakeData.FakeLocation() };
             public static readonly RequestApplicant FakeApplicantComplianceGet = RequestApplicant.CreateWithWorker(FakeRequest.Id, FakeWorkerComplianceGet.Id, "me@mail.com", null, RequestApplicantStatus.InProgress).Value;
             public static readonly RequestApplicantComplianceItem FakeComplianceGetCompletion = RequestApplicantComplianceItem.Create(FakeApplicantComplianceGet.Id, FakeComplianceItemW4.Id, "me@mail.com").Value;
 
-            public static readonly WorkerProfile FakeWorkerCompliancePost = new WorkerProfile(new User(CvnEmail.Create("w.cpost@mail.com").Value), AgencyId);
+            public static readonly WorkerProfile FakeWorkerCompliancePost = new WorkerProfile(new User(CvnEmail.Create("w.cpost@mail.com").Value), AgencyId) { Location = FakeData.FakeLocation() };
             public static readonly RequestApplicant FakeApplicantCompliancePost = RequestApplicant.CreateWithWorker(FakeRequest.Id, FakeWorkerCompliancePost.Id, "me@mail.com", null, RequestApplicantStatus.InProgress).Value;
 
-            public static readonly WorkerProfile FakeWorkerUncomplete = new WorkerProfile(new User(CvnEmail.Create("w.cdel@mail.com").Value), AgencyId);
+            public static readonly WorkerProfile FakeWorkerUncomplete = new WorkerProfile(new User(CvnEmail.Create("w.cdel@mail.com").Value), AgencyId) { Location = FakeData.FakeLocation() };
             public static readonly RequestApplicant FakeApplicantUncomplete = RequestApplicant.CreateWithWorker(FakeRequest.Id, FakeWorkerUncomplete.Id, "me@mail.com", null, RequestApplicantStatus.InProgress).Value;
             public static readonly RequestApplicantComplianceItem FakeUncompleteCompletion = RequestApplicantComplianceItem.Create(FakeApplicantUncomplete.Id, FakeComplianceItemW4.Id, "me@mail.com").Value;
 
@@ -332,23 +331,23 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             public static readonly RequestComplianceItem FakeSinSsnItem = RequestComplianceItem.Create(FakeSinRequest.Id, "SSN", true, ComplianceDocumentTarget.SocialInsurance).Value;
             public static readonly WorkerProfile FakeWorkerSinFill = new WorkerProfile(new User(CvnEmail.Create("w.sinfill@mail.com").Value), AgencyId)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country() } } }
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("CA") } } }
             };
             public static readonly RequestApplicant FakeApplicantSinFill = RequestApplicant.CreateWithWorker(FakeSinRequest.Id, FakeWorkerSinFill.Id, "me@mail.com", null, RequestApplicantStatus.InProgress).Value;
             public static readonly WorkerProfile FakeWorkerSinOwner = new WorkerProfile(new User(CvnEmail.Create("w.sinowner@mail.com").Value), AgencyId)
             {
                 SocialInsurance = "111-111-111",
-                Location = new Location { City = new City { Province = new Province { Country = new Country() } } }
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("CA") } } }
             };
             public static readonly WorkerProfile FakeWorkerSinDuplicate = new WorkerProfile(new User(CvnEmail.Create("w.sindup@mail.com").Value), AgencyId)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country() } } }
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("CA") } } }
             };
             public static readonly RequestApplicant FakeApplicantSinDuplicate = RequestApplicant.CreateWithWorker(FakeSinRequest.Id, FakeWorkerSinDuplicate.Id, "me@mail.com", null, RequestApplicantStatus.InProgress).Value;
             public static readonly WorkerProfile FakeWorkerSinConflict = new WorkerProfile(new User(CvnEmail.Create("w.sinconflict@mail.com").Value), AgencyId)
             {
                 SocialInsurance = "999-999-999",
-                Location = new Location { City = new City { Province = new Province { Country = new Country() } } }
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("CA") } } }
             };
             public static readonly RequestApplicant FakeApplicantSinConflict = RequestApplicant.CreateWithWorker(FakeSinRequest.Id, FakeWorkerSinConflict.Id, "me@mail.com", null, RequestApplicantStatus.InProgress).Value;
 
@@ -364,7 +363,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                context.Agencies.Add(FakeData.FakeAgency(FakeRequest.CompanyProfile.AgencyId));
                 context.Requests.AddRange(FakeRequest, FakeSinRequest);
                 context.IdentificationTypes.Add(FakeSinIdentificationType);
                 context.Candidates.AddRange(FakeCandidatePost, FakeCandidateDelete, FakeCandidateList, FakeCandidateUpdate, FakeCandidateConfirm);

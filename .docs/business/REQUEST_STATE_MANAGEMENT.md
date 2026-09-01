@@ -164,7 +164,7 @@ Agency request controllers live in `Covenant.Api/Controllers/Sigook/Agency/Reque
 - `POST   /api/agency/requests/{requestId}/Workers/{workerId}/Book` — Assign a worker (automatic transition; `Requests/WorkersController` → `AgencyService.BookWorker`)
 - `PUT    /api/agency/requests/{id}/Cancel` — Cancel (only valid when `Open` + no workers; also `PUT /bulk-cancel`)
 - `PUT    /api/agency/requests/{id:guid}/Open` — Reopen
-- `GET    /api/CompanyRequest` — Same listing from the company's perspective (`CompanyModule/CompanyRequest`)
+- `GET    /api/company/requests` — Same listing from the company's perspective (`Controllers/Sigook/Company/Requests/`)
 
 ---
 

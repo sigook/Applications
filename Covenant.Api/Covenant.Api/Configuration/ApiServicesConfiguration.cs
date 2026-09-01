@@ -126,6 +126,8 @@ public static class ApiServicesConfiguration
         services.AddScoped<ICompanyAdapter, CompanyAdapter>();
         services.AddScoped<IWorkerAdapter, WorkerAdapter>();
         services.AddScoped<IRequestAdapter, RequestAdapter>();
+        services.AddScoped<IInvoiceDocumentAdapter, InvoiceDocumentAdapter>();
+        services.AddScoped<IPayrollDocumentAdapter, PayrollDocumentAdapter>();
         return services;
     }
 

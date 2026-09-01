@@ -24,7 +24,7 @@ public class PersonnelController(IAgencyService agencyService, IAgencyRepository
     [ProducesResponseType(typeof(IEnumerable<AgencyPersonnelModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get()
     {
-        return Ok(await agencyRepository.GetAllPersonnel(User.GetAgencyId()));
+        return Ok(await agencyService.GetAgencyPersonnel(User.GetAgencyId()));
     }
 
     /// <summary>Gets the roles that the current user is allowed to assign to a personnel of the current agency.</summary>
@@ -53,9 +53,23 @@ public class PersonnelController(IAgencyService agencyService, IAgencyRepository
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var model = await agencyRepository.GetPersonnel(User.GetAgencyId(), id);
+        var model = await agencyService.GetAgencyPersonnel(User.GetAgencyId(), id);
         if (model is null) return NotFound();
         return Ok(model);
+    }
+
+    /// <summary>Updates the name, email and role of a personnel record of the current agency.</summary>
+    /// <param name="id">Identifier of the personnel record.</param>
+    /// <param name="model">Personnel data.</param>
+    [HttpPut("{id:guid}")]
+    [Authorize(Policy = PolicyConfiguration.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] AgencyPersonnelModel model)
+    {
+        var result = await agencyService.UpdateAgencyPersonnel(id, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 
     /// <summary>Deletes a personnel record of the current agency.</summary>

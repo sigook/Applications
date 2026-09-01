@@ -69,8 +69,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                         o.AddAgencyPersonnelRole(FakeAgencyUser.Id);
                     });
                 services.AddHttpClient();
-                services.AddDbContext<CovenantContext>(b =>
-                    b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IIdentityServerService, IdentityServerService>();
                 services.AddSingleton<ITimeService, TimeService>();
@@ -99,11 +98,11 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             private static readonly User FakeAgencyUser = new User(CvnEmail.Create($"agency{Guid.NewGuid():N}@email.com").Value);
             public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("updateMyEmail@e.com").Value), FakeAgencyUser.Id)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } }
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } }
             };
             public static readonly WorkerProfile FakeWorkerInStaging = new WorkerProfile(UserInStagingEnvironment, FakeAgencyUser.Id)
             {
-                Location = new Location { City = new City { Province = new Province() } }
+                Location = new Location { City = new City { Province = new Province() { Country = FakeData.FakeCountry() } } }
             };
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
@@ -118,6 +117,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
+                context.Agencies.Add(FakeData.FakeAgency(FakeAgencyUser.Id));
                 context.WorkerProfiles.AddRange(FakeWorker, FakeWorkerInStaging);
                 context.Users.AddRange(new User(OtherUserEmail), UserInStagingEnvironment);
                 context.SaveChanges();

@@ -24,7 +24,6 @@ public class DealsController(ISalesService salesService) : ControllerBase
         Ok(await salesService.GetDeals(filter));
 
     /// <summary>Creates a deal for a company profile, owned by the current sales user.</summary>
-    /// <param name="model">Deal data: company profile, title, date, value, type, status and optional document.</param>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]

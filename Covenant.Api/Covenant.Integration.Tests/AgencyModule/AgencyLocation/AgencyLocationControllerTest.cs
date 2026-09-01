@@ -1,4 +1,4 @@
-﻿using Covenant.Api;
+using Covenant.Api;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Sigook.Agency;
 using Covenant.Common.Entities;
@@ -43,13 +43,12 @@ namespace Covenant.Integration.Tests.AgencyModule.AgencyLocation
                             {
                                 o.AddAgencyPersonnelRole(FakeAgency.Id);
                             });
-                        services.AddDbContext<CovenantContext>(b
-                            => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                        services.AddTestDatabase();
                         services.AddSingleton<ITimeService, TimeService>();
                         services.AddSingleton<AgencyIdFilter>();
                     });
                 });
-            Ontario = new Province { Value = "Ontario", Country = new Country { Value = "Canada" } };
+            Ontario = new Province { Value = "Ontario", Country = FakeData.FakeCountry("CA") };
             Toronto = new City { Value = "Toronto", Province = Ontario };
             York = new City { Value = "York", Province = Ontario };
             Brampton = new City { Value = "Brampton", Province = Ontario };

@@ -1,5 +1,5 @@
-﻿using Covenant.Api.Authorization;
-using Covenant.Api.CompanyModule.CompanyRequestWorker.Controllers;
+using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Sigook.Company.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -41,7 +41,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
             _client = factory.CreateClient();
         }
 
-        private static string RequestUri() => CompanyRequestWorkerController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString());
+        private static string RequestUri() => WorkersController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString());
 
         [Fact]
         public async Task Get()
@@ -51,7 +51,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
             response.EnsureSuccessStatusCode();
             var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyWorkerRequestModel>>();
             Assert.NotEmpty(list.Items);
-            var item = list.Items[0];
+            var item = list.Items.Single(i => i.WorkerProfileId == Data.WorkerProfile.Id);
             Assert.NotNull(item);
             Assert.NotNull(item.Name);
             Assert.NotNull(item.ProfileImage);
@@ -105,7 +105,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                         o.AddCompanyRole();
                     });
                 services.AddHttpClient();
-                services.AddDbContext<CovenantContext>(p => p.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestService, RequestService>();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<ILocationRepository, LocationRepository>();
@@ -151,7 +151,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                 Agency = Agency,
                 Locations = new List<CompanyProfileLocation>
                 {
-                    new CompanyProfileLocation {Location = new Location {Address = "ABC",City = new City {Province = new Province{Country = new Country()}}}},
+                    new CompanyProfileLocation {Location = new Location {Address = "ABC",City = new City {Province = new Province{Country = FakeData.FakeCountry("CA")}}}},
                 },
                 Industry = new CompanyProfileIndustry("Company Industry")
             };
@@ -167,7 +167,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                     _workerProfile = new WorkerProfile(new User(CvnEmail.Create("worker_profile@mail.com").Value))
                     {
                         Agency = Agency,
-                    };
+                     Location = FakeData.FakeLocation(),};
                     var basicInfo = new Mock<IWorkerBasicInformation<ICatalog<Guid>>>();
                     basicInfo.SetupGet(i => i.FirstName).Returns("Pepe");
                     _workerProfile.PatchBasicInformation(basicInfo.Object);
@@ -181,7 +181,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
             {
                 ApprovedToWork = true,
                 AgencyId = Agency.Id,
-                Location = new Location { City = new City { Province = new Province() } }
+                Location = new Location { City = new City { Province = new Province() { Country = FakeData.FakeCountry() } } }
             };
 
             public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);

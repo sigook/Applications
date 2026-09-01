@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
+using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
@@ -72,8 +72,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder()
                     .AddTestAuth(o => o.AddAgencyPersonnelRole());
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();

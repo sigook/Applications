@@ -55,6 +55,7 @@ public class AgencyService : IAgencyService
     private readonly IUploadedFilesService uploadedFilesService;
     private readonly ILogger<AgencyService> logger;
     private readonly IServiceProvider serviceProvider;
+    private readonly IValidator<AgencyPersonnelModel> agencyPersonnelValidator;
 
     public AgencyService(
         IAgencyRepository agencyRepository,
@@ -73,7 +74,8 @@ public class AgencyService : IAgencyService
         IEmailService emailService,
         IUploadedFilesService uploadedFilesService,
         ILogger<AgencyService> logger,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IValidator<AgencyPersonnelModel> agencyPersonnelValidator)
     {
         this.timeService = timeService;
         this.agencyRepository = agencyRepository;
@@ -92,6 +94,7 @@ public class AgencyService : IAgencyService
         this.uploadedFilesService = uploadedFilesService;
         this.logger = logger;
         this.serviceProvider = serviceProvider;
+        this.agencyPersonnelValidator = agencyPersonnelValidator;
     }
 
     public async Task<Result<Guid>> CreateCompany(CompanyProfileDetailModel model)
@@ -596,8 +599,78 @@ public class AgencyService : IAgencyService
             ? CovenantConstants.Role.SuperAdminAssignable
             : CovenantConstants.Role.AgencyAssignable;
 
+    public async Task<IEnumerable<AgencyPersonnelModel>> GetAgencyPersonnel(Guid agencyId)
+    {
+        var personnel = (await agencyRepository.GetAllPersonnel(agencyId)).ToList();
+        await SetPersonnelRoles(personnel);
+        return personnel;
+    }
+
+    public async Task<AgencyPersonnelModel> GetAgencyPersonnel(Guid agencyId, Guid id)
+    {
+        var model = await agencyRepository.GetPersonnel(agencyId, id);
+        if (model is not null) await SetPersonnelRoles([model]);
+        return model;
+    }
+
+    private async Task SetPersonnelRoles(IReadOnlyCollection<AgencyPersonnelModel> personnel)
+    {
+        if (personnel.Count == 0) return;
+        var roles = await identityServerService.GetUsersRoles(personnel.Select(p => p.UserId));
+        if (!roles)
+        {
+            logger.LogError("Unable to load the roles of the agency personnel: {Error}", roles.StringErrors);
+            return;
+        }
+        var rolesByUser = roles.Value.GroupBy(r => r.Id).ToDictionary(g => g.Key, g => g.First().Role);
+        foreach (var item in personnel)
+        {
+            if (rolesByUser.TryGetValue(item.UserId, out var role)) item.Role = role;
+        }
+    }
+
+    public async Task<Result> UpdateAgencyPersonnel(Guid id, AgencyPersonnelModel model)
+    {
+        var validation = await agencyPersonnelValidator.ValidateAsync(model);
+        if (!validation.IsValid) return validation.ToResultFailure();
+        var entity = await agencyRepository.GetPersonnel(id);
+        if (entity is null || entity.AgencyId != identityServerService.GetAgencyId())
+        {
+            return Result.Fail("The user does not belong to this agency");
+        }
+        if (!GetAssignableRoles().Contains(model.Role))
+        {
+            return Result.Fail("The selected role cannot be assigned");
+        }
+        var email = CvnEmail.Create(model.Email);
+        if (!email) return Result.Fail(email.Errors);
+        var roles = await identityServerService.GetUsersRoles([entity.UserId]);
+        if (!roles) return Result.Fail(roles.Errors);
+        var currentRole = roles.Value.FirstOrDefault(r => r.Id == entity.UserId)?.Role;
+        var roleChanged = !string.Equals(currentRole, model.Role, StringComparison.OrdinalIgnoreCase);
+        if (roleChanged && entity.UserId == identityServerService.GetUserId())
+        {
+            return Result.Fail("You cannot change your own role");
+        }
+        if (!string.Equals(entity.User.Email, email.Value, StringComparison.OrdinalIgnoreCase))
+        {
+            var emailUpdated = await identityServerService.UpdateUserEmail(new UpdateEmailModel(entity.UserId) { NewEmail = email.Value });
+            if (!emailUpdated) return emailUpdated;
+        }
+        if (roleChanged)
+        {
+            var roleUpdated = await identityServerService.UpdateUserRole(new UpdateRoleModel { Id = entity.UserId, Role = model.Role });
+            if (!roleUpdated) return roleUpdated;
+        }
+        entity.UpdateName(model.Name);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
     public async Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model, Guid? agencyId = null)
     {
+        var validation = await agencyPersonnelValidator.ValidateAsync(model);
+        if (!validation.IsValid) return validation.ToResultFailure();
         if (!GetAssignableRoles().Contains(model.Role))
         {
             return Result.Fail("The selected role cannot be assigned");

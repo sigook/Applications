@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Candidates;
+using Covenant.Api.Controllers.Sigook.Agency.Candidates;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
@@ -81,13 +81,13 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                         o.AddAgencyPersonnelRole();
                         o.AddName("recruiter@mail.com");
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 
-            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
+            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
             public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "B Martin") { Agency = FakeAgency };
 
             public static readonly CandidateDocument FakeDocument = new CandidateDocument(FakeCandidate.Id, CovenantFile.Create("doc.pdf").Value);

@@ -40,7 +40,7 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
             services.AddDefaultTestConfiguration();
             services.AddTestAuthenticationBuilder()
                 .AddTestAuth(o => o.AddAdminRole(Data.Agency.Id));
-            services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
             services.AddSingleton(Mock.Of<IInvoicesContainer>());
             services.AddSingleton(Mock.Of<IPayStubsContainer>());
             var identityServerService = new Mock<IIdentityServerService>();
@@ -72,8 +72,8 @@ namespace Covenant.Integration.Tests.Shared.InvoiceDocument
 
     public static class Data
     {
-        public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency();
-        public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("companyProfile@mail.com").Value), Agency = Agency };
+        public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+        public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("companyProfile@mail.com").Value), Agency = Agency , Industry = new CompanyProfileIndustry("Test") };
         public static readonly Invoice Invoice = new Invoice
         {
             CompanyProfileId = CompanyProfile.Id,

@@ -1,0 +1,125 @@
+.rcard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rcard {
+  background: $white;
+  border: 1px solid $gray-border;
+  border-radius: 8px;
+  padding: 12px;
+
+  &.is-clickable {
+    cursor: pointer;
+  }
+}
+
+.rcard__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rcard__title {
+  font-weight: 600;
+  color: $navy;
+  overflow-wrap: anywhere;
+}
+
+.rcard__sub {
+  font-size: 0.85rem;
+  color: $grey-light;
+  overflow-wrap: anywhere;
+}
+
+.rcard__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.rcard__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.rcard__label {
+  color: $grey-light;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.rcard-worker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rcard-detail {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid $gray-border;
+}
+
+.rcard__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.rcard__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  > .field {
+    flex: 1 1 auto;
+    margin-bottom: 0;
+  }
+}
+
+.filter-trigger {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.filter-count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: $primary;
+  color: $white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+@include mobile {
+  .field.is-grouped {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+}

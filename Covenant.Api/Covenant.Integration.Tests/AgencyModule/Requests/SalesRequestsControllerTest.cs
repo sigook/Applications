@@ -108,7 +108,7 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
         {
             services.AddDefaultTestConfiguration();
             services.AddTestAuthenticationBuilder().AddTestAuth(o => o.AddName("sales@mail.com"));
-            services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
         }
 
         public void Configure(IApplicationBuilder app, CovenantContext context)
@@ -123,7 +123,7 @@ public class SalesRequestsControllerTest : BaseTestOrder, IClassFixture<CustomWe
 
     private static class Data
     {
-        public static readonly Agency FakeAgency = new Agency("Sales Agency", "4160000000");
+        public static readonly Agency FakeAgency = new Agency("Sales Agency", "4160000000") { User = FakeData.FakeUser() };
         public static readonly Guid AgencyId = FakeAgency.Id;
 
         public static readonly User SalesUser = new User(CvnEmail.Create("sales@mail.com").Value);

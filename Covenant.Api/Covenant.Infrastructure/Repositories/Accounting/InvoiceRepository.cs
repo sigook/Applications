@@ -53,7 +53,7 @@ public class InvoiceRepository : IInvoiceRepository
         return await query.ToPaginatedList(filter);
     }
 
-    public async Task<InvoiceListModelWithTotals> GetInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    public async Task<InvoiceListModelWithTotals> GetInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
         var query = GetInvoicesQueryForAgency(agencyIds, filter);
         var detail = await query.ToPaginatedList(filter);
@@ -66,7 +66,7 @@ public class InvoiceRepository : IInvoiceRepository
 
     }
 
-    public async Task<InvoiceListModelWithTotals> GetInvoicesUSAForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    public async Task<InvoiceListModelWithTotals> GetInvoicesUSAForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
         var query = GetInvoicesUSAQueryForAgency(agencyIds, filter);
         var detail = await query.ToPaginatedList(filter);
@@ -78,14 +78,14 @@ public class InvoiceRepository : IInvoiceRepository
         };
     }
 
-    public async Task<List<InvoiceListModel>> GetAllInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    public async Task<List<InvoiceListModel>> GetAllInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
         var query = GetInvoicesQueryForAgency(agencyIds, filter);
         var result = await query.ToListAsync();
         return result;
     }
 
-    public async Task<List<InvoiceListModel>> GetAllInvoicesUSAForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    public async Task<List<InvoiceListModel>> GetAllInvoicesUSAForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
         var query = GetInvoicesUSAQueryForAgency(agencyIds, filter);
         var result = await query.ToListAsync();
@@ -307,7 +307,7 @@ public class InvoiceRepository : IInvoiceRepository
             .ToListAsync();
     }
 
-    private IQueryable<InvoiceListModel> GetInvoicesQueryForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    private IQueryable<InvoiceListModel> GetInvoicesQueryForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
         var invoices = _context.Invoices.Where(i => agencyIds.Contains(i.CompanyProfile.AgencyId));
         var query = from i in invoices
@@ -333,7 +333,7 @@ public class InvoiceRepository : IInvoiceRepository
         return query;
     }
 
-    private IQueryable<InvoiceListModel> GetInvoicesUSAQueryForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    private IQueryable<InvoiceListModel> GetInvoicesUSAQueryForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
         var invoices = _context.InvoicesUSA.Where(i => agencyIds.Contains(i.CompanyProfile.AgencyId));
         var query = from i in invoices
@@ -357,7 +357,7 @@ public class InvoiceRepository : IInvoiceRepository
         return query;
     }
 
-    private Expression<Func<InvoiceListModel, bool>> ApplyFilterInvoices(GetInvoicesFilterV2 filter)
+    private Expression<Func<InvoiceListModel, bool>> ApplyFilterInvoices(GetInvoicesFilter filter)
     {
         var predicate = PredicateBuilder.New<InvoiceListModel>(true);
         if (!string.IsNullOrWhiteSpace(filter.InvoiceNumber))
@@ -371,7 +371,7 @@ public class InvoiceRepository : IInvoiceRepository
         return predicate;
     }
 
-    private IQueryable<InvoiceListModel> ApplySortInvoices(IQueryable<InvoiceListModel> query, GetInvoicesFilterV2 filter)
+    private IQueryable<InvoiceListModel> ApplySortInvoices(IQueryable<InvoiceListModel> query, GetInvoicesFilter filter)
     {
         switch (filter.SortBy)
         {

@@ -68,8 +68,7 @@ builder.Services.AddSwaggerGen(opt =>
             Title = "Covenant/Sigook API",
             Version = "v1",
             Description = "Staffing and recruitment platform API for the Canadian market. "
-                + "Routes for the Agency, Company, Worker and Accounting modules. "
-                + "Versioned routes (v2, v4) are encoded directly in the route template.",
+                + "Routes for the Agency, Company, Worker and Accounting modules.",
             Contact = new OpenApiContact { Name = "Covenant/Sigook" }
         });
 

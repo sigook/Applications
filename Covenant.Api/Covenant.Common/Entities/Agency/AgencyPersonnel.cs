@@ -12,6 +12,8 @@ namespace Covenant.Common.Entities.Agency
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsPrimary { get; private set; }
 
+        public void UpdateName(string name) => Name = name;
+
         public void SetToNotPrimary() => IsPrimary = false;
         public void SetToPrimary() => IsPrimary = true;
 

@@ -5,92 +5,79 @@ using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 
 namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
     public partial class WorkersControllerTest
     {
-        private static class Data
+        public class Data : ITestData
         {
             public static readonly Guid AgencyId = Guid.NewGuid();
-            private static readonly Availability FakeAvailability = new Availability();
-            public static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
+            public static readonly DateTime FakeNow = new(2019, 01, 01);
 
-            private static readonly CompanyProfileJobPositionRate JobPositionRate = new CompanyProfileJobPositionRate { JobPosition = "General Labour" };
-            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { AgencyId = AgencyId, FullName = "Test Company" };
-            public static readonly Request FakeRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, JobPositionRate.Id, workersQuantity: 5).Value;
+            private readonly Availability availability = new();
 
-            public static readonly WorkerProfile FakeWorkerForList = new WorkerProfile(new User(CvnEmail.Create("w_profile@mail.com").Value))
+            public Covenant.Common.Entities.Agency.Agency Agency { get; }
+            public CompanyProfile CompanyProfile { get; }
+            public CompanyProfileJobPositionRate JobPositionRate { get; }
+            public Request Request { get; }
+            public WorkerProfile WorkerForList { get; }
+            public WorkerProfile WorkerToBook { get; }
+            public WorkerProfile WorkerToReject { get; }
+            public WorkerProfile WorkerToRejectObsolete { get; }
+            public WorkerRequest WorkerRequestList { get; }
+            public WorkerRequest WorkerRequestReject { get; }
+            public WorkerRequest WorkerRequestRejectObsolete { get; }
+
+            public Data()
             {
-                ApprovedToWork = true,
-                AgencyId = AgencyId,
-                Location = new Location { City = new City { Province = new Province() } },
-            };
+                Agency = FakeData.FakeAgency(AgencyId);
+                CompanyProfile = FakeData.FakeCompanyProfile(Agency);
+                JobPositionRate = FakeData.FakeJobPositionRate(CompanyProfile);
+                Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow,
+                    JobPositionRate.Id, workersQuantity: 5).Value;
 
-            static Data()
-            {
-                FakeWorkerForList.PatchAvailabilities(new[] { new BaseModel<Guid>(FakeAvailability.Id) });
-                FakeWorkerForList.PatchProfileImage(new CovenantFile("profile.png"));
-                FakeWorkerForList.PatchSinInformation(new FakeSinInfo
-                {
-                    DueDate = DateTime.Now.AddDays(1),
-                    SocialInsurance = "A987654321B",
-                    SocialInsuranceExpire = true,
-                    SocialInsuranceFile = new CovenantFile("sin.pdf")
-                });
-                FakeWorkerToBook.PatchSinInformation(new FakeSinInfo
-                {
-                    DueDate = DateTime.Now.AddDays(1),
-                    SocialInsurance = "A123456789B",
-                    SocialInsuranceExpire = true,
-                    SocialInsuranceFile = new CovenantFile("sin.pdf")
-                });
-                FakeWorkerToBook.PatchAvailabilities(new[] { new BaseModel<Guid>(FakeAvailability.Id) });
-                FakeWorkerToBook.PatchProfileImage(new CovenantFile("profile.png"));
+                WorkerForList = FakeData.FakeWorkerProfile(Agency, "w_profile@mail.com");
+                WorkerToBook = FakeData.FakeWorkerProfile(Agency, "w_book@mail.com",
+                    FakeData.FakeCity(FakeData.FakeProvince(FakeData.FakeCountry("USA"))));
+                WorkerToReject = FakeData.FakeWorkerProfile(Agency, "w_reject@mail.com");
+                WorkerToRejectObsolete = FakeData.FakeWorkerProfile(Agency, "w_reject_obsolote@mail.com");
+
+                PatchWorker(WorkerForList, "A987654321B");
+                PatchWorker(WorkerToBook, "A123456789B");
+
+                WorkerRequestList = WorkerRequest.AgencyBook(WorkerForList.Id, Request.Id, "recruiter@mail.com");
+                WorkerRequestReject = WorkerRequest.AgencyBook(WorkerToReject.Id, Request.Id, "recruiter@mail.com");
+                WorkerRequestRejectObsolete = WorkerRequest.AgencyBook(WorkerToRejectObsolete.Id, Request.Id, "recruiter@mail.com");
             }
 
-            public static readonly WorkerProfile FakeWorkerToBook = new WorkerProfile(new User(CvnEmail.Create("w_profile@mail.com").Value))
+            public IEnumerable<WorkerProfile> Workers =>
+                [WorkerForList, WorkerToBook, WorkerToReject, WorkerToRejectObsolete];
+
+            private void PatchWorker(WorkerProfile worker, string socialInsurance)
             {
-                ApprovedToWork = true,
-                AgencyId = AgencyId,
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } }
-            };
+                worker.PatchAvailabilities([new BaseModel<Guid>(availability.Id)]);
+                worker.PatchProfileImage(new CovenantFile("profile.png"));
+                worker.PatchSinInformation(new FakeSinInfo
+                {
+                    DueDate = DateTime.Now.AddDays(1),
+                    SocialInsurance = socialInsurance,
+                    SocialInsuranceExpire = true,
+                    SocialInsuranceFile = new CovenantFile("sin.pdf")
+                });
+            }
 
-            private static readonly WorkerProfile FakeWorkerToReject = new WorkerProfile(new User(CvnEmail.Create("w_reject@mail.com").Value))
+            public void Seed(CovenantContext context)
             {
-                ApprovedToWork = true,
-                AgencyId = AgencyId,
-                Location = new Location { City = new City { Province = new Province() } }
-            };
-
-            public static readonly WorkerProfile FakeWorkerToRejectObsolete = new WorkerProfile(new User(CvnEmail.Create("w_reject_obsolote@mail.com").Value))
-            {
-                ApprovedToWork = true,
-                AgencyId = AgencyId,
-                Location = new Location { City = new City { Province = new Province() } }
-            };
-
-            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestList =
-                 Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerForList.Id, FakeRequest.Id, "recruiter@mail.com");
-
-            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestReject =
-                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerToReject.Id, FakeRequest.Id, "recruiter@mail.com");
-
-            public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestRejectObsolete =
-                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerToRejectObsolete.Id, FakeRequest.Id, "recruiter@mail.com");
-
-            public static readonly IEnumerable<WorkerProfile> FakeWorkers = new[] { FakeWorkerForList, FakeWorkerToBook, FakeWorkerToReject, FakeWorkerToRejectObsolete };
-
-            public static void Seed(CovenantContext context)
-            {
-                context.Agencies.Add(Utils.FakeData.FakeAgency(AgencyId));
-                context.Availabilities.Add(FakeAvailability);
+                context.Agencies.Add(Agency);
+                context.Availabilities.Add(availability);
                 context.CompanyProfiles.Add(CompanyProfile);
                 context.CompanyProfileJobPositionRates.Add(JobPositionRate);
-                context.WorkerProfiles.AddRange(FakeWorkers);
-                context.Requests.Add(FakeRequest);
-                context.WorkerRequests.AddRange(FakeWorkerRequestList, FakeWorkerRequestReject, FakeWorkerRequestRejectObsolete);
+                context.WorkerProfiles.AddRange(Workers);
+                context.Requests.Add(Request);
+                context.WorkerRequests.AddRange(WorkerRequestList, WorkerRequestReject, WorkerRequestRejectObsolete);
                 context.SaveChanges();
             }
 

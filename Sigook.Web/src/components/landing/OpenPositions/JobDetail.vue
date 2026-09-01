@@ -68,7 +68,7 @@
  */
 import { computed } from 'vue'
 import type { JobViewModel } from '@/types/website'
-import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
+import { useCandidateApplyModal } from '@/composables/useCandidateApplyModal'
 import ArrowPillCta from '@/components/landing/shared/ui/ArrowPillCta.vue'
 import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
 

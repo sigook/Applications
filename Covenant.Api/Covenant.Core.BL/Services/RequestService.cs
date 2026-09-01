@@ -343,7 +343,7 @@ public class RequestService : IRequestService
         var entity = new RequestCancellationDetail
         {
             RequestId = request.Id,
-            ReasonCancellationRequestId = cancellationReasonId,
+            ReasonCancellationRequestId = cancellationReasonId == default ? null : cancellationReasonId,
             OtherReasonCancellationRequest = otherCancellationReason,
             CancelBy = cancelBy,
             CancelAt = timeService.GetCurrentDateTime()
@@ -519,6 +519,8 @@ public class RequestService : IRequestService
             JobBoardsSummary = summary
         };
     }
+
+    public Task<ShiftModel> GetRequestShift(Guid requestId) => requestRepository.GetRequestShift(requestId);
 
     public async Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources)
     {

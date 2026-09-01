@@ -17,6 +17,7 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Linq.Expressions;
@@ -68,7 +69,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<IEmailService>(),
                 Mock.Of<IUploadedFilesService>(),
                 Mock.Of<ILogger<AgencyService>>(),
-                Mock.Of<IServiceProvider>());
+                Mock.Of<IServiceProvider>(),
+                Mock.Of<IValidator<AgencyPersonnelModel>>());
         }
 
         [Fact]

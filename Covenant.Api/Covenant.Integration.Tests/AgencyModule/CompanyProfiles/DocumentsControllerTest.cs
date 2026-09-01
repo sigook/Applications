@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
+using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -90,14 +90,13 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         o.AddAgencyPersonnelRole();
                         o.AddName("recruiter@mail.com");
                     });
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 
-            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency();
+            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
             public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
                 "", "", new CompanyProfileIndustry("Company Industry"));
 

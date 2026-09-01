@@ -85,8 +85,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { showAlertError } from "@/utils/toast";
+import { useBreakpoint } from '@/composables/useBreakpoint';
 import { distributeHours } from "@/utils/distributeHours";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import dayjs from "dayjs";
@@ -103,7 +104,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ (e: 'onMonthChange', v: { startDate: string; endDate: string }): void }>();
 
-const windowWidth = ref(window.innerWidth);
+const { isMobile } = useBreakpoint();
 const calendar = ref<any[]>([]);
 const selectDate = ref<any>(null);
 const today = ref<any>(null);
@@ -178,10 +179,6 @@ function isAvailableToUpdate(date: any) {
   return false;
 }
 
-function handleResize() {
-  windowWidth.value = window.innerWidth;
-}
-
 function distributeWeekHours(week: any) {
   const hours = distributeHours(week.days.length, week.totalHoursWeek, maximumHoursPerDay);
   if (hours.length > 0) {
@@ -228,7 +225,6 @@ function syncHighlightsWithCalendar() {
   });
 }
 
-const isMobile = computed(() => windowWidth.value <= 768);
 const hasEvents = computed(() => props.highlights && props.highlights.length > 0);
 
 watch(() => props.highlights, () => {
@@ -239,14 +235,6 @@ watch(() => props.highlights, () => {
 today.value = dayjs().toDate();
 selectDate.value = today.value;
 getTodayMonth();
-
-onMounted(() => {
-  window.addEventListener('resize', handleResize);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', handleResize);
-});
 
 defineExpose({ WorkerRequestStatus });
 </script>

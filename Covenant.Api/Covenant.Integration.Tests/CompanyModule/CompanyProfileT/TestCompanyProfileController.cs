@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Api.Utils;
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
@@ -41,7 +41,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
                 ConfirmPassword = "P@ssw0rd",
                 Locations = new List<LocationModel> { new LocationModel { Address = "Address", PostalCode = "A1A1A1", City = new CityModel { Id = Startup.FakeCity.Id } } }
             };
-            HttpResponseMessage response = await _client.PostAsJsonAsync("api/CompanyProfile", model);
+            HttpResponseMessage response = await _client.PostAsJsonAsync("api/Company", model);
             response.EnsureSuccessStatusCode();
             response = await _client.GetAsync(response.Headers.Location);
             var detail = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
@@ -54,7 +54,9 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
         public class Startup
         {
             private static readonly Guid FakeCompanyId = Guid.NewGuid();
-            public static readonly City FakeCity = new City { Value = "Toronto", Province = new Province { Country = new Country() } };
+            public static readonly City FakeCity = new City { Value = "Toronto", Province = new Province { Country = FakeData.FakeCountry("CA") } };
+
+            public static readonly Covenant.Common.Entities.Agency.Agency MasterAgency = FakeData.FakeAgency();
 
             public void ConfigureServices(IServiceCollection services)
             {
@@ -64,15 +66,14 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
                     o.AddSub(FakeCompanyId);
                     o.AddCompanyRole();
                 });
-                services.AddDbContext<CovenantContext>(b =>
-                    b.UseInMemoryDatabase(nameof(TestCompanyProfileController)), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 var defaultLogoProvider = new Mock<IDefaultLogoProvider>();
                 defaultLogoProvider.Setup(p => p.GetLogo(It.IsAny<string>())).ReturnsAsync(new CovenantFileModel("logo.png", "Logo"));
                 services.AddSingleton(defaultLogoProvider.Object);
                 services.AddSingleton<ICompanyService, CompanyService>();
                 var agencyRepositoryMock = new Mock<IAgencyRepository>();
-                agencyRepositoryMock.Setup(ar => ar.GetAgencyMasterByLocation(It.IsAny<CityModel>())).ReturnsAsync(new Covenant.Common.Entities.Agency.Agency());
+                agencyRepositoryMock.Setup(ar => ar.GetAgencyMasterByLocation(It.IsAny<CityModel>())).ReturnsAsync(MasterAgency);
                 services.AddSingleton(agencyRepositoryMock.Object);
                 services.AddSingleton<ITimeService, TimeService>();
                 var identityServerService = new Mock<IIdentityServerService>();
@@ -93,6 +94,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
+                context.Agencies.Add(MasterAgency);
                 context.Cities.Add(FakeCity);
                 context.SaveChanges();
             }

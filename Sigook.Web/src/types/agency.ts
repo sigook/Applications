@@ -137,7 +137,7 @@ export interface AgencyLocationDetail {
   isBilling?: boolean;
 }
 
-// Body used by AgencyCreatePersonnelModal.vue (POST /api/agency/personnel)
+// Body used by AgencyPersonnelModal.vue (POST /api/agency/personnel, PUT /api/agency/personnel/{id})
 export interface AgencyPersonnelCreateModel {
   name: string | null;
   email: string | null;
@@ -147,8 +147,10 @@ export interface AgencyPersonnelCreateModel {
 // Item returned by GET /api/agency/personnel
 export interface AgencyPersonnelListItem {
   id: string;
+  userId: string;
   name: string;
   email: string;
+  role: string;
 }
 
 // Item returned by GET /api/agency/personnel/Agencies. Mirrors backend PersonnelAgencyModel.
@@ -286,7 +288,7 @@ export interface AgencyWorkerRequestHistoryItem {
 // Agency-managed company (agency back-office actions on companies)
 // ---------------------------------------------------------------------------
 
-// Filter for GET /api/v2/AgencyCompanyProfile. Mirrors backend GetCompanyForAgencyFilter.
+// Filter for GET /api/agency/companyprofiles. Mirrors backend GetCompanyForAgencyFilter.
 export interface AgencyCompanyFilter {
   pageIndex?: number;
   pageSize?: number;
@@ -306,7 +308,7 @@ export interface AgencyCompanyFilter {
   salesPersonnelId?: string;
 }
 
-// Item returned by GET /api/v2/AgencyCompanyProfile.
+// Item returned by GET /api/agency/companyprofiles.
 export interface AgencyCompanyListItem {
   id: string;
   fullName: string;
@@ -366,7 +368,7 @@ export interface VaccinationRequiredModel {
   vaccinationRequiredComments?: string;
 }
 
-// Body for PUT /api/CompanyProfile/{id}/InvoiceNotes.
+// Body for PUT /api/agency/companyprofiles/{profileId}/InvoiceNotes.
 // Mirrors backend CompanyProfileInvoiceNotesModel.
 export interface InvoiceNotesModel {
   htmlNotes?: string;

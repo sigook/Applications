@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Request;
 using CandidateEntity = Covenant.Common.Entities.Candidate.Candidate;
 using Covenant.Common.Entities.Worker;
@@ -610,7 +610,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                                                          Id = wr.Id,
                                                          WorkerId = wr.WorkerProfile.WorkerId,
                                                          WorkerProfileId = wr.WorkerProfileId,
-                                                         Name = $"{wr.WorkerProfile.FirstName} {wr.WorkerProfile.MiddleName} {wr.WorkerProfile.LastName} {wr.WorkerProfile.SecondLastName}",
+                                                         Name = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
                                                          WorkerRequestStatus = wr.WorkerRequestStatus,
                                                          RejectComments = wr.RejectComments,
                                                          RejectedAt = wr.RejectedAt,
@@ -641,7 +641,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
              WorkerRate = r.WorkerRate,
              WorkerSalary = r.WorkerSalary,
              WorkerApprovedToWork = wp.ApprovedToWork.ToString(),
-             Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
+             Location = r.JobLocation.Address + " " + r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value + " " + r.JobLocation.PostalCode,
              Entrance = r.JobLocation.Entrance,
              Status = wr.WorkerRequestStatus.ToString(),
              WorkersQuantity = r.WorkersQuantity,
@@ -667,7 +667,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 JobTitle = lj.r.JobTitle,
                 AgencyFullName = lj.r.CompanyProfile.Agency.FullName,
                 WorkerRate = lj.r.WorkerRate.HasValue ? lj.r.WorkerRate : lj.r.WorkerSalary,
-                Location = $"{lj.r.JobLocation.Address} {lj.r.JobLocation.City.Value} {lj.r.JobLocation.City.Province.Value} {lj.r.JobLocation.PostalCode}",
+                Location = lj.r.JobLocation.Address + " " + lj.r.JobLocation.City.Value + " " + lj.r.JobLocation.City.Province.Value + " " + lj.r.JobLocation.PostalCode,
                 Entrance = lj.r.JobLocation.Entrance,
                 Status = lj.wr.WorkerRequestStatus.ToString(),
                 WorkersQuantity = lj.r.WorkersQuantity,
@@ -796,7 +796,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         AgencyFullName = r.CompanyProfile.Agency.FullName,
                         CreatedAt = r.CreatedAt,
                         JobTitle = r.JobTitle,
-                        Location = $"{r.JobLocation.Address} {r.JobLocation.City.Value} {r.JobLocation.City.Province.Value} {r.JobLocation.PostalCode}",
+                        Location = r.JobLocation.Address + " " + r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value + " " + r.JobLocation.PostalCode,
                         RequestStatus = r.Status,
                         WorkersQuantity = r.WorkersQuantity,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
@@ -819,7 +819,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                          Id = wr.Id,
                          WorkerId = wr.WorkerProfile.WorkerId,
                          WorkerProfileId = wr.WorkerProfileId,
-                         Name = $"{wr.WorkerProfile.FirstName} {wr.WorkerProfile.MiddleName} {wr.WorkerProfile.LastName} {wr.WorkerProfile.SecondLastName}",
+                         Name = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
                          WorkerRequestStatus = wr.WorkerRequestStatus,
                          ProfileImage = wr.WorkerProfile.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wr.WorkerProfile.ProfileImage.FileName}",
                          NumberId = wr.WorkerProfile.NumberId,

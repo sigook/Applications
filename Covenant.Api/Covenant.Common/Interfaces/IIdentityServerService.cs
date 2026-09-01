@@ -14,6 +14,7 @@ public interface IIdentityServerService
     Task<Result> InactiveUser(Guid id);
     Task<Result> UpdateUserEmail(UpdateEmailModel model);
     Task<Result> UpdateUserRole(UpdateRoleModel model);
+    Task<Result<IEnumerable<UserRoleModel>>> GetUsersRoles(IEnumerable<Guid> userIds);
     Guid GetCompanyId();
     Guid GetAgencyId();
     Guid GetAgencyPersonnelId();

@@ -23,5 +23,6 @@ namespace Covenant.Core.BL.Interfaces
         Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId);
         Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources);
         Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
+        Task<ShiftModel> GetRequestShift(Guid requestId);
     }
 }

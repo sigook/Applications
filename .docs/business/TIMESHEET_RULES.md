@@ -122,9 +122,9 @@ Excess is computed by `CalculateExcessHours` (TimesheetCalculatorService.cs:144-
 
 **Example** (`OvertimeStartsAfter = 44`): Saturday shift of 8 h with 40 h already accumulated → Regular 4 h, Overtime 4 h, accumulated 48 h.
 
-### 5. Night shift — deprecated
+### 5. Night shift — not computed
 
-Not computed. `CalculateHoursBreakdown` explicitly does not support it (TimesheetCalculatorService.cs:80) and downstream consumers pass 0. Legacy `NightShift` columns/fields still exist but are always zero.
+`CalculateHoursBreakdown` explicitly does not support it (TimesheetCalculatorService.cs:80) and downstream consumers pass 0. The `NightShift` columns/fields exist and are always zero. Do not add night-shift logic.
 
 ---
 

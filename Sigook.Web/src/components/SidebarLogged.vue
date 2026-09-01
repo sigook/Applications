@@ -1,99 +1,116 @@
 <template>
-  <aside class="sidebar-logged" :class="{ 'is-collapsed': collapsed }">
+  <div class="sidebar-shell">
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="sidebar-brand">
-      <router-link to="/" class="sidebar-brand-link">
-        <img src="../assets/images/sm-logo.png" class="sidebar-logo" alt="logo" />
-      </router-link>
-      <button v-if="!isMobile" class="sidebar-toggle" @click="isCollapsed = !isCollapsed"
-        :title="isCollapsed ? 'Expand' : 'Collapse'">
-        <b-icon :icon="isCollapsed ? 'menu' : 'menu-open'"></b-icon>
+    <header class="mobile-topbar">
+      <button class="mobile-topbar-burger" @click="isOpen = true" aria-label="Open menu">
+        <b-icon icon="menu" size="is-medium"></b-icon>
       </button>
-    </div>
+      <router-link to="/" class="mobile-topbar-brand">
+        <img src="../assets/images/sm-logo.png" alt="logo" />
+      </router-link>
+      <div class="sidebar-user">
+        <notification-bell v-if="isAgency" />
+        <b-dropdown position="is-bottom-left" :mobile-modal="isMobile" :append-to-body="!isMobile" aria-role="menu">
+          <template #trigger>
+            <div class="sidebar-user-trigger">
+              <span class="sidebar-user-name">{{ currentUser.fullName }}</span>
+              <img v-if="currentUser.logo" :src="currentUser.logo.pathFile" class="img-30 image-profile"
+                alt="profile" />
+              <svg v-else width="40" height="40" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="20" fill="#aeaeae" />
+                <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="20px" font-family="Arial" dy=".3em">
+                  {{ avatarLetters(currentUser.fullName) }}
+                </text>
+              </svg>
+            </div>
+          </template>
+          <b-dropdown-item has-link aria-role="menuitem">
+            <router-link :to="profileUrl">Edit Profile</router-link>
+          </b-dropdown-item>
+          <b-dropdown-item v-for="(item, i) in currentUser.agencies" :key="i" @click="switchAgency(item)"
+            :class="{ 'primary-agency': item.isPrimary }" aria-role="menuitem">
+            {{ item.name }}
+          </b-dropdown-item>
+          <b-dropdown-item @click="logout" aria-role="menuitem">
+            Log Out
+          </b-dropdown-item>
+        </b-dropdown>
+      </div>
+    </header>
 
-    <nav class="sidebar-nav">
-      <div v-if="collapsed" class="sidebar-rail">
-        <div v-for="(group, i) in menuGroups" :key="i" class="sidebar-rail-group">
-          <span v-if="group.label" class="sidebar-rail-group-label" :title="group.label">{{ group.label }}</span>
-          <ul>
-            <li v-for="item in group.items" :key="item.to + item.label">
-              <router-link :to="item.to" class="sidebar-rail-item" :class="{ 'is-active': isActive(item.to) }"
-                :title="item.label">
-                <b-icon :icon="item.icon" size="is-medium"></b-icon>
-                <span class="sidebar-rail-label">{{ item.label }}</span>
-              </router-link>
-            </li>
-          </ul>
-        </div>
+    <div v-if="isMobile && isOpen" class="sidebar-overlay" @click="isOpen = false"></div>
+
+    <aside class="sidebar-logged" :class="{ 'is-collapsed': collapsed, 'is-open': isOpen }">
+      <div class="sidebar-brand">
+        <router-link to="/" class="sidebar-brand-link">
+          <img src="../assets/images/sm-logo.png" class="sidebar-logo" alt="logo" />
+        </router-link>
+        <button v-if="isMobile" class="sidebar-toggle" @click="isOpen = false" aria-label="Close menu">
+          <b-icon icon="close"></b-icon>
+        </button>
+        <button v-else class="sidebar-toggle" @click="isCollapsed = !isCollapsed"
+          :title="isCollapsed ? 'Expand' : 'Collapse'">
+          <b-icon :icon="isCollapsed ? 'menu' : 'menu-open'"></b-icon>
+        </button>
       </div>
 
-      <b-menu v-else>
-        <b-menu-list>
-          <template v-for="(group, i) in menuGroups" :key="i">
-            <b-menu-item v-if="group.label" :title="group.label" class="sidebar-group"
-              :ref="(el) => setGroupRef(el, i)" :model-value="isGroupActive(group)"
-              @update:expanded="expandedGroups[i] = $event">
-              <template #label="{ expanded }">
-                <span class="sidebar-group-label">
-                  <b-icon :icon="group.icon" size="is-medium" class="mr-2"></b-icon>
-                  <span>{{ group.label }}</span>
-                </span>
-                <b-icon :icon="expanded ? 'chevron-up' : 'chevron-down'" size="is-small"
-                  class="sidebar-group-arrow"></b-icon>
-              </template>
-              <b-menu-item v-for="item in group.items" :key="item.to + item.label" tag="router-link" :to="item.to"
-                :model-value="isActive(item.to)" :title="item.label">
+      <nav class="sidebar-nav">
+        <div v-if="collapsed" class="sidebar-rail">
+          <div v-for="(group, i) in menuGroups" :key="i" class="sidebar-rail-group">
+            <span v-if="group.label" class="sidebar-rail-group-label" :title="group.label">{{ group.label }}</span>
+            <ul>
+              <li v-for="item in group.items" :key="item.to + item.label">
+                <router-link :to="item.to" class="sidebar-rail-item" :class="{ 'is-active': isActive(item.to) }"
+                  :title="item.label">
+                  <b-icon :icon="item.icon" size="is-medium"></b-icon>
+                  <span class="sidebar-rail-label">{{ item.label }}</span>
+                </router-link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <b-menu v-else>
+          <b-menu-list>
+            <template v-for="(group, i) in menuGroups" :key="i">
+              <b-menu-item v-if="group.label" :title="group.label" class="sidebar-group"
+                :ref="(el) => setGroupRef(el, i)" :model-value="isGroupActive(group)"
+                @update:expanded="expandedGroups[i] = $event">
+                <template #label="{ expanded }">
+                  <span class="sidebar-group-label">
+                    <b-icon :icon="group.icon" size="is-medium" class="mr-2"></b-icon>
+                    <span>{{ group.label }}</span>
+                  </span>
+                  <b-icon :icon="expanded ? 'chevron-up' : 'chevron-down'" size="is-small"
+                    class="sidebar-group-arrow"></b-icon>
+                </template>
+                <b-menu-item v-for="item in group.items" :key="item.to + item.label" tag="router-link" :to="item.to"
+                  :model-value="isActive(item.to)" :title="item.label">
+                  <template #label>
+                    <span>{{ item.label }}</span>
+                  </template>
+                </b-menu-item>
+              </b-menu-item>
+              <b-menu-item v-else v-for="item in group.items" :key="item.to + item.label" tag="router-link"
+                :to="item.to" :model-value="isActive(item.to)" :title="item.label">
                 <template #label>
+                  <b-icon :icon="item.icon" size="is-medium" class="mr-2"></b-icon>
                   <span>{{ item.label }}</span>
                 </template>
               </b-menu-item>
-            </b-menu-item>
-            <b-menu-item v-else v-for="item in group.items" :key="item.to + item.label" tag="router-link"
-              :to="item.to" :model-value="isActive(item.to)" :title="item.label">
-              <template #label>
-                <b-icon :icon="item.icon" size="is-medium" class="mr-2"></b-icon>
-                <span>{{ item.label }}</span>
-              </template>
-            </b-menu-item>
-          </template>
-        </b-menu-list>
-      </b-menu>
-    </nav>
+            </template>
+          </b-menu-list>
+        </b-menu>
+      </nav>
 
-    <div class="sidebar-user">
-      <notification-bell v-if="isAgency" />
-      <b-dropdown position="is-bottom-left" :mobile-modal="false" append-to-body aria-role="menu">
-        <template #trigger>
-          <div class="sidebar-user-trigger">
-            <span class="sidebar-user-name">{{ currentUser.fullName }}</span>
-            <img v-if="currentUser.logo" :src="currentUser.logo.pathFile" class="img-30 image-profile" alt="profile" />
-            <svg v-else width="40" height="40">
-              <circle cx="20" cy="20" r="20" fill="#aeaeae" />
-              <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="20px" font-family="Arial" dy=".3em">
-                {{ avatarLetters(currentUser.fullName) }}
-              </text>
-            </svg>
-          </div>
-        </template>
-        <b-dropdown-item has-link aria-role="menuitem">
-          <router-link :to="profileUrl">Edit Profile</router-link>
-        </b-dropdown-item>
-        <b-dropdown-item v-for="(item, i) in currentUser.agencies" :key="i" @click="switchAgency(item)"
-          :class="{ 'primary-agency': item.isPrimary }" aria-role="menuitem">
-          {{ item.name }}
-        </b-dropdown-item>
-        <b-dropdown-item @click="logout" aria-role="menuitem">
-          Log Out
-        </b-dropdown-item>
-      </b-dropdown>
-    </div>
-  </aside>
+    </aside>
+  </div>
 </template>
 
 
 <script setup lang="ts">
-import { computed, ref, nextTick, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { useSecurityStore } from '@/stores/security';
@@ -126,19 +143,30 @@ const securityStore = useSecurityStore();
 const isLoading = ref(false);
 const isCollapsed = ref(false);
 const isMobile = ref(false);
+const isOpen = ref(false);
 
-// On mobile the sidebar is always icon-only, regardless of the manual toggle.
-const collapsed = computed(() => isCollapsed.value || isMobile.value);
+// The icon-only rail is a desktop affordance; on mobile the sidebar is a
+// full-width off-canvas drawer that keeps the collapsible groups.
+const collapsed = computed(() => isCollapsed.value && !isMobile.value);
 
 const mobileQuery = window.matchMedia('(max-width: 767px)');
 function updateIsMobile(e: MediaQueryListEvent | MediaQueryList) {
   isMobile.value = e.matches;
+  if (!isMobile.value) isOpen.value = false;
 }
 onMounted(() => {
   updateIsMobile(mobileQuery);
   mobileQuery.addEventListener('change', updateIsMobile);
 });
-onUnmounted(() => mobileQuery.removeEventListener('change', updateIsMobile));
+onUnmounted(() => {
+  mobileQuery.removeEventListener('change', updateIsMobile);
+  document.body.classList.remove('has-drawer-open');
+});
+
+watch(isOpen, (open) => {
+  document.body.classList.toggle('has-drawer-open', open && isMobile.value);
+});
+watch(() => route.fullPath, () => { isOpen.value = false; });
 const profileUrl = ref('');
 const menuGroups = ref<MenuGroup[]>([]);
 const expandedGroups = ref<boolean[]>([]);
@@ -249,6 +277,60 @@ init();
 
 $sidebar-width: 250px;
 $sidebar-width-collapsed: 100px;
+$sidebar-width-drawer: 280px;
+$topbar-height: 56px;
+
+.sidebar-shell {
+  display: contents;
+}
+
+.sidebar-user {
+  position: fixed;
+  top: 12px;
+  right: 24px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 999px;
+  padding: 6px 14px;
+  box-shadow: 0 2px 8px #d6d6d6;
+
+  .sidebar-user-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .sidebar-user-name {
+    font-size: 14px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// On desktop the bar itself is not a box: it collapses so its only visible
+// child, the user pill, keeps behaving as the fixed top-right element.
+.mobile-topbar {
+  display: contents;
+
+  .mobile-topbar-burger,
+  .mobile-topbar-brand {
+    display: none;
+  }
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 50;
+}
 
 .sidebar-logged {
   position: sticky;
@@ -299,36 +381,6 @@ $sidebar-width-collapsed: 100px;
     flex: 1;
     overflow-y: auto;
     padding: 8px;
-  }
-
-  .sidebar-user {
-    position: fixed;
-    top: 12px;
-    right: 24px;
-    z-index: 40;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background-color: #fff;
-    border: 1px solid #eee;
-    border-radius: 999px;
-    padding: 6px 14px;
-    box-shadow: 0 2px 8px #d6d6d6;
-
-    .sidebar-user-trigger {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-
-    .sidebar-user-name {
-      font-size: 14px;
-      max-width: 180px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
   }
 
   .sidebar-rail {
@@ -411,13 +463,77 @@ $sidebar-width-collapsed: 100px;
 }
 
 @media (max-width: 767px) {
-  .sidebar-logged {
-    width: $sidebar-width-collapsed;
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: $topbar-height;
+    padding: 0 12px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    z-index: 45;
 
-    .sidebar-brand-link,
+    .mobile-topbar-burger {
+      display: inline-flex;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      color: #555;
+      padding: 4px;
+    }
+
+    .mobile-topbar-brand {
+      display: inline-flex;
+      line-height: 0;
+
+      img {
+        max-height: 32px;
+      }
+    }
+  }
+
+  body.has-drawer-open {
+    overflow: hidden;
+  }
+
+  .sidebar-logged {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: $sidebar-width-drawer;
+    max-width: 85vw;
+    height: 100dvh;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+
+    &.is-open {
+      transform: none;
+    }
+  }
+
+  .sidebar-user {
+    position: static;
+    margin-left: auto;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    gap: 8px;
+
     .sidebar-user-name {
       display: none;
     }
+
+    svg,
+    .image-profile {
+      width: 32px;
+      height: 32px;
+    }
+
   }
 }
 </style>

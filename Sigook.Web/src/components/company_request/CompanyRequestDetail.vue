@@ -30,7 +30,8 @@
         <span class="has-text-weight-bold mr-2">Role</span>
         <span class="has-text-weight-normal" v-if="request.jobPositionRate">{{ request.jobPositionRate.value }}</span>
         <span v-if="request.displayShift" class="request-shift-container"><b class="has-text-weight-bold ">Shift</b>
-          <agency-shift class="ml-3" :requestId="request.id" :displayShift="request.displayShift" />
+          <agency-shift class="ml-3" :requestId="request.id" :displayShift="request.displayShift"
+            :fetchShift="getRequestShift" />
         </span>
       </section>
 
@@ -77,6 +78,7 @@ import { dateFromNow, currency } from '@/utils/filters';
 import { DurationTermLabels } from "@/constants/enums";
 import Location from "../request/RequestLocation.vue";
 import AgencyShift from "../agency_request/AgencyShiftDetail.vue";
+import { getRequestShift } from "@/api/companyApi";
 
 defineProps<{ request: any }>();
 </script>

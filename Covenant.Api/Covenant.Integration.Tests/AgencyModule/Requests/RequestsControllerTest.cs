@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -64,7 +64,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.Equal(model.Id, entity.Id);
         Assert.Equal(model.NumberId, entity.NumberId);
         Assert.Equal(model.JobTitle, entity.JobTitle);
-        Assert.Equal(model.CreatedAt, entity.CreatedAt);
+        DateAssert.Equal(model.CreatedAt, entity.CreatedAt);
         Assert.Equal(model.Location, entity.JobLocation.FormattedAddress);
         Assert.Equal(model.Entrance, entity.JobLocation.Entrance);
         Assert.Equal(model.CompanyFullName, Data.FakeCompany.FullName);
@@ -98,11 +98,11 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.Equal(model.HolidayIsPaid, Data.FakeRequest.HolidayIsPaid);
         Assert.Equal(model.BreakIsPaid, Data.FakeRequest.BreakIsPaid);
         Assert.Equal(model.Status, Data.FakeRequest.Status);
-        Assert.Equal(model.CreatedAt, Data.FakeRequest.CreatedAt);
+        DateAssert.Equal(model.CreatedAt, Data.FakeRequest.CreatedAt);
         Assert.Equal(model.CreatedBy, Data.FakeRequest.CreatedBy);
         Assert.Equal(model.FinishAt, Data.FakeRequest.FinishAt);
         Assert.Equal(model.StartAt, Data.FakeRequest.StartAt);
-        Assert.Equal(model.InvitationSentItAt, Data.FakeRequest.InvitationSentItAt);
+        DateAssert.Equal(model.InvitationSentItAt, Data.FakeRequest.InvitationSentItAt);
         Assert.Equal(model.DurationBreak, Data.FakeRequest.DurationBreak);
         Assert.Equal(model.Incentive, Data.FakeRequest.Incentive);
         Assert.Equal(model.IncentiveDescription, Data.FakeRequest.IncentiveDescription);
@@ -366,7 +366,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                     o.AddName(Data.FakeUserRecruiter.Email);
                 });
             services.AddHttpClient();
-            services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+            services.AddTestDatabase();
             services.AddSingleton<ITimeService, TimeService>();
             services.AddSingleton<IRequestRepository, RequestRepository>();
             services.AddSingleton<IRequestService, RequestService>();
@@ -406,9 +406,10 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     private static class Data
     {
         public static readonly DateTime FakeNow = DateTime.Now;
-        public static readonly Agency FakeAgency = new Agency("Test", "Test");
+        public static readonly Agency FakeAgency = new Agency("Test", "Test") { User = FakeData.FakeUser() };
         public static readonly Guid AgencyId = FakeAgency.Id;
-        public static readonly City Toronto = new City { Value = "Toronto", Province = new Province { Country = Country.Canada } };
+        public static readonly Country Canada = Country.Canada;
+        public static readonly City Toronto = new City { Value = "Toronto", Province = new Province { Country = Canada } };
 
         private static readonly CompanyName FakeCompanyName = CompanyName.Create("ABC").Value;
         public static readonly CompanyProfile FakeCompany = CompanyProfile.AgencyCreateCompany(
@@ -433,7 +434,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             Address = "11 Main Street",
             Entrance = "Main Door",
             MainIntersection = "Main & Street",
-            City = new City { Province = new Province { Country = Country.Canada } }
+            City = new City { Province = new Province { Country = Canada } }
         };
         public static readonly CompanyProfileJobPositionRate FakeCompanyProfileJobPositionRate = CompanyProfileJobPositionRate.Create(FakeCompany.Id, "Forklift", 20, 15).Value;
 
@@ -449,7 +450,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         public static readonly Request FakeRequestWithRecentInvitation;
 
         public static readonly User FakeWorker = new User(CvnEmail.Create("w1@mai.com").Value);
-        public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(FakeWorker, AgencyId);
+        public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(FakeWorker, AgencyId) { Location = FakeData.FakeLocation() };
 
         public static readonly User FakeUserRecruiter = new User(CvnEmail.Create("re@rec.com").Value);
         public static readonly AgencyPersonnel FakeRecruiter = AgencyPersonnel.CreatePrimary(AgencyId, FakeUserRecruiter.Id, FakeUserRecruiter.Email);
@@ -466,7 +467,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             FakeRequest.WorkerSalary = 50_000m;
             FakeRequest.UpdateIsAsap(true);
             FakeRequest.AddRecruiter(FakeRecruiter, FakeRequest.CreatedAt);
-            FakeRequest.AddWorker(FakeWorker.Id, FakeRequest.CreatedAt.AddDays(1));
+            FakeRequest.AddWorker(FakeWorkerProfile.Id, FakeRequest.CreatedAt.AddDays(1));
             var newShift = new Shift();
             newShift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
             FakeRequest.UpdateShift(newShift);
