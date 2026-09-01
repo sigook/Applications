@@ -24,6 +24,7 @@ const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const defaultSuccessMessage = 'Thank you, one of our recruiters will contact you soon.';
+const defaultErrorMessage = 'We could not process your application, please contact the agency.';
 
 function redirectToHome() {
   window.location.href = '/';
@@ -47,7 +48,7 @@ function apply() {
     return;
   }
 
-  const key = byEmail ? `${numberId}${email}` : `${workerId}${requestId}`;
+  const key = byEmail ? `${numberId}|${email}` : `${workerId}${requestId}`;
   const alreadyApplied = window.sessionStorage.getItem(key);
   if (alreadyApplied) {
     successMessage.value = defaultSuccessMessage;
@@ -66,8 +67,7 @@ function apply() {
     })
     .catch(async (error: unknown) => {
       isLoading.value = false;
-      errorMessage.value = await getErrorMessage(error);
-      window.sessionStorage.setItem(key, '1');
+      errorMessage.value = (await getErrorMessage(error)) || defaultErrorMessage;
     });
 }
 

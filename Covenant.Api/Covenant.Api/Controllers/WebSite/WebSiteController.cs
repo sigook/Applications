@@ -27,8 +27,7 @@ public class WebSiteController(
     IRequestRepository requestRepository,
     IMemoryCache memoryCache,
     IOptions<ServiceBusConfiguration> options,
-    IFilesContainer filesContainer,
-    IWorkerService workerService) : ControllerBase
+    IFilesContainer filesContainer) : ControllerBase
 {
     private readonly ISigookBusClient client = client;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
@@ -37,7 +36,6 @@ public class WebSiteController(
     private readonly IMemoryCache memoryCache = memoryCache;
     private readonly ServiceBusConfiguration serviceBusConfiguration = options.Value;
     private readonly IFilesContainer filesContainer = filesContainer;
-    private readonly IWorkerService workerService = workerService;
 
     /// <summary>Sends a contact-form email from the public website.</summary>
     /// <param name="contact">Contact form data.</param>
@@ -111,10 +109,11 @@ public class WebSiteController(
 
     /// <summary>Applies a worker or candidate to a request using the public request number and their email (anonymous).</summary>
     /// <param name="model">Request number and applicant email.</param>
+    /// <param name="workerService">Worker service.</param>
     [HttpPost("apply")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Apply([FromBody] ApplyByEmailModel model)
+    public async Task<IActionResult> Apply([FromBody] ApplyByEmailModel model, [FromServices] IWorkerService workerService)
     {
         var result = await workerService.ApplyByEmail(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
