@@ -18,6 +18,7 @@ import type { UserProfile } from '@/types/security';
 // import the styles
 import 'buefy/dist/css/buefy.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import '@/assets/scss/landing-form.scss';
 
 import statusDirective from './directives/status-directive';
 

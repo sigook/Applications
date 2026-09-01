@@ -42,7 +42,7 @@ namespace Covenant.Integration.Tests.AgencyModule
                     o.AddSub(FakeUser.Id);
                     o.AddAgencyPersonnelRole();
                 });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton(new Mock<ITimeService>().Object);
                 services.AddSingleton<AgencyIdFilter>();
                 services.AddSingleton(new Mock<IDefaultLogoProvider>().Object);
@@ -61,7 +61,7 @@ namespace Covenant.Integration.Tests.AgencyModule
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
 
-                var agency = new Agency("agency", "3459876543");
+                var agency = new Agency("agency", "3459876543") { User = FakeData.FakeUser() };
                 var agencyPersonnel = AgencyPersonnel.CreatePrimary(agency.Id, FakeUser);
                 context.Agencies.Add(agency);
                 context.AgencyPersonnel.Add(agencyPersonnel);

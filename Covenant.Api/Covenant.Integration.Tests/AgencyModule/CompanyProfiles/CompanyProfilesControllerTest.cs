@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
+using Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -127,7 +127,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 
             public static readonly Industry Drivers = new Industry { Value = "Drivers" };
 
-            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Test", "Test");
+            private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Test", "Test") { User = FakeData.FakeUser() };
 
             public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
                 "ABC Corporation", "657890764", new CompanyProfileIndustry("Company Industry"));
@@ -140,8 +140,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                     {
                         o.AddAgencyPersonnelRole(FakeAgency.Id);
                     });
-                services.AddDbContext<CovenantContext>(b
-                    => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<IAgencyService, AgencyService>();
                 var timeService = new Mock<ITimeService>();
@@ -166,7 +165,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
-                FakeAgency.User = new User(CvnEmail.Create("c@mail.com").Value);
+                FakeAgency.User = new User(CvnEmail.Create("agency@mail.com").Value);
                 context.Industries.Add(Drivers);
                 FakeCompanyProfile.Logo = new CovenantFile("logo.pdf", "Logo");
                 FakeCompanyProfile.UpdateVaccinationInfo(false, "some comment");

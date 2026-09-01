@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
+using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
@@ -123,7 +123,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                     {
                         o.AddAgencyPersonnelRole(Data.AgencyId);
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
 
                 services.AddSingleton<ITimesheetService, TimesheetService>();
                 services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
@@ -159,9 +159,9 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
         {
             public static readonly Guid AgencyId = Guid.NewGuid();
             private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
-            public static readonly Request Request = Request.AgencyCreateRequest(Guid.NewGuid(), FakeData.FakeLocation(), FakeNow, Guid.NewGuid()).Value;
+            public static readonly Request Request = FakeData.FakeRequest(AgencyId, startAt: FakeNow);
             public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
-            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = AgencyId };
+            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = AgencyId , Location = FakeData.FakeLocation(),};
             private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
             public static readonly TimeSheet FakeTimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
             public static readonly TimeSheet TimeSheetReportedByWorker = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id,
@@ -172,6 +172,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             {
                 TimeSheetReportedByWorker.AddClockOut(TimeSheetReportedByWorker.ClockIn.GetValueOrDefault().AddHours(1), TimeSheetReportedByWorker.ClockIn.GetValueOrDefault().AddHours(1));
                 context.Users.Add(Worker);
+                context.Agencies.Add(FakeData.FakeAgency(AgencyId));
                 context.WorkerProfiles.Add(WorkerProfile);
                 context.Requests.Add(Request);
                 context.WorkerRequests.Add(FakeWorkerRequest);

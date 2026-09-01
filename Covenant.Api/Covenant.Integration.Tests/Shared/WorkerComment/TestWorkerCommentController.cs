@@ -48,8 +48,7 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
                     o.AddAgencyPersonnelRole(Data.LoginUser.Id);
                     o.AddCompanyRole();
                 });
-                services.AddDbContext<CovenantContext>(
-                    b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(new DateTime(2019, 01, 01));
                 services.AddSingleton(timeService.Object);
@@ -80,9 +79,9 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
             public static readonly WorkerProfile WorkerProfile = new WorkerProfile(new User(CvnEmail.Create("worker_worker@mail.com").Value))
             {
                 Agency = new Covenant.Common.Entities.Agency.Agency { Id = LoginUser.Id, User = LoginUser }
-            };
+            , Location = FakeData.FakeLocation(),};
 
-            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = LoginUser, Logo = new CovenantFile("logo.png") };
+            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = LoginUser, Logo = new CovenantFile("logo.png") , Industry = new CompanyProfileIndustry("Test") , Agency = FakeData.FakeAgency() };
             public static readonly Covenant.Common.Entities.Worker.WorkerComment Comment =
                 Covenant.Common.Entities.Worker.WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
             public static readonly Covenant.Common.Entities.Worker.WorkerComment CompanyComment =

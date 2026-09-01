@@ -11,6 +11,7 @@
 | [WORKFLOWS.md](./business/WORKFLOWS.md) | Detailed step-by-step flows (Worker Registration, Job Matching, Payroll, etc.) |
 | [REQUEST_STATE_MANAGEMENT.md](./business/REQUEST_STATE_MANAGEMENT.md) | Request lifecycle and state transitions |
 | [ROLES_PERMISSIONS.md](./business/ROLES_PERMISSIONS.md) | The 7 roles, role groups, sales data scoping, user creation rules |
+| [SALES_MODULE.md](./business/SALES_MODULE.md) | Sales module: clients, interactions, deals (catalogs + lifecycle), ownership rule, dashboard KPIs |
 
 ## Technical
 
@@ -21,9 +22,8 @@
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
-| [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every `src/api/*.ts` file mapped to backend endpoints, types, and Pinia stores |
-| [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature, Pinia stores, global plumbing |
-| [SIGOOK_WEB_SALES_DASHBOARD.md](./technical/SIGOOK_WEB_SALES_DASHBOARD.md) | Sigook.Web — sales dashboard: cards, deals/interactions CRUD, static-JSON prototype seam and go-live path |
+| [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every `src/api/*.ts` file mapped to backend endpoints, types, and Pinia stores; static-JSON sales dashboard summary (§18) |
+| [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature (incl. sales dashboard layout), Pinia stores, global plumbing |
 
 ---
 
@@ -50,9 +50,10 @@
 1. [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) — hours calculation rules
 2. Code: `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs`
 
-**Modify the sales dashboard:**
-1. [SIGOOK_WEB_SALES_DASHBOARD.md](./technical/SIGOOK_WEB_SALES_DASHBOARD.md) — layout, data flow, static-vs-live split
-2. Code: `Sigook.Web/src/pages/agency/Dashboard.vue` + `Sigook.Web/src/components/sales_dashboard/`
+**Modify the sales module / dashboard:**
+1. [SALES_MODULE.md](./business/SALES_MODULE.md) — concepts, deal lifecycle, KPI definitions
+2. [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) (routes, `Dashboard.vue` layout, `sales_dashboard/` components) + [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) §14 (deals/interactions CRUD + modal wiring) and §18 (static-vs-live split)
+3. Code: `Sigook.Web/src/pages/agency/Dashboard.vue` + `Sigook.Web/src/components/sales_dashboard/`; backend `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/`
 
 ---
 

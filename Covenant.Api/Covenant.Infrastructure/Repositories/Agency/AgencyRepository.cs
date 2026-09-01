@@ -76,6 +76,7 @@ public class AgencyRepository : IAgencyRepository
             .Select(s => new AgencyPersonnelModel
             {
                 Id = s.Id,
+                UserId = s.UserId,
                 Name = s.Name,
                 Email = s.User.Email
             }).ToListAsync();
@@ -98,6 +99,7 @@ public class AgencyRepository : IAgencyRepository
             .Select(s => new AgencyPersonnelModel
             {
                 Id = s.Id,
+                UserId = s.UserId,
                 Name = s.Name,
                 Email = s.User.Email
             }).SingleOrDefaultAsync();

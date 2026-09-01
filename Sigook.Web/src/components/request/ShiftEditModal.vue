@@ -15,8 +15,7 @@
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertError } from "@/utils/toast";
-import { fetchRequestShift } from "@/api/requestApi";
-import { updateAgencyRequestShift } from "@/api/agencyRequestApi";
+import { getAgencyRequestShift, updateAgencyRequestShift } from "@/api/agencyRequestApi";
 import ShiftForm from "../../components/request/ShiftsForm.vue";
 
 const emit = defineEmits<{ (e: 'onUpdateShift', displayShift: any): void }>();
@@ -29,7 +28,7 @@ const requestId = route.params.id;
 
 function getRequestShift() {
   isLoading.value = true;
-  fetchRequestShift(requestId as string)
+  getAgencyRequestShift(requestId as string)
     .then(response => {
       isLoading.value = false;
       shift.value = response;

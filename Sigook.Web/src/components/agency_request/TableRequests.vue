@@ -105,7 +105,8 @@
           </template>
           <template v-slot="props">
             {{ dateMonth(props.row.createdAt) }}
-            <AgencyShift class="fz-2 is-block" :requestId="props.row.id" :displayShift="props.row.displayShift" />
+            <AgencyShift class="fz-2 is-block" :requestId="props.row.id" :displayShift="props.row.displayShift"
+              :fetchShift="getAgencyRequestShift" />
           </template>
         </b-table-column>
         <b-table-column field="displayRecruiters" label="Recruiter" sortable searchable>
@@ -285,6 +286,7 @@ import ModalNotes from '../notes/ModalNotes.vue';
 import JobBoardsModal from '../../components/agency_request/JobBoardsModal.vue';
 import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterModal.vue';
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
+import { getAgencyRequestShift } from '@/api/agencyRequestApi';
 import CancelList from '@/components/company/CompanyCancelList.vue';
 import { useGridSort } from '@/composables/useGridSort';
 import Export from '@/components/Export.vue';

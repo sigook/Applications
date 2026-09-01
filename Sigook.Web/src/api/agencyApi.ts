@@ -42,6 +42,10 @@ export function createAgencyPersonnel(model: AgencyPersonnelCreateModel): Promis
   return api.post('/api/agency/personnel', model);
 }
 
+export function updateAgencyPersonnel(id: string, model: AgencyPersonnelCreateModel): Promise<void> {
+  return api.put(`/api/agency/personnel/${id}`, model);
+}
+
 // Roles the logged-in user is allowed to assign when creating personnel
 export function getAssignableRoles(): Promise<string[]> {
   return api.get<string[]>('/api/agency/personnel/Roles');

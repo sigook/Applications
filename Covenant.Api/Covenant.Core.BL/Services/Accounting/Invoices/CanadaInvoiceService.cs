@@ -2,6 +2,7 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
@@ -39,12 +40,13 @@ public class CanadaInvoiceService(
     IPayStubRepository payStubRepository,
     IPayStubsContainer payStubsContainer,
     ITeamsService teamsService,
-    IOptions<TeamsWebhookConfiguration> teamsOptions) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService, identityServerService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions)
+    IOptions<TeamsWebhookConfiguration> teamsOptions,
+    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService, identityServerService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
 {
-    protected override Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    protected override Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
         => invoiceRepository.GetInvoicesForAgency(agencyIds, filter);
 
-    protected override Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilterV2 filter)
+    protected override Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
         => invoiceRepository.GetAllInvoicesForAgency(agencyIds, filter);
 
     protected override Task<InvoiceSummaryModel> FetchInvoiceSummary(Guid invoiceId)

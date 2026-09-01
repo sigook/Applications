@@ -1,4 +1,4 @@
-﻿using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
+using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -50,7 +50,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             Assert.Equal(request.WorkersQuantity, model.WorkersQuantity);
             Assert.Equal(request.IsAsap, model.IsAsap);
             Assert.Equal(request.WorkerRate, model.WorkerRate);
-            Assert.Equal(request.CreatedAt, model.CreatedAt);
+            DateAssert.Equal(request.CreatedAt, model.CreatedAt);
             Assert.Equal(request.FinishAt, model.FinishAt);
             Assert.Equal(request.StartAt, model.StartAt);
             Assert.Equal(request.DurationTerm.ToString(), model.DurationTerm);
@@ -81,7 +81,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             Assert.Equal(Data.FakeRequest.Status.ToString(), detail.RequestStatus);
             Assert.Equal(Data.FakeRequest.WorkerRate, detail.WorkerRate);
             Assert.Equal(Data.FakeRequest.Status.ToString(), detail.RequestStatus);
-            Assert.Equal(Data.FakeRequest.CreatedAt, detail.CreatedAt);
+            DateAssert.Equal(Data.FakeRequest.CreatedAt, detail.CreatedAt);
             Assert.Equal(Data.FakeRequest.StartAt, detail.StartAt);
             Assert.Equal(Data.FakeRequest.FinishAt, detail.FinishAt);
             Assert.Equal(Data.FakeRequest.JobLocation.Address, detail.JobLocation.Address);
@@ -116,7 +116,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                         o.AddSub(Data.WorkerProfile.Worker.Id);
                         o.AddWorkerRole();
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(Data.Now);
                 services.AddSingleton(timeService.Object);
@@ -150,7 +150,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                 User = new User(CvnEmail.Create("agency@mail.com").Value),
                 Logo = new CovenantFile("logo.png")
             };
-            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("company@mail.com").Value), Agency = FakeAgency, Logo = new CovenantFile() };
+            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("company@mail.com").Value), Agency = FakeAgency, Logo = new CovenantFile() , Industry = new CompanyProfileIndustry("Test") };
             public static readonly WorkerProfile WorkerProfile;
             public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;
 
@@ -184,7 +184,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                 {
                     Agency = FakeAgency,
                     ApprovedToWork = true,
-                    Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } },
+                    Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } },
                     IdentificationType1 = new IdentificationType(),
                     IdentificationType1File = new CovenantFile(),
                     IdentificationType2 = new IdentificationType(),

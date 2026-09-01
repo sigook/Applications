@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Workers;
+using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
@@ -46,7 +46,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
 
         public class Startup
         {
-            public static readonly Guid WorkerProfileId = Guid.NewGuid();
+            public static readonly Covenant.Common.Entities.Worker.WorkerProfile FakeWorkerProfile = FakeData.FakeWorkerProfile();
+            public static readonly Guid WorkerProfileId = FakeWorkerProfile.Id;
             public void ConfigureServices(IServiceCollection services)
             {
                 services.AddDefaultTestConfiguration();
@@ -56,8 +57,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                         o.AddSub(Guid.NewGuid());
                         o.AddAgencyPersonnelRole();
                     });
-                services.AddDbContext<CovenantContext>(b =>
-                    b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
@@ -75,6 +75,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                         name: "default",
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
+                context.WorkerProfiles.Add(FakeWorkerProfile);
                 context.WorkerProfileNotes.Add(
                     WorkerProfileNote.Create(WorkerProfileId, "Worker doesn't have documents", "Recruiter").Value);
                 context.SaveChanges();

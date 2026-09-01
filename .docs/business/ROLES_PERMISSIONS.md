@@ -67,7 +67,7 @@ The sales module's deals and company interactions (`api/agency/sales/deals`,
 user lists, updates and deletes only the records they own, and `OwnerId` is overwritten server-side
 on create. Admin and superadmin hit the same endpoints unscoped. Controllers:
 `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs`
-(Policy `Sales`). See `.docs/technical/SIGOOK_WEB_SALES_DASHBOARD.md`.
+(Policy `Sales`). Business meaning of deals and interactions: `SALES_MODULE.md`; entities: `.docs/technical/ENTITIES_RELATIONSHIPS.md`.
 
 ## Sales auto-assignment
 
@@ -91,7 +91,7 @@ representative it already had.
 | Unscoped order / client lists | `Recruiting` | Would defeat the sales scoping |
 | Runners | `Recruiting` | Recruiting pipeline (`RunnersController.cs:17`) |
 | Invoices, pay stubs, reports | `Admin` | Financial data |
-| Create / delete agency users | `Admin` | User management |
+| Create / edit / delete agency users | `Admin` | User management |
 | Bulk recruiter assignment | `Admin` | `PUT api/agency/requests/bulk-recruiters` |
 
 > `PayStubsController`, `InvoicesController` and `ReportsController` enforce
@@ -106,10 +106,15 @@ representative it already had.
 Besides `Agency`, `Recruiting`, `Sales` and `Admin` (`PolicyConfiguration.cs`):
 
 - `SuperAdmin` — superadmin only.
-- `Covenant` — requires the `all2job` claim.
-- `AgencyOrCompany` / `AgencyOrWorker` — built from `RecruitingAccess` plus the company/worker
-  roles, so they **exclude sales**.
-- `Request` — authenticated-only (any logged-in user).
+- `Company` — `company` or `company.user`.
+- `Worker` — `worker` only.
+
+Every policy requires a role: there is no authenticated-only policy and no cross-actor policy. An
+endpoint two actors need is exposed once per actor (`Controllers/Sigook/Agency/`, `Controllers/Sigook/Company/`,
+`WorkerModule/`), each under its own policy, and the shared logic lives in a `Covenant.Core.BL`
+service. The request shift is the reference case: `GET api/agency/requests/{requestId}/Shift`
+(policy `Agency`) and `GET api/company/requests/{requestId}/Shift` (policy `Company`) both delegate to
+`IRequestService.GetRequestShift`.
 
 On the frontend, route guards live in `Sigook.Web/src/router/routesAgency.ts` and the
 `useAdmin` / `useRecruitingAccess` composables — UI mirrors, not defenses.
@@ -135,3 +140,25 @@ it would also change it in their first agency.
 
 Only existing **agency** users can be added to a second agency: if the email belongs to a worker or
 company user, `AgencyService` rejects it with `EmailAlreadyTaken` (`AgencyService.cs:625-628`).
+
+## User editing
+
+`PUT api/agency/personnel/{id}` (Policy `Admin`) changes an agency user's **name, email and role**.
+It is the same `AgencyPersonnelModel` the `POST` takes, validated by `AgencyPersonnelModelValidator`.
+
+- The role must be inside the caller's assignable set — same check as creation.
+- **Nobody can change their own role.** A caller editing their own record may change the name and the
+  email, but a role change is rejected server-side; the UI also disables the select. Without this an
+  admin could demote themselves and lose access to user management.
+- **The role is global**, so changing it changes it in *every* agency the user belongs to. This is
+  allowed on purpose, and the modal warns about it.
+- The new role only reaches the user's token on their **next sign-in**: `CustomProfileService` emits
+  roles from the session principal instead of re-reading them.
+- The email moves `Email` + `UserName` in IdentityServer plus the local `Users` row, reusing
+  `IIdentityServerService.UpdateUserEmail` — which rejects an email that already belongs to another
+  user with `EmailAlreadyTaken`. `EmailConfirmed` is untouched, so the user keeps their password and
+  signs in with the new address.
+
+The role is not stored in the Covenant.Api database: `GET api/agency/personnel` fills it by asking
+IdentityServer (`POST /UserAdministration/UsersRoles`, ids in the body). If that call fails, the list
+is still returned with a null role instead of failing the request.

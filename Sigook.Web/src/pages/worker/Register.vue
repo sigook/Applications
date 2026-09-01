@@ -1,7 +1,26 @@
 <template>
-  <div>
+  <main :class="{ 'register-page': !isLogin }">
     <b-loading v-model="isLoading"></b-loading>
-    <form class="form-md" @submit.prevent="validateForm">
+
+    <header v-if="!isLogin" class="register-page__hero">
+      <EyebrowPill variant="red" class="register-page__eyebrow">
+        Register
+      </EyebrowPill>
+      <h1 class="register-page__heading">
+        Create your <span class="register-page__heading-accent">Sigook</span> account.<br>
+        Start <span class="register-page__heading-accent">working</span> sooner.
+      </h1>
+      <p class="register-page__subtitle">
+        Tell us who you are, when you are available and upload the documents that
+        prove it. Once your profile is approved you can apply to open positions
+        across Canada and the US.
+      </p>
+    </header>
+
+    <section :class="{ 'register-page__form-wrap': !isLogin }">
+      <div :class="isLogin ? 'classic-form' : 'register-page__form landing-form'">
+        <span v-if="!isLogin" class="register-page__form-glow" aria-hidden="true"></span>
+        <form class="form-md" @submit.prevent="validateForm">
       <b-steps v-model="activeStep" animated mobile-mode="compact" :has-navigation="false">
         <b-step-item step="1" label="Basic" :clickable="false">
           <h1 class="title has-text-centered">Basic Information</h1>
@@ -191,7 +210,7 @@
               <div class="container-files">
                 <div class="" v-if="worker.identificationType1File">
                   <div class="document-card">
-                    <div class="columns is-multiline document-card-header">
+                    <div class="columns is-multiline is-mobile document-card-header">
                       <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
@@ -240,7 +259,7 @@
                 </div>
                 <div class="" v-if="worker.identificationType2File">
                   <div class="document-card">
-                    <div class="columns is-multiline document-card-header">
+                    <div class="columns is-multiline is-mobile document-card-header">
                       <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-document" size="is-small" class="document-icon"></b-icon>
@@ -315,7 +334,7 @@
                 <div class="" v-for="(item, index) in worker.licenses"
                   v-bind:key="'licences' + index">
                   <div class="document-card">
-                    <div class="columns is-multiline document-card-header">
+                    <div class="columns is-multiline is-mobile document-card-header">
                       <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="certificate" size="is-small" class="document-icon"></b-icon>
@@ -381,7 +400,7 @@
                 <div class="" v-for="(item, index) in worker.certificates"
                   v-bind:key="'certificates' + index">
                   <div class="document-card">
-                    <div class="columns is-multiline document-card-header">
+                    <div class="columns is-multiline is-mobile document-card-header">
                       <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="card-account-details" size="is-small" class="document-icon"></b-icon>
@@ -432,7 +451,7 @@
               <div class="container-files">
                 <div class="" v-if="worker.resume">
                   <div class="document-card">
-                    <div class="columns is-multiline document-card-header">
+                    <div class="columns is-multiline is-mobile document-card-header">
                       <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="file-account" size="is-small" class="document-icon"></b-icon>
@@ -489,7 +508,7 @@
                 <div class="" v-for="(item, index) in worker.otherDocuments"
                   v-bind:key="'otherDocument' + index">
                   <div class="document-card">
-                    <div class="columns is-multiline document-card-header">
+                    <div class="columns is-multiline is-mobile document-card-header">
                       <div class="column is-10-mobile is-10 no-padding">
                         <div class="document-icon-title">
                           <b-icon icon="folder-open" size="is-small" class="document-icon"></b-icon>
@@ -585,8 +604,10 @@
           </div>
         </b-step-item>
       </b-steps>
-    </form>
-  </div>
+        </form>
+      </div>
+    </section>
+  </main>
 </template>
 
 <script setup lang="ts">
@@ -606,6 +627,7 @@ import { createMultipartFormData } from '@/utils/buildWorkerFormData';
 import UploadImage from '../../components/PreviewImage.vue';
 import AddressComponent from '../../components/Address.vue';
 import PhoneInput from '../../components/PhoneInput.vue';
+import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -1042,15 +1064,135 @@ function isCanadaSelected(value: boolean) {
 </script>
 
 <style lang="scss" scoped>
-.form-md {
-  width: 80%;
-  min-width: 800px;
-  margin: 30px auto;
+.register-page {
+  position: relative;
+  font-family: var(--font-family);
+  color: #fff;
+}
 
-  @media (max-width: 900px) {
-    width: 100%;
-    min-width: 0;
-    margin: 0;
+.register-page__hero {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 880px;
+  margin: 0 auto;
+  padding:
+    clamp(120px, 14vw, 180px)
+    clamp(20px, 3vw, 32px)
+    clamp(48px, 6vw, 72px);
+}
+
+.register-page__eyebrow {
+  margin-bottom: clamp(20px, 2.5vw, 28px);
+}
+
+.register-page__heading {
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 clamp(14px, 1.8vw, 22px);
+  text-shadow: var(--sh-text-heading);
+}
+
+.register-page__heading-accent {
+  color: var(--c-brand-cyan);
+}
+
+.register-page__subtitle {
+  font-size: clamp(13px, 1.2vw, 16px);
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  max-width: 620px;
+  text-shadow: var(--sh-text-sub);
+}
+
+.register-page__form-wrap {
+  position: relative;
+  z-index: 2;
+  padding: 0 clamp(20px, 3vw, 40px) clamp(96px, 12vw, 160px);
+}
+
+.register-page__form {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(32px, 4vw, 56px) clamp(28px, 3.4vw, 56px);
+  background: linear-gradient(180deg,
+    rgba(15, 47, 68, 0.78) 0%,
+    rgba(9, 48, 85, 0.78) 100%);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid var(--c-glass-border);
+  border-radius:
+    clamp(28px, 3.2vw, 40px) clamp(28px, 3.2vw, 40px)
+    clamp(28px, 3.2vw, 40px) clamp(64px, 7vw, 96px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.40);
+  isolation: isolate;
+
+  > :not(.register-page__form-glow) {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.register-page__form-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: clamp(220px, 26vw, 360px);
+    height: clamp(220px, 26vw, 360px);
+    background: radial-gradient(circle at bottom left,
+      rgba(0, 173, 239, 0.32) 0%,
+      rgba(0, 173, 239, 0.10) 40%,
+      transparent 70%);
+  }
+}
+
+.classic-form {
+  .form-md {
+    width: 80%;
+    min-width: 800px;
+    margin: 30px auto;
+
+    @media (max-width: 900px) {
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+    }
+  }
+
+  .document-card {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .document-icon {
+    color: #7957d5;
+  }
+
+  .document-filename {
+    color: #363636;
+  }
+
+  .step-navigation-buttons {
+    border-top: 1px solid #e0e0e0;
   }
 }
 
@@ -1076,10 +1218,6 @@ function isCanadaSelected(value: boolean) {
 }
 
 .document-card {
-  background: #fafafa;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
   margin-bottom: 15px;
 }
 
@@ -1095,12 +1233,10 @@ function isCanadaSelected(value: boolean) {
 
 .document-icon {
   margin-right: 10px;
-  color: #7957d5;
 }
 
 .document-filename {
   margin: 0;
-  color: #363636;
 }
 
 .document-delete-container {
@@ -1140,6 +1276,16 @@ function isCanadaSelected(value: boolean) {
   align-items: center;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+}
+
+@media (max-width: 767px) {
+  .upload-button-container {
+    text-align: left;
+  }
+
+  .step-navigation-buttons {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 }
 </style>

@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Personnel;
+using Covenant.Api.Controllers.Sigook.Agency.Personnel;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
@@ -63,20 +63,20 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
                         o.AddSub(FakePersonnel.Id);
                         o.AddAgencyPersonnelRole();
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 
-            public static readonly Agency FakeAgency1 = new Agency(default, default);
+            public static readonly Agency FakeAgency1 = new Agency(default, default) { User = FakeData.FakeUser() };
 
-            public static readonly Agency FakeAgency2 = new Agency(default, default);
+            public static readonly Agency FakeAgency2 = new Agency(default, default) { User = FakeData.FakeUser() };
 
             public static readonly User FakePersonnel = new User(CvnEmail.Create("recruiter@sigook.com").Value);
 
             public static readonly AgencyPersonnel FakeAgencyPersonnel1 = AgencyPersonnel.CreatePrimary(FakeAgency1.Id, FakePersonnel, "A1 Recruiter");
 
-            public static readonly AgencyPersonnel FakeAgencyPersonnel2 = AgencyPersonnel.Create(FakeAgency1.Id, FakePersonnel, false, "A2 Recruiter");
+            public static readonly AgencyPersonnel FakeAgencyPersonnel2 = AgencyPersonnel.Create(FakeAgency2.Id, FakePersonnel, false, "A2 Recruiter");
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
             {

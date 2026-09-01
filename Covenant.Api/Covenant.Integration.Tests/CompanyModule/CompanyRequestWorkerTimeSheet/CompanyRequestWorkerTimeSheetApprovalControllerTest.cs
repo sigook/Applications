@@ -1,0 +1,129 @@
+using Covenant.Api.Authorization;
+using Covenant.Common.Configuration;
+using Covenant.Common.Entities;
+using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Worker;
+using Covenant.Common.Models.Accounting;
+using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Repositories.Company;
+using Covenant.Common.Repositories.Request;
+using Covenant.Common.Utils.Extensions;
+using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Repositories.Company;
+using Covenant.Infrastructure.Repositories.Request;
+using Covenant.Integration.Tests.Configuration;
+using Covenant.Integration.Tests.Utils;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
+using System.Net.Http.Json;
+
+namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
+{
+    public class CompanyRequestWorkerTimeSheetApprovalControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyRequestWorkerTimeSheetApprovalControllerTest.Startup>>
+    {
+        private readonly HttpClient _client;
+        private readonly string _requestUri = $"api/company/requests/{Data.Request.Id}/Workers/{Data.WorkerProfile.Id}/TimeSheets";
+
+        public CompanyRequestWorkerTimeSheetApprovalControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+
+        [Fact, TestOrder(1)]
+        public async Task Get()
+        {
+            HttpResponseMessage response = await _client.GetAsync(_requestUri);
+            response.EnsureSuccessStatusCode();
+            var list = await response.Content.ReadFromJsonAsync<IList<TimeSheetListModel>>();
+            Assert.NotEmpty(list);
+            var model = list[0];
+            Assert.Equal(model.Id, Data.TimeSheet.Id);
+            Assert.Equal(model.Day, Data.TimeSheet.Date);
+            Assert.Equal(model.TimeOut, Data.TimeSheet.TimeOut);
+            Assert.True(model.WasApproved, nameof(model.WasApproved));
+            Assert.NotNull(model.Comment);
+            Assert.Equal(model.TimeIn, Data.TimeSheet.TimeIn);
+            Assert.True(model.CanUpdate);
+            Assert.Equal(Data.TimeSheet.TimeInApproved, model.TimeInApproved);
+            Assert.Equal(Data.TimeSheet.TimeOutApproved, model.TimeOutApproved);
+        }
+
+        [Fact, TestOrder(2)]
+        public async Task Put()
+        {
+            var model = new TimeSheetModel
+            {
+                TimeIn = Data.TimeSheet.TimeIn,
+                Hours = TimeSpan.FromHours(8)
+            };
+            HttpResponseMessage response = await _client.PutAsJsonAsync($"{_requestUri}", model);
+            response.EnsureSuccessStatusCode();
+            response = await _client.GetAsync(_requestUri);
+            response.EnsureSuccessStatusCode();
+            var list = await response.Content.ReadFromJsonAsync<IEnumerable<TimeSheetListModel>>();
+            foreach (TimeSheetListModel item in list)
+            {
+                Assert.NotNull(item.TimeInApproved);
+                Assert.NotNull(item.TimeOutApproved);
+                Assert.NotNull(item.Comment);
+                Assert.True(item.WasApproved);
+                Assert.True(item.CanUpdate);
+            }
+        }
+
+        public class Startup
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+                services.AddDefaultTestConfiguration();
+                services.AddTestAuthenticationBuilder()
+                    .AddTestAuth(o =>
+                    {
+                        o.AddSub(Data.CompanyId);
+                        o.AddCompanyRole();
+                    });
+                services.AddTestDatabase();
+                services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
+                services.AddSingleton<CompanyIdFilter>();
+                services.AddSingleton<ICompanyRepository, CompanyRepository>();
+                services.AddSingleton(Rates.DefaultRates);
+            }
+
+            public void Configure(IApplicationBuilder app, CovenantContext context)
+            {
+                app.UseRouting();
+                app.UseAuthentication();
+                app.UseAuthorization();
+                app.UseResponseCaching();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllerRoute(
+                        name: "default",
+                        pattern: "{controller}/{action=Index}/{id?}");
+                });
+                Data.Seed(context);
+            }
+        }
+
+        private static class Data
+        {
+            private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
+            public static readonly Covenant.Common.Entities.Agency.Agency Agency = FakeData.FakeAgency();
+            public static readonly CompanyProfile CompanyProfile = FakeData.FakeCompanyProfile(Agency);
+            public static readonly Guid CompanyId = CompanyProfile.CompanyId;
+            public static readonly CompanyProfileJobPositionRate JobPositionRate = FakeData.FakeJobPositionRate(CompanyProfile);
+            public static readonly Request Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow, JobPositionRate.Id).Value;
+            public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
+            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = Agency.Id, Location = FakeData.FakeLocation() };
+
+            private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest =
+                Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
+
+            public static readonly TimeSheet TimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
+
+            public static void Seed(CovenantContext context)
+            {
+                context.AddRange(Worker, WorkerProfile, CompanyProfile, JobPositionRate, Request, FakeWorkerRequest, TimeSheet);
+                context.SaveChanges();
+            }
+        }
+    }
+}

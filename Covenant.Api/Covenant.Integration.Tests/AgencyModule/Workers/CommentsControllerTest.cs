@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Controllers.Sigook.Agency.Workers;
+using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Entities;
@@ -43,8 +43,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
 
         public class Startup
         {
-            public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { FullName = "Covenant" };
-            public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("w@s.com").Value), FakeAgency.Id);
+            public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { FullName = "Covenant" , User = FakeData.FakeUser() };
+            public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("w@s.com").Value), FakeAgency.Id) { Location = FakeData.FakeLocation() };
 
             public void ConfigureServices(IServiceCollection services)
             {
@@ -53,7 +53,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 {
                     o.AddAgencyPersonnelRole(FakeAgency.Id);
                 });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }

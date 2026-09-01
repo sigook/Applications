@@ -1,4 +1,4 @@
-﻿using Covenant.Api;
+using Covenant.Api;
 using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
@@ -66,8 +66,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                                 o.AddAgencyPersonnelRole(FakeAgencyUser.Id);
                                 o.AddName(FakeAgencyUser.Email);
                             });
-                        services.AddDbContext<CovenantContext>(b =>
-                            b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                        services.AddTestDatabase();
                         services.AddSingleton<IWorkerRepository, WorkerRepository>();
                         services.AddSingleton(new Mock<ITimeService>().Object);
                         var identityServerService = new Mock<IIdentityServerService>();
@@ -89,7 +88,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             FakeIdentificationType1 = new IdentificationType();
             FakeIdentificationType2 = new IdentificationType();
             FakeGender = new Gender("Male");
-            FakeCity = new City { Value = "Toronto", Province = new Province { Country = new Country() } };
+            FakeCity = new City { Value = "Toronto", Province = new Province { Country = FakeData.FakeCountry("CA") } };
             FakeLift = new Lift("Lift");
             FakeLanguage = new Language();
             FakeAgencyUser = new User(CvnEmail.Create("FakeAgencyUser@email.com").Value);
@@ -98,7 +97,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             {
                 AvailabilityTimes = new List<WorkerProfileAvailabilityTime> { new WorkerProfileAvailabilityTime { AvailabilityTime = new AvailabilityTime { Value = "Morning" } } },
                 AvailabilityDays = new List<WorkerProfileAvailabilityDay> { new WorkerProfileAvailabilityDay { Day = new Day { Value = "Monday" } } },
-                Location = new Location { City = new City { Province = new Province { Country = Country.Canada }, Value = "Toronto" } },
+                Location = new Location { City = new City { Province = FakeData.FakeProvince(), Value = "Toronto" } },
                 ApprovedToWork = true,
                 HavePoliceCheckBackground = true,
                 IdentificationNumber1 = "987654321",
@@ -123,7 +122,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 },
                 LocationPreferences = new List<WorkerProfileLocationPreference>
                 {
-                    new WorkerProfileLocationPreference {City = new City {Value = "Toronto"}}
+                    new WorkerProfileLocationPreference {City = new City {Value = "Toronto", Province = FakeData.FakeProvince()}}
                 },
                 Agency = FakeAgency,
                 CreatedBy = FakeAgency.User.Email,
@@ -131,23 +130,23 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             };
             FakeWorkerToDelete = new WorkerProfile(new User(CvnEmail.Create("delete@e.com").Value), FakeAgency.Id)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } },
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } },
             };
             FakeWorkerToDnu = new WorkerProfile(new User(CvnEmail.Create("dnu@e.com").Value), FakeAgency.Id)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } }
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } }
             };
             FakeWorkerIsContractor = new WorkerProfile(new User(CvnEmail.Create("contractor@e.com").Value), FakeAgency.Id)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } },
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } },
             };
             FakeWorkerIsSubcontractor = new WorkerProfile(new User(CvnEmail.Create("subcontractor@e.com").Value), FakeAgency.Id)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } },
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } },
             };
             FakeWorkerToUpdateEmail = new WorkerProfile(new User(CvnEmail.Create("updateMyEmail@e.com").Value), FakeAgency.Id)
             {
-                Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "USA" } } } }
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } }
             };
             var basicInformation = new Mock<IWorkerBasicInformation<ICatalog<Guid>>>();
             basicInformation.SetupGet(i => i.FirstName).Returns("Juan");
@@ -241,6 +240,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(CovenantFile.Create("sin.pdf").Value);
             entity.PatchSinInformation(sinInfo.Object);
             context.WorkerProfiles.Update(entity);
+            context.Entry(entity.SocialInsuranceFile).State = EntityState.Added;
             await context.SaveChangesAsync();
 
             response = await _client.PutAsJsonAsync(url, new { });
@@ -268,6 +268,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(CovenantFile.Create("sin.pdf").Value);
             entity.PatchSinInformation(sinInfo.Object);
             context.WorkerProfiles.Update(entity);
+            context.Entry(entity.SocialInsuranceFile).State = EntityState.Added;
             await context.SaveChangesAsync();
 
             response = await _client.PutAsJsonAsync(url, new { });
@@ -291,7 +292,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             Assert.Equal(entity.Lift?.Id, detail.Lift?.Id);
             Assert.Equal(entity.SocialInsurance, detail.SocialInsurance);
             Assert.Equal(entity.SocialInsuranceExpire, detail.SocialInsuranceExpire);
-            Assert.Equal(entity.DueDate, detail.DueDate);
+            DateAssert.Equal(entity.DueDate, detail.DueDate);
             Assert.Equal(entity.SocialInsuranceFile?.FileName, detail.SocialInsuranceFile?.FileName);
             Assert.Equal(entity.IdentificationNumber1, detail.IdentificationNumber1);
             Assert.Equal(entity.IdentificationNumber2, detail.IdentificationNumber2);
@@ -337,6 +338,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
 
         private void Seed(CovenantContext context)
         {
+            if (context.WorkerProfiles.Any()) return;
             context.Agencies.Add(FakeAgency);
             context.WorkerProfiles.AddRange(FakeWorkerProfileToFilter, FakeWorkerToDelete, FakeWorkerToDnu, FakeWorkerIsContractor, FakeWorkerIsSubcontractor, FakeWorkerToUpdateEmail);
             context.NotificationTypes.Add(NotificationType.NewRequestNotifyWorker);

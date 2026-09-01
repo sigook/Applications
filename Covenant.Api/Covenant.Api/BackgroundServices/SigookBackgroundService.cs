@@ -37,7 +37,7 @@ public class SigookBackgroundService : BackgroundService
         {
             await covenantContext.Database.MigrateAsync();
         }
-        await RunCustomScriptsAsync(covenantContext);
+        await DatabaseScriptRunner.RunAsync(covenantContext);
     }
 
     private async Task ConfigureServiceBus()
@@ -60,43 +60,5 @@ public class SigookBackgroundService : BackgroundService
         {
             await consumer.OnInit();
         }
-    }
-
-    private async Task RunCustomScriptsAsync(DbContext context)
-    {
-        var infraAssembly = typeof(CovenantContext).Assembly;
-        var assemblyFolder = Path.GetDirectoryName(infraAssembly.Location)!;
-        var basePath = Path.Combine(assemblyFolder, "Scripts");
-        var connection = context.Database.GetDbConnection();
-        if (connection.State != System.Data.ConnectionState.Open)
-        {
-            await connection.OpenAsync();
-        }
-        var folders = new[]
-        {
-            "Schemas",
-            "Tables",
-            "Views",
-            "Functions",
-            "StoredProcedures",
-            "Types",
-        };
-        foreach (var folder in folders)
-        {
-            var fullDir = Path.Combine(basePath, folder);
-            if (!Directory.Exists(fullDir))
-            {
-                continue;
-            }
-            var files = Directory.GetFiles(fullDir, "*.sql").OrderBy(f => f);
-            foreach (var file in files)
-            {
-                var sql = await File.ReadAllTextAsync(file);
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = sql;
-                await cmd.ExecuteNonQueryAsync();
-            }
-        }
-        await connection.CloseAsync();
     }
 }

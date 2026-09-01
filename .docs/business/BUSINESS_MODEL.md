@@ -64,7 +64,7 @@ Defined in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`Coven
 | `Role.CompanyUser` | `company.user` | Company internal user |
 | `Role.Worker` | `worker` | Worker (mobile app) |
 
-Composite groups in the same file: `RecruitingAccess`, `SalesAccess`, `AgencyStaff`, `AdminAccess` (superadmin + admin), `AgencyAssignable`, `SuperAdminAssignable`. The old `agency` / `agency.personnel` roles were deleted; there is no "Account Manager" role.
+Composite groups in the same file: `RecruitingAccess`, `SalesAccess`, `AgencyStaff`, `AdminAccess` (superadmin + admin), `AgencyAssignable`, `SuperAdminAssignable`. There are no `agency` / `agency.personnel` roles and no "Account Manager" role.
 
 ---
 

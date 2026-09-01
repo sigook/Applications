@@ -91,6 +91,9 @@ router.beforeEach(async (to, from, next) => {
       next();
     }
   } else {
+    if (to.meta?.resolveUser) {
+      await useSecurityStore(pinia).getUser().catch(() => null);
+    }
     next();
   }
 });

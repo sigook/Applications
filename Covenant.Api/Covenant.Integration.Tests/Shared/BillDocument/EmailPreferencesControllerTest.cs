@@ -44,7 +44,7 @@ namespace Covenant.Integration.Tests.Shared.BillDocument
             public void ConfigureServices(IServiceCollection services)
             {
                 services.AddDefaultTestConfiguration();
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<INotificationRepository, NotificationRepository>();
             }
 

@@ -53,7 +53,10 @@ const isANewVersion = ref(false);
 const isLogged = ref(false);
 
 const isCallback = computed(() => route.name === 'callback' || route.meta?.layout === 'auth');
-const isLandingRoute = computed(() => route.meta?.layout === 'landing');
+const isLandingRoute = computed(() =>
+  route.meta?.layout === 'landing'
+  || (route.meta?.layout === 'landing-anonymous' && !securityStore.user)
+);
 
 const MOBILE_REGEX = /Android|iPhone|iPod|BlackBerry/i;
 const VERSION_CHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -179,6 +182,12 @@ onUnmounted(() => {
     position: static;
     height: auto;
     overflow: visible;
+  }
+
+  /* The sidebar is an off-canvas drawer here, so it no longer reserves
+     inline space; the fixed top bar does the reserving instead. */
+  .logged-content {
+    padding: 72px 16px 24px;
   }
 }
 </style>

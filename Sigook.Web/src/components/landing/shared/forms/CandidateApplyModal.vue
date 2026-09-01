@@ -24,7 +24,7 @@
           </button>
         </header>
 
-        <div class="reg-modal__body">
+        <div class="reg-modal__body landing-form">
           <CandidateApplyForm
             :job-title="context?.jobTitle"
             :request-id="context?.requestId"
@@ -41,7 +41,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import CandidateApplyForm from '@/components/landing/shared/forms/CandidateApplyForm.vue'
 import LandingIcon from '@/components/landing/shared/icons/LandingIcon.vue'
-import { useCandidateApplyModal } from '@/components/landing/shared/forms/useCandidateApplyModal'
+import { useCandidateApplyModal } from '@/composables/useCandidateApplyModal'
 import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const { isOpen, context, close } = useCandidateApplyModal()

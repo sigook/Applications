@@ -25,7 +25,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     /// <param name="filter">Filter criteria for invoices.</param>
     [HttpGet]
     [ProducesResponseType(typeof(InvoiceListModelWithTotals), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetInvoices([FromQuery] GetInvoicesFilterV2 filter)
+    public async Task<IActionResult> GetInvoices([FromQuery] GetInvoicesFilter filter)
     {
         var service = await invoiceService.Value;
         var data = await service.GetInvoices(filter);
@@ -37,7 +37,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     [HttpGet("file")]
     [Produces("application/octet-stream")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetInvoicesFile([FromQuery] GetInvoicesFilterV2 filter)
+    public async Task<IActionResult> GetInvoicesFile([FromQuery] GetInvoicesFilter filter)
     {
         var service = await invoiceService.Value;
         var file = await service.GetInvoicesFile(filter);

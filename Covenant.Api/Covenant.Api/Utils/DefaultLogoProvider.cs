@@ -1,30 +1,16 @@
-using Covenant.Api.Common;
-using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 
-namespace Covenant.Api.Utils
+namespace Covenant.Api.Utils;
+
+public class DefaultLogoProvider(IFilesContainer filesContainer) : IDefaultLogoProvider
 {
-    public class DefaultLogoProvider : IDefaultLogoProvider
+    public async Task<CovenantFileModel> GetLogo(string name)
     {
-        private readonly FilesConfiguration filesConfiguration;
-        private readonly IFilesContainer filesContainer;
-
-        public DefaultLogoProvider(IOptions<FilesConfiguration> options, IFilesContainer filesContainer)
-        {
-            filesConfiguration = options.Value;
-            this.filesContainer = filesContainer;
-        }
-
-        public async Task<CovenantFileModel> GetLogo(string name)
-        {
-            var c = new CreateDefaultLogo();
-            IFileInfo logo = c.Create(name);
-            var fileSaver = new FileSaver(filesConfiguration.FilesUrl);
-            var result = await fileSaver.SaveImageProfile(logo.PhysicalPath, async (path, contentType) => await filesContainer.Upload(path, contentType));
-            return new CovenantFileModel(result.Value.Path, name);
-        }
+        using var content = new CreateDefaultLogo().Create(name);
+        if (content is null) return null;
+        string fileName = $"default{Guid.NewGuid()}.png";
+        await filesContainer.UploadAsync(content, fileName);
+        return new CovenantFileModel(fileName, name);
     }
 }

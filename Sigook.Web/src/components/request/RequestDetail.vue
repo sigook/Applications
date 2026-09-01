@@ -63,7 +63,8 @@
       <span class="has-text-weight-bold mr-2">Role</span>
       <span class="has-text-weight-normal">{{ request.jobPosition }}</span>
       <span v-if="request.displayShift" class="request-shift-container"><b class="has-text-weight-bold ">Shift</b>
-        <agency-shift class="ml-3" :requestId="request.id" :displayShift="request.displayShift" />
+        <agency-shift class="ml-3" :requestId="request.id" :displayShift="request.displayShift"
+          :fetchShift="getAgencyRequestShift" />
       </span>
     </div>
 
@@ -121,6 +122,7 @@ import {
 } from "@/constants/enums";
 import Skills from "../agency_request/AgencyRequestSkills.vue";
 import AgencyShift from "../agency_request/AgencyShiftDetail.vue";
+import { getAgencyRequestShift } from "@/api/agencyRequestApi";
 
 const props = defineProps<{ request?: any }>();
 const emit = defineEmits<{ (e: 'refreshRequest'): void }>();

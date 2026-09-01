@@ -145,7 +145,7 @@ export interface CompanyProfileListItem {
   updatedBy: string;
 }
 
-// PATCH /api/V2/AgencyCompanyProfile/{id}/{PaidHolidays|Overtime|RequiresPermissionToSeeRequests}
+// PATCH /api/agency/companyprofiles/{id}/{PaidHolidays|Overtime|RequiresPermissionToSeeRequests}
 // Matches CompanyProfileSettingsUpdateModel — .NET binds only the fields it needs
 export interface CompanyProfileSettingsUpdate {
   requiresPermissionToSeeRequests?: boolean;
@@ -267,7 +267,7 @@ export interface TimeSheetModel {
   reimbursementsDescription?: string;
 }
 
-// Response shape of GET /api/v2/AgencyRequest/{}/Worker/{}/TimeSheet/{}/Usages.
+// Response shape of GET /api/agency/requests/{}/Workers/{}/TimeSheets/{}/Usages.
 // Mirrors backend TimeSheetUsagesModel — single object, not an array.
 export interface TimeSheetUsagesModel {
   invoiceNumber?: number | null;

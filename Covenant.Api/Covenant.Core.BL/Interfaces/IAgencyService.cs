@@ -29,6 +29,9 @@ public interface IAgencyService
     Task<Result> AddUpdateWorkerHoliday(Guid workerProfileId, WorkerProfileHolidayModel model);
     Task<Result> CreateHoliday(WorkerProfileHolidayModel model);
     string[] GetAssignableRoles();
+    Task<IEnumerable<AgencyPersonnelModel>> GetAgencyPersonnel(Guid agencyId);
+    Task<AgencyPersonnelModel> GetAgencyPersonnel(Guid agencyId, Guid id);
     Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model, Guid? agencyId = null);
+    Task<Result> UpdateAgencyPersonnel(Guid id, AgencyPersonnelModel model);
     Task<Result> CreateAgency(AgencyModel model);
 }

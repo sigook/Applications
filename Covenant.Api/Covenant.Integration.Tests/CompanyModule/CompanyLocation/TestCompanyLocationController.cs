@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Models.Location;
@@ -23,7 +23,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyLocation
         [Fact]
         public async Task Get()
         {
-            HttpResponseMessage response = await _client.GetAsync("api/CompanyLocation");
+            HttpResponseMessage response = await _client.GetAsync("api/company/profile/Locations");
             response.EnsureSuccessStatusCode();
             var list = await response.Content.ReadFromJsonAsync<List<LocationDetailModel>>();
             Assert.NotEmpty(list);
@@ -49,7 +49,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyLocation
                         o.AddSub(Data.CompanyProfile.Company.Id);
                         o.AddCompanyRole();
                     });
-                services.AddDbContext<CovenantContext>(b => b.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<CompanyIdFilter>();
             }
@@ -78,10 +78,10 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyLocation
                 Company = new User(CvnEmail.Create("company@company.com").Value),
                 Locations = new List<CompanyProfileLocation>
                 {
-                    new CompanyProfileLocation {Location = new Location {Address = "ABC",City = new City {Province = new Province{Country = new Country()}}}},
-                    new CompanyProfileLocation {Location = new Location {Address = "DFG",City = new City {Province = new Province{Country =new Country()}}}}
+                    new CompanyProfileLocation {Location = new Location {Address = "ABC",City = new City {Province = new Province{Country = FakeData.FakeCountry("CA")}}}},
+                    new CompanyProfileLocation {Location = new Location {Address = "DFG",City = new City {Province = new Province{Country =FakeData.FakeCountry("CA")}}}}
                 }
-            };
+            , Industry = new CompanyProfileIndustry("Test") , Agency = FakeData.FakeAgency() };
         }
     }
 }

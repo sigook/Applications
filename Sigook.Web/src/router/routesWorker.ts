@@ -19,7 +19,8 @@ const routesWorker: RouteRecordRaw[] = [
     name: "register-worker",
     component: WorkerRegister,
     meta: {
-      layout: "web",
+      layout: "landing-anonymous",
+      resolveUser: true,
     },
   },
   {
@@ -27,7 +28,8 @@ const routesWorker: RouteRecordRaw[] = [
     name: "register-worker-with-requestId",
     component: WorkerRegister,
     meta: {
-      layout: "web",
+      layout: "landing-anonymous",
+      resolveUser: true,
     },
   },
   {

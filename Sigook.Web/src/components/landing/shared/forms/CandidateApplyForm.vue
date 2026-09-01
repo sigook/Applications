@@ -1,221 +1,233 @@
 <template>
-  <div class="reg-form" :class="{ 'reg-form--loading': isLoading }">
-    <header class="reg-form__head">
-      <p v-if="contextLine" class="reg-form__context">
-        <span class="reg-form__context-label">Applying for:</span>
-        <span class="reg-form__context-value">{{ contextLine }}</span>
-      </p>
-      <WorkerRegisterStepNav :steps="STEPS" :current="currentStepIdx" />
-    </header>
+  <div class="reg-form landing-form">
+    <p v-if="contextLine" class="reg-form__context">
+      <span class="reg-form__context-label">Applying for:</span>
+      <span class="reg-form__context-value">{{ contextLine }}</span>
+    </p>
 
     <div v-if="isLoading" class="reg-form__loader" aria-live="polite">
       <span class="reg-form__spinner" aria-hidden="true"></span>
       <span>{{ loadingText }}</span>
     </div>
 
-    <form v-else class="reg-form__body" @submit.prevent="onSubmit">
-      <section v-show="currentStep === 'personal'" class="reg-form__step">
-        <h3 class="reg-form__step-title">Personal information</h3>
+    <form v-else @submit.prevent="onSubmit">
+      <b-steps v-model="activeStep" animated mobile-mode="compact" :has-navigation="false">
+        <b-step-item step="1" label="Personal" :clickable="false">
+          <h3 class="title">Personal information</h3>
 
-        <Input
-          v-model="fullName"
-          label="Full Name"
-          placeholder="Your full name"
-          :required="true"
-          :maxlength="60"
-          :error="errors.fullName"
-          autocomplete="name"
-        />
-
-        <div class="reg-form__grid reg-form__grid--2col">
-          <Input
-            v-model="email"
-            label="Email"
-            type="email"
-            placeholder="you@email.com"
-            :required="true"
-            :maxlength="100"
-            :error="errors.email"
-            autocomplete="email"
-          />
-          <PhoneInput
-            v-model="phone"
-            label="Phone"
-            placeholder="305 123-4567"
-            :required="true"
-            :error="errors.phone"
-          />
-        </div>
-
-        <div class="reg-form__grid reg-form__grid--2col">
-          <Select
-            v-model="selectedCountry"
-            :options="countries"
-            label="Country"
-            placeholder="Select country"
-            :required="true"
-            :error="errors.countryId"
-          />
-          <Input
-            v-model="address"
-            label="City / Address"
-            placeholder="City / Address"
-            :required="true"
-            :maxlength="100"
-            :error="errors.address"
-          />
-        </div>
-
-        <footer class="reg-form__nav">
-          <span></span>
-          <b-button native-type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
-            <span>Next</span>
-            <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </b-button>
-        </footer>
-      </section>
-
-      <section v-show="currentStep === 'details'" class="reg-form__step">
-        <h3 class="reg-form__step-title">Additional details</h3>
-
-        <div class="reg-form__grid reg-form__grid--2col">
-          <Select
-            v-model="selectedStatus"
-            :options="statusOptions"
-            label="Immigration Status"
-            placeholder="Select status"
-            :required="true"
-            :error="errors.status"
-          />
-          <Select
-            v-model="selectedSource"
-            :options="sources"
-            label="How did you hear about us?"
-            placeholder="Select an option"
-          />
-        </div>
-
-        <div class="reg-form__doc-block">
-          <div class="reg-form__doc-head">
-            <span class="reg-form__doc-title">
-              Resume / CV
-              <span v-if="resumeRequired" class="reg-form__doc-required">*</span>
-              <span v-else class="reg-form__doc-optional">(optional)</span>
-            </span>
-            <FileUpload
-              label="Add resume"
-              accept=".pdf,.doc,.docx"
-              :disabled="!!resume"
-              @file="handleResumeUpload"
-            />
-          </div>
-          <div v-if="resume" class="reg-form__doc-card">
-            <div class="reg-form__doc-card-head">
-              <span class="reg-form__doc-filename">📑 {{ resume.name }}</span>
-              <b-button native-type="button" class="reg-form__doc-remove" @click="deleteResume">Remove</b-button>
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <b-field :type="errors.fullName ? 'is-danger' : ''" :message="errors.fullName || ''">
+                <template #label>
+                  Full Name <span class="has-text-danger">*</span>
+                </template>
+                <b-input type="text" v-model="fullName" name="fullName" placeholder="Your full name"
+                  :maxlength="60" :has-counter="false" autocomplete="name" />
+              </b-field>
+            </div>
+            <div class="column is-6">
+              <b-field :type="errors.email ? 'is-danger' : ''" :message="errors.email || ''">
+                <template #label>
+                  Email <span class="has-text-danger">*</span>
+                </template>
+                <b-input type="email" v-model="email" name="email" placeholder="you@email.com"
+                  :maxlength="100" :has-counter="false" autocomplete="email" />
+              </b-field>
+            </div>
+            <div class="column is-6">
+              <PhoneInput ref="phoneComponent" label="Phone" :required="true" placeholder="305 123-4567"
+                @formattedPhone="(value) => (phone = value || '')" />
+            </div>
+            <div class="column is-6">
+              <b-field :type="errors.countryId ? 'is-danger' : ''" :message="errors.countryId || ''">
+                <template #label>
+                  Country <span class="has-text-danger">*</span>
+                </template>
+                <b-select v-model="selectedCountry" name="country" placeholder="Select country" expanded>
+                  <option v-for="item in countries" :key="item.id" :value="item">{{ item.value }}</option>
+                </b-select>
+              </b-field>
+            </div>
+            <div class="column is-6">
+              <b-field :type="errors.address ? 'is-danger' : ''" :message="errors.address || ''">
+                <template #label>
+                  City / Address <span class="has-text-danger">*</span>
+                </template>
+                <b-input type="text" v-model="address" name="address" placeholder="City / Address"
+                  :maxlength="100" :has-counter="false" />
+              </b-field>
             </div>
           </div>
-          <p v-if="resumeError" class="reg-form__doc-error">{{ resumeError }}</p>
-        </div>
 
-        <TagInput
-          v-model="skillTags"
-          :options="filteredSkills"
-          label="Skills / Roles of Interest"
-          placeholder="Select from suggestions or type your own"
-          option-key="skill"
-          option-label="skill"
-          :allow-new="true"
-          :create-tag="createSkillTag"
-          @typing="onSkillsTyping"
-        />
+          <div class="step-navigation-buttons">
+            <span></span>
+            <b-button type="is-primary" @click="goNext">Next</b-button>
+          </div>
+        </b-step-item>
 
-        <div class="reg-form__field-group reg-form__field-group--inline">
-          <span class="reg-form__field-group-label">Transportation</span>
-          <Switch v-model="hasVehicle">{{ hasVehicle ? 'Own Vehicle' : 'Public Transit' }}</Switch>
-        </div>
+        <b-step-item step="2" label="Details" :clickable="false">
+          <h3 class="title">Additional details</h3>
 
-        <footer class="reg-form__nav">
-          <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
-            <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
-            <span>Previous</span>
-          </b-button>
-          <b-button native-type="button" class="reg-form__btn reg-form__btn--primary" @click="goNext">
-            <span>Next</span>
-            <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </b-button>
-        </footer>
-      </section>
+          <div class="columns is-multiline">
+            <div class="column is-6">
+              <b-field :type="errors.status ? 'is-danger' : ''" :message="errors.status || ''">
+                <template #label>
+                  Immigration Status <span class="has-text-danger">*</span>
+                </template>
+                <b-select v-model="selectedStatus" name="status" placeholder="Select status" expanded>
+                  <option v-for="item in statusOptions" :key="item.id" :value="item">{{ item.value }}</option>
+                </b-select>
+              </b-field>
+            </div>
+            <div class="column is-6">
+              <b-field label="How did you hear about us?">
+                <b-select v-model="selectedSource" name="source" placeholder="Select an option" expanded>
+                  <option v-for="item in sources" :key="item.id" :value="item">{{ item.value }}</option>
+                </b-select>
+              </b-field>
+            </div>
 
-      <section v-show="currentStep === 'review'" class="reg-form__step">
-        <h3 class="reg-form__step-title">Review &amp; submit</h3>
+            <div class="column is-12">
+              <div class="columns is-multiline document-section-header">
+                <div class="column is-6">
+                  <label class="fz1 has-text-weight-semibold section-label">
+                    Resume / CV
+                    <span v-if="resumeRequired" class="has-text-danger">*</span>
+                    <i v-else>(optional)</i>
+                  </label>
+                </div>
+                <div class="column is-6 upload-button-container">
+                  <b-field class="file is-primary upload-field" :class="{
+                    'has-name': !!selectedResumeFile,
+                    'upload-disabled': !!resume
+                  }">
+                    <b-upload v-model="selectedResumeFile" accept=".pdf,.doc,.docx"
+                      @update:modelValue="onResumeUpload" :disabled="!!resume" class="file-label" rounded>
+                      <span class="file-cta">
+                        <b-icon class="file-icon" icon="upload"></b-icon>
+                        <span class="file-label">Add resume</span>
+                      </span>
+                    </b-upload>
+                  </b-field>
+                </div>
+              </div>
+              <div class="container-files">
+                <div v-if="resume" class="document-card">
+                  <div class="columns is-multiline document-card-header">
+                    <div class="column is-10-mobile is-10 no-padding">
+                      <div class="document-icon-title">
+                        <b-icon icon="file-account" size="is-small" class="document-icon"></b-icon>
+                        <h4 class="has-text-weight-semibold document-filename">{{ resume.name }}</h4>
+                      </div>
+                    </div>
+                    <div class="column is-2-mobile is-2 document-delete-container no-padding">
+                      <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
+                        <b-button type="is-danger" size="is-small" icon-left="delete" outlined
+                          @click="deleteResume">
+                        </b-button>
+                      </b-tooltip>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <span v-show="resumeError" class="help is-danger">{{ resumeError }}</span>
+            </div>
 
-        <dl class="reg-form__summary">
-          <div class="reg-form__summary-row">
-            <dt>Name</dt>
-            <dd>{{ fullName || '—' }}</dd>
+            <div class="column is-12">
+              <b-field label="Skills / Roles of Interest">
+                <b-taginput v-model="skillTags" autocomplete :data="filteredSkills" open-on-focus field="skill"
+                  placeholder="Select from suggestions or type your own" :maxlength="20" :has-counter="false"
+                  allow-new @typing="onSkillsTyping" :create-tag="createSkillTag">
+                </b-taginput>
+              </b-field>
+            </div>
+            <div class="column is-12">
+              <b-field label="Transportation">
+                <b-switch v-model="hasVehicle" :true-value="true" :false-value="false">
+                  {{ hasVehicle ? 'Own Vehicle' : 'Public Transit' }}
+                </b-switch>
+              </b-field>
+            </div>
           </div>
-          <div class="reg-form__summary-row">
-            <dt>Email</dt>
-            <dd>{{ email || '—' }}</dd>
-          </div>
-          <div class="reg-form__summary-row">
-            <dt>Phone</dt>
-            <dd>{{ phone || '—' }}</dd>
-          </div>
-          <div class="reg-form__summary-row">
-            <dt>Country</dt>
-            <dd>{{ selectedCountry?.value || '—' }}</dd>
-          </div>
-          <div class="reg-form__summary-row">
-            <dt>City / Address</dt>
-            <dd>{{ address || '—' }}</dd>
-          </div>
-          <div class="reg-form__summary-row">
-            <dt>Immigration Status</dt>
-            <dd>{{ selectedStatus?.value || '—' }}</dd>
-          </div>
-          <div class="reg-form__summary-row">
-            <dt>How did you hear about us</dt>
-            <dd>{{ selectedSource?.value || '—' }}</dd>
-          </div>
-          <div class="reg-form__summary-row">
-            <dt>Transportation</dt>
-            <dd>{{ hasVehicle ? 'Own Vehicle' : 'Public Transit' }}</dd>
-          </div>
-          <div v-if="skillTags.length" class="reg-form__summary-row">
-            <dt>Skills</dt>
-            <dd>
-              <span v-for="tag in skillTags" :key="tag.skill" class="reg-form__summary-chip">
-                {{ tag.skill }}
-              </span>
-            </dd>
-          </div>
-          <div v-if="resume" class="reg-form__summary-row">
-            <dt>Resume</dt>
-            <dd>{{ resume.name }}</dd>
-          </div>
-        </dl>
 
-        <Checkbox v-model="termsAccepted">
-          I agree to Sigook™
-          <router-link to="/terms-and-conditions" target="_blank" class="reg-form__link">Terms and Conditions</router-link>
-          &amp;
-          <router-link to="/privacy-policy" target="_blank" class="reg-form__link">Privacy Policy</router-link>.
-        </Checkbox>
-        <p v-if="errors.termsAccepted" class="reg-form__field-error">{{ errors.termsAccepted }}</p>
+          <div class="step-navigation-buttons">
+            <b-button @click="goPrev">Previous</b-button>
+            <b-button type="is-primary" @click="goNext">Next</b-button>
+          </div>
+        </b-step-item>
 
-        <footer class="reg-form__nav">
-          <b-button native-type="button" class="reg-form__btn reg-form__btn--ghost" @click="goPrev">
-            <span class="reg-form__btn-arrow reg-form__btn-arrow--left" aria-hidden="true">←</span>
-            <span>Previous</span>
-          </b-button>
-          <b-button native-type="submit" class="reg-form__btn reg-form__btn--submit" :disabled="isSubmitting">
-            <span>{{ isSubmitting ? 'Submitting…' : 'Submit Application' }}</span>
-            <span class="reg-form__btn-arrow" aria-hidden="true">→</span>
-          </b-button>
-        </footer>
-      </section>
+        <b-step-item step="3" label="Review" :clickable="false">
+          <h3 class="title">Review &amp; submit</h3>
+
+          <dl class="reg-form__summary">
+            <div class="reg-form__summary-row">
+              <dt>Name</dt>
+              <dd>{{ fullName || '—' }}</dd>
+            </div>
+            <div class="reg-form__summary-row">
+              <dt>Email</dt>
+              <dd>{{ email || '—' }}</dd>
+            </div>
+            <div class="reg-form__summary-row">
+              <dt>Phone</dt>
+              <dd>{{ phone || '—' }}</dd>
+            </div>
+            <div class="reg-form__summary-row">
+              <dt>Country</dt>
+              <dd>{{ selectedCountry?.value || '—' }}</dd>
+            </div>
+            <div class="reg-form__summary-row">
+              <dt>City / Address</dt>
+              <dd>{{ address || '—' }}</dd>
+            </div>
+            <div class="reg-form__summary-row">
+              <dt>Immigration Status</dt>
+              <dd>{{ selectedStatus?.value || '—' }}</dd>
+            </div>
+            <div class="reg-form__summary-row">
+              <dt>How did you hear about us</dt>
+              <dd>{{ selectedSource?.value || '—' }}</dd>
+            </div>
+            <div class="reg-form__summary-row">
+              <dt>Transportation</dt>
+              <dd>{{ hasVehicle ? 'Own Vehicle' : 'Public Transit' }}</dd>
+            </div>
+            <div v-if="skillTags.length" class="reg-form__summary-row">
+              <dt>Skills</dt>
+              <dd>
+                <span v-for="tag in skillTags" :key="tag.skill" class="reg-form__summary-chip">
+                  {{ tag.skill }}
+                </span>
+              </dd>
+            </div>
+            <div v-if="resume" class="reg-form__summary-row">
+              <dt>Resume</dt>
+              <dd>{{ resume.name }}</dd>
+            </div>
+          </dl>
+
+          <b-field class="reg-form__terms">
+            <b-checkbox v-model="termsAccepted" name="agree terms">
+              I agree to Sigook™
+              <router-link to="/terms-and-conditions" target="_blank">
+                <u class="color-primary">Terms and Conditions</u>
+              </router-link>
+              &amp;
+              <router-link to="/privacy-policy" target="_blank">
+                <u class="color-primary">Privacy Policy.</u>
+              </router-link>
+            </b-checkbox>
+          </b-field>
+          <span v-show="errors.termsAccepted" class="help is-danger">{{ errors.termsAccepted || '' }}</span>
+
+          <div class="step-navigation-buttons">
+            <b-button @click="goPrev">Previous</b-button>
+            <b-button type="is-primary" native-type="submit" :disabled="isSubmitting">
+              {{ isSubmitting ? 'Submitting…' : 'Submit Application' }}
+            </b-button>
+          </div>
+        </b-step-item>
+      </b-steps>
     </form>
   </div>
 </template>
@@ -225,24 +237,15 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
-import Input from '@/components/landing/shared/forms/Input.vue'
-import Select from '@/components/landing/shared/forms/Select.vue'
-import PhoneInput from '@/components/landing/shared/forms/PhoneInput.vue'
-import FileUpload from '@/components/landing/shared/forms/FileUpload.vue'
-import TagInput from '@/components/landing/shared/forms/TagInput.vue'
-import Switch from '@/components/landing/shared/forms/Switch.vue'
-import Checkbox from '@/components/landing/shared/forms/Checkbox.vue'
-import WorkerRegisterStepNav, { type StepDescriptor } from '@/components/landing/shared/forms/WorkerRegisterStepNav.vue'
+import PhoneInput from '@/components/PhoneInput.vue'
 
 import { getSources, getSkills } from '@/api/catalogApi'
 import { getCountries } from '@/api/locationApi'
+import { submitCandidateApplication } from '@/api/websiteApi'
+import { residencyList } from '@/constants/catalog'
 import type { Country, Source, Skill } from '@/types/common'
+import type { CandidateFormData } from '@/types/website'
 import { showAlertError, showAlertSuccess } from '@/utils/toast'
-import {
-  RESIDENCY_STATUS,
-  submitCandidateApplication,
-  type CandidateFormData,
-} from '@/components/landing/shared/forms/candidateApplyService'
 
 
 const props = withDefaults(defineProps<{
@@ -258,15 +261,10 @@ const emit = defineEmits<{
 }>()
 
 const contextLine = computed(() => props.jobTitle || '')
-type StepKey = 'personal' | 'details' | 'review'
-const STEPS: readonly StepDescriptor[] = [
-  { key: 'personal', label: 'Personal' },
-  { key: 'details', label: 'Details' },
-  { key: 'review', label: 'Review' },
-] as const
 
-const currentStep = ref<StepKey>('personal')
-const currentStepIdx = computed(() => STEPS.findIndex((s) => s.key === currentStep.value))
+const activeStep = ref(0)
+const LAST_STEP = 2
+
 const schema = yup.object({
   fullName: yup.string().required('Full name is required').max(60, 'Full name must be at most 60 characters'),
   email: yup
@@ -275,10 +273,6 @@ const schema = yup.object({
     .email('Invalid email format')
     .min(6, 'Email must be at least 6 characters')
     .max(100, 'Email must be at most 100 characters'),
-  phone: yup
-    .string()
-    .required('Phone is required')
-    .matches(/^\d{3} \d{3}-\d{4}$/, 'Phone format must be: ### ###-####'),
   countryId: yup.string().required('Country is required'),
   address: yup.string().required('City/Address is required').max(100, 'Address must be at most 100 characters'),
   status: yup.string().required('Immigration status is required'),
@@ -290,7 +284,6 @@ const { errors: formErrors, validateField } = useForm({
   initialValues: {
     fullName: '',
     email: '',
-    phone: '',
     countryId: '',
     address: '',
     status: '',
@@ -300,11 +293,13 @@ const { errors: formErrors, validateField } = useForm({
 
 const { value: fullName } = useField<string>('fullName')
 const { value: email } = useField<string>('email')
-const { value: phone } = useField<string>('phone')
 const { value: countryId } = useField<string>('countryId')
 const { value: address } = useField<string>('address')
 const { value: status } = useField<string>('status')
 const { value: termsAccepted } = useField<boolean>('termsAccepted')
+
+const phone = ref('')
+const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null)
 
 const interacted = reactive<Record<string, boolean>>({})
 function markInteracted(fields: string[]): void {
@@ -314,7 +309,6 @@ function markInteracted(fields: string[]): void {
 const watched: Array<[string, { value: unknown }]> = [
   ['fullName', { value: fullName }],
   ['email', { value: email }],
-  ['phone', { value: phone }],
   ['countryId', { value: countryId }],
   ['address', { value: address }],
   ['status', { value: status }],
@@ -335,7 +329,7 @@ const errors = computed<Record<string, string>>(() => {
 
 
 interface StatusOption { id: string; value: string }
-const statusOptions: StatusOption[] = RESIDENCY_STATUS.map((s) => ({ id: s, value: s }))
+const statusOptions: StatusOption[] = residencyList.map((s) => ({ id: s, value: s }))
 
 const countries = ref<Country[]>([])
 const sources = ref<Source[]>([])
@@ -365,15 +359,15 @@ function onSkillsTyping(value: string): void {
 }
 
 function createSkillTag(raw: string): Skill {
-  const value = raw.slice(0, 20)
-  return { skill: value }
+  return { skill: raw.slice(0, 20) }
 }
 
 const hasVehicle = ref(false)
 const resume = ref<File | null>(null)
+const selectedResumeFile = ref<File | null>(null)
 const resumeError = ref('')
 
-function handleResumeUpload(file: File | null): void {
+function onResumeUpload(file: File | null): void {
   if (!file) return
   if (file.size / 1024 > 15_500) {
     showAlertError('File exceeds 15MB limit')
@@ -381,6 +375,7 @@ function handleResumeUpload(file: File | null): void {
   }
   resume.value = file
   resumeError.value = ''
+  selectedResumeFile.value = null
 }
 
 function deleteResume(): void {
@@ -388,10 +383,11 @@ function deleteResume(): void {
 }
 
 async function validateStepPersonal(): Promise<boolean> {
-  const fields = ['fullName', 'email', 'phone', 'countryId', 'address']
+  const fields = ['fullName', 'email', 'countryId', 'address']
   markInteracted(fields)
   const results = await Promise.all(fields.map((f) => validateField(f as never)))
-  return results.every((r) => r.valid)
+  const phoneValid = await phoneComponent.value?.validatePhone()
+  return results.every((r) => r.valid) && !!phoneValid
 }
 
 async function validateStepDetails(): Promise<boolean> {
@@ -409,15 +405,14 @@ async function validateStepDetails(): Promise<boolean> {
 
 async function validateAndAdvance(): Promise<void> {
   let valid = false
-  if (currentStep.value === 'personal') valid = await validateStepPersonal()
-  else if (currentStep.value === 'details') valid = await validateStepDetails()
+  if (activeStep.value === 0) valid = await validateStepPersonal()
+  else if (activeStep.value === 1) valid = await validateStepDetails()
   if (!valid) {
     showAlertError('Please make sure all required fields are filled out correctly')
     return
   }
-  const idx = currentStepIdx.value
-  if (idx < STEPS.length - 1) {
-    currentStep.value = STEPS[idx + 1].key as StepKey
+  if (activeStep.value < LAST_STEP) {
+    activeStep.value++
   }
 }
 
@@ -426,8 +421,7 @@ function goNext(): void {
 }
 
 function goPrev(): void {
-  const idx = currentStepIdx.value
-  if (idx > 0) currentStep.value = STEPS[idx - 1].key as StepKey
+  if (activeStep.value > 0) activeStep.value--
 }
 
 const isLoading = ref(true)
@@ -443,7 +437,7 @@ async function onSubmit(): Promise<void> {
   }
   if (resumeRequired.value && !resume.value) {
     resumeError.value = 'Resume is required when you apply via LinkedIn'
-    currentStep.value = 'details'
+    activeStep.value = 1
     showAlertError('Resume is required when you apply via LinkedIn')
     return
   }
@@ -499,15 +493,6 @@ onMounted(async () => {
 .reg-form {
   position: relative;
   width: 100%;
-  font-family: var(--font-family);
-  color: #fff;
-}
-
-.reg-form__head {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(14px, 2vw, 22px);
-  margin-bottom: clamp(24px, 3vw, 36px);
 }
 
 .reg-form__context {
@@ -515,12 +500,11 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
+  margin: 0 0 clamp(20px, 2.6vw, 30px);
   background: rgba(0, 173, 239, 0.10);
   border: 1px solid rgba(0, 173, 239, 0.40);
   border-radius: 999px;
   font-size: 12px;
-  align-self: flex-start;
-  margin: 0;
 }
 
 .reg-form__context-label {
@@ -558,147 +542,10 @@ onMounted(async () => {
   to { transform: rotate(360deg); }
 }
 
-.reg-form__body {
-  display: flex;
-  flex-direction: column;
-}
-
-.reg-form__step {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(18px, 2.4vw, 26px);
-  animation: reg-step-in 0.35s ease;
-}
-
-@keyframes reg-step-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.reg-form__step-title {
-  font-size: clamp(20px, 2.4vw, 26px);
-  font-weight: 700;
-  margin: 0 0 4px;
-  letter-spacing: -0.01em;
-}
-
-.reg-form__grid {
-  display: grid;
-  gap: clamp(14px, 1.8vw, 20px);
-}
-
-.reg-form__grid--2col {
-  grid-template-columns: 1fr 1fr;
-}
-
-.reg-form__field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.reg-form__field-group--inline {
-  gap: 12px;
-}
-
-.reg-form__field-group-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.70);
-}
-
-.reg-form__doc-block {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.reg-form__doc-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.reg-form__doc-title {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.reg-form__doc-required {
-  color: var(--c-brand-red);
-  margin-left: 4px;
-}
-
-.reg-form__doc-optional {
-  color: rgba(255, 255, 255, 0.45);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  margin-left: 6px;
-  text-transform: none;
-}
-
-.reg-form__doc-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--c-glass-border-soft);
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.reg-form__doc-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.reg-form__doc-filename {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  word-break: break-all;
-}
-
-.reg-form__doc-remove {
-  background: rgba(229, 45, 39, 0.18);
-  border: 1px solid rgba(229, 45, 39, 0.45);
-  color: #ff8a85;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.reg-form__doc-remove:hover {
-  background: var(--c-brand-red);
-  color: #fff;
-}
-
-.reg-form__doc-error {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--c-brand-red);
-  margin: 0;
-}
-
 .reg-form__summary {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  margin: 0;
+  margin: 0 0 clamp(16px, 2vw, 22px);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--c-glass-border-soft);
   border-radius: 16px;
@@ -749,119 +596,71 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.reg-form__link {
-  color: var(--c-brand-cyan);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.reg-form__terms {
+  margin-bottom: 0;
 }
 
-.reg-form__field-error {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--c-brand-red);
-  margin: 4px 0 0;
+.document-section-header {
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-.reg-form__nav {
+.section-label {
+  margin-bottom: 0;
+}
+
+.upload-button-container {
+  text-align: right;
+}
+
+.upload-field {
+  margin-bottom: 0;
+}
+
+.container-files:empty {
+  display: none;
+}
+
+.document-card-header {
+  align-items: center;
+}
+
+.document-icon-title {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: clamp(14px, 2vw, 22px);
-  padding-top: clamp(14px, 2vw, 22px);
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
 }
 
-.reg-form__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: clamp(11px, 1.2vw, 14px) clamp(22px, 2.4vw, 30px);
-  border-radius: 999px;
-  font-family: var(--font-family);
-  font-size: clamp(13px, 1.1vw, 14px);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  text-decoration: none;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+.document-icon {
+  margin-right: 10px;
 }
 
-.reg-form__btn {
-  height: auto;
+.document-filename {
+  margin: 0;
 }
 
-.reg-form__btn > :deep(span) {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+.document-delete-container {
+  text-align: right;
 }
 
-.reg-form__btn:disabled {
-  opacity: 0.6;
+.no-padding {
+  padding: 0;
+}
+
+.upload-disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
-.reg-form__doc-remove {
-  height: auto;
-}
-
-.reg-form__btn--primary,
-.reg-form__btn--submit {
-  background: var(--c-brand-red);
-  border: 1px solid var(--c-brand-red);
-  color: #fff;
-}
-
-.reg-form__btn--primary:hover,
-.reg-form__btn--submit:hover:not(:disabled) {
-  background: #c92622;
-  border-color: #c92622;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(229, 45, 39, 0.35);
-}
-
-.reg-form__btn--ghost {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px $1 var(--c-glass-border-strong);
-  color: #fff;
-}
-
-.reg-form__btn--ghost:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--c-brand-navy);
-  transform: translateY(-1px);
-}
-
-.reg-form__btn-arrow {
-  font-size: 1.15em;
-  line-height: 1;
-  transition: transform 0.25s ease;
-}
-
-.reg-form__btn-arrow--left {
-  transform: scaleX(-1);
-}
-
-.reg-form__btn:hover .reg-form__btn-arrow:not(.reg-form__btn-arrow--left) {
-  transform: translateX(3px);
-}
-
-.reg-form__btn:hover .reg-form__btn-arrow--left {
-  transform: scaleX(-1) translateX(3px);
+.step-navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 20px;
 }
 
 @media (max-width: 900px) {
-  .reg-form__grid--2col {
-    grid-template-columns: 1fr;
-  }
-
   .reg-form__summary-row {
     grid-template-columns: 1fr;
     gap: 4px;

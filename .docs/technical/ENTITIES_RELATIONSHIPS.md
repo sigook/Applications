@@ -170,6 +170,17 @@ invoice/pay-stub time.
 | `CompanyProfileNote` | Company↔CovenantNote (shared note entity with soft delete) |
 | `CompanyUser` | additional company-side login: `CompanyProfileId` → CompanyProfile (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyProfileId, UserId)`. Gotcha: `Id == UserId` (the ctor sets `Id = user.Id`), so a user can hold only one CompanyUser row globally |
 
+### Sales entities (`Deal.cs`, `CompanyInteraction.cs`)
+
+Both hang off `CompanyProfile` and carry the owning sales user; added by migration `20260811133554_AddDealsAndInteractions`. Enums in `Covenant.Common/Enums/`, serialized as ints (see the enum mirror gotcha in SIGOOK_WEB_API_MAP.md §14). Business meaning: `.docs/business/SALES_MODULE.md`.
+
+| Entity | Key fields |
+|---|---|
+| `Deal` | `Title`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; exposed as `OwnerId` in `DealListModel` / `GetDealsFilter`), `Date` (business date), `Value` (decimal), `Type` (`DealType`: Temporal 0, Permanent 1, TempToPerm 2), `Status` (`DealStatus`: ToSend 0, Sent 1, Rejected 2, Accepted 3), `DocumentId?` → CovenantFile, `CreatedAt` / `UpdatedAt`. `Update()` never touches `CompanyProfileId` or `UserId` |
+| `CompanyInteraction` | `Description`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; `OwnerId` in list/filter models), `InteractionPurpose` (Intro 0 … Closing 4), `InteractionType` (Call 0, Mail 1, Sms 2, LinkedIn 3), `InteractionStatus` (NotStarted 0 default, InProgress 1, Completed 2), `CreatedAt` / `UpdatedAt`. Same immutable `CompanyProfileId` / `UserId` on update |
+
+Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs` — rule in `.docs/business/ROLES_PERMISSIONS.md`.
+
 ---
 
 ## Worker domain — `Entities/Worker/`
@@ -266,11 +277,8 @@ there is no `IsOpen` flag.** Transitions happen only inside `AddWorker`, `Reject
 Child/related entities in the same folder: `RequestNote`, `RequestSkill`, `RequestReportTo`,
 `RequestRequestedBy`, `RequestCompanyUser` (which company users may see the request),
 `RequestComission`, `RequestCancellationDetail`, `RequestFinalizationDetail`
-(+ root-level `ReasonCancellationRequest`, whose `Value` is a plain English `string` — it used
-to point at a multi-language `StringResource` row, now deleted). Migration
-`20260731002342_PluralizeTableNames` dropped three tables: `CompanyProfileHoliday`,
-`StringResource`, `TimeSheetPhoto` — holiday eligibility is now worker-side only
-(`WorkerProfileHoliday`).
+(+ root-level `ReasonCancellationRequest`, whose `Value` is a plain English `string`).
+Holiday eligibility is worker-side only (`WorkerProfileHoliday`).
 
 ### WorkerRequest (`WorkerRequest.cs`)
 
@@ -304,8 +312,7 @@ unique `(RequestId, RecruiterId, WorkDate)`. Managed through `Request.AddRecruit
 `Controllers/Sigook/Agency/Recruiting/WeeklyBoardController.cs`.
 
 The people a recruiter sends under an assignment are **Runners** (`RequestRecruiter.Runners`,
-FK `Runner.RequestRecruiterId`, `ON DELETE SET NULL`). The old `WorkerDispatch` entity was
-replaced by `Runner` in migration `RunnersWorkerOnlyAndBoardRunners`.
+FK `Runner.RequestRecruiterId`, `ON DELETE SET NULL`).
 
 ### Runner (`Entities/Request/Runners/`)
 
@@ -361,7 +368,7 @@ Two parallel 1:1 hour-breakdown rows per timesheet, same shape (`ITimeSheetTotal
 - `TimeSheetTotalPayroll` — **payroll** hours; consumed by `PayStubWageDetail`. Unique on
   `TimeSheetId`.
 
-Night shift is deprecated: `NightShiftHours` exists but pay stubs and invoices compute it as 0.
+Night shift is not computed: `NightShiftHours` exists but pay stubs and invoices always set it to 0.
 
 Also: `TimesheetHistory` (keyless read model for a worker's timesheet history view).
 

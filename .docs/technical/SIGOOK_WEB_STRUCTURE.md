@@ -1,6 +1,6 @@
 # Sigook.Web Codebase Structure
 
-Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `buefy` 3.x, VeeValidate 4 + Yup, oidc-client-ts, Bootstrap 5 CSS.
+Vue 3 SPA with three logged-in portals (Agency, Company, Worker) plus a public landing site. Stack: Vite, TypeScript, Pinia, Vue Router 4, `buefy` 3.x (Bulma 1.x), VeeValidate 4 + Yup, oidc-client-ts.
 
 ---
 
@@ -63,13 +63,12 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | agencyTimeSheetApi.ts | TimeSheet CRUD per request/worker, usages |
 | agencyWorkerApi.ts | Worker (agency view): list, flags (DNU, contractor), tax, email, holidays |
 | catalogApi.ts | Enums: gender, ID type, availability, skills, industries, sources, tax categories |
+| authApi.ts | IdentityServer (not Covenant.Api): password-grant token, userinfo, forgot/reset password |
 | companyApi.ts | Company portal: profile, requests, workers, timesheet, users, contacts, invoices + sales deals & interactions CRUD |
-| downloadApi.ts | Invoice PDF, payroll Excel (various groupings) |
 | locationApi.ts | Countries, provinces, cities, provincial settings, location tax |
 | notificationApi.ts | Aggregated agency notification bell payload |
-| requestApi.ts | Shift lookup only |
 | salesApi.ts | Sales-scoped request/company lists + Excel export |
-| salesDashboardApi.ts | Sales dashboard summary — static JSON prototype (see SIGOOK_WEB_SALES_DASHBOARD.md) |
+| salesDashboardApi.ts | Sales dashboard summary — served from static JSON (see SIGOOK_WEB_API_MAP.md §18) |
 | sharedApi.ts | Email preferences unsubscribe |
 | userNotificationApi.ts | In-app user notifications |
 | websiteApi.ts | Public: job search, contact form, candidate apply |
@@ -116,18 +115,20 @@ Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold
 | File | Prefixes | Notes |
 |------|----------|-------|
 | index.ts | `/login`, `/forgot-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group → unauthenticated users go to `/login?returnUrl=`), scroll behavior, canonical link, page titles. `/login` and `/forgot-password` use `meta.layout: "auth"` (rendered without chrome by `App.vue`, styles in `assets/scss/auth.scss`) |
-| routesAgency.ts | `/recruiting/*`, `/sales/*`, `/accounting/*`, `/agency-profile` | Legacy `/agency-*` paths kept as redirects |
+| routesAgency.ts | `/recruiting/*`, `/sales/*`, `/accounting/*`, `/agency-profile` | `/agency-*` paths redirect here |
 | routesCompany.ts | `/company-requests`, `/company-invoices`, `/company-profile`, `/company-user-profile` | |
 | routesWorker.ts | `/register-worker`, `/worker-requests`, `/punch-card`, `/timesheet`, `/worker-history`, `/worker-profile`, `/worker-apply` | |
-| routesLanding.ts | `/`, `/open-positions`, `/industries`, `/about`, `/employers`, `/talents`, `/special-projects`, `/partner`, `/apply`, `/privacy-policy`, `/terms-and-conditions`, `/disclaimer` | `meta: { layout: 'landing', requiresAuth: false }`; old URLs (`/home`, `/jobSeekers`, `/business`, `/about-us`, `/atas`, `/v2/*`, ...) redirect |
+| routesLanding.ts | `/`, `/open-positions`, `/industries`, `/about`, `/employers`, `/talents`, `/special-projects`, `/partner`, `/apply`, `/privacy-policy`, `/terms-and-conditions`, `/disclaimer` | `meta: { layout: 'landing', requiresAuth: false }`; `/home`, `/jobSeekers`, `/business`, `/about-us`, `/atas`, `/v2/*`, ... redirect into these |
 
 Agency route map (from `routesAgency.ts`):
 - `/recruiting/requests[/create/:companyProfileId | /update/:companyProfileId/:requestId | /:id]`
 - `/recruiting/weekly-board`, `/recruiting/attendance-review`
 - `/recruiting/workers[/register | /:id]`, `/recruiting/candidates`
 - `/recruiting/companies[/create | /update/:companyProfileId | /:id]`
-- `/sales/dashboard`, `/sales/interactions`, `/sales/deals` (see SIGOOK_WEB_SALES_DASHBOARD.md)
+- `/sales/dashboard` (`sales-dashboard`), `/sales/interactions` (`sales-interactions`), `/sales/deals` (`sales-deals`) — `routesAgency.ts:169-194`, lazy imports at `:21-23`; guard `requiresAuth` + `salesAccess` (superadmin, admin, sales — `src/security/roles.ts:15`)
 - `/sales/requests[...]`, `/sales/companies[...]`, `/sales/agencies[/create | /:id]`
+
+Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboard-outline`) first, then Interactions, Clients (`/sales/companies`), Deals — plus Agencies for admins of a master agency. Admin/superadmin get the Sales group next to Recruiting and Accounting; sales users get only Sales. The dashboard is **not** the default home: sales lands on `/sales/requests` after sign-in (`menu.ts:205-206`, a route with no sidebar entry), so the dashboard is reached through the menu.
 - `/accounting/invoices[/create]`, `/accounting/paystubs[/create]`, `/accounting/reports`
 
 **Auth guard:** routes declare `meta: { requiresAuth: true, role: [...] }` with role groups from `src/security/roles.ts`; guard redirects to `/unauthorized`.
@@ -149,12 +150,26 @@ Agency route map (from `routesAgency.ts`):
 | Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail |
 | Candidates.vue | Candidate pool; convert to worker, bulk import |
 | Agencies.vue / CreateAgency.vue / DetailAgency.vue | Sub-agencies (sales) |
-| Dashboard.vue | Sales dashboard — snapshot cards + deals/interactions CRUD (see SIGOOK_WEB_SALES_DASHBOARD.md) |
-| SalesInteractions.vue / SalesDeals.vue | Interaction and deal grids reusing the dashboard's create/edit modal |
+| Dashboard.vue | Sales dashboard — snapshot cards + deals/interactions CRUD (layout below) |
+| SalesInteractions.vue / SalesDeals.vue | Full paginated Buefy tables of interactions / deals (sorting via `useGridSort`), reusing the dashboard's `SalesCreateModal` for create/edit/delete |
 | AgencyProfile.vue | Own agency profile, locations, personnel |
 | accounting/Invoices.vue / accounting/CreateInvoice.vue | Invoice list and creation (preview → generate) |
 | accounting/PayStubs.vue / accounting/CreatePayStub.vue | Pay stub list and manual creation |
 | accounting/Reports.vue | T4, CRA, hours worked, payment, payroll export |
+
+#### Sales dashboard layout (`Dashboard.vue`)
+
+`<script setup>`, all state in component-local refs — no Pinia store (stores hold filters only). Two CSS grids: a 3-card top row and a 2-card bottom row; below 1215px they collapse to 2/1 columns, below 768px to a single column and the period label hides. Header: "Sales Dashboard · {agent name}" (`useCurrentAgent`) + period label. Card titles link to `/sales/interactions`, `/sales/companies`, `/sales/deals`.
+
+| Card | Content | Data source | Actions |
+|------|---------|-------------|---------|
+| Log Interactions | `SalesInteractionList` — 6 most recent, icon per type, relative timestamps | **Live** — `getCompanyInteractions` (pageSize 6, newest first) | "+ Log interaction"; row click opens edit |
+| Clients | `SalesClientList` — initials avatar + industry; subtitle "N active · N new this month" | **Static** — `clients` block | "+ Create client" |
+| Deals | `SalesDealList` — 6 most recent: status pill, optional document link, compact value | **Live** — `getDeals` (pageSize 6, newest first) | "+ Create deal"; row click opens edit |
+| Deals closed | `SalesBarChart` (responsive SVG, d3-scale) + `SalesRangeTabs` (Week / Month / Quarter) | **Static** — `dealsClosed` series | Range tabs only (client-side) |
+| This quarter | `SalesGoalDonut` (d3 arc, animated) + two `SalesMeterList`s: "Pipeline by status", "Activity this week" | **Static** — `goal`, `pipeline`, `activity` blocks | — |
+
+Static = frozen `src/data/sales/salesDashboard.json` via `salesDashboardApi.ts`; the static-vs-live split and refresh behavior are in SIGOOK_WEB_API_MAP.md §18.
 
 ### Company (`src/pages/company/`)
 
@@ -207,7 +222,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | notifications/ | NotificationBell (agency sidebar bell, uses `useNotifications`) |
 | request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
-| sales_dashboard/ | 15 components for the sales dashboard: SalesCard/List/ListRow shells, Interaction/Client/Deal lists, SalesBarChart + SalesGoalDonut + SalesMeterList + SalesRangeTabs charts, SalesCreateModal + Interaction/Deal/Client forms, SearchSelect (see SIGOOK_WEB_SALES_DASHBOARD.md) |
+| sales_dashboard/ | 15 components for the sales dashboard. Shells & lists: SalesCard (icon chip, linked title, action button, body slot), SalesList (scroll + empty state), SalesListRow, SalesInteractionList, SalesClientList, SalesDealList. Charts: SalesBarChart (d3-scale SVG, `useElementSize`), SalesGoalDonut (d3 arc, `useTween`), SalesMeterList, SalesRangeTabs (week/month/quarter `v-model`). Create/edit: SalesCreateModal (kind switcher + delete — wiring in SIGOOK_WEB_API_MAP.md §14), SalesInteractionForm, SalesDealForm (file upload), SalesClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info), SearchSelect (generic autocomplete for the client pickers) |
 | weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
 | worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 
@@ -253,9 +268,9 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | filters.ts | Formatter helpers |
 | locationLabel.ts | Location display label formatting |
 | phoneFormat.ts | Phone number formatting |
-| salesDashboardFormat.ts | Sales dashboard formatters: `compactMoney`, `relativeTime`, `shortDate`, `initialsOf` |
+| salesDashboardFormat.ts | Sales dashboard formatters: `compactMoney`, `relativeTime`, `shortDate`, `initialsOf`, `ratioOf` |
 | timeSheetApprove.ts | Timesheet approval workflow |
-| toast.ts | Toast notification helper (replaces the old toastMixin) |
+| toast.ts | Toast notification helper |
 | validation.ts | Shared validation helpers |
 | workerStatus.ts | Worker status helpers |
 
@@ -303,7 +318,7 @@ Plain functions imported where needed (Vue 3 removed template filters):
 - **directives/**: `status-directive.ts` only (registered as `v-status` in main.ts) — status badge rendering.
 - **constants/**: `enums.ts` (6 numeric enums used by agency/company pages, incl. `ClockType`), `catalog.ts` (`maximumHoursPerDay` from `VUE_APP_MAXIMUM_HOURS_DAY`, `residencyList`), `workerFeatures.ts` (worker status feature list).
 - **lang/**: NOT i18n translations — a single `validator.ts` registers VeeValidate rules (built-in + custom `cvn-postal-code` and `phoneCustom` via google-libphonenumber) with English messages inline. The app is English-only; no vue-i18n.
-- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json) + `sales/salesDashboard.json` (frozen sales dashboard summary payload — see SIGOOK_WEB_SALES_DASHBOARD.md).
+- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json) + `sales/salesDashboard.json` (frozen sales dashboard summary payload, Q3 2026 — see SIGOOK_WEB_API_MAP.md §18).
 
 ---
 
@@ -331,7 +346,7 @@ assets/
 | main.ts | Registers validation rules, app globals, `v-status` directive, global components (defaultImage, QuillEditor), router, pinia, oidc event wiring, Buefy (+programmatic), VueScrollTo, VueLazyload |
 | varaibles.ts | (misspelled filename, kept) `appGlobals` object — request/worker status strings, sort keys, regexes, user type strings, agency types — registered on `app.config.globalProperties` via `registerAppGlobals` |
 
-**Environment variables:** read as `import.meta.env.VUE_APP_*` — the legacy Vue-CLI prefix is preserved under Vite via `envPrefix: 'VUE_APP_'` in `vite.config.ts` (NOT `VITE_*`). Used: `VUE_APP_URL_API`, `VUE_APP_SECURITY_SERVER`, `VUE_APP_CLIENT`, `VUE_APP_RE_CAPTCHA_SITE_KEY`, `VUE_APP_MAXIMUM_HOURS_DAY`. Files: `.env.development.local`, `.env.staging`, `.env.production`.
+**Environment variables:** read as `import.meta.env.VUE_APP_*` — the prefix is set by `envPrefix: 'VUE_APP_'` in `vite.config.ts` (NOT `VITE_*`). Used: `VUE_APP_URL_API`, `VUE_APP_SECURITY_SERVER`, `VUE_APP_CLIENT`, `VUE_APP_RE_CAPTCHA_SITE_KEY`, `VUE_APP_MAXIMUM_HOURS_DAY`. Files: `.env.development.local`, `.env.staging`, `.env.production`.
 
 ---
 
@@ -339,7 +354,7 @@ assets/
 
 ### Authentication
 
-1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" still redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`.
+1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`.
 2. On 401, `apiService` retries once after `silentSignin`; on failure sends the browser to `/login?returnUrl=`.
 3. Logout (`securityStore.signOut`) revokes the refresh token, clears the local user and routes to `/` — it never hits IdentityServer's end-session page.
 4. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
