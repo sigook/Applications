@@ -190,25 +190,29 @@ public class UserAdministrationController : ControllerBase
     }
 
     [HttpPut("UpdateRole")]
-    public async Task<IActionResult> UpdateRole([FromServices] CovenantContext context, [FromBody] UpdateRoleModel model)
+    public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleModel model)
     {
-        var userRole = await context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == model.Id);
-        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == model.Role);
-        if (role is null)
+        if (!await _roleManager.RoleExistsAsync(model.Role))
         {
             ModelState.AddModelError(nameof(model.Role), $"Unknown role '{model.Role}'");
             return BadRequest(ModelState);
         }
-        if (userRole != null)
+
+        var user = await _userManager.FindByIdAsync(model.Id.ToString());
+        if (user is null) return NotFound();
+
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.Count == 1 && currentRoles[0].Equals(model.Role, StringComparison.OrdinalIgnoreCase)) return Ok();
+
+        if (currentRoles.Count > 0)
         {
-            userRole.RoleId = role.Id;
+            var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeResult.Succeeded) return ReturnIdentityResultError(removeResult);
         }
-        else
-        {
-            userRole = new IdentityUserRole<Guid> { UserId = model.Id, RoleId = role.Id };
-            await context.UserRoles.AddAsync(userRole);
-        }
-        await context.SaveChangesAsync();
+
+        var addResult = await _userManager.AddToRoleAsync(user, model.Role);
+        if (!addResult.Succeeded) return ReturnIdentityResultError(addResult);
+
         return Ok();
     }
 
