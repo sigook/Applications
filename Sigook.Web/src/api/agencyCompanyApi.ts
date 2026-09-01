@@ -18,6 +18,7 @@ import type { CovenantFileModel } from '@/types/common';
 import type {
   CompanyProfileDetail,
   CompanyProfileDocumentModel,
+  CompanyProfileDropdownItem,
   CompanyProfileListItem,
   CompanyProfileSettingsUpdate,
   CompanyUserModel,
@@ -61,6 +62,10 @@ export function updateAgencyCompanyProfileLogo(profileId: string, model: Partial
 
 export function getAgencyCompanyProfileWithRequests(): Promise<CompanyProfileListItem[]> {
   return api.get<CompanyProfileListItem[]>(`${companyProfilesUrl}/company-with-requests`);
+}
+
+export function getAgencyCompaniesList(searchTerm?: string): Promise<CompanyProfileDropdownItem[]> {
+  return api.get<CompanyProfileDropdownItem[]>(`${companyProfilesUrl}/companies-list`, { params: { searchTerm } });
 }
 
 export function bulkAgencyCompanies(agencyId: string, file: File): Promise<Blob> {

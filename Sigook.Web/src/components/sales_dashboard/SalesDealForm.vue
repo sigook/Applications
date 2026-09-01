@@ -10,10 +10,11 @@
         v-model="companyProfileId"
         :options="clientOptions"
         :loading="isLoadingClients"
+        :min-search-length="MINIMUM_SEARCH_LENGTH"
         remote
         clearable
         placeholder="Search client…"
-        @search="searchClients"
+        @search="onClientSearch"
       />
       <p v-else class="sd-readonly">{{ deal?.companyName }}</p>
     </b-field>
@@ -73,8 +74,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
-import { useSalesCompanySearch } from '@/composables/useSalesCompanySearch';
 import { useDropdownReveal } from '@/composables/useDropdownReveal';
+import { getAgencyCompaniesList } from '@/api/agencyCompanyApi';
 import { createDeal, updateDeal } from '@/api/companyApi';
 import {
   DealType,
@@ -84,10 +85,12 @@ import {
   DEAL_TYPE_LABELS,
   DEAL_STATUS_LABELS,
 } from '@/types/company';
-import type { Deal } from '@/types/company';
+import type { Deal, CompanyProfileDropdownItem } from '@/types/company';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { generateFileName } from '@/utils/fileNaming';
 import SearchSelect from './SearchSelect.vue';
+
+const MINIMUM_SEARCH_LENGTH = 3;
 
 const props = defineProps<{ deal?: Deal | null }>();
 
@@ -97,7 +100,26 @@ const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, la
 const typeOptions = DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }));
 const statusOptions = DEAL_STATUSES.map((s) => ({ value: s, label: DEAL_STATUS_LABELS[s] }));
 
-const { companies: clients, isLoading: isLoadingClients, search: searchClients } = useSalesCompanySearch();
+const clients = ref<CompanyProfileDropdownItem[]>([]);
+const isLoadingClients = ref(false);
+
+function loadClients(term: string): void {
+  isLoadingClients.value = true;
+  getAgencyCompaniesList(term || undefined)
+    .then((result) => {
+      clients.value = result;
+    })
+    .catch((error) => showAlertError(error))
+    .finally(() => {
+      isLoadingClients.value = false;
+    });
+}
+
+function onClientSearch(term: string): void {
+  const normalized = term.trim();
+  if (normalized.length > 0 && normalized.length < MINIMUM_SEARCH_LENGTH) return;
+  loadClients(normalized);
+}
 
 const title = ref('');
 const companyProfileId = ref<string | null>(null);
@@ -115,16 +137,13 @@ function onPickerActive(active: boolean): void {
 }
 
 onMounted(() => {
-  if (props.deal) {
-    title.value = props.deal.title;
-    companyProfileId.value = props.deal.companyProfileId;
-    date.value = new Date(props.deal.date);
-    value.value = props.deal.value;
-    type.value = props.deal.type;
-    status.value = props.deal.status;
-    return;
-  }
-  searchClients('');
+  if (!props.deal) return;
+  title.value = props.deal.title;
+  companyProfileId.value = props.deal.companyProfileId;
+  date.value = new Date(props.deal.date);
+  value.value = props.deal.value;
+  type.value = props.deal.type;
+  status.value = props.deal.status;
 });
 
 function resetForm(): void {

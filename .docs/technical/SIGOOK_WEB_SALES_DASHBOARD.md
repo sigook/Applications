@@ -93,7 +93,7 @@ All creation and editing runs through `SalesCreateModal` (`src/components/sales_
 
 | Kind | Form | API functions | Endpoint | Notes |
 |------|------|---------------|----------|-------|
-| `interaction` | `SalesInteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` / `deleteCompanyInteraction` (`companyApi.ts:226-243`) | `/api/agency/sales/companyinteractions` | Client picker via `getSalesCompanies`; client is read-only when editing |
+| `interaction` | `SalesInteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` / `deleteCompanyInteraction` (`companyApi.ts:226-243`) | `/api/agency/sales/companyinteractions` | Client picker via `getAgencyCompaniesList`; client is read-only when editing |
 | `deal` | `SalesDealForm` | `createDeal` / `updateDeal` / `deleteDeal` (`companyApi.ts:203-224`) | `/api/agency/sales/deals` | Create is `multipart/form-data` with an optional document (`buildMultipartFormData` + `generateFileName`) |
 | `client` | `SalesClientForm` | `createAgencyCompany` (`agencyCompanyApi.ts`) | `POST /api/agency/companyprofiles` | Create-only from the modal; catalogs via `getIndustries` / `getCompanyStatus`; it is the ordinary company endpoint, so sales auto-assignment applies |
 
@@ -147,8 +147,7 @@ Backend data model: `Covenant.Common/Entities/Company/{Deal,CompanyInteraction}.
 |------|------|
 | `src/api/salesDashboardApi.ts` | Static summary payload (the swap seam) |
 | `src/api/companyApi.ts:203-243` | Deals + interactions CRUD |
-| `src/api/salesApi.ts` | `getSalesCompanies` (client pickers) |
-| `src/api/agencyCompanyApi.ts` | `createAgencyCompany` (client form) |
+| `src/api/agencyCompanyApi.ts` | `createAgencyCompany` (client form); `getAgencyCompaniesList` (client pickers: 50 on open, searches from 3 characters) |
 | `src/api/catalogApi.ts` | `getIndustries`, `getCompanyStatus`, `addIndustry` |
 | `src/api/agencyApi.ts` | `getAgencyPersonnel` (header agent name, sales-rep picker) |
 

@@ -158,6 +158,13 @@ public class CompanyProfilesController(
     public async Task<IActionResult> GetCompanyWithRequest() =>
         Ok(await requestRepository.GetCompaniesWithRequests(User.GetAgencyIds()));
 
+    /// <summary>Gets the agency companies for a dropdown filtered by a search term.</summary>
+    /// <param name="searchTerm">Term used to filter companies by name.</param>
+    [HttpGet("companies-list")]
+    [ProducesResponseType(typeof(List<CompanyProfileDropdownModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCompaniesList([FromQuery] string searchTerm) =>
+        Ok(await companyRepository.GetCompaniesList(User.GetAgencyId(), searchTerm));
+
     /// <summary>Bulk-imports company data for an agency from an uploaded file.</summary>
     /// <param name="agencyId">Identifier of the agency to import companies into.</param>
     /// <param name="file">Spreadsheet file containing the company data to import.</param>

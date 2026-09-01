@@ -145,6 +145,12 @@ export interface CompanyProfileListItem {
   updatedBy: string;
 }
 
+// Matches CompanyProfileDropdownModel — returned by GetCompaniesList
+export interface CompanyProfileDropdownItem {
+  id: string;
+  fullName: string;
+}
+
 // PATCH /api/agency/companyprofiles/{id}/{PaidHolidays|Overtime|RequiresPermissionToSeeRequests}
 // Matches CompanyProfileSettingsUpdateModel — .NET binds only the fields it needs
 export interface CompanyProfileSettingsUpdate {

@@ -20,6 +20,7 @@
         v-model="companyProfileId"
         :options="clientOptions"
         :loading="isLoadingClients"
+        :min-search-length="MINIMUM_SEARCH_LENGTH"
         remote
         clearable
         placeholder="Search client…"
@@ -48,7 +49,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useSalesCompanySearch } from '@/composables/useSalesCompanySearch';
+import { getAgencyCompaniesList } from '@/api/agencyCompanyApi';
 import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyApi';
 import {
   InteractionType,
@@ -61,10 +62,12 @@ import {
   INTERACTION_PURPOSE_LABELS,
   INTERACTION_STATUS_LABELS,
 } from '@/types/company';
-import type { CompanyInteraction } from '@/types/company';
+import type { CompanyInteraction, CompanyProfileDropdownItem } from '@/types/company';
 import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import SearchSelect from './SearchSelect.vue';
+
+const MINIMUM_SEARCH_LENGTH = 3;
 
 const props = defineProps<{
   interaction?: CompanyInteraction | null;
@@ -87,13 +90,27 @@ const clientOptions = computed(() => {
 const purposeOptions = INTERACTION_PURPOSES.map((p) => ({ value: p, label: INTERACTION_PURPOSE_LABELS[p] }));
 const statusOptions = INTERACTION_STATUSES.map((s) => ({ value: s, label: INTERACTION_STATUS_LABELS[s] }));
 
-const { companies: clients, isLoading: isLoadingClients, search: searchClients } = useSalesCompanySearch();
-
+const clients = ref<CompanyProfileDropdownItem[]>([]);
+const isLoadingClients = ref(false);
 const clientSearchTerm = ref('');
+
+function loadClients(term: string): void {
+  isLoadingClients.value = true;
+  getAgencyCompaniesList(term || undefined)
+    .then((result) => {
+      clients.value = result;
+    })
+    .catch((error) => showAlertError(error))
+    .finally(() => {
+      isLoadingClients.value = false;
+    });
+}
 
 function onClientSearch(term: string): void {
   clientSearchTerm.value = term;
-  searchClients(term);
+  const normalized = term.trim();
+  if (normalized.length > 0 && normalized.length < MINIMUM_SEARCH_LENGTH) return;
+  loadClients(normalized);
 }
 
 const type = ref<InteractionType>(InteractionType.Call);
@@ -114,7 +131,6 @@ onMounted(() => {
   if (props.initialClient) {
     companyProfileId.value = props.initialClient.id;
   }
-  searchClients('');
 });
 
 function resetForm(): void {

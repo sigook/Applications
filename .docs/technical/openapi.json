@@ -4795,6 +4795,48 @@
         }
       }
     },
+    "/api/agency/companyprofiles/companies-list": {
+      "get": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Gets the agency companies for a dropdown filtered by a search term.",
+        "parameters": [
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Term used to filter companies by name.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDropdownModel"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/companyprofiles/bulk/{agencyId}": {
       "post": {
         "tags": [
@@ -25561,6 +25603,20 @@
           },
           "documentType": {
             "$ref": "#/components/schemas/Covenant.Common.Enums.CompanyProfileDocumentType"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.CompanyProfileDropdownModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
