@@ -6,18 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="6b40d5e8-4a24-454e-b6d5-bfa77ee6bea6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/config/environment.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/config/environment.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/auth/data/datasources/auth_remote_datasource.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/data/datasources/auth_remote_datasource.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/auth/data/repositories/auth_repository_impl.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/data/repositories/auth_repository_impl.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/pages/logout_webview_page.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/auth/presentation/viewmodels/auth_viewmodel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/jobs/presentation/pages/jobs_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/jobs/presentation/pages/jobs_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/jobs/presentation/widgets/app_drawer.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/jobs/presentation/widgets/app_drawer.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/profile/preferences/presentation/widgets/profile_action_buttons.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/profile/presentation/pages/preferences/sections/account_settings_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/presentation/pages/preferences/sections/account_settings_section.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/features/auth/data/datasources/auth_remote_datasource_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/features/auth/data/datasources/auth_remote_datasource_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/features/auth/data/repositories/auth_repository_impl_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/features/auth/data/repositories/auth_repository_impl_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/features/auth/presentation/viewmodels/auth_viewmodel_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/features/auth/presentation/viewmodels/auth_viewmodel_test.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
