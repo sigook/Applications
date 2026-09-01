@@ -3,38 +3,6 @@
     "label": "Q3 2026",
     "asOf": "2026-07-12T17:00:00Z"
   },
-  "clients": {
-    "totalItems": 34,
-    "activeCount": 34,
-    "newThisMonth": 3,
-    "items": [
-      {
-        "id": "a1f4c9d2-6b83-4e07-9c15-3d8a2f6e0b11",
-        "name": "Acme Logistics",
-        "industry": "Logistics"
-      },
-      {
-        "id": "b2e5d0a3-7c94-4f18-8d26-4e9b3a7f1c12",
-        "name": "Vertex Manufacturing",
-        "industry": "Manufacturing"
-      },
-      {
-        "id": "c3d6e1b4-8a05-4029-9e37-5f0c4b8a2d13",
-        "name": "Harbor Foods",
-        "industry": "Food Service"
-      },
-      {
-        "id": "d4c7f2a5-9b16-4130-8f48-6a1d5c9b3e14",
-        "name": "Northwind Traders",
-        "industry": "Retail"
-      },
-      {
-        "id": "e5b8a3c6-0c27-4241-9a59-7b2e6d0c4f15",
-        "name": "Beacon Retail",
-        "industry": "Retail"
-      }
-    ]
-  },
   "deals": {
     "totalItems": 57,
     "pipelineValue": 612000

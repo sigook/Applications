@@ -9,19 +9,6 @@ export interface SalesPeriod {
   readonly asOf: string;
 }
 
-export interface SalesClient {
-  readonly id: string;
-  readonly name: string;
-  readonly industry: string;
-}
-
-export interface SalesClientsBlock {
-  readonly items: readonly SalesClient[];
-  readonly totalItems: number;
-  readonly activeCount: number;
-  readonly newThisMonth: number;
-}
-
 export interface SalesDealsBlock {
   readonly totalItems: number;
   readonly pipelineValue: number;
@@ -55,7 +42,6 @@ export interface SalesActivity {
 
 export interface SalesDashboardModel {
   readonly period: SalesPeriod;
-  readonly clients: SalesClientsBlock;
   readonly deals: SalesDealsBlock;
   readonly dealsClosed: SalesClosedSeries;
   readonly goal: SalesGoal;

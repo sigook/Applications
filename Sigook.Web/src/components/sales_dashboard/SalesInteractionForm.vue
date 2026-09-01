@@ -23,7 +23,7 @@
         remote
         clearable
         placeholder="Search client…"
-        @search="searchClients"
+        @search="onClientSearch"
       />
       <p v-else class="sd-readonly">{{ interaction?.companyName }}</p>
     </b-field>
@@ -62,18 +62,39 @@ import {
   INTERACTION_STATUS_LABELS,
 } from '@/types/company';
 import type { CompanyInteraction } from '@/types/company';
+import type { AgencyCompanyListItem } from '@/types/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import SearchSelect from './SearchSelect.vue';
 
-const props = defineProps<{ interaction?: CompanyInteraction | null }>();
+const props = defineProps<{
+  interaction?: CompanyInteraction | null;
+  initialClient?: AgencyCompanyListItem | null;
+}>();
 
 const isEditing = computed(() => !!props.interaction);
 
-const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.fullName })));
+const clientOptions = computed(() => {
+  const options = clients.value.map((c) => ({ value: c.id, label: c.fullName }));
+  if (
+    props.initialClient &&
+    !clientSearchTerm.value.trim() &&
+    !options.some((o) => o.value === props.initialClient?.id)
+  ) {
+    options.unshift({ value: props.initialClient.id, label: props.initialClient.fullName });
+  }
+  return options;
+});
 const purposeOptions = INTERACTION_PURPOSES.map((p) => ({ value: p, label: INTERACTION_PURPOSE_LABELS[p] }));
 const statusOptions = INTERACTION_STATUSES.map((s) => ({ value: s, label: INTERACTION_STATUS_LABELS[s] }));
 
 const { companies: clients, isLoading: isLoadingClients, search: searchClients } = useSalesCompanySearch();
+
+const clientSearchTerm = ref('');
+
+function onClientSearch(term: string): void {
+  clientSearchTerm.value = term;
+  searchClients(term);
+}
 
 const type = ref<InteractionType>(InteractionType.Call);
 const companyProfileId = ref<string | null>(null);
@@ -90,12 +111,15 @@ onMounted(() => {
     description.value = props.interaction.description;
     return;
   }
+  if (props.initialClient) {
+    companyProfileId.value = props.initialClient.id;
+  }
   searchClients('');
 });
 
 function resetForm(): void {
   type.value = InteractionType.Call;
-  companyProfileId.value = null;
+  companyProfileId.value = props.initialClient?.id ?? null;
   purpose.value = InteractionPurpose.Intro;
   status.value = InteractionStatus.NotStarted;
   description.value = '';

@@ -28,6 +28,7 @@
           ref="interactionForm"
           :key="openToken"
           :interaction="interaction"
+          :initial-client="interactionClient"
         />
         <SalesClientForm v-else-if="kind === 'client'" ref="clientForm" :key="openToken" />
         <SalesDealForm v-else-if="kind === 'deal'" ref="dealForm" :key="openToken" :deal="deal" />
@@ -62,6 +63,7 @@
 import { computed, ref, watch } from 'vue';
 import type { SalesCreateKind } from '@/types/sales';
 import type { CompanyInteraction, Deal } from '@/types/company';
+import type { AgencyCompanyListItem } from '@/types/agency';
 import { deleteCompanyInteraction, deleteDeal } from '@/api/companyApi';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import SalesInteractionForm from './SalesInteractionForm.vue';
@@ -82,6 +84,7 @@ const props = defineProps<{
   kind: SalesCreateKind | null;
   interaction?: CompanyInteraction | null;
   deal?: Deal | null;
+  interactionClient?: AgencyCompanyListItem | null;
 }>();
 
 const emit = defineEmits<{
