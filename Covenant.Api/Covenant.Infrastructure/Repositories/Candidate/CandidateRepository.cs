@@ -27,6 +27,23 @@ namespace Covenant.Infrastructure.Repositories.Candidate
 
         public Task<bool> CandidateExists(string email) => _context.Candidates.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()));
 
+        public Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId) =>
+            _context.Candidates
+                .AsNoTracking()
+                .Where(c => c.AgencyId == agencyId && !c.Dnu)
+                .Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains("@"))
+                .Where(c => !string.IsNullOrEmpty(c.Address))
+                .Where(c => !c.RequestApplicants.Any(ra => ra.RequestId == requestId))
+                .OrderBy(c => c.NumberId)
+                .Select(c => new CandidateContactInfoModel
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Email = c.Email,
+                    Address = c.Address
+                })
+                .ToListAsync();
+
         public async Task<PaginatedList<CandidateListModel>> GetCandidates(Guid agencyId, GetCandidatesFilter filter)
         {
             var query = GetAllCandidates(agencyId, filter);

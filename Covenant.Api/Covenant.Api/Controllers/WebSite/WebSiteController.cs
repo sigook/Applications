@@ -1,5 +1,7 @@
 ﻿using Covenant.Api.Authorization;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Core.BL.Extensions;
+using Covenant.Core.BL.Interfaces;
 using Covenant.Api.Common.Models;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
@@ -25,7 +27,8 @@ public class WebSiteController(
     IRequestRepository requestRepository,
     IMemoryCache memoryCache,
     IOptions<ServiceBusConfiguration> options,
-    IFilesContainer filesContainer) : ControllerBase
+    IFilesContainer filesContainer,
+    IWorkerService workerService) : ControllerBase
 {
     private readonly ISigookBusClient client = client;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
@@ -34,6 +37,7 @@ public class WebSiteController(
     private readonly IMemoryCache memoryCache = memoryCache;
     private readonly ServiceBusConfiguration serviceBusConfiguration = options.Value;
     private readonly IFilesContainer filesContainer = filesContainer;
+    private readonly IWorkerService workerService = workerService;
 
     /// <summary>Sends a contact-form email from the public website.</summary>
     /// <param name="contact">Contact form data.</param>
@@ -102,6 +106,18 @@ public class WebSiteController(
             }
         }
         await client.SendMessageAsync(candidate, serviceBusConfiguration.ValidateCandidateQueue);
+        return Ok();
+    }
+
+    /// <summary>Applies a worker or candidate to a request using the public request number and their email (anonymous).</summary>
+    /// <param name="model">Request number and applicant email.</param>
+    [HttpPost("apply")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Apply([FromBody] ApplyByEmailModel model)
+    {
+        var result = await workerService.ApplyByEmail(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

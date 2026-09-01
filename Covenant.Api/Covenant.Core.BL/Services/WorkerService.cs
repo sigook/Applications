@@ -2,6 +2,7 @@
 using Covenant.Core.BL.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
+using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
@@ -14,9 +15,11 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Security;
 using Covenant.Common.Models.Request;
+using Covenant.Common.Models.WebSite;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Agency;
+using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
@@ -52,6 +55,7 @@ public class WorkerService : IWorkerService
     private readonly IFilesContainer filesContainer;
     private readonly IDocumentService documentService;
     private readonly ICandidateService candidateService;
+    private readonly ICandidateRepository candidateRepository;
     private readonly IUploadedFilesService uploadedFilesService;
     private readonly ICompanyRepository companyRepository;
     private readonly ICatalogRepository catalogRepository;
@@ -78,6 +82,7 @@ public class WorkerService : IWorkerService
         IFilesContainer filesContainer,
         IDocumentService documentService,
         ICandidateService candidateService,
+        ICandidateRepository candidateRepository,
         IUploadedFilesService uploadedFilesService,
         ICatalogRepository catalogRepository)
     {
@@ -100,6 +105,7 @@ public class WorkerService : IWorkerService
         this.filesContainer = filesContainer;
         this.documentService = documentService;
         this.candidateService = candidateService;
+        this.candidateRepository = candidateRepository;
         this.uploadedFilesService = uploadedFilesService;
         this.catalogRepository = catalogRepository;
     }
@@ -201,6 +207,26 @@ public class WorkerService : IWorkerService
             WorkerId = worker.WorkerId,
             WorkerProfileId = worker.Id
         });
+    }
+
+    public async Task<Result> ApplyByEmail(ApplyByEmailModel model)
+    {
+        var emailResult = CvnEmail.Create(model.Email?.Trim());
+        if (!emailResult) return Result.Fail(ApiResources.RequestNotAvailable);
+        var email = emailResult.Value.Email.ToLower();
+        var request = await requestRepository.GetRequest(r => r.NumberId == model.NumberId);
+        if (request is null || !request.IsAvailableToApply) return Result.Fail(ApiResources.RequestNotAvailable);
+        var agencyId = request.CompanyProfile.AgencyId;
+        var profile = await workerRepository.GetProfile(p => p.AgencyId == agencyId && p.Worker.Email.ToLower() == email);
+        if (profile is not null) return await Apply(request.Id, new WorkerRequestApplyModel(), profile.WorkerId);
+        var candidate = await candidateRepository.GetCandidate(c => c.AgencyId == agencyId && c.Email != null && c.Email.ToLower() == email);
+        if (candidate is null || candidate.Dnu) return Result.Fail(ApiResources.RequestNotAvailable);
+        var city = request.JobLocation?.City?.Value;
+        if (string.IsNullOrWhiteSpace(city) || !candidate.Address.ContainsNormalized(city)) return Result.Fail(ApiResources.RequestNotAvailable);
+        var existingApplicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == request.Id && ra.CandidateId == candidate.Id);
+        if (existingApplicant != null) return Result.Fail("You already apply to this request");
+        await NotifyCandidateApplicant(request, candidate);
+        return Result.Ok();
     }
 
     public async Task<Result> UpdateProfileImage(Guid profileId)
@@ -477,5 +503,32 @@ public class WorkerService : IWorkerService
             await sendGridService.SendEmail(sendGridModel);
         }
         return result.Value;
+    }
+
+    private async Task NotifyCandidateApplicant(Request request, Candidate candidate)
+    {
+        var result = RequestApplicant.CreateWithCandidate(request.Id, candidate.Id, "Sigook", null, RequestApplicantStatus.Pending);
+        await requestRepository.Create([result.Value]);
+        await requestRepository.SaveChangesAsync();
+        if (request.Recruiters.Any())
+        {
+            var sendGridModel = new SendGridModel
+            {
+                Tos = request.Recruiters.Select(r => r.Recruiter.User.Email),
+                Template = "NEW_APPLICANT",
+                Data = new
+                {
+                    RequestNumberId = request.NumberId,
+                    request.JobTitle,
+                    CandidateNumberId = candidate.NumberId,
+                    Nmae = candidate.Name,
+                    candidate.Email,
+                    Phone = candidate.PhoneNumbers?.FirstOrDefault()?.PhoneNumber,
+                    candidate.Address,
+                    Skills = string.Join(",", candidate.Skills?.Select(s => s.Skill) ?? [])
+                }
+            };
+            await sendGridService.SendEmail(sendGridModel);
+        }
     }
 }

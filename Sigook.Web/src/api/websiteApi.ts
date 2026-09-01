@@ -19,6 +19,10 @@ export function submitContactForm(contact: ContactForm): Promise<void> {
   return api.post<void>('/api/WebSite/contact', contact);
 }
 
+export function requestApplyByEmail(numberId: number, email: string): Promise<void> {
+  return api.post<void>('/api/WebSite/apply', { numberId, email });
+}
+
 export function submitCandidate(formData: FormData): Promise<void> {
   return api.post<void>('/api/WebSite/candidate', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }

@@ -13,9 +13,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, type LocationQueryValue } from 'vue-router';
 import { getErrorMessage } from '@/utils/toast';
 import { workerRequestApply } from '@/api/workerApi';
+import { requestApplyByEmail } from '@/api/websiteApi';
 
 const route = useRoute();
 
@@ -28,15 +29,25 @@ function redirectToHome() {
   window.location.href = '/';
 }
 
+function firstParam(value: LocationQueryValue | LocationQueryValue[]): string | null {
+  const single = Array.isArray(value) ? value[0] : value;
+  return typeof single === 'string' && single ? single : null;
+}
+
 function apply() {
-  const workerId = route.query.w;
-  const requestId = route.query.r;
-  if (!workerId || !requestId) {
+  const numberIdParam = firstParam(route.query.n);
+  const email = firstParam(route.query.e);
+  const workerId = firstParam(route.query.w);
+  const requestId = firstParam(route.query.r);
+
+  const numberId = numberIdParam ? Number(numberIdParam) : NaN;
+  const byEmail = Number.isInteger(numberId) && numberId > 0 && !!email;
+  if (!byEmail && (!workerId || !requestId)) {
     redirectToHome();
     return;
   }
 
-  const key = `${workerId}${requestId}`;
+  const key = byEmail ? `${numberId}${email}` : `${workerId}${requestId}`;
   const alreadyApplied = window.sessionStorage.getItem(key);
   if (alreadyApplied) {
     successMessage.value = defaultSuccessMessage;
@@ -44,7 +55,10 @@ function apply() {
   }
 
   isLoading.value = true;
-  workerRequestApply(workerId as string, requestId as string, {})
+  const applyRequest = byEmail
+    ? requestApplyByEmail(numberId, email as string)
+    : workerRequestApply(workerId as string, requestId as string, {});
+  applyRequest
     .then(() => {
       isLoading.value = false;
       successMessage.value = defaultSuccessMessage;

@@ -97,7 +97,7 @@ PUT api/agency/requests/{id}/Cancel                       → RequestService.Can
 PUT api/agency/requests/{id}/Open                         → RequestService.OpenRequest     (reopen)
 PUT api/agency/requests/{id}/IncreaseWorkersQuantityByOne → AgencyService.IncreaseWorkersQuantityByOne
 PUT api/agency/requests/{id}/ReduceWorkersQuantityByOne   → RequestService.ReduceWorkerQuantityByOne
-POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers)
+POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers AND candidates)
 ```
 
 Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET api/agency/sales/requests` (sales rep sees only their own companies' orders).
@@ -111,7 +111,9 @@ GET  api/WorkerRequest/{id}                 → WorkerRequestController.GetById
 POST api/WorkerRequest/{requestId}/Apply    → WorkerRequestController.Apply → WorkerService.Apply(requestId, model)
 ```
 
-There is no `/Available` suffix — the plain `GET api/WorkerRequest` already returns only requests the authenticated worker can apply to. An anonymous variant `POST api/WorkerRequest/{workerId}/{requestId}/Apply` exists for invitation links.
+There is no `/Available` suffix — the plain `GET api/WorkerRequest` already returns only requests the authenticated worker can apply to. An anonymous variant `POST api/WorkerRequest/{workerId}/{requestId}/Apply` exists for legacy invitation links (`/worker-apply?r=&w=`).
+
+Invitation emails (workers and candidates) now carry a unified anonymous link `/worker-apply?n={requestNumberId}&e={email}` handled by `POST api/WebSite/apply` → `WorkerService.ApplyByEmail`: the request is resolved by its public `NumberId`, the email is matched (case/whitespace-insensitive) against workers of the request's agency first, then candidates. Candidates are invited and allowed to apply **only if their free-text address contains the request's city** (accent/case-insensitive containment; a request without a city accepts no candidates), are excluded when DNU, and become `RequestApplicant` rows (`Pending`, created by "Sigook"). The invitation consumer (`InvitationConsumer`) sends one batch to workers of the request's province plus city-matched candidates of the agency, deduplicated by email.
 
 ### Step 2B: Agency tracks applicants
 

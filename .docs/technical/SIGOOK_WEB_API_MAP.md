@@ -703,6 +703,7 @@ Public landing site endpoints (no auth).
 | `getJobs(filter)` | GET | `/api/WebSite/jobs` | `JobSearchFilter` (params; `countries` defaults to `['USA','CA']`) | `JobViewModel[]` | Public job search |
 | `submitContactForm(contact)` | POST | `/api/WebSite/contact` | `ContactForm` | `void` | |
 | `submitCandidate(formData)` | POST | `/api/WebSite/candidate` | FormData (multipart) | `void` | Public candidate apply |
+| `requestApplyByEmail(numberId, email)` | POST | `/api/WebSite/apply` | `{ numberId: number; email: string }` | `void` | Unified invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker first, then a candidate (city-validated). Legacy `?r=&w=` links still call `/api/WorkerRequest/{workerId}/{requestId}/Apply` |
 
 **Types:** `JobSearchFilter`, `JobViewModel`, `ContactForm` (`src/types/website`)
 
