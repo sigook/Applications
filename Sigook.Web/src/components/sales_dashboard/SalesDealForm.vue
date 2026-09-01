@@ -85,7 +85,8 @@ import {
   DEAL_TYPE_LABELS,
   DEAL_STATUS_LABELS,
 } from '@/types/company';
-import type { Deal, CompanyProfileDropdownItem } from '@/types/company';
+import type { Deal } from '@/types/company';
+import type { CatalogItem } from '@/types/common';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { generateFileName } from '@/utils/fileNaming';
 import SearchSelect from './SearchSelect.vue';
@@ -96,11 +97,11 @@ const props = defineProps<{ deal?: Deal | null }>();
 
 const isEditing = computed(() => !!props.deal);
 
-const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.fullName })));
+const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.value })));
 const typeOptions = DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }));
 const statusOptions = DEAL_STATUSES.map((s) => ({ value: s, label: DEAL_STATUS_LABELS[s] }));
 
-const clients = ref<CompanyProfileDropdownItem[]>([]);
+const clients = ref<CatalogItem[]>([]);
 const isLoadingClients = ref(false);
 
 function loadClients(term: string): void {

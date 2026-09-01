@@ -4819,7 +4819,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDropdownModel"
+                    "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
                   }
                 }
               }
@@ -25603,20 +25603,6 @@
           },
           "documentType": {
             "$ref": "#/components/schemas/Covenant.Common.Enums.CompanyProfileDocumentType"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Covenant.Common.Models.Company.CompanyProfileDropdownModel": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "fullName": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false

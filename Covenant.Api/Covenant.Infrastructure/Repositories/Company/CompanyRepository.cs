@@ -17,8 +17,6 @@ namespace Covenant.Infrastructure.Repositories.Company;
 
 public class CompanyRepository : ICompanyRepository
 {
-    private const int MaximumCompaniesInDropdown = 50;
-
     private readonly CovenantContext _context;
     private readonly FilesConfiguration filesConfiguration;
 
@@ -660,23 +658,23 @@ public class CompanyRepository : ICompanyRepository
             _ => query.AddOrderBy(filter, i => i.CreatedAt)
         };
 
-    public async Task<List<CompanyProfileDropdownModel>> GetCompaniesList(Guid agencyId, string searchTerm)
+    public async Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm)
     {
         var companyProfiles = _context.CompanyProfiles.Where(cp => cp.AgencyId == agencyId);
         var query = companyProfiles
-            .Select(cp => new CompanyProfileDropdownModel
+            .Select(cp => new BaseModel<Guid>
             {
                 Id = cp.Id,
-                FullName = cp.FullName
+                Value = cp.FullName
             });
-        var predicate = PredicateBuilder.New<CompanyProfileDropdownModel>(true);
+        var predicate = PredicateBuilder.New<BaseModel<Guid>>(true);
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             searchTerm = searchTerm.ToLower();
-            predicate = predicate.And(p => EF.Functions.Like(p.FullName.ToLower(), $"%{searchTerm}%"));
+            predicate = predicate.And(p => EF.Functions.Like(p.Value.ToLower(), $"%{searchTerm}%"));
         }
         query = query.Where(predicate);
-        var result = await query.OrderBy(c => c.FullName).Take(MaximumCompaniesInDropdown).ToListAsync();
+        var result = await query.OrderBy(c => c.Value).ToListAsync();
         return result;
     }
 }

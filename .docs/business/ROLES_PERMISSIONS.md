@@ -56,7 +56,7 @@ Concretely:
   `/FileWithDetails` on companyprofiles — there is no companyprofiles `/all`) require Policy
   `Recruiting`. Otherwise a sales user would just call those and see everything.
   **One deliberate exception:** `GET api/agency/companyprofiles/companies-list` (Policy `Agency`) is a
-  name-only typeahead, capped at 50 rows, that is **not** sales-scoped — it feeds the client pickers of
+  name-only typeahead, uncapped, that is **not** sales-scoped — it feeds the client pickers of
   the sales dashboard's deal and interaction modals, so a sales user can log activity against any
   company of the agency, not only their own. Accepted on purpose; the scoped lists it sits beside
   (`api/agency/sales/companyprofiles`) still drive every actual client listing.

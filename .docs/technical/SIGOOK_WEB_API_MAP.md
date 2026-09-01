@@ -97,7 +97,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | `updateAgencyCompanyEmail(id, model)` | PUT | `/api/agency/companyprofiles/{id}/Email` | `{ newEmail: string }` | `void` | |
 | `updateAgencyCompanyProfileLogo(id, model)` | PUT | `/api/agency/companyprofiles/{id}/Logo` | `Partial<CovenantFileModel>` | `void` | |
 | `getAgencyCompanyProfileWithRequests()` | GET | `/api/agency/companyprofiles/company-with-requests` | — | `CompanyProfileListItem[]` | Companies + their requests |
-| `getAgencyCompaniesList(searchTerm?)` | GET | `/api/agency/companyprofiles/companies-list` | `searchTerm` (query, optional) | `CompanyProfileDropdownItem[]` | Typeahead for the sales dashboard client pickers; max 50 rows, ordered by name, scoped to the caller's agency (**not** sales-scoped) |
+| `getAgencyCompaniesList(searchTerm?)` | GET | `/api/agency/companyprofiles/companies-list` | `searchTerm` (query, optional) | `CatalogItem[]` | Typeahead for the sales dashboard client pickers; every company of the agency, ordered by name, scoped to the caller's agency (**not** sales-scoped) |
 | `bulkAgencyCompanies(agencyId, file)` | POST | `/api/agency/companyprofiles/bulk/{agencyId}` | FormData (multipart) | Blob | Excel import |
 
 ### Contact People

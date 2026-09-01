@@ -62,8 +62,9 @@ import {
   INTERACTION_PURPOSE_LABELS,
   INTERACTION_STATUS_LABELS,
 } from '@/types/company';
-import type { CompanyInteraction, CompanyProfileDropdownItem } from '@/types/company';
+import type { CompanyInteraction } from '@/types/company';
 import type { AgencyCompanyListItem } from '@/types/agency';
+import type { CatalogItem } from '@/types/common';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import SearchSelect from './SearchSelect.vue';
 
@@ -77,7 +78,7 @@ const props = defineProps<{
 const isEditing = computed(() => !!props.interaction);
 
 const clientOptions = computed(() => {
-  const options = clients.value.map((c) => ({ value: c.id, label: c.fullName }));
+  const options = clients.value.map((c) => ({ value: c.id, label: c.value }));
   if (
     props.initialClient &&
     !clientSearchTerm.value.trim() &&
@@ -90,7 +91,7 @@ const clientOptions = computed(() => {
 const purposeOptions = INTERACTION_PURPOSES.map((p) => ({ value: p, label: INTERACTION_PURPOSE_LABELS[p] }));
 const statusOptions = INTERACTION_STATUSES.map((s) => ({ value: s, label: INTERACTION_STATUS_LABELS[s] }));
 
-const clients = ref<CompanyProfileDropdownItem[]>([]);
+const clients = ref<CatalogItem[]>([]);
 const isLoadingClients = ref(false);
 const clientSearchTerm = ref('');
 

@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Security;
 using Covenant.Common.Repositories.Company;
@@ -161,7 +162,7 @@ public class CompanyProfilesController(
     /// <summary>Gets the agency companies for a dropdown filtered by a search term.</summary>
     /// <param name="searchTerm">Term used to filter companies by name.</param>
     [HttpGet("companies-list")]
-    [ProducesResponseType(typeof(List<CompanyProfileDropdownModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCompaniesList([FromQuery] string searchTerm) =>
         Ok(await companyRepository.GetCompaniesList(User.GetAgencyId(), searchTerm));
 
