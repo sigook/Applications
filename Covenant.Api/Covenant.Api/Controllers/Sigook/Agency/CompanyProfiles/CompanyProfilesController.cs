@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Security;
 using Covenant.Common.Repositories.Company;
@@ -157,6 +158,13 @@ public class CompanyProfilesController(
     [ProducesResponseType(typeof(IEnumerable<CompanyProfileListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCompanyWithRequest() =>
         Ok(await requestRepository.GetCompaniesWithRequests(User.GetAgencyIds()));
+
+    /// <summary>Gets the agency companies for a dropdown filtered by a search term.</summary>
+    /// <param name="searchTerm">Term used to filter companies by name.</param>
+    [HttpGet("companies-list")]
+    [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCompaniesList([FromQuery] string searchTerm) =>
+        Ok(await companyRepository.GetCompaniesList(User.GetAgencyId(), searchTerm));
 
     /// <summary>Bulk-imports company data for an agency from an uploaded file.</summary>
     /// <param name="agencyId">Identifier of the agency to import companies into.</param>

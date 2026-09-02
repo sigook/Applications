@@ -48,4 +48,5 @@ public interface ICompanyRepository
     Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression);
     Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter);
     Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression);
+    Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm);
 }

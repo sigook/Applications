@@ -35,7 +35,7 @@
           action-label="Create client"
           @action="openDrawer('client')"
         >
-          <sales-client-list :items="data.clients.items" />
+          <sales-client-list :items="clients" @select="startInteractionForClient" />
         </sales-card>
 
         <sales-card
@@ -72,7 +72,14 @@
         </sales-card>
       </div>
 
-      <sales-create-modal v-model="isModalOpen" :kind="modalKind" :interaction="editingInteraction" :deal="editingDeal" @saved="onSaved" />
+      <sales-create-modal
+        v-model="isModalOpen"
+        :kind="modalKind"
+        :interaction="editingInteraction"
+        :deal="editingDeal"
+        :interaction-client="interactionClient"
+        @saved="onSaved"
+      />
     </template>
   </div>
 </template>
@@ -90,6 +97,7 @@ import SalesMeterList from '@/components/sales_dashboard/SalesMeterList.vue';
 import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue';
 import { getSalesDashboard } from '@/api/salesDashboardApi';
 import { getCompanyInteractions, getDeals } from '@/api/companyApi';
+import { getSalesCompanies } from '@/api/salesApi';
 import { useCurrentAgent } from '@/composables/useCurrentAgent';
 import { compactMoney, shortDate } from '@/utils/salesDashboardFormat';
 import { showAlertError } from '@/utils/toast';
@@ -102,6 +110,7 @@ import {
   INTERACTION_TYPE_LABELS,
 } from '@/types/company';
 import type { Deal, CompanyInteraction } from '@/types/company';
+import type { AgencyCompanyListItem } from '@/types/agency';
 import type {
   SalesCreateKind,
   SalesDashboardModel,
@@ -115,6 +124,9 @@ const isLoading = ref(false);
 const data = ref<SalesDashboardModel | null>(null);
 const interactions = ref<CompanyInteraction[]>([]);
 const editingInteraction = ref<CompanyInteraction | null>(null);
+const clients = ref<AgencyCompanyListItem[]>([]);
+const clientsTotal = ref<number | null>(null);
+const interactionClient = ref<AgencyCompanyListItem | null>(null);
 const deals = ref<Deal[]>([]);
 const editingDeal = ref<Deal | null>(null);
 const nowIso = new Date().toISOString();
@@ -122,13 +134,9 @@ const range = ref<SalesRangeKey>('week');
 const isModalOpen = ref(false);
 const modalKind = ref<SalesCreateKind | null>(null);
 
-const clientsSubtitle = computed(() => {
-  if (!data.value) {
-    return '';
-  }
-  const { activeCount, newThisMonth } = data.value.clients;
-  return `${activeCount} active · ${newThisMonth} new this month`;
-});
+const clientsSubtitle = computed(() =>
+  clientsTotal.value === null ? '' : `${clientsTotal.value} in your book`
+);
 
 const dealsSubtitle = computed(() =>
   data.value ? `${compactMoney(data.value.deals.pipelineValue)} in pipeline` : ''
@@ -163,12 +171,21 @@ function openDrawer(kind: SalesCreateKind): void {
 
 function startCreateInteraction(): void {
   editingInteraction.value = null;
+  interactionClient.value = null;
   modalKind.value = 'interaction';
   isModalOpen.value = true;
 }
 
 function startEditInteraction(interaction: CompanyInteraction): void {
   editingInteraction.value = interaction;
+  interactionClient.value = null;
+  modalKind.value = 'interaction';
+  isModalOpen.value = true;
+}
+
+function startInteractionForClient(client: AgencyCompanyListItem): void {
+  editingInteraction.value = null;
+  interactionClient.value = client;
   modalKind.value = 'interaction';
   isModalOpen.value = true;
 }
@@ -193,6 +210,15 @@ function loadInteractions(): void {
     .catch((error) => showAlertError(error));
 }
 
+function loadClients(): void {
+  getSalesCompanies({ pageIndex: 1, pageSize: 6, sortBy: 3, isDescending: true })
+    .then((result) => {
+      clients.value = result.items;
+      clientsTotal.value = result.totalItems;
+    })
+    .catch((error) => showAlertError(error));
+}
+
 function loadDeals(): void {
   getDeals({ pageSize: 6, isDescending: true, sortBy: DealSortBy.Date })
     .then((result) => {
@@ -203,6 +229,7 @@ function loadDeals(): void {
 
 function onSaved(): void {
   loadInteractions();
+  loadClients();
   loadDeals();
 }
 
@@ -216,6 +243,7 @@ onMounted(() => {
       isLoading.value = false;
     });
   loadInteractions();
+  loadClients();
   loadDeals();
   loadAgentName();
 });

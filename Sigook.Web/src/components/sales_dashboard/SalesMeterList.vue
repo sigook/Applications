@@ -59,7 +59,7 @@ const widthScale = computed(() =>
 }
 
 .sd-meter__label {
-  width: 74px;
+  width: 90px;
   flex: none;
   font-size: 0.72rem;
   color: #777;

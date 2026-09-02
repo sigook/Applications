@@ -55,6 +55,11 @@ Concretely:
   `GET api/agency/recruiting/companyprofiles` (plus `/all` and `/File` on requests, and `/File` and
   `/FileWithDetails` on companyprofiles — there is no companyprofiles `/all`) require Policy
   `Recruiting`. Otherwise a sales user would just call those and see everything.
+  **One deliberate exception:** `GET api/agency/companyprofiles/companies-list` (Policy `Agency`) is a
+  name-only typeahead, uncapped, that is **not** sales-scoped — it feeds the client pickers of
+  the sales dashboard's deal and interaction modals, so a sales user can log activity against any
+  company of the agency, not only their own. Accepted on purpose; the scoped lists it sits beside
+  (`api/agency/sales/companyprofiles`) still drive every actual client listing.
 - **Details are not scoped.** Policy `Agency` = `AgencyStaff`, so sales reaches the same detail,
   edit, workers, timesheets and applicants endpoints a recruiter reaches. A sales user who
   knows the id of another rep's order can open and edit it. **This is accepted on purpose** — the
