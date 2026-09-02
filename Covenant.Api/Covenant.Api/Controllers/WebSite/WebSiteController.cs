@@ -1,7 +1,5 @@
 ﻿using Covenant.Api.Authorization;
-using Covenant.Api.Utils.Extensions;
 using Covenant.Core.BL.Extensions;
-using Covenant.Core.BL.Interfaces;
 using Covenant.Api.Common.Models;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
@@ -104,19 +102,6 @@ public class WebSiteController(
             }
         }
         await client.SendMessageAsync(candidate, serviceBusConfiguration.ValidateCandidateQueue);
-        return Ok();
-    }
-
-    /// <summary>Applies a worker or candidate to a request using the public request number and their email (anonymous).</summary>
-    /// <param name="model">Request number and applicant email.</param>
-    /// <param name="workerService">Worker service.</param>
-    [HttpPost("apply")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Apply([FromBody] ApplyByEmailModel model, [FromServices] IWorkerService workerService)
-    {
-        var result = await workerService.ApplyByEmail(model);
-        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

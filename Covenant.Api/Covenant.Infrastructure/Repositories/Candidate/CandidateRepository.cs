@@ -30,7 +30,7 @@ namespace Covenant.Infrastructure.Repositories.Candidate
         public Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId) =>
             _context.Candidates
                 .AsNoTracking()
-                .Where(c => c.AgencyId == agencyId && !c.Dnu)
+                .Where(c => c.AgencyId == agencyId && !c.Dnu && !c.EmailUnsubscribed)
                 .Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains("@"))
                 .Where(c => !string.IsNullOrEmpty(c.Address))
                 .Where(c => !c.RequestApplicants.Any(ra => ra.RequestId == requestId))

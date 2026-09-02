@@ -15,8 +15,7 @@
 import { ref } from 'vue';
 import { useRoute, type LocationQueryValue } from 'vue-router';
 import { getErrorMessage } from '@/utils/toast';
-import { workerRequestApply } from '@/api/workerApi';
-import { requestApplyByEmail } from '@/api/websiteApi';
+import { requestApplyByEmail } from '@/api/workerApi';
 
 const route = useRoute();
 
@@ -38,17 +37,14 @@ function firstParam(value: LocationQueryValue | LocationQueryValue[]): string | 
 function apply() {
   const numberIdParam = firstParam(route.query.n);
   const email = firstParam(route.query.e);
-  const workerId = firstParam(route.query.w);
-  const requestId = firstParam(route.query.r);
 
   const numberId = numberIdParam ? Number(numberIdParam) : NaN;
-  const byEmail = Number.isInteger(numberId) && numberId > 0 && !!email;
-  if (!byEmail && (!workerId || !requestId)) {
+  if (!Number.isInteger(numberId) || numberId <= 0 || !email) {
     redirectToHome();
     return;
   }
 
-  const key = byEmail ? `${numberId}|${email}` : `${workerId}${requestId}`;
+  const key = `${numberId}|${email}`;
   const alreadyApplied = window.sessionStorage.getItem(key);
   if (alreadyApplied) {
     successMessage.value = defaultSuccessMessage;
@@ -56,10 +52,7 @@ function apply() {
   }
 
   isLoading.value = true;
-  const applyRequest = byEmail
-    ? requestApplyByEmail(numberId, email as string)
-    : workerRequestApply(workerId as string, requestId as string, {});
-  applyRequest
+  requestApplyByEmail(numberId, email)
     .then(() => {
       isLoading.value = false;
       successMessage.value = defaultSuccessMessage;

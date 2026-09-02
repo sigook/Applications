@@ -122,11 +122,12 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         {
             if (!candidate.Address.ContainsNormalized(city)) continue;
             if (!invitedEmails.Add(candidate.Email)) continue;
+            var candidateUnsubscribeUrl = sendGridConfiguration.CandidateUnsubscribeUrl.Replace("{{candidateId}}", candidate.Id.ToString());
             object data = new
             {
                 worker_name = candidate.Name,
-                unsubscribe = sendGridConfiguration.CandidateUnsubscribeUrl,
-                unsubscribe_preferences = sendGridConfiguration.CandidateUnsubscribeUrl,
+                unsubscribe = candidateUnsubscribeUrl,
+                unsubscribe_preferences = candidateUnsubscribeUrl,
                 job_title = jobTitle,
                 description,
                 requirements,

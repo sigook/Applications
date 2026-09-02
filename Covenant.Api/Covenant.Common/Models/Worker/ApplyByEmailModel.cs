@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.WebSite;
+namespace Covenant.Common.Models.Worker;
 
 public class ApplyByEmailModel
 {

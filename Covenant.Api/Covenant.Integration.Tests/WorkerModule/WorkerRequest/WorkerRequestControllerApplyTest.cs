@@ -4,25 +4,25 @@ using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.WebSite;
 using Covenant.Common.Models.Worker;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
-using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.WebSiteModule;
+using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 
-public class WebSiteControllerApplyTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WebSiteControllerApplyTest.Startup>>
+namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest;
+
+public class WorkerRequestControllerApplyTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerRequestControllerApplyTest.Startup>>
 {
-    private const string RequestUri = "api/WebSite/apply";
+    private static string RequestUri => $"{WorkerRequestController.RouteName}/Apply";
     private readonly CustomWebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
 
-    public WebSiteControllerApplyTest(CustomWebApplicationFactory<Startup> factory)
+    public WorkerRequestControllerApplyTest(CustomWebApplicationFactory<Startup> factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

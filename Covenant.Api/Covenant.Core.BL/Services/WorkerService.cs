@@ -15,7 +15,6 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Security;
 using Covenant.Common.Models.Request;
-using Covenant.Common.Models.WebSite;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Agency;

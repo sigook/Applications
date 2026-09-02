@@ -703,7 +703,6 @@ Public landing site endpoints (no auth).
 | `getJobs(filter)` | GET | `/api/WebSite/jobs` | `JobSearchFilter` (params; `countries` defaults to `['USA','CA']`) | `JobViewModel[]` | Public job search |
 | `submitContactForm(contact)` | POST | `/api/WebSite/contact` | `ContactForm` | `void` | |
 | `submitCandidate(formData)` | POST | `/api/WebSite/candidate` | FormData (multipart) | `void` | Public candidate apply |
-| `requestApplyByEmail(numberId, email)` | POST | `/api/WebSite/apply` | `{ numberId: number; email: string }` | `void` | Unified invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker first, then a candidate (city-validated). Legacy `?r=&w=` links still call `/api/WorkerRequest/{workerId}/{requestId}/Apply` |
 
 **Types:** `JobSearchFilter`, `JobViewModel`, `ContactForm` (`src/types/website`)
 
@@ -719,7 +718,7 @@ Public landing site endpoints (no auth).
 | `getJobs(filter)` | GET | `/api/WorkerRequest` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | Available jobs |
 | `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | |
 | `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply |
-| `workerRequestApply(workerId, requestId, model)` | POST | `/api/WorkerRequest/{workerId}/{requestId}/Apply` | `WorkerRequestApplyModel` | `void` | Apply on behalf of worker |
+| `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `{ numberId: number; email: string }` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
 | `workerRequestDecline(id)` | DELETE | `/api/WorkerRequest/Decline/{id}` | — | `void` | Decline offer |
 
 ### TimeSheet
