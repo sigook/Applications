@@ -43,7 +43,11 @@ async function onUnsubscribe() {
 
   isLoading.value = true;
   try {
-    await unsubscribe({ userId: userId as string, typeId: subscriptionType as string });
+    await unsubscribe({
+      userId: userId as string,
+      typeId: subscriptionType as string,
+      userType: typeOfUser as string,
+    });
     isLoading.value = false;
     window.sessionStorage.setItem(key, '1');
     redirectToHome();

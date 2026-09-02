@@ -4795,6 +4795,48 @@
         }
       }
     },
+    "/api/agency/companyprofiles/companies-list": {
+      "get": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Gets the agency companies for a dropdown filtered by a search term.",
+        "parameters": [
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Term used to filter companies by name.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/companyprofiles/bulk/{agencyId}": {
       "post": {
         "tags": [
@@ -20322,64 +20364,35 @@
         }
       }
     },
-    "/api/WorkerRequest/{workerId}/{requestId}/Apply": {
+    "/api/WorkerRequest/Apply": {
       "post": {
         "tags": [
           "WorkerRequest"
         ],
-        "summary": "Applies a specific worker to a request (anonymous).",
-        "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Identifier of the worker.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
+        "summary": "Applies a worker or a candidate to a request from an invitation link (anonymous).",
         "requestBody": {
-          "description": "Application data.",
+          "description": "Public request number and the invited person's email.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestApplicantDetailModel"
-                }
-              }
-            }
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request",
@@ -23703,7 +23716,10 @@
           0,
           1,
           2,
-          3
+          3,
+          4,
+          5,
+          6
         ],
         "type": "integer",
         "format": "int32"
@@ -26350,6 +26366,10 @@
             "format": "uuid"
           },
           "typeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userType": {
             "type": "string",
             "nullable": true
           }
@@ -29286,6 +29306,20 @@
             "type": "string",
             "nullable": true,
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Worker.ApplyByEmailModel": {
+        "type": "object",
+        "properties": {
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

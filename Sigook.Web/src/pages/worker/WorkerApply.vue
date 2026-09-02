@@ -13,9 +13,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, type LocationQueryValue } from 'vue-router';
 import { getErrorMessage } from '@/utils/toast';
-import { workerRequestApply } from '@/api/workerApi';
+import { requestApplyByEmail } from '@/api/workerApi';
 
 const route = useRoute();
 
@@ -23,20 +23,28 @@ const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const defaultSuccessMessage = 'Thank you, one of our recruiters will contact you soon.';
+const defaultErrorMessage = 'We could not process your application, please contact the agency.';
 
 function redirectToHome() {
   window.location.href = '/';
 }
 
+function firstParam(value: LocationQueryValue | LocationQueryValue[]): string | null {
+  const single = Array.isArray(value) ? value[0] : value;
+  return typeof single === 'string' && single ? single : null;
+}
+
 function apply() {
-  const workerId = route.query.w;
-  const requestId = route.query.r;
-  if (!workerId || !requestId) {
+  const numberIdParam = firstParam(route.query.n);
+  const email = firstParam(route.query.e);
+
+  const numberId = numberIdParam ? Number(numberIdParam) : NaN;
+  if (!Number.isInteger(numberId) || numberId <= 0 || !email) {
     redirectToHome();
     return;
   }
 
-  const key = `${workerId}${requestId}`;
+  const key = `${numberId}|${email}`;
   const alreadyApplied = window.sessionStorage.getItem(key);
   if (alreadyApplied) {
     successMessage.value = defaultSuccessMessage;
@@ -44,7 +52,7 @@ function apply() {
   }
 
   isLoading.value = true;
-  workerRequestApply(workerId as string, requestId as string, {})
+  requestApplyByEmail(numberId, email)
     .then(() => {
       isLoading.value = false;
       successMessage.value = defaultSuccessMessage;
@@ -52,8 +60,7 @@ function apply() {
     })
     .catch(async (error: unknown) => {
       isLoading.value = false;
-      errorMessage.value = await getErrorMessage(error);
-      window.sessionStorage.setItem(key, '1');
+      errorMessage.value = (await getErrorMessage(error)) || defaultErrorMessage;
     });
 }
 

@@ -20,8 +20,11 @@
         v-model="companyProfileId"
         :options="clientOptions"
         :loading="isLoadingClients"
+        :min-search-length="MINIMUM_SEARCH_LENGTH"
+        remote
         clearable
         placeholder="Search client…"
+        @search="onClientSearch"
       />
       <p v-else class="sd-readonly">{{ interaction?.companyName }}</p>
     </b-field>
@@ -46,7 +49,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { getSalesCompanies } from '@/api/salesApi';
+import { getAgencyCompaniesList } from '@/api/agencyCompanyApi';
 import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyApi';
 import {
   InteractionType,
@@ -61,19 +64,55 @@ import {
 } from '@/types/company';
 import type { CompanyInteraction } from '@/types/company';
 import type { AgencyCompanyListItem } from '@/types/agency';
+import type { CatalogItem } from '@/types/common';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import SearchSelect from './SearchSelect.vue';
 
-const props = defineProps<{ interaction?: CompanyInteraction | null }>();
+const MINIMUM_SEARCH_LENGTH = 3;
+
+const props = defineProps<{
+  interaction?: CompanyInteraction | null;
+  initialClient?: AgencyCompanyListItem | null;
+}>();
 
 const isEditing = computed(() => !!props.interaction);
 
-const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.fullName })));
+const clientOptions = computed(() => {
+  const options = clients.value.map((c) => ({ value: c.id, label: c.value }));
+  if (
+    props.initialClient &&
+    !clientSearchTerm.value.trim() &&
+    !options.some((o) => o.value === props.initialClient?.id)
+  ) {
+    options.unshift({ value: props.initialClient.id, label: props.initialClient.fullName });
+  }
+  return options;
+});
 const purposeOptions = INTERACTION_PURPOSES.map((p) => ({ value: p, label: INTERACTION_PURPOSE_LABELS[p] }));
 const statusOptions = INTERACTION_STATUSES.map((s) => ({ value: s, label: INTERACTION_STATUS_LABELS[s] }));
 
-const clients = ref<AgencyCompanyListItem[]>([]);
+const clients = ref<CatalogItem[]>([]);
 const isLoadingClients = ref(false);
+const clientSearchTerm = ref('');
+
+function loadClients(term: string): void {
+  isLoadingClients.value = true;
+  getAgencyCompaniesList(term || undefined)
+    .then((result) => {
+      clients.value = result;
+    })
+    .catch((error) => showAlertError(error))
+    .finally(() => {
+      isLoadingClients.value = false;
+    });
+}
+
+function onClientSearch(term: string): void {
+  clientSearchTerm.value = term;
+  const normalized = term.trim();
+  if (normalized.length > 0 && normalized.length < MINIMUM_SEARCH_LENGTH) return;
+  loadClients(normalized);
+}
 
 const type = ref<InteractionType>(InteractionType.Call);
 const companyProfileId = ref<string | null>(null);
@@ -90,20 +129,14 @@ onMounted(() => {
     description.value = props.interaction.description;
     return;
   }
-  isLoadingClients.value = true;
-  getSalesCompanies({ pageSize: 100 })
-    .then((result) => {
-      clients.value = result.items;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoadingClients.value = false;
-    });
+  if (props.initialClient) {
+    companyProfileId.value = props.initialClient.id;
+  }
 });
 
 function resetForm(): void {
   type.value = InteractionType.Call;
-  companyProfileId.value = null;
+  companyProfileId.value = props.initialClient?.id ?? null;
   purpose.value = InteractionPurpose.Intro;
   status.value = InteractionStatus.NotStarted;
   description.value = '';

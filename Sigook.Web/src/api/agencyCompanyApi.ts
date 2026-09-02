@@ -1,6 +1,6 @@
 import { api } from '@/security/apiService';
 import { buildMultipartFormData } from '@/utils/multipart';
-import type { PaginatedList } from '@/types/common';
+import type { CatalogItem, PaginatedList } from '@/types/common';
 import type {
   AgencyCompanyFilter,
   AgencyCompanyListItem,
@@ -61,6 +61,10 @@ export function updateAgencyCompanyProfileLogo(profileId: string, model: Partial
 
 export function getAgencyCompanyProfileWithRequests(): Promise<CompanyProfileListItem[]> {
   return api.get<CompanyProfileListItem[]>(`${companyProfilesUrl}/company-with-requests`);
+}
+
+export function getAgencyCompaniesList(searchTerm?: string): Promise<CatalogItem[]> {
+  return api.get<CatalogItem[]>(`${companyProfilesUrl}/companies-list`, { params: { searchTerm } });
 }
 
 export function bulkAgencyCompanies(agencyId: string, file: File): Promise<Blob> {

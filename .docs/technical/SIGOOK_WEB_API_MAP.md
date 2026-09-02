@@ -97,6 +97,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | `updateAgencyCompanyEmail(id, model)` | PUT | `/api/agency/companyprofiles/{id}/Email` | `{ newEmail: string }` | `void` | |
 | `updateAgencyCompanyProfileLogo(id, model)` | PUT | `/api/agency/companyprofiles/{id}/Logo` | `Partial<CovenantFileModel>` | `void` | |
 | `getAgencyCompanyProfileWithRequests()` | GET | `/api/agency/companyprofiles/company-with-requests` | — | `CompanyProfileListItem[]` | Companies + their requests |
+| `getAgencyCompaniesList(searchTerm?)` | GET | `/api/agency/companyprofiles/companies-list` | `searchTerm` (query, optional) | `CatalogItem[]` | Typeahead for the sales dashboard client pickers; every company of the agency, ordered by name, scoped to the caller's agency (**not** sales-scoped) |
 | `bulkAgencyCompanies(agencyId, file)` | POST | `/api/agency/companyprofiles/bulk/{agencyId}` | FormData (multipart) | Blob | Excel import |
 
 ### Contact People
@@ -537,7 +538,7 @@ Company portal (client) view of their profile, requests and workers — plus the
 
 | Kind | Form | API functions | Notes |
 |------|------|---------------|-------|
-| `interaction` | `SalesInteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` / `deleteCompanyInteraction` (above) | Client picker via `getSalesCompanies` (salesApi.ts); client is read-only when editing |
+| `interaction` | `SalesInteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` / `deleteCompanyInteraction` (above) | Client picker via `getAgencyCompaniesList` (agencyCompanyApi.ts); client is read-only when editing |
 | `deal` | `SalesDealForm` | `createDeal` / `updateDeal` / `deleteDeal` (above) | Create is `multipart/form-data` with an optional document (`utils/multipart.ts` + `utils/fileNaming.ts`) |
 | `client` | `SalesClientForm` | `createAgencyCompany` (agencyCompanyApi.ts) | Create-only from the modal; catalogs via `getIndustries` / `getCompanyStatus` (catalogApi.ts); ordinary company endpoint, so sales auto-assignment applies |
 
@@ -596,7 +597,7 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyReques
 
 **Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyCompanyFilter`, `AgencyCompanyListItem` (`src/types/agency`)
 
-**Usage:** `/sales/requests` and `/sales/companies` pages; shared detail pages resolve their base path via `useModuleBase`. `getSalesCompanies` is also the client picker in the sales dashboard's interaction/deal forms (`components/sales_dashboard/`).
+**Usage:** `/sales/requests` and `/sales/companies` pages; shared detail pages resolve their base path via `useModuleBase`. The sales dashboard's interaction/deal client pickers use `getAgencyCompaniesList` (agencyCompanyApi.ts) instead — note that endpoint is **not** sales-scoped, so a sales user picks from every company of the agency.
 
 ---
 
@@ -718,7 +719,7 @@ Public landing site endpoints (no auth).
 | `getJobs(filter)` | GET | `/api/WorkerRequest` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | Available jobs |
 | `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | |
 | `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply |
-| `workerRequestApply(workerId, requestId, model)` | POST | `/api/WorkerRequest/{workerId}/{requestId}/Apply` | `WorkerRequestApplyModel` | `void` | Apply on behalf of worker |
+| `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `{ numberId: number; email: string }` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
 | `workerRequestDecline(id)` | DELETE | `/api/WorkerRequest/Decline/{id}` | — | `void` | Decline offer |
 
 ### TimeSheet

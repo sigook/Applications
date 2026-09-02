@@ -131,6 +131,35 @@ namespace Covenant.Tests.Sales
         }
 
         [Fact]
+        public async Task CreateDealFailsWhenStatusOutOfRange()
+        {
+            var model = ValidCreateModel();
+            model.Status = (DealStatus)99;
+            Result<Guid> result = await CreateDeal(model);
+            Assert.False(result);
+            Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.Status));
+        }
+
+        [Theory]
+        [InlineData(DealStatus.UnderReview, 4)]
+        [InlineData(DealStatus.Closed, 5)]
+        [InlineData(DealStatus.Completed, 6)]
+        public async Task CreateDealSucceedsWithNewStatus(DealStatus status, int expectedValue)
+        {
+            Deal created = null;
+            _companyRepository
+                .Setup(r => r.Create(It.IsAny<Deal>()))
+                .Callback<Deal>(d => created = d)
+                .Returns(Task.CompletedTask);
+            var model = ValidCreateModel();
+            model.Status = status;
+            Result<Guid> result = await CreateDeal(model);
+            Assert.True(result);
+            Assert.Equal(status, created.Status);
+            Assert.Equal(expectedValue, (int)created.Status);
+        }
+
+        [Fact]
         public async Task CreateDealFailsWhenCompanyProfileMissing()
         {
             var model = ValidCreateModel();

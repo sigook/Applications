@@ -657,4 +657,24 @@ public class CompanyRepository : ICompanyRepository
             GetCompanyInteractionsSortBy.CreatedAt => query.AddOrderBy(filter, i => i.CreatedAt),
             _ => query.AddOrderBy(filter, i => i.CreatedAt)
         };
+
+    public async Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm)
+    {
+        var companyProfiles = _context.CompanyProfiles.Where(cp => cp.AgencyId == agencyId);
+        var query = companyProfiles
+            .Select(cp => new BaseModel<Guid>
+            {
+                Id = cp.Id,
+                Value = cp.FullName
+            });
+        var predicate = PredicateBuilder.New<BaseModel<Guid>>(true);
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            searchTerm = searchTerm.ToLower();
+            predicate = predicate.And(p => EF.Functions.Like(p.Value.ToLower(), $"%{searchTerm}%"));
+        }
+        query = query.Where(predicate);
+        var result = await query.OrderBy(c => c.Value).ToListAsync();
+        return result;
+    }
 }
