@@ -2,4 +2,4 @@ namespace Covenant.Common.Models.Request;
 
 public record SendInvitationJob(Guid RequestId, string Nickname);
 
-public record InvitationSentResult(int SentCount, int NumberId, string JobTitle);
+public record InvitationSentResult(int WorkersSentCount, int CandidatesSentCount, int NumberId, string JobTitle);

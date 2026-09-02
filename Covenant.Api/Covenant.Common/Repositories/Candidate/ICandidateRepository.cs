@@ -8,6 +8,7 @@ namespace Covenant.Common.Repositories.Candidate;
 public interface ICandidateRepository
 {
     Task<Common.Entities.Candidate.Candidate> GetCandidate(Expression<Func<Common.Entities.Candidate.Candidate, bool>> expression);
+    Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId);
     Task<bool> CandidateExists(string email);
     Task<PaginatedList<CandidateListModel>> GetCandidates(Guid agencyId, GetCandidatesFilter filter);
     IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter);

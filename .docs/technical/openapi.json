@@ -20364,64 +20364,35 @@
         }
       }
     },
-    "/api/WorkerRequest/{workerId}/{requestId}/Apply": {
+    "/api/WorkerRequest/Apply": {
       "post": {
         "tags": [
           "WorkerRequest"
         ],
-        "summary": "Applies a specific worker to a request (anonymous).",
-        "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Identifier of the worker.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
+        "summary": "Applies a worker or a candidate to a request from an invitation link (anonymous).",
         "requestBody": {
-          "description": "Application data.",
+          "description": "Public request number and the invited person's email.",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestApplicantDetailModel"
-                }
-              }
-            }
+            "description": "OK"
           },
           "400": {
             "description": "Bad Request",
@@ -26449,6 +26420,10 @@
           "typeId": {
             "type": "string",
             "nullable": true
+          },
+          "userType": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -29383,6 +29358,20 @@
             "type": "string",
             "nullable": true,
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Worker.ApplyByEmailModel": {
+        "type": "object",
+        "properties": {
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

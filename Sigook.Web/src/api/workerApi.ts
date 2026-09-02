@@ -35,8 +35,8 @@ export function workerRequestApplySelf(requestId: string, model: WorkerRequestAp
   return api.post(`/api/WorkerRequest/${requestId}/Apply/`, model);
 }
 
-export function workerRequestApply(workerId: string, requestId: string, model: WorkerRequestApplyModel): Promise<void> {
-  return api.post(`/api/WorkerRequest/${workerId}/${requestId}/Apply`, model);
+export function requestApplyByEmail(numberId: number, email: string): Promise<void> {
+  return api.post<void>('/api/WorkerRequest/Apply', { numberId, email });
 }
 
 export function workerRequestDecline(id: string): Promise<void> {

@@ -64,20 +64,18 @@ namespace Covenant.Api.WorkerModule.WorkerRequest.Controllers
         }
 
         /// <summary>
-        /// Applies a specific worker to a request (anonymous).
+        /// Applies a worker or a candidate to a request from an invitation link (anonymous).
         /// </summary>
-        /// <param name="workerId">Identifier of the worker.</param>
-        /// <param name="requestId">Identifier of the request.</param>
-        /// <param name="model">Application data.</param>
-        [HttpPost("{workerId:guid}/{requestId:guid}/Apply")]
+        /// <param name="model">Public request number and the invited person's email.</param>
+        [HttpPost("Apply")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(RequestApplicantDetailModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Apply([FromRoute] Guid workerId, [FromRoute] Guid requestId, [FromBody] WorkerRequestApplyModel model)
+        public async Task<IActionResult> Apply([FromBody] ApplyByEmailModel model)
         {
-            var result = await workerService.Apply(requestId, model, workerId);
+            var result = await workerService.ApplyByEmail(model);
             if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            return Ok(result.Value);
+            return Ok();
         }
     }
 }

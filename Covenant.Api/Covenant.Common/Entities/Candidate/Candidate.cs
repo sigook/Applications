@@ -40,8 +40,11 @@ namespace Covenant.Common.Entities.Candidate
         public Agency.Agency Agency { get; set; }
         public Guid AgencyId { get; set; }
         public bool Dnu { get; set; } = false;
+        public bool EmailUnsubscribed { get; set; } = false;
 
         public void AddEmail(CvnEmail email) => Email = email.Email;
+
+        public void UnsubscribeFromEmails() => EmailUnsubscribed = true;
 
         public Result CanConvertToWorker()
         {
