@@ -20705,58 +20705,6 @@
         }
       }
     },
-    "/api/WorkerRequest/{requestId}/TimeSheet/clock-type": {
-      "get": {
-        "tags": [
-          "WorkerRequestTimeSheet"
-        ],
-        "summary": "Gets the next expected clock type (clock-in or clock-out) for a request, without worker coordinates.",
-        "description": "Obsolete: only for app versions that do not send coordinates.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "description": "Optional date to evaluate the clock type for.",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Enums.ClockType"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        },
-        "deprecated": true
-      }
-    },
     "/api/company/requests/{requestId}/Workers": {
       "get": {
         "tags": [
