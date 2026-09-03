@@ -7,7 +7,7 @@
         <b-button size="is-small" type="is-ghost" icon-right="file-excel"
           @click="downloadTimeSheetDocument">Export</b-button>
       </b-field>
-      <template v-if="isMobile">
+      <template v-if="isTouch">
         <div class="mobile-list-toolbar">
           <b-field>
             <b-input v-model="serverParams.name" placeholder="Search name..." icon="magnify" expanded
@@ -141,7 +141,7 @@ import { WorkerRequestStatusLabels } from "@/constants/enums";
 defineProps<{ request: any }>();
 
 const route = useRoute();
-const { isMobile } = useBreakpoint();
+const { isTouch } = useBreakpoint();
 
 const showFilters = ref(false);
 const expandedIds = ref<Set<string>>(new Set());

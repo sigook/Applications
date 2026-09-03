@@ -48,8 +48,8 @@ export function workerRegisterTime(requestId: string, latitude: number, longitud
   return api.post(`/api/WorkerRequest/${requestId}/TimeSheet`, { latitude, longitude });
 }
 
-export function workerGetTimeSheet(requestId: string): Promise<WorkerTimeSheetItem[]> {
-  return api.get<WorkerTimeSheetItem[]>(`/api/WorkerRequest/${requestId}/TimeSheet`);
+export function workerGetTimeSheet(requestId: string): Promise<PaginatedList<WorkerTimeSheetItem>> {
+  return api.get<PaginatedList<WorkerTimeSheetItem>>(`/api/WorkerRequest/${requestId}/TimeSheet`);
 }
 
 export function getClockType(

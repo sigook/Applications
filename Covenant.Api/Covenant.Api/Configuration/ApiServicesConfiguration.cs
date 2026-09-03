@@ -80,6 +80,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IRunnerService, RunnerService>();
         services.AddScoped<IRequestApplicantService, RequestApplicantService>();
+        services.AddScoped<IRequestApplicantNotificationService, RequestApplicantNotificationService>();
         services.AddScoped<IWeeklyBoardService, WeeklyBoardService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ICandidateService, CandidateService>();

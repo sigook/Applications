@@ -58,7 +58,7 @@ namespace Covenant.Api.WorkerModule.WorkerRequest.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Apply([FromRoute] Guid requestId, [FromBody] WorkerRequestApplyModel model)
         {
-            var result = await workerService.Apply(requestId, model);
+            var result = await workerService.Apply(model, requestId);
             if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
             return Ok(result.Value);
         }
@@ -69,13 +69,13 @@ namespace Covenant.Api.WorkerModule.WorkerRequest.Controllers
         /// <param name="model">Public request number and the invited person's email.</param>
         [HttpPost("Apply")]
         [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(RequestApplicantDetailModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Apply([FromBody] ApplyByEmailModel model)
+        public async Task<IActionResult> ApplyFromInvitation([FromBody] WorkerRequestApplyModel model)
         {
-            var result = await workerService.ApplyByEmail(model);
+            var result = await workerService.Apply(model);
             if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-            return Ok();
+            return Ok(result.Value);
         }
     }
 }

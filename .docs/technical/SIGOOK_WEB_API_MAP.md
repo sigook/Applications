@@ -718,8 +718,8 @@ Public landing site endpoints (no auth).
 |----------|------------|----------|--------------|---------------|-------|
 | `getJobs(filter)` | GET | `/api/WorkerRequest` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | Available jobs |
 | `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | |
-| `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply |
-| `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `{ numberId: number; email: string }` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
+| `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply; the worker comes from the token, `email` in the body is ignored |
+| `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `WorkerRequestApplyModel` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
 | `workerRequestDecline(id)` | DELETE | `/api/WorkerRequest/Decline/{id}` | — | `void` | Decline offer |
 
 ### TimeSheet

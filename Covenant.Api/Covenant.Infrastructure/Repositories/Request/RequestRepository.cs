@@ -421,6 +421,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
          select new CompanyRequestDetailModel
          {
              Id = r.Id,
+             NumberId = r.NumberId,
              JobTitle = r.JobTitle,
              WorkersQuantity = r.WorkersQuantity,
              WorkersQuantityWorking = r.WorkersQuantityWorking,
@@ -723,6 +724,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 select new WorkerRequestDetailModel
                 {
                     Id = r.Id,
+                    NumberId = r.NumberId,
                     JobTitle = r.JobTitle,
                     Status = wr == null ? "None" : wr.WorkerRequestStatus.ToString(),
                     DurationTerm = r.DurationTerm.ToString(),

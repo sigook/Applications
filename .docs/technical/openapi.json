@@ -20375,24 +20375,31 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestApplicantDetailModel"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -27643,6 +27650,10 @@
             "type": "string",
             "format": "uuid"
           },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "jobTitle": {
             "type": "string",
             "nullable": true
@@ -29310,20 +29321,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.Worker.ApplyByEmailModel": {
-        "type": "object",
-        "properties": {
-          "numberId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.Worker.CreateCommentModel": {
         "type": "object",
         "properties": {
@@ -30073,6 +30070,15 @@
       "Covenant.Common.Models.Worker.WorkerRequestApplyModel": {
         "type": "object",
         "properties": {
+          "numberId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
           "comments": {
             "type": "string",
             "nullable": true
@@ -30086,6 +30092,10 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
           },
           "jobTitle": {
             "type": "string",

@@ -4,7 +4,7 @@
     <b-field grouped position="is-right">
       <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
     </b-field>
-    <template v-if="isMobile">
+    <template v-if="isTouch">
       <div class="mobile-list-toolbar">
         <b-field>
           <b-input v-model="userSearch" placeholder="Search..." icon="magnify" expanded></b-input>
@@ -70,7 +70,7 @@ import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import { getCompanyUser, deleteCompanyUser } from '@/api/companyApi';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 
-const { isMobile } = useBreakpoint();
+const { isTouch } = useBreakpoint();
 const userSearch = ref('');
 const isLoading = ref(false);
 const showModal = ref(false);

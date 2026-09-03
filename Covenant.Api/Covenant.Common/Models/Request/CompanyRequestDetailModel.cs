@@ -6,6 +6,7 @@ namespace Covenant.Common.Models.Request
     public class CompanyRequestDetailModel
     {
         public Guid Id { get; set; }
+        public int NumberId { get; set; }
         public string JobTitle { get; set; }
         public int WorkersQuantity { get; set; }
         public int WorkersQuantityWorking { get; set; }

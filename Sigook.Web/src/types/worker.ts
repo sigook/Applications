@@ -281,12 +281,18 @@ export interface WorkerRequestDetail extends WorkerRequestListItem {
   displayShift?: string;
 }
 
+// Matches API TimeSheetListModel.
 export interface WorkerTimeSheetItem {
   id: string;
-  date: string;
+  day: string;
   clockIn?: string | null;
   clockOut?: string | null;
-  totalHours?: number;
+  timeIn: string;
+  timeOut?: string | null;
+  totalHours: number;
+  totalHoursApproved: number;
+  wasApproved: boolean;
+  canUpdate: boolean;
 }
 
 export interface WorkerWageHistoryItem {
