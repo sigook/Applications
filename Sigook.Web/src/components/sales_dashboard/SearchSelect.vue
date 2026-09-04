@@ -3,6 +3,7 @@
     :model-value="search"
     :data="filtered"
     field="label"
+    :size="size"
     :placeholder="placeholder"
     :loading="loading"
     :clearable="clearable"
@@ -32,6 +33,7 @@ const props = withDefaults(
     modelValue: V | null;
     options: readonly Option[];
     placeholder?: string;
+    size?: string;
     loading?: boolean;
     clearable?: boolean;
     remote?: boolean;
