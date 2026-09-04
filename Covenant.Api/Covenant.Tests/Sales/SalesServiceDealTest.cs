@@ -4,6 +4,7 @@ using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -216,6 +217,72 @@ namespace Covenant.Tests.Sales
             Assert.False(result);
             Assert.Equal("You can only manage your own deals", result.Errors.First().Message);
             _companyRepository.Verify(r => r.Update(It.IsAny<Deal>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetDealsScopesToOwnerForSalesUser()
+        {
+            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            GetDealsFilter captured = null;
+            _companyRepository
+                .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
+                .Callback<Guid, GetDealsFilter>((_, f) => captured = f)
+                .ReturnsAsync(new PaginatedList<DealListModel>());
+            await _sut.GetDeals(new GetDealsFilter { OwnerId = Guid.NewGuid() });
+            Assert.Equal(_userId, captured.OwnerId);
+        }
+
+        [Fact]
+        public async Task GetDealsIsNotScopedForAdmin()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            GetDealsFilter captured = null;
+            _companyRepository
+                .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
+                .Callback<Guid, GetDealsFilter>((_, f) => captured = f)
+                .ReturnsAsync(new PaginatedList<DealListModel>());
+            await _sut.GetDeals(new GetDealsFilter());
+            Assert.Null(captured.OwnerId);
+        }
+
+        [Fact]
+        public async Task GetDealsKeepsRequestedOwnerForAdmin()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            var otherUserId = Guid.NewGuid();
+            GetDealsFilter captured = null;
+            _companyRepository
+                .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
+                .Callback<Guid, GetDealsFilter>((_, f) => captured = f)
+                .ReturnsAsync(new PaginatedList<DealListModel>());
+            await _sut.GetDeals(new GetDealsFilter { OwnerId = otherUserId });
+            Assert.Equal(otherUserId, captured.OwnerId);
+        }
+
+        [Fact]
+        public async Task UpdateDealSucceedsWhenAdminIsNotOwner()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            var deal = OwnedDeal(Guid.NewGuid());
+            _companyRepository
+                .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
+                .ReturnsAsync(deal);
+            Result result = await _sut.UpdateDeal(deal.Id, ValidUpdateModel());
+            Assert.True(result);
+            _companyRepository.Verify(r => r.Update(deal), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteDealSucceedsWhenAdminIsNotOwner()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            var deal = OwnedDeal(Guid.NewGuid());
+            _companyRepository
+                .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
+                .ReturnsAsync(deal);
+            Result result = await _sut.DeleteDeal(deal.Id);
+            Assert.True(result);
+            _companyRepository.Verify(r => r.Delete(deal), Times.Once);
         }
 
         [Fact]

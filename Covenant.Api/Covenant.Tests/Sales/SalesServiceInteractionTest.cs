@@ -3,6 +3,7 @@ using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -146,6 +147,72 @@ namespace Covenant.Tests.Sales
             Assert.False(result);
             Assert.Equal("You can only manage your own interactions", result.Errors.First().Message);
             _companyRepository.Verify(r => r.Update(It.IsAny<CompanyInteraction>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetInteractionsScopesToOwnerForSalesUser()
+        {
+            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            GetCompanyInteractionsFilter captured = null;
+            _companyRepository
+                .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
+                .Callback<Guid, GetCompanyInteractionsFilter>((_, f) => captured = f)
+                .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
+            await _sut.GetInteractions(new GetCompanyInteractionsFilter { OwnerId = Guid.NewGuid() });
+            Assert.Equal(_userId, captured.OwnerId);
+        }
+
+        [Fact]
+        public async Task GetInteractionsIsNotScopedForAdmin()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            GetCompanyInteractionsFilter captured = null;
+            _companyRepository
+                .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
+                .Callback<Guid, GetCompanyInteractionsFilter>((_, f) => captured = f)
+                .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
+            await _sut.GetInteractions(new GetCompanyInteractionsFilter());
+            Assert.Null(captured.OwnerId);
+        }
+
+        [Fact]
+        public async Task GetInteractionsKeepsRequestedOwnerForAdmin()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            var otherUserId = Guid.NewGuid();
+            GetCompanyInteractionsFilter captured = null;
+            _companyRepository
+                .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
+                .Callback<Guid, GetCompanyInteractionsFilter>((_, f) => captured = f)
+                .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
+            await _sut.GetInteractions(new GetCompanyInteractionsFilter { OwnerId = otherUserId });
+            Assert.Equal(otherUserId, captured.OwnerId);
+        }
+
+        [Fact]
+        public async Task UpdateInteractionSucceedsWhenAdminIsNotOwner()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            var interaction = OwnedInteraction(Guid.NewGuid());
+            _companyRepository
+                .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
+                .ReturnsAsync(interaction);
+            Result result = await _sut.UpdateInteraction(interaction.Id, ValidUpdateModel());
+            Assert.True(result);
+            _companyRepository.Verify(r => r.Update(interaction), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteInteractionSucceedsWhenAdminIsNotOwner()
+        {
+            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            var interaction = OwnedInteraction(Guid.NewGuid());
+            _companyRepository
+                .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
+                .ReturnsAsync(interaction);
+            Result result = await _sut.DeleteInteraction(interaction.Id);
+            Assert.True(result);
+            _companyRepository.Verify(r => r.Delete(interaction), Times.Once);
         }
 
         [Fact]

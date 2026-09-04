@@ -26,6 +26,8 @@ public class SalesService(
 {
     private Guid? SalesScope => identityServerService.IsSales() ? identityServerService.GetAgencyPersonnelId() : null;
 
+    private Guid? OwnerScope => identityServerService.IsAdmin() ? null : identityServerService.GetUserId();
+
     public async Task<AgencyRequestsPagedResponse> GetRequests(GetRequestForAgencyFilter filter)
     {
         Guid agencyId = filter.AgencyId ?? identityServerService.GetAgencyId();
@@ -54,7 +56,7 @@ public class SalesService(
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(GetCompanyInteractionsFilter filter)
     {
         var agencyId = identityServerService.GetAgencyId();
-        filter.OwnerId = identityServerService.GetUserId();
+        filter.OwnerId = OwnerScope ?? filter.OwnerId;
         return await companyRepository.GetInteractions(agencyId, filter);
     }
 
@@ -94,7 +96,7 @@ public class SalesService(
     public async Task<PaginatedList<DealListModel>> GetDeals(GetDealsFilter filter)
     {
         var agencyId = identityServerService.GetAgencyId();
-        filter.OwnerId = identityServerService.GetUserId();
+        filter.OwnerId = OwnerScope ?? filter.OwnerId;
         return await companyRepository.GetDeals(agencyId, filter);
     }
 
@@ -153,7 +155,7 @@ public class SalesService(
     {
         var interaction = await companyRepository.GetInteraction(i => i.Id == id);
         if (interaction is null) return Result.Fail<CompanyInteraction>("Interaction not found");
-        if (interaction.UserId != identityServerService.GetUserId())
+        if (!identityServerService.IsAdmin() && interaction.UserId != identityServerService.GetUserId())
             return Result.Fail<CompanyInteraction>("You can only manage your own interactions");
         return Result.Ok(interaction);
     }
@@ -162,7 +164,7 @@ public class SalesService(
     {
         var deal = await companyRepository.GetDeal(d => d.Id == id);
         if (deal is null) return Result.Fail<Deal>("Deal not found");
-        if (deal.UserId != identityServerService.GetUserId())
+        if (!identityServerService.IsAdmin() && deal.UserId != identityServerService.GetUserId())
             return Result.Fail<Deal>("You can only manage your own deals");
         return Result.Ok(deal);
     }

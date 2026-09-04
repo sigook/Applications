@@ -432,13 +432,15 @@ export interface Deal {
 }
 
 // Filter for GET .../deals. Mirrors backend GetDealsFilter.
-// OwnerId is forced server-side to the current sales user, so it is not exposed here.
+// ownerId is honoured only for admin/superadmin; for a sales user the backend overwrites it
+// with their own user id (SalesService.OwnerScope).
 export interface DealFilter {
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
   sortBy?: DealSortBy;
   companyProfileId?: string | null;
+  ownerId?: string | null;
   type?: DealType | null;
   statuses?: DealStatus[];
   dateFrom?: string | null;
@@ -569,13 +571,15 @@ export interface CompanyInteraction {
 }
 
 // Filter for GET .../companyinteractions. Mirrors backend GetCompanyInteractionsFilter.
-// OwnerId is forced server-side to the current sales user, so it is not exposed here.
+// ownerId is honoured only for admin/superadmin; for a sales user the backend overwrites it
+// with their own user id (SalesService.OwnerScope).
 export interface CompanyInteractionFilter {
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
   sortBy?: CompanyInteractionSortBy;
   companyProfileId?: string | null;
+  ownerId?: string | null;
   interactionPurpose?: InteractionPurpose | null;
   interactionType?: InteractionType | null;
   statuses?: InteractionStatus[];

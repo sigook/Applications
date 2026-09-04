@@ -515,18 +515,18 @@ Company portal (client) view of their profile, requests and workers — plus the
 ### Sales — Deals
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getDeals(filter)` | GET | `/api/agency/sales/deals` | `DealFilter` (params) | `PaginatedList<Deal>` | Sales users only see deals they own |
+| `getDeals(filter)` | GET | `/api/agency/sales/deals` | `DealFilter` (params) | `PaginatedList<Deal>` | Sales users only see deals they own; admin/superadmin unscoped, with optional `ownerId` filter |
 | `createDeal(model, file?)` | POST | `/api/agency/sales/deals` | `CreateDealModel` (multipart: `data` + optional document) | `string` (id) | `OwnerId` forced server-side |
-| `updateDeal(id, model)` | PUT | `/api/agency/sales/deals/{id}` | `UpdateDealModel` | `void` | Owner-checked for sales |
-| `deleteDeal(id)` | DELETE | `/api/agency/sales/deals/{id}` | — | `void` | Owner-checked for sales |
+| `updateDeal(id, model)` | PUT | `/api/agency/sales/deals/{id}` | `UpdateDealModel` | `void` | Owner-checked for sales; admin/superadmin may edit any |
+| `deleteDeal(id)` | DELETE | `/api/agency/sales/deals/{id}` | — | `void` | Owner-checked for sales; admin/superadmin may delete any |
 
 ### Sales — Company Interactions
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCompanyInteractions(filter)` | GET | `/api/agency/sales/companyinteractions` | `CompanyInteractionFilter` (params) | `PaginatedList<CompanyInteraction>` | Sales users only see interactions they own |
+| `getCompanyInteractions(filter)` | GET | `/api/agency/sales/companyinteractions` | `CompanyInteractionFilter` (params) | `PaginatedList<CompanyInteraction>` | Sales users only see interactions they own; admin/superadmin unscoped, with optional `ownerId` filter |
 | `createCompanyInteraction(model)` | POST | `/api/agency/sales/companyinteractions` | `CreateCompanyInteractionModel` | `string` (id) | `OwnerId` forced server-side |
-| `updateCompanyInteraction(id, model)` | PUT | `/api/agency/sales/companyinteractions/{id}` | `UpdateCompanyInteractionModel` | `void` | Owner-checked for sales |
-| `deleteCompanyInteraction(id)` | DELETE | `/api/agency/sales/companyinteractions/{id}` | — | `void` | Owner-checked for sales |
+| `updateCompanyInteraction(id, model)` | PUT | `/api/agency/sales/companyinteractions/{id}` | `UpdateCompanyInteractionModel` | `void` | Owner-checked for sales; admin/superadmin may edit any |
+| `deleteCompanyInteraction(id)` | DELETE | `/api/agency/sales/companyinteractions/{id}` | — | `void` | Owner-checked for sales; admin/superadmin may delete any |
 
 **Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`); deals/interactions enums + models at `src/types/company.ts:344-589`.
 

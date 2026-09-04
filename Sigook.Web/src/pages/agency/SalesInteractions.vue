@@ -36,8 +36,16 @@
         <b-table-column field="status" label="Status" sortable v-slot="props">
           {{ INTERACTION_STATUS_LABELS[props.row.interactionStatus] }}
         </b-table-column>
-        <b-table-column field="owner" label="Owner" v-slot="props">
-          {{ props.row.owner }}
+        <b-table-column field="owner" label="Owner" :searchable="isAdmin">
+          <template #searchable>
+            <b-select v-model="serverParams.ownerId" size="is-small" expanded @update:modelValue="onOwnerChange">
+              <option :value="null">All owners</option>
+              <option v-for="o in owners" :key="o.userId" :value="o.userId">{{ o.name || o.email }}</option>
+            </b-select>
+          </template>
+          <template v-slot="props">
+            {{ props.row.owner }}
+          </template>
         </b-table-column>
         <b-table-column field="date" label="Date" sortable v-slot="props">
           {{ date(props.row.createdAt) }}
@@ -59,6 +67,7 @@ import {
   INTERACTION_STATUS_LABELS,
 } from '@/types/company';
 import type { CompanyInteraction } from '@/types/company';
+import { useSalesOwners } from '@/composables/useSalesOwners';
 import { date } from '@/utils/filters';
 import { showAlertError } from '@/utils/toast';
 import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue';
@@ -68,14 +77,17 @@ const totalItems = ref(0);
 const rows = ref<CompanyInteraction[]>([]);
 const isModalOpen = ref(false);
 const editing = ref<CompanyInteraction | null>(null);
+const { isAdmin, owners, loadOwners } = useSalesOwners();
 const serverParams = ref({
   sortBy: CompanyInteractionSortBy.CreatedAt,
   isDescending: true,
   pageIndex: 1,
   pageSize: 30,
+  ownerId: null as string | null,
 });
 
 load();
+loadOwners();
 
 function load(): void {
   isLoading.value = true;
@@ -94,6 +106,12 @@ function onPageChange(page: number): void {
   serverParams.value.pageIndex = page;
   load();
 }
+
+function onOwnerChange(): void {
+  serverParams.value.pageIndex = 1;
+  load();
+}
+
 
 function onSortChange(field: string, order: string): void {
   switch (field) {
