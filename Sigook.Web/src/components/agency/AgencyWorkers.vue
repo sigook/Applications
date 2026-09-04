@@ -47,7 +47,7 @@
               {{ props.row.name }}
             </template>
           </b-table-column>
-          <b-table-column field="mobileNumber" label="Phone" searchable>
+          <b-table-column field="mobileNumber" label="Phone" searchable cell-class="is-nowrap">
             <template v-slot:searchable>
               <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
                 @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>

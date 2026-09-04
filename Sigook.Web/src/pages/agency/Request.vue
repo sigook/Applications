@@ -288,12 +288,7 @@ function getStatusColorClass(r: any) {
 .wrapper-request-top {
   align-items: flex-start;
 
-  // keep the action group's own items centered relative to each other,
-  // and nudge it down so its text sits on the title's first line
   & > div:last-child {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
     padding-top: 4px;
   }
 }

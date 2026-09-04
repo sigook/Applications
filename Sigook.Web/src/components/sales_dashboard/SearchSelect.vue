@@ -11,13 +11,16 @@
     append-to-body
     @focus="onFocus"
     @blur="onBlur"
-    @update:model-value="onInput"
+    @update:model-value="onModelUpdate"
+    @typing="onTyping"
     @select="onSelect"
-  />
+  >
+    <template v-if="belowThreshold" #empty>Type at least {{ minSearchLength }} characters</template>
+  </b-autocomplete>
 </template>
 
 <script setup lang="ts" generic="V extends string | number">
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 interface Option {
   value: V;
@@ -31,45 +34,101 @@ const props = withDefaults(
     placeholder?: string;
     loading?: boolean;
     clearable?: boolean;
+    remote?: boolean;
+    minSearchLength?: number;
   }>(),
-  { placeholder: 'Search…', loading: false, clearable: false }
+  { placeholder: 'Search…', loading: false, clearable: false, remote: false, minSearchLength: 0 }
 );
 
-const emit = defineEmits<{ (e: 'update:modelValue', value: V | null): void }>();
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: V | null): void;
+  (e: 'search', term: string): void;
+}>();
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 const search = ref('');
+const selectedLabel = ref('');
+const isFocused = ref(false);
+let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 function syncFromModel(): void {
-  search.value = props.options.find((o) => o.value === props.modelValue)?.label ?? '';
+  if (props.modelValue === null) {
+    selectedLabel.value = '';
+    search.value = '';
+    return;
+  }
+  const match = props.options.find((o) => o.value === props.modelValue);
+  if (match) selectedLabel.value = match.label;
+  search.value = selectedLabel.value;
 }
 
 watch(() => props.modelValue, syncFromModel, { immediate: true });
 watch(
   () => props.options,
   () => {
-    if (props.modelValue !== null) syncFromModel();
+    if (!isFocused.value && props.modelValue !== null) syncFromModel();
   }
 );
 
+const belowThreshold = computed(() => {
+  const length = search.value.trim().length;
+  return props.remote && length > 0 && length < props.minSearchLength;
+});
+
+// Remote results are already filtered by the server, but a term shorter than the
+// threshold never reached it — filter those locally so the list always matches the input.
 const filtered = computed(() => {
-  const term = search.value.toLowerCase();
+  if (props.remote && !belowThreshold.value) return [...props.options];
+  const term = search.value.trim().toLowerCase();
   return props.options.filter((o) => o.label.toLowerCase().includes(term));
 });
 
-function onInput(text: string): void {
+function emitSearch(term: string): void {
+  if (!props.remote) return;
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => emit('search', term), SEARCH_DEBOUNCE_MS);
+}
+
+// Fires for programmatic changes too, so it only mirrors text. The one change that must still
+// reach the parent is Buefy's clear button: it empties the value without emitting `typing`.
+// It is told apart from our own focus reset because that one empties `search` first.
+function onModelUpdate(text: string): void {
+  const isClearButton = text === '' && search.value !== '';
+  search.value = text;
+  if (!isClearButton || !props.clearable) return;
+  selectedLabel.value = '';
+  emit('update:modelValue', null);
+}
+
+// Buefy emits `typing` only on a real keystroke, so clearing and searching stay user-driven.
+function onTyping(text: string): void {
   search.value = text;
   if (text === '' && props.clearable) emit('update:modelValue', null);
+  emitSearch(text);
 }
 
 function onSelect(option: Option | null): void {
-  if (option) emit('update:modelValue', option.value);
+  if (option) {
+    selectedLabel.value = option.label;
+    emit('update:modelValue', option.value);
+  }
 }
 
 function onFocus(): void {
+  isFocused.value = true;
   search.value = '';
+  if (props.remote) {
+    clearTimeout(debounceTimer);
+    emit('search', '');
+  }
 }
 
 function onBlur(): void {
+  isFocused.value = false;
+  clearTimeout(debounceTimer);
   syncFromModel();
 }
+
+onBeforeUnmount(() => clearTimeout(debounceTimer));
 </script>

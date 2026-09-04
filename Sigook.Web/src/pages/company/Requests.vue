@@ -6,7 +6,7 @@
       <b-field grouped position="is-right">
         <b-button tag="router-link" to="/company-requests/create" icon-left="plus">Create Request</b-button>
       </b-field>
-      <template v-if="isMobile">
+      <template v-if="isTouch">
         <div class="mobile-list-toolbar">
           <b-field>
             <b-input v-model="serverParams.jobTitle" placeholder="Search position..." icon="magnify" expanded
@@ -159,7 +159,7 @@ import { useBreakpoint } from '@/composables/useBreakpoint';
 
 const router = useRouter();
 const companyStore = useCompanyStore();
-const { isMobile } = useBreakpoint();
+const { isTouch } = useBreakpoint();
 
 const showFilters = ref(false);
 const isLoading = ref(true);

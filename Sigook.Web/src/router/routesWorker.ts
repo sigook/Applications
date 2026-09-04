@@ -5,7 +5,6 @@ const WorkerRegister = () => import("@/pages/worker/Register.vue");
 const WorkerRequests = () => import("@/pages/worker/Requests.vue");
 const WorkerRequest = () => import("@/pages/worker/Request.vue");
 const WorkerRequestApplied = () => import("@/pages/worker/RequestApplied.vue");
-const PunchCard = () => import("@/pages/worker/PunchCard.vue");
 const WorkerTimeSheet = () => import("@/pages/worker/TimeSheet.vue");
 const WorkerHistory = () => import("@/pages/worker/History.vue");
 const WorkerProfile = () => import("@/pages/worker/WorkerProfile.vue");
@@ -61,14 +60,6 @@ const routesWorker: RouteRecordRaw[] = [
   { path: "/worker-request/:id", redirect: (to) => `/worker-requests/${to.params.id}` },
   { path: "/worker-request-applied/:id", redirect: (to) => `/worker-requests/applied/${to.params.id}` },
   {
-    path: "/punch-card",
-    component: PunchCard,
-    meta: {
-      requiresAuth: true,
-      role: [worker],
-    },
-  },
-  {
     path: "/timesheet",
     component: WorkerTimeSheet,
     meta: {
@@ -94,11 +85,13 @@ const routesWorker: RouteRecordRaw[] = [
   },
   {
     path: "/worker-apply",
+    name: "worker-apply",
     component: WorkerApply,
     meta: {
       requiresAuth: false,
       role: [],
-      layout: "web",
+      layout: "landing",
+      title: "Apply",
     },
   },
 ];

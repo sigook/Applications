@@ -183,6 +183,12 @@
     margin-left: 10px;
     margin-bottom: 0;
   }
+
+  & > div:last-child:not(:first-child):not(.dropdown) {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 }
 
 .option-request-top {

@@ -4,5 +4,7 @@ namespace Covenant.Common.Models.Notification
     {
         public Guid UserId { get; set; }
         public string TypeId { get; set; }
+
+        public string UserType { get; set; }
     }
 }

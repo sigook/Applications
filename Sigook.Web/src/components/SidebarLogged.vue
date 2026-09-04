@@ -11,7 +11,8 @@
       </router-link>
       <div class="sidebar-user">
         <notification-bell v-if="isAgency" />
-        <b-dropdown position="is-bottom-left" :mobile-modal="isMobile" :append-to-body="!isMobile" aria-role="menu">
+        <b-dropdown :key="isDrawer ? 'drawer' : 'desktop'" position="is-bottom-left" :mobile-modal="isDrawer"
+          :append-to-body="!isDrawer" aria-role="menu">
           <template #trigger>
             <div class="sidebar-user-trigger">
               <span class="sidebar-user-name">{{ currentUser.fullName }}</span>
@@ -39,14 +40,14 @@
       </div>
     </header>
 
-    <div v-if="isMobile && isOpen" class="sidebar-overlay" @click="isOpen = false"></div>
+    <div v-if="isDrawer && isOpen" class="sidebar-overlay" @click="isOpen = false"></div>
 
     <aside class="sidebar-logged" :class="{ 'is-collapsed': collapsed, 'is-open': isOpen }">
       <div class="sidebar-brand">
         <router-link to="/" class="sidebar-brand-link">
           <img src="../assets/images/sm-logo.png" class="sidebar-logo" alt="logo" />
         </router-link>
-        <button v-if="isMobile" class="sidebar-toggle" @click="isOpen = false" aria-label="Close menu">
+        <button v-if="isDrawer" class="sidebar-toggle" @click="isOpen = false" aria-label="Close menu">
           <b-icon icon="close"></b-icon>
         </button>
         <button v-else class="sidebar-toggle" @click="isCollapsed = !isCollapsed"
@@ -110,10 +111,11 @@
 
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { useSecurityStore } from '@/stores/security';
+import { useBreakpoint } from '@/composables/useBreakpoint';
 import { avatarLetters } from '@/utils/filters';
 import menu from '@/security/menu';
 import roles, { agencyStaff } from '@/security/roles';
@@ -141,30 +143,27 @@ const agencyStore = useAgencyStore();
 const securityStore = useSecurityStore();
 
 const isLoading = ref(false);
-const isCollapsed = ref(false);
-const isMobile = ref(false);
+const { isTouch: isDrawer, isCompactDesktop } = useBreakpoint();
+const isCollapsed = ref(isCompactDesktop.value);
 const isOpen = ref(false);
 
-// The icon-only rail is a desktop affordance; on mobile the sidebar is a
-// full-width off-canvas drawer that keeps the collapsible groups.
-const collapsed = computed(() => isCollapsed.value && !isMobile.value);
+watch(isCompactDesktop, (compact) => {
+  isCollapsed.value = compact;
+});
 
-const mobileQuery = window.matchMedia('(max-width: 767px)');
-function updateIsMobile(e: MediaQueryListEvent | MediaQueryList) {
-  isMobile.value = e.matches;
-  if (!isMobile.value) isOpen.value = false;
-}
-onMounted(() => {
-  updateIsMobile(mobileQuery);
-  mobileQuery.addEventListener('change', updateIsMobile);
+// The icon-only rail is a desktop affordance; on mobile and tablet the sidebar
+// is an off-canvas drawer that keeps the collapsible groups.
+const collapsed = computed(() => isCollapsed.value && !isDrawer.value);
+
+watch(isDrawer, (drawer) => {
+  if (!drawer) isOpen.value = false;
 });
 onUnmounted(() => {
-  mobileQuery.removeEventListener('change', updateIsMobile);
   document.body.classList.remove('has-drawer-open');
 });
 
 watch(isOpen, (open) => {
-  document.body.classList.toggle('has-drawer-open', open && isMobile.value);
+  document.body.classList.toggle('has-drawer-open', open && isDrawer.value);
 });
 watch(() => route.fullPath, () => { isOpen.value = false; });
 const profileUrl = ref('');
@@ -462,7 +461,7 @@ $topbar-height: 56px;
   font-weight: 700;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .mobile-topbar {
     display: flex;
     align-items: center;

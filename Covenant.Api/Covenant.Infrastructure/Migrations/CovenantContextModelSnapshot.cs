@@ -1145,6 +1145,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<bool>("EmailUnsubscribed")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid?>("GenderId")
                         .HasColumnType("uuid");
 

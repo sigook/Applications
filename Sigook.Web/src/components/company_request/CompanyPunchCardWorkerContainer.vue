@@ -1,7 +1,11 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <Calendar :highlights="data" :workerProfileId="workerProfileId" :requestId="requestId" :startDate="request.startAt"
+    <PunchCardAgenda v-if="isTouch" :highlights="data" :start-date="request.startAt" :worker="worker"
+      :errors="itemErrors" @month-change="(args: any) => onMonthChange(args.startDate, args.endDate)"
+      @view="openDetail" @edit="editPunchCard" @approve="(day: any) => timeSheetFastApprove(day, requestId, workerProfileId)"
+      @post-hours="(day: any) => validatePost(day, dayKeyOf(day))" @clock-in="showClockIn = true" />
+    <Calendar v-else :highlights="data" :workerProfileId="workerProfileId" :requestId="requestId" :startDate="request.startAt"
       :status="request.status" :worker="worker" @onMonthChange="(args: any) => onMonthChange(args.startDate, args.endDate)">
       <template v-slot:punch-input="slotProps">
         <div v-if="slotProps.item.id !== null" class="mt-2">
@@ -80,6 +84,13 @@
       <TimeSheetDetail v-if="editableDay" :editable-day="editableDay" />
     </b-modal>
 
+    <TimeSheetDaySheet v-model="showDaySheet" :editable-day="editableDay" @save="onSheetSave" @post="onSheetPost"
+      @delete="onSheetDelete" />
+
+    <SheetPanel v-model="showDetailSheet" :title="detailSheetTitle">
+      <TimeSheetDetail v-if="editableDay" :editable-day="editableDay" />
+    </SheetPanel>
+
     <!-- Clock in modal -->
     <b-modal custom-content-class="card" v-model="showClockIn" width="400px">
       <div class="p-3">
@@ -95,13 +106,18 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { showAlertConfirm, showAlertError } from "@/utils/toast";
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateHHmm, hour } from '@/utils/filters';
 import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
 import Calendar from "../calendar/CalendarPunchCard.vue";
+import PunchCardAgenda from "../../components/company_request/PunchCardAgenda.vue";
+import TimeSheetDaySheet from "../../components/company_request/TimeSheetDaySheet.vue";
+import SheetPanel from "../../components/responsive/SheetPanel.vue";
 import TimeSheetModal from "../../components/company_request/CompanyRequestTimeSheetModal.vue";
 import TimeSheetDetail from "../../components/company_request/CompanyRequestTimeSheetDetail.vue";
+import { useBreakpoint } from '@/composables/useBreakpoint';
+import type { PunchCardDay, TimeSheetModel } from '@/types/company';
 import { buildTimeSheetApproveModel } from "@/utils/timeSheetApprove";
 import { maximumHoursPerDay } from "@/constants/catalog";
 import {
@@ -116,6 +132,8 @@ dayjs.extend(duration);
 
 const props = defineProps<{ workerProfileId: any; requestId: any; request: any; worker: any }>();
 
+const { isTouch } = useBreakpoint();
+
 const emptyTime = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
 const startDate = ref('');
 const endDate = ref('');
@@ -127,8 +145,54 @@ const clockInTime = ref<Date>(emptyTime);
 const maxClockInTime = ref<Date>(new Date());
 const showModalPunchCard = ref(false);
 const showDetailPunchCard = ref(false);
+const showDaySheet = ref(false);
+const showDetailSheet = ref(false);
 const itemErrors = ref<Record<string, string>>({});
 const startTime = ref<Date | null>(null);
+
+const detailSheetTitle = computed(() =>
+  editableDay.value ? dayjs(editableDay.value.day).format('dddd, MMMM D') : '',
+);
+
+function dayKeyOf(day: PunchCardDay) {
+  return dayjs(day.day).format('YYYY-MM-DD');
+}
+
+function onSheetSave(model: TimeSheetModel) {
+  const item = editableDay.value;
+  if (!item?.id) return;
+  isLoading.value = true;
+  updateCompanyRequestWorkerTimeSheet(props.requestId, props.workerProfileId, item.id, model)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      showDaySheet.value = false;
+      getAgencyWorkerTimeSheetByDate();
+    })
+    .catch((error: unknown) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
+function onSheetPost(hours: number) {
+  const item = editableDay.value;
+  if (!item) return;
+  showDaySheet.value = false;
+  reportWorkerTimSheet({ ...item, totalHoursApproved: hours });
+}
+
+function onSheetDelete() {
+  const item = editableDay.value;
+  if (!item) return;
+  showAlertConfirm('Are you sure', 'You want to delete this item?')
+    .then(response => {
+      if (response) {
+        showDaySheet.value = false;
+        doDelete(item);
+      }
+    });
+}
 
 const maximumDailyHours = computed(() => maximumHoursPerDay);
 
@@ -169,6 +233,7 @@ function onMonthChange(sd: string, ed: string) {
 function updateCell() {
   getAgencyWorkerTimeSheetByDate();
   showModalPunchCard.value = false;
+  showDaySheet.value = false;
 }
 
 function isToday(date: any) {
@@ -272,7 +337,11 @@ function todayTimeZero(time: any) {
 
 function openDetail(item: any) {
   editableDay.value = item;
-  showDetailPunchCard.value = true;
+  if (isTouch.value) {
+    showDetailSheet.value = true;
+  } else {
+    showDetailPunchCard.value = true;
+  }
 }
 
 function editPunchCard(day: any) {
@@ -295,7 +364,11 @@ function editPunchCard(day: any) {
   newTime.setSeconds(sec);
   editableDay.value.hoursApprovedToDate = newTime;
 
-  showModalPunchCard.value = true;
+  if (isTouch.value) {
+    showDaySheet.value = true;
+  } else {
+    showModalPunchCard.value = true;
+  }
 }
 
 function stringToDate(value: string) {

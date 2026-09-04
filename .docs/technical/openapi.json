@@ -4795,6 +4795,48 @@
         }
       }
     },
+    "/api/agency/companyprofiles/companies-list": {
+      "get": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Gets the agency companies for a dropdown filtered by a search term.",
+        "parameters": [
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Term used to filter companies by name.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/companyprofiles/bulk/{agencyId}": {
       "post": {
         "tags": [
@@ -20322,36 +20364,14 @@
         }
       }
     },
-    "/api/WorkerRequest/{workerId}/{requestId}/Apply": {
+    "/api/WorkerRequest/Apply": {
       "post": {
         "tags": [
           "WorkerRequest"
         ],
-        "summary": "Applies a specific worker to a request (anonymous).",
-        "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Identifier of the worker.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
+        "summary": "Applies a worker or a candidate to a request from an invitation link (anonymous).",
         "requestBody": {
-          "description": "Application data.",
+          "description": "Public request number and the invited person's email.",
           "content": {
             "application/json": {
               "schema": {
@@ -20703,58 +20723,6 @@
             "description": "Forbidden — insufficient permissions"
           }
         }
-      }
-    },
-    "/api/WorkerRequest/{requestId}/TimeSheet/clock-type": {
-      "get": {
-        "tags": [
-          "WorkerRequestTimeSheet"
-        ],
-        "summary": "Gets the next expected clock type (clock-in or clock-out) for a request, without worker coordinates.",
-        "description": "Obsolete: only for app versions that do not send coordinates.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "description": "Optional date to evaluate the clock type for.",
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Enums.ClockType"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        },
-        "deprecated": true
       }
     },
     "/api/company/requests/{requestId}/Workers": {
@@ -23755,7 +23723,10 @@
           0,
           1,
           2,
-          3
+          3,
+          4,
+          5,
+          6
         ],
         "type": "integer",
         "format": "int32"
@@ -26404,6 +26375,10 @@
           "typeId": {
             "type": "string",
             "nullable": true
+          },
+          "userType": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -27674,6 +27649,10 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
           },
           "jobTitle": {
             "type": "string",
@@ -30091,6 +30070,15 @@
       "Covenant.Common.Models.Worker.WorkerRequestApplyModel": {
         "type": "object",
         "properties": {
+          "numberId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
           "comments": {
             "type": "string",
             "nullable": true
@@ -30104,6 +30092,10 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
           },
           "jobTitle": {
             "type": "string",

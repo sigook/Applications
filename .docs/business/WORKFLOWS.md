@@ -97,7 +97,7 @@ PUT api/agency/requests/{id}/Cancel                       → RequestService.Can
 PUT api/agency/requests/{id}/Open                         → RequestService.OpenRequest     (reopen)
 PUT api/agency/requests/{id}/IncreaseWorkersQuantityByOne → AgencyService.IncreaseWorkersQuantityByOne
 PUT api/agency/requests/{id}/ReduceWorkersQuantityByOne   → RequestService.ReduceWorkerQuantityByOne
-POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers)
+POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers AND candidates)
 ```
 
 Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET api/agency/sales/requests` (sales rep sees only their own companies' orders).
@@ -108,10 +108,14 @@ Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET
 GET  api/WorkerRequest                      → WorkerRequestController.Get (WorkerModule/WorkerRequest/Controllers/WorkerRequestController.cs)
                                               → IRequestRepository.GetRequestsForWorker
 GET  api/WorkerRequest/{id}                 → WorkerRequestController.GetById
-POST api/WorkerRequest/{requestId}/Apply    → WorkerRequestController.Apply → WorkerService.Apply(requestId, model)
+POST api/WorkerRequest/{requestId}/Apply    → WorkerRequestController.Apply → WorkerService.Apply(model, requestId)
 ```
 
-There is no `/Available` suffix — the plain `GET api/WorkerRequest` already returns only requests the authenticated worker can apply to. An anonymous variant `POST api/WorkerRequest/{workerId}/{requestId}/Apply` exists for invitation links.
+There is no `/Available` suffix — the plain `GET api/WorkerRequest` already returns only requests the authenticated worker can apply to.
+
+Both apply routes share one service method, `WorkerService.Apply(WorkerRequestApplyModel model, Guid? requestId = null)`, and one payload, `WorkerRequestApplyModel { NumberId?, Email, Comments }`. The route decides how the applicant is resolved: with `requestId` the worker comes from the token and any `Email` in the body is ignored; without it the worker is looked up by `Email` within the request's agency. Once resolved, `Apply` branches into `ApplyAsWorker` or `ApplyAsCandidate`, each of which owns its duplicate guard, its `RequestApplicant` factory and its notification. Sending the recruiter email is `IRequestApplicantNotificationService` (`NEW_APPLICANT` SendGrid template, one overload per applicant kind); it only notifies — the row is always created by the caller beforehand.
+
+Invitation emails (workers and candidates) carry a unified anonymous link `/worker-apply?n={requestNumberId}&e={email}` handled by `POST api/WorkerRequest/Apply` (`[AllowAnonymous]`) → `WorkerRequestController.ApplyFromInvitation`: the request is resolved by its public `NumberId`, the email is matched (case/whitespace-insensitive) against workers of the request's agency first, then candidates. Candidates are invited and allowed to apply **only if their free-text address contains the request's city** (accent/case-insensitive containment; a request without a city accepts no candidates), are excluded when DNU, and become `RequestApplicant` rows (`Pending`, created by "Sigook"). The invitation consumer (`InvitationConsumer`) sends one batch to workers of the request's province plus city-matched candidates of the agency, deduplicated by email. Both audiences get the same SendGrid template and the same personalised unsubscribe link shape: workers `/email-preferences?u=w&id={workerId}&t=10`, candidates `/email-preferences?u=c&id={candidateId}&t=10`. A candidate opt-out is stored as `Candidate.EmailUnsubscribed` (candidates have no `User` row, so `POST api/EmailPreferences/Unsubscribe` branches on the `userType` field) and excludes them from later invitation batches.
 
 ### Step 2B: Agency tracks applicants
 

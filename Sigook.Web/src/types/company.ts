@@ -267,6 +267,28 @@ export interface TimeSheetModel {
   reimbursementsDescription?: string;
 }
 
+export interface PunchCardDay extends Partial<Omit<TimeSheetListItem, 'id' | 'day' | 'totalHoursApproved'>> {
+  id: string | null;
+  day: string | Date;
+  totalHoursApproved: number | null;
+}
+
+export interface PunchCardWeek {
+  totalHoursWeek: number | null;
+  days: PunchCardDay[];
+}
+
+export interface PunchCardEditableDay extends PunchCardDay {
+  hoursApprovedToDate?: Date | null;
+  missinghoursToDate?: Date | null;
+  missingHoursOvertimeToDate?: Date | null;
+}
+
+export interface PunchCardWorker {
+  workerRequestStatus: number;
+  rejectedAt: string | null;
+}
+
 // Response shape of GET /api/agency/requests/{}/Workers/{}/TimeSheets/{}/Usages.
 // Mirrors backend TimeSheetUsagesModel — single object, not an array.
 export interface TimeSheetUsagesModel {
@@ -361,6 +383,9 @@ export enum DealStatus {
   Sent = 1,
   Rejected = 2,
   Accepted = 3,
+  UnderReview = 4,
+  Closed = 5,
+  Completed = 6,
 }
 
 // GetDealsSortBy on the backend: Date=0, Company=1, Value=2, Status=3.
@@ -384,13 +409,19 @@ export const DEAL_STATUS_LABELS: Record<DealStatus, string> = {
   [DealStatus.Sent]: 'Sent',
   [DealStatus.Rejected]: 'Rejected',
   [DealStatus.Accepted]: 'Accepted',
+  [DealStatus.UnderReview]: 'Under Review',
+  [DealStatus.Closed]: 'Closed',
+  [DealStatus.Completed]: 'Completed',
 };
 
 export const DEAL_STATUSES: DealStatus[] = [
   DealStatus.ToSend,
   DealStatus.Sent,
-  DealStatus.Rejected,
+  DealStatus.UnderReview,
   DealStatus.Accepted,
+  DealStatus.Rejected,
+  DealStatus.Closed,
+  DealStatus.Completed,
 ];
 
 export const DEAL_STATUS_COLORS: Record<DealStatus, string> = {
@@ -398,6 +429,9 @@ export const DEAL_STATUS_COLORS: Record<DealStatus, string> = {
   [DealStatus.Sent]: '#21b7ff',
   [DealStatus.Rejected]: '#ff5c5c',
   [DealStatus.Accepted]: '#3eb800',
+  [DealStatus.UnderReview]: '#ffb020',
+  [DealStatus.Closed]: '#8a94a6',
+  [DealStatus.Completed]: '#0f9d8a',
 };
 
 // Mirrors backend DealListModel.

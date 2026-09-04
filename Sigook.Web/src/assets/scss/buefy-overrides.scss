@@ -8,6 +8,30 @@
   }
 }
 
+@include compact-desktop {
+  html:root {
+    --bulma-body-size: 14px;
+    --grid-height: calc(100vh - 240px);
+  }
+
+  .b-table .table {
+    td,
+    th {
+      padding: 0.3em 0.4em;
+    }
+
+    th .th-wrap {
+      font-size: 0.9em;
+    }
+  }
+}
+
+@include short-viewport {
+  :root {
+    --grid-height: auto;
+  }
+}
+
 html:root {
   --bulma-primary-h: 197deg;
   --bulma-primary-s: 100%;
@@ -97,7 +121,7 @@ html:root {
   }
 }
 
-@media (min-width: 768px) {
+@include fit-viewport-grid {
   .logged-content:has(.table-wrapper.has-sticky-header) {
     overflow: hidden;
     display: flex;
@@ -116,6 +140,19 @@ html:root {
       min-height: 0;
       height: auto;
       width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    padding-bottom: 12px;
+
+    .b-tabs,
+    .b-table > .level,
+    .b-table .table-pagination {
+      margin-bottom: 0;
+    }
+
+    .b-tabs > .tab-content {
+      padding-bottom: 0;
     }
   }
 }
@@ -135,6 +172,13 @@ html:root {
   .modal .modal-card {
     max-width: calc(100vw - 24px) !important;
   }
+}
+
+// Confirm/alert dialogs must sit above the app's sheet panels (z-index 55,
+// SheetPanel/MobileFiltersPanel), which teleport to body above Bulma's
+// default modal layer (40).
+.modal.dialog {
+  z-index: 60;
 }
 
 // Buefy ships `.collapse .collapse-trigger { display: inline }`, so every

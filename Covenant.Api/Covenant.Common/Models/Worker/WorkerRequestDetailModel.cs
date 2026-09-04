@@ -5,6 +5,7 @@ namespace Covenant.Common.Models.Worker
     public class WorkerRequestDetailModel
     {
         public Guid Id { get; set; }
+        public int NumberId { get; set; }
         public string JobTitle { get; set; }
         public string AgencyFullName { get; set; }
         public string AgencyLogo { get; set; }

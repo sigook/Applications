@@ -35,8 +35,8 @@ export function workerRequestApplySelf(requestId: string, model: WorkerRequestAp
   return api.post(`/api/WorkerRequest/${requestId}/Apply/`, model);
 }
 
-export function workerRequestApply(workerId: string, requestId: string, model: WorkerRequestApplyModel): Promise<void> {
-  return api.post(`/api/WorkerRequest/${workerId}/${requestId}/Apply`, model);
+export function requestApplyByEmail(numberId: number, email: string): Promise<void> {
+  return api.post<void>('/api/WorkerRequest/Apply', { numberId, email });
 }
 
 export function workerRequestDecline(id: string): Promise<void> {
@@ -48,8 +48,8 @@ export function workerRegisterTime(requestId: string, latitude: number, longitud
   return api.post(`/api/WorkerRequest/${requestId}/TimeSheet`, { latitude, longitude });
 }
 
-export function workerGetTimeSheet(requestId: string): Promise<WorkerTimeSheetItem[]> {
-  return api.get<WorkerTimeSheetItem[]>(`/api/WorkerRequest/${requestId}/TimeSheet`);
+export function workerGetTimeSheet(requestId: string): Promise<PaginatedList<WorkerTimeSheetItem>> {
+  return api.get<PaginatedList<WorkerTimeSheetItem>>(`/api/WorkerRequest/${requestId}/TimeSheet`);
 }
 
 export function getClockType(

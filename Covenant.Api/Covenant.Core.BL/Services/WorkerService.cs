@@ -2,6 +2,7 @@
 using Covenant.Core.BL.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
+using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
@@ -17,6 +18,7 @@ using Covenant.Common.Models.Request;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Agency;
+using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
@@ -32,77 +34,52 @@ using System.Linq.Expressions;
 
 namespace Covenant.Core.BL.Services;
 
-public class WorkerService : IWorkerService
+public class WorkerService(
+    IWorkerRepository workerRepository,
+    IAgencyRepository agencyRepository,
+    ICompanyRepository companyRepository,
+    INotificationRepository notificationRepository,
+    IRequestRepository requestRepository,
+    IWorkerRequestRepository workerRequestRepository,
+    IIdentityServerService identityServerService,
+    ITeamsService teamsNotification,
+    IEmailService emailService,
+    IRazorViewToStringRenderer razorViewToStringRenderer,
+    IOptions<TeamsWebhookConfiguration> options,
+    ILogger<WorkerService> logger,
+    IWorkerAdapter workerAdapter,
+    IValidator<WorkerProfileCreateModel> workerProfileValidator,
+    IHttpContextAccessor httpContextAccessor,
+    IFilesContainer filesContainer,
+    IDocumentService documentService,
+    ICandidateService candidateService,
+    ICandidateRepository candidateRepository,
+    IUploadedFilesService uploadedFilesService,
+    ICatalogRepository catalogRepository,
+    IRequestApplicantNotificationService applicantNotificationService) : IWorkerService
 {
-    private readonly IWorkerRepository workerRepository;
-    private readonly IAgencyRepository agencyRepository;
-    private readonly INotificationRepository notificationRepository;
-    private readonly IRequestRepository requestRepository;
-    private readonly IWorkerRequestRepository workerRequestRepository;
-    private readonly IIdentityServerService identityServerService;
-    private readonly ITeamsService teamsNotification;
-    private readonly IEmailService emailService;
-    private readonly ISendGridService sendGridService;
-    private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
-    private readonly ILogger<WorkerService> logger;
-    private readonly TeamsWebhookConfiguration teamsWebhookConfiguration;
-    private readonly IWorkerAdapter workerAdapter;
-    private readonly IValidator<WorkerProfileCreateModel> workerProfileValidator;
-    private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly IFilesContainer filesContainer;
-    private readonly IDocumentService documentService;
-    private readonly ICandidateService candidateService;
-    private readonly IUploadedFilesService uploadedFilesService;
-    private readonly ICompanyRepository companyRepository;
-    private readonly ICatalogRepository catalogRepository;
-
-    public WorkerService(
-        IWorkerRepository workerRepository,
-        IAgencyRepository agencyRepository,
-        ICompanyRepository companyRepository,
-        IUserRepository userRepository,
-        INotificationRepository notificationRepository,
-        IRequestRepository requestRepository,
-        IWorkerRequestRepository workerRequestRepository,
-        IIdentityServerService identityServerService,
-        ITeamsService teamsNotification,
-        IEmailService emailService,
-        ISendGridService sendGridService,
-        ITimeService timeService,
-        IRazorViewToStringRenderer razorViewToStringRenderer,
-        IOptions<TeamsWebhookConfiguration> options,
-        ILogger<WorkerService> logger,
-        IWorkerAdapter workerAdapter,
-        IValidator<WorkerProfileCreateModel> workerProfileValidator,
-        IHttpContextAccessor httpContextAccessor,
-        IFilesContainer filesContainer,
-        IDocumentService documentService,
-        ICandidateService candidateService,
-        IUploadedFilesService uploadedFilesService,
-        ICatalogRepository catalogRepository)
-    {
-        this.workerRepository = workerRepository;
-        this.agencyRepository = agencyRepository;
-        this.companyRepository = companyRepository;
-        this.notificationRepository = notificationRepository;
-        this.requestRepository = requestRepository;
-        this.workerRequestRepository = workerRequestRepository;
-        this.identityServerService = identityServerService;
-        this.teamsNotification = teamsNotification;
-        this.emailService = emailService;
-        this.sendGridService = sendGridService;
-        this.razorViewToStringRenderer = razorViewToStringRenderer;
-        teamsWebhookConfiguration = options.Value;
-        this.logger = logger;
-        this.workerAdapter = workerAdapter;
-        this.workerProfileValidator = workerProfileValidator;
-        this.httpContextAccessor = httpContextAccessor;
-        this.filesContainer = filesContainer;
-        this.documentService = documentService;
-        this.candidateService = candidateService;
-        this.uploadedFilesService = uploadedFilesService;
-        this.catalogRepository = catalogRepository;
-    }
+    private readonly IWorkerRepository workerRepository = workerRepository;
+    private readonly IAgencyRepository agencyRepository = agencyRepository;
+    private readonly INotificationRepository notificationRepository = notificationRepository;
+    private readonly IRequestRepository requestRepository = requestRepository;
+    private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
+    private readonly IIdentityServerService identityServerService = identityServerService;
+    private readonly ITeamsService teamsNotification = teamsNotification;
+    private readonly IEmailService emailService = emailService;
+    private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
+    private readonly ILogger<WorkerService> logger = logger;
+    private readonly TeamsWebhookConfiguration teamsWebhookConfiguration = options.Value;
+    private readonly IWorkerAdapter workerAdapter = workerAdapter;
+    private readonly IValidator<WorkerProfileCreateModel> workerProfileValidator = workerProfileValidator;
+    private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
+    private readonly IFilesContainer filesContainer = filesContainer;
+    private readonly IDocumentService documentService = documentService;
+    private readonly ICandidateService candidateService = candidateService;
+    private readonly ICandidateRepository candidateRepository = candidateRepository;
+    private readonly IUploadedFilesService uploadedFilesService = uploadedFilesService;
+    private readonly ICompanyRepository companyRepository = companyRepository;
+    private readonly ICatalogRepository catalogRepository = catalogRepository;
+    private readonly IRequestApplicantNotificationService applicantNotificationService = applicantNotificationService;
 
     public async Task<Result<Guid>> CreateWorker(int? requestId)
     {
@@ -153,7 +130,8 @@ public class WorkerService : IWorkerService
             var request = await requestRepository.GetRequest(r => r.NumberId == requestId.Value);
             if (request != null)
             {
-                await NotifyApplicant(request, entity, string.Empty);
+                await CreateApplicant(RequestApplicant.CreateWithWorker(request.Id, entity.Id, "Sigook", string.Empty, RequestApplicantStatus.Pending));
+                await applicantNotificationService.Notify(request, entity);
             }
         }
         return Result.Ok(entity.Id);
@@ -181,26 +159,28 @@ public class WorkerService : IWorkerService
         throw new NotImplementedException();
     }
 
-    public async Task<Result<RequestApplicantDetailModel>> Apply(Guid requestId, WorkerRequestApplyModel model, Guid? workerId = null)
+    public async Task<Result<RequestApplicantDetailModel>> Apply(WorkerRequestApplyModel model, Guid? requestId = null)
     {
-        if (!workerId.HasValue)
+        CvnEmail email = null;
+        if (!requestId.HasValue)
         {
-            workerId = identityServerService.GetUserId();
+            var emailResult = CvnEmail.Create(model.Email?.Trim());
+            if (!emailResult) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
+            email = emailResult.Value;
         }
-        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+
+        var request = requestId.HasValue
+            ? await requestRepository.GetRequest(r => r.Id == requestId.Value)
+            : await requestRepository.GetRequest(r => r.NumberId == model.NumberId);
         if (request is null || !request.IsAvailableToApply) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
-        var worker = await workerRepository.GetProfile(p => p.WorkerId == workerId);
-        if (worker is null) return Result.Fail<RequestApplicantDetailModel>(ApiResources.WorkerNotFound);
-        if (await workerRequestRepository.WorkerRequestExists(worker.Id, requestId)) return Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
-        var requestCandidate = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == worker.Id);
-        if (requestCandidate != null) return Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
-        var result = await NotifyApplicant(request, worker, model.Comments);
-        return Result.Ok(new RequestApplicantDetailModel
-        {
-            Id = result.Id,
-            WorkerId = worker.WorkerId,
-            WorkerProfileId = worker.Id
-        });
+
+        var workerProfile = requestId.HasValue
+            ? await workerRepository.GetProfile(p => p.WorkerId == identityServerService.GetUserId())
+            : await workerRepository.GetProfile(p => p.AgencyId == request.CompanyProfile.AgencyId && p.Worker.Email.ToLower() == email.Email.ToLower());
+
+        if (workerProfile is not null) return await ApplyAsWorker(request, workerProfile, model.Comments);
+        if (requestId.HasValue) return Result.Fail<RequestApplicantDetailModel>(ApiResources.WorkerNotFound);
+        return await ApplyAsCandidate(request, email.Email.ToLower(), model.Comments);
     }
 
     public async Task<Result> UpdateProfileImage(Guid profileId)
@@ -448,34 +428,50 @@ public class WorkerService : IWorkerService
         }
     }
 
-    private async Task<RequestApplicant> NotifyApplicant(Request request, WorkerProfile workerProfile, string comments)
+    private async Task<Result<RequestApplicantDetailModel>> ApplyAsWorker(Request request, WorkerProfile workerProfile, string comments)
     {
-        var result = RequestApplicant.CreateWithWorker(request.Id, workerProfile.Id, "Sigook", comments, RequestApplicantStatus.Pending);
-        await requestRepository.Create([result.Value]);
-        await requestRepository.SaveChangesAsync();
-        if (request.Recruiters.Any())
+        if (await workerRequestRepository.WorkerRequestExists(workerProfile.Id, request.Id)) return AlreadyApplied();
+        if (await requestRepository.GetRequestApplicant(ra => ra.RequestId == request.Id && ra.WorkerProfileId == workerProfile.Id) is not null) return AlreadyApplied();
+
+        var created = await CreateApplicant(RequestApplicant.CreateWithWorker(request.Id, workerProfile.Id, "Sigook", comments, RequestApplicantStatus.Pending));
+        if (!created) return Result.Fail<RequestApplicantDetailModel>(created.Errors);
+        await applicantNotificationService.Notify(request, workerProfile);
+
+        return Result.Ok(new RequestApplicantDetailModel
         {
-            var sendGridModel = new SendGridModel
-            {
-                Tos = request.Recruiters.Select(r => r.Recruiter.User.Email),
-                Template = "NEW_APPLICANT",
-                Data = new
-                {
-                    RequestNumberId = request.NumberId,
-                    request.JobTitle,
-                    WorkerNumberId = workerProfile.NumberId,
-                    Nmae = workerProfile.FullName,
-                    workerProfile.Worker?.Email,
-                    Phone = $"{workerProfile.Phone}",
-                    workerProfile.MobileNumber,
-                    workerProfile.Location?.FormattedAddress,
-                    Skills = string.Join(",", workerProfile.Skills?.Select(s => s.Skill)),
-                    Sin = workerProfile.MaskedSocialInsurance,
-                    SinExpire = workerProfile.DueDate?.ToString("D")
-                }
-            };
-            await sendGridService.SendEmail(sendGridModel);
-        }
-        return result.Value;
+            Id = created.Value.Id,
+            WorkerId = workerProfile.WorkerId,
+            WorkerProfileId = workerProfile.Id
+        });
+    }
+
+    private async Task<Result<RequestApplicantDetailModel>> ApplyAsCandidate(Request request, string email, string comments)
+    {
+        var candidate = await candidateRepository.GetCandidate(c => c.AgencyId == request.CompanyProfile.AgencyId && c.Email != null && c.Email.ToLower() == email);
+        if (candidate is null || candidate.Dnu) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
+        var city = request.JobLocation?.City?.Value;
+        if (string.IsNullOrWhiteSpace(city) || !candidate.Address.ContainsNormalized(city)) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
+        if (await requestRepository.GetRequestApplicant(ra => ra.RequestId == request.Id && ra.CandidateId == candidate.Id) is not null) return AlreadyApplied();
+
+        var created = await CreateApplicant(RequestApplicant.CreateWithCandidate(request.Id, candidate.Id, "Sigook", comments, RequestApplicantStatus.Pending));
+        if (!created) return Result.Fail<RequestApplicantDetailModel>(created.Errors);
+        await applicantNotificationService.Notify(request, candidate);
+
+        return Result.Ok(new RequestApplicantDetailModel
+        {
+            Id = created.Value.Id,
+            CandidateId = candidate.Id
+        });
+    }
+
+    private static Result<RequestApplicantDetailModel> AlreadyApplied() =>
+        Result.Fail<RequestApplicantDetailModel>("You already apply to this request");
+
+    private async Task<Result<RequestApplicant>> CreateApplicant(Result<RequestApplicant> applicant)
+    {
+        if (!applicant) return applicant;
+        await requestRepository.Create([applicant.Value]);
+        await requestRepository.SaveChangesAsync();
+        return applicant;
     }
 }

@@ -5,7 +5,10 @@
     <section class="wrapper-request-top" v-if="request">
       <div>
         <img v-if="request.agencyLogo" :src="request.agencyLogo" />
-        <h2 class="is-capitalized fz1 has-text-weight-bold">{{ request.jobTitle }}</h2>
+        <h2 class="is-capitalized fz1 has-text-weight-bold">
+          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
+          {{ request.jobTitle }}
+        </h2>
       </div>
 
       <div>
@@ -28,7 +31,8 @@
         </div>
       </b-tab-item>
       <b-tab-item v-if="request.punchCardOptionEnabled" label="Punch Card" value="Punch Card">
-        <PunchCard v-if="visitedTabs.includes('Punch Card') && timesheet" :requestId="request.id" :timesheet="timesheet" @refreshTimeSheet="getTimeSheet" />
+        <PunchCard v-if="visitedTabs.includes('Punch Card') && timesheet" :requestId="request.id" :timesheet="timesheet"
+          :request="request" @refreshTimeSheet="getTimeSheet" />
       </b-tab-item>
       <b-tab-item v-if="request.punchCardOptionEnabled" label="Time Sheet" value="Time Sheet">
         <TimeSheet v-if="visitedTabs.includes('Time Sheet')" :data="timesheet" />
