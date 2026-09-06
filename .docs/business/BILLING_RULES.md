@@ -206,6 +206,13 @@ Created by `InvoiceService.CreateSubcontractorReportsAsync`, invoked from `Creat
 - Amounts use **WorkerRate** (what the subcontractor is owed), with the same global multipliers: regular, overtime (`rates.OverTime`), worked holiday (`rates.Holiday`). Missing hours and night shift are hardcoded `0` in the wage detail.
 - Totals: `Gross = regular + overtime + holiday`; `PublicHolidayPay = 0` (subcontractors get no statutory holiday pay); `Earnings = TotalNet = Gross`, minus nothing except explicit `DeductionsOthers` rows appended per timesheet.
 
+### Deletion
+
+Two paths remove subcontractor reports:
+
+- **With the invoice** — `DeleteInvoiceAndReportsSubcontractor` (Canada only), see *Invoice Deletion* below.
+- **Standalone, by week** — `DELETE api/agency/accounting/Reports/subcontractors?weekEnding=` → `AccountingService.DeleteSubcontractorReport` → `ISubcontractorRepository.DeleteReportsByWeekEnding`. Deletes every `ReportSubcontractor` of that week belonging to the caller's agency (children cascade) **plus** their `TimeSheetTotalPayroll` rows. Removing those rows is what re-qualifies the timesheets: `GetTimeSheetForCreatingReportsSubcontractor` only picks timesheets with `TimeSheetTotalPayroll == null`, so the week is rebuilt on the next invoice creation for that company. The invoice itself is untouched. A week with no reports returns `400`.
+
 ---
 
 ## USA Invoices

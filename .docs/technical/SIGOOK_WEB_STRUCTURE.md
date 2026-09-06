@@ -208,7 +208,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 
 | Folder | Contents |
 |--------|----------|
-| (root) | Address, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged, UserNotification |
+| (root) | Address, Breadcrumbs, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, PageHeader (sticky 52px title bar: crumbs › title · count + actions slot; on touch the heading teleports into the mobile topbar), Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged (sidebar + mobile topbar; user avatar with notifications dot and user menu at the footer), UserNotification |
 | agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
 | agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4, TimesheetsReport |
 | agency_company/ | CompanyDetailTab, CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
@@ -219,7 +219,6 @@ Domain folders + shared root-level components. Components take function refs (e.
 | company_request/ | CompanyRequestDetail, punch card components, timesheet detail/modal, CompanyRequestWorkers |
 | landing/ | Section components per page (About/, Employers/, Home/, Industries/, OpenPositions/, Partner/, SpecialProjects/, Talents/) + `shared/` (cards, forms incl. CandidateApplyForm/Modal + WorkerRegisterForm, hero, icons, layout Header/Footer/GlobalBackground/AppVersionToast, sections, ui) |
 | notes/ | ColorPicker, ModalNotes, NoteForm, NotesPopover |
-| notifications/ | NotificationBell (agency sidebar bell, uses `useNotifications`) |
 | request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
 | sales_dashboard/ | 15 components for the sales dashboard. Shells & lists: SalesCard (icon chip, linked title, action button, body slot), SalesList (scroll + empty state), SalesListRow, SalesInteractionList, SalesClientList, SalesDealList. Charts: SalesBarChart (d3-scale SVG, `useElementSize`), SalesGoalDonut (d3 arc, `useTween`), SalesMeterList, SalesRangeTabs (week/month/quarter `v-model`). Create/edit: SalesCreateModal (kind switcher + delete — wiring in SIGOOK_WEB_API_MAP.md §14), SalesInteractionForm, SalesDealForm (file upload), SalesClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info), SearchSelect (generic autocomplete for the client pickers) |

@@ -605,6 +605,60 @@ public class CompanyRepository : ICompanyRepository
     public Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression) =>
         _context.CompanyInteractions.FirstOrDefaultAsync(expression);
 
+    public async Task<CompanyDeletionCheckModel> GetDeletionCheck(Guid companyProfileId)
+    {
+        var model = await _context.CompanyProfiles
+            .Where(c => c.Id == companyProfileId)
+            .Select(c => new CompanyDeletionCheckModel { Id = c.Id, FullName = c.FullName })
+            .SingleOrDefaultAsync();
+        if (model is null) return null;
+        var counts = new Dictionary<string, int>
+        {
+            ["Requests"] = await _context.Requests.CountAsync(r => r.CompanyProfileId == companyProfileId),
+            ["Invoices"] = await _context.Invoices.CountAsync(i => i.CompanyProfileId == companyProfileId),
+            ["USA invoices"] = await _context.InvoicesUSA.CountAsync(i => i.CompanyProfileId == companyProfileId),
+            ["Deals"] = await _context.Deals.CountAsync(d => d.CompanyProfileId == companyProfileId),
+            ["Interactions"] = await _context.CompanyInteractions.CountAsync(i => i.CompanyProfileId == companyProfileId),
+            ["Worker comments"] = await _context.WorkerComments.CountAsync(c => c.CompanyProfileId == companyProfileId)
+        };
+        model.Blockers = counts.Where(c => c.Value > 0)
+            .Select(c => new CompanyDeletionBlockerModel { Entity = c.Key, Count = c.Value })
+            .ToList();
+        return model;
+    }
+
+    public Task<List<Guid>> GetCompanyUserIds(Guid companyProfileId) =>
+        _context.CompanyUsers.Where(cu => cu.CompanyProfileId == companyProfileId)
+            .Select(cu => cu.UserId).ToListAsync();
+
+    public async Task DeleteCompanyProfile(Guid companyProfileId)
+    {
+        var locationIds = await _context.CompanyProfileLocations
+            .Where(l => l.CompanyProfileId == companyProfileId).Select(l => l.LocationId).ToListAsync();
+        var noteIds = await _context.CompanyProfileNotes
+            .Where(n => n.CompanyProfileId == companyProfileId).Select(n => n.NoteId).ToListAsync();
+        var fileIds = await _context.CompanyProfileDocuments
+            .Where(d => d.CompanyProfileId == companyProfileId).Select(d => d.DocumentId).ToListAsync();
+        var logoId = await _context.CompanyProfiles
+            .Where(c => c.Id == companyProfileId).Select(c => c.LogoId).SingleOrDefaultAsync();
+        if (logoId.HasValue) fileIds.Add(logoId.Value);
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        await _context.CompanyProfileNotes.Where(n => n.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyProfileDocuments.Where(d => d.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyProfileLocations.Where(l => l.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyProfileContactPeople.Where(c => c.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyProfileJobPositionRates.Where(j => j.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyProfileInvoiceNotes.Where(n => n.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyProfileInvoiceRecipients.Where(r => r.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyUsers.Where(u => u.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await _context.CompanyProfiles.Where(c => c.Id == companyProfileId).ExecuteDeleteAsync();
+        await _context.CovenantNotes.Where(n => noteIds.Contains(n.Id)).ExecuteDeleteAsync();
+        await _context.Locations.Where(l => locationIds.Contains(l.Id)).ExecuteDeleteAsync();
+        await _context.CovenantFiles.Where(f => fileIds.Contains(f.Id)).ExecuteDeleteAsync();
+        await transaction.CommitAsync();
+    }
+
     private static Expression<Func<DealListModel, bool>> ApplyFilterDeals(GetDealsFilter filter)
     {
         Expression<Func<DealListModel, bool>> predicate = d => true;

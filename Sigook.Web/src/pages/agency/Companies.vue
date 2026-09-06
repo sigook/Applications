@@ -146,14 +146,18 @@
             </template>
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <b-dropdown v-if="props.row.companyStatus === CompanyStatus.Client" aria-role="list"
+            <b-dropdown v-if="props.row.companyStatus === CompanyStatus.Client || isSuperAdmin" aria-role="list"
               position="is-bottom-left" append-to-body>
               <template #trigger>
                 <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
               </template>
-              <b-dropdown-item aria-role="listitem"
+              <b-dropdown-item v-if="props.row.companyStatus === CompanyStatus.Client" aria-role="listitem"
                 @click="router.push({ path: requestBase + '/create/' + props.row.id })">
                 Create Request
+              </b-dropdown-item>
+              <b-dropdown-item v-if="isSuperAdmin" aria-role="listitem" class="has-text-danger"
+                @click="onDeleteCompany(props.row)">
+                Delete
               </b-dropdown-item>
             </b-dropdown>
           </b-table-column>
@@ -174,7 +178,14 @@ import { useAgencyStore } from '@/stores/agency';
 import { useAppStore } from '@/stores/app';
 import { downloadFile } from '@/utils/downloadFile';
 import { useAdmin } from '@/composables/useAdmin';
-import { getAgencyCompanies, bulkAgencyCompanies } from '@/api/agencyCompanyApi';
+import { useSuperAdmin } from '@/composables/useSuperAdmin';
+import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
+import {
+  getAgencyCompanies,
+  bulkAgencyCompanies,
+  getCompanyDeletionCheck,
+  deleteAgencyCompany,
+} from '@/api/agencyCompanyApi';
 import { getSalesCompanies } from '@/api/salesApi';
 import { downloadAgencyReport } from '@/api/agencyReportApi';
 import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from '@/api/agencyNoteApi';
@@ -198,6 +209,7 @@ const exportUrl = computed(() =>
 const agencyStore = useAgencyStore();
 const appStore = useAppStore();
 const { isAdmin } = useAdmin();
+const { isSuperAdmin } = useSuperAdmin();
 
 const isLoading = ref(true);
 const totalItems = ref(0);
@@ -290,6 +302,32 @@ function onCellClick(row: AgencyCompanyListItem, column: TableColumnRef) {
   }
 }
 
+
+async function onDeleteCompany(row: AgencyCompanyListItem) {
+  isLoading.value = true;
+  try {
+    const check = await getCompanyDeletionCheck(row.id);
+    isLoading.value = false;
+    if (!check.canDelete) {
+      const detail = check.blockers.map((b) => `${b.entity}: ${b.count}`).join(', ');
+      showAlertError(`${check.fullName} cannot be deleted because it has related records (${detail}).`);
+      return;
+    }
+    const confirmed = await showAlertConfirm(
+      'Delete client',
+      `${check.fullName} and its users will be permanently deleted. This action cannot be undone.`,
+      'Delete',
+    );
+    if (!confirmed) return;
+    isLoading.value = true;
+    await deleteAgencyCompany(row.id);
+    showAlertSuccess(`${check.fullName} was deleted`);
+    loadCompanies();
+  } catch (error: unknown) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
+}
 
 function exportWithDetails() {
   isLoading.value = true;

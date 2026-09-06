@@ -13,6 +13,7 @@ import type {
   InvoiceRecipientModel,
   PetitionJobPositionPayload,
   UpdateIsAsapRequestsPayload,
+  CompanyDeletionCheck,
 } from '@/types/agency';
 import type { CovenantFileModel } from '@/types/common';
 import type {
@@ -65,6 +66,14 @@ export function getAgencyCompanyProfileWithRequests(): Promise<CompanyProfileLis
 
 export function getAgencyCompaniesList(searchTerm?: string): Promise<CatalogItem[]> {
   return api.get<CatalogItem[]>(`${companyProfilesUrl}/companies-list`, { params: { searchTerm } });
+}
+
+export function getCompanyDeletionCheck(companyProfileId: string): Promise<CompanyDeletionCheck> {
+  return api.get<CompanyDeletionCheck>(`${companyProfilesUrl}/${companyProfileId}/deletion-check`);
+}
+
+export function deleteAgencyCompany(companyProfileId: string): Promise<void> {
+  return api.del(`${companyProfilesUrl}/${companyProfileId}`);
 }
 
 export function bulkAgencyCompanies(agencyId: string, file: File): Promise<Blob> {

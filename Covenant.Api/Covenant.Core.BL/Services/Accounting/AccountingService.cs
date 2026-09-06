@@ -62,4 +62,19 @@ public class AccountingService : IAccountingService
         var data = await subcontractorRepository.GetReportsSubcontractorSummary(weekEndingDate);
         return Result.Ok(await mediator.Send(new GenerateSubcontractorReport(data)));
     }
+
+    public async Task<Result> DeleteSubcontractorReport(string weekEnding)
+    {
+        if (!DateTime.TryParse(weekEnding, out DateTime weekEndingDate))
+        {
+            return Result.Fail($"Invalid date format ({weekEnding})");
+        }
+        var agencyId = identityServerService.GetAgencyId();
+        int deleted = await subcontractorRepository.DeleteReportsByWeekEnding(agencyId, weekEndingDate);
+        if (deleted == 0)
+        {
+            return Result.Fail($"No subcontractor reports found for week ending {weekEndingDate:yyyy-MM-dd}");
+        }
+        return Result.Ok();
+    }
 }

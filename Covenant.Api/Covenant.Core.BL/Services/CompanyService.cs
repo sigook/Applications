@@ -303,6 +303,31 @@ public class CompanyService : ICompanyService
         return Result.Fail("User not found");
     }
 
+    public Task<CompanyDeletionCheckModel> CheckCompanyDeletion(Guid companyProfileId) =>
+        companyRepository.GetDeletionCheck(companyProfileId);
+
+    public async Task<Result> DeleteCompanyProfile(Guid companyProfileId)
+    {
+        var check = await companyRepository.GetDeletionCheck(companyProfileId);
+        if (check is null) return Result.Fail("Company profile not found");
+        if (!check.CanDelete)
+        {
+            var detail = string.Join(", ", check.Blockers.Select(b => $"{b.Entity} ({b.Count})"));
+            return Result.Fail($"The company cannot be deleted because it has related records: {detail}");
+        }
+
+        var profile = await companyRepository.GetCompanyProfileId(p => p.Id == companyProfileId);
+        var companyUserIds = await companyRepository.GetCompanyUserIds(companyProfileId);
+        await companyRepository.DeleteCompanyProfile(companyProfileId);
+
+        foreach (var userId in companyUserIds)
+        {
+            var companyUserResult = await identityServerService.DeleteUserOrClaim(userId, profile.CompanyId);
+            if (!companyUserResult) return companyUserResult;
+        }
+        return await identityServerService.DeleteUserOrClaim(profile.CompanyId, profile.CompanyId);
+    }
+
     private Task<CompanyProfileIdsModel> GetCompanyProfileIds(Guid? companyProfileId) =>
         companyProfileId.HasValue
             ? companyRepository.GetCompanyProfileId(p => p.Id == companyProfileId.Value)
