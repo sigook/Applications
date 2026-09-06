@@ -118,7 +118,10 @@ function loadClients(term: string): void {
 
 function onClientSearch(term: string): void {
   const normalized = term.trim();
-  if (normalized.length > 0 && normalized.length < MINIMUM_SEARCH_LENGTH) return;
+  if (normalized.length < MINIMUM_SEARCH_LENGTH) {
+    clients.value = [];
+    return;
+  }
   loadClients(normalized);
 }
 

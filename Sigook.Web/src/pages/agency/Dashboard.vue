@@ -41,7 +41,7 @@
         <sales-card
           title="Deals"
           title-to="/sales/deals"
-          :subtitle="dealsSubtitle"
+          subtitle=""
           icon="handshake-outline"
           tone="primary"
           action-icon="plus"
