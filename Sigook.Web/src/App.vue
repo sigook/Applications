@@ -168,8 +168,7 @@ onUnmounted(() => {
   min-width: 0;
   height: 100vh;
   overflow-y: auto;
-  // extra top padding leaves room for the fixed top-right user menu
-  padding: 64px 32px 24px;
+  padding: 16px 32px 24px;
 }
 
 /* Legacy .message-version banner removed — replaced by AppVersionToast
@@ -178,7 +177,7 @@ onUnmounted(() => {
 
 @include compact-desktop {
   .logged-content {
-    padding: 56px 16px 20px;
+    padding: 16px 16px 20px;
   }
 }
 

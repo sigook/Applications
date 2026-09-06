@@ -85,6 +85,7 @@ public class CovenantContext : DbContext
     public DbSet<ReasonCancellationRequest> ReasonCancellationRequests { get; set; }
     public DbSet<Holiday> Holidays { get; set; }
     public DbSet<CovenantFile> CovenantFiles { get; set; }
+    public DbSet<CovenantNote> CovenantNotes { get; set; }
     public DbSet<CppDeduction> CppDeductions { get; set; }
     public DbSet<TaxDeduction> TaxDeductions { get; set; }
     public DbSet<NotificationType> NotificationTypes { get; set; }

@@ -1,7 +1,6 @@
 <template>
   <nav class="page-header-breadcrumb" v-if="crumbs.length || backTo">
-    <a class="page-header-back page-header-back-inline" v-if="backTo" @click="goBack(backTo)" role="button"
-      aria-label="Go back">
+    <a class="page-header-back" v-if="backTo" @click="goBack(backTo)" role="button" aria-label="Go back">
       <b-icon icon="arrow-left" size="is-small"></b-icon>
     </a>
     <template v-for="(crumb, index) in crumbs" :key="index">

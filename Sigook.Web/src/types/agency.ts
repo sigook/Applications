@@ -319,6 +319,22 @@ export interface AgencyCompanyListItem {
   createdAt?: string;
 }
 
+// Related records that prevent a company from being deleted.
+// Mirrors backend CompanyDeletionBlockerModel.
+export interface CompanyDeletionBlocker {
+  entity: string;
+  count: number;
+}
+
+// Result of asking the backend whether a company can be deleted.
+// Mirrors backend CompanyDeletionCheckModel.
+export interface CompanyDeletionCheck {
+  id: string;
+  fullName: string;
+  canDelete: boolean;
+  blockers: CompanyDeletionBlocker[];
+}
+
 // Contact person attached to a company.
 // Mirrors backend CompanyProfileContactPersonModel.
 export interface AgencyCompanyContactPerson {
