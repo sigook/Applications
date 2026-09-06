@@ -122,7 +122,20 @@ service. The request shift is the reference case: `GET api/agency/requests/{requ
 `IRequestService.GetRequestShift`.
 
 On the frontend, route guards live in `Sigook.Web/src/router/routesAgency.ts` and the
-`useAdmin` / `useRecruitingAccess` composables — UI mirrors, not defenses.
+`useAdmin` / `useRecruitingAccess` / `useSuperAdmin` composables — UI mirrors, not defenses.
+
+## Company deletion (superadmin only)
+
+`DELETE api/agency/companyprofiles/{id}` and its companion `GET .../{id}/deletion-check` are the
+only endpoints under Policy `SuperAdmin`. Deletion is **blocked** while the company still has
+Requests, Invoices, USA invoices, Deals, Interactions or Worker comments; `deletion-check` returns
+that list so the UI can explain the refusal before anything is touched. Invoices are on a cascade FK,
+so they are checked explicitly — relying on the database alone would wipe accounting data silently.
+
+When nothing blocks, the delete removes the profile's own records (locations, contact people, job
+position rates, documents, notes, invoice notes, invoice recipients, company users) plus the
+company's login user and every company user, in IdentityServer and in the API database.
+Service: `ICompanyService.DeleteCompanyProfile`.
 
 ## User creation
 

@@ -10,8 +10,7 @@ public interface IWorkerService
 {
     Task<Result<Guid>> CreateWorker(int? orderId);
     Task<Result> DeleteWorker(Guid workerProfileId);
-    Task<Result<RequestApplicantDetailModel>> Apply(Guid requestId, WorkerRequestApplyModel model, Guid? workerId = null);
-    Task<Result> ApplyByEmail(ApplyByEmailModel model);
+    Task<Result<RequestApplicantDetailModel>> Apply(WorkerRequestApplyModel model, Guid? requestId = null);
     Task<Result> UpdateProfileImage(Guid profileId);
     Task<Result> UpdateDocumentSection(Guid profileId, WorkerDocumentType documentType);
     Task<Result<PaginatedList<WorkerCommentModel>>> GetComments(Guid workerId, Pagination pagination);

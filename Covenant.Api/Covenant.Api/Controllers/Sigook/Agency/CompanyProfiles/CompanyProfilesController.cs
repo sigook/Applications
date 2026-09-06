@@ -153,6 +153,32 @@ public class CompanyProfilesController(
         return Ok();
     }
 
+    /// <summary>Checks whether a company profile can be deleted without breaking its related records.</summary>
+    /// <param name="id">Identifier of the company profile.</param>
+    [HttpGet("{id:guid}/deletion-check")]
+    [Authorize(Policy = PolicyConfiguration.SuperAdmin)]
+    [ProducesResponseType(typeof(CompanyDeletionCheckModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetDeletionCheck([FromRoute] Guid id)
+    {
+        var model = await companyService.CheckCompanyDeletion(id);
+        if (model is null) return NotFound();
+        return Ok(model);
+    }
+
+    /// <summary>Deletes a company profile and its login users when it has no related records.</summary>
+    /// <param name="id">Identifier of the company profile to delete.</param>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Policy = PolicyConfiguration.SuperAdmin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
+    {
+        var result = await companyService.DeleteCompanyProfile(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return NoContent();
+    }
+
     /// <summary>Gets the companies that have associated requests for the current agencies.</summary>
     [HttpGet("company-with-requests")]
     [ProducesResponseType(typeof(IEnumerable<CompanyProfileListModel>), StatusCodes.Status200OK)]

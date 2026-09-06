@@ -49,4 +49,7 @@ public interface ICompanyRepository
     Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter);
     Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression);
     Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm);
+    Task<CompanyDeletionCheckModel> GetDeletionCheck(Guid companyProfileId);
+    Task<List<Guid>> GetCompanyUserIds(Guid companyProfileId);
+    Task DeleteCompanyProfile(Guid companyProfileId);
 }

@@ -68,6 +68,10 @@ export function downloadSubcontractorReport(weekEnding: string): Promise<Blob> {
   });
 }
 
+export function deleteSubcontractorReport(weekEnding: string): Promise<void> {
+  return api.del('/api/agency/accounting/reports/subcontractors', { params: { weekEnding } });
+}
+
 // ---------------------------------------------------------------------------
 // Skip payroll numbers
 // ---------------------------------------------------------------------------

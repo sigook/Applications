@@ -117,7 +117,7 @@
   z-index: 1;
 }
 
-@include mobile {
+@include touch {
   .field.is-grouped {
     flex-wrap: wrap;
     row-gap: 8px;

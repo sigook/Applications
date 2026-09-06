@@ -17,11 +17,17 @@
           {{ currency(props.row.totalNet) }}
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-tooltip label="Download Report" type="is-dark" position="is-top" append-to-body>
-            <b-button type="is-success" outlined rounded icon-right="file-excel" :loading="props.row.reportDownloading"
-              @click="downloadSubcontractor(props.row)">
-            </b-button>
-          </b-tooltip>
+          <b-field>
+            <b-tooltip label="Download Report" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-success" outlined rounded icon-right="file-excel" class="mr-2"
+                :loading="props.row.reportDownloading" @click="downloadSubcontractor(props.row)">
+              </b-button>
+            </b-tooltip>
+            <b-tooltip label="Delete Report" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeleteSubcontractor(props.row)">
+              </b-button>
+            </b-tooltip>
+          </b-field>
         </b-table-column>
       </template>
     </b-table>
@@ -29,11 +35,12 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
-import { showAlertError } from "@/utils/toast";
+import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { date, currency } from '@/utils/filters';
-import { getPayrollSubcontractors, downloadSubcontractorReport } from "@/api/agencyPayStubApi";
+import { getDialog } from '@/utils/buefyProgrammatic';
+import { getPayrollSubcontractors, downloadSubcontractorReport, deleteSubcontractorReport } from "@/api/agencyPayStubApi";
 import type { PayrollSubContractorRow } from '@/types/accounting';
 
 const isLoading = ref(false);
@@ -77,6 +84,34 @@ function downloadSubcontractor(subcontractor: PayrollSubContractorRow) {
       subcontractor.reportDownloading = false;
       showAlertError(error.data);
     });
+}
+
+function onDeleteSubcontractor(subcontractor: PayrollSubContractorRow) {
+  const weekEnding = dayjs(subcontractor.weekEnding).format('MM-DD-YYYY');
+  const message = `You are about to delete the subcontractor report for week ending <b>${weekEnding}</b>,
+        including its <b>${subcontractor.numberOfWorkers}</b> worker report(s).
+        <br>
+        <br>
+        Their timesheets will be released and included again the next time a report is generated.`;
+  getDialog().confirm({
+    title: 'Are you sure you want to delete?',
+    message: message,
+    confirmText: 'Yes, I read and I want to delete',
+    type: 'is-danger',
+    hasIcon: true,
+    onConfirm: () => {
+      isLoading.value = true;
+      deleteSubcontractorReport(weekEnding)
+        .then(() => {
+          showAlertSuccess(`Subcontractor report ${weekEnding} deleted successfully`);
+          loadSubcontractors();
+        })
+        .catch(error => {
+          isLoading.value = false;
+          showAlertError(error.data);
+        });
+    },
+  });
 }
 
 loadSubcontractors();

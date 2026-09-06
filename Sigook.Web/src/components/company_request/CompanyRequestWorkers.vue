@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <template v-if="isMobile">
+    <template v-if="isTouch">
       <div class="mobile-list-toolbar">
         <b-field>
           <b-input v-model="serverParams.name" placeholder="Search name..." icon="magnify" expanded
@@ -153,7 +153,7 @@ import MobileFiltersPanel from '@/components/responsive/MobileFiltersPanel.vue';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 
 const route = useRoute();
-const { isMobile } = useBreakpoint();
+const { isTouch } = useBreakpoint();
 
 const showFilters = ref(false);
 const isLoading = ref(false);

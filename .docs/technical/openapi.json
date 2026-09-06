@@ -4372,6 +4372,48 @@
             "description": "Forbidden — insufficient permissions"
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Deletes a company profile and its login users when it has no related records.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the company profile to delete.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
       }
     },
     "/api/agency/companyprofiles": {
@@ -4737,6 +4779,57 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/companyprofiles/{id}/deletion-check": {
+      "get": {
+        "tags": [
+          "CompanyProfiles"
+        ],
+        "summary": "Checks whether a company profile can be deleted without breaking its related records.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyDeletionCheckModel"
                 }
               }
             }
@@ -12426,6 +12519,56 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Accounting.Subcontractor.PayrollSubContractorListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Deletes every subcontractor report of the given week-ending date, releasing its timesheets.",
+        "parameters": [
+          {
+            "name": "weekEnding",
+            "in": "query",
+            "description": "Week-ending date.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
               }
             }
@@ -20375,24 +20518,31 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.ApplyByEmailModel"
+                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerRequestApplyModel"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestApplicantDetailModel"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -25295,6 +25445,45 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Company.CompanyDeletionBlockerModel": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.CompanyDeletionCheckModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyDeletionBlockerModel"
+            },
+            "nullable": true
+          },
+          "canDelete": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Company.CompanyInteractionListModel": {
         "type": "object",
         "properties": {
@@ -27643,6 +27832,10 @@
             "type": "string",
             "format": "uuid"
           },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
+          },
           "jobTitle": {
             "type": "string",
             "nullable": true
@@ -29310,20 +29503,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.Worker.ApplyByEmailModel": {
-        "type": "object",
-        "properties": {
-          "numberId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.Worker.CreateCommentModel": {
         "type": "object",
         "properties": {
@@ -30073,6 +30252,15 @@
       "Covenant.Common.Models.Worker.WorkerRequestApplyModel": {
         "type": "object",
         "properties": {
+          "numberId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
           "comments": {
             "type": "string",
             "nullable": true
@@ -30086,6 +30274,10 @@
           "id": {
             "type": "string",
             "format": "uuid"
+          },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
           },
           "jobTitle": {
             "type": "string",

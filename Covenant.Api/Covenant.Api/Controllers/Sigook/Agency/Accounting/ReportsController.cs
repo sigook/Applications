@@ -164,4 +164,16 @@ public class ReportsController(
         }
         return BadRequest(ModelState.AddErrors(file.Errors));
     }
+
+    /// <summary>Deletes every subcontractor report of the given week-ending date, releasing its timesheets.</summary>
+    /// <param name="weekEnding">Week-ending date.</param>
+    [HttpDelete("subcontractors")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteSubcontractorReport([FromQuery] string weekEnding)
+    {
+        var result = await accountingService.DeleteSubcontractorReport(weekEnding);
+        if (result) return Ok();
+        return BadRequest(ModelState.AddErrors(result.Errors));
+    }
 }

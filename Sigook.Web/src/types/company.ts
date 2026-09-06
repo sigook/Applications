@@ -267,6 +267,28 @@ export interface TimeSheetModel {
   reimbursementsDescription?: string;
 }
 
+export interface PunchCardDay extends Partial<Omit<TimeSheetListItem, 'id' | 'day' | 'totalHoursApproved'>> {
+  id: string | null;
+  day: string | Date;
+  totalHoursApproved: number | null;
+}
+
+export interface PunchCardWeek {
+  totalHoursWeek: number | null;
+  days: PunchCardDay[];
+}
+
+export interface PunchCardEditableDay extends PunchCardDay {
+  hoursApprovedToDate?: Date | null;
+  missinghoursToDate?: Date | null;
+  missingHoursOvertimeToDate?: Date | null;
+}
+
+export interface PunchCardWorker {
+  workerRequestStatus: number;
+  rejectedAt: string | null;
+}
+
 // Response shape of GET /api/agency/requests/{}/Workers/{}/TimeSheets/{}/Usages.
 // Mirrors backend TimeSheetUsagesModel — single object, not an array.
 export interface TimeSheetUsagesModel {

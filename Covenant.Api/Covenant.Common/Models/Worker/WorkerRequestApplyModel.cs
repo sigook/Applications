@@ -1,7 +1,8 @@
-﻿namespace Covenant.Common.Models.Worker
+namespace Covenant.Common.Models.Worker;
+
+public class WorkerRequestApplyModel
 {
-    public class WorkerRequestApplyModel
-    {
-        public string Comments { get; set; }
-    }
+    public int? NumberId { get; set; }
+    public string Email { get; set; }
+    public string Comments { get; set; }
 }

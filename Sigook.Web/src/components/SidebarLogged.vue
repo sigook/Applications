@@ -6,47 +6,17 @@
       <button class="mobile-topbar-burger" @click="isOpen = true" aria-label="Open menu">
         <b-icon icon="menu" size="is-medium"></b-icon>
       </button>
-      <router-link to="/" class="mobile-topbar-brand">
-        <img src="../assets/images/sm-logo.png" alt="logo" />
-      </router-link>
-      <div class="sidebar-user">
-        <notification-bell v-if="isAgency" />
-        <b-dropdown position="is-bottom-left" :mobile-modal="isMobile" :append-to-body="!isMobile" aria-role="menu">
-          <template #trigger>
-            <div class="sidebar-user-trigger">
-              <span class="sidebar-user-name">{{ currentUser.fullName }}</span>
-              <img v-if="currentUser.logo" :src="currentUser.logo.pathFile" class="img-30 image-profile"
-                alt="profile" />
-              <svg v-else width="40" height="40" viewBox="0 0 40 40">
-                <circle cx="20" cy="20" r="20" fill="#aeaeae" />
-                <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="20px" font-family="Arial" dy=".3em">
-                  {{ avatarLetters(currentUser.fullName) }}
-                </text>
-              </svg>
-            </div>
-          </template>
-          <b-dropdown-item has-link aria-role="menuitem">
-            <router-link :to="profileUrl">Edit Profile</router-link>
-          </b-dropdown-item>
-          <b-dropdown-item v-for="(item, i) in currentUser.agencies" :key="i" @click="switchAgency(item)"
-            :class="{ 'primary-agency': item.isPrimary }" aria-role="menuitem">
-            {{ item.name }}
-          </b-dropdown-item>
-          <b-dropdown-item @click="logout" aria-role="menuitem">
-            Log Out
-          </b-dropdown-item>
-        </b-dropdown>
-      </div>
+      <div id="mobile-topbar-title" class="mobile-topbar-title"></div>
     </header>
 
-    <div v-if="isMobile && isOpen" class="sidebar-overlay" @click="isOpen = false"></div>
+    <div v-if="isDrawer && isOpen" class="sidebar-overlay" @click="isOpen = false"></div>
 
     <aside class="sidebar-logged" :class="{ 'is-collapsed': collapsed, 'is-open': isOpen }">
       <div class="sidebar-brand">
         <router-link to="/" class="sidebar-brand-link">
           <img src="../assets/images/sm-logo.png" class="sidebar-logo" alt="logo" />
         </router-link>
-        <button v-if="isMobile" class="sidebar-toggle" @click="isOpen = false" aria-label="Close menu">
+        <button v-if="isDrawer" class="sidebar-toggle" @click="isOpen = false" aria-label="Close menu">
           <b-icon icon="close"></b-icon>
         </button>
         <button v-else class="sidebar-toggle" @click="isCollapsed = !isCollapsed"
@@ -104,23 +74,73 @@
         </b-menu>
       </nav>
 
+      <div class="sidebar-user">
+        <b-dropdown :key="isDrawer ? 'drawer' : 'desktop'" position="is-top-right" :mobile-modal="isDrawer"
+          :append-to-body="!isDrawer" aria-role="menu">
+          <template #trigger>
+            <div class="sidebar-user-trigger" :title="currentUser.fullName">
+              <span class="sidebar-user-avatar-wrap">
+                <img v-if="currentUser.logo && !logoFailed" :src="currentUser.logo.pathFile" class="sidebar-user-avatar"
+                  alt="profile" @error="logoFailed = true" />
+                <svg v-else class="sidebar-user-avatar" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="20" fill="#aeaeae" />
+                  <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="17px" font-family="Arial"
+                    dy=".35em">
+                    {{ avatarLetters(currentUser.fullName) }}
+                  </text>
+                </svg>
+                <span v-if="isAgency && hasNotifications" class="sidebar-user-dot"></span>
+              </span>
+              <span class="sidebar-user-name">{{ currentUser.fullName }}</span>
+              <b-icon icon="chevron-down" size="is-small" class="sidebar-user-arrow"></b-icon>
+            </div>
+          </template>
+          <template v-if="isAgency">
+            <b-dropdown-item custom aria-role="menuitem" class="sidebar-user-notifications-header">
+              Notifications
+            </b-dropdown-item>
+            <b-dropdown-item v-if="!hasNotifications" custom aria-role="menuitem">
+              <span class="sidebar-user-notifications-empty">Nothing to review</span>
+            </b-dropdown-item>
+            <b-dropdown-item v-for="group in grouped" :key="group.type" aria-role="menuitem"
+              @click="router.push(group.route)">
+              <div class="sidebar-user-notification">
+                <span class="sidebar-user-notification-label">{{ group.label }}</span>
+                <span class="sidebar-user-notification-count">{{ group.items.length }}</span>
+              </div>
+            </b-dropdown-item>
+            <b-dropdown-item separator></b-dropdown-item>
+          </template>
+          <b-dropdown-item has-link aria-role="menuitem">
+            <router-link :to="profileUrl">Edit Profile</router-link>
+          </b-dropdown-item>
+          <b-dropdown-item v-for="(item, i) in currentUser.agencies" :key="i" @click="switchAgency(item)"
+            :class="{ 'primary-agency': item.isPrimary }" aria-role="menuitem">
+            {{ item.name }}
+          </b-dropdown-item>
+          <b-dropdown-item @click="logout" aria-role="menuitem">
+            Log Out
+          </b-dropdown-item>
+        </b-dropdown>
+      </div>
     </aside>
   </div>
 </template>
 
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { useSecurityStore } from '@/stores/security';
+import { useBreakpoint } from '@/composables/useBreakpoint';
 import { avatarLetters } from '@/utils/filters';
 import menu from '@/security/menu';
 import roles, { agencyStaff } from '@/security/roles';
 import { getMyProfile } from '@/api/workerApi';
 import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
 import { getCompanyProfile } from '@/api/companyApi';
-import NotificationBell from '@/components/notifications/NotificationBell.vue';
+import { useNotifications } from '@/composables/useNotifications';
 
 interface MenuLink {
   to: string;
@@ -141,30 +161,28 @@ const agencyStore = useAgencyStore();
 const securityStore = useSecurityStore();
 
 const isLoading = ref(false);
-const isCollapsed = ref(false);
-const isMobile = ref(false);
+const { isTouch: isDrawer, isCompactDesktop } = useBreakpoint();
+const isCollapsed = ref(isCompactDesktop.value);
 const isOpen = ref(false);
+const logoFailed = ref(false);
 
-// The icon-only rail is a desktop affordance; on mobile the sidebar is a
-// full-width off-canvas drawer that keeps the collapsible groups.
-const collapsed = computed(() => isCollapsed.value && !isMobile.value);
+watch(isCompactDesktop, (compact) => {
+  isCollapsed.value = compact;
+});
 
-const mobileQuery = window.matchMedia('(max-width: 767px)');
-function updateIsMobile(e: MediaQueryListEvent | MediaQueryList) {
-  isMobile.value = e.matches;
-  if (!isMobile.value) isOpen.value = false;
-}
-onMounted(() => {
-  updateIsMobile(mobileQuery);
-  mobileQuery.addEventListener('change', updateIsMobile);
+// The icon-only rail is a desktop affordance; on mobile and tablet the sidebar
+// is an off-canvas drawer that keeps the collapsible groups.
+const collapsed = computed(() => isCollapsed.value && !isDrawer.value);
+
+watch(isDrawer, (drawer) => {
+  if (!drawer) isOpen.value = false;
 });
 onUnmounted(() => {
-  mobileQuery.removeEventListener('change', updateIsMobile);
   document.body.classList.remove('has-drawer-open');
 });
 
 watch(isOpen, (open) => {
-  document.body.classList.toggle('has-drawer-open', open && isMobile.value);
+  document.body.classList.toggle('has-drawer-open', open && isDrawer.value);
 });
 watch(() => route.fullPath, () => { isOpen.value = false; });
 const profileUrl = ref('');
@@ -190,6 +208,8 @@ const currentUser = computed(() => agencyStore.agency);
 
 const isAgency = computed(() =>
   securityStore.userRoles.some((ur) => agencyStaff.includes(ur)));
+
+const { grouped, hasNotifications, load: loadNotifications } = useNotifications();
 
 function isActive(to: string): boolean {
   return route.path === to || route.path.startsWith(`${to}/`);
@@ -265,6 +285,7 @@ async function init() {
   }
   menuGroups.value = menu.getMenu(userRoles, agencyStore.agency);
   expandedGroups.value = menuGroups.value.map(() => false);
+  if (isAgency.value) loadNotifications();
   await nextTick();
   expandActiveGroup();
 }
@@ -285,44 +306,71 @@ $topbar-height: 56px;
 }
 
 .sidebar-user {
-  position: fixed;
-  top: 12px;
-  right: 24px;
-  z-index: 40;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  background-color: #fff;
-  border: 1px solid #eee;
-  border-radius: 999px;
-  padding: 6px 14px;
-  box-shadow: 0 2px 8px #d6d6d6;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #eee;
+
+  .dropdown {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .dropdown-trigger {
+    width: 100%;
+  }
 
   .sidebar-user-trigger {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
     cursor: pointer;
   }
 
+  .sidebar-user-avatar-wrap {
+    position: relative;
+    flex: 0 0 auto;
+    display: flex;
+  }
+
+  .sidebar-user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .sidebar-user-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background-color: #ff3860;
+    border: 2px solid #fff;
+  }
+
   .sidebar-user-name {
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: 14px;
-    max-width: 180px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
+  .sidebar-user-arrow {
+    flex: 0 0 auto;
+    color: #6b6b6b;
+  }
 }
 
-// On desktop the bar itself is not a box: it collapses so its only visible
-// child, the user pill, keeps behaving as the fixed top-right element.
 .mobile-topbar {
-  display: contents;
-
-  .mobile-topbar-burger,
-  .mobile-topbar-brand {
-    display: none;
-  }
+  display: none;
 }
 
 .sidebar-overlay {
@@ -362,6 +410,20 @@ $topbar-height: 56px;
     justify-content: center;
 
     .sidebar-brand-link {
+      display: none;
+    }
+  }
+
+  &.is-collapsed .sidebar-user {
+    justify-content: center;
+    padding: 12px 8px;
+
+    .dropdown {
+      flex: 0 0 auto;
+    }
+
+    .sidebar-user-name,
+    .sidebar-user-arrow {
       display: none;
     }
   }
@@ -462,7 +524,45 @@ $topbar-height: 56px;
   font-weight: 700;
 }
 
-@media (max-width: 767px) {
+.sidebar-user-notifications-header {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+}
+
+.sidebar-user-notifications-empty {
+  font-size: 13px;
+  color: #999;
+}
+
+.sidebar-user-notification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 200px;
+}
+
+.sidebar-user-notification-label {
+  font-weight: 600;
+}
+
+.sidebar-user-notification-count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background-color: $primary;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+}
+
+@media (max-width: 1023px) {
   .mobile-topbar {
     display: flex;
     align-items: center;
@@ -479,6 +579,7 @@ $topbar-height: 56px;
 
     .mobile-topbar-burger {
       display: inline-flex;
+      flex: 0 0 auto;
       border: 0;
       background: transparent;
       cursor: pointer;
@@ -486,13 +587,9 @@ $topbar-height: 56px;
       padding: 4px;
     }
 
-    .mobile-topbar-brand {
-      display: inline-flex;
-      line-height: 0;
-
-      img {
-        max-height: 32px;
-      }
+    .mobile-topbar-title {
+      flex: 1 1 auto;
+      min-width: 0;
     }
   }
 
@@ -516,24 +613,5 @@ $topbar-height: 56px;
     }
   }
 
-  .sidebar-user {
-    position: static;
-    margin-left: auto;
-    border: 0;
-    box-shadow: none;
-    padding: 0;
-    gap: 8px;
-
-    .sidebar-user-name {
-      display: none;
-    }
-
-    svg,
-    .image-profile {
-      width: 32px;
-      height: 32px;
-    }
-
-  }
 }
 </style>

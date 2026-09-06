@@ -19,4 +19,6 @@ public interface ICompanyService
     Task<Result> CreateContact(CompanyProfileContactPersonModel model);
     Task<Result> DeleteCompanyUser(Guid userId, Guid? companyProfileId = null);
     Task<Result<ResultGenerateDocument<byte[]>>> BulkCompany(Guid agencyId, IFormFile file);
+    Task<CompanyDeletionCheckModel> CheckCompanyDeletion(Guid companyProfileId);
+    Task<Result> DeleteCompanyProfile(Guid companyProfileId);
 }

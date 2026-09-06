@@ -62,6 +62,25 @@ public class SubcontractorRepository : BaseRepository<ReportSubcontractor>, ISub
         return await data.ToPaginatedList(pagination);
     }
 
+    public async Task<int> DeleteReportsByWeekEnding(Guid agencyId, DateTime weekEnding)
+    {
+        var reports = await _context.ReportSubcontractors
+            .Where(rs => rs.WorkerProfile.AgencyId == agencyId && rs.WeekEnding.Date == weekEnding.Date)
+            .ToListAsync();
+        if (reports.Count == 0) return 0;
+
+        var reportIds = reports.Select(rs => rs.Id).ToList();
+        var timeSheetTotals = await _context.ReportSubcontractorWageDetails
+            .Where(wd => reportIds.Contains(wd.ReportSubcontractorId))
+            .Select(wd => wd.TimeSheetTotal)
+            .ToListAsync();
+
+        _context.ReportSubcontractors.RemoveRange(reports);
+        _context.TimeSheetTotalPayrolls.RemoveRange(timeSheetTotals);
+        await _context.SaveChangesAsync();
+        return reports.Count;
+    }
+
     public async Task<RegularWageWorker> GetSubcontractorRegularWages(Guid workerProfileId, DateTime holiday, DateTime start, DateTime end, IEnumerable<DateTime> qualifyingDays)
     {
         var queryable = from ps1 in _context.ReportSubcontractors.Where(s => s.WorkerProfileId == workerProfileId && s.DateWorkEnd.Date >= start && s.DateWorkEnd.Date <= end)

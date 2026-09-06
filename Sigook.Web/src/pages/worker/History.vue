@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <h2 class="fz1 pt-3">{{ "History" }}</h2>
     <div>
-      <template v-if="isMobile">
+      <template v-if="isTouch">
         <div class="rcard-list">
           <div v-for="row in rows" :key="row.id" class="rcard">
             <div class="rcard__head">
@@ -106,7 +106,7 @@ import { dateMonth, splitCapital, currency } from '@/utils/filters';
 import { appGlobals } from '@/varaibles';
 import { useBreakpoint } from '@/composables/useBreakpoint';
 
-const { isMobile } = useBreakpoint();
+const { isTouch } = useBreakpoint();
 const isLoading = ref(false);
 const totalItems = ref(0);
 const rows = ref<WorkerRequestListItem[]>([]);

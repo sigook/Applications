@@ -168,15 +168,20 @@ onUnmounted(() => {
   min-width: 0;
   height: 100vh;
   overflow-y: auto;
-  // extra top padding leaves room for the fixed top-right user menu
-  padding: 64px 32px 24px;
+  padding: 16px 32px 24px;
 }
 
 /* Legacy .message-version banner removed — replaced by AppVersionToast
    (src/components/landing/shared/layout/AppVersionToast.vue) which renders
    non-invasively in the bottom-right corner. */
 
-@media (max-width: 767px) {
+@include compact-desktop {
+  .logged-content {
+    padding: 16px 16px 20px;
+  }
+}
+
+@media (max-width: 1023px) {
   .logged-layout,
   .logged-content {
     position: static;

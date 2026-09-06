@@ -26,7 +26,7 @@
     </b-message>
     <h2 class="fz1 pt-3">Jobs</h2>
     <div>
-      <template v-if="isMobile">
+      <template v-if="isTouch">
         <div class="rcard-list">
           <div v-for="row in rows" :key="row.id" class="rcard is-clickable" @click="onRowClick(row)">
             <div class="rcard__head">
@@ -136,7 +136,7 @@ import { useBreakpoint } from '@/composables/useBreakpoint';
 
 const router = useRouter();
 const workerStore = useWorkerStore();
-const { isMobile } = useBreakpoint();
+const { isTouch } = useBreakpoint();
 
 const isLoading = ref(true);
 const totalItems = ref(0);

@@ -99,6 +99,8 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | `getAgencyCompanyProfileWithRequests()` | GET | `/api/agency/companyprofiles/company-with-requests` | — | `CompanyProfileListItem[]` | Companies + their requests |
 | `getAgencyCompaniesList(searchTerm?)` | GET | `/api/agency/companyprofiles/companies-list` | `searchTerm` (query, optional) | `CatalogItem[]` | Typeahead for the sales dashboard client pickers; every company of the agency, ordered by name, scoped to the caller's agency (**not** sales-scoped) |
 | `bulkAgencyCompanies(agencyId, file)` | POST | `/api/agency/companyprofiles/bulk/{agencyId}` | FormData (multipart) | Blob | Excel import |
+| `getCompanyDeletionCheck(id)` | GET | `/api/agency/companyprofiles/{id}/deletion-check` | — | `CompanyDeletionCheck` | **superadmin only**; lists the related records that block deletion |
+| `deleteAgencyCompany(id)` | DELETE | `/api/agency/companyprofiles/{id}` | — | `void` | **superadmin only**; 400 with the blocker detail when the company still has related records |
 
 ### Contact People
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -243,6 +245,7 @@ Pay stub generation and payroll administration.
 | `generatePayStubs(workerIds)` | POST | `/api/agency/accounting/PayStubs/generate` | `string[]` | `void` | Batch generate from timesheets |
 | `getPayrollSubcontractors(filter)` | GET | `/api/agency/accounting/reports/subcontractors` | `SubcontractorPayrollFilter` (params) | `PaginatedList<PayrollSubContractorListItem>` | |
 | `downloadSubcontractorReport(weekEnding)` | GET | `/api/agency/accounting/reports/subcontractors/file` | `weekEnding` (param) | Blob | Excel |
+| `deleteSubcontractorReport(weekEnding)` | DELETE | `/api/agency/accounting/reports/subcontractors` | `weekEnding` (param) | `void` | Deletes the whole week; releases its timesheets |
 | `getSkipPayrollNumbers(filter)` | GET | `/api/agency/accounting/PayStubs/skip-payroll-number` | `{ searchTerm? }` (params) | `SkipPayrollNumberItem[]` | |
 | `addSkipPayrollNumber(payload)` | POST | `/api/agency/accounting/PayStubs/skip-payroll-number` | `CreateSkipPayrollNumberPayload` | `void` | |
 
@@ -578,7 +581,7 @@ In-app notification bell (agency roles). A single aggregated call returns every 
 
 **Composable:** `useNotifications` loads once, maps each typed list to generic `AppNotification[]` grouped by `NotificationType`.
 
-**UI:** `NotificationBell.vue` (in `SidebarLogged.vue`) shows a dot + per-type count; `WorkerAttendanceReview` type links to `/recruiting/attendance-review`, each row links to the order's Punch Card.
+**UI:** `SidebarLogged.vue` owns the load; the user avatar at the sidebar footer shows a red dot and the user menu opens with a "Notifications" section (per-type count, or "Nothing to review"); `WorkerAttendanceReview` type links to `/recruiting/attendance-review`, each row links to the order's Punch Card.
 
 **Extensibility:** a new kind = new list on backend `NotificationsModel` + new `NotificationType`/label/route + a mapper in `useNotifications`. See WORKFLOWS.md → Runner Pipeline Flow → STEP 5.
 
@@ -718,8 +721,8 @@ Public landing site endpoints (no auth).
 |----------|------------|----------|--------------|---------------|-------|
 | `getJobs(filter)` | GET | `/api/WorkerRequest` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | Available jobs |
 | `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | |
-| `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply |
-| `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `{ numberId: number; email: string }` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
+| `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply; the worker comes from the token, `email` in the body is ignored |
+| `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `WorkerRequestApplyModel` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
 | `workerRequestDecline(id)` | DELETE | `/api/WorkerRequest/Decline/{id}` | — | `void` | Decline offer |
 
 ### TimeSheet

@@ -5,7 +5,10 @@
     <section class="wrapper-request-top" v-if="request">
       <div>
         <img v-if="request.agencyLogo" :src="request.agencyLogo" />
-        <h2 class="is-capitalized fz1 has-text-weight-bold">{{ request.jobTitle }}</h2>
+        <h2 class="is-capitalized fz1 has-text-weight-bold">
+          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
+          {{ request.jobTitle }}
+        </h2>
       </div>
 
       <div>
