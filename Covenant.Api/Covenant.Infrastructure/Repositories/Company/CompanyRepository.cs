@@ -3,6 +3,7 @@ using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Utils.Extensions;
@@ -604,6 +605,38 @@ public class CompanyRepository : ICompanyRepository
 
     public Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression) =>
         _context.CompanyInteractions.FirstOrDefaultAsync(expression);
+
+    public Task<List<DealStatusSummaryModel>> GetDealsByStatus(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive, List<DealStatus> statuses)
+    {
+        var query = _context.Deals
+            .Where(d => d.CompanyProfile.AgencyId == agencyId && d.Date >= fromUtc && d.Date < toUtcExclusive);
+        if (ownerId.HasValue) query = query.Where(d => d.UserId == ownerId.Value);
+        if (statuses is { Count: > 0 }) query = query.Where(d => statuses.Contains(d.Status));
+        return query
+            .GroupBy(d => d.Status)
+            .Select(g => new DealStatusSummaryModel
+            {
+                Status = g.Key,
+                Count = g.Count(),
+                TotalValue = g.Sum(d => d.Value)
+            })
+            .ToListAsync();
+    }
+
+    public Task<List<InteractionTypeSummaryModel>> GetInteractionsByType(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive)
+    {
+        var query = _context.CompanyInteractions
+            .Where(i => i.CompanyProfile.AgencyId == agencyId && i.CreatedAt >= fromUtc && i.CreatedAt < toUtcExclusive);
+        if (ownerId.HasValue) query = query.Where(i => i.UserId == ownerId.Value);
+        return query
+            .GroupBy(i => i.InteractionType)
+            .Select(g => new InteractionTypeSummaryModel
+            {
+                Type = g.Key,
+                Count = g.Count()
+            })
+            .ToListAsync();
+    }
 
     public async Task<CompanyDeletionCheckModel> GetDeletionCheck(Guid companyProfileId)
     {

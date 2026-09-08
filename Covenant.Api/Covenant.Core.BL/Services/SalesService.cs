@@ -1,12 +1,15 @@
-using Covenant.Common.Entities;
+﻿using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
+using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using FluentValidation;
@@ -22,7 +25,9 @@ public class SalesService(
     IValidator<CreateCompanyInteractionModel> createInteractionValidator,
     IValidator<UpdateCompanyInteractionModel> updateInteractionValidator,
     IValidator<CreateDealModel> createDealValidator,
-    IValidator<UpdateDealModel> updateDealValidator) : ISalesService
+    IValidator<UpdateDealModel> updateDealValidator,
+    ITimeService timeService,
+    IValidator<GetDealsByStatusFilter> dealsByStatusValidator) : ISalesService
 {
     private Guid? SalesScope => identityServerService.IsSales() ? identityServerService.GetAgencyPersonnelId() : null;
 
@@ -144,6 +149,56 @@ public class SalesService(
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
+
+    public async Task<Result<DealsByStatusModel>> GetDealsByStatus(GetDealsByStatusFilter filter)
+    {
+        var validationResult = await dealsByStatusValidator.ValidateAsync(filter);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure<DealsByStatusModel>();
+        var agencyId = identityServerService.GetAgencyId();
+        filter.OwnerId = OwnerScope ?? filter.OwnerId;
+        var statuses = (filter.Statuses ?? []).Distinct().OrderBy(s => s).ToList();
+        var window = BusinessTime.GetPeriodWindow(filter.Period, timeService.GetCurrentDateTimeOffset());
+        var rows = await companyRepository.GetDealsByStatus(agencyId, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
+        var items = FillStatuses(rows, statuses.Count > 0 ? statuses : Enum.GetValues<DealStatus>().ToList());
+        return Result.Ok(new DealsByStatusModel
+        {
+            Period = window.Range,
+            TotalCount = items.Sum(i => i.Count),
+            TotalValue = items.Sum(i => i.TotalValue),
+            Items = items
+        });
+    }
+
+    public async Task<SalesDashboardSummaryModel> GetDashboardSummary(GetSalesDashboardSummaryFilter filter)
+    {
+        var agencyId = identityServerService.GetAgencyId();
+        var ownerId = OwnerScope ?? filter.OwnerId;
+        var now = timeService.GetCurrentDateTimeOffset();
+        var quarter = BusinessTime.GetPeriodWindow(SalesPeriod.Quarter, now);
+        var week = BusinessTime.GetPeriodWindow(SalesPeriod.Week, now);
+        var pipeline = await companyRepository.GetDealsByStatus(agencyId, ownerId, quarter.FromUtc, quarter.ToUtcExclusive, []);
+        var activity = await companyRepository.GetInteractionsByType(agencyId, ownerId, week.FromUtc, week.ToUtcExclusive);
+        return new SalesDashboardSummaryModel
+        {
+            AsOf = now.UtcDateTime,
+            Quarter = quarter.Range,
+            Week = week.Range,
+            Pipeline = FillStatuses(pipeline, Enum.GetValues<DealStatus>().ToList()),
+            Activity = FillTypes(activity)
+        };
+    }
+
+    private static List<DealStatusSummaryModel> FillStatuses(List<DealStatusSummaryModel> rows, List<DealStatus> statuses) =>
+        statuses
+            .Select(status => rows.FirstOrDefault(r => r.Status == status)
+                ?? new DealStatusSummaryModel { Status = status, Count = 0, TotalValue = 0 })
+            .ToList();
+
+    private static List<InteractionTypeSummaryModel> FillTypes(List<InteractionTypeSummaryModel> rows) =>
+        Enum.GetValues<InteractionType>()
+            .Select(type => rows.FirstOrDefault(r => r.Type == type)
+                ?? new InteractionTypeSummaryModel { Type = type, Count = 0 })
+            .ToList();
 
     private void ApplyScope(GetRequestForAgencyFilter filter)
     {

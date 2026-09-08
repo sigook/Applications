@@ -606,55 +606,75 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyReques
 
 ## 18. salesDashboardApi.ts
 
-**Static — no backend endpoint.** Serves the sales dashboard summary from `src/data/sales/salesDashboard.json`.
+Live sales dashboard aggregates. Base: `/api/agency/sales/dashboard` (backend `DashboardController` in
+`Covenant.Api/Controllers/Sigook/Agency/Sales/`). Owner-scoped exactly like deals and interactions: a
+sales user always sees only their own rows, admin/superadmin see the whole agency and may pass `ownerId`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getSalesDashboard()` | — | — (resolves `src/data/sales/salesDashboard.json`) | — | `SalesDashboardModel` | `GET /api/agency/sales/dashboard` does **not** exist in the backend; the equivalent call sits commented in the file header |
+| `getDealsByStatus(filter)` | GET | `/api/agency/sales/dashboard/deals-by-status` | `DealsByStatusFilter` | `DealsByStatusModel` | Feeds the "Deals by status" column chart |
+| `getSalesDashboardSummary()` | GET | `/api/agency/sales/dashboard/summary` | — | `SalesDashboardSummary` | Feeds the "This quarter" meters and the header period label |
 
-**Types:** `SalesDashboardModel` + blocks (`src/types/sales.ts:56-64`) — `period`, `clients`, `deals`, `dealsClosed.{week,month,quarter}`, `goal`, `pipeline[]` (by `DealStatus`), `activity[]` (by `InteractionType`); enum fields as numeric values.
+**Query params (`DealsByStatusFilter`):** `period` (`SalesPeriod` 0 Day / 1 Week / 2 Month / 3 Quarter,
+default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&statuses[1]=3` by the qs
+`indices` format), `ownerId` (honored only for admin/superadmin).
 
-**UI:** `pages/agency/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions: `.docs/business/SALES_MODULE.md`.
+**Types** (`src/types/sales.ts`): `SalesPeriod`, `SalesPeriodRange`, `DealStatusSummary`,
+`InteractionTypeSummary`, `DealsByStatusFilter`, `DealsByStatusModel`, `SalesDashboardSummary`,
+`SalesBarPoint`, `SalesMeter`, `SALES_PERIOD_TABS`. Enum fields travel as numeric values.
 
-### Static vs live
+**UI:** `pages/agency/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions:
+`.docs/business/SALES_MODULE.md`.
 
-The payload above (period label, Clients card, "Deals closed" chart, goal donut, pipeline/activity meters) is frozen at Q3 2026 (`asOf` 2026-07-12). Only the Interactions and Deals lists and every create/edit/delete flow hit the backend:
+### Response shape
 
-```
-Dashboard.vue onMounted (Dashboard.vue:209-221)
-├─ getSalesDashboard()             → src/data/sales/salesDashboard.json        [STATIC]
-├─ getCompanyInteractions({...6})  → GET /api/agency/sales/companyinteractions [LIVE]
-├─ getDeals({...6})                → GET /api/agency/sales/deals               [LIVE]
-└─ useCurrentAgent.loadAgentName() → GET /api/agency/personnel                 [LIVE]
+```jsonc
+// GET /api/agency/sales/dashboard/deals-by-status?period=1
+{
+  "period": { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00",
+              "label": "Sep 6 - Sep 12, 2026", "timeZone": "America/New_York" },
+  "totalCount": 9,
+  "totalValue": 41500.00,
+  "items": [ { "status": 0, "count": 3, "totalValue": 12000.00 } ]  // one row per status, zero-filled
+}
 
-SalesCreateModal @saved → onSaved (Dashboard.vue:204-207)
-└─ reloads interactions + deals only — the static blocks never refresh
-```
-
-> **Half-live refresh.** Saving a deal or interaction does not move the pipeline meters, the goal donut, the "Deals closed" chart or the Clients card — those render the frozen JSON. The range tabs are client-side only: they index into the pre-baked `dealsClosed.{week,month,quarter}` arrays; no request is made.
-
-### Where the summary comes from
-
-`src/api/salesDashboardApi.ts` holds the whole static path:
-
-```ts
-import dashboardData from '@/data/sales/salesDashboard.json';
-import type { SalesDashboardModel } from '@/types/sales';
-
-export function getSalesDashboard(): Promise<SalesDashboardModel> {
-  return Promise.resolve(dashboardData as unknown as SalesDashboardModel);
+// GET /api/agency/sales/dashboard/summary
+{
+  "asOf": "2026-09-09T15:00:00Z",
+  "quarter": { "period": 3, "from": "2026-07-01T00:00:00", "to": "2026-09-30T00:00:00", "label": "Q3 2026", "timeZone": "America/New_York" },
+  "week":    { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00", "label": "Sep 6 - Sep 12, 2026", "timeZone": "America/New_York" },
+  "pipeline": [ { "status": 0, "count": 24, "totalValue": 180000.00 } ],  // 7 rows, enum order
+  "activity": [ { "type": 0, "count": 42 } ]                              // 4 rows, enum order
 }
 ```
 
-The file header also carries the equivalent `api.get<SalesDashboardModel>('/api/agency/sales/dashboard')` call, commented out; the JSON is shaped exactly like that response, so the function signature and every caller are independent of which body is active.
+`from`/`to` are **calendar dates in the business time zone**, serialized without a UTC offset so the
+browser renders them verbatim; `to` is inclusive. Windows are resolved server-side by
+`Covenant.Common/Utils/BusinessTime.cs` (America/New_York, week Sunday–Saturday).
 
-`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/` contains only `CompanyProfilesController`, `RequestsController`, `DealsController` and `CompanyInteractionsController`; the dashboard endpoint is absent from `openapi.json`. The payload shape fixes two contract decisions: `dealsClosed` ships all three ranges pre-aggregated (no range query param), and `period` is computed server-side.
+### Refresh behavior
 
-**Consequences of the static payload:**
-- Period label and every chart render the same numbers regardless of today.
-- The quarterly target cannot be stored or configured anywhere.
-- Saves refresh only the two live lists; creating a client refreshes nothing (the Clients card reads the static JSON).
-- Range tabs never hit the network.
+```
+Dashboard.vue onMounted
+├─ getSalesDashboardSummary()      → GET .../dashboard/summary               [LIVE]
+├─ getDealsByStatus({period})      → GET .../dashboard/deals-by-status       [LIVE]
+├─ getCompanyInteractions({...6})  → GET /api/agency/sales/companyinteractions [LIVE]
+├─ getSalesCompanies({...6})       → GET /api/agency/sales/companyprofiles     [LIVE]
+├─ getDeals({...6})                → GET /api/agency/sales/deals               [LIVE]
+└─ useCurrentAgent.loadAgentName() → GET /api/agency/personnel                 [LIVE]
+
+period tab change / status filter change → getDealsByStatus() only
+SalesCreateModal @saved → onSaved → all five data loaders re-run
+```
+
+The whole dashboard is live; nothing is cached and there is no static JSON left. `loadDealsByStatus`
+carries a request counter so a fast tab switch cannot render a stale response.
+
+**Known limits:**
+- An unbindable `period` (e.g. `?period=99`) falls back to the default week rather than returning 400 —
+  the API sets `SuppressModelStateInvalidFilter`, so this matches every other filter. A value that
+  *does* bind but is outside the enum is rejected by `GetDealsByStatusFilterValidator` with a 400.
+- No quarterly goal exists in the schema, so the dashboard has no goal donut.
 - The client form is create-only from the modal (no edit/delete path).
 
 ---
@@ -816,7 +836,7 @@ Public landing site endpoints (no auth).
 | **Request** | agencyRequestApi.ts | Workers, applicants, skills, shift, sources, bulk cancel |
 | **Runner** | agencyRunnerApi.ts | Recruiting pipeline per request: status, interviews |
 | **WeeklyBoard** | weeklyBoardApi.ts | Recruiter day assignments + runners sent |
-| **Sales** | salesApi.ts, salesDashboardApi.ts, companyApi.ts (deals/interactions) | Sales-scoped lists + Excel export; dashboard summary from static JSON; deals + interactions CRUD (owner-scoped) |
+| **Sales** | salesApi.ts, salesDashboardApi.ts, companyApi.ts (deals/interactions) | Sales-scoped lists + Excel export; live dashboard aggregates (deals by status, quarter summary); deals + interactions CRUD (owner-scoped) |
 | **Worker** (agency view) | agencyWorkerApi.ts | Flags (DNU, contractor), tax, holidays, request history |
 | **Worker** (self) | workerApi.ts | Profile build, applications, timesheet, wage history |
 | **Invoice** | agencyInvoiceApi.ts | Preview, PDF, email, linked pay stubs |

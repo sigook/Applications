@@ -7,95 +7,112 @@
         Sales Dashboard
         <span v-if="agentName" class="fw-light fz-1">· {{ agentName }}</span>
       </h2>
-      <span v-if="data" class="sd-period">{{ data.period.label }} · {{ shortDate(data.period.asOf) }}</span>
+      <span v-if="summary" class="sd-period">{{ summary.quarter.label }} · {{ shortDate(summary.asOf) }}</span>
     </div>
 
-    <template v-if="data">
-      <div class="sd-grid-top">
-        <sales-card
-          title="Log Interactions"
-          title-to="/sales/interactions"
-          subtitle="Recent activity"
-          icon="message-text-outline"
-          tone="primary"
-          action-icon="plus"
-          action-label="Log interaction"
-          @action="startCreateInteraction"
-        >
-          <sales-interaction-list :items="interactions" :as-of="nowIso" @edit="startEditInteraction" />
-        </sales-card>
+    <div class="sd-grid-top">
+      <sales-card
+        title="Log Interactions"
+        title-to="/sales/interactions"
+        subtitle="Recent activity"
+        icon="message-text-outline"
+        tone="primary"
+        action-icon="plus"
+        action-label="Log interaction"
+        @action="startCreateInteraction"
+      >
+        <sales-interaction-list :items="interactions" :as-of="nowIso" @edit="startEditInteraction" />
+      </sales-card>
 
-        <sales-card
-          title="Clients"
-          title-to="/sales/companies"
-          :subtitle="clientsSubtitle"
-          icon="domain"
-          tone="primary"
-          action-icon="plus"
-          action-label="Create client"
-          @action="openDrawer('client')"
-        >
-          <sales-client-list :items="clients" @select="startInteractionForClient" />
-        </sales-card>
+      <sales-card
+        title="Clients"
+        title-to="/sales/companies"
+        :subtitle="clientsSubtitle"
+        icon="domain"
+        tone="primary"
+        action-icon="plus"
+        action-label="Create client"
+        @action="openDrawer('client')"
+      >
+        <sales-client-list :items="clients" @select="startInteractionForClient" />
+      </sales-card>
 
-        <sales-card
-          title="Deals"
-          title-to="/sales/deals"
-          subtitle=""
-          icon="handshake-outline"
-          tone="primary"
-          action-icon="plus"
-          action-label="Create deal"
-          @action="startCreateDeal"
-        >
-          <sales-deal-list :items="deals" @edit="startEditDeal" />
-        </sales-card>
-      </div>
+      <sales-card
+        title="Deals"
+        title-to="/sales/deals"
+        subtitle=""
+        icon="handshake-outline"
+        tone="primary"
+        action-icon="plus"
+        action-label="Create deal"
+        @action="startCreateDeal"
+      >
+        <sales-deal-list :items="deals" @edit="startEditDeal" />
+      </sales-card>
+    </div>
 
-      <div class="sd-grid-bottom">
-        <sales-card title="Deals closed">
-          <template #subtitle>
-            Total <span class="sd-total">{{ closedTotal }}</span>
-          </template>
-          <template #actions>
-            <sales-range-tabs v-model="range" />
-          </template>
-          <sales-bar-chart :points="closedPoints" />
-        </sales-card>
+    <div class="sd-grid-bottom">
+      <sales-card title="Deals by status">
+        <template #subtitle>
+          Total <span class="sd-total">{{ dealsByStatus?.totalCount ?? 0 }}</span>
+          <span v-if="dealsByStatus"> · {{ compactMoney(dealsByStatus.totalValue) }} · {{ dealsByStatus.period.label }}</span>
+        </template>
+        <template #actions>
+          <sales-range-tabs v-model="period" />
+        </template>
+        <div class="sd-by-status">
+          <b-taginput
+            size="is-small"
+            v-model="statusesSelected"
+            autocomplete
+            :data="statusOptions"
+            open-on-focus
+            field="value"
+            icon="label"
+            placeholder="All statuses"
+            append-to-body
+            @update:modelValue="loadDealsByStatus"
+          />
+          <p v-if="dealsByStatus && dealsByStatus.totalCount === 0" class="sd-by-status__empty">
+            No deals dated in this period
+          </p>
+          <sales-bar-chart v-else title="Deals by status" :points="dealPoints" />
+        </div>
+      </sales-card>
 
-        <sales-card title="This quarter">
-          <div class="sd-quarter">
-            <sales-goal-donut :goal="data.goal" />
-            <sales-meter-list title="Pipeline by status" :items="pipelineMeters" />
-            <sales-meter-list title="Activity this week" :items="activityMeters" />
-          </div>
-        </sales-card>
-      </div>
+      <sales-card title="This quarter">
+        <template #subtitle>
+          <span v-if="summary">{{ summary.quarter.label }} · {{ shortDate(summary.quarter.from) }} – {{ shortDate(summary.quarter.to) }}</span>
+        </template>
+        <div class="sd-quarter">
+          <sales-meter-list title="Pipeline by status" :items="pipelineMeters" />
+          <sales-meter-list :title="activityTitle" :items="activityMeters" />
+        </div>
+      </sales-card>
+    </div>
 
-      <sales-create-modal
-        v-model="isModalOpen"
-        :kind="modalKind"
-        :interaction="editingInteraction"
-        :deal="editingDeal"
-        :interaction-client="interactionClient"
-        @saved="onSaved"
-      />
-    </template>
+    <sales-create-modal
+      v-model="isModalOpen"
+      :kind="modalKind"
+      :interaction="editingInteraction"
+      :deal="editingDeal"
+      :interaction-client="interactionClient"
+      @saved="onSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import SalesCard from '@/components/sales_dashboard/SalesCard.vue';
 import SalesInteractionList from '@/components/sales_dashboard/SalesInteractionList.vue';
 import SalesClientList from '@/components/sales_dashboard/SalesClientList.vue';
 import SalesDealList from '@/components/sales_dashboard/SalesDealList.vue';
 import SalesRangeTabs from '@/components/sales_dashboard/SalesRangeTabs.vue';
 import SalesBarChart from '@/components/sales_dashboard/SalesBarChart.vue';
-import SalesGoalDonut from '@/components/sales_dashboard/SalesGoalDonut.vue';
 import SalesMeterList from '@/components/sales_dashboard/SalesMeterList.vue';
 import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue';
-import { getSalesDashboard } from '@/api/salesDashboardApi';
+import { getDealsByStatus, getSalesDashboardSummary } from '@/api/salesDashboardApi';
 import { getCompanyInteractions, getDeals } from '@/api/companyApi';
 import { getSalesCompanies } from '@/api/salesApi';
 import { useCurrentAgent } from '@/composables/useCurrentAgent';
@@ -103,25 +120,31 @@ import { compactMoney, shortDate } from '@/utils/salesDashboardFormat';
 import { showAlertError } from '@/utils/toast';
 import {
   DealSortBy,
+  DEAL_STATUSES,
   DEAL_STATUS_COLORS,
   DEAL_STATUS_LABELS,
   CompanyInteractionSortBy,
+  INTERACTION_TYPES,
   INTERACTION_TYPE_COLORS,
   INTERACTION_TYPE_LABELS,
 } from '@/types/company';
-import type { Deal, CompanyInteraction } from '@/types/company';
+import type { Deal, CompanyInteraction, DealStatus } from '@/types/company';
 import type { AgencyCompanyListItem } from '@/types/agency';
-import type {
-  SalesCreateKind,
-  SalesDashboardModel,
-  SalesMeter,
-  SalesRangeKey,
+import type { CatalogItem } from '@/types/common';
+import {
+  SalesPeriod,
+  type DealsByStatusModel,
+  type SalesBarPoint,
+  type SalesCreateKind,
+  type SalesDashboardSummary,
+  type SalesMeter,
 } from '@/types/sales';
 
 const { agentName, loadAgentName } = useCurrentAgent();
 
 const isLoading = ref(false);
-const data = ref<SalesDashboardModel | null>(null);
+const summary = ref<SalesDashboardSummary | null>(null);
+const dealsByStatus = ref<DealsByStatusModel | null>(null);
 const interactions = ref<CompanyInteraction[]>([]);
 const editingInteraction = ref<CompanyInteraction | null>(null);
 const clients = ref<AgencyCompanyListItem[]>([]);
@@ -130,39 +153,58 @@ const interactionClient = ref<AgencyCompanyListItem | null>(null);
 const deals = ref<Deal[]>([]);
 const editingDeal = ref<Deal | null>(null);
 const nowIso = new Date().toISOString();
-const range = ref<SalesRangeKey>('week');
+const period = ref<SalesPeriod>(SalesPeriod.Week);
+const statusesSelected = ref<CatalogItem<DealStatus>[]>([]);
 const isModalOpen = ref(false);
 const modalKind = ref<SalesCreateKind | null>(null);
+
+// Drops out-of-order responses when the period or the status filter changes fast.
+let dealsByStatusRequest = 0;
+
+const statusOptions: CatalogItem<DealStatus>[] = DEAL_STATUSES.map((status) => ({
+  id: status,
+  value: DEAL_STATUS_LABELS[status],
+}));
 
 const clientsSubtitle = computed(() =>
   clientsTotal.value === null ? '' : `${clientsTotal.value} in your book`
 );
 
-const dealsSubtitle = computed(() =>
-  data.value ? `${compactMoney(data.value.deals.pipelineValue)} in pipeline` : ''
+const activityTitle = computed(() =>
+  summary.value ? `Activity this week · ${summary.value.week.label}` : 'Activity this week'
 );
 
-const closedPoints = computed(() => (data.value ? data.value.dealsClosed[range.value] : []));
+const dealPoints = computed<SalesBarPoint[]>(() => {
+  const items = dealsByStatus.value?.items ?? [];
+  return DEAL_STATUSES.filter((status) => items.some((item) => item.status === status)).map((status) => {
+    const item = items.find((entry) => entry.status === status);
+    return {
+      key: String(status),
+      label: DEAL_STATUS_LABELS[status],
+      value: item?.count ?? 0,
+      color: DEAL_STATUS_COLORS[status],
+      caption: compactMoney(item?.totalValue ?? 0),
+    };
+  });
+});
 
-const closedTotal = computed(() =>
-  compactMoney(closedPoints.value.reduce((sum, point) => sum + point.value, 0))
-);
+const pipelineMeters = computed<SalesMeter[]>(() => {
+  const pipeline = summary.value?.pipeline ?? [];
+  return DEAL_STATUSES.filter((status) => pipeline.some((entry) => entry.status === status)).map((status) => ({
+    label: DEAL_STATUS_LABELS[status],
+    count: pipeline.find((entry) => entry.status === status)?.count ?? 0,
+    color: DEAL_STATUS_COLORS[status],
+  }));
+});
 
-const pipelineMeters = computed<SalesMeter[]>(() =>
-  (data.value?.pipeline ?? []).map((entry) => ({
-    label: DEAL_STATUS_LABELS[entry.status],
-    count: entry.count,
-    color: DEAL_STATUS_COLORS[entry.status],
-  }))
-);
-
-const activityMeters = computed<SalesMeter[]>(() =>
-  (data.value?.activity ?? []).map((entry) => ({
-    label: INTERACTION_TYPE_LABELS[entry.type],
-    count: entry.count,
-    color: INTERACTION_TYPE_COLORS[entry.type],
-  }))
-);
+const activityMeters = computed<SalesMeter[]>(() => {
+  const activity = summary.value?.activity ?? [];
+  return INTERACTION_TYPES.filter((type) => activity.some((entry) => entry.type === type)).map((type) => ({
+    label: INTERACTION_TYPE_LABELS[type],
+    count: activity.find((entry) => entry.type === type)?.count ?? 0,
+    color: INTERACTION_TYPE_COLORS[type],
+  }));
+});
 
 function openDrawer(kind: SalesCreateKind): void {
   modalKind.value = kind;
@@ -202,6 +244,29 @@ function startEditDeal(deal: Deal): void {
   isModalOpen.value = true;
 }
 
+function loadDealsByStatus(): void {
+  const request = ++dealsByStatusRequest;
+  getDealsByStatus({
+    period: period.value,
+    statuses: statusesSelected.value.length ? statusesSelected.value.map((status) => status.id) : undefined,
+  })
+    .then((result) => {
+      if (request === dealsByStatusRequest) dealsByStatus.value = result;
+    })
+    .catch((error) => showAlertError(error));
+}
+
+function loadSummary(): void {
+  getSalesDashboardSummary()
+    .then((result) => {
+      summary.value = result;
+    })
+    .catch((error) => showAlertError(error))
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
+
 function loadInteractions(): void {
   getCompanyInteractions({ pageSize: 6, isDescending: true, sortBy: CompanyInteractionSortBy.CreatedAt })
     .then((result) => {
@@ -231,17 +296,16 @@ function onSaved(): void {
   loadInteractions();
   loadClients();
   loadDeals();
+  loadDealsByStatus();
+  loadSummary();
 }
+
+watch(period, () => loadDealsByStatus());
 
 onMounted(() => {
   isLoading.value = true;
-  getSalesDashboard()
-    .then((result) => {
-      data.value = result;
-    })
-    .finally(() => {
-      isLoading.value = false;
-    });
+  loadSummary();
+  loadDealsByStatus();
   loadInteractions();
   loadClients();
   loadDeals();
@@ -288,6 +352,24 @@ onMounted(() => {
   .sd-total {
     color: $green;
     font-weight: 600;
+  }
+
+  .sd-by-status {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.625rem 0.95rem 0;
+  }
+
+  .sd-by-status__empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: 0.75rem;
+    color: #9a9a9a;
   }
 
   .sd-quarter {

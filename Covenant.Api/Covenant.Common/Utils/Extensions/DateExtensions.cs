@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Covenant.Common.Utils.Extensions;
 
@@ -104,4 +104,12 @@ public static class DateExtensions
             _ => throw new ArgumentOutOfRangeException(),
         };
     }
+
+    public static DateTime StartOfWeekSunday(this DateTime date) => date.Date.AddDays(-(int)date.DayOfWeek);
+
+    public static DateTime StartOfMonth(this DateTime date) => new(date.Year, date.Month, 1);
+
+    public static DateTime StartOfQuarter(this DateTime date) => new(date.Year, (date.Quarter() - 1) * 3 + 1, 1);
+
+    public static int Quarter(this DateTime date) => (date.Month - 1) / 3 + 1;
 }

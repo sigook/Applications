@@ -1,6 +1,8 @@
 ﻿using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Models.Location;
 using System.Linq.Expressions;
 
@@ -48,6 +50,8 @@ public interface ICompanyRepository
     Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression);
     Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter);
     Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression);
+    Task<List<DealStatusSummaryModel>> GetDealsByStatus(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive, List<DealStatus> statuses);
+    Task<List<InteractionTypeSummaryModel>> GetInteractionsByType(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive);
     Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm);
     Task<CompanyDeletionCheckModel> GetDeletionCheck(Guid companyProfileId);
     Task<List<Guid>> GetCompanyUserIds(Guid companyProfileId);
