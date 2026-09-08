@@ -112,9 +112,11 @@ Served live by `GET api/agency/sales/dashboard/*` (see `.docs/technical/SIGOOK_W
 | Pipeline by status | Count of deals per `DealStatus` over deals whose `Date` falls in the current quarter |
 | Activity this week | Count of interactions per `InteractionType` whose `CreatedAt` falls in the current week |
 
-Every window is resolved **server-side in US Eastern time** (`America/New_York`), and the week runs
-**Sunday to Saturday**, the same boundary payroll and timesheets use. The response always carries one
-row per status (or per requested status), zero-filled, so the chart keeps a stable column order.
+Every window is resolved **server-side in UTC**, whatever the server's own time zone is: the
+instant is converted with `now.UtcDateTime` before the calendar math. The week runs **Sunday to
+Saturday** — the same day-of-week boundary payroll uses, but anchored to UTC midnight, not to a
+business time zone. The response always carries one row per status (or per requested status),
+zero-filled, so the chart keeps a stable column order.
 
 > **There is no quarterly goal.** No entity stores a target amount, so the dashboard shows no goal
 > donut. Adding one needs a new column plus a screen to set it.
@@ -125,8 +127,8 @@ row per status (or per requested status), zero-filled, so the chart keeps a stab
 - The period label ("Q3 2026", "Sep 6 - Sep 12, 2026") is **computed server-side**, not by the browser.
 - Column colors and labels live in the **front end** (`DEAL_STATUS_COLORS`, `DEAL_STATUS_LABELS`); the
   endpoint returns data only, so it stays chart-agnostic.
-- `Deal.Date` is captured as the browser's local midnight in ISO form, so a rep working far east of
-  Eastern can file a deal one Eastern day early. Bucketing cannot fix that; capture would have to.
+- `Deal.Date` is captured as the browser's local midnight in ISO form, so a rep east of UTC can file
+  a deal one UTC day early. Bucketing cannot fix that; capture would have to.
 
 ---
 

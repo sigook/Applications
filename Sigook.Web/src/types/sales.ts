@@ -10,14 +10,13 @@ export enum SalesPeriod {
 
 export type SalesCreateKind = 'interaction' | 'client' | 'deal';
 
-// Mirrors backend SalesPeriodRangeModel. `from`/`to` are calendar dates in the
-// business time zone (America/New_York), serialized without a UTC offset.
+// Mirrors backend SalesPeriodRangeModel. `from`/`to` are UTC calendar dates,
+// serialized without an offset so the browser renders them verbatim; `to` is inclusive.
 export interface SalesPeriodRange {
   readonly period: SalesPeriod;
   readonly from: string;
   readonly to: string;
   readonly label: string;
-  readonly timeZone: string;
 }
 
 export interface DealStatusSummary {

@@ -1,24 +1,15 @@
 using System.Globalization;
-using Covenant.Common.Constants;
 using Covenant.Common.Enums;
 using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Common.Utils;
 
-public static class BusinessTime
+public static class SalesPeriodWindows
 {
-    public static readonly TimeZoneInfo Zone = TimeZoneInfo.FindSystemTimeZoneById(CovenantConstants.BusinessTimeZoneId);
-
-    public static DateTime ToBusinessTime(DateTimeOffset instant) =>
-        DateTime.SpecifyKind(TimeZoneInfo.ConvertTime(instant, Zone).DateTime, DateTimeKind.Unspecified);
-
-    public static DateTime ToUtc(DateTime businessLocal) =>
-        TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(businessLocal, DateTimeKind.Unspecified), Zone);
-
     public static SalesPeriodWindow GetPeriodWindow(SalesPeriod period, DateTimeOffset now)
     {
-        DateTime today = ToBusinessTime(now).Date;
+        DateTime today = now.UtcDateTime.Date;
         (DateTime from, DateTime toExclusive) = period switch
         {
             SalesPeriod.Day => (today, today.AddDays(1)),
@@ -33,13 +24,12 @@ public static class BusinessTime
             Range = new SalesPeriodRangeModel
             {
                 Period = period,
-                From = from,
-                To = to,
-                Label = GetLabel(period, from, to),
-                TimeZone = CovenantConstants.BusinessTimeZoneId
+                From = DateTime.SpecifyKind(from, DateTimeKind.Unspecified),
+                To = DateTime.SpecifyKind(to, DateTimeKind.Unspecified),
+                Label = GetLabel(period, from, to)
             },
-            FromUtc = ToUtc(from),
-            ToUtcExclusive = ToUtc(toExclusive)
+            FromUtc = DateTime.SpecifyKind(from, DateTimeKind.Utc),
+            ToUtcExclusive = DateTime.SpecifyKind(toExclusive, DateTimeKind.Utc)
         };
     }
 

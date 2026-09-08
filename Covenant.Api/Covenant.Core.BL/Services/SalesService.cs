@@ -157,7 +157,7 @@ public class SalesService(
         var agencyId = identityServerService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
         var statuses = (filter.Statuses ?? []).Distinct().OrderBy(s => s).ToList();
-        var window = BusinessTime.GetPeriodWindow(filter.Period, timeService.GetCurrentDateTimeOffset());
+        var window = SalesPeriodWindows.GetPeriodWindow(filter.Period, timeService.GetCurrentDateTimeOffset());
         var rows = await companyRepository.GetDealsByStatus(agencyId, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
         var items = FillStatuses(rows, statuses.Count > 0 ? statuses : Enum.GetValues<DealStatus>().ToList());
         return Result.Ok(new DealsByStatusModel
@@ -174,8 +174,8 @@ public class SalesService(
         var agencyId = identityServerService.GetAgencyId();
         var ownerId = OwnerScope ?? filter.OwnerId;
         var now = timeService.GetCurrentDateTimeOffset();
-        var quarter = BusinessTime.GetPeriodWindow(SalesPeriod.Quarter, now);
-        var week = BusinessTime.GetPeriodWindow(SalesPeriod.Week, now);
+        var quarter = SalesPeriodWindows.GetPeriodWindow(SalesPeriod.Quarter, now);
+        var week = SalesPeriodWindows.GetPeriodWindow(SalesPeriod.Week, now);
         var pipeline = await companyRepository.GetDealsByStatus(agencyId, ownerId, quarter.FromUtc, quarter.ToUtcExclusive, []);
         var activity = await companyRepository.GetInteractionsByType(agencyId, ownerId, week.FromUtc, week.ToUtcExclusive);
         return new SalesDashboardSummaryModel

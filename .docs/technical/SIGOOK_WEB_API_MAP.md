@@ -632,7 +632,7 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 // GET /api/agency/sales/dashboard/deals-by-status?period=1
 {
   "period": { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00",
-              "label": "Sep 6 - Sep 12, 2026", "timeZone": "America/New_York" },
+              "label": "Sep 6 - Sep 12, 2026" },
   "totalCount": 9,
   "totalValue": 41500.00,
   "items": [ { "status": 0, "count": 3, "totalValue": 12000.00 } ]  // one row per status, zero-filled
@@ -641,16 +641,16 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 // GET /api/agency/sales/dashboard/summary
 {
   "asOf": "2026-09-09T15:00:00Z",
-  "quarter": { "period": 3, "from": "2026-07-01T00:00:00", "to": "2026-09-30T00:00:00", "label": "Q3 2026", "timeZone": "America/New_York" },
-  "week":    { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00", "label": "Sep 6 - Sep 12, 2026", "timeZone": "America/New_York" },
+  "quarter": { "period": 3, "from": "2026-07-01T00:00:00", "to": "2026-09-30T00:00:00", "label": "Q3 2026" },
+  "week":    { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00", "label": "Sep 6 - Sep 12, 2026" },
   "pipeline": [ { "status": 0, "count": 24, "totalValue": 180000.00 } ],  // 7 rows, enum order
   "activity": [ { "type": 0, "count": 42 } ]                              // 4 rows, enum order
 }
 ```
 
-`from`/`to` are **calendar dates in the business time zone**, serialized without a UTC offset so the
-browser renders them verbatim; `to` is inclusive. Windows are resolved server-side by
-`Covenant.Common/Utils/BusinessTime.cs` (America/New_York, week Sunday–Saturday).
+`from`/`to` are **UTC calendar dates**, serialized without an offset so the browser renders them
+verbatim; `to` is inclusive. Windows are resolved server-side by
+`Covenant.Common/Utils/SalesPeriodWindows.cs` (UTC, week Sunday–Saturday).
 
 ### Refresh behavior
 

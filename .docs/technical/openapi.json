@@ -26413,10 +26413,6 @@
           "label": {
             "type": "string",
             "nullable": true
-          },
-          "timeZone": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
