@@ -46,3 +46,11 @@ class PermissionFailure extends Failure {
 class UserCancelledFailure extends Failure {
   const UserCancelledFailure({super.message = 'User cancelled the operation'});
 }
+
+extension SessionFailureX on Failure {
+  bool get isDefinitiveAuthFailure {
+    final failure = this;
+    if (failure is! ServerFailure) return false;
+    return const {400, 401, 403}.contains(failure.statusCode);
+  }
+}

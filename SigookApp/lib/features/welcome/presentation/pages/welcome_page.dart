@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../../../core/constants/error_messages.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
 class WelcomePage extends ConsumerStatefulWidget {
   const WelcomePage({super.key});
@@ -93,6 +95,23 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
 
     _controller.forward();
     _loadAppVersion();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && ref.read(authViewModelProvider).sessionExpired) {
+        _showSessionExpiredMessage();
+      }
+    });
+  }
+
+  void _showSessionExpiredMessage() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(ErrorMessages.tokenExpired),
+        backgroundColor: AppTheme.errorRed,
+      ),
+    );
+    ref.read(authViewModelProvider.notifier).acknowledgeSessionExpired();
   }
 
   Future<void> _loadAppVersion() async {
@@ -194,6 +213,13 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+
+    ref.listen(
+      authViewModelProvider.select((s) => s.sessionExpired),
+      (previous, next) {
+        if (next) _showSessionExpiredMessage();
+      },
+    );
 
     return Scaffold(
       body: Stack(

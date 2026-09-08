@@ -111,11 +111,37 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> {
   late final GoRouter _router;
+  late final RouterRefreshNotifier _routerRefresh;
+  late final ProviderSubscription<(bool, bool)> _sessionSubscription;
 
   @override
   void initState() {
     super.initState();
-    _router = AppRouter.buildRouter(ref.read(analyticsServiceProvider));
+    _routerRefresh = RouterRefreshNotifier();
+    _sessionSubscription = ref.listenManual(
+      authViewModelProvider.select(
+        (s) => (s.isAuthenticated, s.isRestoringSession),
+      ),
+      (previous, next) => _routerRefresh.refresh(),
+    );
+    _router = AppRouter.buildRouter(
+      ref.read(analyticsServiceProvider),
+      isSessionActive: _isSessionActive,
+      refreshListenable: _routerRefresh,
+    );
+  }
+
+  bool _isSessionActive() {
+    final authState = ref.read(authViewModelProvider);
+    return authState.isAuthenticated || authState.isRestoringSession;
+  }
+
+  @override
+  void dispose() {
+    _sessionSubscription.close();
+    _router.dispose();
+    _routerRefresh.dispose();
+    super.dispose();
   }
 
   @override

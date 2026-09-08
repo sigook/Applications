@@ -1,6 +1,6 @@
-import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:riverpod/riverpod.dart';
+import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/auth_interceptor.dart';
@@ -17,13 +17,24 @@ import '../../domain/usecases/resend_confirmation_link.dart';
 
 part 'auth_providers.g.dart';
 
+@Riverpod(keepAlive: true)
+class SessionExpiredSignal extends _$SessionExpiredSignal {
+  @override
+  int build() => 0;
+
+  void emit() => state = state + 1;
+}
+
 // 0. Auth Interceptor for automatic token refresh on 401 errors
 final authInterceptorProvider = Provider<AuthInterceptor>((ref) {
   return AuthInterceptor(
-    ref: ref,
     authRepository: ref.read(authRepositoryProvider),
     localDataSource: ref.read(authLocalDataSourceProvider),
-    dio: ref.read(apiClientProvider).dio,
+    retryDio: ApiClient(
+      crashReportingService: ref.read(crashReportingServiceProvider),
+    ).dio,
+    onSessionExpired: () =>
+        ref.read(sessionExpiredSignalProvider.notifier).emit(),
   );
 });
 
@@ -42,18 +53,12 @@ final authenticatedApiClientProvider = Provider((ref) {
   return apiClient;
 });
 
-// 1. OAuth Client
-final flutterAppAuthProvider = Provider<FlutterAppAuth>((ref) {
-  return FlutterAppAuth();
-});
-
-// 2. Datasources
+// 1. Datasources
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   return AuthRemoteDataSourceImpl(
     dio: ref.read(apiClientProvider).dio,
     anonymousDio: ApiClient().dio,
     networkInfo: ref.read(networkInfoProvider),
-    appAuth: ref.read(flutterAppAuthProvider),
   );
 });
 
@@ -63,7 +68,7 @@ final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {
   );
 });
 
-// 3. Repository
+// 2. Repository
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepositoryImpl(
     remote: ref.read(authRemoteDataSourceProvider),
@@ -72,7 +77,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   );
 });
 
-// 4. UseCases
+// 3. UseCases
 @riverpod
 SignIn signIn(Ref ref) {
   return SignIn(ref.read(authRepositoryProvider));
@@ -98,4 +103,4 @@ ResendConfirmationLink resendConfirmationLink(Ref ref) {
   return ResendConfirmationLink(ref.read(authRepositoryProvider));
 }
 
-// 5. authViewModelProvider is auto-generated from @riverpod in auth_viewmodel.dart
+// 4. authViewModelProvider is auto-generated from @riverpod in auth_viewmodel.dart
