@@ -5493,6 +5493,111 @@
         }
       }
     },
+    "/api/agency/sales/Dashboard/deals-by-status": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Gets the deal count and total value per status for a period. Sales users only see the deals they own.",
+        "parameters": [
+          {
+            "name": "Period",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
+              }
+            }
+          },
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.DealsByStatusModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/sales/Dashboard/summary": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Gets the sales dashboard summary: deals per status for the current quarter and interactions per type for the current week.",
+        "parameters": [
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesDashboardSummaryModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/sales/Deals": {
       "get": {
         "tags": [
@@ -24030,6 +24135,16 @@
         "type": "integer",
         "format": "int32"
       },
+      "Covenant.Common.Enums.SalesPeriod": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "Covenant.Common.Enums.TaxCategory": {
         "enum": [
           1,
@@ -26191,6 +26306,111 @@
             "nullable": true
           },
           "jobPosition": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.DealStatusSummaryModel": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.DealsByStatusModel": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.DealStatusSummaryModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.InteractionTypeSummaryModel": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionType"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.SalesDashboardSummaryModel": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quarter": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel"
+          },
+          "week": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel"
+          },
+          "pipeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.DealStatusSummaryModel"
+            },
+            "nullable": true
+          },
+          "activity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.InteractionTypeSummaryModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "label": {
             "type": "string",
             "nullable": true
           }

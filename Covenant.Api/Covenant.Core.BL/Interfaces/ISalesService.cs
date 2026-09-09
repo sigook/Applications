@@ -1,6 +1,7 @@
-using Covenant.Common.Functionals;
+﻿using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Models.Request;
 
 namespace Covenant.Core.BL.Interfaces;
@@ -22,4 +23,7 @@ public interface ISalesService
     Task<Result<Guid>> CreateDeal();
     Task<Result> UpdateDeal(Guid id, UpdateDealModel model);
     Task<Result> DeleteDeal(Guid id);
+
+    Task<Result<DealsByStatusModel>> GetDealsByStatus(GetDealsByStatusFilter filter);
+    Task<SalesDashboardSummaryModel> GetDashboardSummary(GetSalesDashboardSummaryFilter filter);
 }

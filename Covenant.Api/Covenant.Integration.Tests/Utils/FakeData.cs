@@ -1,4 +1,4 @@
-using Covenant.Common.Entities;
+﻿using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
@@ -128,4 +128,14 @@ public static class FakeData
         if (rate is not null) request.JobPositionRate = rate;
         return request;
     }
+
+    public static Deal FakeDeal(Guid userId, Guid companyProfileId, DateTime date, DealStatus status,
+        decimal value = 1000m, string title = "Deal", DealType type = DealType.Temporal) =>
+        new(title, userId, companyProfileId, date, value, type, status, null);
+
+    public static CompanyInteraction FakeCompanyInteraction(Guid userId, Guid companyProfileId, DateTime createdAt,
+        InteractionType type, string description = "Interaction",
+        InteractionPurpose purpose = InteractionPurpose.Intro,
+        InteractionStatus status = InteractionStatus.Completed) =>
+        new(description, userId, companyProfileId, purpose, type, status) { CreatedAt = createdAt };
 }

@@ -14,7 +14,7 @@ Sigook.Web/
 │   ├── components/         # Reusable Vue components by domain
 │   ├── composables/        # Composition API utilities
 │   ├── constants/          # Enums and static constants
-│   ├── data/               # Static JSON (landing pages, sales dashboard)
+│   ├── data/               # Static JSON (landing pages)
 │   ├── directives/         # Custom Vue directives
 │   ├── filters/            # Formatter functions (imported, not Vue 2 filters)
 │   ├── lang/               # VeeValidate rules + English error messages
@@ -68,7 +68,7 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | locationApi.ts | Countries, provinces, cities, provincial settings, location tax |
 | notificationApi.ts | Aggregated agency notification bell payload |
 | salesApi.ts | Sales-scoped request/company lists + Excel export |
-| salesDashboardApi.ts | Sales dashboard summary — served from static JSON (see SIGOOK_WEB_API_MAP.md §18) |
+| salesDashboardApi.ts | Live sales dashboard aggregates: deals by status + quarter summary (see SIGOOK_WEB_API_MAP.md §18) |
 | sharedApi.ts | Email preferences unsubscribe |
 | userNotificationApi.ts | In-app user notifications |
 | websiteApi.ts | Public: job search, contact form, candidate apply |
@@ -88,7 +88,7 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | company.ts | `CompanyProfile*`, `CompanyRequest*`, `TimeSheet*`, `ClockIn*`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*`, sales `Deal*`/`CompanyInteraction*` enums + models |
 | notification.ts | `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` |
 | runner.ts | `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, interview models, `RunnerStartingToday` |
-| sales.ts | `SalesDashboardModel` + dashboard blocks, `SalesRangeKey`, `SalesCreateKind`, `SALES_RANGE_TABS` |
+| sales.ts | `SalesPeriod`, dashboard response types (`DealsByStatusModel`, `SalesDashboardSummary`, `SalesPeriodRange`), `SalesBarPoint`, `SalesMeter`, `SalesCreateKind`, `SALES_PERIOD_TABS` |
 | security.ts | `ChangeEmailRequest`, `GetEmailResponse`, `UserProfile` |
 | website.ts | `JobSearchFilter`, `JobViewModel`, `ContactForm` |
 | weeklyBoard.ts | `WeeklyBoard`, `RecruiterWeeklyBoard`, assignment/runner payloads |
@@ -164,12 +164,12 @@ Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboar
 | Card | Content | Data source | Actions |
 |------|---------|-------------|---------|
 | Log Interactions | `SalesInteractionList` — 6 most recent, icon per type, relative timestamps | **Live** — `getCompanyInteractions` (pageSize 6, newest first) | "+ Log interaction"; row click opens edit |
-| Clients | `SalesClientList` — initials avatar + industry; subtitle "N active · N new this month" | **Static** — `clients` block | "+ Create client" |
+| Clients | `SalesClientList` — initials avatar + industry; subtitle "N in your book" | **Live** — `getSalesCompanies` (pageSize 6, newest first) | "+ Create client" |
 | Deals | `SalesDealList` — 6 most recent: status pill, optional document link, compact value | **Live** — `getDeals` (pageSize 6, newest first) | "+ Create deal"; row click opens edit |
-| Deals closed | `SalesBarChart` (responsive SVG, d3-scale) + `SalesRangeTabs` (Week / Month / Quarter) | **Static** — `dealsClosed` series | Range tabs only (client-side) |
-| This quarter | `SalesGoalDonut` (d3 arc, animated) + two `SalesMeterList`s: "Pipeline by status", "Activity this week" | **Static** — `goal`, `pipeline`, `activity` blocks | — |
+| Deals by status | `SalesBarChart` (responsive SVG, d3-scale, one color per `DealStatus`) + `SalesRangeTabs` (Today / This week / This month) + a `b-taginput` status filter | **Live** — `getDealsByStatus` | Period tabs and status filter both re-query |
+| This quarter | Two `SalesMeterList`s: "Pipeline by status" (quarter), "Activity this week" | **Live** — `getSalesDashboardSummary` | — |
 
-Static = frozen `src/data/sales/salesDashboard.json` via `salesDashboardApi.ts`; the static-vs-live split and refresh behavior are in SIGOOK_WEB_API_MAP.md §18.
+Every card is live; period windows are resolved server-side in UTC. Endpoints and refresh behavior are in SIGOOK_WEB_API_MAP.md §18.
 
 ### Company (`src/pages/company/`)
 
@@ -221,7 +221,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | notes/ | ColorPicker, ModalNotes, NoteForm, NotesPopover |
 | request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
-| sales_dashboard/ | 15 components for the sales dashboard. Shells & lists: SalesCard (icon chip, linked title, action button, body slot), SalesList (scroll + empty state), SalesListRow, SalesInteractionList, SalesClientList, SalesDealList. Charts: SalesBarChart (d3-scale SVG, `useElementSize`), SalesGoalDonut (d3 arc, `useTween`), SalesMeterList, SalesRangeTabs (week/month/quarter `v-model`). Create/edit: SalesCreateModal (kind switcher + delete — wiring in SIGOOK_WEB_API_MAP.md §14), SalesInteractionForm, SalesDealForm (file upload), SalesClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info), SearchSelect (generic autocomplete for the client pickers) |
+| sales_dashboard/ | 14 components for the sales dashboard. Shells & lists: SalesCard (icon chip, linked title, action button, body slot), SalesList (scroll + empty state), SalesListRow, SalesInteractionList, SalesClientList, SalesDealList. Charts: SalesBarChart (d3-scale SVG, `useElementSize`, per-point color, labels wrap then rotate when the band is narrow), SalesMeterList, SalesRangeTabs (`SalesPeriod` `v-model`). Create/edit: SalesCreateModal (kind switcher + delete — wiring in SIGOOK_WEB_API_MAP.md §14), SalesInteractionForm, SalesDealForm (file upload), SalesClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info), SearchSelect (generic autocomplete for the client pickers) |
 | weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
 | worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 
@@ -298,7 +298,6 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | useRunnerActions.ts | Runner menu state (status/interview/history modals) + delete with confirm; shared by the Runners tab and the weekly board |
 | useRevealOnScroll.ts | Reveal-on-scroll animation (landing) |
 | useStickyForm.ts | Persists in-progress form state |
-| useTween.ts | Numeric tween animation (sales goal donut) |
 
 ---
 
@@ -317,7 +316,7 @@ Plain functions imported where needed (Vue 3 removed template filters):
 - **directives/**: `status-directive.ts` only (registered as `v-status` in main.ts) — status badge rendering.
 - **constants/**: `enums.ts` (6 numeric enums used by agency/company pages, incl. `ClockType`), `catalog.ts` (`maximumHoursPerDay` from `VUE_APP_MAXIMUM_HOURS_DAY`, `residencyList`), `workerFeatures.ts` (worker status feature list).
 - **lang/**: NOT i18n translations — a single `validator.ts` registers VeeValidate rules (built-in + custom `cvn-postal-code` and `phoneCustom` via google-libphonenumber) with English messages inline. The app is English-only; no vue-i18n.
-- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json) + `sales/salesDashboard.json` (frozen sales dashboard summary payload, Q3 2026 — see SIGOOK_WEB_API_MAP.md §18).
+- **data/**: `landing/` static JSON (historyMilestones.json, industries.json, teamMembers.json).
 
 ---
 

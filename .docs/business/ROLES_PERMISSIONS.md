@@ -70,8 +70,10 @@ Concretely:
 The sales module's deals and company interactions (`api/agency/sales/deals`,
 `api/agency/sales/companyinteractions`) do **not** follow the list-is-the-boundary rule: a sales
 user lists, updates and deletes only the records they own, and `OwnerId` is overwritten server-side
-on create. Admin and superadmin hit the same endpoints unscoped. Controllers:
-`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs`
+on create. The dashboard aggregates (`api/agency/sales/dashboard/deals-by-status`,
+`api/agency/sales/dashboard/summary`) count only those same owned rows. Admin and superadmin hit
+every one of these endpoints unscoped. Controllers:
+`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController,DashboardController}.cs`
 (Policy `Sales`). Business meaning of deals and interactions: `SALES_MODULE.md`; entities: `.docs/technical/ENTITIES_RELATIONSHIPS.md`.
 
 ## Sales auto-assignment

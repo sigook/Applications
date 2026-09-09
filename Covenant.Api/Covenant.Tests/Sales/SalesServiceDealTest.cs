@@ -1,4 +1,4 @@
-using Covenant.Api.Validators.Company;
+﻿using Covenant.Api.Validators.Company;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
@@ -39,7 +39,9 @@ namespace Covenant.Tests.Sales
                 new CreateCompanyInteractionModelValidator(),
                 new UpdateCompanyInteractionModelValidator(),
                 new CreateDealModelValidator(),
-                new UpdateDealModelValidator());
+                new UpdateDealModelValidator(),
+                Mock.Of<ITimeService>(),
+                new GetDealsByStatusFilterValidator());
         }
 
         private static CreateDealModel ValidCreateModel() => new()
