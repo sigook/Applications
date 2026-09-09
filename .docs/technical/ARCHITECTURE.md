@@ -325,6 +325,15 @@ rather than constructing clients directly.
   "Sign in with Microsoft 365" button (`signinRedirect` with `acr_values=idp:oidc`, which skips
   the IdentityServer login page and goes straight to the external provider via `/callback`).
   Covenant.Api validates the JWT Bearer token on every request.
+- **Microsoft 365 accounts are re-checked after login.** The external callback stores the Entra
+  `oid` as the `microsoft_oid` user claim and rejects the login when Graph reports
+  `accountEnabled = false`. `CustomProfileService.IsActiveAsync` repeats that Graph check (and the
+  `InactiveUsers` check) every time IdentityServer validates a session — refresh tokens, the
+  authorize endpoint, userinfo — so blocking sign-in in the Microsoft 365 admin center or
+  deactivating a user in Sigook ends their session at the next token refresh. Results are cached
+  5 minutes per user (`Microsoft365AccountService`); a Graph outage or missing
+  `Microsoft365ClientId/Secret` fails open (session allowed, error logged). Requires the
+  IdentityServer app registration to hold the `User.Read.All` application permission.
 - **Forgot password** is API-driven (`POST /Password/forgot` → 6-digit emailed code, 15-min TTL,
   5 attempts, 60-s resend cooldown; `POST /Password/reset` with `{email, code, newPassword}`).
   Codes live in the `PasswordResetCode` table (hashed). Both Sigook.Web (`/forgot-password`)

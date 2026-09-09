@@ -13,8 +13,11 @@ namespace Covenant.IdentityServer.Controllers.Account.Models
 
         public const string CompanyId = "companyId";
         public const string AgencyId = "agencyId";
+        public const string MicrosoftObjectId = "microsoft_oid";
+        public const string MicrosoftObjectIdExternalClaim = "oid";
 
         public static Claim ClaimCompanyId(Guid id) => new(CompanyId, id.ToString());
         public static Claim ClaimAgencyId(Guid id) => new(AgencyId, id.ToString());
+        public static Claim ClaimMicrosoftObjectId(string objectId) => new(MicrosoftObjectId, objectId);
     }
 }

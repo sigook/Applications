@@ -12,7 +12,7 @@ Controllers:        Covenant.IdentityServer/Controllers/Account/        (Login, 
                     Covenant.IdentityServer/Controllers/Diagnostics/
                     Covenant.IdentityServer/Controllers/Grants/
                     Covenant.IdentityServer/Controllers/Home/
-Services:           Covenant.IdentityServer/Services/                   (Interfaces: IClientService, IEmailService, etc.)
+Services:           Covenant.IdentityServer/Services/                   (Interfaces: IClientService, IEmailService, IMicrosoft365AccountService = Graph accountEnabled check; CustomProfileService.IsActiveAsync = session kill switch for InactiveUsers + disabled Entra accounts)
                     Covenant.IdentityServer/Services/Impl/              (Implementations)
 Security:           Covenant.IdentityServer/Security/                   (RoleConstants, CovenantResourceOwnerPasswordValidator = password grant rules)
 Entities:           Covenant.IdentityServer/Entities/                   (CovenantRole, InactiveUser, PasswordResetCode)

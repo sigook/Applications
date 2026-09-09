@@ -27,11 +27,22 @@ http.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   return Promise.reject(error);
 });
 
+async function signOutAndRedirectToLogin(): Promise<void> {
+  const securityStore = useSecurityStore(pinia);
+  await securityStore.signOut().catch(() => undefined);
+  const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+  window.location.assign(`/login?returnUrl=${returnUrl}`);
+}
+
 // Response interceptor
 http.interceptors.response.use(response => response, async (error: AxiosError) => {
   const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-  if (error.response?.status === 401 && !originalRequest._retry) {
+  if (error.response?.status === 401) {
+    if (originalRequest._retry) {
+      await signOutAndRedirectToLogin();
+      return Promise.reject(error.response);
+    }
     originalRequest._retry = true;
 
     try {
@@ -44,8 +55,7 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
       originalRequest.headers['accept-language'] = localStorage.getItem('language') && localStorage.getItem('language') !== 'en' ? localStorage.getItem('language') : 'en-US';
       return http(originalRequest);
     } catch (e) {
-      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.assign(`/login?returnUrl=${returnUrl}`);
+      await signOutAndRedirectToLogin();
       return Promise.reject(e);
     }
   } else {

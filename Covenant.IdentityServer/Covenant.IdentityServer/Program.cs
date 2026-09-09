@@ -79,6 +79,8 @@ builder.Services
     .AddMicrosoftAuthentication365(builder.Configuration);
 
 builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IMicrosoft365AccountService, Microsoft365AccountService>();
 if (!builder.Environment.IsProduction())
 {
     IdentityModelEventSource.ShowPII = true;
