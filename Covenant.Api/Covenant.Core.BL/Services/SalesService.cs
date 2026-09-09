@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Entities;
+﻿using System.Globalization;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
@@ -9,7 +10,6 @@ using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
-using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using FluentValidation;
@@ -157,7 +157,7 @@ public class SalesService(
         var agencyId = identityServerService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
         var statuses = (filter.Statuses ?? []).Distinct().OrderBy(s => s).ToList();
-        var window = SalesPeriodWindows.GetPeriodWindow(filter.Period, timeService.GetCurrentDateTimeOffset());
+        var window = GetPeriodWindow(filter.Period, timeService.GetCurrentDateTimeOffset());
         var rows = await companyRepository.GetDealsByStatus(agencyId, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
         var items = FillStatuses(rows, statuses.Count > 0 ? statuses : Enum.GetValues<DealStatus>().ToList());
         return Result.Ok(new DealsByStatusModel
@@ -174,8 +174,8 @@ public class SalesService(
         var agencyId = identityServerService.GetAgencyId();
         var ownerId = OwnerScope ?? filter.OwnerId;
         var now = timeService.GetCurrentDateTimeOffset();
-        var quarter = SalesPeriodWindows.GetPeriodWindow(SalesPeriod.Quarter, now);
-        var week = SalesPeriodWindows.GetPeriodWindow(SalesPeriod.Week, now);
+        var quarter = GetPeriodWindow(SalesPeriod.Quarter, now);
+        var week = GetPeriodWindow(SalesPeriod.Week, now);
         var pipeline = await companyRepository.GetDealsByStatus(agencyId, ownerId, quarter.FromUtc, quarter.ToUtcExclusive, []);
         var activity = await companyRepository.GetInteractionsByType(agencyId, ownerId, week.FromUtc, week.ToUtcExclusive);
         return new SalesDashboardSummaryModel
@@ -187,6 +187,41 @@ public class SalesService(
             Activity = FillTypes(activity)
         };
     }
+
+    private SalesPeriodWindow GetPeriodWindow(SalesPeriod period, DateTimeOffset now)
+    {
+        DateTime today = now.UtcDateTime.Date;
+        (DateTime from, DateTime toExclusive) = period switch
+        {
+            SalesPeriod.Day => (today, today.AddDays(1)),
+            SalesPeriod.Week => (today.StartOfWeekSunday(), today.StartOfWeekSunday().AddDays(7)),
+            SalesPeriod.Month => (today.StartOfMonth(), today.StartOfMonth().AddMonths(1)),
+            SalesPeriod.Quarter => (today.StartOfQuarter(), today.StartOfQuarter().AddMonths(3)),
+            _ => throw new ArgumentOutOfRangeException(nameof(period))
+        };
+        DateTime to = toExclusive.AddDays(-1);
+        return new SalesPeriodWindow
+        {
+            Range = new SalesPeriodRangeModel
+            {
+                Period = period,
+                From = DateTime.SpecifyKind(from, DateTimeKind.Unspecified),
+                To = DateTime.SpecifyKind(to, DateTimeKind.Unspecified),
+                Label = GetLabel(period, from, to)
+            },
+            FromUtc = DateTime.SpecifyKind(from, DateTimeKind.Utc),
+            ToUtcExclusive = DateTime.SpecifyKind(toExclusive, DateTimeKind.Utc)
+        };
+    }
+
+    private static string GetLabel(SalesPeriod period, DateTime from, DateTime to) => period switch
+    {
+        SalesPeriod.Day => from.ToString("MMM d, yyyy", CultureInfo.InvariantCulture),
+        SalesPeriod.Week => $"{from.ToString("MMM d", CultureInfo.InvariantCulture)} - {to.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)}",
+        SalesPeriod.Month => from.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
+        SalesPeriod.Quarter => $"Q{from.Quarter()} {from.Year}",
+        _ => throw new ArgumentOutOfRangeException(nameof(period))
+    };
 
     private static List<DealStatusSummaryModel> FillStatuses(List<DealStatusSummaryModel> rows, List<DealStatus> statuses) =>
         statuses

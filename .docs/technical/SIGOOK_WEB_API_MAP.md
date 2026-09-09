@@ -650,7 +650,7 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 
 `from`/`to` are **UTC calendar dates**, serialized without an offset so the browser renders them
 verbatim; `to` is inclusive. Windows are resolved server-side by
-`Covenant.Common/Utils/SalesPeriodWindows.cs` (UTC, week Sunday–Saturday).
+`SalesService.GetPeriodWindow` (UTC, week Sunday–Saturday).
 
 ### Refresh behavior
 
