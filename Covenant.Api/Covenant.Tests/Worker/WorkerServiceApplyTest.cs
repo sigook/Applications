@@ -50,6 +50,7 @@ public class WorkerServiceApplyTest
             _workerRepository.Object,
             Mock.Of<IAgencyRepository>(),
             Mock.Of<ICompanyRepository>(),
+            Mock.Of<IUserRepository>(),
             Mock.Of<INotificationRepository>(),
             _requestRepository.Object,
             _workerRequestRepository.Object,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -362,6 +363,136 @@ void main() {
       expect(result.isLeft(), true);
       verifyNever(() => mockRemote.revokeRefreshToken(any()));
       verifyNever(() => mockLocal.clearToken());
+    });
+  });
+
+  // ── refreshToken (single-flight / storage precedence) ─────────────────────
+
+  group('refreshToken — coordination', () {
+    const tRefreshToken = 'refresh-token-xyz';
+    final tValidCachedModel = AuthTokenModel(
+      accessToken: 'access-newer',
+      refreshToken: 'refresh-newer',
+      expirationDateTime: DateTime.now().add(const Duration(hours: 1)),
+    );
+
+    test('propagates statusCode and code from the remote failure', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockRemote.refreshToken(tRefreshToken)).thenThrow(
+        ServerException(
+          message: 'Session expired',
+          statusCode: 400,
+          code: 'invalid_grant',
+        ),
+      );
+
+      final result = await repository.refreshToken(tRefreshToken);
+
+      expect(result.isLeft(), true);
+      result.fold(
+        (f) {
+          final failure = f as ServerFailure;
+          expect(failure.statusCode, 400);
+          expect(failure.code, 'invalid_grant');
+        },
+        (_) => fail('Expected Left'),
+      );
+      verifyNever(() => mockLocal.cacheToken(any()));
+    });
+
+    test('shares one in-flight refresh between concurrent callers', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      final completer = Completer<AuthTokenModel>();
+      when(() => mockRemote.refreshToken(tRefreshToken))
+          .thenAnswer((_) => completer.future);
+
+      final first = repository.refreshToken(tRefreshToken);
+      final second = repository.refreshToken(tRefreshToken);
+      completer.complete(_tTokenModel);
+      final results = await Future.wait([first, second]);
+
+      expect(results[0].isRight(), true);
+      expect(results[1].isRight(), true);
+      verify(() => mockRemote.refreshToken(any())).called(1);
+      verify(() => mockLocal.cacheToken(_tTokenModel)).called(1);
+    });
+
+    test('starts a new refresh once the previous one has completed', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockRemote.refreshToken(tRefreshToken))
+          .thenAnswer((_) async => _tTokenModel);
+
+      await repository.refreshToken(tRefreshToken);
+      await repository.refreshToken(tRefreshToken);
+
+      verify(() => mockRemote.refreshToken(any())).called(2);
+    });
+
+    test('returns the cached token when storage already holds a newer valid one',
+        () async {
+      when(() => mockLocal.getCachedToken())
+          .thenAnswer((_) async => tValidCachedModel);
+
+      final result = await repository.refreshToken('refresh-old');
+
+      expect(result.isRight(), true);
+      result.fold(
+        (_) => fail('Expected Right'),
+        (token) => expect(token, tValidCachedModel.toEntity()),
+      );
+      verifyNever(() => mockRemote.refreshToken(any()));
+      verifyNever(() => mockLocal.cacheToken(any()));
+    });
+
+    test('refreshes with the stored refresh token when it differs and is expired',
+        () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockLocal.getCachedToken()).thenAnswer(
+        (_) async => const AuthTokenModel(
+          accessToken: 'access-newer',
+          refreshToken: 'refresh-newer',
+        ),
+      );
+      when(() => mockRemote.refreshToken('refresh-newer'))
+          .thenAnswer((_) async => _tTokenModel);
+
+      final result = await repository.refreshToken('refresh-old');
+
+      expect(result.isRight(), true);
+      verify(() => mockRemote.refreshToken('refresh-newer')).called(1);
+      verifyNever(() => mockRemote.refreshToken('refresh-old'));
+    });
+
+    test('returns CacheFailure when storage throws', () async {
+      when(() => mockLocal.getCachedToken()).thenThrow(Exception('storage'));
+
+      final result = await repository.refreshToken(tRefreshToken);
+
+      expect(result.isLeft(), true);
+      result.fold((f) => expect(f, isA<CacheFailure>()), (_) => fail(''));
+      verifyNever(() => mockRemote.refreshToken(any()));
+    });
+  });
+
+  // ── clearSession ──────────────────────────────────────────────────────────
+
+  group('clearSession', () {
+    test('clears the local token without revoking', () async {
+      final result = await repository.clearSession();
+
+      expect(result.isRight(), true);
+      verify(() => mockLocal.clearToken()).called(1);
+      verifyNever(() => mockRemote.revokeRefreshToken(any()));
+      verifyNever(() => mockNetwork.isConnected);
+    });
+
+    test('returns CacheFailure when clearing throws', () async {
+      when(() => mockLocal.clearToken()).thenThrow(Exception('storage'));
+
+      final result = await repository.clearSession();
+
+      expect(result.isLeft(), true);
+      result.fold((f) => expect(f, isA<CacheFailure>()), (_) => fail(''));
     });
   });
 }

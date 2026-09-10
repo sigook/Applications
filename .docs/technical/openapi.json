@@ -2968,6 +2968,78 @@
       }
     },
     "/api/agency/workers/{workerProfileId}/Comments": {
+      "get": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "Gets the paginated comments about a worker, scoped to the current agency.",
+        "parameters": [
+          {
+            "name": "workerProfileId",
+            "in": "path",
+            "description": "Identifier of the worker profile the comments are about.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.WorkerCommentModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.WorkerCommentModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.WorkerCommentModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
       "post": {
         "tags": [
           "Comments"
@@ -5493,6 +5565,111 @@
         }
       }
     },
+    "/api/agency/sales/Dashboard/deals-by-status": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Gets the deal count and total value per status for a period. Sales users only see the deals they own.",
+        "parameters": [
+          {
+            "name": "Period",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
+              }
+            }
+          },
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.DealsByStatusModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/sales/Dashboard/summary": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Gets the sales dashboard summary: deals per status for the current quarter and interactions per type for the current week.",
+        "parameters": [
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesDashboardSummaryModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/sales/Deals": {
       "get": {
         "tags": [
@@ -6277,7 +6454,7 @@
         "tags": [
           "EmailPreferences"
         ],
-        "summary": "Unsubscribes a user from a given notification type.",
+        "summary": "Unsubscribes the owner of an email address from a given notification type.",
         "requestBody": {
           "description": "Unsubscribe request data.",
           "content": {
@@ -16711,6 +16888,141 @@
         }
       }
     },
+    "/api/agency/workers/{workerProfileId}/TimeSheetHistory": {
+      "get": {
+        "tags": [
+          "TimeSheetHistory"
+        ],
+        "summary": "Gets the paginated timesheet history for a worker profile.",
+        "parameters": [
+          {
+            "name": "workerProfileId",
+            "in": "path",
+            "description": "Worker profile identifier.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/workers/{workerProfileId}/TimeSheetHistory/{rowNumber}": {
+      "get": {
+        "tags": [
+          "TimeSheetHistory"
+        ],
+        "summary": "Gets the accumulated timesheet history for a worker profile up to a given row.",
+        "parameters": [
+          {
+            "name": "workerProfileId",
+            "in": "path",
+            "description": "Worker profile identifier.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "rowNumber",
+            "in": "path",
+            "description": "Row number to accumulate up to.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.TimesheetHistoryAccumulated"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.TimesheetHistoryAccumulated"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.TimesheetHistoryAccumulated"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/requests/{requestId}/TimeSheets/File": {
       "get": {
         "tags": [
@@ -17369,6 +17681,141 @@
         }
       }
     },
+    "/api/agency/workers/{workerProfileId}/WageHistory": {
+      "get": {
+        "tags": [
+          "WageHistory"
+        ],
+        "summary": "Gets the paginated wage history for a worker profile.",
+        "parameters": [
+          {
+            "name": "workerProfileId",
+            "in": "path",
+            "description": "Worker profile identifier.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/workers/{workerProfileId}/WageHistory/{rowNumber}": {
+      "get": {
+        "tags": [
+          "WageHistory"
+        ],
+        "summary": "Gets the accumulated wage history for a worker profile up to a given row.",
+        "parameters": [
+          {
+            "name": "workerProfileId",
+            "in": "path",
+            "description": "Worker profile identifier.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "rowNumber",
+            "in": "path",
+            "description": "Row number to accumulate up to.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.PayStubHistoryAccumulated"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.PayStubHistoryAccumulated"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.PayStubHistoryAccumulated"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/WebSite/contact": {
       "post": {
         "tags": [
@@ -17865,23 +18312,13 @@
         }
       }
     },
-    "/api/worker/{workerId}/comment": {
+    "/api/WorkerProfile/me/Comments": {
       "get": {
         "tags": [
           "WorkerComment"
         ],
-        "summary": "Gets the paginated comments for a worker, scoped to the caller.",
+        "summary": "Gets the paginated comments written about the current worker.",
         "parameters": [
-          {
-            "name": "workerId",
-            "in": "path",
-            "description": "Worker identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
           {
             "name": "IsDescending",
             "in": "query",
@@ -17917,21 +18354,14 @@
               }
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
           "500": {
             "description": "Internal Server Error"
           },
           "401": {
             "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
           }
         }
       }
@@ -18727,141 +19157,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{workerProfileId}/TimeSheetHistory": {
-      "get": {
-        "tags": [
-          "WorkerProfileTimeSheetHistory"
-        ],
-        "summary": "Gets the paginated timesheet history for a worker profile.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{workerProfileId}/TimeSheetHistory/{rowNumber}": {
-      "get": {
-        "tags": [
-          "WorkerProfileTimeSheetHistory"
-        ],
-        "summary": "Gets the accumulated timesheet history for a worker profile up to a given row.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "rowNumber",
-            "in": "path",
-            "description": "Row number to accumulate up to.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.TimesheetHistoryAccumulated"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.TimesheetHistoryAccumulated"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.TimesheetHistoryAccumulated"
                 }
               }
             }
@@ -20180,141 +20475,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{workerProfileId}/WageHistory": {
-      "get": {
-        "tags": [
-          "WorkerProfileWageHistory"
-        ],
-        "summary": "Gets the paginated wage history for a worker profile.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{workerProfileId}/WageHistory/{rowNumber}": {
-      "get": {
-        "tags": [
-          "WorkerProfileWageHistory"
-        ],
-        "summary": "Gets the accumulated wage history for a worker profile up to a given row.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "rowNumber",
-            "in": "path",
-            "description": "Row number to accumulate up to.",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.PayStubHistoryAccumulated"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.PayStubHistoryAccumulated"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.PayStubHistoryAccumulated"
                 }
               }
             }
@@ -22765,10 +22925,10 @@
         }
       }
     },
-    "/api/WorkersReportDocument/{requestId}/Document": {
+    "/api/agency/requests/{requestId}/WorkersReport": {
       "get": {
         "tags": [
-          "WorkersReportDocument"
+          "WorkersReport"
         ],
         "summary": "Generates the workers report for a request as an Excel file.",
         "parameters": [
@@ -24026,6 +24186,16 @@
         "enum": [
           1,
           2
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "Covenant.Common.Enums.SalesPeriod": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
         ],
         "type": "integer",
         "format": "int32"
@@ -26197,6 +26367,111 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Company.SalesDashboard.DealStatusSummaryModel": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.DealsByStatusModel": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.DealStatusSummaryModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.InteractionTypeSummaryModel": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionType"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.SalesDashboardSummaryModel": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "quarter": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel"
+          },
+          "week": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel"
+          },
+          "pipeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.DealStatusSummaryModel"
+            },
+            "nullable": true
+          },
+          "activity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.InteractionTypeSummaryModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.SalesPeriodRangeModel": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Company.UpdateCompanyInteractionModel": {
         "type": "object",
         "properties": {
@@ -26550,15 +26825,11 @@
       "Covenant.Common.Models.Notification.UnsubscribeModel": {
         "type": "object",
         "properties": {
-          "userId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "typeId": {
+          "email": {
             "type": "string",
             "nullable": true
           },
-          "userType": {
+          "typeId": {
             "type": "string",
             "nullable": true
           }

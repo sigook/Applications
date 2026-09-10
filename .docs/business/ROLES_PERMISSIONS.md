@@ -70,8 +70,10 @@ Concretely:
 The sales module's deals and company interactions (`api/agency/sales/deals`,
 `api/agency/sales/companyinteractions`) do **not** follow the list-is-the-boundary rule: a sales
 user lists, updates and deletes only the records they own, and `OwnerId` is overwritten server-side
-on create. Admin and superadmin hit the same endpoints unscoped. Controllers:
-`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs`
+on create. The dashboard aggregates (`api/agency/sales/dashboard/deals-by-status`,
+`api/agency/sales/dashboard/summary`) count only those same owned rows. Admin and superadmin hit
+every one of these endpoints unscoped. Controllers:
+`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController,DashboardController}.cs`
 (Policy `Sales`). Business meaning of deals and interactions: `SALES_MODULE.md`; entities: `.docs/technical/ENTITIES_RELATIONSHIPS.md`.
 
 ## Sales auto-assignment
@@ -172,6 +174,10 @@ It is the same `AgencyPersonnelModel` the `POST` takes, validated by `AgencyPers
   allowed on purpose, and the modal warns about it.
 - The new role only reaches the user's token on their **next sign-in**: `CustomProfileService` emits
   roles from the session principal instead of re-reading them.
+- **Blocking sign-in in Microsoft 365 is enough to lock a staff user out.** Every session check in
+  IdentityServer asks Microsoft Graph whether the account is still enabled, so a user blocked in
+  the admin center loses access at their next token refresh (access token lifetime plus up to
+  5 minutes of cache). Deactivating a user in Sigook (`InactiveUsers`) cuts sessions the same way.
 - The email moves `Email` + `UserName` in IdentityServer plus the local `Users` row, reusing
   `IIdentityServerService.UpdateUserEmail` — which rejects an email that already belongs to another
   user with `EmailAlreadyTaken`. `EmailConfirmed` is untouched, so the user keeps their password and

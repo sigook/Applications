@@ -54,4 +54,40 @@ void main() {
       expect(model.userInfo, isNull);
     });
   });
+
+  group('isExpired', () {
+    test('is expired when expirationDateTime is null', () {
+      const model = AuthTokenModel(accessToken: 'access-123');
+
+      expect(model.isExpired(), true);
+    });
+
+    test('is expired when the expiration is in the past', () {
+      final model = AuthTokenModel(
+        accessToken: 'access-123',
+        expirationDateTime: DateTime.now().subtract(const Duration(minutes: 1)),
+      );
+
+      expect(model.isExpired(), true);
+    });
+
+    test('is not expired when the expiration is in the future', () {
+      final model = AuthTokenModel(
+        accessToken: 'access-123',
+        expirationDateTime: DateTime.now().add(const Duration(hours: 1)),
+      );
+
+      expect(model.isExpired(), false);
+    });
+
+    test('treats an expiration inside the leeway window as expired', () {
+      final model = AuthTokenModel(
+        accessToken: 'access-123',
+        expirationDateTime: DateTime.now().add(const Duration(seconds: 30)),
+      );
+
+      expect(model.isExpired(), false);
+      expect(model.isExpired(leeway: const Duration(seconds: 60)), true);
+    });
+  });
 }

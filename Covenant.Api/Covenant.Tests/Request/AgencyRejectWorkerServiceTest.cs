@@ -1,4 +1,4 @@
-using Covenant.Api.Validators.Request;
+﻿using Covenant.Api.Validators.Request;
 using Covenant.Common.Configuration;
 using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
@@ -14,6 +14,7 @@ using Covenant.Common.Repositories.Worker;
 using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
+using MediatR;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -47,7 +48,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<ILogger<RequestService>>(),
                 new RequestCreateModelValidator(),
                 new RequestUpdateRequirementsModelValidator(),
-                new RequestAdapter());
+                new RequestAdapter(),
+                Mock.Of<IMediator>());
 
             Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
             Assert.True(result);
@@ -78,7 +80,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<ILogger<RequestService>>(),
                 new RequestCreateModelValidator(),
                 new RequestUpdateRequirementsModelValidator(),
-                new RequestAdapter());
+                new RequestAdapter(),
+                Mock.Of<IMediator>());
             Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
             Assert.False(result);
         }

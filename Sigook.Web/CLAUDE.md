@@ -14,7 +14,7 @@ UI library is `buefy` 3.x (official Vue 3 release, successor of `@ntohq/buefy-ne
 
 - `.docs/technical/SIGOOK_WEB_API_MAP.md` — every `src/api/*.ts` file → backend endpoint, types, Pinia wiring
 - `.docs/technical/SIGOOK_WEB_STRUCTURE.md` — folder layout, routes, views by feature (incl. sales dashboard layout), global plumbing
-- `.docs/business/SALES_MODULE.md` — sales module concepts (deals, interactions, dashboard KPIs); its static-JSON prototype seam is in SIGOOK_WEB_API_MAP.md §20
+- `.docs/business/SALES_MODULE.md` — sales module concepts (deals, interactions, dashboard KPIs); the dashboard aggregate endpoints are in SIGOOK_WEB_API_MAP.md §18
 
 ## Code Navigation
 

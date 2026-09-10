@@ -38,6 +38,7 @@ public class WorkerService(
     IWorkerRepository workerRepository,
     IAgencyRepository agencyRepository,
     ICompanyRepository companyRepository,
+    IUserRepository userRepository,
     INotificationRepository notificationRepository,
     IRequestRepository requestRepository,
     IWorkerRequestRepository workerRequestRepository,
@@ -238,27 +239,17 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    public async Task<Result<PaginatedList<WorkerCommentModel>>> GetComments(Guid workerId, Pagination pagination)
+    public Task<PaginatedList<WorkerCommentModel>> GetAgencyComments(Guid workerProfileId, Pagination pagination)
     {
-        var condition = await CommentsScope(workerId);
-        if (condition is null) return Result.Fail<PaginatedList<WorkerCommentModel>>("Not allowed to read these comments");
-        return Result.Ok(await workerRepository.GetComments(condition, pagination));
+        var agencyId = identityServerService.GetAgencyId();
+        return workerRepository.GetComments(
+            c => c.WorkerProfileId == workerProfileId && c.WorkerProfile.AgencyId == agencyId, pagination);
     }
 
-    private async Task<Expression<Func<WorkerComment, bool>>> CommentsScope(Guid workerId)
+    public Task<PaginatedList<WorkerCommentModel>> GetMyComments(Pagination pagination)
     {
-        if (identityServerService.IsAgencyStaff())
-        {
-            var agencyId = identityServerService.GetAgencyId();
-            return c => c.WorkerProfile.WorkerId == workerId && c.WorkerProfile.AgencyId == agencyId;
-        }
-        if (identityServerService.GetUserId() == workerId)
-            return c => c.WorkerProfile.WorkerId == workerId;
-        var companyId = identityServerService.GetCompanyId();
-        var companyProfile = await companyRepository.GetCompanyProfileId(p => p.CompanyId == companyId);
-        if (companyProfile is null) return null;
-        var companyProfileId = companyProfile.Id;
-        return c => c.WorkerProfile.WorkerId == workerId && c.CompanyProfileId == companyProfileId;
+        var workerId = identityServerService.GetUserId();
+        return workerRepository.GetComments(c => c.WorkerProfile.WorkerId == workerId, pagination);
     }
 
     public Task<Result> AddAgencyComment(Guid workerProfileId, string comment, decimal rate) =>
@@ -276,6 +267,44 @@ public class WorkerService(
     {
         await workerRepository.Create(entity);
         await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> Unsubscribe(UnsubscribeModel model)
+    {
+        User user = await userRepository.GetUserByEmail(model.Email);
+        if (user is not null) return await UnsubscribeUser(user, model.TypeId);
+
+        var candidate = await candidateRepository.GetCandidate(c => c.Email.ToLower() == model.Email.ToLower());
+        if (candidate is null) return Result.Fail("Email not found");
+
+        candidate.UnsubscribeFromEmails();
+        await candidateRepository.Update(candidate);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    private async Task<Result> UnsubscribeUser(User user, string typeId)
+    {
+        NotificationType notificationType = string.IsNullOrWhiteSpace(typeId)
+            ? NotificationType.NewRequestNotifyWorker
+            : NotificationType.GetAll.FirstOrDefault(c => c.Id.ToString() == typeId);
+        if (notificationType is null) return Result.Fail("Notification type not found");
+
+        UserNotificationType entity = await notificationRepository.Get(user.Id, notificationType.Id);
+        if (entity is null)
+        {
+            await notificationRepository.Create(new UserNotificationType(user.Id, notificationType.Id));
+        }
+        else
+        {
+            entity.EmailNotification = false;
+            entity.PushNotification = false;
+            entity.SMSNotification = false;
+            await notificationRepository.Update(entity);
+        }
+
+        await notificationRepository.SaveChangesAsync();
         return Result.Ok();
     }
 

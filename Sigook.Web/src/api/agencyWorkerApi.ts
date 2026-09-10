@@ -1,6 +1,6 @@
 import { api } from '@/security/apiService';
 import type { PaginatedList } from '@/types/common';
-import type { WorkerCommentCreateModel } from '@/types/worker';
+import type { WorkerCommentCreateModel, WorkerCommentFilter, WorkerCommentList } from '@/types/worker';
 import type {
   AgencyWorkerFilter,
   AgencyWorkerListItem,
@@ -69,7 +69,13 @@ export function updateAgencyWorkerEmail(workerProfileId: string, model: UpdateWo
   return api.put(`/api/agency/workers/${workerProfileId}/Email`, model);
 }
 
-// Worker comment from agency side (used by shared Comments component)
+// Worker comments seen from the agency side (used by shared Comments component)
+export function getAgencyWorkerComments(workerProfileId: string, filter: WorkerCommentFilter): Promise<WorkerCommentList> {
+  return api.get<WorkerCommentList>(`/api/agency/workers/${workerProfileId}/Comments`, {
+    params: { PageSize: filter.size, PageIndex: filter.pageIndex },
+  });
+}
+
 export function agencyCommentWorker(workerProfileId: string, comment: WorkerCommentCreateModel): Promise<void> {
   return api.post(`/api/agency/workers/${workerProfileId}/Comments`, comment);
 }

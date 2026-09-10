@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sigook_app_flutter/core/constants/error_messages.dart';
@@ -11,8 +10,6 @@ import 'package:sigook_app_flutter/features/auth/data/datasources/auth_remote_da
 import '../../../../helpers/mocks.dart';
 
 class MockDio extends Mock implements Dio {}
-
-class MockFlutterAppAuth extends Mock implements FlutterAppAuth {}
 
 void main() {
   late MockDio mockDio;
@@ -43,8 +40,165 @@ void main() {
       dio: mockDio,
       anonymousDio: mockAnonymousDio,
       networkInfo: mockNetwork,
-      appAuth: MockFlutterAppAuth(),
     );
+  });
+
+  group('refreshToken', () {
+    const tRefreshToken = 'refresh-456';
+
+    void stubRefreshSuccess({String? newRefreshToken = 'refresh-789'}) {
+      when(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          )).thenAnswer(
+        (_) async => Response(
+          requestOptions: tRequestOptions,
+          statusCode: 200,
+          data: {
+            'access_token': 'access-999',
+            'refresh_token': ?newRefreshToken,
+            'token_type': 'Bearer',
+            'expires_in': 3600,
+            'scope': 'openid profile api1 offline_access',
+          },
+        ),
+      );
+    }
+
+    test('posts a form-urlencoded refresh_token grant and maps the response',
+        () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      stubRefreshSuccess();
+
+      final result = await datasource.refreshToken(tRefreshToken);
+
+      expect(result.accessToken, 'access-999');
+      expect(result.refreshToken, 'refresh-789');
+      expect(result.expirationDateTime, isNotNull);
+      expect(result.expirationDateTime!.isAfter(DateTime.now()), true);
+
+      final captured = verify(() => mockAnonymousDio.post(
+            captureAny(),
+            data: captureAny(named: 'data'),
+            options: captureAny(named: 'options'),
+          )).captured;
+      expect(captured[0] as String, endsWith('/connect/token'));
+      final body = captured[1] as Map;
+      expect(body['grant_type'], 'refresh_token');
+      expect(body['refresh_token'], tRefreshToken);
+      expect(body.containsKey('client_id'), true);
+      expect(
+        (captured[2] as Options).contentType,
+        Headers.formUrlEncodedContentType,
+      );
+    });
+
+    test('keeps the current refresh token when the response has none',
+        () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      stubRefreshSuccess(newRefreshToken: null);
+
+      final result = await datasource.refreshToken(tRefreshToken);
+
+      expect(result.accessToken, 'access-999');
+      expect(result.refreshToken, tRefreshToken);
+    });
+
+    test('maps invalid_grant on 400 to a ServerException with code and status',
+        () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          )).thenThrow(badResponse(400, {'error': 'invalid_grant'}));
+
+      await expectLater(
+        () => datasource.refreshToken(tRefreshToken),
+        throwsA(
+          isA<ServerException>()
+              .having((e) => e.statusCode, 'statusCode', 400)
+              .having((e) => e.code, 'code', 'invalid_grant')
+              .having((e) => e.message, 'message', ErrorMessages.tokenExpired),
+        ),
+      );
+    });
+
+    test('maps other 400 errors to authenticationFailed', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          )).thenThrow(badResponse(400, {'error': 'invalid_client'}));
+
+      await expectLater(
+        () => datasource.refreshToken(tRefreshToken),
+        throwsA(
+          isA<ServerException>()
+              .having((e) => e.statusCode, 'statusCode', 400)
+              .having((e) => e.code, 'code', 'invalid_client')
+              .having(
+                (e) => e.message,
+                'message',
+                ErrorMessages.authenticationFailed,
+              ),
+        ),
+      );
+    });
+
+    test('maps a 500 to a ServerException carrying the status code', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          )).thenThrow(badResponse(500));
+
+      await expectLater(
+        () => datasource.refreshToken(tRefreshToken),
+        throwsA(
+          isA<ServerException>()
+              .having((e) => e.statusCode, 'statusCode', 500)
+              .having((e) => e.code, 'code', isNull),
+        ),
+      );
+    });
+
+    test('throws NetworkException on connection timeout', () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => true);
+      when(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          )).thenThrow(
+        DioException(
+          requestOptions: tRequestOptions,
+          type: DioExceptionType.connectionTimeout,
+        ),
+      );
+
+      await expectLater(
+        () => datasource.refreshToken(tRefreshToken),
+        throwsA(isA<NetworkException>()),
+      );
+    });
+
+    test('throws NetworkException without calling the endpoint when offline',
+        () async {
+      when(() => mockNetwork.isConnected).thenAnswer((_) async => false);
+
+      await expectLater(
+        () => datasource.refreshToken(tRefreshToken),
+        throwsA(isA<NetworkException>()),
+      );
+      verifyNever(() => mockAnonymousDio.post(
+            any(),
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+          ));
+    });
   });
 
   group('signIn', () {

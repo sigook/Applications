@@ -99,7 +99,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         foreach (var worker in workers)
         {
             if (!invitedEmails.Add(worker.Email)) continue;
-            var unsubscribeUrl = sendGridConfiguration.UnsubscribeUrl.Replace("{{workerId}}", worker.WorkerId.ToString());
+            var unsubscribeUrl = BuildUnsubscribeUrl(sendGridConfiguration.UnsubscribeUrl, worker.Email);
             object data = new
             {
                 worker_name = worker.FullName,
@@ -122,7 +122,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         {
             if (!candidate.Address.ContainsNormalized(city)) continue;
             if (!invitedEmails.Add(candidate.Email)) continue;
-            var candidateUnsubscribeUrl = sendGridConfiguration.CandidateUnsubscribeUrl.Replace("{{candidateId}}", candidate.Id.ToString());
+            var candidateUnsubscribeUrl = BuildUnsubscribeUrl(sendGridConfiguration.UnsubscribeUrl, candidate.Email);
             object data = new
             {
                 worker_name = candidate.Name,
@@ -148,6 +148,9 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         }
         return Result.Ok(new InvitationSentResult(workersSentCount, candidatesSentCount, request.NumberId, request.JobTitle));
     }
+
+    private static string BuildUnsubscribeUrl(string template, string email) =>
+        template.Replace("{{email}}", Uri.EscapeDataString(email));
 
     private static string BuildApplyUrl(string template, int numberId, string email) =>
         template

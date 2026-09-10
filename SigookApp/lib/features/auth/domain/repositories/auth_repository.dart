@@ -10,6 +10,7 @@ abstract class AuthRepository {
   Future<Either<Failure, AuthToken>> refreshToken(String refreshToken);
   Future<Either<Failure, String>> getUserRole(String accessToken);
   Future<Either<Failure, void>> logout();
+  Future<Either<Failure, void>> clearSession();
   Future<Either<Failure, void>> deactivateAccount(String accessToken);
   Future<Either<Failure, void>> requestPasswordResetCode(String email);
   Future<Either<Failure, void>> resetPassword({

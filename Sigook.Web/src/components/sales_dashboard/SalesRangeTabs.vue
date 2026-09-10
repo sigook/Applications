@@ -1,7 +1,7 @@
 <template>
   <div class="sd-tabs">
     <b-button
-      v-for="tab in SALES_RANGE_TABS"
+      v-for="tab in SALES_PERIOD_TABS"
       :key="tab.key"
       size="is-small"
       :class="['sd-tab', { 'is-active': tab.key === modelValue }]"
@@ -14,16 +14,16 @@
 </template>
 
 <script setup lang="ts">
-import type { SalesRangeKey } from '@/types/sales';
-import { SALES_RANGE_TABS } from '@/types/sales';
+import type { SalesPeriod } from '@/types/sales';
+import { SALES_PERIOD_TABS } from '@/types/sales';
 
-defineProps<{ modelValue: SalesRangeKey }>();
+defineProps<{ modelValue: SalesPeriod }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: SalesRangeKey): void;
+  (e: 'update:modelValue', value: SalesPeriod): void;
 }>();
 
-const select = (value: SalesRangeKey): void => {
+const select = (value: SalesPeriod): void => {
   emit('update:modelValue', value);
 };
 </script>
