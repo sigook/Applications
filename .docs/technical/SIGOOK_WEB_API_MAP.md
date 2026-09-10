@@ -262,7 +262,7 @@ Report generation and blob downloads.
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `downloadAgencyReport(url, filter)` | GET | (dynamic url) | `ReportQueryParams` (params) | Blob | Generic blob downloader |
-| `getWorkersReportDocument(requestId)` | GET | `/api/WorkersReportDocument/{requestId}/Document` | — | Blob | |
+| `getWorkersReportDocument(requestId)` | GET | `/api/agency/requests/{requestId}/WorkersReport` | — | Blob | Excel export of the request's workers |
 | `getJobPositionsHoursWorked(filter)` | GET | `/api/agency/accounting/reports/{companyProfileId}/job-positions` | `AgencyReportFilter & { companyProfileId }` (params) | `AgencyCompanyJobPosition[]` | Hours per position |
 | `getHoursWorkedReport(filter)` | GET | `/api/agency/accounting/reports/hours-worked` | `AgencyReportFilter` (params) | `HoursWorkedResume` | |
 | `getTimesheetsReport(filter)` | GET | `/api/agency/accounting/reports/timesheets/file` | `AgencyReportFilter` (params) | Blob | USA agencies |
@@ -663,7 +663,7 @@ The file header also carries the equivalent `api.get<SalesDashboardModel>('/api/
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `unsubscribe(model)` | POST | `/api/EmailPreferences/Unsubscribe` | `UnsubscribeRequest` | `void` | No auth required |
+| `unsubscribe(model)` | POST | `/api/EmailPreferences/Unsubscribe` | `UnsubscribeRequest` (`email` + optional `typeId`) | `void` | No auth required; the backend resolves whether the email belongs to a user or a candidate, and defaults `typeId` to `NewRequestNotifyWorker` (10) when omitted |
 
 ---
 
@@ -735,7 +735,7 @@ Public landing site endpoints (no auth).
 ### Comments
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCommentsWorker(filter)` | GET | `/api/worker/{filter.workerId}/comment` | `WorkerCommentFilter` (params) | `WorkerCommentList` | Feedback on worker |
+| `getMyComments(filter)` | GET | `/api/WorkerProfile/me/Comments` | `WorkerCommentFilter` (params) | `WorkerCommentList` | Feedback written about the signed-in worker |
 
 ### Profile
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -792,10 +792,10 @@ Public landing site endpoints (no auth).
 ### Wage & TimeSheet History
 | Function | HTTP Method | Endpoint | Request Type | Response Type |
 |----------|------------|----------|--------------|---------------|
-| `getWorkerProfileWageHistory(filter)` | GET | `/api/WorkerProfile/{profileId}/WageHistory` | `WageHistoryFilter` (params) | `PaginatedList<WorkerWageHistoryItem>` |
-| `getWorkerProfileWageHistoryAccumulated(id, rowNumber)` | GET | `/api/WorkerProfile/{id}/WageHistory/{rowNumber}` | — | `WorkerWageHistoryItem` |
-| `getWorkerProfileTimeSheetHistory(filter)` | GET | `/api/WorkerProfile/{profileId}/TimeSheetHistory` | `TimeSheetHistoryFilter` (params) | `PaginatedList<WorkerTimeSheetHistoryItem>` |
-| `getWorkerProfileTimeSheetHistoryAccumulated(id, rowNumber)` | GET | `/api/WorkerProfile/{id}/TimeSheetHistory/{rowNumber}` | — | `WorkerTimeSheetHistoryItem` |
+| `getWorkerProfileWageHistory(filter)` | GET | `/api/agency/workers/{profileId}/WageHistory` | `WageHistoryFilter` (params) | `PaginatedList<WorkerWageHistoryItem>` |
+| `getWorkerProfileWageHistoryAccumulated(id, rowNumber)` | GET | `/api/agency/workers/{id}/WageHistory/{rowNumber}` | — | `WorkerWageHistoryItem` |
+| `getWorkerProfileTimeSheetHistory(filter)` | GET | `/api/agency/workers/{profileId}/TimeSheetHistory` | `TimeSheetHistoryFilter` (params) | `PaginatedList<WorkerTimeSheetHistoryItem>` |
+| `getWorkerProfileTimeSheetHistoryAccumulated(id, rowNumber)` | GET | `/api/agency/workers/{id}/TimeSheetHistory/{rowNumber}` | — | `WorkerTimeSheetHistoryItem` |
 
 **Types:** from `src/types/worker`; `ClockType` enum from `src/constants/enums`.
 

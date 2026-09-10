@@ -18,8 +18,10 @@ using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
+using Covenant.Documents.Services;
 using Covenant.Infrastructure.Services;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -43,6 +45,7 @@ public class RequestService : IRequestService
     private readonly IValidator<RequestCreateModel> requestCreateValidator;
     private readonly IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator;
     private readonly IRequestAdapter requestAdapter;
+    private readonly IMediator mediator;
 
     public RequestService(
         ICompanyRepository companyRepository,
@@ -59,9 +62,11 @@ public class RequestService : IRequestService
         ILogger<RequestService> logger,
         IValidator<RequestCreateModel> requestCreateValidator,
         IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator,
-        IRequestAdapter requestAdapter)
+        IRequestAdapter requestAdapter,
+        IMediator mediator)
     {
         this.requestAdapter = requestAdapter;
+        this.mediator = mediator;
         this.requestCreateValidator = requestCreateValidator;
         this.requestUpdateRequirementsValidator = requestUpdateRequirementsValidator;
         this.companyRepository = companyRepository;
@@ -521,6 +526,12 @@ public class RequestService : IRequestService
     }
 
     public Task<ShiftModel> GetRequestShift(Guid requestId) => requestRepository.GetRequestShift(requestId);
+
+    public async Task<ResultGenerateDocument<MemoryStream>> GetWorkersReportFile(Guid requestId)
+    {
+        var workers = await requestRepository.GetWorkersRequestByRequestId(requestId, new GetWorkersRequestFilter());
+        return await mediator.Send(new GenerateWorkersReport(workers.Items));
+    }
 
     public async Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources)
     {

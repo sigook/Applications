@@ -2,6 +2,7 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Models;
+using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Worker;
 
 namespace Covenant.Core.BL.Interfaces;
@@ -13,7 +14,9 @@ public interface IWorkerService
     Task<Result<RequestApplicantDetailModel>> Apply(WorkerRequestApplyModel model, Guid? requestId = null);
     Task<Result> UpdateProfileImage(Guid profileId);
     Task<Result> UpdateDocumentSection(Guid profileId, WorkerDocumentType documentType);
-    Task<Result<PaginatedList<WorkerCommentModel>>> GetComments(Guid workerId, Pagination pagination);
+    Task<PaginatedList<WorkerCommentModel>> GetAgencyComments(Guid workerProfileId, Pagination pagination);
+    Task<PaginatedList<WorkerCommentModel>> GetMyComments(Pagination pagination);
     Task<Result> AddAgencyComment(Guid workerProfileId, string comment, decimal rate);
     Task<Result> AddCompanyComment(Guid workerProfileId, string comment, decimal rate);
+    Task<Result> Unsubscribe(UnsubscribeModel model);
 }

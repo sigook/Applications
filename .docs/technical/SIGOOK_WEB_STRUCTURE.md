@@ -198,7 +198,7 @@ landing/
 
 ### Shared (`src/pages/`)
 
-Callback.vue (OAuth callback), SilentRefresh.vue (hidden iframe token renew), Unauthorized.vue, NotFound.vue, EmailPreferences.vue (unsubscribe, no auth)
+Callback.vue (OAuth callback), SilentRefresh.vue (hidden iframe token renew), Unauthorized.vue, NotFound.vue, EmailPreferences.vue (unsubscribe by `?email=` link, optional `&t=` notification type, no auth)
 
 ---
 

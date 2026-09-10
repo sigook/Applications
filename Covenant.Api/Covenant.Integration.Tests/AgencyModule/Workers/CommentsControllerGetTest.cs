@@ -1,6 +1,7 @@
+using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Sigook.Agency.Workers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
@@ -10,31 +11,28 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Xunit;
 using System.Net.Http.Json;
+using Xunit;
 
-namespace Covenant.Integration.Tests.Shared.WorkerComment
+namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
-    public class TestWorkerCommentController : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<TestWorkerCommentController.Startup>>
+    public class CommentsControllerGetTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerGetTest.Startup>>
     {
-        private readonly CustomWebApplicationFactory<Startup> _factory;
-
-        private static string Uri(Guid workerId) => $"api/worker/{workerId}/comment";
         private readonly HttpClient _client;
 
-        public TestWorkerCommentController(CustomWebApplicationFactory<Startup> factory)
+        public CommentsControllerGetTest(CustomWebApplicationFactory<Startup> factory)
         {
-            _factory = factory;
             _client = factory.CreateClient();
         }
 
         [Fact]
         public async Task GetList()
         {
-            HttpResponseMessage response = await _client.GetAsync(Uri(Data.WorkerProfile.Worker.Id));
+            string url = CommentsController.RouteName.Replace("{workerProfileId:guid}", Data.WorkerProfile.Id.ToString());
+            HttpResponseMessage response = await _client.GetAsync(url);
             response.EnsureSuccessStatusCode();
             var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerCommentModel>>();
-            Assert.NotEmpty(list.Items);
+            Assert.Equal(2, list.Items.Count);
         }
 
         public class Startup
@@ -46,9 +44,9 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
                 {
                     o.AddSub(Data.LoginUser.Id);
                     o.AddAgencyPersonnelRole(Data.LoginUser.Id);
-                    o.AddCompanyRole();
                 });
                 services.AddTestDatabase();
+                services.AddSingleton<AgencyIdFilter>();
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(new DateTime(2019, 01, 01));
                 services.AddSingleton(timeService.Object);
@@ -68,24 +66,35 @@ namespace Covenant.Integration.Tests.Shared.WorkerComment
                 });
                 context.WorkerProfiles.Add(Data.WorkerProfile);
                 context.CompanyProfiles.Add(Data.CompanyProfile);
-                context.WorkerComments.AddRange(Data.Comment, Data.CompanyComment);
+                context.WorkerComments.AddRange(Data.AgencyComment, Data.CompanyComment);
                 context.SaveChanges();
             }
         }
 
-        private static class Data
+        internal static class Data
         {
             public static readonly User LoginUser = new User(CvnEmail.Create("login_user@mail.com").Value);
-            public static readonly WorkerProfile WorkerProfile = new WorkerProfile(new User(CvnEmail.Create("worker_worker@mail.com").Value))
-            {
-                Agency = new Covenant.Common.Entities.Agency.Agency { Id = LoginUser.Id, User = LoginUser }
-            , Location = FakeData.FakeLocation(),};
 
-            public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = LoginUser, Logo = new CovenantFile("logo.png") , Industry = new CompanyProfileIndustry("Test") , Agency = FakeData.FakeAgency() };
-            public static readonly Covenant.Common.Entities.Worker.WorkerComment Comment =
-                Covenant.Common.Entities.Worker.WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
-            public static readonly Covenant.Common.Entities.Worker.WorkerComment CompanyComment =
-                Covenant.Common.Entities.Worker.WorkerComment.CommentPostByCompany(WorkerProfile.Id, CompanyProfile.Id, "Posted by the company", 3);
+            public static readonly Common.Entities.Worker.WorkerProfile WorkerProfile =
+                new Common.Entities.Worker.WorkerProfile(new User(CvnEmail.Create("worker_worker@mail.com").Value))
+                {
+                    Agency = new Common.Entities.Agency.Agency { Id = LoginUser.Id, User = LoginUser },
+                    Location = FakeData.FakeLocation()
+                };
+
+            public static readonly CompanyProfile CompanyProfile = new CompanyProfile
+            {
+                Company = LoginUser,
+                Logo = new CovenantFile("logo.png"),
+                Industry = new CompanyProfileIndustry("Test"),
+                Agency = FakeData.FakeAgency()
+            };
+
+            public static readonly Common.Entities.Worker.WorkerComment AgencyComment =
+                Common.Entities.Worker.WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
+
+            public static readonly Common.Entities.Worker.WorkerComment CompanyComment =
+                Common.Entities.Worker.WorkerComment.CommentPostByCompany(WorkerProfile.Id, CompanyProfile.Id, "Posted by the company", 3);
         }
     }
 }

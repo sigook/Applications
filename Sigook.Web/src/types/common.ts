@@ -155,9 +155,8 @@ export enum LanguageProficiency {
 }
 
 export interface UnsubscribeRequest {
-  userId: string;
-  typeId: string;
-  userType: string;
+  email: string;
+  typeId?: string;
 }
 
 // Mirrors backend UserNotificationListModel / UserNotificationUpdateModel.

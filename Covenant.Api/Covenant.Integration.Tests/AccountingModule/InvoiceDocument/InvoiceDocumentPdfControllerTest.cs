@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
@@ -18,12 +18,12 @@ using Moq;
 using System.Text;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Shared.InvoiceDocument
+namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument.Pdf
 {
-    public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
+    public class InvoiceDocumentPdfControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
     {
         private readonly HttpClient _client;
-        public InvoiceDocumentControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+        public InvoiceDocumentPdfControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
         [Fact]
         public async Task GetPdf()
