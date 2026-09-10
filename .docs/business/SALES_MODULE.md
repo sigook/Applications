@@ -97,31 +97,38 @@ Landing page of the module (`/sales/dashboard`, reached from the sidebar — sig
 | Log Interactions | What were my last touchpoints? (6 most recent, newest first) |
 | Clients | Who are my clients? How many are active, how many are new this month? |
 | Deals | What are my latest proposals and where are they? (6 most recent) |
-| Deals closed | How much value have I closed, by day / week / month, for the current week / month / quarter? |
-| This quarter | Progress toward the quarterly value goal, plus two breakdowns: **pipeline by status** (how many deals sit in each `DealStatus`) and **activity this week** (how many interactions per channel) |
+| Deals by status | How many deals are To Send, Sent, Under Review, Accepted, Rejected, Closed or Completed for today / this week / this month? |
+| This quarter | Two breakdowns: **pipeline by status** (how many deals sit in each `DealStatus` this quarter) and **activity this week** (how many interactions per channel) |
 
-### KPI definitions (proposed — confirm when the endpoint is built)
+### KPI definitions
 
-The live endpoint does not exist yet, so these are the intended semantics inferred from the cards and the payload shape, not implemented rules. The sample payload does not even distinguish some of them (goal `actual` equals `pipelineValue`).
+Served live by `GET api/agency/sales/dashboard/*` (see `.docs/technical/SIGOOK_WEB_API_MAP.md` §18).
 
 | KPI | Definition |
 |-----|------------|
 | Active clients | Companies in an active status (not Blocked / Inactive) |
 | New this month | Companies created in the current calendar month |
-| Pipeline value | Sum of `Value` over open deals (To Send + Sent) |
-| Deals closed | Sum of `Value` over deals that reached **Accepted**, bucketed by the deal `Date` |
-| Quarterly goal | Closed value in the quarter vs. a target amount |
-| Pipeline by status | Count of deals per `DealStatus` |
-| Activity this week | Count of interactions per `InteractionType` in the current week |
+| Deals by status | Count of deals per `DealStatus`, plus the summed `Value` per status, over deals whose `Date` falls in the selected period |
+| Pipeline by status | Count of deals per `DealStatus` over deals whose `Date` falls in the current quarter |
+| Activity this week | Count of interactions per `InteractionType` whose `CreatedAt` falls in the current week |
 
-> **The summary cards are not live.** Clients, Deals closed, This quarter and the period label render **frozen sample data for Q3 2026**; only the Interactions and Deals lists, and every create/edit/delete action, hit the backend. The quarterly target cannot be set anywhere. Technical detail: `.docs/technical/SIGOOK_WEB_API_MAP.md` §18.
+Every window is resolved **server-side in UTC**, whatever the server's own time zone is: the
+instant is converted with `now.UtcDateTime` before the calendar math. The week runs **Sunday to
+Saturday** — the same day-of-week boundary payroll uses, but anchored to UTC midnight, not to a
+business time zone. The response always carries one row per status (or per requested status),
+zero-filled, so the chart keeps a stable column order.
+
+> **There is no quarterly goal.** No entity stores a target amount, so the dashboard shows no goal
+> donut. Adding one needs a new column plus a screen to set it.
 
 ### Where things are decided
 
-Two shape decisions the dashboard already commits to, which the backend must honor when it goes live:
-
-- The "Deals closed" chart ships **all three ranges** (week / month / quarter) at once; switching tabs never re-queries.
-- The period label ("Q3 2026") is **computed server-side**, not by the browser.
+- The period selector (Today / This week / This month) **re-queries** — each tab is one request.
+- The period label ("Q3 2026", "Sep 6 - Sep 12, 2026") is **computed server-side**, not by the browser.
+- Column colors and labels live in the **front end** (`DEAL_STATUS_COLORS`, `DEAL_STATUS_LABELS`); the
+  endpoint returns data only, so it stays chart-agnostic.
+- `Deal.Date` is captured as the browser's local midnight in ISO form, so a rep east of UTC can file
+  a deal one UTC day early. Bucketing cannot fix that; capture would have to.
 
 ---
 

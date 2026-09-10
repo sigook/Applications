@@ -1,4 +1,4 @@
-using Covenant.Common.Utils.Extensions;
+﻿using Covenant.Common.Utils.Extensions;
 using Xunit;
 
 namespace Covenant.Tests.Common;
@@ -72,5 +72,30 @@ public class DateExtensionsTest
     {
         DateTime paymentDate = DateTime.Parse(lastDateWorked).GetPaymentDateForExternalWorkers();
         Assert.Equal(DateTime.Parse(expectedPaymentDate), paymentDate);
+    }
+
+    [Theory]
+    [InlineData("2026-09-06", "2026-09-06")]
+    [InlineData("2026-09-09", "2026-09-06")]
+    [InlineData("2026-09-12", "2026-09-06")]
+    [InlineData("2026-01-03", "2025-12-28")]
+    public void StartOfWeekSunday(string date, string expected) =>
+        Assert.Equal(DateTime.Parse(expected), DateTime.Parse(date).StartOfWeekSunday());
+
+    [Theory]
+    [InlineData("2026-09-06", "2026-09-01")]
+    [InlineData("2026-01-31", "2026-01-01")]
+    public void StartOfMonth(string date, string expected) =>
+        Assert.Equal(DateTime.Parse(expected), DateTime.Parse(date).StartOfMonth());
+
+    [Theory]
+    [InlineData("2026-09-06", "2026-07-01", 3)]
+    [InlineData("2026-01-01", "2026-01-01", 1)]
+    [InlineData("2026-06-30", "2026-04-01", 2)]
+    [InlineData("2026-12-31", "2026-10-01", 4)]
+    public void StartOfQuarter(string date, string expected, int expectedQuarter)
+    {
+        Assert.Equal(DateTime.Parse(expected), DateTime.Parse(date).StartOfQuarter());
+        Assert.Equal(expectedQuarter, DateTime.Parse(date).Quarter());
     }
 }

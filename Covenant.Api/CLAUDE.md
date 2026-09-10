@@ -6,7 +6,7 @@
 Controllers:     Covenant.Api/Controllers/Sigook/                       (root: Catalog, File, Location, EmailPreferences)
                  Covenant.Api/Controllers/Sigook/Agency/                (Agency, AgencyLocation)
                  Covenant.Api/Controllers/Sigook/Agency/Accounting/     (Invoices, PayStubs, Reports, LocationTax)
-                 Covenant.Api/Controllers/Sigook/Agency/Sales/          (Requests, CompanyProfiles — scoped to the sales rep)
+                 Covenant.Api/Controllers/Sigook/Agency/Sales/          (Requests, CompanyProfiles, Deals, CompanyInteractions, Dashboard — scoped to the sales rep)
                  Covenant.Api/Controllers/Sigook/Agency/Candidates/     (Candidates, Notes, PhoneNumbers, Skills, Documents)
                  Covenant.Api/Controllers/Sigook/Agency/Recruiting/     (Requests, CompanyProfiles, WeeklyBoard — scoped to recruiting)
                  Covenant.Api/Controllers/Sigook/Agency/Requests/       (Requests, Applicants, Notes, Runners, Shift, Skills, Workers, TimeSheets, WorkersReport)

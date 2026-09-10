@@ -177,7 +177,7 @@ Two coexisting layouts:
 | `Controllers/Sigook/Agency/CompanyProfiles/` | company detail: profile, contacts, documents, invoice notes/recipients, job positions, locations, logo, notes, users |
 | `Controllers/Sigook/Agency/Requests/` | request detail: `RequestsController`, `ApplicantsController`, `RunnersController`, `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController` (per-worker notes on a request), notes, shift, skills, report-to, requested-by |
 | `Controllers/Sigook/Agency/Recruiting/` | recruiting-scoped lists: `RequestsController`, `CompanyProfilesController`, `WeeklyBoardController` |
-| `Controllers/Sigook/Agency/Sales/` | sales-scoped lists: `RequestsController`, `CompanyProfilesController` |
+| `Controllers/Sigook/Agency/Sales/` | sales-scoped lists and owner-scoped records: `RequestsController`, `CompanyProfilesController`, `DealsController`, `CompanyInteractionsController`, `DashboardController` |
 | `Controllers/Sigook/Agency/Candidates/` | candidate domain: `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
 | `Controllers/Sigook/Agency/Workers/` | worker-profile management: `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController` |
 | `Controllers/Sigook/Agency/Personnel/` | `PersonnelController` (agency back-office users), `AgenciesController` (agencies the caller belongs to) |

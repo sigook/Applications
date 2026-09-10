@@ -3,6 +3,7 @@
     :model-value="search"
     :data="filtered"
     field="label"
+    :size="size"
     :placeholder="placeholder"
     :loading="loading"
     :clearable="clearable"
@@ -32,6 +33,7 @@ const props = withDefaults(
     modelValue: V | null;
     options: readonly Option[];
     placeholder?: string;
+    size?: string;
     loading?: boolean;
     clearable?: boolean;
     remote?: boolean;
@@ -73,13 +75,13 @@ watch(
 
 const belowThreshold = computed(() => {
   const length = search.value.trim().length;
-  return props.remote && length > 0 && length < props.minSearchLength;
+  return props.remote && length < props.minSearchLength;
 });
 
-// Remote results are already filtered by the server, but a term shorter than the
-// threshold never reached it — filter those locally so the list always matches the input.
+// A term shorter than the threshold never reached the server, so there is nothing to show:
+// an empty list keeps the #empty hint visible instead of leaving stale results on screen.
 const filtered = computed(() => {
-  if (props.remote && !belowThreshold.value) return [...props.options];
+  if (props.remote) return belowThreshold.value ? [] : [...props.options];
   const term = search.value.trim().toLowerCase();
   return props.options.filter((o) => o.label.toLowerCase().includes(term));
 });
@@ -118,7 +120,9 @@ function onSelect(option: Option | null): void {
 function onFocus(): void {
   isFocused.value = true;
   search.value = '';
-  if (props.remote) {
+  // With a minimum search length there is no initial list: the parent only fetches once the
+  // user types enough characters, so focus must not trigger an unfiltered request.
+  if (props.remote && props.minSearchLength === 0) {
     clearTimeout(debounceTimer);
     emit('search', '');
   }
