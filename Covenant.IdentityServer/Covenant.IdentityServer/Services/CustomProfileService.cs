@@ -10,13 +10,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.IdentityServer.Services;
 
-public class CustomProfileService<TUser>(
-    UserManager<TUser> userManager,
-    IUserClaimsPrincipalFactory<TUser> claimsFactory,
-    CovenantContext covenantContext,
-    IMicrosoft365AccountService accountService,
-    ILogger<CustomProfileService<TUser>> logger) : ProfileService<TUser>(userManager, claimsFactory) where TUser : class
+public class CustomProfileService<TUser> : ProfileService<TUser> where TUser : class
 {
+	private readonly UserManager<TUser> _userManager;
+	private readonly IUserClaimsPrincipalFactory<TUser> _claimsFactory;
+	private readonly CovenantContext _covenantContext;
+	private readonly IMicrosoft365AccountService _accountService;
+	private readonly ILogger<CustomProfileService<TUser>> _logger;
+
+	public CustomProfileService(
+		UserManager<TUser> userManager,
+		IUserClaimsPrincipalFactory<TUser> claimsFactory,
+		CovenantContext covenantContext,
+		IMicrosoft365AccountService accountService,
+		ILogger<CustomProfileService<TUser>> logger)
+		: base(userManager, claimsFactory)
+	{
+		_userManager = userManager;
+		_claimsFactory = claimsFactory;
+		_covenantContext = covenantContext;
+		_accountService = accountService;
+		_logger = logger;
+	}
+
 	/// <summary>
 	/// The roles and nickname are required in the api
 	/// </summary>
@@ -24,8 +40,8 @@ public class CustomProfileService<TUser>(
 	public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
 	{
 		string sub = context.Subject.GetSubjectId();
-		TUser user = await userManager.FindByIdAsync(sub);
-		ClaimsPrincipal principal = await claimsFactory.CreateAsync(user);
+		TUser user = await _userManager.FindByIdAsync(sub);
+		ClaimsPrincipal principal = await _claimsFactory.CreateAsync(user);
 		IEnumerable<Claim> roles = context.Subject.FindAll(JwtClaimTypes.Role);
 		if (roles != null) context.IssuedClaims.AddRange(roles);
 
@@ -37,21 +53,21 @@ public class CustomProfileService<TUser>(
 		await base.IsActiveAsync(context, user);
 		if (!context.IsActive) return;
 
-		Guid userId = Guid.Parse(await userManager.GetUserIdAsync(user));
-		if (await covenantContext.InactiveUsers.AnyAsync(iu => iu.UserId == userId))
+		Guid userId = Guid.Parse(await _userManager.GetUserIdAsync(user));
+		if (await _covenantContext.InactiveUsers.AnyAsync(iu => iu.UserId == userId))
 		{
-			logger.LogWarning("Session rejected: user is inactive. UserId={UserId} Caller={Caller}", userId, context.Caller);
+			_logger.LogWarning("Session rejected: user is inactive. UserId={UserId} Caller={Caller}", userId, context.Caller);
 			context.IsActive = false;
 			return;
 		}
 
-		IList<Claim> claims = await userManager.GetClaimsAsync(user);
+		IList<Claim> claims = await _userManager.GetClaimsAsync(user);
 		string objectId = claims.FirstOrDefault(c => c.Type == Constants.MicrosoftObjectId)?.Value;
 		if (string.IsNullOrEmpty(objectId)) return;
 
-		if (!await accountService.IsAccountEnabledAsync(objectId))
+		if (!await _accountService.IsAccountEnabledAsync(objectId))
 		{
-			logger.LogWarning("Session rejected: Microsoft 365 account is disabled. UserId={UserId} Caller={Caller}", userId, context.Caller);
+			_logger.LogWarning("Session rejected: Microsoft 365 account is disabled. UserId={UserId} Caller={Caller}", userId, context.Caller);
 			context.IsActive = false;
 		}
 	}

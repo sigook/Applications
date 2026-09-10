@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<LangVersion>latest</LangVersion>
+		<LangVersion>10.0</LangVersion>
 		<UserSecretsId>b3e67271-9a18-4e3d-b66d-21326c3dfe3e</UserSecretsId>
 		<ImplicitUsings>true</ImplicitUsings>
 	</PropertyGroup>
