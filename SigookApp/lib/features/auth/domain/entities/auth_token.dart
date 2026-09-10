@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'user_info.dart';
 
 class AuthToken extends Equatable {
+  static const Duration defaultExpiryLeeway = Duration(seconds: 60);
+
   final String? accessToken;
   final String? idToken;
   final String? refreshToken;
@@ -22,9 +24,15 @@ class AuthToken extends Equatable {
 
   factory AuthToken.empty() => const AuthToken();
 
-  bool get isValid =>
-      (accessToken != null && accessToken!.isNotEmpty) &&
-      (expirationDateTime != null);
+  bool get hasAccessToken => accessToken != null && accessToken!.isNotEmpty;
+
+  bool get hasRefreshToken => refreshToken != null && refreshToken!.isNotEmpty;
+
+  bool isExpired({Duration leeway = Duration.zero}) {
+    final expiration = expirationDateTime;
+    if (expiration == null) return true;
+    return !expiration.isAfter(DateTime.now().add(leeway));
+  }
 
   @override
   List<Object?> get props => [

@@ -24,9 +24,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   bool _hasNavigated = false;
   bool _isProcessing = false;
 
-  static const int _maxRetries = 5;
-  static const int _retryDelaySeconds = 10;
-
   @override
   void initState() {
     super.initState();
@@ -55,115 +52,75 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) _onLogoTapped();
+      if (mounted) _restoreSessionAndNavigate();
     });
   }
 
-  Future<void> _onLogoTapped() async {
+  Future<void> _restoreSessionAndNavigate() async {
     if (_isProcessing || _hasNavigated) return;
+    _isProcessing = true;
 
-    setState(() => _isProcessing = true);
-
-    debugPrint('🔐 [SPLASH] Starting authentication check...');
-
-    // Wait for AuthViewModel to finish loading token from secure storage
-    int attempts = 0;
-    const maxWaitAttempts = 50;
-    bool isInitialized = false;
-    while (!isInitialized && attempts < maxWaitAttempts && mounted) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      attempts++;
-      isInitialized = ref.read(authViewModelProvider.notifier).isInitialized;
-    }
-
-    debugPrint('🔐 [SPLASH] Token loading completed after ${attempts * 100}ms');
+    debugPrint('🔐 [SPLASH] Waiting for session restore...');
+    final result = await ref.read(authViewModelProvider.notifier).sessionRestore;
 
     if (!mounted || _hasNavigated) return;
+    debugPrint('🔐 [SPLASH] Session restore result: ${result.name}');
 
-    final token = ref.read(authViewModelProvider).token;
+    switch (result) {
+      case SessionRestoreResult.authenticated:
+      case SessionRestoreResult.refreshDeferred:
+        await _checkRoleAndNavigate();
+      case SessionRestoreResult.unauthenticated:
+      case SessionRestoreResult.sessionExpired:
+        _navigateToWelcome();
+    }
+  }
 
-    if (token == null || token.accessToken == null || token.accessToken!.isEmpty) {
-      debugPrint('🔐 [SPLASH] No token found, redirecting to welcome');
+  Future<void> _checkRoleAndNavigate() async {
+    final accessToken = ref.read(authViewModelProvider).token?.accessToken;
+    if (accessToken == null || accessToken.isEmpty) {
       _navigateToWelcome();
       return;
     }
 
-    debugPrint('🔐 [SPLASH] Token found, validating with server...');
-    await _validateAndNavigate(token.accessToken!);
-  }
+    final roleResult = await ref
+        .read(authRepositoryProvider)
+        .getUserRole(accessToken);
 
-  Future<void> _validateAndNavigate(String accessToken) async {
-    for (int attempt = 0; attempt < _maxRetries; attempt++) {
-      if (!mounted || _hasNavigated) return;
-
-      final roleResult = await ref.read(authRepositoryProvider).getUserRole(accessToken);
-
-      if (!mounted || _hasNavigated) return;
-
-      bool handled = false;
-
-      roleResult.fold(
-        (failure) {
-          if (failure is ServerFailure &&
-              (failure.statusCode == 401 || failure.statusCode == 403)) {
-            debugPrint('🔐 [SPLASH] Token rejected by server (${failure.statusCode}), clearing session');
-            ref.read(authViewModelProvider.notifier).logout();
-            _navigateToWelcome();
-            handled = true;
-          } else {
-            debugPrint(
-              '🔐 [SPLASH] Connection failed (attempt ${attempt + 1}/$_maxRetries): ${failure.message}',
-            );
-          }
-        },
-        (role) {
-          if (role.toLowerCase() == 'worker') {
-            debugPrint('🔐 [SPLASH] User role is worker - access granted');
-            _navigateToJobs();
-          } else {
-            debugPrint('🔐 [SPLASH] User role is "$role" - access denied');
-            ref.read(authViewModelProvider.notifier).logout();
-            _navigateToWelcome();
-          }
-          handled = true;
-        },
-      );
-
-      if (handled || _hasNavigated) return;
-
-      // Network/server error — show retry modal unless this was the last attempt
-      if (attempt < _maxRetries - 1) {
-        final shouldRetry = await _showRetryModal(attempt + 1);
-        if (!mounted || _hasNavigated) return;
-        if (!shouldRetry) {
-          _navigateToWelcome();
-          return;
-        }
-      }
-    }
-
-    // All retries exhausted without a valid response
     if (!mounted || _hasNavigated) return;
-    debugPrint('🔐 [SPLASH] All retries exhausted, redirecting to welcome');
-    _navigateToWelcome();
+
+    roleResult.fold(
+      (failure) {
+        final rejected =
+            failure is ServerFailure &&
+            (failure.statusCode == 401 || failure.statusCode == 403);
+        if (rejected) {
+          debugPrint(
+            '🔐 [SPLASH] Token rejected by server (${failure.statusCode}), clearing session',
+          );
+          _signOutAndNavigateToWelcome();
+        } else {
+          debugPrint(
+            '🔐 [SPLASH] Role check unavailable (${failure.message}), continuing',
+          );
+          _navigateToJobs();
+        }
+      },
+      (role) {
+        if (role.toLowerCase() == 'worker') {
+          debugPrint('🔐 [SPLASH] User role is worker - access granted');
+          _navigateToJobs();
+        } else {
+          debugPrint('🔐 [SPLASH] User role is "$role" - access denied');
+          _signOutAndNavigateToWelcome();
+        }
+      },
+    );
   }
 
-  Future<bool> _showRetryModal(int attempt) async {
-    if (!mounted) return false;
-
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => _RetryConnectionDialog(
-        attempt: attempt,
-        maxAttempts: _maxRetries,
-        retryDelaySeconds: _retryDelaySeconds,
-        onCancel: () => Navigator.of(ctx).pop(false),
-        onCountdownComplete: () => Navigator.of(ctx).pop(true),
-      ),
-    );
-
-    return result ?? false;
+  void _signOutAndNavigateToWelcome() {
+    unawaited(ref.read(authViewModelProvider.notifier).logout());
+    _navigateToWelcome();
   }
 
   void _navigateToJobs() {
@@ -218,106 +175,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           ),
         ],
       ),
-    );
-  }
-}
-
-class _RetryConnectionDialog extends StatefulWidget {
-  final int attempt;
-  final int maxAttempts;
-  final int retryDelaySeconds;
-  final VoidCallback onCancel;
-  final VoidCallback onCountdownComplete;
-
-  const _RetryConnectionDialog({
-    required this.attempt,
-    required this.maxAttempts,
-    required this.retryDelaySeconds,
-    required this.onCancel,
-    required this.onCountdownComplete,
-  });
-
-  @override
-  State<_RetryConnectionDialog> createState() => _RetryConnectionDialogState();
-}
-
-class _RetryConnectionDialogState extends State<_RetryConnectionDialog> {
-  late int _secondsLeft;
-  Timer? _timer;
-  bool _actionTaken = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _secondsLeft = widget.retryDelaySeconds;
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      setState(() => _secondsLeft--);
-      if (_secondsLeft <= 0) {
-        timer.cancel();
-        _triggerCountdownComplete();
-      }
-    });
-  }
-
-  void _triggerCountdownComplete() {
-    if (_actionTaken) return;
-    _actionTaken = true;
-    widget.onCountdownComplete();
-  }
-
-  void _handleCancel() {
-    if (_actionTaken) return;
-    _actionTaken = true;
-    _timer?.cancel();
-    widget.onCancel();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = 1.0 - (_secondsLeft / widget.retryDelaySeconds);
-
-    return AlertDialog(
-      title: const Text('Connection Error'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Unable to reach the server. Please check your connection.'),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text('Retrying in '),
-              Text(
-                '$_secondsLeft s',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const Spacer(),
-              Text(
-                'Attempt ${widget.attempt}/${widget.maxAttempts}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(value: progress),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _handleCancel,
-          child: const Text('Cancel'),
-        ),
-      ],
     );
   }
 }

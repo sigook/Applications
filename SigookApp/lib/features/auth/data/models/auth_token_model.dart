@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:sigook_app_flutter/features/auth/domain/entities/auth_token.dart';
 import 'user_info_model.dart';
 
@@ -23,28 +22,6 @@ abstract class AuthTokenModel with _$AuthTokenModel {
   factory AuthTokenModel.fromJson(Map<String, dynamic> json) =>
       _$AuthTokenModelFromJson(json);
 
-  factory AuthTokenModel.fromResponse(dynamic response) {
-    UserInfoModel? userInfo;
-    if (response.idToken != null) {
-      try {
-        final decodedToken = JwtDecoder.decode(response.idToken);
-        userInfo = UserInfoModel.fromIdTokenClaims(decodedToken);
-      } catch (e) {
-        userInfo = null;
-      }
-    }
-
-    return AuthTokenModel(
-      accessToken: response.accessToken,
-      idToken: response.idToken,
-      refreshToken: response.refreshToken,
-      expirationDateTime: response.accessTokenExpirationDateTime,
-      tokenType: response.tokenType ?? 'Bearer',
-      scopes: response.scopes,
-      userInfo: userInfo,
-    );
-  }
-
   factory AuthTokenModel.fromTokenResponse(Map<String, dynamic> json) {
     DateTime? expiration;
     final expiresIn = json['expires_in'];
@@ -67,9 +44,8 @@ abstract class AuthTokenModel with _$AuthTokenModel {
     );
   }
 
-  bool get isValid =>
-      (accessToken != null && accessToken!.isNotEmpty) &&
-      (expirationDateTime != null);
+  bool isExpired({Duration leeway = Duration.zero}) =>
+      toEntity().isExpired(leeway: leeway);
 
   AuthToken toEntity() {
     return AuthToken(

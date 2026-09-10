@@ -13,6 +13,8 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource local;
   final NetworkInfo networkInfo;
 
+  Future<Either<Failure, AuthToken>>? _inFlightRefresh;
+
   AuthRepositoryImpl({
     required this.remote,
     required this.local,
@@ -43,18 +45,48 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthToken>> refreshToken(
-    String currentRefreshToken,
+  Future<Either<Failure, AuthToken>> refreshToken(String currentRefreshToken) {
+    final inFlight = _inFlightRefresh;
+    if (inFlight != null) return inFlight;
+
+    final refresh = _refresh(currentRefreshToken).whenComplete(() {
+      _inFlightRefresh = null;
+    });
+    _inFlightRefresh = refresh;
+    return refresh;
+  }
+
+  Future<Either<Failure, AuthToken>> _refresh(
+    String requestedRefreshToken,
   ) async {
     try {
+      var refreshTokenToUse = requestedRefreshToken;
+      final cached = await local.getCachedToken();
+      final cachedRefreshToken = cached?.refreshToken;
+      if (cached != null &&
+          cachedRefreshToken != null &&
+          cachedRefreshToken.isNotEmpty &&
+          cachedRefreshToken != requestedRefreshToken) {
+        if (!cached.isExpired()) return Right(cached.toEntity());
+        refreshTokenToUse = cachedRefreshToken;
+      }
+
       if (!await networkInfo.isConnected) return Left(NetworkFailure());
-      final tokenModel = await remote.refreshToken(currentRefreshToken);
+      final tokenModel = await remote.refreshToken(refreshTokenToUse);
       await local.cacheToken(tokenModel);
       return Right(tokenModel.toEntity());
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(
+        ServerFailure(
+          message: e.message,
+          statusCode: e.statusCode,
+          code: e.code,
+        ),
+      );
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: 'Token refresh error: $e'));
     }
   }
 
@@ -176,6 +208,16 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       await local.clearToken();
       return Left(ServerFailure(message: 'Logout error: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> clearSession() async {
+    try {
+      await local.clearToken();
+      return const Right(null);
+    } catch (e) {
+      return Left(CacheFailure(message: 'Clear session error: $e'));
     }
   }
 }

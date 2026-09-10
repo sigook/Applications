@@ -31,6 +31,10 @@ class AppRoutes {
   static const String terms = '/terms';
 }
 
+class RouterRefreshNotifier extends ChangeNotifier {
+  void refresh() => notifyListeners();
+}
+
 class KeyboardDismissObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -57,9 +61,30 @@ class AnalyticsNavigatorObserver extends NavigatorObserver {
 }
 
 class AppRouter {
-  static GoRouter buildRouter(AnalyticsService analytics) => GoRouter(
+  static const Set<String> _protectedLocations = {
+    AppRoutes.jobs,
+    AppRoutes.jobDetails,
+    AppRoutes.profile,
+    AppRoutes.history,
+  };
+
+  static bool requiresSession(String location) =>
+      _protectedLocations.contains(location);
+
+  static GoRouter buildRouter(
+    AnalyticsService analytics, {
+    required bool Function() isSessionActive,
+    Listenable? refreshListenable,
+  }) => GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
+    refreshListenable: refreshListenable,
+    redirect: (context, state) {
+      if (requiresSession(state.matchedLocation) && !isSessionActive()) {
+        return AppRoutes.welcome;
+      }
+      return null;
+    },
     observers: [
       KeyboardDismissObserver(),
       AnalyticsNavigatorObserver(analytics),

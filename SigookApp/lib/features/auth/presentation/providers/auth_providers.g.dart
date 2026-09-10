@@ -9,6 +9,60 @@ part of 'auth_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(SessionExpiredSignal)
+const sessionExpiredSignalProvider = SessionExpiredSignalProvider._();
+
+final class SessionExpiredSignalProvider
+    extends $NotifierProvider<SessionExpiredSignal, int> {
+  const SessionExpiredSignalProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sessionExpiredSignalProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sessionExpiredSignalHash();
+
+  @$internal
+  @override
+  SessionExpiredSignal create() => SessionExpiredSignal();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$sessionExpiredSignalHash() =>
+    r'43d754359618679d627a752bfba1be251f699952';
+
+abstract class _$SessionExpiredSignal extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
 @ProviderFor(signIn)
 const signInProvider = SignInProvider._();
 

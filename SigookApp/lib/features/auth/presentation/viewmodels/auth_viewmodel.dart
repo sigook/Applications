@@ -13,6 +13,13 @@ import '../providers/auth_providers.dart';
 part 'auth_viewmodel.freezed.dart';
 part 'auth_viewmodel.g.dart';
 
+enum SessionRestoreResult {
+  authenticated,
+  refreshDeferred,
+  unauthenticated,
+  sessionExpired,
+}
+
 @freezed
 sealed class AuthState with _$AuthState {
   const factory AuthState({
@@ -21,68 +28,124 @@ sealed class AuthState with _$AuthState {
     String? errorCode,
     AuthToken? token,
     @Default(false) bool isAuthenticated,
+    @Default(false) bool isRestoringSession,
+    @Default(false) bool sessionExpired,
     @Default(false) bool justConfirmationSent,
   }) = _AuthState;
 }
 
 @Riverpod(keepAlive: true)
 class AuthViewModel extends _$AuthViewModel {
-  bool _isInitialized = false;
+  Future<SessionRestoreResult>? _sessionRestore;
 
   @override
   AuthState build() {
-    // Reset initialization flag on each build (important for hot reload)
-    _isInitialized = false;
-    debugPrint(
-      '🔑 [AUTH] AuthViewModel build() called (instance: $hashCode), starting token load',
-    );
-    _loadCachedToken();
-    return const AuthState();
+    ref.listen(sessionExpiredSignalProvider, (previous, next) {
+      expireSession();
+    });
+    debugPrint('🔑 [AUTH] AuthViewModel build() called, starting session restore');
+    _sessionRestore = _restoreSession();
+    return const AuthState(isRestoringSession: true);
   }
 
-  bool get isInitialized => _isInitialized;
+  Future<SessionRestoreResult> get sessionRestore =>
+      _sessionRestore ??= _restoreSession();
 
-  Future<void> _loadCachedToken() async {
+  Future<SessionRestoreResult> _restoreSession() async {
+    final cachedToken = await _loadCachedToken();
+    if (!ref.mounted) return SessionRestoreResult.unauthenticated;
+
+    if (cachedToken == null || !cachedToken.hasAccessToken) {
+      debugPrint('🔑 [AUTH] No cached token found');
+      state = const AuthState();
+      return SessionRestoreResult.unauthenticated;
+    }
+
+    if (!cachedToken.isExpired(leeway: AuthToken.defaultExpiryLeeway)) {
+      debugPrint('🔑 [AUTH] Cached token still valid');
+      state = AuthState(token: cachedToken, isAuthenticated: true);
+      return SessionRestoreResult.authenticated;
+    }
+
+    final refreshToken = cachedToken.refreshToken;
+    if (refreshToken == null || refreshToken.isEmpty) {
+      debugPrint('🔑 [AUTH] Cached token expired and no refresh token');
+      await _clearExpiredSession(reason: 'no_refresh_token');
+      return SessionRestoreResult.sessionExpired;
+    }
+
+    debugPrint('🔑 [AUTH] Cached token expired, refreshing...');
+    final result = await ref
+        .read(authRepositoryProvider)
+        .refreshToken(refreshToken);
+    if (!ref.mounted) return SessionRestoreResult.unauthenticated;
+
+    return result.fold(
+      (failure) async {
+        if (failure.isDefinitiveAuthFailure) {
+          debugPrint('🔑 [AUTH] Refresh rejected: ${failure.message}');
+          await _clearExpiredSession(
+            reason: 'refresh_rejected',
+            code: failure is ServerFailure ? failure.code : null,
+          );
+          return SessionRestoreResult.sessionExpired;
+        }
+        debugPrint('🔑 [AUTH] Refresh deferred: ${failure.message}');
+        state = AuthState(token: cachedToken, isAuthenticated: true);
+        return SessionRestoreResult.refreshDeferred;
+      },
+      (refreshedToken) async {
+        debugPrint('🔑 [AUTH] Token refreshed');
+        state = AuthState(token: refreshedToken, isAuthenticated: true);
+        return SessionRestoreResult.authenticated;
+      },
+    );
+  }
+
+  Future<AuthToken?> _loadCachedToken() async {
     try {
-      debugPrint('🔑 [AUTH] Loading cached token from secure storage...');
-      final localDataSource = ref.read(authLocalDataSourceProvider);
-      final cachedTokenModel = await localDataSource.getCachedToken();
-
-      if (!ref.mounted) return;
-
-      if (cachedTokenModel != null) {
-        debugPrint(
-          '🔑 [AUTH] Token found in secure storage. Access token: ${cachedTokenModel.accessToken?.substring(0, 20)}...',
-        );
-        final cachedToken = cachedTokenModel.toEntity();
-
-        // Simply load the token into state; the splash screen validates the
-        // session against /connect/userinfo before entering the app
-        state = state.copyWith(token: cachedToken, isAuthenticated: true);
-        debugPrint('🔑 [AUTH] Token loaded from cache and set in state');
-      } else {
-        debugPrint('🔑 [AUTH] No cached token found in secure storage');
-        state = const AuthState();
-      }
+      final cached = await ref.read(authLocalDataSourceProvider).getCachedToken();
+      return cached?.toEntity();
     } catch (e) {
       debugPrint('🔑 [AUTH] Failed to load cached token: $e');
-      state = const AuthState();
-    } finally {
-      _isInitialized = true;
-      if (ref.mounted) {
-        debugPrint(
-          '🔑 [AUTH] _loadCachedToken completed. Token present: ${state.token != null}',
-        );
-      } else {
-        debugPrint(
-          '🔑 [AUTH] _loadCachedToken completed but ref was unmounted',
-        );
-      }
+      return null;
     }
   }
 
+  Future<void> _clearExpiredSession({
+    required String reason,
+    String? code,
+  }) async {
+    await ref.read(authRepositoryProvider).clearSession();
+    if (!ref.mounted) return;
+    state = const AuthState(sessionExpired: true);
+    ref.read(analyticsServiceProvider).logEvent(
+      name: 'session_expired',
+      parameters: {
+        'reason': reason,
+        'code': ?code,
+        'timestamp': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  Future<void> expireSession() async {
+    if (!state.isAuthenticated && state.token == null) return;
+    await _clearExpiredSession(reason: 'interceptor');
+  }
+
+  void acknowledgeSessionExpired() {
+    if (!state.sessionExpired) return;
+    state = state.copyWith(sessionExpired: false);
+  }
+
   Future<void> signIn({required String email, required String password}) async {
-    state = state.copyWith(isLoading: true, error: null, errorCode: null);
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      errorCode: null,
+      sessionExpired: false,
+    );
 
     final signInUseCase = ref.read(signInProvider);
     final result = await signInUseCase(
