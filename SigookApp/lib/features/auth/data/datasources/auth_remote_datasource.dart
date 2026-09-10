@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import '../../../../core/config/environment.dart';
 import '../../../../core/constants/auth_error_codes.dart';
@@ -29,13 +28,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio dio;
   final Dio anonymousDio;
   final NetworkInfo networkInfo;
-  final FlutterAppAuth appAuth;
 
   AuthRemoteDataSourceImpl({
     required this.dio,
     required this.anonymousDio,
     required this.networkInfo,
-    required this.appAuth,
   });
 
   @override
@@ -227,16 +224,37 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
 
     try {
-      final TokenRequest request = TokenRequest(
-        EnvironmentConfig.clientId,
-        EnvironmentConfig.redirectUri,
-        issuer: EnvironmentConfig.authority,
-        refreshToken: currentRefreshToken,
+      final response = await anonymousDio.post(
+        _authorityUrl('/connect/token'),
+        data: {
+          'grant_type': 'refresh_token',
+          'client_id': EnvironmentConfig.clientId,
+          'refresh_token': currentRefreshToken,
+        },
+        options: Options(contentType: Headers.formUrlEncodedContentType),
       );
 
-      final TokenResponse result = await appAuth.token(request);
-
-      return AuthTokenModel.fromResponse(result);
+      final model = AuthTokenModel.fromTokenResponse(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+      if (model.refreshToken == null || model.refreshToken!.isEmpty) {
+        return model.copyWith(refreshToken: currentRefreshToken);
+      }
+      return model;
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      if (statusCode == 400 || statusCode == 401) {
+        final data = e.response?.data;
+        final code = data is Map ? data['error']?.toString() : null;
+        throw ServerException(
+          message: code == AuthErrorCodes.invalidGrant
+              ? ErrorMessages.tokenExpired
+              : ErrorMessages.authenticationFailed,
+          statusCode: statusCode,
+          code: code,
+        );
+      }
+      handleDioException(e);
     } catch (e) {
       if (e is ServerException || e is NetworkException) rethrow;
       throw ServerException(message: 'Token refresh error: ${e.toString()}');
