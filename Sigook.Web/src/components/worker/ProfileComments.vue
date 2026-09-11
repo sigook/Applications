@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getCommentsWorker } from '@/api/workerApi';
+import { getMyComments } from '@/api/workerApi';
 import Comments from '../../components/Comments.vue';
 
 const props = defineProps<{ worker?: any }>();
@@ -23,7 +23,7 @@ const commentsData = ref<any>([]);
 
 function updateComments() {
   isLoading.value = true;
-  getCommentsWorker({ workerId: props.worker.workerId, size: commentSize, pageIndex: commentPageIndex.value })
+  getMyComments({ size: commentSize, pageIndex: commentPageIndex.value })
     .then((data) => {
       commentsData.value = data;
       isLoading.value = false;

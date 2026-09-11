@@ -7,7 +7,6 @@ public static class CovenantConstants
     public const string AgencyId = "agencyId";
     public const string AgencyIds = "agencyIds";
     public const string AgencyPersonnelId = "agencyPersonnelId";
-    public const string BusinessTimeZoneId = "America/New_York";
 
     public static class Role
     {

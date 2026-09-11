@@ -1,18 +1,16 @@
-using Covenant.Api.Shared.EmailPreferences.Controllers;
+using Covenant.Api.Controllers.Sigook;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Notification;
 using Covenant.Common.Models.Notification;
-using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Repositories;
 using Covenant.Infrastructure.Repositories.Notification;
 using Covenant.Integration.Tests.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Shared.BillDocument
+namespace Covenant.Integration.Tests.NotificationModule.EmailPreferences
 {
     public class EmailPreferencesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<EmailPreferencesControllerTest.Startup>>
     {
@@ -30,12 +28,26 @@ namespace Covenant.Integration.Tests.Shared.BillDocument
             var requestUri = $"{EmailPreferencesController.RouteName}/{nameof(EmailPreferencesController.Unsubscribe)}";
             HttpResponseMessage response = await _client.PostAsJsonAsync(requestUri, new UnsubscribeModel
             {
-                UserId = Startup.FakeUser.Id,
+                Email = Startup.FakeUser.Email,
                 TypeId = NotificationType.NewRequestNotifyWorker.Id.ToString()
             });
             response.EnsureSuccessStatusCode();
             var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
             Assert.True(await context.UserNotificationTypes.AnyAsync());
+        }
+
+        [Fact]
+        public async Task PostWithoutTypeIdDefaultsToNewRequestNotifyWorker()
+        {
+            var requestUri = $"{EmailPreferencesController.RouteName}/{nameof(EmailPreferencesController.Unsubscribe)}";
+            HttpResponseMessage response = await _client.PostAsJsonAsync(requestUri, new UnsubscribeModel
+            {
+                Email = Startup.FakeUser.Email
+            });
+            response.EnsureSuccessStatusCode();
+            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            Assert.True(await context.UserNotificationTypes
+                .AnyAsync(t => t.NotificationTypeId == NotificationType.NewRequestNotifyWorker.Id));
         }
 
         public class Startup

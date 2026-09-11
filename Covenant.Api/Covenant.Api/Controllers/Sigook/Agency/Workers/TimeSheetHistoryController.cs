@@ -6,17 +6,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Shared.WorkerProfileTimeSheetHistory;
+namespace Covenant.Api.Controllers.Sigook.Agency.Workers;
 
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]
-[Route(Route)]
-public class WorkerProfileTimeSheetHistoryController : ControllerBase
+[Route(RouteName)]
+public class TimeSheetHistoryController(ITimesheetRepository timeSheetRepository) : ControllerBase
 {
-    private readonly ITimesheetRepository _timeSheetRepository;
-    public const string Route = "api/WorkerProfile/{workerProfileId}/TimeSheetHistory";
-
-    public WorkerProfileTimeSheetHistoryController(ITimesheetRepository timeSheetRepository) => _timeSheetRepository = timeSheetRepository;
+    public const string RouteName = "api/agency/workers/{workerProfileId:guid}/TimeSheetHistory";
 
     /// <summary>Gets the paginated timesheet history for a worker profile.</summary>
     /// <param name="workerProfileId">Worker profile identifier.</param>
@@ -24,16 +21,13 @@ public class WorkerProfileTimeSheetHistoryController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<TimeSheetHistoryModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid workerProfileId, Pagination pagination) =>
-        Ok(await _timeSheetRepository.GetTimeSheetHistory(workerProfileId, pagination));
+        Ok(await timeSheetRepository.GetTimeSheetHistory(workerProfileId, pagination));
 
     /// <summary>Gets the accumulated timesheet history for a worker profile up to a given row.</summary>
     /// <param name="workerProfileId">Worker profile identifier.</param>
     /// <param name="rowNumber">Row number to accumulate up to.</param>
     [HttpGet("{rowNumber}")]
     [ProducesResponseType(typeof(TimesheetHistoryAccumulated), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetTimeSheetHistoryAccumulated([FromRoute] Guid workerProfileId, [FromRoute] int rowNumber)
-    {
-        var data = await _timeSheetRepository.GetTimesheetHistoryAccumulated(workerProfileId, rowNumber);
-        return Ok(data);
-    }
+    public async Task<IActionResult> GetAccumulated([FromRoute] Guid workerProfileId, [FromRoute] int rowNumber) =>
+        Ok(await timeSheetRepository.GetTimesheetHistoryAccumulated(workerProfileId, rowNumber));
 }

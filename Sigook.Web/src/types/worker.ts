@@ -155,7 +155,6 @@ export interface WorkerRegisterTimeModel {
 }
 
 export interface WorkerCommentFilter {
-  workerId: string;
   size: number;
   pageIndex: number;
 }

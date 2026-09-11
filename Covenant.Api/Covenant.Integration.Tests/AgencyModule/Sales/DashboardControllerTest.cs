@@ -159,7 +159,7 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
 
     private static class Data
     {
-        // Wednesday 2026-09-09, 11:00 Eastern. Week = Sun 2026-09-06 to Sat 2026-09-12, quarter = Q3 2026.
+        // Wednesday 2026-09-09, 15:00 UTC. Week = Sun 2026-09-06 to Sat 2026-09-12, quarter = Q3 2026.
         public static readonly DateTimeOffset Now = new(2026, 9, 9, 15, 0, 0, TimeSpan.Zero);
 
         private static DateTime Utc(int day, int hour = 12) => new(2026, 9, day, hour, 0, 0, DateTimeKind.Utc);

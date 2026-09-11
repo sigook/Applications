@@ -21,6 +21,7 @@ using Covenant.Core.BL.Services;
 using Covenant.Tests.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MediatR;
 using Moq;
 using Xunit;
 
@@ -83,7 +84,8 @@ namespace Covenant.Tests.Accounting
                 Mock.Of<ILogger<RequestService>>(),
                 new RequestCreateModelValidator(),
                 new RequestUpdateRequirementsModelValidator(),
-                new RequestAdapter());
+                new RequestAdapter(),
+                Mock.Of<IMediator>());
             timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel
             {

@@ -22,9 +22,9 @@ public class CompanyRepositoryDashboardTest
     private readonly Guid _ownerId = Guid.NewGuid();
     private readonly Guid _otherOwnerId = Guid.NewGuid();
 
-    // Sunday 2026-09-06 through Saturday 2026-09-12, Eastern, expressed as UTC instants.
-    private static readonly DateTime FromUtc = new(2026, 9, 6, 4, 0, 0, DateTimeKind.Utc);
-    private static readonly DateTime ToUtcExclusive = new(2026, 9, 13, 4, 0, 0, DateTimeKind.Utc);
+    // Sunday 2026-09-06 through Saturday 2026-09-12, as UTC instants.
+    private static readonly DateTime FromUtc = new(2026, 9, 6, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime ToUtcExclusive = new(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
 
     public CompanyRepositoryDashboardTest()
     {

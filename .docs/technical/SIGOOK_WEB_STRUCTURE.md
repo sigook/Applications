@@ -169,7 +169,7 @@ Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboar
 | Deals by status | `SalesBarChart` (responsive SVG, d3-scale, one color per `DealStatus`) + `SalesRangeTabs` (Today / This week / This month) + a `b-taginput` status filter | **Live** — `getDealsByStatus` | Period tabs and status filter both re-query |
 | This quarter | Two `SalesMeterList`s: "Pipeline by status" (quarter), "Activity this week" | **Live** — `getSalesDashboardSummary` | — |
 
-Every card is live; period windows are resolved server-side in US Eastern time. Endpoints and refresh behavior are in SIGOOK_WEB_API_MAP.md §18.
+Every card is live; period windows are resolved server-side in UTC. Endpoints and refresh behavior are in SIGOOK_WEB_API_MAP.md §18.
 
 ### Company (`src/pages/company/`)
 
@@ -198,7 +198,7 @@ landing/
 
 ### Shared (`src/pages/`)
 
-Callback.vue (OAuth callback), SilentRefresh.vue (hidden iframe token renew), Unauthorized.vue, NotFound.vue, EmailPreferences.vue (unsubscribe, no auth)
+Callback.vue (OAuth callback), SilentRefresh.vue (hidden iframe token renew), Unauthorized.vue, NotFound.vue, EmailPreferences.vue (unsubscribe by `?email=` link, optional `&t=` notification type, no auth)
 
 ---
 

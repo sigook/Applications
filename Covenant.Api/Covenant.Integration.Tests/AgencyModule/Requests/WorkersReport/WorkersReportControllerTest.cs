@@ -1,3 +1,4 @@
+﻿using Covenant.Api.Controllers.Sigook.Agency.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models.Worker;
@@ -9,13 +10,13 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Shared.WorkersReportDocument
+namespace Covenant.Integration.Tests.AgencyModule.Requests.WorkersReport
 {
-    public class WorkersReportDocumentControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
+    public class WorkersReportControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
     {
         private readonly HttpClient client;
 
-        public WorkersReportDocumentControllerTest(CustomWebApplicationFactory<Startup> factory)
+        public WorkersReportControllerTest(CustomWebApplicationFactory<Startup> factory)
         {
             client = factory.CreateClient();
         }
@@ -23,7 +24,7 @@ namespace Covenant.Integration.Tests.Shared.WorkersReportDocument
         [Fact]
         public async Task Should_Get_ExcelFile_Of_Workers()
         {
-            var response = await client.GetAsync($"api/WorkersReportDocument/057d28b0-7d09-4e8e-aca4-a22a97943770/Document");
+            var response = await client.GetAsync(WorkersReportController.RouteName.Replace("{requestId:guid}", "057d28b0-7d09-4e8e-aca4-a22a97943770"));
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStreamAsync();
             var path = Path.Combine(Directory.GetCurrentDirectory(), $"doc_{Guid.NewGuid():N}.xlsx");
@@ -44,7 +45,7 @@ namespace Covenant.Integration.Tests.Shared.WorkersReportDocument
             services.AddDefaultTestConfiguration();
             services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ServicesConfiguration).Assembly));
             services.AddTestAuthenticationBuilder()
-                .AddTestAuth(o => { });
+                .AddTestAuth(o => o.AddAgencyPersonnelRole());
             services.AddTestDatabase();
         }
 

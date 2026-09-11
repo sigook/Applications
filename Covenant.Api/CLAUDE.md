@@ -3,12 +3,14 @@
 ## Code Navigation
 
 ```
-Controllers:     Covenant.Api/Controllers/Sigook/                       (root: Catalog, File, Location)
+Controllers:     Covenant.Api/Controllers/Sigook/                       (root: Catalog, File, Location, EmailPreferences)
                  Covenant.Api/Controllers/Sigook/Agency/                (Agency, AgencyLocation)
                  Covenant.Api/Controllers/Sigook/Agency/Accounting/     (Invoices, PayStubs, Reports, LocationTax)
                  Covenant.Api/Controllers/Sigook/Agency/Sales/          (Requests, CompanyProfiles, Deals, CompanyInteractions, Dashboard — scoped to the sales rep)
                  Covenant.Api/Controllers/Sigook/Agency/Candidates/     (Candidates, Notes, PhoneNumbers, Skills, Documents)
-                 Covenant.Api/Controllers/Sigook/Agency/Workers/        (Workers, Notes, Comments, Holidays, RequestHistory)
+                 Covenant.Api/Controllers/Sigook/Agency/Recruiting/     (Requests, CompanyProfiles, WeeklyBoard — scoped to recruiting)
+                 Covenant.Api/Controllers/Sigook/Agency/Requests/       (Requests, Applicants, Notes, Runners, Shift, Skills, Workers, TimeSheets, WorkersReport)
+                 Covenant.Api/Controllers/Sigook/Agency/Workers/        (Workers, Notes, Comments, Holidays, RequestHistory, WageHistory, TimeSheetHistory)
                  Covenant.Api/Controllers/Sigook/Agency/Personnel/      (Personnel, Agencies)
                  Covenant.Api/Controllers/Sigook/Company/               (Company, Users)
                  Covenant.Api/Controllers/Sigook/Company/Accounting/    (Invoices)
@@ -16,7 +18,7 @@ Controllers:     Covenant.Api/Controllers/Sigook/                       (root: C
                  Covenant.Api/Controllers/Sigook/Company/Requests/      (Requests, Shift, Workers, WorkerTimeSheets)
                  Covenant.Api/Controllers/Sigook/Company/Workers/       (Comments)
                  Covenant.Api/Controllers/Jobs/                         (ScheduleTasks — called by Sigook.Functions timers)
-Module controllers: Covenant.Api/{Module}Module/                        (WorkerModule)
+Module controllers: Covenant.Api/{Module}Module/                        (WorkerModule — the worker's own endpoints, Policy=Worker)
 Services:        Covenant.Core.BL/Services/                             (RequestService, WorkerService, etc.)
                  Covenant.Core.BL/Services/Accounting/                  (PayStubService)
                  Covenant.Core.BL/Services/Accounting/Shared/           (TimesheetCalculatorService — hours breakdown + deductions)

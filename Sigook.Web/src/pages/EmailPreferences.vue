@@ -25,16 +25,15 @@ function redirectToHome() {
 }
 
 async function onUnsubscribe() {
-  const typeOfUser = route.query.u;
-  const userId = route.query.id;
+  const email = route.query.email;
   const subscriptionType = route.query.t;
 
-  if (!typeOfUser || !userId || !subscriptionType) {
+  if (!email) {
     redirectToHome();
     return;
   }
 
-  const key = `${typeOfUser}${userId}${subscriptionType}`;
+  const key = `${email}${subscriptionType ?? ''}`;
   const alreadyUnsubscribe = window.sessionStorage.getItem(key);
   if (alreadyUnsubscribe) {
     redirectToHome();
@@ -44,9 +43,8 @@ async function onUnsubscribe() {
   isLoading.value = true;
   try {
     await unsubscribe({
-      userId: userId as string,
-      typeId: subscriptionType as string,
-      userType: typeOfUser as string,
+      email: email as string,
+      typeId: (subscriptionType as string) || undefined,
     });
     isLoading.value = false;
     window.sessionStorage.setItem(key, '1');

@@ -143,8 +143,7 @@ import { useModuleBase } from '@/composables/useModuleBase';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import type { PageBreadcrumb } from '@/types/common';
 import { workerColor } from '@/utils/workerStatus';
-import { getCommentsWorker } from '@/api/workerApi';
-import { getAgencyWorker, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
+import { getAgencyWorker, getAgencyWorkerComments, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
 import { lowercase } from '@/utils/filters';
 import imageDetail from '@/components/worker/WorkImageDetail.vue';
 import Comments from '@/components/Comments.vue';
@@ -218,8 +217,7 @@ function changeTab(tab: string) {
 
 function updateComments() {
   isLoading.value = true;
-  getCommentsWorker({
-    workerId: worker.value.workerId,
+  getAgencyWorkerComments(worker.value.id, {
     size: commentSize.value,
     pageIndex: commentPageIndex.value,
   }).then((data) => {

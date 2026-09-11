@@ -4,7 +4,7 @@ import type { DealsByStatusFilter, DealsByStatusModel, SalesDashboardSummary } f
 const baseUrl = '/api/agency/sales/dashboard';
 
 // Deal count and total value per status for a period (day / week / month / quarter),
-// resolved server-side in the business time zone. Sales users only see their own deals.
+// resolved server-side in UTC. Sales users only see their own deals.
 export function getDealsByStatus(filter: DealsByStatusFilter): Promise<DealsByStatusModel> {
   return api.get<DealsByStatusModel>(`${baseUrl}/deals-by-status`, { params: { ...filter } });
 }

@@ -1,4 +1,4 @@
-using Covenant.Api.Validators.Request;
+﻿using Covenant.Api.Validators.Request;
 using Covenant.Common.Configuration;
 using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
@@ -17,6 +17,7 @@ using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MediatR;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -48,7 +49,8 @@ namespace Covenant.Tests.Request
                 Mock.Of<ILogger<RequestService>>(),
                 new RequestCreateModelValidator(),
                 new RequestUpdateRequirementsModelValidator(),
-                new RequestAdapter());
+                new RequestAdapter(),
+                Mock.Of<IMediator>());
             Result result = await service.CancelRequest(request.Id, new RequestCancellationDetailModel());
             Assert.True(result);
             Assert.Equal(RequestStatus.Cancelled, request.Status);

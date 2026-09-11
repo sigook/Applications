@@ -262,7 +262,7 @@ Report generation and blob downloads.
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `downloadAgencyReport(url, filter)` | GET | (dynamic url) | `ReportQueryParams` (params) | Blob | Generic blob downloader |
-| `getWorkersReportDocument(requestId)` | GET | `/api/WorkersReportDocument/{requestId}/Document` | — | Blob | |
+| `getWorkersReportDocument(requestId)` | GET | `/api/agency/requests/{requestId}/WorkersReport` | — | Blob | Excel export of the request's workers |
 | `getJobPositionsHoursWorked(filter)` | GET | `/api/agency/accounting/reports/{companyProfileId}/job-positions` | `AgencyReportFilter & { companyProfileId }` (params) | `AgencyCompanyJobPosition[]` | Hours per position |
 | `getHoursWorkedReport(filter)` | GET | `/api/agency/accounting/reports/hours-worked` | `AgencyReportFilter` (params) | `HoursWorkedResume` | |
 | `getTimesheetsReport(filter)` | GET | `/api/agency/accounting/reports/timesheets/file` | `AgencyReportFilter` (params) | Blob | USA agencies |
@@ -632,7 +632,7 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 // GET /api/agency/sales/dashboard/deals-by-status?period=1
 {
   "period": { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00",
-              "label": "Sep 6 - Sep 12, 2026", "timeZone": "America/New_York" },
+              "label": "Sep 6 - Sep 12, 2026" },
   "totalCount": 9,
   "totalValue": 41500.00,
   "items": [ { "status": 0, "count": 3, "totalValue": 12000.00 } ]  // one row per status, zero-filled
@@ -641,16 +641,16 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 // GET /api/agency/sales/dashboard/summary
 {
   "asOf": "2026-09-09T15:00:00Z",
-  "quarter": { "period": 3, "from": "2026-07-01T00:00:00", "to": "2026-09-30T00:00:00", "label": "Q3 2026", "timeZone": "America/New_York" },
-  "week":    { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00", "label": "Sep 6 - Sep 12, 2026", "timeZone": "America/New_York" },
+  "quarter": { "period": 3, "from": "2026-07-01T00:00:00", "to": "2026-09-30T00:00:00", "label": "Q3 2026" },
+  "week":    { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00", "label": "Sep 6 - Sep 12, 2026" },
   "pipeline": [ { "status": 0, "count": 24, "totalValue": 180000.00 } ],  // 7 rows, enum order
   "activity": [ { "type": 0, "count": 42 } ]                              // 4 rows, enum order
 }
 ```
 
-`from`/`to` are **calendar dates in the business time zone**, serialized without a UTC offset so the
-browser renders them verbatim; `to` is inclusive. Windows are resolved server-side by
-`Covenant.Common/Utils/BusinessTime.cs` (America/New_York, week Sunday–Saturday).
+`from`/`to` are **UTC calendar dates**, serialized without an offset so the browser renders them
+verbatim; `to` is inclusive. Windows are resolved server-side by
+`SalesService.GetPeriodWindow` (UTC, week Sunday–Saturday).
 
 ### Refresh behavior
 
@@ -683,7 +683,7 @@ carries a request counter so a fast tab switch cannot render a stale response.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `unsubscribe(model)` | POST | `/api/EmailPreferences/Unsubscribe` | `UnsubscribeRequest` | `void` | No auth required |
+| `unsubscribe(model)` | POST | `/api/EmailPreferences/Unsubscribe` | `UnsubscribeRequest` (`email` + optional `typeId`) | `void` | No auth required; the backend resolves whether the email belongs to a user or a candidate, and defaults `typeId` to `NewRequestNotifyWorker` (10) when omitted |
 
 ---
 
@@ -755,7 +755,7 @@ Public landing site endpoints (no auth).
 ### Comments
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCommentsWorker(filter)` | GET | `/api/worker/{filter.workerId}/comment` | `WorkerCommentFilter` (params) | `WorkerCommentList` | Feedback on worker |
+| `getMyComments(filter)` | GET | `/api/WorkerProfile/me/Comments` | `WorkerCommentFilter` (params) | `WorkerCommentList` | Feedback written about the signed-in worker |
 
 ### Profile
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -812,10 +812,10 @@ Public landing site endpoints (no auth).
 ### Wage & TimeSheet History
 | Function | HTTP Method | Endpoint | Request Type | Response Type |
 |----------|------------|----------|--------------|---------------|
-| `getWorkerProfileWageHistory(filter)` | GET | `/api/WorkerProfile/{profileId}/WageHistory` | `WageHistoryFilter` (params) | `PaginatedList<WorkerWageHistoryItem>` |
-| `getWorkerProfileWageHistoryAccumulated(id, rowNumber)` | GET | `/api/WorkerProfile/{id}/WageHistory/{rowNumber}` | — | `WorkerWageHistoryItem` |
-| `getWorkerProfileTimeSheetHistory(filter)` | GET | `/api/WorkerProfile/{profileId}/TimeSheetHistory` | `TimeSheetHistoryFilter` (params) | `PaginatedList<WorkerTimeSheetHistoryItem>` |
-| `getWorkerProfileTimeSheetHistoryAccumulated(id, rowNumber)` | GET | `/api/WorkerProfile/{id}/TimeSheetHistory/{rowNumber}` | — | `WorkerTimeSheetHistoryItem` |
+| `getWorkerProfileWageHistory(filter)` | GET | `/api/agency/workers/{profileId}/WageHistory` | `WageHistoryFilter` (params) | `PaginatedList<WorkerWageHistoryItem>` |
+| `getWorkerProfileWageHistoryAccumulated(id, rowNumber)` | GET | `/api/agency/workers/{id}/WageHistory/{rowNumber}` | — | `WorkerWageHistoryItem` |
+| `getWorkerProfileTimeSheetHistory(filter)` | GET | `/api/agency/workers/{profileId}/TimeSheetHistory` | `TimeSheetHistoryFilter` (params) | `PaginatedList<WorkerTimeSheetHistoryItem>` |
+| `getWorkerProfileTimeSheetHistoryAccumulated(id, rowNumber)` | GET | `/api/agency/workers/{id}/TimeSheetHistory/{rowNumber}` | — | `WorkerTimeSheetHistoryItem` |
 
 **Types:** from `src/types/worker`; `ClockType` enum from `src/constants/enums`.
 

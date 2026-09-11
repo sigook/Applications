@@ -12,7 +12,7 @@ Controllers:        Covenant.IdentityServer/Controllers/Account/        (Login, 
                     Covenant.IdentityServer/Controllers/Diagnostics/
                     Covenant.IdentityServer/Controllers/Grants/
                     Covenant.IdentityServer/Controllers/Home/
-Services:           Covenant.IdentityServer/Services/                   (Interfaces: IClientService, IEmailService, etc.)
+Services:           Covenant.IdentityServer/Services/                   (Interfaces: IClientService, IEmailService, IMicrosoft365AccountService = Graph accountEnabled check; CustomProfileService.IsActiveAsync = session kill switch for InactiveUsers + disabled Entra accounts)
                     Covenant.IdentityServer/Services/Impl/              (Implementations)
 Security:           Covenant.IdentityServer/Security/                   (RoleConstants, CovenantResourceOwnerPasswordValidator = password grant rules)
 Entities:           Covenant.IdentityServer/Entities/                   (CovenantRole, InactiveUser, PasswordResetCode)
@@ -28,6 +28,7 @@ Background jobs:    Covenant.IdentityServer/BackgroundServices/
 ## Gotchas
 
 - **Pinned to .NET 6.** Upgrading to .NET 8 deadlocks (IdentityServer4 + AutoMapper incompatibility). Do not bump the TargetFramework.
+- **C# 10 only.** `global.json` and the Dockerfile pin SDK `6.0.400`, whose compiler tops out at C# 10, so the csproj sets `<LangVersion>10.0</LangVersion>` to fail locally instead of in CI. No primary constructors, collection expressions (`[x]`), or raw string literals here — use classic constructors with `_field` backing and `new[] { x }`.
 - **Dates:** `Program.cs` enables `Npgsql.EnableLegacyTimestampBehavior` (must stay before `CreateBuilder`). Npgsql then hands `timestamptz` back with an unpredictable `DateTime.Kind`, so compare instants with `DateTimeOffset` (see `PasswordResetCode`) rather than `DateTime.UtcNow`/`Now`.
 - **Client grant changes are migrations, not UI:** the admin `Client/Edit` page never updates grant types / PKCE / offline access. Follow `Data/Migrations/IdentityServer/ConfigurationDb/20260820000000_AddPasswordGrantForNativeLogin.cs`.
 - **No reference to `Covenant.Common`** (neither project nor NuGet). IdentityServer vendors its own copies of shared types (`Entities/CovenantUser.cs`, `Enums/UserType.cs`, etc.) — changes to Covenant.Common do not flow here automatically; keep vendored copies in sync manually. The pipeline still passes a `PatSigookPackages` build-arg that the Dockerfile no longer consumes (leftover).

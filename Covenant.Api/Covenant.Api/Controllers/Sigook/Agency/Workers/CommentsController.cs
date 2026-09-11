@@ -1,4 +1,5 @@
 ﻿using Covenant.Api.Authorization;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
@@ -14,6 +15,17 @@ namespace Covenant.Api.Controllers.Sigook.Agency.Workers;
 public class CommentsController : ControllerBase
 {
     public const string RouteName = "api/agency/workers/{workerProfileId:guid}/Comments";
+
+    /// <summary>Gets the paginated comments about a worker, scoped to the current agency.</summary>
+    /// <param name="workerProfileId">Identifier of the worker profile the comments are about.</param>
+    /// <param name="workerService">Worker service.</param>
+    /// <param name="pagination">Pagination criteria.</param>
+    [HttpGet]
+    [ProducesResponseType(typeof(PaginatedList<WorkerCommentModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get(Guid workerProfileId,
+        [FromServices] IWorkerService workerService,
+        Pagination pagination) =>
+        Ok(await workerService.GetAgencyComments(workerProfileId, pagination ?? new Pagination()));
 
     /// <summary>Posts a comment about a worker on behalf of the current agency.</summary>
     /// <param name="workerProfileId">Identifier of the worker profile the comment is about.</param>

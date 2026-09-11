@@ -1,6 +1,7 @@
 using Covenant.IdentityServer.Entities;
 using Covenant.IdentityServer.Configuration;
 using Covenant.IdentityServer.Controllers.Account.Models;
+using Covenant.IdentityServer.Services;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Events;
@@ -23,6 +24,7 @@ namespace Covenant.IdentityServer.Controllers.Account
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
         private readonly UserManager<CovenantUser> _userManager;
+        private readonly IMicrosoft365AccountService _accountService;
         private readonly ILogger<ExternalController> _logger;
 
         public ExternalController(
@@ -30,12 +32,14 @@ namespace Covenant.IdentityServer.Controllers.Account
             IClientStore clientStore,
             IEventService events,
             UserManager<CovenantUser> userManager,
+            IMicrosoft365AccountService accountService,
             ILogger<ExternalController> logger)
         {
             _interaction = interaction;
             _clientStore = clientStore;
             _events = events;
             _userManager = userManager;
+            _accountService = accountService;
             _logger = logger;
         }
 
@@ -226,6 +230,17 @@ namespace Covenant.IdentityServer.Controllers.Account
 
             _logger.LogInformation("Roles resolved from database: {Roles}", string.Join(", ", userRoles));
 
+            string objectId = externalUser.FindFirst(Constants.MicrosoftObjectIdExternalClaim)?.Value;
+            if (!string.IsNullOrEmpty(objectId))
+            {
+                await StoreMicrosoftObjectId(covenantUser, objectId);
+                if (!await _accountService.IsAccountEnabledAsync(objectId))
+                {
+                    _logger.LogWarning("Microsoft 365 account is disabled, login rejected: {Email}", externalEmail.Value);
+                    return null;
+                }
+            }
+
             string providerUserId = userIdClaim.Value;
             var claims = new List<Claim>
             {
@@ -234,6 +249,19 @@ namespace Covenant.IdentityServer.Controllers.Account
             claims.AddRange(userRoles.Select(role => new Claim(JwtClaimTypes.Role, role)));
 
             return new CovenantUserData(provider, providerUserId, covenantUser.UserName, covenantUser.Id.ToString(), claims);
+        }
+
+        private async Task StoreMicrosoftObjectId(CovenantUser user, string objectId)
+        {
+            IList<Claim> claims = await _userManager.GetClaimsAsync(user);
+            Claim existing = claims.FirstOrDefault(c => c.Type == Constants.MicrosoftObjectId);
+            if (existing?.Value == objectId) return;
+
+            IdentityResult result = existing is null
+                ? await _userManager.AddClaimAsync(user, Constants.ClaimMicrosoftObjectId(objectId))
+                : await _userManager.ReplaceClaimAsync(user, existing, Constants.ClaimMicrosoftObjectId(objectId));
+            if (!result.Succeeded)
+                _logger.LogError("Could not store Microsoft object id for user {UserId}: {Errors}", user.Id, string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
         private void ProcessLoginCallback(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)

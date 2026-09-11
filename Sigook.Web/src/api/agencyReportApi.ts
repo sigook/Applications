@@ -15,9 +15,9 @@ export function downloadAgencyReport(url: string, filter: ReportQueryParams): Pr
   return api.get<Blob>(url, { params: { ...filter }, responseType: 'blob' });
 }
 
-// Workers report document (PDF/Excel)
+// Workers report document (Excel)
 export function getWorkersReportDocument(requestId: string): Promise<Blob> {
-  return api.get<Blob>(`/api/WorkersReportDocument/${requestId}/Document`, { responseType: 'blob' });
+  return api.get<Blob>(`/api/agency/requests/${requestId}/WorkersReport`, { responseType: 'blob' });
 }
 
 // Job positions hours worked report (data, not blob)

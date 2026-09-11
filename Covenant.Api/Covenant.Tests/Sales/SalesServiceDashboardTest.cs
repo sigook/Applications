@@ -20,12 +20,12 @@ public class SalesServiceDashboardTest
     private readonly Guid _agencyId = Guid.NewGuid();
     private readonly Guid _userId = Guid.NewGuid();
 
-    // Wednesday 2026-09-09, 11:00 Eastern. Week = Sun 2026-09-06 to Sat 2026-09-12, quarter = Q3.
+    // Wednesday 2026-09-09, 15:00 UTC. Week = Sun 2026-09-06 to Sat 2026-09-12, quarter = Q3.
     private static readonly DateTimeOffset Now = new(2026, 9, 9, 15, 0, 0, TimeSpan.Zero);
-    private static readonly DateTime WeekFromUtc = new(2026, 9, 6, 4, 0, 0, DateTimeKind.Utc);
-    private static readonly DateTime WeekToUtc = new(2026, 9, 13, 4, 0, 0, DateTimeKind.Utc);
-    private static readonly DateTime QuarterFromUtc = new(2026, 7, 1, 4, 0, 0, DateTimeKind.Utc);
-    private static readonly DateTime QuarterToUtc = new(2026, 10, 1, 4, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime WeekFromUtc = new(2026, 9, 6, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime WeekToUtc = new(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime QuarterFromUtc = new(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime QuarterToUtc = new(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public SalesServiceDashboardTest()
     {
@@ -102,7 +102,7 @@ public class SalesServiceDashboardTest
     }
 
     [Fact]
-    public async Task GetDealsByStatusQueriesTheEasternWeekWindow()
+    public async Task GetDealsByStatusQueriesTheUtcWeekWindow()
     {
         DateTime capturedFrom = default;
         DateTime capturedTo = default;

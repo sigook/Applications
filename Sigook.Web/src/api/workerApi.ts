@@ -64,8 +64,8 @@ export function getClockType(
 }
 
 // Comments
-export function getCommentsWorker(filter: WorkerCommentFilter): Promise<WorkerCommentList> {
-  return api.get<WorkerCommentList>(`/api/worker/${filter.workerId}/comment`, {
+export function getMyComments(filter: WorkerCommentFilter): Promise<WorkerCommentList> {
+  return api.get<WorkerCommentList>('/api/WorkerProfile/me/Comments', {
     params: { PageSize: filter.size, PageIndex: filter.pageIndex }
   });
 }
@@ -218,18 +218,18 @@ export function createWorkerImage(profileId: string, formData: FormData): Promis
 
 // Wage History
 export function getWorkerProfileWageHistory(filter: WageHistoryFilter): Promise<PaginatedList<WorkerWageHistoryItem>> {
-  return api.get<PaginatedList<WorkerWageHistoryItem>>(`/api/WorkerProfile/${filter.profileId}/WageHistory`, { params: { ...filter } });
+  return api.get<PaginatedList<WorkerWageHistoryItem>>(`/api/agency/workers/${filter.profileId}/WageHistory`, { params: { ...filter } });
 }
 
 export function getWorkerProfileWageHistoryAccumulated(profileId: string, rowNumber: number): Promise<WorkerWageHistoryItem> {
-  return api.get<WorkerWageHistoryItem>(`/api/WorkerProfile/${profileId}/WageHistory/${rowNumber}`);
+  return api.get<WorkerWageHistoryItem>(`/api/agency/workers/${profileId}/WageHistory/${rowNumber}`);
 }
 
 // TimeSheet History
 export function getWorkerProfileTimeSheetHistory(filter: TimeSheetHistoryFilter): Promise<PaginatedList<WorkerTimeSheetHistoryItem>> {
-  return api.get<PaginatedList<WorkerTimeSheetHistoryItem>>(`/api/WorkerProfile/${filter.profileId}/TimeSheetHistory`, { params: { ...filter } });
+  return api.get<PaginatedList<WorkerTimeSheetHistoryItem>>(`/api/agency/workers/${filter.profileId}/TimeSheetHistory`, { params: { ...filter } });
 }
 
 export function getWorkerProfileTimeSheetHistoryAccumulated(profileId: string, rowNumber: number): Promise<WorkerTimeSheetHistoryItem> {
-  return api.get<WorkerTimeSheetHistoryItem>(`/api/WorkerProfile/${profileId}/TimeSheetHistory/${rowNumber}`);
+  return api.get<WorkerTimeSheetHistoryItem>(`/api/agency/workers/${profileId}/TimeSheetHistory/${rowNumber}`);
 }

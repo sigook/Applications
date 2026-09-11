@@ -113,7 +113,7 @@ export default {
     if (isAdmin && agency.masterAgency) {
       sales.items.push({
         to: "/sales/agencies",
-        icon: "handshake-outline",
+        icon: "sitemap-outline",
         label: "Agencies",
       });
     }
