@@ -6,7 +6,6 @@
     :size="size"
     :placeholder="placeholder"
     :loading="loading"
-    :clearable="clearable"
     open-on-focus
     expanded
     append-to-body
@@ -15,9 +14,7 @@
     @update:model-value="onModelUpdate"
     @typing="onTyping"
     @select="onSelect"
-  >
-    <template v-if="belowThreshold" #empty>Type at least {{ minSearchLength }} characters</template>
-  </b-autocomplete>
+  ></b-autocomplete>
 </template>
 
 <script setup lang="ts" generic="V extends string | number">
@@ -35,11 +32,10 @@ const props = withDefaults(
     placeholder?: string;
     size?: string;
     loading?: boolean;
-    clearable?: boolean;
     remote?: boolean;
     minSearchLength?: number;
   }>(),
-  { placeholder: 'Search…', loading: false, clearable: false, remote: false, minSearchLength: 0 }
+  { placeholder: 'Search…', loading: false, remote: false, minSearchLength: 0 }
 );
 
 const emit = defineEmits<{
@@ -78,10 +74,14 @@ const belowThreshold = computed(() => {
   return props.remote && length < props.minSearchLength;
 });
 
-// A term shorter than the threshold never reached the server, so there is nothing to show:
-// an empty list keeps the #empty hint visible instead of leaving stale results on screen.
+// A partial term never reached the server, so there is nothing to show. An empty term keeps
+// what is already loaded: clicking an option blurs the input (which resets the term) before
+// the click lands, and emptying the list there would unmount the option mid-click.
 const filtered = computed(() => {
-  if (props.remote) return belowThreshold.value ? [] : [...props.options];
+  if (props.remote) {
+    const hasPartialTerm = belowThreshold.value && search.value.trim().length > 0;
+    return hasPartialTerm ? [] : [...props.options];
+  }
   const term = search.value.trim().toLowerCase();
   return props.options.filter((o) => o.label.toLowerCase().includes(term));
 });
@@ -92,21 +92,19 @@ function emitSearch(term: string): void {
   debounceTimer = setTimeout(() => emit('search', term), SEARCH_DEBOUNCE_MS);
 }
 
-// Fires for programmatic changes too, so it only mirrors text. The one change that must still
-// reach the parent is Buefy's clear button: it empties the value without emitting `typing`.
-// It is told apart from our own focus reset because that one empties `search` first.
+// Fires for programmatic changes too (selecting an option writes its label), so it only mirrors text.
 function onModelUpdate(text: string): void {
-  const isClearButton = text === '' && search.value !== '';
   search.value = text;
-  if (!isClearButton || !props.clearable) return;
-  selectedLabel.value = '';
-  emit('update:modelValue', null);
 }
 
-// Buefy emits `typing` only on a real keystroke, so clearing and searching stay user-driven.
+// Buefy emits `typing` only on a real keystroke, so emptying the input stays user-driven:
+// wiping the text is what clears the current selection.
 function onTyping(text: string): void {
   search.value = text;
-  if (text === '' && props.clearable) emit('update:modelValue', null);
+  if (text === '') {
+    selectedLabel.value = '';
+    emit('update:modelValue', null);
+  }
   emitSearch(text);
 }
 
@@ -120,9 +118,9 @@ function onSelect(option: Option | null): void {
 function onFocus(): void {
   isFocused.value = true;
   search.value = '';
-  // With a minimum search length there is no initial list: the parent only fetches once the
-  // user types enough characters, so focus must not trigger an unfiltered request.
-  if (props.remote && props.minSearchLength === 0) {
+  // The parent owns the list: for an empty term it either clears stale results (with a
+  // minimum search length) or fetches the unfiltered list (without one).
+  if (props.remote) {
     clearTimeout(debounceTimer);
     emit('search', '');
   }

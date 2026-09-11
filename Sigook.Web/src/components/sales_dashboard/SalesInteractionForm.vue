@@ -1,54 +1,75 @@
 <template>
-  <form class="sd-form" @submit.prevent>
-    <b-field label="Type">
-      <div class="sd-choices">
-        <b-button
-          v-for="option in INTERACTION_TYPES"
-          :key="option"
-          class="sd-choice"
-          :class="{ 'is-active': type === option }"
-          @click="type = option"
-        >
-          {{ INTERACTION_TYPE_LABELS[option] }}
-        </b-button>
+  <form @submit.prevent>
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <b-field label="Type">
+          <div class="sd-choices">
+            <b-button
+              v-for="option in INTERACTION_TYPES"
+              :key="option"
+              class="sd-choice"
+              :class="{ 'is-active': type === option }"
+              @click="type = option"
+            >
+              {{ INTERACTION_TYPE_LABELS[option] }}
+            </b-button>
+          </div>
+        </b-field>
       </div>
-    </b-field>
 
-    <b-field label="Client">
-      <search-select
-        v-if="!isEditing"
-        v-model="companyProfileId"
-        :options="clientOptions"
-        :loading="isLoadingClients"
-        :min-search-length="MINIMUM_SEARCH_LENGTH"
-        remote
-        clearable
-        placeholder="Search client…"
-        @search="onClientSearch"
-      />
-      <p v-else class="sd-readonly">{{ interaction?.companyName }}</p>
-    </b-field>
+      <div class="column is-12">
+        <b-field
+          label="Client *"
+          :type="formErrors.companyProfileId ? 'is-danger' : ''"
+          :message="isEditing ? '' : formErrors.companyProfileId || CLIENT_SEARCH_HINT"
+        >
+          <search-select
+            v-if="!isEditing"
+            v-model="companyProfileId"
+            :options="clientOptions"
+            :loading="isLoadingClients"
+            :min-search-length="MINIMUM_SEARCH_LENGTH"
+            remote
+            placeholder="Search client…"
+            @search="onClientSearch"
+          />
+          <p v-else class="sd-readonly">{{ interaction?.companyName }}</p>
+        </b-field>
+      </div>
 
-    <b-field label="Purpose">
-      <b-select v-model="purpose" expanded>
-        <option v-for="opt in purposeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-      </b-select>
-    </b-field>
+      <div class="column is-6">
+        <b-field label="Purpose">
+          <b-select v-model="purpose" expanded>
+            <option v-for="opt in purposeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          </b-select>
+        </b-field>
+      </div>
 
-    <b-field label="Status">
-      <b-select v-model="status" expanded>
-        <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-      </b-select>
-    </b-field>
+      <div class="column is-6">
+        <b-field label="Status">
+          <b-select v-model="status" expanded>
+            <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          </b-select>
+        </b-field>
+      </div>
 
-    <b-field label="Description">
-      <b-input v-model="description" type="textarea" placeholder="What was discussed…"></b-input>
-    </b-field>
+      <div class="column is-12">
+        <b-field
+          label="Description *"
+          :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''"
+        >
+          <b-input v-model="description" name="description" type="textarea" placeholder="What was discussed…"></b-input>
+        </b-field>
+      </div>
+    </div>
   </form>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { getAgencyCompaniesList } from '@/api/agencyCompanyApi';
 import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyApi';
 import {
@@ -69,6 +90,7 @@ import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import SearchSelect from './SearchSelect.vue';
 
 const MINIMUM_SEARCH_LENGTH = 3;
+const CLIENT_SEARCH_HINT = `Type at least ${MINIMUM_SEARCH_LENGTH} characters to search`;
 
 const props = defineProps<{
   interaction?: CompanyInteraction | null;
@@ -117,68 +139,89 @@ function onClientSearch(term: string): void {
   loadClients(normalized);
 }
 
-const type = ref<InteractionType>(InteractionType.Call);
-const companyProfileId = ref<string | null>(null);
-const purpose = ref<InteractionPurpose>(InteractionPurpose.Intro);
-const status = ref<InteractionStatus>(InteractionStatus.NotStarted);
-const description = ref('');
+interface InteractionFormValues {
+  companyProfileId: string | null;
+  type: InteractionType;
+  purpose: InteractionPurpose;
+  status: InteractionStatus;
+  description: string;
+}
+
+const validationSchema = yup.object({
+  companyProfileId: yup.string().nullable().required('Client is required'),
+  description: yup.string().trim().required('Description is required').max(5000, 'Max 5000 characters'),
+});
+
+const form = useStickyForm<InteractionFormValues>({
+  schema: validationSchema,
+  initialValues: {
+    companyProfileId: null,
+    type: InteractionType.Call,
+    purpose: InteractionPurpose.Intro,
+    status: InteractionStatus.NotStarted,
+    description: '',
+  },
+});
+const { companyProfileId, type, purpose, status, description } = form.fields;
+const formErrors = form.errors;
 
 onMounted(() => {
   if (props.interaction) {
-    type.value = props.interaction.interactionType;
-    companyProfileId.value = props.interaction.companyProfileId;
-    purpose.value = props.interaction.interactionPurpose;
-    status.value = props.interaction.interactionStatus;
-    description.value = props.interaction.description;
+    form.hydrate({
+      companyProfileId: props.interaction.companyProfileId,
+      type: props.interaction.interactionType,
+      purpose: props.interaction.interactionPurpose,
+      status: props.interaction.interactionStatus,
+      description: props.interaction.description,
+    });
     return;
   }
   if (props.initialClient) {
-    companyProfileId.value = props.initialClient.id;
+    form.hydrate({ companyProfileId: props.initialClient.id });
   }
 });
 
 function resetForm(): void {
-  type.value = InteractionType.Call;
-  companyProfileId.value = props.initialClient?.id ?? null;
-  purpose.value = InteractionPurpose.Intro;
-  status.value = InteractionStatus.NotStarted;
-  description.value = '';
+  form.hydrate({ companyProfileId: props.initialClient?.id ?? null });
 }
 
-async function submit(): Promise<boolean> {
-  if (!companyProfileId.value) {
-    await showAlertError('Please select a client');
-    return false;
-  }
-  if (!description.value.trim()) {
-    await showAlertError('Please enter a description');
-    return false;
-  }
-  try {
-    if (props.interaction) {
-      await updateCompanyInteraction(props.interaction.id, {
-        description: description.value.trim(),
-        interactionPurpose: purpose.value,
-        interactionType: type.value,
-        interactionStatus: status.value,
-      });
-      showAlertSuccess('Interaction updated');
-    } else {
-      await createCompanyInteraction({
-        companyProfileId: companyProfileId.value,
-        description: description.value.trim(),
-        interactionPurpose: purpose.value,
-        interactionType: type.value,
-        interactionStatus: status.value,
-      });
-      showAlertSuccess('Interaction logged');
-      resetForm();
-    }
-    return true;
-  } catch (error) {
-    await showAlertError(error);
-    return false;
-  }
+function submit(): Promise<boolean> {
+  form.markInteracted();
+  return new Promise<boolean>((resolve) => {
+    form.handleSubmit(
+      async (values) => {
+        try {
+          if (props.interaction) {
+            await updateCompanyInteraction(props.interaction.id, {
+              description: values.description.trim(),
+              interactionPurpose: values.purpose,
+              interactionType: values.type,
+              interactionStatus: values.status,
+            });
+            showAlertSuccess('Interaction updated');
+          } else {
+            await createCompanyInteraction({
+              companyProfileId: values.companyProfileId as string,
+              description: values.description.trim(),
+              interactionPurpose: values.purpose,
+              interactionType: values.type,
+              interactionStatus: values.status,
+            });
+            showAlertSuccess('Interaction logged');
+            resetForm();
+          }
+          resolve(true);
+        } catch (error) {
+          await showAlertError(error);
+          resolve(false);
+        }
+      },
+      () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+        resolve(false);
+      }
+    )();
+  });
 }
 
 defineExpose({ submit });
@@ -187,41 +230,8 @@ defineExpose({ submit });
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
 
-.sd-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-
-  :deep(.label) {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #777;
-    margin-bottom: 0.35rem;
-  }
-
-  :deep(.input),
-  :deep(.textarea),
-  :deep(.select select) {
-    font-size: 0.82rem;
-    border-color: $gray-border;
-    box-shadow: none;
-    color: #333;
-
-    &:focus,
-    &:active {
-      border-color: $primary;
-      box-shadow: 0 0 0 2px rgba($primary, 0.15);
-    }
-  }
-
-  :deep(.textarea) {
-    min-height: 5.5rem;
-  }
-}
-
 .sd-readonly {
-  font-size: 0.82rem;
-  color: #333;
+  color: $grey-font;
   padding: 0.35rem 0;
   font-weight: 600;
 }
@@ -237,16 +247,15 @@ defineExpose({ submit });
   border: 0;
   border-radius: 7px;
   padding: 0.4rem 0.85rem;
-  font-size: 0.78rem;
   font-weight: 600;
-  background: #eef0f3;
-  color: #666;
+  background: $gray-bg;
+  color: $grey-light;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: #e4e7eb;
-    color: #555;
+    background: darken($gray-bg, 5%);
+    color: $grey-font;
   }
 
   &.is-active {
