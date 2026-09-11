@@ -78,10 +78,14 @@ const belowThreshold = computed(() => {
   return props.remote && length < props.minSearchLength;
 });
 
-// A term shorter than the threshold never reached the server, so there is nothing to show:
-// an empty list keeps the #empty hint visible instead of leaving stale results on screen.
+// A partial term never reached the server, so there is nothing to show. An empty term keeps
+// what is already loaded: clicking an option blurs the input (which resets the term) before
+// the click lands, and emptying the list there would unmount the option mid-click.
 const filtered = computed(() => {
-  if (props.remote) return belowThreshold.value ? [] : [...props.options];
+  if (props.remote) {
+    const hasPartialTerm = belowThreshold.value && search.value.trim().length > 0;
+    return hasPartialTerm ? [] : [...props.options];
+  }
   const term = search.value.trim().toLowerCase();
   return props.options.filter((o) => o.label.toLowerCase().includes(term));
 });
@@ -120,9 +124,9 @@ function onSelect(option: Option | null): void {
 function onFocus(): void {
   isFocused.value = true;
   search.value = '';
-  // With a minimum search length there is no initial list: the parent only fetches once the
-  // user types enough characters, so focus must not trigger an unfiltered request.
-  if (props.remote && props.minSearchLength === 0) {
+  // The parent owns the list: for an empty term it either clears stale results (with a
+  // minimum search length) or fetches the unfiltered list (without one).
+  if (props.remote) {
     clearTimeout(debounceTimer);
     emit('search', '');
   }
