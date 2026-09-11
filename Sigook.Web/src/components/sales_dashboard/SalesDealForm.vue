@@ -1,79 +1,109 @@
 <template>
-  <form class="sd-form" @submit.prevent>
-    <b-field label="Deal title">
-      <b-input v-model="title" placeholder="e.g. Warehouse staffing – 40 FTE"></b-input>
-    </b-field>
+  <form @submit.prevent>
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <b-field label="Deal title *" :type="formErrors.title ? 'is-danger' : ''" :message="formErrors.title || ''">
+          <b-input v-model="title" name="title" placeholder="e.g. Warehouse staffing – 40 FTE"></b-input>
+        </b-field>
+      </div>
 
-    <b-field label="Client">
-      <search-select
-        v-if="!isEditing"
-        v-model="companyProfileId"
-        :options="clientOptions"
-        :loading="isLoadingClients"
-        :min-search-length="MINIMUM_SEARCH_LENGTH"
-        remote
-        clearable
-        placeholder="Search client…"
-        @search="onClientSearch"
-      />
-      <p v-else class="sd-readonly">{{ deal?.companyName }}</p>
-    </b-field>
+      <div class="column is-12">
+        <b-field
+          label="Client *"
+          :type="formErrors.companyProfileId ? 'is-danger' : ''"
+          :message="isEditing ? '' : formErrors.companyProfileId || CLIENT_SEARCH_HINT"
+        >
+          <search-select
+            v-if="!isEditing"
+            v-model="companyProfileId"
+            :options="clientOptions"
+            :loading="isLoadingClients"
+            :min-search-length="MINIMUM_SEARCH_LENGTH"
+            remote
+            placeholder="Search client…"
+            @search="onClientSearch"
+          />
+          <p v-else class="sd-readonly">{{ deal?.companyName }}</p>
+        </b-field>
+      </div>
 
-    <div class="sd-form__row">
-      <b-field label="Value" class="sd-form__col">
-        <b-input v-model="value" type="number" step="0.01" placeholder="$"></b-input>
-      </b-field>
+      <div class="column is-6">
+        <b-field label="Value" :type="formErrors.value ? 'is-danger' : ''" :message="formErrors.value || ''">
+          <b-numberinput v-model="value" name="value" :min="0" :max="1000000" :step="0.01" :controls="false" />
+        </b-field>
+      </div>
 
-      <b-field label="Type" class="sd-form__col">
-        <b-select v-model="type" expanded>
-          <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-        </b-select>
-      </b-field>
+      <div class="column is-6">
+        <b-field label="Type">
+          <b-select v-model="type" expanded>
+            <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          </b-select>
+        </b-field>
+      </div>
+
+      <div class="column is-6">
+        <b-field label="Status">
+          <b-select v-model="status" expanded>
+            <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          </b-select>
+        </b-field>
+      </div>
+
+      <div class="column is-6">
+        <b-field label="Date *" :type="formErrors.date ? 'is-danger' : ''" :message="formErrors.date || ''">
+          <b-datepicker
+            ref="datePicker"
+            v-model="date"
+            name="date"
+            placeholder="Pick a date"
+            expanded
+            @active-change="onPickerActive"
+          ></b-datepicker>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field v-if="!isEditing" label="Document" :type="fileError ? 'is-danger' : ''" :message="fileError">
+          <div class="file is-primary" :class="{ 'has-name': !!documentFile }">
+            <b-upload
+              v-model="documentFile"
+              class="file-label"
+              :accept="UPLOAD_ACCEPT"
+              name="dealDocument"
+              @update:modelValue="onFileSelected"
+            >
+              <span class="file-cta">
+                <b-icon class="file-icon" icon="upload"></b-icon>
+                <span class="file-label">Click to upload</span>
+              </span>
+              <span class="file-name" v-if="documentFile">{{ documentFile.name }}</span>
+            </b-upload>
+          </div>
+        </b-field>
+
+        <b-field v-else label="Document">
+          <a
+            v-if="deal?.documentPath"
+            class="sd-document sd-document--link"
+            :href="deal.documentPath"
+            target="_blank"
+            rel="noopener"
+          >
+            <b-icon icon="paperclip" size="is-small"></b-icon>
+            {{ deal.documentName }}
+          </a>
+          <p v-else class="sd-document">No document attached</p>
+        </b-field>
+      </div>
     </div>
-
-    <b-field label="Status">
-      <b-select v-model="status" expanded>
-        <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-      </b-select>
-    </b-field>
-
-    <b-field label="Date">
-      <b-datepicker
-        ref="datePicker"
-        v-model="date"
-        placeholder="Pick a date"
-        @active-change="onPickerActive"
-      ></b-datepicker>
-    </b-field>
-
-    <b-field v-if="!isEditing" label="Document">
-      <b-upload v-model="documentFile" expanded>
-        <a class="button is-fullwidth sd-upload">
-          <b-icon icon="paperclip" size="is-small"></b-icon>
-          <span>{{ documentFile ? documentFile.name : 'Attach a document (optional)' }}</span>
-        </a>
-      </b-upload>
-    </b-field>
-
-    <b-field v-else label="Document">
-      <a
-        v-if="deal?.documentPath"
-        class="sd-document sd-document--link"
-        :href="deal.documentPath"
-        target="_blank"
-        rel="noopener"
-      >
-        <b-icon icon="paperclip" size="is-small"></b-icon>
-        {{ deal.documentName }}
-      </a>
-      <p v-else class="sd-document">No document attached</p>
-    </b-field>
   </form>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/composables/useStickyForm';
 import { useDropdownReveal } from '@/composables/useDropdownReveal';
 import { getAgencyCompaniesList } from '@/api/agencyCompanyApi';
 import { createDeal, updateDeal } from '@/api/companyApi';
@@ -89,9 +119,11 @@ import type { Deal } from '@/types/company';
 import type { CatalogItem } from '@/types/common';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { generateFileName } from '@/utils/fileNaming';
+import { UPLOAD_ACCEPT, validateUploadFile } from '@/utils/fileValidation';
 import SearchSelect from './SearchSelect.vue';
 
 const MINIMUM_SEARCH_LENGTH = 3;
+const CLIENT_SEARCH_HINT = `Type at least ${MINIMUM_SEARCH_LENGTH} characters to search`;
 
 const props = defineProps<{ deal?: Deal | null }>();
 
@@ -125,13 +157,48 @@ function onClientSearch(term: string): void {
   loadClients(normalized);
 }
 
-const title = ref('');
-const companyProfileId = ref<string | null>(null);
-const date = ref<Date | null>(null);
-const value = ref<number | null>(null);
-const type = ref<DealType>(DealType.Temporal);
-const status = ref<DealStatus>(DealStatus.ToSend);
+interface DealFormValues {
+  title: string;
+  companyProfileId: string | null;
+  date: Date | null;
+  value: number | null;
+  type: DealType;
+  status: DealStatus;
+}
+
+const validationSchema = yup.object({
+  title: yup.string().trim().required('Deal title is required').max(200, 'Max 200 characters'),
+  companyProfileId: yup.string().nullable().required('Client is required'),
+  date: yup.date().nullable().required('Date is required').typeError('Please pick a valid date'),
+  value: yup
+    .number()
+    .nullable()
+    .transform((v, original) => (original === '' || original === null ? null : v))
+    .min(0, 'Value must be 0 or greater')
+    .typeError('Please enter a valid value'),
+});
+
+const form = useStickyForm<DealFormValues>({
+  schema: validationSchema,
+  initialValues: {
+    title: '',
+    companyProfileId: null,
+    date: null,
+    value: null,
+    type: DealType.Temporal,
+    status: DealStatus.ToSend,
+  },
+});
+const { title, companyProfileId, date, value, type, status } = form.fields;
+const formErrors = form.errors;
+
 const documentFile = ref<File | null>(null);
+const fileError = ref('');
+
+function onFileSelected(file: File | null): void {
+  fileError.value = file ? validateUploadFile(file) : '';
+  if (fileError.value) documentFile.value = null;
+}
 
 const datePicker = ref<ComponentPublicInstance | null>(null);
 const { reveal } = useDropdownReveal();
@@ -142,73 +209,67 @@ function onPickerActive(active: boolean): void {
 
 onMounted(() => {
   if (!props.deal) return;
-  title.value = props.deal.title;
-  companyProfileId.value = props.deal.companyProfileId;
-  date.value = new Date(props.deal.date);
-  value.value = props.deal.value;
-  type.value = props.deal.type;
-  status.value = props.deal.status;
+  form.hydrate({
+    title: props.deal.title,
+    companyProfileId: props.deal.companyProfileId,
+    date: new Date(props.deal.date),
+    value: props.deal.value,
+    type: props.deal.type,
+    status: props.deal.status,
+  });
 });
 
 function resetForm(): void {
-  title.value = '';
-  companyProfileId.value = null;
-  date.value = null;
-  value.value = null;
-  type.value = DealType.Temporal;
-  status.value = DealStatus.ToSend;
+  form.resetAll();
   documentFile.value = null;
+  fileError.value = '';
 }
 
-async function submit(): Promise<boolean> {
-  if (!title.value.trim()) {
-    await showAlertError('Please enter a deal title');
-    return false;
-  }
-  if (!companyProfileId.value) {
-    await showAlertError('Please select a client');
-    return false;
-  }
-  if (!date.value) {
-    await showAlertError('Please pick a date');
-    return false;
-  }
-  const amount = Number(value.value);
-  if (!Number.isFinite(amount) || amount < 0) {
-    await showAlertError('Please enter a valid value');
-    return false;
-  }
-  try {
-    if (props.deal) {
-      await updateDeal(props.deal.id, {
-        title: title.value.trim(),
-        date: date.value.toISOString(),
-        value: amount,
-        type: type.value,
-        status: status.value,
-        documentId: props.deal.documentId ?? null,
-      });
-      showAlertSuccess('Deal updated');
-    } else {
-      const file = documentFile.value;
-      await createDeal({
-        title: title.value.trim(),
-        companyProfileId: companyProfileId.value,
-        date: date.value.toISOString(),
-        value: amount,
-        type: type.value,
-        status: status.value,
-        documentId: null,
-        fileName: file ? generateFileName('Deal', file.name) : null,
-      }, file);
-      showAlertSuccess('Deal created');
-      resetForm();
-    }
-    return true;
-  } catch (error) {
-    await showAlertError(error);
-    return false;
-  }
+function submit(): Promise<boolean> {
+  form.markInteracted();
+  return new Promise<boolean>((resolve) => {
+    form.handleSubmit(
+      async (values) => {
+        const amount = Number(values.value ?? 0);
+        const dealDate = new Date(values.date as Date);
+        try {
+          if (props.deal) {
+            await updateDeal(props.deal.id, {
+              title: values.title.trim(),
+              date: dealDate.toISOString(),
+              value: amount,
+              type: values.type,
+              status: values.status,
+              documentId: props.deal.documentId ?? null,
+            });
+            showAlertSuccess('Deal updated');
+          } else {
+            const file = documentFile.value;
+            await createDeal({
+              title: values.title.trim(),
+              companyProfileId: values.companyProfileId as string,
+              date: dealDate.toISOString(),
+              value: amount,
+              type: values.type,
+              status: values.status,
+              documentId: null,
+              fileName: file ? generateFileName('Deal', file.name) : null,
+            }, file);
+            showAlertSuccess('Deal created');
+            resetForm();
+          }
+          resolve(true);
+        } catch (error) {
+          await showAlertError(error);
+          resolve(false);
+        }
+      },
+      () => {
+        showAlertError('Please make sure all required fields are filled out correctly');
+        resolve(false);
+      }
+    )();
+  });
 }
 
 defineExpose({ submit });
@@ -217,41 +278,8 @@ defineExpose({ submit });
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
 
-.sd-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-
-  :deep(.label) {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #777;
-    margin-bottom: 0.35rem;
-  }
-
-  :deep(.input),
-  :deep(.textarea),
-  :deep(.select select) {
-    font-size: 0.82rem;
-    border-color: $gray-border;
-    box-shadow: none;
-    color: #333;
-
-    &:focus,
-    &:active {
-      border-color: $primary;
-      box-shadow: 0 0 0 2px rgba($primary, 0.15);
-    }
-  }
-
-  :deep(.textarea) {
-    min-height: 5.5rem;
-  }
-}
-
 .sd-readonly {
-  font-size: 0.82rem;
-  color: #333;
+  color: $grey-font;
   padding: 0.35rem 0;
   font-weight: 600;
 }
@@ -260,8 +288,7 @@ defineExpose({ submit });
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.82rem;
-  color: #333;
+  color: $grey-font;
   padding: 0.35rem 0;
   word-break: break-all;
 }
@@ -276,13 +303,4 @@ defineExpose({ submit });
   }
 }
 
-.sd-form__row {
-  display: flex;
-  gap: 0.7rem;
-}
-
-.sd-form__col {
-  flex: 1;
-  min-width: 0;
-}
 </style>

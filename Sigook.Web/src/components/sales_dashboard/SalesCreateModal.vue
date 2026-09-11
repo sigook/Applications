@@ -3,7 +3,6 @@
     class="sd-modal"
     :model-value="modelValue"
     width="500px"
-    :can-cancel="['escape', 'outside']"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div v-if="meta" class="sd-modal__panel">
@@ -17,9 +16,6 @@
             <p class="sd-modal__subtitle">{{ isEditing ? editSubtitle : meta.subtitle }}</p>
           </div>
         </div>
-        <b-button class="sd-modal__close" aria-label="Close" @click="close">
-          <b-icon icon="close" size="is-small"></b-icon>
-        </b-button>
       </header>
 
       <div class="sd-modal__body">
@@ -266,31 +262,6 @@ async function onDelete(): Promise<void> {
   font-size: 0.72rem;
   color: #9aa1ab;
   line-height: 1.4;
-}
-
-.sd-modal__close {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 0;
-  background: #f2f3f5;
-  color: #666;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0;
-  flex: none;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background: #e7e9ec;
-  }
-
-  &:focus-visible {
-    outline: 2px solid rgba($primary, 0.5);
-    outline-offset: 1px;
-  }
 }
 
 .sd-modal__body {

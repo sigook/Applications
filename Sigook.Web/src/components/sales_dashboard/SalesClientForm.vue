@@ -1,97 +1,109 @@
 <template>
-  <form class="sd-form" @submit.prevent>
-    <div class="sd-form__logo">
-      <UploadImage
-        :required="false"
-        @imageSelected="(img) => (company.logo.fileName = img)"
-        @onUpload="() => pubSub.subscribe('file')"
-        @finishUpload="() => pubSub.unsubscribe()"
-      />
-    </div>
-
-    <b-field v-if="isAdmin" class="sd-form__check">
-      <b-checkbox v-model="company.requiresPermissionToSeeRequests">
-        Requires permission to see requests?
-      </b-checkbox>
-    </b-field>
-
-    <b-field :type="formErrors.fullName ? 'is-danger' : ''" :message="formErrors.fullName || ''">
-      <template #label>Full name <span class="has-text-danger">*</span></template>
-      <b-input v-model="fullName" name="full name" placeholder="e.g. Acme Logistics"></b-input>
-    </b-field>
-
-    <b-field :type="formErrors.industry ? 'is-danger' : ''" :message="formErrors.industry || ''">
-      <template #label>Type of industry <span class="has-text-danger">*</span></template>
-      <b-autocomplete
-        ref="industryPicker"
-        v-model="industry"
-        :data="filteredIndustries"
-        open-on-focus
-        field="value"
-        name="industry"
-        placeholder="Industry"
-        selectable-footer
-        @active="(active) => onDropdownActive(industryPicker, active)"
-        @select="selectIndustry"
-        @select-footer="onAddIndustry"
-      >
-        <template #footer>
-          <a><span> Add new... </span></a>
-        </template>
-        <template #empty>You don't have any industry created</template>
-      </b-autocomplete>
-    </b-field>
-
-    <div class="sd-form__row">
-      <b-field
-        class="sd-form__col"
-        :type="formErrors.companyStatus ? 'is-danger' : ''"
-        :message="formErrors.companyStatus || ''"
-      >
-        <template #label>Status <span class="has-text-danger">*</span></template>
-        <b-select
-          v-model="companyStatus"
-          placeholder="Select option"
-          name="state"
-          expanded
-          :class="{ 'sd-form__select--empty': !companyStatus }"
-        >
-          <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.value }}</option>
-        </b-select>
-      </b-field>
-
-      <b-field
-        class="sd-form__col"
-        :type="formErrors.salesRepresentative ? 'is-danger' : ''"
-        :message="formErrors.salesRepresentative || ''"
-      >
-        <template #label>Sales Representative <span class="has-text-danger">*</span></template>
-        <b-autocomplete
-          ref="salesRepresentativePicker"
-          v-model="salesRepresentative"
-          :data="filteredSalesRepresentative"
-          open-on-focus
-          name="salesRepresentative"
-          placeholder="Select"
-          :custom-formatter="(option) => `${option.name} - ${option.email}`"
-          @active="(active) => onDropdownActive(salesRepresentativePicker, active)"
-          @select="onSalesRepresentativeSelected"
-        ></b-autocomplete>
-      </b-field>
-    </div>
-
-    <b-field :type="formErrors.about ? 'is-danger' : ''" label="About" :message="formErrors.about || ''">
-      <b-input type="textarea" v-model="about" name="about"></b-input>
-    </b-field>
-
-    <b-field label="Internal Info">
-      <div class="sd-form__editor">
-        <QuillEditor theme="snow" content-type="html" v-model:content="company.internalInfo" />
+  <form @submit.prevent>
+    <div class="columns is-multiline">
+      <div class="column is-12 sd-form__logo">
+        <UploadImage
+          :required="false"
+          @imageSelected="(img) => (company.logo.fileName = img)"
+          @onUpload="() => pubSub.subscribe('file')"
+          @finishUpload="() => pubSub.unsubscribe()"
+        />
       </div>
-    </b-field>
 
-    <div class="sd-form__row">
-      <div class="sd-form__col">
+      <div v-if="isAdmin" class="column is-12">
+        <b-field>
+          <b-checkbox v-model="company.requiresPermissionToSeeRequests">
+            Requires permission to see requests?
+          </b-checkbox>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field label="Full name *" :type="formErrors.fullName ? 'is-danger' : ''" :message="formErrors.fullName || ''">
+          <b-input v-model="fullName" name="full name" placeholder="e.g. Acme Logistics"></b-input>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field
+          label="Type of industry *"
+          :type="formErrors.industry ? 'is-danger' : ''"
+          :message="formErrors.industry || ''"
+        >
+          <b-autocomplete
+            ref="industryPicker"
+            v-model="industry"
+            :data="filteredIndustries"
+            open-on-focus
+            field="value"
+            name="industry"
+            placeholder="Industry"
+            selectable-footer
+            @active="(active) => onDropdownActive(industryPicker, active)"
+            @select="selectIndustry"
+            @select-footer="onAddIndustry"
+          >
+            <template #footer>
+              <a><span> Add new... </span></a>
+            </template>
+            <template #empty>You don't have any industry created</template>
+          </b-autocomplete>
+        </b-field>
+      </div>
+
+      <div class="column is-6">
+        <b-field
+          label="Status *"
+          :type="formErrors.companyStatus ? 'is-danger' : ''"
+          :message="formErrors.companyStatus || ''"
+        >
+          <b-select
+            v-model="companyStatus"
+            placeholder="Select option"
+            name="state"
+            expanded
+            :class="{ 'sd-form__select--empty': !companyStatus }"
+          >
+            <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.value }}</option>
+          </b-select>
+        </b-field>
+      </div>
+
+      <div class="column is-6">
+        <b-field
+          label="Sales Representative *"
+          :type="formErrors.salesRepresentative ? 'is-danger' : ''"
+          :message="formErrors.salesRepresentative || ''"
+        >
+          <b-autocomplete
+            ref="salesRepresentativePicker"
+            v-model="salesRepresentative"
+            :data="filteredSalesRepresentative"
+            open-on-focus
+            name="salesRepresentative"
+            placeholder="Select"
+            :custom-formatter="(option) => `${option.name} - ${option.email}`"
+            @active="(active) => onDropdownActive(salesRepresentativePicker, active)"
+            @select="onSalesRepresentativeSelected"
+          ></b-autocomplete>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field :type="formErrors.about ? 'is-danger' : ''" label="About" :message="formErrors.about || ''">
+          <b-input type="textarea" v-model="about" name="about"></b-input>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field label="Internal Info">
+          <div class="sd-form__editor">
+            <QuillEditor theme="snow" content-type="html" v-model:content="company.internalInfo" />
+          </div>
+        </b-field>
+      </div>
+
+      <div class="column is-6">
         <PhoneInput
           :required="false"
           :defaultValue="company.phone"
@@ -99,13 +111,14 @@
           @formattedPhone="(phone) => (company.phone = phone)"
         ></PhoneInput>
       </div>
-      <b-field class="sd-form__col" :type="formErrors.phoneExt ? 'is-danger' : ''" label="Phone Ext" :message="formErrors.phoneExt || ''">
-        <b-input v-model="phoneExt" name="phoneExt"></b-input>
-      </b-field>
-    </div>
 
-    <div class="sd-form__row">
-      <div class="sd-form__col">
+      <div class="column is-6">
+        <b-field :type="formErrors.phoneExt ? 'is-danger' : ''" label="Phone Ext" :message="formErrors.phoneExt || ''">
+          <b-input v-model="phoneExt" name="phoneExt"></b-input>
+        </b-field>
+      </div>
+
+      <div class="column is-6">
         <PhoneInput
           :required="false"
           :defaultValue="company.fax"
@@ -113,30 +126,31 @@
           @formattedPhone="(fax) => (company.fax = fax)"
         ></PhoneInput>
       </div>
-      <b-field class="sd-form__col" :type="formErrors.faxExt ? 'is-danger' : ''" label="Fax Ext" :message="formErrors.faxExt || ''">
-        <b-input v-model="faxExt" name="faxExt"></b-input>
-      </b-field>
-    </div>
 
-    <div class="sd-form__row">
-      <b-field class="sd-form__col" :type="formErrors.email ? 'is-danger' : ''" :message="formErrors.email || ''">
-        <template #label>Email <span class="has-text-danger">*</span></template>
-        <b-input type="email" v-model="email" name="email" placeholder="name@company.com"></b-input>
-      </b-field>
-      <b-field
-        v-if="displayPassword"
-        class="sd-form__col"
-        :type="formErrors.password ? 'is-danger' : ''"
-        :message="formErrors.password || ''"
-      >
-        <template #label>Password <span class="has-text-danger">*</span></template>
-        <b-input type="password" v-model="password" name="password"></b-input>
-      </b-field>
-    </div>
+      <div class="column is-6">
+        <b-field :type="formErrors.faxExt ? 'is-danger' : ''" label="Fax Ext" :message="formErrors.faxExt || ''">
+          <b-input v-model="faxExt" name="faxExt"></b-input>
+        </b-field>
+      </div>
 
-    <b-field :type="formErrors.website ? 'is-danger' : ''" label="Website" :message="formErrors.website || ''">
-      <b-input v-model="website" name="website" placeholder="www.example.com"></b-input>
-    </b-field>
+      <div class="column is-6">
+        <b-field label="Email *" :type="formErrors.email ? 'is-danger' : ''" :message="formErrors.email || ''">
+          <b-input type="email" v-model="email" name="email" placeholder="name@company.com"></b-input>
+        </b-field>
+      </div>
+
+      <div v-if="displayPassword" class="column is-6">
+        <b-field label="Password *" :type="formErrors.password ? 'is-danger' : ''" :message="formErrors.password || ''">
+          <b-input type="password" v-model="password" name="password"></b-input>
+        </b-field>
+      </div>
+
+      <div class="column is-12">
+        <b-field :type="formErrors.website ? 'is-danger' : ''" label="Website" :message="formErrors.website || ''">
+          <b-input v-model="website" name="website" placeholder="www.example.com"></b-input>
+        </b-field>
+      </div>
+    </div>
   </form>
 </template>
 
@@ -342,81 +356,17 @@ defineExpose({ submit });
 <style scoped lang="scss">
 @import "../../assets/scss/variables";
 
-.sd-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-
-  :deep(.label) {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #777;
-    margin-bottom: 0.35rem;
-  }
-
-  // Size the control on the wrapper so Bulma's em-based control height stays
-  // consistent (the select's height derives from .select, not the inner <select>).
-  :deep(.input),
-  :deep(.textarea),
-  :deep(.select) {
-    font-size: 0.82rem;
-  }
-
-  :deep(.input),
-  :deep(.textarea),
-  :deep(.select select) {
-    border-color: $gray-border;
-    box-shadow: none;
-    color: #333;
-
-    &:focus,
-    &:active {
-      border-color: $primary;
-      box-shadow: 0 0 0 2px rgba($primary, 0.15);
-    }
-  }
-
-  :deep(.textarea) {
-    min-height: 5.5rem;
-  }
-
-  // Buefy select: neutral chevron + gray placeholder text so it matches the
-  // sibling inputs instead of Bulma's default link-coloured arrow / dark text.
-  :deep(.select:not(.is-multiple):not(.is-loading))::after {
-    border-color: $grey-light;
-  }
-
-  :deep(.sd-form__select--empty select) {
-    color: #b5b5b5;
-  }
+:deep(.sd-form__select--empty select) {
+  color: $grey-light;
 }
 
 .sd-form__logo {
   display: flex;
   justify-content: center;
-  margin-bottom: 0.4rem;
-}
-
-.sd-form__check {
-  margin-bottom: 0.2rem;
-}
-
-.sd-form__row {
-  display: flex;
-  gap: 0.7rem;
-}
-
-.sd-form__col {
-  flex: 1;
-  min-width: 0;
 }
 
 .sd-form__editor {
   width: 100%;
-
-  :deep(.ql-container) {
-    font-size: 0.82rem;
-  }
 
   :deep(.ql-editor) {
     min-height: 5rem;

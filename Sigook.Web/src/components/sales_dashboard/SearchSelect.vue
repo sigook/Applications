@@ -6,7 +6,6 @@
     :size="size"
     :placeholder="placeholder"
     :loading="loading"
-    :clearable="clearable"
     open-on-focus
     expanded
     append-to-body
@@ -15,9 +14,7 @@
     @update:model-value="onModelUpdate"
     @typing="onTyping"
     @select="onSelect"
-  >
-    <template v-if="belowThreshold" #empty>Type at least {{ minSearchLength }} characters</template>
-  </b-autocomplete>
+  ></b-autocomplete>
 </template>
 
 <script setup lang="ts" generic="V extends string | number">
@@ -35,11 +32,10 @@ const props = withDefaults(
     placeholder?: string;
     size?: string;
     loading?: boolean;
-    clearable?: boolean;
     remote?: boolean;
     minSearchLength?: number;
   }>(),
-  { placeholder: 'Search…', loading: false, clearable: false, remote: false, minSearchLength: 0 }
+  { placeholder: 'Search…', loading: false, remote: false, minSearchLength: 0 }
 );
 
 const emit = defineEmits<{
@@ -96,21 +92,19 @@ function emitSearch(term: string): void {
   debounceTimer = setTimeout(() => emit('search', term), SEARCH_DEBOUNCE_MS);
 }
 
-// Fires for programmatic changes too, so it only mirrors text. The one change that must still
-// reach the parent is Buefy's clear button: it empties the value without emitting `typing`.
-// It is told apart from our own focus reset because that one empties `search` first.
+// Fires for programmatic changes too (selecting an option writes its label), so it only mirrors text.
 function onModelUpdate(text: string): void {
-  const isClearButton = text === '' && search.value !== '';
   search.value = text;
-  if (!isClearButton || !props.clearable) return;
-  selectedLabel.value = '';
-  emit('update:modelValue', null);
 }
 
-// Buefy emits `typing` only on a real keystroke, so clearing and searching stay user-driven.
+// Buefy emits `typing` only on a real keystroke, so emptying the input stays user-driven:
+// wiping the text is what clears the current selection.
 function onTyping(text: string): void {
   search.value = text;
-  if (text === '' && props.clearable) emit('update:modelValue', null);
+  if (text === '') {
+    selectedLabel.value = '';
+    emit('update:modelValue', null);
+  }
   emitSearch(text);
 }
 
