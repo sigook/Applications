@@ -28,7 +28,7 @@ public class AgencyIdFilter : IAsyncActionFilter
         {
             if (controller.User.IsAgencyStaff())
             {
-                string sub = controller.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                string sub = controller.User.GetSubject();
                 if (Guid.TryParse(sub, out Guid userId))
                 {
                     Guid agencyId = await _repository.GetAgencyIdForUser(userId);

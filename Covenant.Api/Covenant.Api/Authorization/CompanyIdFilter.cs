@@ -1,5 +1,6 @@
 using Covenant.Common.Constants;
 using Covenant.Common.Repositories.Company;
+using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Security.Claims;
@@ -27,7 +28,7 @@ namespace Covenant.Api.Authorization
             {
                 if (controller.User.IsInRole(CovenantConstants.Role.CompanyUser))
                 {
-                    string sub = controller.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    string sub = controller.User.GetSubject();
                     if (Guid.TryParse(sub, out Guid userId))
                     {
                         Guid companyId = await _repository.GetCompanyIdForUser(userId);

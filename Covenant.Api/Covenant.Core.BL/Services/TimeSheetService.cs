@@ -14,7 +14,6 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Resources;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
-using GeoCoordinatePortable;
 using MediatR;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Configuration;
@@ -148,10 +147,10 @@ public class TimesheetService(
             {
                 if (info != null && info.Latitude.HasValue && info.Longitude.HasValue)
                 {
-                    var pinJob = new GeoCoordinate(info.Latitude.Value, info.Longitude.Value);
                     now = timeService.GetCurrentLocalDateTime(info.Latitude.Value, info.Longitude.Value);
-                    var pinWorker = new GeoCoordinate(workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
-                    var distanceBetween = pinJob.GetDistanceTo(pinWorker);
+                    var distanceBetween = DistanceInMeters(
+                        info.Latitude.Value, info.Longitude.Value,
+                        workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
                     telemetryClient.TrackEvent(
                         "TimesheetLocationDistanceCheck",
                         new Dictionary<string, string>
@@ -331,5 +330,17 @@ public class TimesheetService(
         if (!belongsToCompany)
             return Result.Fail<ResultGenerateDocument<MemoryStream>>("Request doesn't exist");
         return Result.Ok(await GetRequestTimesheetFile(requestId));
+    }
+
+    private static double DistanceInMeters(double latitude1, double longitude1, double latitude2, double longitude2)
+    {
+        const double earthRadiusMeters = 6376500.0;
+        var lat1 = latitude1 * (Math.PI / 180.0);
+        var lon1 = longitude1 * (Math.PI / 180.0);
+        var lat2 = latitude2 * (Math.PI / 180.0);
+        var deltaLon = longitude2 * (Math.PI / 180.0) - lon1;
+        var a = Math.Pow(Math.Sin((lat2 - lat1) / 2.0), 2.0)
+                + Math.Cos(lat1) * Math.Cos(lat2) * Math.Pow(Math.Sin(deltaLon / 2.0), 2.0);
+        return earthRadiusMeters * (2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a)));
     }
 }

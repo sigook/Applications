@@ -497,9 +497,9 @@ cp .env.example .env.local
 
 | Target           | API_BASE_URL                          | AUTH_AUTHORITY                  |
 | ---------------- | ------------------------------------- | ------------------------------- |
-| Android Emulator | `https://10.0.2.2:44307/api/`         | `https://10.0.2.2:44381/`       |
-| iOS Simulator    | `https://localhost:44307/api/`        | `https://localhost:44381/`      |
-| Physical device  | `https://<your-LAN-IP>:44307/api/`    | `https://<your-LAN-IP>:44381/`  |
+| Android Emulator | `https://10.0.2.2:44307/api/`         | `https://10.0.2.2:44307/`       |
+| iOS Simulator    | `https://localhost:44307/api/`        | `https://localhost:44307/`      |
+| Physical device  | `https://<your-LAN-IP>:44307/api/`    | `https://<your-LAN-IP>:44307/`  |
 
 #### 3. Run
 
@@ -507,7 +507,7 @@ cp .env.example .env.local
 2. Select a configuration from the dropdown:
    - **Debug — Staging** — day-to-day development against staging servers
    - **Profile — Staging** — performance profiling (DevTools)
-   - **Debug — Local** — requires local backend (`Covenant.Api` + `Covenant.IdentityServer` running)
+   - **Debug — Local** — requires the local backend (`Covenant.Api`, which also serves the OAuth endpoints)
    - **Debug — Staging (Android/iOS)** — forces a specific platform when multiple devices are connected
    - **Attach to Device** — attach the debugger to an already-running app
 3. Press `F5`

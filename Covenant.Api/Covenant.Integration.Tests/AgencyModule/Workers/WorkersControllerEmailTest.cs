@@ -3,6 +3,7 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models.Security;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
@@ -71,7 +72,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 services.AddHttpClient();
                 services.AddTestDatabase();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton(Mock.Of<IUserAdministrationService>());
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
                 var mockMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);

@@ -6,7 +6,7 @@
     "ENVIRONMENT": "Development",
     "AZURE_FUNCTIONS_ENVIRONMENT": "Development",
     "KeyVault:Url": "https://sigook.vault.azure.net/",
-    "ScheduleTasks__AccountsUrl": "https://localhost:44381/connect/token",
+    "ScheduleTasks__AccountsUrl": "https://localhost:44307/connect/token",
     "ScheduleTasks__ApiUrl": "https://localhost:44307/api/ScheduleTasks/",
     "CraTables__CppApiUrl": "https://localhost:44307/api/Accounting/Deduction/Cpp/Blob",
     "CraTables__TaxApiUrl": "https://localhost:44307/api/Accounting/Deduction/Tax/Blob",

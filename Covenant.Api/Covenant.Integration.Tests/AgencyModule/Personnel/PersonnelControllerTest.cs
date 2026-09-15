@@ -4,6 +4,7 @@ using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Security;
@@ -353,7 +354,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
                 services.AddTestDatabase();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton(Mock.Of<IUserAdministrationService>());
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 
 

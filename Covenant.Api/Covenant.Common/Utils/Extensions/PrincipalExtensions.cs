@@ -21,11 +21,14 @@ public static class PrincipalExtensions
     public static bool IsSuperAdmin(this IPrincipal user) =>
         user.IsInRole(CovenantConstants.Role.SuperAdmin);
 
+    public static string GetSubject(this ClaimsPrincipal user) =>
+        user.FindFirst(IdentityClaims.Subject)?.Value ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
     public static Guid GetCompanyId(this ClaimsPrincipal user)
     {
         string sub = user.IsCompanyUser()
             ? user.FindFirst(CovenantConstants.CompanyId)?.Value
-            : user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            : user.GetSubject();
         if (string.IsNullOrEmpty(sub)) return Guid.Empty;
         Guid.TryParse(sub, out Guid id);
         return id;
@@ -35,7 +38,7 @@ public static class PrincipalExtensions
     {
         string sub = user.IsAgencyStaff()
             ? user.FindFirst(CovenantConstants.AgencyId)?.Value
-            : user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            : user.GetSubject();
         if (string.IsNullOrEmpty(sub)) return Guid.Empty;
         Guid.TryParse(sub, out Guid id);
         return id;
@@ -87,7 +90,7 @@ public static class PrincipalExtensions
     public static bool TryGetUserId(this ClaimsPrincipal user, out Guid id)
     {
         id = Guid.Empty;
-        string sub = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        string sub = user.GetSubject();
         if (string.IsNullOrEmpty(sub)) return false;
         return Guid.TryParse(sub, out id);
     }

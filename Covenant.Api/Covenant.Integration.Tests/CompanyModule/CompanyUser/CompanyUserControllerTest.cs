@@ -3,6 +3,7 @@ using Covenant.Api.Controllers.Sigook.Company;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
@@ -194,7 +195,8 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
                 services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<CompanyIdFilter>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton(Mock.Of<IUserAdministrationService>());
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

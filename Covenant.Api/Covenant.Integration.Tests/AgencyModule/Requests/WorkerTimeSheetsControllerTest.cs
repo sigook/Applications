@@ -5,6 +5,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
@@ -130,7 +131,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton(Mock.Of<IUserAdministrationService>());
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);
                 services.AddSingleton(Rates.DefaultRates);
                 var timeService = new Mock<ITimeService>();

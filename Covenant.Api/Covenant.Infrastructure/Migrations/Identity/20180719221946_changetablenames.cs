@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Covenant.IdentityServer.Migrations
+namespace Covenant.Infrastructure.Migrations.Identity
 {
     public partial class changetablenames : Migration
     {

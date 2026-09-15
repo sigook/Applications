@@ -1,8 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="Scripts\Functions\get_week_start_sunday.sql" />
 	  <None Remove="Scripts\Views\PayStubHistory.sql" />
@@ -29,13 +25,15 @@
 		<PackageReference Include="MailKit" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-		<PackageReference Include="Microsoft.Extensions.Http" />
 		<PackageReference Include="SendGrid" />
 		<PackageReference Include="GeoTimeZone" />
 		<PackageReference Include="Microsoft.Graph" />
+		<PackageReference Include="Microsoft.Kiota.Abstractions" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="FirebaseAdmin" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+		<PackageReference Include="OpenIddict.EntityFrameworkCore" />
 		<PackageReference Include="PdfPig" />
 	</ItemGroup>
 	<ItemGroup>

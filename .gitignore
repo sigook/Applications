@@ -711,3 +711,6 @@ local.properties
 
 # C# language server cache - regenerated automatically, not committed
 *.lscache
+
+# Development signing keys
+*.jwk

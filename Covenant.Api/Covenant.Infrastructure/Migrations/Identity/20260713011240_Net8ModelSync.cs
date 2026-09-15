@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Covenant.IdentityServer.Migrations
+namespace Covenant.Infrastructure.Migrations.Identity
 {
     /// <inheritdoc />
     public partial class Net8ModelSync : Migration

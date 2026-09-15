@@ -1,3 +1,4 @@
+using Covenant.Common.Enums;
 using Sigook.Functions.Models;
 using Sigook.Functions.Utils;
 using Xunit;

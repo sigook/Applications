@@ -4,22 +4,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace Sigook.Functions.Configuration;
 
-public class PrefixKeyVaultSecretManager : KeyVaultSecretManager
+public class PrefixKeyVaultSecretManager(string prefix) : KeyVaultSecretManager
 {
-    private readonly string _prefix;
+    private readonly string _prefix = $"{prefix}--";
 
-    public PrefixKeyVaultSecretManager(string prefix)
-    {
-        _prefix = $"{prefix}--";
-    }
+    public override bool Load(SecretProperties properties) =>
+        properties.Name.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase);
 
-    public override bool Load(SecretProperties properties)
-    {
-        return properties.Name.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase);
-    }
-
-    public override string GetKey(KeyVaultSecret secret)
-    {
-        return secret.Name[_prefix.Length..].Replace("--", ConfigurationPath.KeyDelimiter);
-    }
+    public override string GetKey(KeyVaultSecret secret) =>
+        secret.Name[_prefix.Length..].Replace("--", ConfigurationPath.KeyDelimiter);
 }

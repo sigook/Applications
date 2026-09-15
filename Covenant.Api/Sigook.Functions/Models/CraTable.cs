@@ -1,3 +1,5 @@
+using Covenant.Common.Models.Accounting.Deductions;
+
 namespace Sigook.Functions.Models;
 
 public record CraTable(CraTableKind Kind, ImportCraTableFromBlobModel Import)

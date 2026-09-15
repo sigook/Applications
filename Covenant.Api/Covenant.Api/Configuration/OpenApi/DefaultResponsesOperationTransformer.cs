@@ -1,26 +1,24 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
 
-namespace Covenant.Api.Configuration.Swagger;
+namespace Covenant.Api.Configuration.OpenApi;
 
-public class DefaultResponsesOperationFilter : IOperationFilter
+public sealed class DefaultResponsesOperationTransformer : IOpenApiOperationTransformer
 {
-    public void Apply(OpenApiOperation operation, OperationFilterContext context)
+    public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
+        operation.Responses ??= [];
         operation.Responses.TryAdd("500", new OpenApiResponse { Description = "Internal Server Error" });
 
-        var hasAllowAnonymous = context.MethodInfo.GetCustomAttributes(true)
-            .OfType<AllowAnonymousAttribute>().Any()
-            || (context.MethodInfo.DeclaringType?.GetCustomAttributes(true)
-                .OfType<AllowAnonymousAttribute>().Any() ?? false);
-
-        if (hasAllowAnonymous)
+        var allowsAnonymous = context.Description.ActionDescriptor.EndpointMetadata.OfType<IAllowAnonymous>().Any();
+        if (allowsAnonymous)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized — authentication required" });
         operation.Responses.TryAdd("403", new OpenApiResponse { Description = "Forbidden — insufficient permissions" });
+        return Task.CompletedTask;
     }
 }

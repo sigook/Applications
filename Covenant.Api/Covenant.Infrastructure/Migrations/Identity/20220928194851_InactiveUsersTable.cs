@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Covenant.IdentityServer.Migrations
+namespace Covenant.Infrastructure.Migrations.Identity
 {
     public partial class InactiveUsersTable : Migration
     {

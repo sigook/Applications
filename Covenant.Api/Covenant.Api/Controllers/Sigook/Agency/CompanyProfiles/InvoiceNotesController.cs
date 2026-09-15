@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Company;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 
+[ApiController]
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]

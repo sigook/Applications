@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Covenant.IdentityServer.Migrations
+namespace Covenant.Infrastructure.Migrations.Identity
 {
     /// <inheritdoc />
     public partial class RemoveInvalidUsers : Migration

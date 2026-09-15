@@ -1,22 +1,17 @@
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.OpenApi;
 
-namespace Covenant.Api.Configuration.Swagger;
+namespace Covenant.Api.Configuration.OpenApi;
 
-/// <summary>
-/// Declares the deployment servers on the OpenAPI document. Implemented as a
-/// document filter (instead of a <c>UseSwagger</c> pre-serialize filter) so the
-/// servers are also present in the document generated at build time by
-/// Microsoft.Extensions.ApiDescription.Server.
-/// </summary>
-public class ServersDocumentFilter : IDocumentFilter
+public sealed class ServersDocumentTransformer : IOpenApiDocumentTransformer
 {
-    public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
-        swaggerDoc.Servers =
+        document.Servers =
         [
             new OpenApiServer { Url = "https://localhost:44307", Description = "Local" },
             new OpenApiServer { Url = "https://staging.api.sigook.ca", Description = "Staging" }
         ];
+        return Task.CompletedTask;
     }
 }

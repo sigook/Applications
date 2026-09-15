@@ -1,39 +1,35 @@
 using Azure.Identity;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sigook.Functions.Configuration;
+using Sigook.Functions.Services;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .ConfigureAppConfiguration((context, config) =>
-    {
-        var environment = context.HostingEnvironment;
+var builder = FunctionsApplication.CreateBuilder(args);
 
-        config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-              .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
-        var builtConfig = config.Build();
-        var keyVaultUrl = builtConfig["KeyVault:Url"];
-        if (!string.IsNullOrEmpty(keyVaultUrl))
-        {
-            var prefix = environment.IsProduction() ? "production" : "staging";
-            config.AddAzureKeyVault(
-                new Uri(keyVaultUrl),
-                new DefaultAzureCredential(),
-                new PrefixKeyVaultSecretManager($"{prefix}-func"));
-        }
-    })
-    .ConfigureServices((context, services) =>
-    {
-        services.AddApplicationInsightsTelemetryWorkerService();
-        services.ConfigureFunctionsApplicationInsights();
-        services.Configure<ScheduleTasksOptions>(context.Configuration.GetSection(ScheduleTasksOptions.SectionName));
-        services.Configure<CraTablesOptions>(context.Configuration.GetSection(CraTablesOptions.SectionName));
-        services.AddHttpClient("Api");
-        services.AddHttpClient("Teams");
-    })
-    .Build();
+var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+if (!string.IsNullOrEmpty(keyVaultUrl))
+{
+    var prefix = builder.Environment.IsProduction() ? "production" : "staging";
+    builder.Configuration.AddAzureKeyVault(
+        new Uri(keyVaultUrl),
+        new DefaultAzureCredential(),
+        new PrefixKeyVaultSecretManager($"{prefix}-func"));
+}
 
-host.Run();
+builder.Services
+    .AddApplicationInsightsTelemetryWorkerService()
+    .ConfigureFunctionsApplicationInsights();
+builder.Services.Configure<ScheduleTasksOptions>(builder.Configuration.GetSection(ScheduleTasksOptions.SectionName));
+builder.Services.Configure<CraTablesOptions>(builder.Configuration.GetSection(CraTablesOptions.SectionName));
+builder.Services.AddHttpClient(HttpClients.Api);
+builder.Services.AddHttpClient(HttpClients.Teams);
+builder.Services.AddSingleton<IAccessTokenProvider, AccessTokenProvider>();
+
+builder.Build().Run();
