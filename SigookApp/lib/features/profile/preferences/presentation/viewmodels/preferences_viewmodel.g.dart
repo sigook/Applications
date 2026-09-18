@@ -10,11 +10,11 @@ part of 'preferences_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PreferencesViewModel)
-const preferencesViewModelProvider = PreferencesViewModelProvider._();
+final preferencesViewModelProvider = PreferencesViewModelProvider._();
 
 final class PreferencesViewModelProvider
     extends $NotifierProvider<PreferencesViewModel, PreferencesState> {
-  const PreferencesViewModelProvider._()
+  PreferencesViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$PreferencesViewModel extends $Notifier<PreferencesState> {
   PreferencesState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PreferencesState, PreferencesState>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$PreferencesViewModel extends $Notifier<PreferencesState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

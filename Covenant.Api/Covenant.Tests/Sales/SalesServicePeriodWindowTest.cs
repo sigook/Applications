@@ -45,6 +45,7 @@ public class SalesServicePeriodWindowTest
             _companyRepository.Object,
             _identityServerService.Object,
             Mock.Of<IUploadedFilesService>(),
+            Mock.Of<IDocumentService>(),
             new CreateCompanyInteractionModelValidator(),
             new UpdateCompanyInteractionModelValidator(),
             new CreateDealModelValidator(),

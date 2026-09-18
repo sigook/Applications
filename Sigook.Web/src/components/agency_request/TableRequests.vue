@@ -214,20 +214,8 @@
               Edit Request
             </b-dropdown-item>
             <b-dropdown-item aria-role="listitem"
-              @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'Applicants' } })">
-              Applicants
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem"
-              @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'Runners' } })">
-              Runners
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem"
-              @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'Workers' } })">
-              Workers
-            </b-dropdown-item>
-            <b-dropdown-item v-if="!isDirectHiring(props.row)" aria-role="listitem"
-              @click="router.push({ path: requestDetailBase + '/' + props.row.id, query: { tab: 'PunchCard' } })">
-              Punch Card
+              @click="router.push({ path: requestDetailBase + '/duplicate/' + props.row.companyProfileId + '/' + props.row.id })">
+              Duplicate Request
             </b-dropdown-item>
           </b-dropdown>
         </b-table-column>
@@ -265,7 +253,6 @@ import { useAgencyStore } from '@/stores/agency';
 import { appGlobals } from '@/varaibles';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { dateMonth, breakWord, currency } from '@/utils/filters';
-import { isDirectHiring } from '@/utils/directHiring';
 import { useAdmin } from '@/composables/useAdmin';
 import { updateIsAsapRequests } from "@/api/agencyCompanyApi";
 import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/api/agencyRequestApi";

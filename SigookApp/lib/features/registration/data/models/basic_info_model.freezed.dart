@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'basic_info_model.dart';
@@ -9,14 +9,14 @@ part of 'basic_info_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$BasicInfoModel {
 
- String get firstName; String get lastName; String get dateOfBirth;// ISO 8601 string
- String get genderId; String get genderValue; Map<String, dynamic>? get country; Map<String, dynamic>? get provinceState; Map<String, dynamic>? get city; String get address; String get zipCode; String get mobileNumber; String? get identificationType; String? get identificationNumber;
+ String get firstName; String get lastName; String get dateOfBirth; String get genderId; String get genderValue; Map<String, dynamic>? get country; Map<String, dynamic>? get provinceState; Map<String, dynamic>? get city; String get address; String get zipCode; String get mobileNumber; String? get identificationType; String? get identificationNumber;
 /// Create a copy of BasicInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,21 @@ $BasicInfoModelCopyWith<BasicInfoModel> get copyWith => _$BasicInfoModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BasicInfoModel&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.genderId, genderId) || other.genderId == genderId)&&(identical(other.genderValue, genderValue) || other.genderValue == genderValue)&&const DeepCollectionEquality().equals(other.country, country)&&const DeepCollectionEquality().equals(other.provinceState, provinceState)&&const DeepCollectionEquality().equals(other.city, city)&&(identical(other.address, address) || other.address == address)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.identificationType, identificationType) || other.identificationType == identificationType)&&(identical(other.identificationNumber, identificationNumber) || other.identificationNumber == identificationNumber));
+  final _this = this as BasicInfoModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BasicInfoModel&&(identical(other.firstName, _this.firstName) || other.firstName == _this.firstName)&&(identical(other.lastName, _this.lastName) || other.lastName == _this.lastName)&&(identical(other.dateOfBirth, _this.dateOfBirth) || other.dateOfBirth == _this.dateOfBirth)&&(identical(other.genderId, _this.genderId) || other.genderId == _this.genderId)&&(identical(other.genderValue, _this.genderValue) || other.genderValue == _this.genderValue)&&const DeepCollectionEquality().equals(other.country, _this.country)&&const DeepCollectionEquality().equals(other.provinceState, _this.provinceState)&&const DeepCollectionEquality().equals(other.city, _this.city)&&(identical(other.address, _this.address) || other.address == _this.address)&&(identical(other.zipCode, _this.zipCode) || other.zipCode == _this.zipCode)&&(identical(other.mobileNumber, _this.mobileNumber) || other.mobileNumber == _this.mobileNumber)&&(identical(other.identificationType, _this.identificationType) || other.identificationType == _this.identificationType)&&(identical(other.identificationNumber, _this.identificationNumber) || other.identificationNumber == _this.identificationNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,firstName,lastName,dateOfBirth,genderId,genderValue,const DeepCollectionEquality().hash(country),const DeepCollectionEquality().hash(provinceState),const DeepCollectionEquality().hash(city),address,zipCode,mobileNumber,identificationType,identificationNumber);
+int get hashCode {
+  final _this = this as BasicInfoModel;
+  return Object.hash(runtimeType,_this.firstName,_this.lastName,_this.dateOfBirth,_this.genderId,_this.genderValue,const DeepCollectionEquality().hash(_this.country),const DeepCollectionEquality().hash(_this.provinceState),const DeepCollectionEquality().hash(_this.city),_this.address,_this.zipCode,_this.mobileNumber,_this.identificationType,_this.identificationNumber);
+}
 
 @override
 String toString() {
-  return 'BasicInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderValue: $genderValue, country: $country, provinceState: $provinceState, city: $city, address: $address, zipCode: $zipCode, mobileNumber: $mobileNumber, identificationType: $identificationType, identificationNumber: $identificationNumber)';
+  final _this = this as BasicInfoModel;
+  return 'BasicInfoModel(firstName: ${_this.firstName}, lastName: ${_this.lastName}, dateOfBirth: ${_this.dateOfBirth}, genderId: ${_this.genderId}, genderValue: ${_this.genderValue}, country: ${_this.country}, provinceState: ${_this.provinceState}, city: ${_this.city}, address: ${_this.address}, zipCode: ${_this.zipCode}, mobileNumber: ${_this.mobileNumber}, identificationType: ${_this.identificationType}, identificationNumber: ${_this.identificationNumber})';
 }
 
 
@@ -67,7 +72,7 @@ class _$BasicInfoModelCopyWithImpl<$Res>
 /// Create a copy of BasicInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? firstName = null,Object? lastName = null,Object? dateOfBirth = null,Object? genderId = null,Object? genderValue = null,Object? country = freezed,Object? provinceState = freezed,Object? city = freezed,Object? address = null,Object? zipCode = null,Object? mobileNumber = null,Object? identificationType = freezed,Object? identificationNumber = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(BasicInfoModel(
 firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,dateOfBirth: null == dateOfBirth ? _self.dateOfBirth : dateOfBirth // ignore: cast_nullable_to_non_nullable
@@ -216,13 +221,12 @@ return $default(_that.firstName,_that.lastName,_that.dateOfBirth,_that.genderId,
 @JsonSerializable()
 
 class _BasicInfoModel extends BasicInfoModel {
-  const _BasicInfoModel({required this.firstName, required this.lastName, required this.dateOfBirth, required this.genderId, required this.genderValue, final  Map<String, dynamic>? country, final  Map<String, dynamic>? provinceState, final  Map<String, dynamic>? city, required this.address, required this.zipCode, required this.mobileNumber, this.identificationType, this.identificationNumber}): _country = country,_provinceState = provinceState,_city = city,super._();
+  const _BasicInfoModel({required this.firstName, required this.lastName, required this.dateOfBirth, required this.genderId, required this.genderValue,  Map<String, dynamic>? country,  Map<String, dynamic>? provinceState,  Map<String, dynamic>? city, required this.address, required this.zipCode, required this.mobileNumber, this.identificationType, this.identificationNumber}): _country = country,_provinceState = provinceState,_city = city,super._();
   factory _BasicInfoModel.fromJson(Map<String, dynamic> json) => _$BasicInfoModelFromJson(json);
 
 @override final  String firstName;
 @override final  String lastName;
 @override final  String dateOfBirth;
-// ISO 8601 string
 @override final  String genderId;
 @override final  String genderValue;
  final  Map<String, dynamic>? _country;
@@ -271,16 +275,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BasicInfoModel&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.genderId, genderId) || other.genderId == genderId)&&(identical(other.genderValue, genderValue) || other.genderValue == genderValue)&&const DeepCollectionEquality().equals(other._country, _country)&&const DeepCollectionEquality().equals(other._provinceState, _provinceState)&&const DeepCollectionEquality().equals(other._city, _city)&&(identical(other.address, address) || other.address == address)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.identificationType, identificationType) || other.identificationType == identificationType)&&(identical(other.identificationNumber, identificationNumber) || other.identificationNumber == identificationNumber));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BasicInfoModel&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.genderId, genderId) || other.genderId == genderId)&&(identical(other.genderValue, genderValue) || other.genderValue == genderValue)&&const DeepCollectionEquality().equals(other.country, _country)&&const DeepCollectionEquality().equals(other.provinceState, _provinceState)&&const DeepCollectionEquality().equals(other.city, _city)&&(identical(other.address, address) || other.address == address)&&(identical(other.zipCode, zipCode) || other.zipCode == zipCode)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.identificationType, identificationType) || other.identificationType == identificationType)&&(identical(other.identificationNumber, identificationNumber) || other.identificationNumber == identificationNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,firstName,lastName,dateOfBirth,genderId,genderValue,const DeepCollectionEquality().hash(_country),const DeepCollectionEquality().hash(_provinceState),const DeepCollectionEquality().hash(_city),address,zipCode,mobileNumber,identificationType,identificationNumber);
+int get hashCode {
+    return Object.hash(runtimeType,firstName,lastName,dateOfBirth,genderId,genderValue,const DeepCollectionEquality().hash(_country),const DeepCollectionEquality().hash(_provinceState),const DeepCollectionEquality().hash(_city),address,zipCode,mobileNumber,identificationType,identificationNumber);
+}
 
 @override
 String toString() {
-  return 'BasicInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderValue: $genderValue, country: $country, provinceState: $provinceState, city: $city, address: $address, zipCode: $zipCode, mobileNumber: $mobileNumber, identificationType: $identificationType, identificationNumber: $identificationNumber)';
+    return 'BasicInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderValue: $genderValue, country: $country, provinceState: $provinceState, city: $city, address: $address, zipCode: $zipCode, mobileNumber: $mobileNumber, identificationType: $identificationType, identificationNumber: $identificationNumber)';
 }
 
 

@@ -10,11 +10,11 @@ part of 'account_settings_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(AccountSettingsViewModel)
-const accountSettingsViewModelProvider = AccountSettingsViewModelProvider._();
+final accountSettingsViewModelProvider = AccountSettingsViewModelProvider._();
 
 final class AccountSettingsViewModelProvider
     extends $NotifierProvider<AccountSettingsViewModel, AccountSettingsState> {
-  const AccountSettingsViewModelProvider._()
+  AccountSettingsViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -49,8 +49,7 @@ abstract class _$AccountSettingsViewModel
   AccountSettingsState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AccountSettingsState, AccountSettingsState>;
     final element =
         ref.element
@@ -60,6 +59,6 @@ abstract class _$AccountSettingsViewModel
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

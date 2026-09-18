@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'worker_profile_model.dart';
@@ -9,6 +9,7 @@ part of 'worker_profile_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ProfileImageModelCopyWith<ProfileImageModel> get copyWith => _$ProfileImageMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileImageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.pathFile, pathFile) || other.pathFile == pathFile)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.description, description) || other.description == description)&&(identical(other.canDownload, canDownload) || other.canDownload == canDownload));
+  final _this = this as ProfileImageModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileImageModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.pathFile, _this.pathFile) || other.pathFile == _this.pathFile)&&(identical(other.fileName, _this.fileName) || other.fileName == _this.fileName)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.canDownload, _this.canDownload) || other.canDownload == _this.canDownload));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,pathFile,fileName,description,canDownload);
+int get hashCode {
+  final _this = this as ProfileImageModel;
+  return Object.hash(runtimeType,_this.id,_this.pathFile,_this.fileName,_this.description,_this.canDownload);
+}
 
 @override
 String toString() {
-  return 'ProfileImageModel(id: $id, pathFile: $pathFile, fileName: $fileName, description: $description, canDownload: $canDownload)';
+  final _this = this as ProfileImageModel;
+  return 'ProfileImageModel(id: ${_this.id}, pathFile: ${_this.pathFile}, fileName: ${_this.fileName}, description: ${_this.description}, canDownload: ${_this.canDownload})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ProfileImageModelCopyWithImpl<$Res>
 /// Create a copy of ProfileImageModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? pathFile = freezed,Object? fileName = freezed,Object? description = freezed,Object? canDownload = null,}) {
-  return _then(_self.copyWith(
+  return _then(ProfileImageModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,pathFile: freezed == pathFile ? _self.pathFile : pathFile // ignore: cast_nullable_to_non_nullable
 as String?,fileName: freezed == fileName ? _self.fileName : fileName // ignore: cast_nullable_to_non_nullable
@@ -235,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileImageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.pathFile, pathFile) || other.pathFile == pathFile)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.description, description) || other.description == description)&&(identical(other.canDownload, canDownload) || other.canDownload == canDownload));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileImageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.pathFile, pathFile) || other.pathFile == pathFile)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.description, description) || other.description == description)&&(identical(other.canDownload, canDownload) || other.canDownload == canDownload));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,pathFile,fileName,description,canDownload);
+int get hashCode {
+    return Object.hash(runtimeType,id,pathFile,fileName,description,canDownload);
+}
 
 @override
 String toString() {
-  return 'ProfileImageModel(id: $id, pathFile: $pathFile, fileName: $fileName, description: $description, canDownload: $canDownload)';
+    return 'ProfileImageModel(id: $id, pathFile: $pathFile, fileName: $fileName, description: $description, canDownload: $canDownload)';
 }
 
 
@@ -303,16 +311,21 @@ $CatalogItemModelCopyWith<CatalogItemModel> get copyWith => _$CatalogItemModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value));
+  final _this = this as CatalogItemModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CatalogItemModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.value, _this.value) || other.value == _this.value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value);
+int get hashCode {
+  final _this = this as CatalogItemModel;
+  return Object.hash(runtimeType,_this.id,_this.value);
+}
 
 @override
 String toString() {
-  return 'CatalogItemModel(id: $id, value: $value)';
+  final _this = this as CatalogItemModel;
+  return 'CatalogItemModel(id: ${_this.id}, value: ${_this.value})';
 }
 
 
@@ -341,7 +354,7 @@ class _$CatalogItemModelCopyWithImpl<$Res>
 /// Create a copy of CatalogItemModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? value = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CatalogItemModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,value: freezed == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -504,16 +517,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatalogItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CatalogItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value);
+int get hashCode {
+    return Object.hash(runtimeType,id,value);
+}
 
 @override
 String toString() {
-  return 'CatalogItemModel(id: $id, value: $value)';
+    return 'CatalogItemModel(id: $id, value: $value)';
 }
 
 
@@ -569,16 +584,21 @@ $SkillItemModelCopyWith<SkillItemModel> get copyWith => _$SkillItemModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SkillItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.skill, skill) || other.skill == skill));
+  final _this = this as SkillItemModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SkillItemModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.skill, _this.skill) || other.skill == _this.skill));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,skill);
+int get hashCode {
+  final _this = this as SkillItemModel;
+  return Object.hash(runtimeType,_this.id,_this.skill);
+}
 
 @override
 String toString() {
-  return 'SkillItemModel(id: $id, skill: $skill)';
+  final _this = this as SkillItemModel;
+  return 'SkillItemModel(id: ${_this.id}, skill: ${_this.skill})';
 }
 
 
@@ -607,7 +627,7 @@ class _$SkillItemModelCopyWithImpl<$Res>
 /// Create a copy of SkillItemModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? skill = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(SkillItemModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,skill: freezed == skill ? _self.skill : skill // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -770,16 +790,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SkillItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.skill, skill) || other.skill == skill));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SkillItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.skill, skill) || other.skill == skill));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,skill);
+int get hashCode {
+    return Object.hash(runtimeType,id,skill);
+}
 
 @override
 String toString() {
-  return 'SkillItemModel(id: $id, skill: $skill)';
+    return 'SkillItemModel(id: $id, skill: $skill)';
 }
 
 
@@ -835,16 +857,21 @@ $CountryModelCopyWith<CountryModel> get copyWith => _$CountryModelCopyWithImpl<C
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CountryModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code));
+  final _this = this as CountryModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CountryModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.value, _this.value) || other.value == _this.value)&&(identical(other.code, _this.code) || other.code == _this.code));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value,code);
+int get hashCode {
+  final _this = this as CountryModel;
+  return Object.hash(runtimeType,_this.id,_this.value,_this.code);
+}
 
 @override
 String toString() {
-  return 'CountryModel(id: $id, value: $value, code: $code)';
+  final _this = this as CountryModel;
+  return 'CountryModel(id: ${_this.id}, value: ${_this.value}, code: ${_this.code})';
 }
 
 
@@ -873,7 +900,7 @@ class _$CountryModelCopyWithImpl<$Res>
 /// Create a copy of CountryModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? value = freezed,Object? code = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CountryModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,value: freezed == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as String?,code: freezed == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
@@ -1038,16 +1065,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CountryModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CountryModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value,code);
+int get hashCode {
+    return Object.hash(runtimeType,id,value,code);
+}
 
 @override
 String toString() {
-  return 'CountryModel(id: $id, value: $value, code: $code)';
+    return 'CountryModel(id: $id, value: $value, code: $code)';
 }
 
 
@@ -1104,16 +1133,21 @@ $ProvinceModelCopyWith<ProvinceModel> get copyWith => _$ProvinceModelCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProvinceModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code)&&(identical(other.country, country) || other.country == country));
+  final _this = this as ProvinceModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProvinceModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.value, _this.value) || other.value == _this.value)&&(identical(other.code, _this.code) || other.code == _this.code)&&(identical(other.country, _this.country) || other.country == _this.country));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value,code,country);
+int get hashCode {
+  final _this = this as ProvinceModel;
+  return Object.hash(runtimeType,_this.id,_this.value,_this.code,_this.country);
+}
 
 @override
 String toString() {
-  return 'ProvinceModel(id: $id, value: $value, code: $code, country: $country)';
+  final _this = this as ProvinceModel;
+  return 'ProvinceModel(id: ${_this.id}, value: ${_this.value}, code: ${_this.code}, country: ${_this.country})';
 }
 
 
@@ -1142,7 +1176,7 @@ class _$ProvinceModelCopyWithImpl<$Res>
 /// Create a copy of ProvinceModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? value = freezed,Object? code = freezed,Object? country = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(ProvinceModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,value: freezed == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as String?,code: freezed == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
@@ -1321,16 +1355,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProvinceModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code)&&(identical(other.country, country) || other.country == country));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProvinceModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code)&&(identical(other.country, country) || other.country == country));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value,code,country);
+int get hashCode {
+    return Object.hash(runtimeType,id,value,code,country);
+}
 
 @override
 String toString() {
-  return 'ProvinceModel(id: $id, value: $value, code: $code, country: $country)';
+    return 'ProvinceModel(id: $id, value: $value, code: $code, country: $country)';
 }
 
 
@@ -1400,16 +1436,21 @@ $CityModelCopyWith<CityModel> get copyWith => _$CityModelCopyWithImpl<CityModel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CityModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code)&&(identical(other.province, province) || other.province == province));
+  final _this = this as CityModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CityModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.value, _this.value) || other.value == _this.value)&&(identical(other.code, _this.code) || other.code == _this.code)&&(identical(other.province, _this.province) || other.province == _this.province));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value,code,province);
+int get hashCode {
+  final _this = this as CityModel;
+  return Object.hash(runtimeType,_this.id,_this.value,_this.code,_this.province);
+}
 
 @override
 String toString() {
-  return 'CityModel(id: $id, value: $value, code: $code, province: $province)';
+  final _this = this as CityModel;
+  return 'CityModel(id: ${_this.id}, value: ${_this.value}, code: ${_this.code}, province: ${_this.province})';
 }
 
 
@@ -1438,7 +1479,7 @@ class _$CityModelCopyWithImpl<$Res>
 /// Create a copy of CityModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? value = freezed,Object? code = freezed,Object? province = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CityModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,value: freezed == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as String?,code: freezed == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
@@ -1617,16 +1658,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CityModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code)&&(identical(other.province, province) || other.province == province));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CityModel&&(identical(other.id, id) || other.id == id)&&(identical(other.value, value) || other.value == value)&&(identical(other.code, code) || other.code == code)&&(identical(other.province, province) || other.province == province));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,value,code,province);
+int get hashCode {
+    return Object.hash(runtimeType,id,value,code,province);
+}
 
 @override
 String toString() {
-  return 'CityModel(id: $id, value: $value, code: $code, province: $province)';
+    return 'CityModel(id: $id, value: $value, code: $code, province: $province)';
 }
 
 
@@ -1696,16 +1739,21 @@ $LocationModelCopyWith<LocationModel> get copyWith => _$LocationModelCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.address, address) || other.address == address)&&(identical(other.city, city) || other.city == city)&&(identical(other.postalCode, postalCode) || other.postalCode == postalCode)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.mainIntersection, mainIntersection) || other.mainIntersection == mainIntersection)&&(identical(other.isBilling, isBilling) || other.isBilling == isBilling)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.formattedAddress, formattedAddress) || other.formattedAddress == formattedAddress)&&(identical(other.isUSA, isUSA) || other.isUSA == isUSA));
+  final _this = this as LocationModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LocationModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.address, _this.address) || other.address == _this.address)&&(identical(other.city, _this.city) || other.city == _this.city)&&(identical(other.postalCode, _this.postalCode) || other.postalCode == _this.postalCode)&&(identical(other.entrance, _this.entrance) || other.entrance == _this.entrance)&&(identical(other.mainIntersection, _this.mainIntersection) || other.mainIntersection == _this.mainIntersection)&&(identical(other.isBilling, _this.isBilling) || other.isBilling == _this.isBilling)&&(identical(other.latitude, _this.latitude) || other.latitude == _this.latitude)&&(identical(other.longitude, _this.longitude) || other.longitude == _this.longitude)&&(identical(other.formattedAddress, _this.formattedAddress) || other.formattedAddress == _this.formattedAddress)&&(identical(other.isUSA, _this.isUSA) || other.isUSA == _this.isUSA));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,address,city,postalCode,entrance,mainIntersection,isBilling,latitude,longitude,formattedAddress,isUSA);
+int get hashCode {
+  final _this = this as LocationModel;
+  return Object.hash(runtimeType,_this.id,_this.address,_this.city,_this.postalCode,_this.entrance,_this.mainIntersection,_this.isBilling,_this.latitude,_this.longitude,_this.formattedAddress,_this.isUSA);
+}
 
 @override
 String toString() {
-  return 'LocationModel(id: $id, address: $address, city: $city, postalCode: $postalCode, entrance: $entrance, mainIntersection: $mainIntersection, isBilling: $isBilling, latitude: $latitude, longitude: $longitude, formattedAddress: $formattedAddress, isUSA: $isUSA)';
+  final _this = this as LocationModel;
+  return 'LocationModel(id: ${_this.id}, address: ${_this.address}, city: ${_this.city}, postalCode: ${_this.postalCode}, entrance: ${_this.entrance}, mainIntersection: ${_this.mainIntersection}, isBilling: ${_this.isBilling}, latitude: ${_this.latitude}, longitude: ${_this.longitude}, formattedAddress: ${_this.formattedAddress}, isUSA: ${_this.isUSA})';
 }
 
 
@@ -1734,7 +1782,7 @@ class _$LocationModelCopyWithImpl<$Res>
 /// Create a copy of LocationModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? address = freezed,Object? city = freezed,Object? postalCode = freezed,Object? entrance = freezed,Object? mainIntersection = freezed,Object? isBilling = null,Object? latitude = freezed,Object? longitude = freezed,Object? formattedAddress = freezed,Object? isUSA = null,}) {
-  return _then(_self.copyWith(
+  return _then(LocationModel(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
 as String?,city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
@@ -1927,16 +1975,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.address, address) || other.address == address)&&(identical(other.city, city) || other.city == city)&&(identical(other.postalCode, postalCode) || other.postalCode == postalCode)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.mainIntersection, mainIntersection) || other.mainIntersection == mainIntersection)&&(identical(other.isBilling, isBilling) || other.isBilling == isBilling)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.formattedAddress, formattedAddress) || other.formattedAddress == formattedAddress)&&(identical(other.isUSA, isUSA) || other.isUSA == isUSA));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LocationModel&&(identical(other.id, id) || other.id == id)&&(identical(other.address, address) || other.address == address)&&(identical(other.city, city) || other.city == city)&&(identical(other.postalCode, postalCode) || other.postalCode == postalCode)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.mainIntersection, mainIntersection) || other.mainIntersection == mainIntersection)&&(identical(other.isBilling, isBilling) || other.isBilling == isBilling)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.formattedAddress, formattedAddress) || other.formattedAddress == formattedAddress)&&(identical(other.isUSA, isUSA) || other.isUSA == isUSA));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,address,city,postalCode,entrance,mainIntersection,isBilling,latitude,longitude,formattedAddress,isUSA);
+int get hashCode {
+    return Object.hash(runtimeType,id,address,city,postalCode,entrance,mainIntersection,isBilling,latitude,longitude,formattedAddress,isUSA);
+}
 
 @override
 String toString() {
-  return 'LocationModel(id: $id, address: $address, city: $city, postalCode: $postalCode, entrance: $entrance, mainIntersection: $mainIntersection, isBilling: $isBilling, latitude: $latitude, longitude: $longitude, formattedAddress: $formattedAddress, isUSA: $isUSA)';
+    return 'LocationModel(id: $id, address: $address, city: $city, postalCode: $postalCode, entrance: $entrance, mainIntersection: $mainIntersection, isBilling: $isBilling, latitude: $latitude, longitude: $longitude, formattedAddress: $formattedAddress, isUSA: $isUSA)';
 }
 
 
@@ -2013,16 +2063,21 @@ $LicenseItemModelCopyWith<LicenseItemModel> get copyWith => _$LicenseItemModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LicenseItemModel&&(identical(other.license, license) || other.license == license)&&(identical(other.number, number) || other.number == number)&&(identical(other.issued, issued) || other.issued == issued)&&(identical(other.expires, expires) || other.expires == expires));
+  final _this = this as LicenseItemModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LicenseItemModel&&(identical(other.license, _this.license) || other.license == _this.license)&&(identical(other.number, _this.number) || other.number == _this.number)&&(identical(other.issued, _this.issued) || other.issued == _this.issued)&&(identical(other.expires, _this.expires) || other.expires == _this.expires));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,license,number,issued,expires);
+int get hashCode {
+  final _this = this as LicenseItemModel;
+  return Object.hash(runtimeType,_this.license,_this.number,_this.issued,_this.expires);
+}
 
 @override
 String toString() {
-  return 'LicenseItemModel(license: $license, number: $number, issued: $issued, expires: $expires)';
+  final _this = this as LicenseItemModel;
+  return 'LicenseItemModel(license: ${_this.license}, number: ${_this.number}, issued: ${_this.issued}, expires: ${_this.expires})';
 }
 
 
@@ -2051,7 +2106,7 @@ class _$LicenseItemModelCopyWithImpl<$Res>
 /// Create a copy of LicenseItemModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? license = freezed,Object? number = freezed,Object? issued = freezed,Object? expires = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(LicenseItemModel(
 license: freezed == license ? _self.license : license // ignore: cast_nullable_to_non_nullable
 as ProfileImageModel?,number: freezed == number ? _self.number : number // ignore: cast_nullable_to_non_nullable
 as String?,issued: freezed == issued ? _self.issued : issued // ignore: cast_nullable_to_non_nullable
@@ -2230,16 +2285,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LicenseItemModel&&(identical(other.license, license) || other.license == license)&&(identical(other.number, number) || other.number == number)&&(identical(other.issued, issued) || other.issued == issued)&&(identical(other.expires, expires) || other.expires == expires));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LicenseItemModel&&(identical(other.license, license) || other.license == license)&&(identical(other.number, number) || other.number == number)&&(identical(other.issued, issued) || other.issued == issued)&&(identical(other.expires, expires) || other.expires == expires));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,license,number,issued,expires);
+int get hashCode {
+    return Object.hash(runtimeType,license,number,issued,expires);
+}
 
 @override
 String toString() {
-  return 'LicenseItemModel(license: $license, number: $number, issued: $issued, expires: $expires)';
+    return 'LicenseItemModel(license: $license, number: $number, issued: $issued, expires: $expires)';
 }
 
 
@@ -2309,16 +2366,21 @@ $WorkerProfileListItemModelCopyWith<WorkerProfileListItemModel> get copyWith => 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkerProfileListItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.agencyFullName, agencyFullName) || other.agencyFullName == agencyFullName)&&(identical(other.agencyLogo, agencyLogo) || other.agencyLogo == agencyLogo));
+  final _this = this as WorkerProfileListItemModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkerProfileListItemModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.agencyFullName, _this.agencyFullName) || other.agencyFullName == _this.agencyFullName)&&(identical(other.agencyLogo, _this.agencyLogo) || other.agencyLogo == _this.agencyLogo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,agencyFullName,agencyLogo);
+int get hashCode {
+  final _this = this as WorkerProfileListItemModel;
+  return Object.hash(runtimeType,_this.id,_this.agencyFullName,_this.agencyLogo);
+}
 
 @override
 String toString() {
-  return 'WorkerProfileListItemModel(id: $id, agencyFullName: $agencyFullName, agencyLogo: $agencyLogo)';
+  final _this = this as WorkerProfileListItemModel;
+  return 'WorkerProfileListItemModel(id: ${_this.id}, agencyFullName: ${_this.agencyFullName}, agencyLogo: ${_this.agencyLogo})';
 }
 
 
@@ -2347,7 +2409,7 @@ class _$WorkerProfileListItemModelCopyWithImpl<$Res>
 /// Create a copy of WorkerProfileListItemModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? agencyFullName = freezed,Object? agencyLogo = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(WorkerProfileListItemModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,agencyFullName: freezed == agencyFullName ? _self.agencyFullName : agencyFullName // ignore: cast_nullable_to_non_nullable
 as String?,agencyLogo: freezed == agencyLogo ? _self.agencyLogo : agencyLogo // ignore: cast_nullable_to_non_nullable
@@ -2512,16 +2574,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkerProfileListItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.agencyFullName, agencyFullName) || other.agencyFullName == agencyFullName)&&(identical(other.agencyLogo, agencyLogo) || other.agencyLogo == agencyLogo));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkerProfileListItemModel&&(identical(other.id, id) || other.id == id)&&(identical(other.agencyFullName, agencyFullName) || other.agencyFullName == agencyFullName)&&(identical(other.agencyLogo, agencyLogo) || other.agencyLogo == agencyLogo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,agencyFullName,agencyLogo);
+int get hashCode {
+    return Object.hash(runtimeType,id,agencyFullName,agencyLogo);
+}
 
 @override
 String toString() {
-  return 'WorkerProfileListItemModel(id: $id, agencyFullName: $agencyFullName, agencyLogo: $agencyLogo)';
+    return 'WorkerProfileListItemModel(id: $id, agencyFullName: $agencyFullName, agencyLogo: $agencyLogo)';
 }
 
 
@@ -2578,16 +2642,21 @@ $WorkerProfileModelCopyWith<WorkerProfileModel> get copyWith => _$WorkerProfileM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkerProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.profileImage, profileImage) || other.profileImage == profileImage)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.middleName, middleName) || other.middleName == middleName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.secondLastName, secondLastName) || other.secondLastName == secondLastName)&&(identical(other.birthDay, birthDay) || other.birthDay == birthDay)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.socialInsurance, socialInsurance) || other.socialInsurance == socialInsurance)&&(identical(other.socialInsuranceExpire, socialInsuranceExpire) || other.socialInsuranceExpire == socialInsuranceExpire)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.socialInsuranceFile, socialInsuranceFile) || other.socialInsuranceFile == socialInsuranceFile)&&(identical(other.identificationNumber1, identificationNumber1) || other.identificationNumber1 == identificationNumber1)&&(identical(other.identificationNumber2, identificationNumber2) || other.identificationNumber2 == identificationNumber2)&&(identical(other.havePoliceCheckBackground, havePoliceCheckBackground) || other.havePoliceCheckBackground == havePoliceCheckBackground)&&(identical(other.identificationType1File, identificationType1File) || other.identificationType1File == identificationType1File)&&(identical(other.identificationType2File, identificationType2File) || other.identificationType2File == identificationType2File)&&(identical(other.identificationType1, identificationType1) || other.identificationType1 == identificationType1)&&(identical(other.identificationType2, identificationType2) || other.identificationType2 == identificationType2)&&(identical(other.policeCheckBackGround, policeCheckBackGround) || other.policeCheckBackGround == policeCheckBackGround)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.phoneExt, phoneExt) || other.phoneExt == phoneExt)&&(identical(other.location, location) || other.location == location)&&(identical(other.hasVehicle, hasVehicle) || other.hasVehicle == hasVehicle)&&const DeepCollectionEquality().equals(other.licenses, licenses)&&const DeepCollectionEquality().equals(other.certificates, certificates)&&const DeepCollectionEquality().equals(other.otherDocuments, otherDocuments)&&const DeepCollectionEquality().equals(other.availabilities, availabilities)&&const DeepCollectionEquality().equals(other.availabilityTimes, availabilityTimes)&&const DeepCollectionEquality().equals(other.availabilityDays, availabilityDays)&&const DeepCollectionEquality().equals(other.locationPreferences, locationPreferences)&&(identical(other.lift, lift) || other.lift == lift)&&const DeepCollectionEquality().equals(other.languages, languages)&&const DeepCollectionEquality().equals(other.skills, skills)&&(identical(other.resume, resume) || other.resume == resume)&&(identical(other.haveAnyHealthProblem, haveAnyHealthProblem) || other.haveAnyHealthProblem == haveAnyHealthProblem)&&(identical(other.healthProblem, healthProblem) || other.healthProblem == healthProblem)&&(identical(other.otherHealthProblem, otherHealthProblem) || other.otherHealthProblem == otherHealthProblem)&&(identical(other.contactEmergencyName, contactEmergencyName) || other.contactEmergencyName == contactEmergencyName)&&(identical(other.contactEmergencyLastName, contactEmergencyLastName) || other.contactEmergencyLastName == contactEmergencyLastName)&&(identical(other.contactEmergencyPhone, contactEmergencyPhone) || other.contactEmergencyPhone == contactEmergencyPhone)&&(identical(other.email, email) || other.email == email)&&(identical(other.approvedToWork, approvedToWork) || other.approvedToWork == approvedToWork)&&(identical(other.workerId, workerId) || other.workerId == workerId)&&(identical(other.isSubcontractor, isSubcontractor) || other.isSubcontractor == isSubcontractor)&&(identical(other.isContractor, isContractor) || other.isContractor == isContractor)&&(identical(other.dnu, dnu) || other.dnu == dnu)&&(identical(other.punchCardId, punchCardId) || other.punchCardId == punchCardId));
+  final _this = this as WorkerProfileModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WorkerProfileModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.numberId, _this.numberId) || other.numberId == _this.numberId)&&(identical(other.profileImage, _this.profileImage) || other.profileImage == _this.profileImage)&&(identical(other.firstName, _this.firstName) || other.firstName == _this.firstName)&&(identical(other.middleName, _this.middleName) || other.middleName == _this.middleName)&&(identical(other.lastName, _this.lastName) || other.lastName == _this.lastName)&&(identical(other.secondLastName, _this.secondLastName) || other.secondLastName == _this.secondLastName)&&(identical(other.birthDay, _this.birthDay) || other.birthDay == _this.birthDay)&&(identical(other.gender, _this.gender) || other.gender == _this.gender)&&(identical(other.socialInsurance, _this.socialInsurance) || other.socialInsurance == _this.socialInsurance)&&(identical(other.socialInsuranceExpire, _this.socialInsuranceExpire) || other.socialInsuranceExpire == _this.socialInsuranceExpire)&&(identical(other.dueDate, _this.dueDate) || other.dueDate == _this.dueDate)&&(identical(other.socialInsuranceFile, _this.socialInsuranceFile) || other.socialInsuranceFile == _this.socialInsuranceFile)&&(identical(other.identificationNumber1, _this.identificationNumber1) || other.identificationNumber1 == _this.identificationNumber1)&&(identical(other.identificationNumber2, _this.identificationNumber2) || other.identificationNumber2 == _this.identificationNumber2)&&(identical(other.havePoliceCheckBackground, _this.havePoliceCheckBackground) || other.havePoliceCheckBackground == _this.havePoliceCheckBackground)&&(identical(other.identificationType1File, _this.identificationType1File) || other.identificationType1File == _this.identificationType1File)&&(identical(other.identificationType2File, _this.identificationType2File) || other.identificationType2File == _this.identificationType2File)&&(identical(other.identificationType1, _this.identificationType1) || other.identificationType1 == _this.identificationType1)&&(identical(other.identificationType2, _this.identificationType2) || other.identificationType2 == _this.identificationType2)&&(identical(other.policeCheckBackGround, _this.policeCheckBackGround) || other.policeCheckBackGround == _this.policeCheckBackGround)&&(identical(other.mobileNumber, _this.mobileNumber) || other.mobileNumber == _this.mobileNumber)&&(identical(other.phone, _this.phone) || other.phone == _this.phone)&&(identical(other.phoneExt, _this.phoneExt) || other.phoneExt == _this.phoneExt)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.hasVehicle, _this.hasVehicle) || other.hasVehicle == _this.hasVehicle)&&const DeepCollectionEquality().equals(other.licenses, _this.licenses)&&const DeepCollectionEquality().equals(other.certificates, _this.certificates)&&const DeepCollectionEquality().equals(other.otherDocuments, _this.otherDocuments)&&const DeepCollectionEquality().equals(other.availabilities, _this.availabilities)&&const DeepCollectionEquality().equals(other.availabilityTimes, _this.availabilityTimes)&&const DeepCollectionEquality().equals(other.availabilityDays, _this.availabilityDays)&&const DeepCollectionEquality().equals(other.locationPreferences, _this.locationPreferences)&&(identical(other.lift, _this.lift) || other.lift == _this.lift)&&const DeepCollectionEquality().equals(other.languages, _this.languages)&&const DeepCollectionEquality().equals(other.skills, _this.skills)&&(identical(other.resume, _this.resume) || other.resume == _this.resume)&&(identical(other.haveAnyHealthProblem, _this.haveAnyHealthProblem) || other.haveAnyHealthProblem == _this.haveAnyHealthProblem)&&(identical(other.healthProblem, _this.healthProblem) || other.healthProblem == _this.healthProblem)&&(identical(other.otherHealthProblem, _this.otherHealthProblem) || other.otherHealthProblem == _this.otherHealthProblem)&&(identical(other.contactEmergencyName, _this.contactEmergencyName) || other.contactEmergencyName == _this.contactEmergencyName)&&(identical(other.contactEmergencyLastName, _this.contactEmergencyLastName) || other.contactEmergencyLastName == _this.contactEmergencyLastName)&&(identical(other.contactEmergencyPhone, _this.contactEmergencyPhone) || other.contactEmergencyPhone == _this.contactEmergencyPhone)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.approvedToWork, _this.approvedToWork) || other.approvedToWork == _this.approvedToWork)&&(identical(other.workerId, _this.workerId) || other.workerId == _this.workerId)&&(identical(other.isSubcontractor, _this.isSubcontractor) || other.isSubcontractor == _this.isSubcontractor)&&(identical(other.isContractor, _this.isContractor) || other.isContractor == _this.isContractor)&&(identical(other.dnu, _this.dnu) || other.dnu == _this.dnu)&&(identical(other.punchCardId, _this.punchCardId) || other.punchCardId == _this.punchCardId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,numberId,profileImage,firstName,middleName,lastName,secondLastName,birthDay,gender,socialInsurance,socialInsuranceExpire,dueDate,socialInsuranceFile,identificationNumber1,identificationNumber2,havePoliceCheckBackground,identificationType1File,identificationType2File,identificationType1,identificationType2,policeCheckBackGround,mobileNumber,phone,phoneExt,location,hasVehicle,const DeepCollectionEquality().hash(licenses),const DeepCollectionEquality().hash(certificates),const DeepCollectionEquality().hash(otherDocuments),const DeepCollectionEquality().hash(availabilities),const DeepCollectionEquality().hash(availabilityTimes),const DeepCollectionEquality().hash(availabilityDays),const DeepCollectionEquality().hash(locationPreferences),lift,const DeepCollectionEquality().hash(languages),const DeepCollectionEquality().hash(skills),resume,haveAnyHealthProblem,healthProblem,otherHealthProblem,contactEmergencyName,contactEmergencyLastName,contactEmergencyPhone,email,approvedToWork,workerId,isSubcontractor,isContractor,dnu,punchCardId]);
+int get hashCode {
+  final _this = this as WorkerProfileModel;
+  return Object.hashAll([runtimeType,_this.id,_this.numberId,_this.profileImage,_this.firstName,_this.middleName,_this.lastName,_this.secondLastName,_this.birthDay,_this.gender,_this.socialInsurance,_this.socialInsuranceExpire,_this.dueDate,_this.socialInsuranceFile,_this.identificationNumber1,_this.identificationNumber2,_this.havePoliceCheckBackground,_this.identificationType1File,_this.identificationType2File,_this.identificationType1,_this.identificationType2,_this.policeCheckBackGround,_this.mobileNumber,_this.phone,_this.phoneExt,_this.location,_this.hasVehicle,const DeepCollectionEquality().hash(_this.licenses),const DeepCollectionEquality().hash(_this.certificates),const DeepCollectionEquality().hash(_this.otherDocuments),const DeepCollectionEquality().hash(_this.availabilities),const DeepCollectionEquality().hash(_this.availabilityTimes),const DeepCollectionEquality().hash(_this.availabilityDays),const DeepCollectionEquality().hash(_this.locationPreferences),_this.lift,const DeepCollectionEquality().hash(_this.languages),const DeepCollectionEquality().hash(_this.skills),_this.resume,_this.haveAnyHealthProblem,_this.healthProblem,_this.otherHealthProblem,_this.contactEmergencyName,_this.contactEmergencyLastName,_this.contactEmergencyPhone,_this.email,_this.approvedToWork,_this.workerId,_this.isSubcontractor,_this.isContractor,_this.dnu,_this.punchCardId]);
+}
 
 @override
 String toString() {
-  return 'WorkerProfileModel(id: $id, numberId: $numberId, profileImage: $profileImage, firstName: $firstName, middleName: $middleName, lastName: $lastName, secondLastName: $secondLastName, birthDay: $birthDay, gender: $gender, socialInsurance: $socialInsurance, socialInsuranceExpire: $socialInsuranceExpire, dueDate: $dueDate, socialInsuranceFile: $socialInsuranceFile, identificationNumber1: $identificationNumber1, identificationNumber2: $identificationNumber2, havePoliceCheckBackground: $havePoliceCheckBackground, identificationType1File: $identificationType1File, identificationType2File: $identificationType2File, identificationType1: $identificationType1, identificationType2: $identificationType2, policeCheckBackGround: $policeCheckBackGround, mobileNumber: $mobileNumber, phone: $phone, phoneExt: $phoneExt, location: $location, hasVehicle: $hasVehicle, licenses: $licenses, certificates: $certificates, otherDocuments: $otherDocuments, availabilities: $availabilities, availabilityTimes: $availabilityTimes, availabilityDays: $availabilityDays, locationPreferences: $locationPreferences, lift: $lift, languages: $languages, skills: $skills, resume: $resume, haveAnyHealthProblem: $haveAnyHealthProblem, healthProblem: $healthProblem, otherHealthProblem: $otherHealthProblem, contactEmergencyName: $contactEmergencyName, contactEmergencyLastName: $contactEmergencyLastName, contactEmergencyPhone: $contactEmergencyPhone, email: $email, approvedToWork: $approvedToWork, workerId: $workerId, isSubcontractor: $isSubcontractor, isContractor: $isContractor, dnu: $dnu, punchCardId: $punchCardId)';
+  final _this = this as WorkerProfileModel;
+  return 'WorkerProfileModel(id: ${_this.id}, numberId: ${_this.numberId}, profileImage: ${_this.profileImage}, firstName: ${_this.firstName}, middleName: ${_this.middleName}, lastName: ${_this.lastName}, secondLastName: ${_this.secondLastName}, birthDay: ${_this.birthDay}, gender: ${_this.gender}, socialInsurance: ${_this.socialInsurance}, socialInsuranceExpire: ${_this.socialInsuranceExpire}, dueDate: ${_this.dueDate}, socialInsuranceFile: ${_this.socialInsuranceFile}, identificationNumber1: ${_this.identificationNumber1}, identificationNumber2: ${_this.identificationNumber2}, havePoliceCheckBackground: ${_this.havePoliceCheckBackground}, identificationType1File: ${_this.identificationType1File}, identificationType2File: ${_this.identificationType2File}, identificationType1: ${_this.identificationType1}, identificationType2: ${_this.identificationType2}, policeCheckBackGround: ${_this.policeCheckBackGround}, mobileNumber: ${_this.mobileNumber}, phone: ${_this.phone}, phoneExt: ${_this.phoneExt}, location: ${_this.location}, hasVehicle: ${_this.hasVehicle}, licenses: ${_this.licenses}, certificates: ${_this.certificates}, otherDocuments: ${_this.otherDocuments}, availabilities: ${_this.availabilities}, availabilityTimes: ${_this.availabilityTimes}, availabilityDays: ${_this.availabilityDays}, locationPreferences: ${_this.locationPreferences}, lift: ${_this.lift}, languages: ${_this.languages}, skills: ${_this.skills}, resume: ${_this.resume}, haveAnyHealthProblem: ${_this.haveAnyHealthProblem}, healthProblem: ${_this.healthProblem}, otherHealthProblem: ${_this.otherHealthProblem}, contactEmergencyName: ${_this.contactEmergencyName}, contactEmergencyLastName: ${_this.contactEmergencyLastName}, contactEmergencyPhone: ${_this.contactEmergencyPhone}, email: ${_this.email}, approvedToWork: ${_this.approvedToWork}, workerId: ${_this.workerId}, isSubcontractor: ${_this.isSubcontractor}, isContractor: ${_this.isContractor}, dnu: ${_this.dnu}, punchCardId: ${_this.punchCardId})';
 }
 
 
@@ -2616,7 +2685,7 @@ class _$WorkerProfileModelCopyWithImpl<$Res>
 /// Create a copy of WorkerProfileModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? numberId = freezed,Object? profileImage = freezed,Object? firstName = freezed,Object? middleName = freezed,Object? lastName = freezed,Object? secondLastName = freezed,Object? birthDay = freezed,Object? gender = freezed,Object? socialInsurance = freezed,Object? socialInsuranceExpire = null,Object? dueDate = freezed,Object? socialInsuranceFile = freezed,Object? identificationNumber1 = freezed,Object? identificationNumber2 = freezed,Object? havePoliceCheckBackground = null,Object? identificationType1File = freezed,Object? identificationType2File = freezed,Object? identificationType1 = freezed,Object? identificationType2 = freezed,Object? policeCheckBackGround = freezed,Object? mobileNumber = freezed,Object? phone = freezed,Object? phoneExt = freezed,Object? location = freezed,Object? hasVehicle = null,Object? licenses = null,Object? certificates = null,Object? otherDocuments = null,Object? availabilities = null,Object? availabilityTimes = null,Object? availabilityDays = null,Object? locationPreferences = null,Object? lift = freezed,Object? languages = null,Object? skills = null,Object? resume = freezed,Object? haveAnyHealthProblem = null,Object? healthProblem = freezed,Object? otherHealthProblem = freezed,Object? contactEmergencyName = freezed,Object? contactEmergencyLastName = freezed,Object? contactEmergencyPhone = freezed,Object? email = freezed,Object? approvedToWork = null,Object? workerId = freezed,Object? isSubcontractor = null,Object? isContractor = null,Object? dnu = null,Object? punchCardId = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(WorkerProfileModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,numberId: freezed == numberId ? _self.numberId : numberId // ignore: cast_nullable_to_non_nullable
 as int?,profileImage: freezed == profileImage ? _self.profileImage : profileImage // ignore: cast_nullable_to_non_nullable
@@ -2940,7 +3009,7 @@ return $default(_that.id,_that.numberId,_that.profileImage,_that.firstName,_that
 @JsonSerializable()
 
 class _WorkerProfileModel extends WorkerProfileModel {
-  const _WorkerProfileModel({required this.id, this.numberId, this.profileImage, this.firstName, this.middleName, this.lastName, this.secondLastName, this.birthDay, this.gender, this.socialInsurance, this.socialInsuranceExpire = false, this.dueDate, this.socialInsuranceFile, this.identificationNumber1, this.identificationNumber2, this.havePoliceCheckBackground = false, this.identificationType1File, this.identificationType2File, this.identificationType1, this.identificationType2, this.policeCheckBackGround, this.mobileNumber, this.phone, this.phoneExt, this.location, this.hasVehicle = false, final  List<LicenseItemModel> licenses = const [], final  List<ProfileImageModel> certificates = const [], final  List<CatalogItemModel> otherDocuments = const [], final  List<CatalogItemModel> availabilities = const [], final  List<CatalogItemModel> availabilityTimes = const [], final  List<CatalogItemModel> availabilityDays = const [], final  List<CatalogItemModel> locationPreferences = const [], this.lift, final  List<CatalogItemModel> languages = const [], final  List<SkillItemModel> skills = const [], this.resume, this.haveAnyHealthProblem = false, this.healthProblem, this.otherHealthProblem, this.contactEmergencyName, this.contactEmergencyLastName, this.contactEmergencyPhone, this.email, this.approvedToWork = false, this.workerId, this.isSubcontractor = false, this.isContractor = false, this.dnu = false, this.punchCardId}): _licenses = licenses,_certificates = certificates,_otherDocuments = otherDocuments,_availabilities = availabilities,_availabilityTimes = availabilityTimes,_availabilityDays = availabilityDays,_locationPreferences = locationPreferences,_languages = languages,_skills = skills,super._();
+  const _WorkerProfileModel({required this.id, this.numberId, this.profileImage, this.firstName, this.middleName, this.lastName, this.secondLastName, this.birthDay, this.gender, this.socialInsurance, this.socialInsuranceExpire = false, this.dueDate, this.socialInsuranceFile, this.identificationNumber1, this.identificationNumber2, this.havePoliceCheckBackground = false, this.identificationType1File, this.identificationType2File, this.identificationType1, this.identificationType2, this.policeCheckBackGround, this.mobileNumber, this.phone, this.phoneExt, this.location, this.hasVehicle = false,  List<LicenseItemModel> licenses = const [],  List<ProfileImageModel> certificates = const [],  List<CatalogItemModel> otherDocuments = const [],  List<CatalogItemModel> availabilities = const [],  List<CatalogItemModel> availabilityTimes = const [],  List<CatalogItemModel> availabilityDays = const [],  List<CatalogItemModel> locationPreferences = const [], this.lift,  List<CatalogItemModel> languages = const [],  List<SkillItemModel> skills = const [], this.resume, this.haveAnyHealthProblem = false, this.healthProblem, this.otherHealthProblem, this.contactEmergencyName, this.contactEmergencyLastName, this.contactEmergencyPhone, this.email, this.approvedToWork = false, this.workerId, this.isSubcontractor = false, this.isContractor = false, this.dnu = false, this.punchCardId}): _licenses = licenses,_certificates = certificates,_otherDocuments = otherDocuments,_availabilities = availabilities,_availabilityTimes = availabilityTimes,_availabilityDays = availabilityDays,_locationPreferences = locationPreferences,_languages = languages,_skills = skills,super._();
   factory _WorkerProfileModel.fromJson(Map<String, dynamic> json) => _$WorkerProfileModelFromJson(json);
 
 @override final  String id;
@@ -3061,16 +3130,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkerProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.profileImage, profileImage) || other.profileImage == profileImage)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.middleName, middleName) || other.middleName == middleName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.secondLastName, secondLastName) || other.secondLastName == secondLastName)&&(identical(other.birthDay, birthDay) || other.birthDay == birthDay)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.socialInsurance, socialInsurance) || other.socialInsurance == socialInsurance)&&(identical(other.socialInsuranceExpire, socialInsuranceExpire) || other.socialInsuranceExpire == socialInsuranceExpire)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.socialInsuranceFile, socialInsuranceFile) || other.socialInsuranceFile == socialInsuranceFile)&&(identical(other.identificationNumber1, identificationNumber1) || other.identificationNumber1 == identificationNumber1)&&(identical(other.identificationNumber2, identificationNumber2) || other.identificationNumber2 == identificationNumber2)&&(identical(other.havePoliceCheckBackground, havePoliceCheckBackground) || other.havePoliceCheckBackground == havePoliceCheckBackground)&&(identical(other.identificationType1File, identificationType1File) || other.identificationType1File == identificationType1File)&&(identical(other.identificationType2File, identificationType2File) || other.identificationType2File == identificationType2File)&&(identical(other.identificationType1, identificationType1) || other.identificationType1 == identificationType1)&&(identical(other.identificationType2, identificationType2) || other.identificationType2 == identificationType2)&&(identical(other.policeCheckBackGround, policeCheckBackGround) || other.policeCheckBackGround == policeCheckBackGround)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.phoneExt, phoneExt) || other.phoneExt == phoneExt)&&(identical(other.location, location) || other.location == location)&&(identical(other.hasVehicle, hasVehicle) || other.hasVehicle == hasVehicle)&&const DeepCollectionEquality().equals(other._licenses, _licenses)&&const DeepCollectionEquality().equals(other._certificates, _certificates)&&const DeepCollectionEquality().equals(other._otherDocuments, _otherDocuments)&&const DeepCollectionEquality().equals(other._availabilities, _availabilities)&&const DeepCollectionEquality().equals(other._availabilityTimes, _availabilityTimes)&&const DeepCollectionEquality().equals(other._availabilityDays, _availabilityDays)&&const DeepCollectionEquality().equals(other._locationPreferences, _locationPreferences)&&(identical(other.lift, lift) || other.lift == lift)&&const DeepCollectionEquality().equals(other._languages, _languages)&&const DeepCollectionEquality().equals(other._skills, _skills)&&(identical(other.resume, resume) || other.resume == resume)&&(identical(other.haveAnyHealthProblem, haveAnyHealthProblem) || other.haveAnyHealthProblem == haveAnyHealthProblem)&&(identical(other.healthProblem, healthProblem) || other.healthProblem == healthProblem)&&(identical(other.otherHealthProblem, otherHealthProblem) || other.otherHealthProblem == otherHealthProblem)&&(identical(other.contactEmergencyName, contactEmergencyName) || other.contactEmergencyName == contactEmergencyName)&&(identical(other.contactEmergencyLastName, contactEmergencyLastName) || other.contactEmergencyLastName == contactEmergencyLastName)&&(identical(other.contactEmergencyPhone, contactEmergencyPhone) || other.contactEmergencyPhone == contactEmergencyPhone)&&(identical(other.email, email) || other.email == email)&&(identical(other.approvedToWork, approvedToWork) || other.approvedToWork == approvedToWork)&&(identical(other.workerId, workerId) || other.workerId == workerId)&&(identical(other.isSubcontractor, isSubcontractor) || other.isSubcontractor == isSubcontractor)&&(identical(other.isContractor, isContractor) || other.isContractor == isContractor)&&(identical(other.dnu, dnu) || other.dnu == dnu)&&(identical(other.punchCardId, punchCardId) || other.punchCardId == punchCardId));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WorkerProfileModel&&(identical(other.id, id) || other.id == id)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.profileImage, profileImage) || other.profileImage == profileImage)&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.middleName, middleName) || other.middleName == middleName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.secondLastName, secondLastName) || other.secondLastName == secondLastName)&&(identical(other.birthDay, birthDay) || other.birthDay == birthDay)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.socialInsurance, socialInsurance) || other.socialInsurance == socialInsurance)&&(identical(other.socialInsuranceExpire, socialInsuranceExpire) || other.socialInsuranceExpire == socialInsuranceExpire)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.socialInsuranceFile, socialInsuranceFile) || other.socialInsuranceFile == socialInsuranceFile)&&(identical(other.identificationNumber1, identificationNumber1) || other.identificationNumber1 == identificationNumber1)&&(identical(other.identificationNumber2, identificationNumber2) || other.identificationNumber2 == identificationNumber2)&&(identical(other.havePoliceCheckBackground, havePoliceCheckBackground) || other.havePoliceCheckBackground == havePoliceCheckBackground)&&(identical(other.identificationType1File, identificationType1File) || other.identificationType1File == identificationType1File)&&(identical(other.identificationType2File, identificationType2File) || other.identificationType2File == identificationType2File)&&(identical(other.identificationType1, identificationType1) || other.identificationType1 == identificationType1)&&(identical(other.identificationType2, identificationType2) || other.identificationType2 == identificationType2)&&(identical(other.policeCheckBackGround, policeCheckBackGround) || other.policeCheckBackGround == policeCheckBackGround)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.phoneExt, phoneExt) || other.phoneExt == phoneExt)&&(identical(other.location, location) || other.location == location)&&(identical(other.hasVehicle, hasVehicle) || other.hasVehicle == hasVehicle)&&const DeepCollectionEquality().equals(other.licenses, _licenses)&&const DeepCollectionEquality().equals(other.certificates, _certificates)&&const DeepCollectionEquality().equals(other.otherDocuments, _otherDocuments)&&const DeepCollectionEquality().equals(other.availabilities, _availabilities)&&const DeepCollectionEquality().equals(other.availabilityTimes, _availabilityTimes)&&const DeepCollectionEquality().equals(other.availabilityDays, _availabilityDays)&&const DeepCollectionEquality().equals(other.locationPreferences, _locationPreferences)&&(identical(other.lift, lift) || other.lift == lift)&&const DeepCollectionEquality().equals(other.languages, _languages)&&const DeepCollectionEquality().equals(other.skills, _skills)&&(identical(other.resume, resume) || other.resume == resume)&&(identical(other.haveAnyHealthProblem, haveAnyHealthProblem) || other.haveAnyHealthProblem == haveAnyHealthProblem)&&(identical(other.healthProblem, healthProblem) || other.healthProblem == healthProblem)&&(identical(other.otherHealthProblem, otherHealthProblem) || other.otherHealthProblem == otherHealthProblem)&&(identical(other.contactEmergencyName, contactEmergencyName) || other.contactEmergencyName == contactEmergencyName)&&(identical(other.contactEmergencyLastName, contactEmergencyLastName) || other.contactEmergencyLastName == contactEmergencyLastName)&&(identical(other.contactEmergencyPhone, contactEmergencyPhone) || other.contactEmergencyPhone == contactEmergencyPhone)&&(identical(other.email, email) || other.email == email)&&(identical(other.approvedToWork, approvedToWork) || other.approvedToWork == approvedToWork)&&(identical(other.workerId, workerId) || other.workerId == workerId)&&(identical(other.isSubcontractor, isSubcontractor) || other.isSubcontractor == isSubcontractor)&&(identical(other.isContractor, isContractor) || other.isContractor == isContractor)&&(identical(other.dnu, dnu) || other.dnu == dnu)&&(identical(other.punchCardId, punchCardId) || other.punchCardId == punchCardId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,numberId,profileImage,firstName,middleName,lastName,secondLastName,birthDay,gender,socialInsurance,socialInsuranceExpire,dueDate,socialInsuranceFile,identificationNumber1,identificationNumber2,havePoliceCheckBackground,identificationType1File,identificationType2File,identificationType1,identificationType2,policeCheckBackGround,mobileNumber,phone,phoneExt,location,hasVehicle,const DeepCollectionEquality().hash(_licenses),const DeepCollectionEquality().hash(_certificates),const DeepCollectionEquality().hash(_otherDocuments),const DeepCollectionEquality().hash(_availabilities),const DeepCollectionEquality().hash(_availabilityTimes),const DeepCollectionEquality().hash(_availabilityDays),const DeepCollectionEquality().hash(_locationPreferences),lift,const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_skills),resume,haveAnyHealthProblem,healthProblem,otherHealthProblem,contactEmergencyName,contactEmergencyLastName,contactEmergencyPhone,email,approvedToWork,workerId,isSubcontractor,isContractor,dnu,punchCardId]);
+int get hashCode {
+    return Object.hashAll([runtimeType,id,numberId,profileImage,firstName,middleName,lastName,secondLastName,birthDay,gender,socialInsurance,socialInsuranceExpire,dueDate,socialInsuranceFile,identificationNumber1,identificationNumber2,havePoliceCheckBackground,identificationType1File,identificationType2File,identificationType1,identificationType2,policeCheckBackGround,mobileNumber,phone,phoneExt,location,hasVehicle,const DeepCollectionEquality().hash(_licenses),const DeepCollectionEquality().hash(_certificates),const DeepCollectionEquality().hash(_otherDocuments),const DeepCollectionEquality().hash(_availabilities),const DeepCollectionEquality().hash(_availabilityTimes),const DeepCollectionEquality().hash(_availabilityDays),const DeepCollectionEquality().hash(_locationPreferences),lift,const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_skills),resume,haveAnyHealthProblem,healthProblem,otherHealthProblem,contactEmergencyName,contactEmergencyLastName,contactEmergencyPhone,email,approvedToWork,workerId,isSubcontractor,isContractor,dnu,punchCardId]);
+}
 
 @override
 String toString() {
-  return 'WorkerProfileModel(id: $id, numberId: $numberId, profileImage: $profileImage, firstName: $firstName, middleName: $middleName, lastName: $lastName, secondLastName: $secondLastName, birthDay: $birthDay, gender: $gender, socialInsurance: $socialInsurance, socialInsuranceExpire: $socialInsuranceExpire, dueDate: $dueDate, socialInsuranceFile: $socialInsuranceFile, identificationNumber1: $identificationNumber1, identificationNumber2: $identificationNumber2, havePoliceCheckBackground: $havePoliceCheckBackground, identificationType1File: $identificationType1File, identificationType2File: $identificationType2File, identificationType1: $identificationType1, identificationType2: $identificationType2, policeCheckBackGround: $policeCheckBackGround, mobileNumber: $mobileNumber, phone: $phone, phoneExt: $phoneExt, location: $location, hasVehicle: $hasVehicle, licenses: $licenses, certificates: $certificates, otherDocuments: $otherDocuments, availabilities: $availabilities, availabilityTimes: $availabilityTimes, availabilityDays: $availabilityDays, locationPreferences: $locationPreferences, lift: $lift, languages: $languages, skills: $skills, resume: $resume, haveAnyHealthProblem: $haveAnyHealthProblem, healthProblem: $healthProblem, otherHealthProblem: $otherHealthProblem, contactEmergencyName: $contactEmergencyName, contactEmergencyLastName: $contactEmergencyLastName, contactEmergencyPhone: $contactEmergencyPhone, email: $email, approvedToWork: $approvedToWork, workerId: $workerId, isSubcontractor: $isSubcontractor, isContractor: $isContractor, dnu: $dnu, punchCardId: $punchCardId)';
+    return 'WorkerProfileModel(id: $id, numberId: $numberId, profileImage: $profileImage, firstName: $firstName, middleName: $middleName, lastName: $lastName, secondLastName: $secondLastName, birthDay: $birthDay, gender: $gender, socialInsurance: $socialInsurance, socialInsuranceExpire: $socialInsuranceExpire, dueDate: $dueDate, socialInsuranceFile: $socialInsuranceFile, identificationNumber1: $identificationNumber1, identificationNumber2: $identificationNumber2, havePoliceCheckBackground: $havePoliceCheckBackground, identificationType1File: $identificationType1File, identificationType2File: $identificationType2File, identificationType1: $identificationType1, identificationType2: $identificationType2, policeCheckBackGround: $policeCheckBackGround, mobileNumber: $mobileNumber, phone: $phone, phoneExt: $phoneExt, location: $location, hasVehicle: $hasVehicle, licenses: $licenses, certificates: $certificates, otherDocuments: $otherDocuments, availabilities: $availabilities, availabilityTimes: $availabilityTimes, availabilityDays: $availabilityDays, locationPreferences: $locationPreferences, lift: $lift, languages: $languages, skills: $skills, resume: $resume, haveAnyHealthProblem: $haveAnyHealthProblem, healthProblem: $healthProblem, otherHealthProblem: $otherHealthProblem, contactEmergencyName: $contactEmergencyName, contactEmergencyLastName: $contactEmergencyLastName, contactEmergencyPhone: $contactEmergencyPhone, email: $email, approvedToWork: $approvedToWork, workerId: $workerId, isSubcontractor: $isSubcontractor, isContractor: $isContractor, dnu: $dnu, punchCardId: $punchCardId)';
 }
 
 

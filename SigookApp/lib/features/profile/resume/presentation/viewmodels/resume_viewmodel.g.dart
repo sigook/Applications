@@ -10,11 +10,11 @@ part of 'resume_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ResumeViewModel)
-const resumeViewModelProvider = ResumeViewModelProvider._();
+final resumeViewModelProvider = ResumeViewModelProvider._();
 
 final class ResumeViewModelProvider
     extends $NotifierProvider<ResumeViewModel, ResumeState> {
-  const ResumeViewModelProvider._()
+  ResumeViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$ResumeViewModel extends $Notifier<ResumeState> {
   ResumeState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ResumeState, ResumeState>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$ResumeViewModel extends $Notifier<ResumeState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

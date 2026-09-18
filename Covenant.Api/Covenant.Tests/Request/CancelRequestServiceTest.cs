@@ -36,6 +36,7 @@ namespace Covenant.Tests.Request
             requestRepository.Setup(c => c.GetRequestCancellationDetail(request.Id)).ReturnsAsync(new RequestCancellationDetail());
             var service = new RequestService(
                 Mock.Of<ICompanyRepository>(),
+                Mock.Of<IAgencyRepository>(),
                 Mock.Of<ILocationRepository>(),
                 Mock.Of<ITimeService>(),
                 requestRepository.Object,

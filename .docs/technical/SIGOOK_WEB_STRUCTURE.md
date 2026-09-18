@@ -121,7 +121,7 @@ Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold
 | routesLanding.ts | `/`, `/open-positions`, `/industries`, `/about`, `/employers`, `/talents`, `/special-projects`, `/partner`, `/apply`, `/privacy-policy`, `/terms-and-conditions`, `/disclaimer` | `meta: { layout: 'landing', requiresAuth: false }`; `/home`, `/jobSeekers`, `/business`, `/about-us`, `/atas`, `/v2/*`, ... redirect into these |
 
 Agency route map (from `routesAgency.ts`):
-- `/recruiting/requests[/create/:companyProfileId | /update/:companyProfileId/:requestId | /:id]`
+- `/recruiting/requests[/create/:companyProfileId | /update/:companyProfileId/:requestId | /duplicate/:companyProfileId/:requestId | /:id]` — create, update and duplicate share `AgencyCreateRequest.vue` and the `loadAgencyRequestFormResolver` guard (one `GET /api/agency/requests/lookup` call); the duplicate routes are the ones carrying `meta.isDuplicate`
 - `/recruiting/weekly-board`, `/recruiting/attendance-review`
 - `/recruiting/workers[/register | /:id]`, `/recruiting/candidates`
 - `/recruiting/companies[/create | /update/:companyProfileId | /:id]`
@@ -143,7 +143,7 @@ Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboar
 
 | Page | Purpose |
 |------|---------|
-| Requests.vue / Request.vue / AgencyCreateRequest.vue | Request list, detail (workers, applicants, runners, notes), create/edit |
+| Requests.vue / Request.vue / AgencyCreateRequest.vue | Request list, detail (workers, applicants, runners, notes), create/edit/duplicate |
 | WeeklyBoard.vue | Recruiting weekly board (admin + recruiter views) |
 | AttendanceReview.vue | Workers starting recently — attendance follow-up |
 | Workers.vue / DetailWorker.vue | Worker roster and detail (flags, holidays, history, notes) |

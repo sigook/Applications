@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'paginated_jobs_model.dart';
@@ -9,6 +9,7 @@ part of 'paginated_jobs_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $PaginatedJobsModelCopyWith<PaginatedJobsModel> get copyWith => _$PaginatedJobsM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginatedJobsModel&&const DeepCollectionEquality().equals(other.items, items)&&(identical(other.pageIndex, pageIndex) || other.pageIndex == pageIndex)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalItems, totalItems) || other.totalItems == totalItems));
+  final _this = this as PaginatedJobsModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaginatedJobsModel&&const DeepCollectionEquality().equals(other.items, _this.items)&&(identical(other.pageIndex, _this.pageIndex) || other.pageIndex == _this.pageIndex)&&(identical(other.totalPages, _this.totalPages) || other.totalPages == _this.totalPages)&&(identical(other.totalItems, _this.totalItems) || other.totalItems == _this.totalItems));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(items),pageIndex,totalPages,totalItems);
+int get hashCode {
+  final _this = this as PaginatedJobsModel;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.items),_this.pageIndex,_this.totalPages,_this.totalItems);
+}
 
 @override
 String toString() {
-  return 'PaginatedJobsModel(items: $items, pageIndex: $pageIndex, totalPages: $totalPages, totalItems: $totalItems)';
+  final _this = this as PaginatedJobsModel;
+  return 'PaginatedJobsModel(items: ${_this.items}, pageIndex: ${_this.pageIndex}, totalPages: ${_this.totalPages}, totalItems: ${_this.totalItems})';
 }
 
 
@@ -66,7 +72,7 @@ class _$PaginatedJobsModelCopyWithImpl<$Res>
 /// Create a copy of PaginatedJobsModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? pageIndex = null,Object? totalPages = null,Object? totalItems = null,}) {
-  return _then(_self.copyWith(
+  return _then(PaginatedJobsModel(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<JobModel>,pageIndex: null == pageIndex ? _self.pageIndex : pageIndex // ignore: cast_nullable_to_non_nullable
 as int,totalPages: null == totalPages ? _self.totalPages : totalPages // ignore: cast_nullable_to_non_nullable
@@ -212,7 +218,7 @@ return $default(_that.items,_that.pageIndex,_that.totalPages,_that.totalItems);c
 @JsonSerializable()
 
 class _PaginatedJobsModel extends PaginatedJobsModel {
-  const _PaginatedJobsModel({required final  List<JobModel> items, required this.pageIndex, required this.totalPages, required this.totalItems}): _items = items,super._();
+  const _PaginatedJobsModel({required  List<JobModel> items, required this.pageIndex, required this.totalPages, required this.totalItems}): _items = items,super._();
   factory _PaginatedJobsModel.fromJson(Map<String, dynamic> json) => _$PaginatedJobsModelFromJson(json);
 
  final  List<JobModel> _items;
@@ -239,16 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginatedJobsModel&&const DeepCollectionEquality().equals(other._items, _items)&&(identical(other.pageIndex, pageIndex) || other.pageIndex == pageIndex)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalItems, totalItems) || other.totalItems == totalItems));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaginatedJobsModel&&const DeepCollectionEquality().equals(other.items, _items)&&(identical(other.pageIndex, pageIndex) || other.pageIndex == pageIndex)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalItems, totalItems) || other.totalItems == totalItems));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),pageIndex,totalPages,totalItems);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_items),pageIndex,totalPages,totalItems);
+}
 
 @override
 String toString() {
-  return 'PaginatedJobsModel(items: $items, pageIndex: $pageIndex, totalPages: $totalPages, totalItems: $totalItems)';
+    return 'PaginatedJobsModel(items: $items, pageIndex: $pageIndex, totalPages: $totalPages, totalItems: $totalItems)';
 }
 
 

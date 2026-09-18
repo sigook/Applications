@@ -37,13 +37,13 @@ public class DealsController(ISalesService salesService) : ControllerBase
 
     /// <summary>Updates an existing deal. Sales users can only update the deals they own.</summary>
     /// <param name="id">Identifier of the deal.</param>
-    /// <param name="model">Updated deal data: title, date, value, type, status and optional document.</param>
     [HttpPut("{id}")]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] UpdateDealModel model)
+    public async Task<IActionResult> Put([FromRoute] Guid id)
     {
-        var result = await salesService.UpdateDeal(id, model);
+        var result = await salesService.UpdateDeal(id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

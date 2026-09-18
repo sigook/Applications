@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'personal_info_model.dart';
@@ -9,14 +9,14 @@ part of 'personal_info_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$PersonalInfoModel {
 
- String get firstName; String get lastName; DateTime get dateOfBirth; String? get genderId;// UUID from API (may be null)
- String get genderName;
+ String get firstName; String get lastName; DateTime get dateOfBirth; String? get genderId; String get genderName;
 /// Create a copy of PersonalInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,21 @@ $PersonalInfoModelCopyWith<PersonalInfoModel> get copyWith => _$PersonalInfoMode
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PersonalInfoModel&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.genderId, genderId) || other.genderId == genderId)&&(identical(other.genderName, genderName) || other.genderName == genderName));
+  final _this = this as PersonalInfoModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PersonalInfoModel&&(identical(other.firstName, _this.firstName) || other.firstName == _this.firstName)&&(identical(other.lastName, _this.lastName) || other.lastName == _this.lastName)&&(identical(other.dateOfBirth, _this.dateOfBirth) || other.dateOfBirth == _this.dateOfBirth)&&(identical(other.genderId, _this.genderId) || other.genderId == _this.genderId)&&(identical(other.genderName, _this.genderName) || other.genderName == _this.genderName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,firstName,lastName,dateOfBirth,genderId,genderName);
+int get hashCode {
+  final _this = this as PersonalInfoModel;
+  return Object.hash(runtimeType,_this.firstName,_this.lastName,_this.dateOfBirth,_this.genderId,_this.genderName);
+}
 
 @override
 String toString() {
-  return 'PersonalInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderName: $genderName)';
+  final _this = this as PersonalInfoModel;
+  return 'PersonalInfoModel(firstName: ${_this.firstName}, lastName: ${_this.lastName}, dateOfBirth: ${_this.dateOfBirth}, genderId: ${_this.genderId}, genderName: ${_this.genderName})';
 }
 
 
@@ -67,7 +72,7 @@ class _$PersonalInfoModelCopyWithImpl<$Res>
 /// Create a copy of PersonalInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? firstName = null,Object? lastName = null,Object? dateOfBirth = null,Object? genderId = freezed,Object? genderName = null,}) {
-  return _then(_self.copyWith(
+  return _then(PersonalInfoModel(
 firstName: null == firstName ? _self.firstName : firstName // ignore: cast_nullable_to_non_nullable
 as String,lastName: null == lastName ? _self.lastName : lastName // ignore: cast_nullable_to_non_nullable
 as String,dateOfBirth: null == dateOfBirth ? _self.dateOfBirth : dateOfBirth // ignore: cast_nullable_to_non_nullable
@@ -215,7 +220,6 @@ class _PersonalInfoModel extends PersonalInfoModel {
 @override final  String lastName;
 @override final  DateTime dateOfBirth;
 @override final  String? genderId;
-// UUID from API (may be null)
 @override final  String genderName;
 
 /// Create a copy of PersonalInfoModel
@@ -231,16 +235,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PersonalInfoModel&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.genderId, genderId) || other.genderId == genderId)&&(identical(other.genderName, genderName) || other.genderName == genderName));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PersonalInfoModel&&(identical(other.firstName, firstName) || other.firstName == firstName)&&(identical(other.lastName, lastName) || other.lastName == lastName)&&(identical(other.dateOfBirth, dateOfBirth) || other.dateOfBirth == dateOfBirth)&&(identical(other.genderId, genderId) || other.genderId == genderId)&&(identical(other.genderName, genderName) || other.genderName == genderName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,firstName,lastName,dateOfBirth,genderId,genderName);
+int get hashCode {
+    return Object.hash(runtimeType,firstName,lastName,dateOfBirth,genderId,genderName);
+}
 
 @override
 String toString() {
-  return 'PersonalInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderName: $genderName)';
+    return 'PersonalInfoModel(firstName: $firstName, lastName: $lastName, dateOfBirth: $dateOfBirth, genderId: $genderId, genderName: $genderName)';
 }
 
 

@@ -285,6 +285,8 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `postAgencyRequest(model)` | POST | `/api/agency/requests` | `CreateAgencyRequestModel` | `AgencyRequestDetail` | |
+| `getAgencyRequestLookup(companyProfileId, requestId?)` | GET | `/api/agency/requests/lookup` | `companyProfileId`, `requestId?` (params) | `AgencyRequestLookup` | Everything the request form needs in one call: job positions, locations, personnel, company users and — when `requestId` is sent — the request detail. Feeds create, edit and duplicate. With `requestId` the company profile is taken from the request itself |
+| `duplicateAgencyRequest(sourceRequestId, model)` | POST | `/api/agency/requests/{sourceRequestId}/Duplicate` | `CreateAgencyRequestModel` | `AgencyRequestDetail` | Creates a new request from the edited form; the backend copies the shift (unless the payload carries one), skills, requested-by / report-to contacts and job boards from the source request |
 | `getAgencyRequests(filter)` | GET | `/api/agency/recruiting/requests` | `AgencyRequestFilter` (params) | `AgencyRequestsPagedResponse` | Recruiting-scoped list |
 | `getAllAgencyRequests(filter)` | GET | `/api/agency/recruiting/requests/all` | `AgencyRequestFilter` (params) | `AgencyRequestListItem[]` | Unpaged |
 | `getAgencyRequest(id)` | GET | `/api/agency/requests/{id}` | — | `AgencyRequestDetail` | |
@@ -313,10 +315,13 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `searchAgencyRequestApplicants(id, searchTerm)` | GET | `/api/agency/requests/{id}/Applicants/Search` | `searchTerm` (param) | `ApplicantSearchResult[]` | |
-| `getAgencyRequestApplicant(filter)` | GET | `/api/agency/requests/{filter.requestId}/Applicants` | `AgencyRequestApplicantFilter` (params) | `PaginatedList<AgencyRequestApplicant>` | |
+| `getAgencyRequestApplicant(filter)` | GET | `/api/agency/requests/{filter.requestId}/Applicants` | `AgencyRequestApplicantFilter` (params) | `PaginatedList<AgencyRequestApplicant>` | Every row carries its compliance counters (`complianceTotal`, `complianceCompleted`, `mandatoryPending`) |
+| `getAgencyApplicants(filter)` | GET | `/api/agency/recruiting/applicants` | `AgencyApplicantsFilter` (params) | `AgencyApplicantsPagedResponse` | Applicants of every request of the agency. The page is a page of REQUESTS (`pageSize` counts requests) and each one carries all its matching applicants, so a request is never split; `totalApplicants` counts the whole filter |
 | `postAgencyRequestApplicant(id, model)` | POST | `/api/agency/requests/{id}/Applicants` | `CreateRequestApplicantModel` | `AgencyRequestApplicant` | |
 | `deleteAgencyRequestApplicant(id, applicantId)` | DELETE | `/api/agency/requests/{id}/Applicants/{applicantId}` | — | `void` | |
 | `updateAgencyRequestApplicant(id, applicantId, model)` | PUT | `/api/agency/requests/{id}/Applicants/{applicantId}` | `UpdateApplicantCommentsPayload` | `void` | |
+| `changeApplicantStatus(id, applicantId, model)` | PUT | `/api/agency/requests/{id}/Applicants/{applicantId}/Status` | `ChangeRequestApplicantStatusModel` | `void` | Fails when the transition is not valid for that applicant |
+| `changeAgencyApplicantsStatus(model)` | PUT | `/api/agency/recruiting/applicants/Status` | `ChangeApplicantsStatusModel` | `ChangeApplicantsStatusResult` | Bulk change across requests: applies what it can and returns `skipped[]` with the reason for each one it left untouched |
 
 ### Request Contact People (RequestedBy / ReportTo)
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -343,7 +348,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `getAgencyRequestSources(id)` | GET | `/api/agency/requests/{id}/sources` | — | `RequestJobBoard[]` | Where the order is posted |
 | `setAgencyRequestSources(id, items)` | PUT | `/api/agency/requests/{id}/sources` | `SetRequestJobBoardItem[]` | `void` | |
 
-**Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyRequestListItem`, `AgencyRequestDetail`, `CreateAgencyRequestModel`, `RequestShiftModel`, `CancelRequestPayload`, `BulkCancelRequestsPayload`, `BulkCancelRequestsResult`, `AgencyRequestWorkerFilter`, `AgencyRequestWorker`, `BookWorkerModel`, `RejectWorkerModel`, `AgencyRequestApplicantFilter`, `AgencyRequestApplicant`, `ApplicantSearchResult`, `CreateRequestApplicantModel`, `UpdateApplicantCommentsPayload`, `AgencyRequestSkillModel`, `AgencyRequestPersonItem`, `RequestJobBoard`, `SetRequestJobBoardItem` (`src/types/agency`)
+**Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyRequestListItem`, `AgencyRequestDetail`, `CreateAgencyRequestModel`, `RequestShiftModel`, `CancelRequestPayload`, `BulkCancelRequestsPayload`, `BulkCancelRequestsResult`, `AgencyRequestWorkerFilter`, `AgencyRequestWorker`, `BookWorkerModel`, `RejectWorkerModel`, `AgencyRequestApplicantFilter`, `AgencyRequestApplicant`, `AgencyApplicantsFilter`, `AgencyApplicant`, `AgencyRequestApplicants`, `AgencyApplicantsPagedResponse`, `ChangeApplicantsStatusModel`, `SkippedApplicant`, `ChangeApplicantsStatusResult`, `ApplicantSearchResult`, `CreateRequestApplicantModel`, `UpdateApplicantCommentsPayload`, `AgencyRequestSkillModel`, `AgencyRequestPersonItem`, `RequestJobBoard`, `SetRequestJobBoardItem` (`src/types/agency`)
 
 **Pinia:** `agencyRequestFilter` in `useAgencyStore`.
 
@@ -520,7 +525,7 @@ Company portal (client) view of their profile, requests and workers — plus the
 |----------|------------|----------|--------------|---------------|-------|
 | `getDeals(filter)` | GET | `/api/agency/sales/deals` | `DealFilter` (params) | `PaginatedList<Deal>` | Sales users only see deals they own; admin/superadmin unscoped, with optional `ownerId` filter |
 | `createDeal(model, file?)` | POST | `/api/agency/sales/deals` | `CreateDealModel` (multipart: `data` + optional document) | `string` (id) | `OwnerId` forced server-side |
-| `updateDeal(id, model)` | PUT | `/api/agency/sales/deals/{id}` | `UpdateDealModel` | `void` | Owner-checked for sales; admin/superadmin may edit any |
+| `updateDeal(id, model, file?)` | PUT | `/api/agency/sales/deals/{id}` | `UpdateDealModel` (multipart: `data` + optional document) | `void` | Owner-checked for sales; admin/superadmin may edit any. A new file replaces the current document and deletes the previous one |
 | `deleteDeal(id)` | DELETE | `/api/agency/sales/deals/{id}` | — | `void` | Owner-checked for sales; admin/superadmin may delete any |
 
 ### Sales — Company Interactions

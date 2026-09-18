@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'job_model.dart';
@@ -9,6 +9,7 @@ part of 'job_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $JobModelCopyWith<JobModel> get copyWith => _$JobModelCopyWithImpl<JobModel>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobModel&&(identical(other.id, id) || other.id == id)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.workersQuantity, workersQuantity) || other.workersQuantity == workersQuantity)&&(identical(other.location, location) || other.location == location)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.agencyFullName, agencyFullName) || other.agencyFullName == agencyFullName)&&(identical(other.agencyLogo, agencyLogo) || other.agencyLogo == agencyLogo)&&(identical(other.status, status) || other.status == status)&&(identical(other.isAsap, isAsap) || other.isAsap == isAsap)&&(identical(other.workerApprovedToWork, workerApprovedToWork) || other.workerApprovedToWork == workerApprovedToWork)&&(identical(other.workerRate, workerRate) || other.workerRate == workerRate)&&(identical(other.workerSalary, workerSalary) || other.workerSalary == workerSalary)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.finishAt, finishAt) || other.finishAt == finishAt)&&(identical(other.startAt, startAt) || other.startAt == startAt)&&(identical(other.durationTerm, durationTerm) || other.durationTerm == durationTerm));
+  final _this = this as JobModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.jobTitle, _this.jobTitle) || other.jobTitle == _this.jobTitle)&&(identical(other.numberId, _this.numberId) || other.numberId == _this.numberId)&&(identical(other.workersQuantity, _this.workersQuantity) || other.workersQuantity == _this.workersQuantity)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.entrance, _this.entrance) || other.entrance == _this.entrance)&&(identical(other.agencyFullName, _this.agencyFullName) || other.agencyFullName == _this.agencyFullName)&&(identical(other.agencyLogo, _this.agencyLogo) || other.agencyLogo == _this.agencyLogo)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.isAsap, _this.isAsap) || other.isAsap == _this.isAsap)&&(identical(other.workerApprovedToWork, _this.workerApprovedToWork) || other.workerApprovedToWork == _this.workerApprovedToWork)&&(identical(other.workerRate, _this.workerRate) || other.workerRate == _this.workerRate)&&(identical(other.workerSalary, _this.workerSalary) || other.workerSalary == _this.workerSalary)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.finishAt, _this.finishAt) || other.finishAt == _this.finishAt)&&(identical(other.startAt, _this.startAt) || other.startAt == _this.startAt)&&(identical(other.durationTerm, _this.durationTerm) || other.durationTerm == _this.durationTerm));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,jobTitle,numberId,workersQuantity,location,entrance,agencyFullName,agencyLogo,status,isAsap,workerApprovedToWork,workerRate,workerSalary,createdAt,finishAt,startAt,durationTerm);
+int get hashCode {
+  final _this = this as JobModel;
+  return Object.hash(runtimeType,_this.id,_this.jobTitle,_this.numberId,_this.workersQuantity,_this.location,_this.entrance,_this.agencyFullName,_this.agencyLogo,_this.status,_this.isAsap,_this.workerApprovedToWork,_this.workerRate,_this.workerSalary,_this.createdAt,_this.finishAt,_this.startAt,_this.durationTerm);
+}
 
 @override
 String toString() {
-  return 'JobModel(id: $id, jobTitle: $jobTitle, numberId: $numberId, workersQuantity: $workersQuantity, location: $location, entrance: $entrance, agencyFullName: $agencyFullName, agencyLogo: $agencyLogo, status: $status, isAsap: $isAsap, workerApprovedToWork: $workerApprovedToWork, workerRate: $workerRate, workerSalary: $workerSalary, createdAt: $createdAt, finishAt: $finishAt, startAt: $startAt, durationTerm: $durationTerm)';
+  final _this = this as JobModel;
+  return 'JobModel(id: ${_this.id}, jobTitle: ${_this.jobTitle}, numberId: ${_this.numberId}, workersQuantity: ${_this.workersQuantity}, location: ${_this.location}, entrance: ${_this.entrance}, agencyFullName: ${_this.agencyFullName}, agencyLogo: ${_this.agencyLogo}, status: ${_this.status}, isAsap: ${_this.isAsap}, workerApprovedToWork: ${_this.workerApprovedToWork}, workerRate: ${_this.workerRate}, workerSalary: ${_this.workerSalary}, createdAt: ${_this.createdAt}, finishAt: ${_this.finishAt}, startAt: ${_this.startAt}, durationTerm: ${_this.durationTerm})';
 }
 
 
@@ -66,7 +72,7 @@ class _$JobModelCopyWithImpl<$Res>
 /// Create a copy of JobModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? agencyFullName = freezed,Object? agencyLogo = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(JobModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,jobTitle: null == jobTitle ? _self.jobTitle : jobTitle // ignore: cast_nullable_to_non_nullable
 as String,numberId: null == numberId ? _self.numberId : numberId // ignore: cast_nullable_to_non_nullable
@@ -259,16 +265,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobModel&&(identical(other.id, id) || other.id == id)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.workersQuantity, workersQuantity) || other.workersQuantity == workersQuantity)&&(identical(other.location, location) || other.location == location)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.agencyFullName, agencyFullName) || other.agencyFullName == agencyFullName)&&(identical(other.agencyLogo, agencyLogo) || other.agencyLogo == agencyLogo)&&(identical(other.status, status) || other.status == status)&&(identical(other.isAsap, isAsap) || other.isAsap == isAsap)&&(identical(other.workerApprovedToWork, workerApprovedToWork) || other.workerApprovedToWork == workerApprovedToWork)&&(identical(other.workerRate, workerRate) || other.workerRate == workerRate)&&(identical(other.workerSalary, workerSalary) || other.workerSalary == workerSalary)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.finishAt, finishAt) || other.finishAt == finishAt)&&(identical(other.startAt, startAt) || other.startAt == startAt)&&(identical(other.durationTerm, durationTerm) || other.durationTerm == durationTerm));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobModel&&(identical(other.id, id) || other.id == id)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.workersQuantity, workersQuantity) || other.workersQuantity == workersQuantity)&&(identical(other.location, location) || other.location == location)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.agencyFullName, agencyFullName) || other.agencyFullName == agencyFullName)&&(identical(other.agencyLogo, agencyLogo) || other.agencyLogo == agencyLogo)&&(identical(other.status, status) || other.status == status)&&(identical(other.isAsap, isAsap) || other.isAsap == isAsap)&&(identical(other.workerApprovedToWork, workerApprovedToWork) || other.workerApprovedToWork == workerApprovedToWork)&&(identical(other.workerRate, workerRate) || other.workerRate == workerRate)&&(identical(other.workerSalary, workerSalary) || other.workerSalary == workerSalary)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.finishAt, finishAt) || other.finishAt == finishAt)&&(identical(other.startAt, startAt) || other.startAt == startAt)&&(identical(other.durationTerm, durationTerm) || other.durationTerm == durationTerm));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,jobTitle,numberId,workersQuantity,location,entrance,agencyFullName,agencyLogo,status,isAsap,workerApprovedToWork,workerRate,workerSalary,createdAt,finishAt,startAt,durationTerm);
+int get hashCode {
+    return Object.hash(runtimeType,id,jobTitle,numberId,workersQuantity,location,entrance,agencyFullName,agencyLogo,status,isAsap,workerApprovedToWork,workerRate,workerSalary,createdAt,finishAt,startAt,durationTerm);
+}
 
 @override
 String toString() {
-  return 'JobModel(id: $id, jobTitle: $jobTitle, numberId: $numberId, workersQuantity: $workersQuantity, location: $location, entrance: $entrance, agencyFullName: $agencyFullName, agencyLogo: $agencyLogo, status: $status, isAsap: $isAsap, workerApprovedToWork: $workerApprovedToWork, workerRate: $workerRate, workerSalary: $workerSalary, createdAt: $createdAt, finishAt: $finishAt, startAt: $startAt, durationTerm: $durationTerm)';
+    return 'JobModel(id: $id, jobTitle: $jobTitle, numberId: $numberId, workersQuantity: $workersQuantity, location: $location, entrance: $entrance, agencyFullName: $agencyFullName, agencyLogo: $agencyLogo, status: $status, isAsap: $isAsap, workerApprovedToWork: $workerApprovedToWork, workerRate: $workerRate, workerSalary: $workerSalary, createdAt: $createdAt, finishAt: $finishAt, startAt: $startAt, durationTerm: $durationTerm)';
 }
 
 

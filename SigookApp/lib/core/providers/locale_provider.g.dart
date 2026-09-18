@@ -10,11 +10,11 @@ part of 'locale_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(LocaleNotifier)
-const localeProvider = LocaleNotifierProvider._();
+final localeProvider = LocaleNotifierProvider._();
 
 final class LocaleNotifierProvider
     extends $NotifierProvider<LocaleNotifier, Locale> {
-  const LocaleNotifierProvider._()
+  LocaleNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$LocaleNotifier extends $Notifier<Locale> {
   Locale build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<Locale, Locale>;
     final element =
         ref.element
@@ -58,17 +57,17 @@ abstract class _$LocaleNotifier extends $Notifier<Locale> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(supportedLocales)
-const supportedLocalesProvider = SupportedLocalesProvider._();
+final supportedLocalesProvider = SupportedLocalesProvider._();
 
 final class SupportedLocalesProvider
     extends $FunctionalProvider<List<Locale>, List<Locale>, List<Locale>>
     with $Provider<List<Locale>> {
-  const SupportedLocalesProvider._()
+  SupportedLocalesProvider._()
     : super(
         from: null,
         argument: null,

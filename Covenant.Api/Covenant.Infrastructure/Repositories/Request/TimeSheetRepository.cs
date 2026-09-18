@@ -475,7 +475,7 @@ public class TimesheetRepository : ITimesheetRepository
                     select new
                     {
                         ts.WorkerRequest.WorkerProfile.WorkerId,
-                        ts.WorkerRequest.WorkerProfile.NumberId,
+                        ts.WorkerRequest.WorkerProfile.ExternalId,
                         FullName = ts.WorkerRequest.WorkerProfile.LastName + ", " + ts.WorkerRequest.WorkerProfile.FirstName,
                         ts.WorkerRequest.WorkerProfile.SocialInsurance,
                         ts.WorkerRequest.WorkerProfile.WcCode,
@@ -489,7 +489,7 @@ public class TimesheetRepository : ITimesheetRepository
                      group q by new
                      {
                          q.WorkerId,
-                         q.NumberId,
+                         q.ExternalId,
                          q.FullName,
                          q.SocialInsurance,
                          q.WcCode,
@@ -500,7 +500,7 @@ public class TimesheetRepository : ITimesheetRepository
                      orderby g.Key.FullName
                      select new TimesheetsReportResponse
                      {
-                         EmployeeId = g.Key.NumberId,
+                         EmployeeId = g.Key.ExternalId,
                          FullName = g.Key.FullName,
                          SocialInsurance = g.Key.SocialInsurance,
                          WcCode = g.Key.WcCode,

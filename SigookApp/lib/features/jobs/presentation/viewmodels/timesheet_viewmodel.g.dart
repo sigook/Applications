@@ -10,11 +10,11 @@ part of 'timesheet_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(TimesheetViewModel)
-const timesheetViewModelProvider = TimesheetViewModelFamily._();
+final timesheetViewModelProvider = TimesheetViewModelFamily._();
 
 final class TimesheetViewModelProvider
     extends $NotifierProvider<TimesheetViewModel, TimesheetState> {
-  const TimesheetViewModelProvider._({
+  TimesheetViewModelProvider._({
     required TimesheetViewModelFamily super.from,
     required String super.argument,
   }) : super(
@@ -70,7 +70,7 @@ final class TimesheetViewModelFamily extends $Family
           TimesheetState,
           String
         > {
-  const TimesheetViewModelFamily._()
+  TimesheetViewModelFamily._()
     : super(
         retry: null,
         name: r'timesheetViewModelProvider',
@@ -93,8 +93,7 @@ abstract class _$TimesheetViewModel extends $Notifier<TimesheetState> {
   TimesheetState build(String jobId);
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build(_$args);
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<TimesheetState, TimesheetState>;
     final element =
         ref.element
@@ -104,6 +103,6 @@ abstract class _$TimesheetViewModel extends $Notifier<TimesheetState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, () => build(_$args));
   }
 }

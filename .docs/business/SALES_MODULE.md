@@ -53,7 +53,7 @@ A commercial proposal made to a client company (`Deal`): what was offered, for h
 | Value | Monetary value of the proposal. Feeds the dashboard's pipeline value and "deals closed" figures. |
 | Type | Kind of staffing being sold — see below |
 | Status | Where the proposal is — see lifecycle below |
-| Document | Optional attached file (the proposal / contract). Attached at creation. |
+| Document | Optional attached file (the proposal / contract). Can be attached when the deal is created and added or replaced when it is edited; replacing deletes the previous file. |
 | Owner | The user who created it. Set server-side. |
 
 **Type** (`DealType`) mirrors the kinds of placement the agency sells:

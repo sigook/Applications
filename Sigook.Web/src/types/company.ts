@@ -489,6 +489,7 @@ export interface UpdateDealModel {
   type: DealType;
   status: DealStatus;
   documentId?: string | null;
+  fileName?: string | null;
 }
 
 // --- Company interactions --------------------------------------------------

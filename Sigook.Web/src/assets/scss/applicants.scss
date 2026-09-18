@@ -1,0 +1,207 @@
+.applicants-filters {
+  margin-bottom: 12px;
+}
+
+.applicants-filter-number .input {
+  width: 110px;
+}
+
+.applicants-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  // The Export component ships its own right-aligned field with a bottom margin.
+  .field {
+    margin-bottom: 0;
+  }
+}
+
+// Selection spans every request of the page, so its bar lives above the list
+// and not inside a single request.
+.applicants-selection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border: 1px solid $gray-border;
+  border-radius: 4px;
+  background: $gray-bg;
+}
+
+.applicants-selection-count {
+  margin-right: auto;
+  font-weight: 600;
+}
+
+// The skipped list of a bulk change grows with the selection, so it scrolls
+// inside the dialog instead of pushing it past the viewport.
+.applicants-skipped {
+  max-height: 40vh;
+  overflow-y: auto;
+  text-align: left;
+
+  li + li {
+    margin-top: 4px;
+  }
+}
+
+.applicants-request + .applicants-request {
+  margin-top: 12px;
+}
+
+.applicants-request-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 6px 10px;
+  background: $gray-bg;
+  border-bottom: 1px solid $gray-border;
+  cursor: pointer;
+  overflow: hidden;
+
+  .asap {
+    margin-right: 0;
+  }
+}
+
+// Title on its own line with the details under it: a long client + job title
+// used to eat the details and push the tags past the right edge.
+.applicants-request-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.applicants-request-title {
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.applicants-request-meta {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8em;
+  color: $grey-dark;
+}
+
+.applicants-request-tags,
+.applicants-request-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.applicants-request-tags {
+  margin-left: auto;
+
+  .tag {
+    white-space: nowrap;
+  }
+}
+
+// Keep the confirmed counter the same width on every request so the numbers
+// line up down the page instead of drifting with the client name.
+.applicants-request-fill {
+  min-width: 118px;
+  justify-content: center;
+}
+
+// The app centers every .pagination (buefy-overrides); this one is a
+// standalone pager for the whole page, so it sits at the end of the list,
+// bottom right, like the pagination of every grid. buefy-overrides is imported
+// after this file, so the extra class is what wins the tie.
+html .pagination.applicants-pagination {
+  justify-content: flex-end;
+  padding: 12px 0 4px;
+
+  .pagination-list {
+    flex-grow: 0;
+    justify-content: flex-end;
+  }
+}
+
+// The grid is `table-layout: auto`, so a long comment would widen its column
+// and push the table past the page. Cap the cell content instead.
+.applicants-comments {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 260px;
+}
+
+.applicants-comments-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85em;
+}
+
+.applicants-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.applicants-compliance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .fz-1 {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+
+// Plain bar instead of Bulma's `.progress`: that one carries a block bottom
+// margin and its own height, which left the bar floating above the counter.
+.applicants-compliance-bar {
+  display: block;
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: 999px;
+  background: $gray-border;
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: $primary;
+    transition: width 0.2s ease;
+
+    &.is-complete {
+      background: $green;
+    }
+  }
+}
+
+@include touch {
+  .applicants-request-header {
+    flex-wrap: wrap;
+  }
+
+  .applicants-request-tags {
+    margin-left: 0;
+  }
+}

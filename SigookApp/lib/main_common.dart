@@ -39,9 +39,7 @@ Future<void> mainCommon() async {
     await ErrorMessages.load();
 
     debugPrint('🔐 Initializing secure storage...');
-    const secureStorage = FlutterSecureStorage(
-      aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    );
+    const secureStorage = FlutterSecureStorage();
 
     debugPrint('✅ App initialization complete, running app...');
     runApp(

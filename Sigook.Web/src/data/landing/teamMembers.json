@@ -14,13 +14,6 @@
     "photo": null
   },
   {
-    "name": "Isabella Zabaleta",
-    "role": "Operations and Management Support Assistant",
-    "bio": "Provides essential support to our operations and management teams, ensuring smooth workflows and efficient processes across the organization.",
-    "linkedin": "https://www.linkedin.com/in/isabella-zabaleta-marketing-ux/",
-    "photo": null
-  },
-  {
     "name": "Leonardo Gomez",
     "role": "Recruiter & Talent Acquisition",
     "bio": "Skilled recruiter and talent acquisition specialist, dedicated to connecting top talent with the right opportunities within our organization.",
@@ -53,13 +46,6 @@
     "role": "CTO - Lead Developer",
     "bio": "Experienced technology leader and fullstack developer, responsible for overseeing our technical strategy and leading the development of innovative solutions that drive our business forward.",
     "linkedin": "#",
-    "photo": null
-  },
-  {
-    "name": "Juan Betancur",
-    "role": "Senior Fullstack Developer",
-    "bio": "Experienced fullstack developer with a strong focus on building scalable and maintainable web applications.",
-    "linkedin": "https://www.linkedin.com/in/juan-betancur-b868b2213",
     "photo": null
   }
 ]

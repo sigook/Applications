@@ -10,11 +10,11 @@ part of 'personal_details_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PersonalDetailsViewModel)
-const personalDetailsViewModelProvider = PersonalDetailsViewModelProvider._();
+final personalDetailsViewModelProvider = PersonalDetailsViewModelProvider._();
 
 final class PersonalDetailsViewModelProvider
     extends $NotifierProvider<PersonalDetailsViewModel, PersonalDetailsState> {
-  const PersonalDetailsViewModelProvider._()
+  PersonalDetailsViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -49,8 +49,7 @@ abstract class _$PersonalDetailsViewModel
   PersonalDetailsState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PersonalDetailsState, PersonalDetailsState>;
     final element =
         ref.element
@@ -60,6 +59,6 @@ abstract class _$PersonalDetailsViewModel
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

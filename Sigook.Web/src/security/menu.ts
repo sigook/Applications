@@ -61,6 +61,11 @@ export default {
           label: "Weekly Board",
         },
         {
+          to: "/recruiting/applicants",
+          icon: "account-multiple-check-outline",
+          label: "Applicants",
+        },
+        {
           to: "/recruiting/attendance-review",
           icon: "clipboard-check-outline",
           label: "Attendance Review",

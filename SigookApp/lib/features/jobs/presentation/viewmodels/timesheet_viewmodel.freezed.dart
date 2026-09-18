@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'timesheet_viewmodel.dart';
@@ -9,6 +9,7 @@ part of 'timesheet_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -24,23 +25,29 @@ $TimesheetStateCopyWith<TimesheetState> get copyWith => _$TimesheetStateCopyWith
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  final _this = this as TimesheetState;
   properties
     ..add(DiagnosticsProperty('type', 'TimesheetState'))
-    ..add(DiagnosticsProperty('entries', entries))..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('isLoadingMore', isLoadingMore))..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('currentPage', currentPage))..add(DiagnosticsProperty('totalPages', totalPages))..add(DiagnosticsProperty('totalItems', totalItems));
+    ..add(DiagnosticsProperty('entries', _this.entries))..add(DiagnosticsProperty('isLoading', _this.isLoading))..add(DiagnosticsProperty('isLoadingMore', _this.isLoadingMore))..add(DiagnosticsProperty('error', _this.error))..add(DiagnosticsProperty('currentPage', _this.currentPage))..add(DiagnosticsProperty('totalPages', _this.totalPages))..add(DiagnosticsProperty('totalItems', _this.totalItems));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TimesheetState&&const DeepCollectionEquality().equals(other.entries, entries)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.error, error) || other.error == error)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalItems, totalItems) || other.totalItems == totalItems));
+  final _this = this as TimesheetState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TimesheetState&&const DeepCollectionEquality().equals(other.entries, _this.entries)&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.isLoadingMore, _this.isLoadingMore) || other.isLoadingMore == _this.isLoadingMore)&&(identical(other.error, _this.error) || other.error == _this.error)&&(identical(other.currentPage, _this.currentPage) || other.currentPage == _this.currentPage)&&(identical(other.totalPages, _this.totalPages) || other.totalPages == _this.totalPages)&&(identical(other.totalItems, _this.totalItems) || other.totalItems == _this.totalItems));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(entries),isLoading,isLoadingMore,error,currentPage,totalPages,totalItems);
+int get hashCode {
+  final _this = this as TimesheetState;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.entries),_this.isLoading,_this.isLoadingMore,_this.error,_this.currentPage,_this.totalPages,_this.totalItems);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'TimesheetState(entries: $entries, isLoading: $isLoading, isLoadingMore: $isLoadingMore, error: $error, currentPage: $currentPage, totalPages: $totalPages, totalItems: $totalItems)';
+  final _this = this as TimesheetState;
+  return 'TimesheetState(entries: ${_this.entries}, isLoading: ${_this.isLoading}, isLoadingMore: ${_this.isLoadingMore}, error: ${_this.error}, currentPage: ${_this.currentPage}, totalPages: ${_this.totalPages}, totalItems: ${_this.totalItems})';
 }
 
 
@@ -69,7 +76,7 @@ class _$TimesheetStateCopyWithImpl<$Res>
 /// Create a copy of TimesheetState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? entries = null,Object? isLoading = null,Object? isLoadingMore = null,Object? error = freezed,Object? currentPage = null,Object? totalPages = null,Object? totalItems = null,}) {
-  return _then(_self.copyWith(
+  return _then(TimesheetState(
 entries: null == entries ? _self.entries : entries // ignore: cast_nullable_to_non_nullable
 as List<TimesheetEntry>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
@@ -212,7 +219,7 @@ return $default(_that.entries,_that.isLoading,_that.isLoadingMore,_that.error,_t
 
 
 class _TimesheetState with DiagnosticableTreeMixin implements TimesheetState {
-  const _TimesheetState({final  List<TimesheetEntry> entries = const [], this.isLoading = false, this.isLoadingMore = false, this.error, this.currentPage = 1, this.totalPages = 1, this.totalItems = 0}): _entries = entries;
+  const _TimesheetState({ List<TimesheetEntry> entries = const [], this.isLoading = false, this.isLoadingMore = false, this.error, this.currentPage = 1, this.totalPages = 1, this.totalItems = 0}): _entries = entries;
   
 
  final  List<TimesheetEntry> _entries;
@@ -238,23 +245,25 @@ _$TimesheetStateCopyWith<_TimesheetState> get copyWith => __$TimesheetStateCopyW
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
+    properties
     ..add(DiagnosticsProperty('type', 'TimesheetState'))
     ..add(DiagnosticsProperty('entries', entries))..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('isLoadingMore', isLoadingMore))..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('currentPage', currentPage))..add(DiagnosticsProperty('totalPages', totalPages))..add(DiagnosticsProperty('totalItems', totalItems));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TimesheetState&&const DeepCollectionEquality().equals(other._entries, _entries)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.error, error) || other.error == error)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalItems, totalItems) || other.totalItems == totalItems));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TimesheetState&&const DeepCollectionEquality().equals(other.entries, _entries)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.error, error) || other.error == error)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalItems, totalItems) || other.totalItems == totalItems));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_entries),isLoading,isLoadingMore,error,currentPage,totalPages,totalItems);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_entries),isLoading,isLoadingMore,error,currentPage,totalPages,totalItems);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'TimesheetState(entries: $entries, isLoading: $isLoading, isLoadingMore: $isLoadingMore, error: $error, currentPage: $currentPage, totalPages: $totalPages, totalItems: $totalItems)';
+    return 'TimesheetState(entries: $entries, isLoading: $isLoading, isLoadingMore: $isLoadingMore, error: $error, currentPage: $currentPage, totalPages: $totalPages, totalItems: $totalItems)';
 }
 
 

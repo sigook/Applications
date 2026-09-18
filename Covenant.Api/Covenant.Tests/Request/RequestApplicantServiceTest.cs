@@ -51,6 +51,7 @@ public class RequestApplicantServiceTest
             _identityServerService.Object,
             filesOptions.Object,
             new ChangeRequestApplicantStatusModelValidator(),
+            new ChangeApplicantsStatusModelValidator(),
             new CompleteApplicantComplianceItemModelValidator());
     }
 
@@ -133,6 +134,77 @@ public class RequestApplicantServiceTest
         Assert.False(result);
     }
 
+    private void SetupApplicants(params RequestApplicant[] applicants) =>
+        _requestRepository.Setup(r => r.GetRequestApplicants(It.IsAny<Expression<Func<RequestApplicant, bool>>>())).ReturnsAsync(applicants);
+
+    private static RequestApplicant Applicant(Guid requestId, RequestApplicantStatus status) =>
+        RequestApplicant.CreateWithWorker(requestId, Guid.NewGuid(), "tester", null, status).Value;
+
+    [Fact]
+    public async Task ChangeApplicantsStatusStartsTheValidOnesAndReportsTheRest()
+    {
+        var pending = Applicant(_requestId, RequestApplicantStatus.Pending);
+        var confirmed = Applicant(_requestId, RequestApplicantStatus.Confirmed);
+        var missingId = Guid.NewGuid();
+        SetupApplicants(pending, confirmed);
+
+        var result = await _sut.ChangeApplicantsStatus(new ChangeApplicantsStatusModel
+        {
+            ApplicantIds = [pending.Id, confirmed.Id, missingId],
+            Status = RequestApplicantStatus.InProgress
+        });
+
+        Assert.True(result);
+        Assert.Equal(1, result.Value.Updated);
+        Assert.Equal(RequestApplicantStatus.InProgress, pending.Status);
+        Assert.Equal(RequestApplicantStatus.Confirmed, confirmed.Status);
+        Assert.Equal(2, result.Value.Skipped.Count);
+        Assert.Contains(result.Value.Skipped, s => s.ApplicantId == missingId);
+        _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task ChangeApplicantsStatusConfirmsOnlyTheOnesWithMandatoryItemsCompleted()
+    {
+        var ready = Applicant(_requestId, RequestApplicantStatus.InProgress);
+        var blocked = Applicant(_requestId, RequestApplicantStatus.InProgress);
+        SetupApplicants(ready, blocked);
+        var item = RequestComplianceItem.Create(_requestId, "ID", true, ComplianceDocumentTarget.Identification1).Value;
+        _requestRepository.Setup(r => r.GetComplianceItems(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync([item]);
+        _requestRepository.Setup(r => r.GetApplicantComplianceCompletions(It.IsAny<IEnumerable<Guid>>()))
+            .ReturnsAsync([RequestApplicantComplianceItem.Create(ready.Id, item.Id, "tester").Value]);
+
+        var result = await _sut.ChangeApplicantsStatus(new ChangeApplicantsStatusModel
+        {
+            ApplicantIds = [ready.Id, blocked.Id],
+            Status = RequestApplicantStatus.Confirmed
+        });
+
+        Assert.True(result);
+        Assert.Equal(1, result.Value.Updated);
+        Assert.Equal(RequestApplicantStatus.Confirmed, ready.Status);
+        Assert.Equal(RequestApplicantStatus.InProgress, blocked.Status);
+        Assert.Contains(result.Value.Skipped, s => s.ApplicantId == blocked.Id && s.Reason.Contains("ID"));
+    }
+
+    [Fact]
+    public async Task ChangeApplicantsStatusToPendingIsRejected()
+    {
+        var result = await _sut.ChangeApplicantsStatus(new ChangeApplicantsStatusModel
+        {
+            ApplicantIds = [Guid.NewGuid()],
+            Status = RequestApplicantStatus.Pending
+        });
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task ChangeApplicantsStatusWithoutApplicantsIsRejected()
+    {
+        var result = await _sut.ChangeApplicantsStatus(new ChangeApplicantsStatusModel { Status = RequestApplicantStatus.Cancelled });
+        Assert.False(result);
+    }
+
     [Fact]
     public async Task CompleteItemWithoutFileCreatesCompletion()
     {
@@ -154,6 +226,44 @@ public class RequestApplicantServiceTest
         _requestRepository.Setup(r => r.GetApplicantComplianceItem(applicant.Id, item.Id)).ReturnsAsync((RequestApplicantComplianceItem)null);
         var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel());
         Assert.False(result);
+    }
+
+    [Fact]
+    public async Task CompleteMandatoryItemWithoutFileSucceedsWhenTheProfileAlreadyHasTheDocument()
+    {
+        var workerProfileId = Guid.NewGuid();
+        var applicant = SetupApplicant(RequestApplicantStatus.InProgress, workerProfileId);
+        var item = SetupComplianceItem("Resume", isMandatory: true, ComplianceDocumentTarget.Resume);
+        var resume = new CovenantFile("resume.pdf");
+        var profile = new WorkerProfile { Id = workerProfileId, Resume = resume };
+        _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(profile);
+        _requestRepository.Setup(r => r.GetApplicantComplianceItem(applicant.Id, item.Id)).ReturnsAsync((RequestApplicantComplianceItem)null);
+        var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel());
+        Assert.True(result);
+        Assert.Same(resume, profile.Resume);
+        _uploadedFilesService.Verify(s => s.Upload(It.IsAny<IEnumerable<string>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompleteMandatoryIdentificationWithoutFileSucceedsWhenTheProfileAlreadyHasTheDocument()
+    {
+        var workerProfileId = Guid.NewGuid();
+        var applicant = SetupApplicant(RequestApplicantStatus.InProgress, workerProfileId);
+        var item = SetupComplianceItem("ID", isMandatory: true, ComplianceDocumentTarget.Identification1);
+        var identificationTypeId = Guid.NewGuid();
+        var profile = new WorkerProfile
+        {
+            Id = workerProfileId,
+            IdentificationNumber1 = "123456789",
+            IdentificationType1Id = identificationTypeId,
+            IdentificationType1File = new CovenantFile("id.pdf")
+        };
+        _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(profile);
+        _requestRepository.Setup(r => r.GetApplicantComplianceItem(applicant.Id, item.Id)).ReturnsAsync((RequestApplicantComplianceItem)null);
+        var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel());
+        Assert.True(result);
+        Assert.Equal("123456789", profile.IdentificationNumber1);
+        Assert.Equal("id.pdf", profile.IdentificationType1File.FileName);
     }
 
     [Fact]

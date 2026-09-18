@@ -206,7 +206,8 @@
             </div>
           </dl>
 
-          <b-field class="reg-form__terms">
+          <b-field class="reg-form__terms" :type="errors.termsAccepted ? 'is-danger' : ''"
+            :message="errors.termsAccepted || ''">
             <b-checkbox v-model="termsAccepted" name="agree terms">
               I agree to Sigook™
               <router-link to="/terms-and-conditions" target="_blank">
@@ -218,7 +219,6 @@
               </router-link>
             </b-checkbox>
           </b-field>
-          <span v-show="errors.termsAccepted" class="help is-danger">{{ errors.termsAccepted || '' }}</span>
 
           <div class="step-navigation-buttons">
             <b-button @click="goPrev">Previous</b-button>

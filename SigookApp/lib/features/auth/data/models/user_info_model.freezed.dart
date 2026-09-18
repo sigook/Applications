@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'user_info_model.dart';
@@ -9,6 +9,7 @@ part of 'user_info_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $UserInfoModelCopyWith<UserInfoModel> get copyWith => _$UserInfoModelCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserInfoModel&&(identical(other.sub, sub) || other.sub == sub)&&(identical(other.name, name) || other.name == name)&&(identical(other.givenName, givenName) || other.givenName == givenName)&&(identical(other.familyName, familyName) || other.familyName == familyName)&&(identical(other.email, email) || other.email == email)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified)&&const DeepCollectionEquality().equals(other.roles, roles));
+  final _this = this as UserInfoModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserInfoModel&&(identical(other.sub, _this.sub) || other.sub == _this.sub)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.givenName, _this.givenName) || other.givenName == _this.givenName)&&(identical(other.familyName, _this.familyName) || other.familyName == _this.familyName)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.emailVerified, _this.emailVerified) || other.emailVerified == _this.emailVerified)&&const DeepCollectionEquality().equals(other.roles, _this.roles));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sub,name,givenName,familyName,email,emailVerified,const DeepCollectionEquality().hash(roles));
+int get hashCode {
+  final _this = this as UserInfoModel;
+  return Object.hash(runtimeType,_this.sub,_this.name,_this.givenName,_this.familyName,_this.email,_this.emailVerified,const DeepCollectionEquality().hash(_this.roles));
+}
 
 @override
 String toString() {
-  return 'UserInfoModel(sub: $sub, name: $name, givenName: $givenName, familyName: $familyName, email: $email, emailVerified: $emailVerified, roles: $roles)';
+  final _this = this as UserInfoModel;
+  return 'UserInfoModel(sub: ${_this.sub}, name: ${_this.name}, givenName: ${_this.givenName}, familyName: ${_this.familyName}, email: ${_this.email}, emailVerified: ${_this.emailVerified}, roles: ${_this.roles})';
 }
 
 
@@ -66,7 +72,7 @@ class _$UserInfoModelCopyWithImpl<$Res>
 /// Create a copy of UserInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? sub = freezed,Object? name = freezed,Object? givenName = freezed,Object? familyName = freezed,Object? email = freezed,Object? emailVerified = freezed,Object? roles = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(UserInfoModel(
 sub: freezed == sub ? _self.sub : sub // ignore: cast_nullable_to_non_nullable
 as String?,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String?,givenName: freezed == givenName ? _self.givenName : givenName // ignore: cast_nullable_to_non_nullable
@@ -215,7 +221,7 @@ return $default(_that.sub,_that.name,_that.givenName,_that.familyName,_that.emai
 @JsonSerializable()
 
 class _UserInfoModel extends UserInfoModel {
-  const _UserInfoModel({this.sub, this.name, @JsonKey(name: 'given_name') this.givenName, @JsonKey(name: 'family_name') this.familyName, this.email, @JsonKey(name: 'email_verified') this.emailVerified, @JsonKey(name: 'roles') final  List<String>? roles}): _roles = roles,super._();
+  const _UserInfoModel({this.sub, this.name, @JsonKey(name: 'given_name') this.givenName, @JsonKey(name: 'family_name') this.familyName, this.email, @JsonKey(name: 'email_verified') this.emailVerified, @JsonKey(name: 'roles')  List<String>? roles}): _roles = roles,super._();
   factory _UserInfoModel.fromJson(Map<String, dynamic> json) => _$UserInfoModelFromJson(json);
 
 @override final  String? sub;
@@ -247,16 +253,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserInfoModel&&(identical(other.sub, sub) || other.sub == sub)&&(identical(other.name, name) || other.name == name)&&(identical(other.givenName, givenName) || other.givenName == givenName)&&(identical(other.familyName, familyName) || other.familyName == familyName)&&(identical(other.email, email) || other.email == email)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified)&&const DeepCollectionEquality().equals(other._roles, _roles));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserInfoModel&&(identical(other.sub, sub) || other.sub == sub)&&(identical(other.name, name) || other.name == name)&&(identical(other.givenName, givenName) || other.givenName == givenName)&&(identical(other.familyName, familyName) || other.familyName == familyName)&&(identical(other.email, email) || other.email == email)&&(identical(other.emailVerified, emailVerified) || other.emailVerified == emailVerified)&&const DeepCollectionEquality().equals(other.roles, _roles));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sub,name,givenName,familyName,email,emailVerified,const DeepCollectionEquality().hash(_roles));
+int get hashCode {
+    return Object.hash(runtimeType,sub,name,givenName,familyName,email,emailVerified,const DeepCollectionEquality().hash(_roles));
+}
 
 @override
 String toString() {
-  return 'UserInfoModel(sub: $sub, name: $name, givenName: $givenName, familyName: $familyName, email: $email, emailVerified: $emailVerified, roles: $roles)';
+    return 'UserInfoModel(sub: $sub, name: $name, givenName: $givenName, familyName: $familyName, email: $email, emailVerified: $emailVerified, roles: $roles)';
 }
 
 

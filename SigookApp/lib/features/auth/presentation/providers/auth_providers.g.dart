@@ -10,11 +10,11 @@ part of 'auth_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(SessionExpiredSignal)
-const sessionExpiredSignalProvider = SessionExpiredSignalProvider._();
+final sessionExpiredSignalProvider = SessionExpiredSignalProvider._();
 
 final class SessionExpiredSignalProvider
     extends $NotifierProvider<SessionExpiredSignal, int> {
-  const SessionExpiredSignalProvider._()
+  SessionExpiredSignalProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$SessionExpiredSignal extends $Notifier<int> {
   int build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<int, int>;
     final element =
         ref.element
@@ -59,16 +58,16 @@ abstract class _$SessionExpiredSignal extends $Notifier<int> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(signIn)
-const signInProvider = SignInProvider._();
+final signInProvider = SignInProvider._();
 
 final class SignInProvider extends $FunctionalProvider<SignIn, SignIn, SignIn>
     with $Provider<SignIn> {
-  const SignInProvider._()
+  SignInProvider._()
     : super(
         from: null,
         argument: null,
@@ -104,11 +103,11 @@ final class SignInProvider extends $FunctionalProvider<SignIn, SignIn, SignIn>
 String _$signInHash() => r'22614f11f9564296d0cb7bdf5e3a0064602a9f75';
 
 @ProviderFor(logout)
-const logoutProvider = LogoutProvider._();
+final logoutProvider = LogoutProvider._();
 
 final class LogoutProvider extends $FunctionalProvider<Logout, Logout, Logout>
     with $Provider<Logout> {
-  const LogoutProvider._()
+  LogoutProvider._()
     : super(
         from: null,
         argument: null,
@@ -144,7 +143,7 @@ final class LogoutProvider extends $FunctionalProvider<Logout, Logout, Logout>
 String _$logoutHash() => r'3f851dcbb9e8569c953ef50df79359f905c186c8';
 
 @ProviderFor(requestPasswordResetCode)
-const requestPasswordResetCodeProvider = RequestPasswordResetCodeProvider._();
+final requestPasswordResetCodeProvider = RequestPasswordResetCodeProvider._();
 
 final class RequestPasswordResetCodeProvider
     extends
@@ -154,7 +153,7 @@ final class RequestPasswordResetCodeProvider
           RequestPasswordResetCode
         >
     with $Provider<RequestPasswordResetCode> {
-  const RequestPasswordResetCodeProvider._()
+  RequestPasswordResetCodeProvider._()
     : super(
         from: null,
         argument: null,
@@ -192,12 +191,12 @@ String _$requestPasswordResetCodeHash() =>
     r'f31a43d35951eaf0a455661f166c85500ed71014';
 
 @ProviderFor(resetPassword)
-const resetPasswordProvider = ResetPasswordProvider._();
+final resetPasswordProvider = ResetPasswordProvider._();
 
 final class ResetPasswordProvider
     extends $FunctionalProvider<ResetPassword, ResetPassword, ResetPassword>
     with $Provider<ResetPassword> {
-  const ResetPasswordProvider._()
+  ResetPasswordProvider._()
     : super(
         from: null,
         argument: null,
@@ -233,7 +232,7 @@ final class ResetPasswordProvider
 String _$resetPasswordHash() => r'9d7a2211899fe2d3dd0ddee1ed97bebf623b03fd';
 
 @ProviderFor(resendConfirmationLink)
-const resendConfirmationLinkProvider = ResendConfirmationLinkProvider._();
+final resendConfirmationLinkProvider = ResendConfirmationLinkProvider._();
 
 final class ResendConfirmationLinkProvider
     extends
@@ -243,7 +242,7 @@ final class ResendConfirmationLinkProvider
           ResendConfirmationLink
         >
     with $Provider<ResendConfirmationLink> {
-  const ResendConfirmationLinkProvider._()
+  ResendConfirmationLinkProvider._()
     : super(
         from: null,
         argument: null,

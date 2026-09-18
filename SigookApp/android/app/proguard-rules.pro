@@ -19,9 +19,6 @@
 -dontwarn com.google.android.play.core.tasks.OnSuccessListener
 -dontwarn com.google.android.play.core.tasks.Task
 
-# Keep AppAuth classes for OAuth
--keep class net.openid.appauth.** { *; }
-
 # Keep Gson classes (if using JSON serialization)
 -keepattributes Signature
 -keepattributes *Annotation*

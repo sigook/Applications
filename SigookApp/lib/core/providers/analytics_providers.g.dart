@@ -10,7 +10,7 @@ part of 'analytics_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(analyticsService)
-const analyticsServiceProvider = AnalyticsServiceProvider._();
+final analyticsServiceProvider = AnalyticsServiceProvider._();
 
 final class AnalyticsServiceProvider
     extends
@@ -20,7 +20,7 @@ final class AnalyticsServiceProvider
           AnalyticsService
         >
     with $Provider<AnalyticsService> {
-  const AnalyticsServiceProvider._()
+  AnalyticsServiceProvider._()
     : super(
         from: null,
         argument: null,
@@ -56,7 +56,7 @@ final class AnalyticsServiceProvider
 String _$analyticsServiceHash() => r'0721502b6eae308e6ae4da612b75c1075920a9ac';
 
 @ProviderFor(crashReportingService)
-const crashReportingServiceProvider = CrashReportingServiceProvider._();
+final crashReportingServiceProvider = CrashReportingServiceProvider._();
 
 final class CrashReportingServiceProvider
     extends
@@ -66,7 +66,7 @@ final class CrashReportingServiceProvider
           CrashReportingService
         >
     with $Provider<CrashReportingService> {
-  const CrashReportingServiceProvider._()
+  CrashReportingServiceProvider._()
     : super(
         from: null,
         argument: null,

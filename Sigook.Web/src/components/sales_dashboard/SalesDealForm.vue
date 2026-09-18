@@ -63,7 +63,7 @@
       </div>
 
       <div class="column is-12">
-        <b-field v-if="!isEditing" label="Document" :type="fileError ? 'is-danger' : ''" :message="fileError">
+        <b-field label="Document" :type="fileError ? 'is-danger' : ''" :message="fileError">
           <div class="file is-primary" :class="{ 'has-name': !!documentFile }">
             <b-upload
               v-model="documentFile"
@@ -74,26 +74,24 @@
             >
               <span class="file-cta">
                 <b-icon class="file-icon" icon="upload"></b-icon>
-                <span class="file-label">Click to upload</span>
+                <span class="file-label">{{ hasDocument ? 'Click to replace' : 'Click to upload' }}</span>
               </span>
               <span class="file-name" v-if="documentFile">{{ documentFile.name }}</span>
             </b-upload>
           </div>
         </b-field>
 
-        <b-field v-else label="Document">
-          <a
-            v-if="deal?.documentPath"
-            class="sd-document sd-document--link"
-            :href="deal.documentPath"
-            target="_blank"
-            rel="noopener"
-          >
-            <b-icon icon="paperclip" size="is-small"></b-icon>
-            {{ deal.documentName }}
-          </a>
-          <p v-else class="sd-document">No document attached</p>
-        </b-field>
+        <a
+          v-if="isEditing && !documentFile && deal?.documentPath"
+          class="sd-document sd-document--link"
+          :href="deal.documentPath"
+          target="_blank"
+          rel="noopener"
+        >
+          <b-icon icon="paperclip" size="is-small"></b-icon>
+          {{ deal.documentName }}
+        </a>
+        <p v-else-if="isEditing && !documentFile" class="sd-document">No document attached</p>
       </div>
     </div>
   </form>
@@ -128,6 +126,7 @@ const CLIENT_SEARCH_HINT = `Type at least ${MINIMUM_SEARCH_LENGTH} characters to
 const props = defineProps<{ deal?: Deal | null }>();
 
 const isEditing = computed(() => !!props.deal);
+const hasDocument = computed(() => !!props.deal?.documentId);
 
 const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.value })));
 const typeOptions = DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }));
@@ -233,6 +232,7 @@ function submit(): Promise<boolean> {
         const amount = Number(values.value ?? 0);
         const dealDate = new Date(values.date as Date);
         try {
+          const file = documentFile.value;
           if (props.deal) {
             await updateDeal(props.deal.id, {
               title: values.title.trim(),
@@ -241,10 +241,10 @@ function submit(): Promise<boolean> {
               type: values.type,
               status: values.status,
               documentId: props.deal.documentId ?? null,
-            });
+              fileName: file ? generateFileName('Deal', file.name) : null,
+            }, file);
             showAlertSuccess('Deal updated');
           } else {
-            const file = documentFile.value;
             await createDeal({
               title: values.title.trim(),
               companyProfileId: values.companyProfileId as string,

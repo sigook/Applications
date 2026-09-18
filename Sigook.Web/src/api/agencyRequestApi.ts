@@ -8,6 +8,7 @@ import type {
   AgencyRequestFilter,
   AgencyRequestListItem,
   AgencyRequestDetail,
+  AgencyRequestLookup,
   CreateAgencyRequestModel,
   RequestShiftModel,
   CancelRequestPayload,
@@ -28,10 +29,15 @@ import type {
   RequestJobBoard,
   SetRequestJobBoardItem,
   AgencyRequestsPagedResponse,
+  AgencyApplicantsFilter,
+  AgencyApplicantsPagedResponse,
+  ChangeApplicantsStatusModel,
+  ChangeApplicantsStatusResult,
 } from '@/types/agency';
 
 const requestsUrl = '/api/agency/requests';
 const recruitingRequestsUrl = '/api/agency/recruiting/requests';
+const recruitingApplicantsUrl = '/api/agency/recruiting/applicants';
 
 // ---------------------------------------------------------------------------
 // Request CRUD
@@ -39,6 +45,16 @@ const recruitingRequestsUrl = '/api/agency/recruiting/requests';
 
 export function postAgencyRequest(model: CreateAgencyRequestModel): Promise<AgencyRequestDetail> {
   return api.post<AgencyRequestDetail>(requestsUrl, model);
+}
+
+export function getAgencyRequestLookup(companyProfileId: string, requestId?: string): Promise<AgencyRequestLookup> {
+  return api.get<AgencyRequestLookup>(`${requestsUrl}/lookup`, { params: { companyProfileId, requestId } });
+}
+
+// Creates a new request out of an existing one. The shift, skills, contact people
+// and job boards are copied from the source request by the backend.
+export function duplicateAgencyRequest(sourceRequestId: string, model: CreateAgencyRequestModel): Promise<AgencyRequestDetail> {
+  return api.post<AgencyRequestDetail>(`${requestsUrl}/${sourceRequestId}/Duplicate`, model);
 }
 
 export function getAgencyRequests(filter: AgencyRequestFilter): Promise<AgencyRequestsPagedResponse> {
@@ -129,6 +145,10 @@ export function getAgencyRequestApplicant(filter: AgencyRequestApplicantFilter):
   return api.get<PaginatedList<AgencyRequestApplicant>>(`${requestsUrl}/${filter.requestId}/Applicants`, { params: { ...filter } });
 }
 
+export function getAgencyApplicants(filter: AgencyApplicantsFilter): Promise<AgencyApplicantsPagedResponse> {
+  return api.get<AgencyApplicantsPagedResponse>(`${recruitingApplicantsUrl}`, { params: { ...filter } });
+}
+
 export function postAgencyRequestApplicant(requestId: string, model: CreateRequestApplicantModel): Promise<AgencyRequestApplicant> {
   return api.post<AgencyRequestApplicant>(`${requestsUrl}/${requestId}/Applicants`, model);
 }
@@ -143,6 +163,10 @@ export function updateAgencyRequestApplicant(requestId: string, id: string, mode
 
 export function changeApplicantStatus(requestId: string, id: string, model: ChangeRequestApplicantStatusModel): Promise<void> {
   return api.put(`${requestsUrl}/${requestId}/Applicants/${id}/Status`, model);
+}
+
+export function changeAgencyApplicantsStatus(model: ChangeApplicantsStatusModel): Promise<ChangeApplicantsStatusResult> {
+  return api.put<ChangeApplicantsStatusResult>(`${recruitingApplicantsUrl}/Status`, model);
 }
 
 export function getApplicantComplianceItems(requestId: string, id: string): Promise<ApplicantComplianceItem[]> {

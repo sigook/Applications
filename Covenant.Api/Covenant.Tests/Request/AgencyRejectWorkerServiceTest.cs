@@ -35,6 +35,7 @@ namespace Covenant.Tests.Request
 
             var sut = new RequestService(
                 Mock.Of<ICompanyRepository>(),
+                Mock.Of<IAgencyRepository>(),
                 Mock.Of<ILocationRepository>(),
                 Mock.Of<ITimeService>(),
                 requestRepository.Object,
@@ -67,6 +68,7 @@ namespace Covenant.Tests.Request
             requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
             var sut = new RequestService(
                 Mock.Of<ICompanyRepository>(),
+                Mock.Of<IAgencyRepository>(),
                 Mock.Of<ILocationRepository>(),
                 Mock.Of<ITimeService>(),
                 requestRepository.Object,

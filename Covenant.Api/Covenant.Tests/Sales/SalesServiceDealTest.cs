@@ -21,6 +21,7 @@ namespace Covenant.Tests.Sales
         private readonly Mock<ICompanyRepository> _companyRepository = new();
         private readonly Mock<IIdentityServerService> _identityServerService = new();
         private readonly Mock<IUploadedFilesService> _uploadedFilesService = new();
+        private readonly Mock<IDocumentService> _documentService = new();
         private readonly ISalesService _sut;
         private readonly Guid _agencyId = Guid.NewGuid();
         private readonly Guid _userId = Guid.NewGuid();
@@ -36,6 +37,7 @@ namespace Covenant.Tests.Sales
                 _companyRepository.Object,
                 _identityServerService.Object,
                 _uploadedFilesService.Object,
+                _documentService.Object,
                 new CreateCompanyInteractionModelValidator(),
                 new UpdateCompanyInteractionModelValidator(),
                 new CreateDealModelValidator(),
@@ -72,6 +74,12 @@ namespace Covenant.Tests.Sales
         {
             _uploadedFilesService.Setup(u => u.GetModel<CreateDealModel>()).Returns(model);
             return _sut.CreateDeal();
+        }
+
+        private Task<Result> UpdateDeal(Guid id, UpdateDealModel model)
+        {
+            _uploadedFilesService.Setup(u => u.GetModel<UpdateDealModel>()).Returns(model);
+            return _sut.UpdateDeal(id);
         }
 
         [Fact]
@@ -179,10 +187,53 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
-            Result result = await _sut.UpdateDeal(deal.Id, ValidUpdateModel());
+            Result result = await UpdateDeal(deal.Id, ValidUpdateModel());
             Assert.True(result);
             _companyRepository.Verify(r => r.Update(deal), Times.Once);
             _companyRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateDealWithFileReplacesDocumentAndDeletesPrevious()
+        {
+            var deal = OwnedDeal(_userId);
+            var previousDocumentId = Guid.NewGuid();
+            deal.DocumentId = previousDocumentId;
+            _companyRepository
+                .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
+                .ReturnsAsync(deal);
+            CovenantFile created = null;
+            _companyRepository
+                .Setup(r => r.Create(It.IsAny<CovenantFile>()))
+                .Callback<CovenantFile>(f => created = f)
+                .Returns(Task.CompletedTask);
+            var model = ValidUpdateModel();
+            model.DocumentId = previousDocumentId;
+            model.FileName = "Deal_def456.pdf";
+            Result result = await UpdateDeal(deal.Id, model);
+            Assert.True(result);
+            Assert.Equal("Deal_def456.pdf", created.FileName);
+            Assert.Equal(created.Id, deal.DocumentId);
+            _uploadedFilesService.Verify(u => u.Upload(It.IsAny<IEnumerable<string>>()), Times.Once);
+            _documentService.Verify(d => d.DeleteFile(previousDocumentId), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateDealKeepsDocumentWhenNoFileUploaded()
+        {
+            var deal = OwnedDeal(_userId);
+            var documentId = Guid.NewGuid();
+            deal.DocumentId = documentId;
+            _companyRepository
+                .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
+                .ReturnsAsync(deal);
+            var model = ValidUpdateModel();
+            model.DocumentId = documentId;
+            Result result = await UpdateDeal(deal.Id, model);
+            Assert.True(result);
+            Assert.Equal(documentId, deal.DocumentId);
+            _companyRepository.Verify(r => r.Create(It.IsAny<CovenantFile>()), Times.Never);
+            _documentService.Verify(d => d.DeleteFile(It.IsAny<Guid>()), Times.Never);
         }
 
         [Fact]
@@ -190,7 +241,7 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidUpdateModel();
             model.Title = string.Empty;
-            Result result = await _sut.UpdateDeal(Guid.NewGuid(), model);
+            Result result = await UpdateDeal(Guid.NewGuid(), model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(UpdateDealModel.Title));
             _companyRepository.Verify(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()), Times.Never);
@@ -202,7 +253,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync((Deal)null);
-            Result result = await _sut.UpdateDeal(Guid.NewGuid(), ValidUpdateModel());
+            Result result = await UpdateDeal(Guid.NewGuid(), ValidUpdateModel());
             Assert.False(result);
             Assert.Equal("Deal not found", result.Errors.First().Message);
         }
@@ -215,7 +266,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
-            Result result = await _sut.UpdateDeal(deal.Id, ValidUpdateModel());
+            Result result = await UpdateDeal(deal.Id, ValidUpdateModel());
             Assert.False(result);
             Assert.Equal("You can only manage your own deals", result.Errors.First().Message);
             _companyRepository.Verify(r => r.Update(It.IsAny<Deal>()), Times.Never);
@@ -269,7 +320,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
-            Result result = await _sut.UpdateDeal(deal.Id, ValidUpdateModel());
+            Result result = await UpdateDeal(deal.Id, ValidUpdateModel());
             Assert.True(result);
             _companyRepository.Verify(r => r.Update(deal), Times.Once);
         }

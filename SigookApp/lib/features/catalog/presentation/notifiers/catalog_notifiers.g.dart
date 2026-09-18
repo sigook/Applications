@@ -10,11 +10,11 @@ part of 'catalog_notifiers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(Availability)
-const availabilityProvider = AvailabilityProvider._();
+final availabilityProvider = AvailabilityProvider._();
 
 final class AvailabilityProvider
     extends $AsyncNotifierProvider<Availability, List<CatalogItem>> {
-  const AvailabilityProvider._()
+  AvailabilityProvider._()
     : super(
         from: null,
         argument: null,
@@ -39,8 +39,7 @@ abstract class _$Availability extends $AsyncNotifier<List<CatalogItem>> {
   FutureOr<List<CatalogItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CatalogItem>>, List<CatalogItem>>;
     final element =
@@ -51,16 +50,16 @@ abstract class _$Availability extends $AsyncNotifier<List<CatalogItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(AvailabilityTime)
-const availabilityTimeProvider = AvailabilityTimeProvider._();
+final availabilityTimeProvider = AvailabilityTimeProvider._();
 
 final class AvailabilityTimeProvider
     extends $AsyncNotifierProvider<AvailabilityTime, List<CatalogItem>> {
-  const AvailabilityTimeProvider._()
+  AvailabilityTimeProvider._()
     : super(
         from: null,
         argument: null,
@@ -85,8 +84,7 @@ abstract class _$AvailabilityTime extends $AsyncNotifier<List<CatalogItem>> {
   FutureOr<List<CatalogItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CatalogItem>>, List<CatalogItem>>;
     final element =
@@ -97,16 +95,16 @@ abstract class _$AvailabilityTime extends $AsyncNotifier<List<CatalogItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(Countries)
-const countriesProvider = CountriesProvider._();
+final countriesProvider = CountriesProvider._();
 
 final class CountriesProvider
     extends $AsyncNotifierProvider<Countries, List<CatalogItem>> {
-  const CountriesProvider._()
+  CountriesProvider._()
     : super(
         from: null,
         argument: null,
@@ -131,8 +129,7 @@ abstract class _$Countries extends $AsyncNotifier<List<CatalogItem>> {
   FutureOr<List<CatalogItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CatalogItem>>, List<CatalogItem>>;
     final element =
@@ -143,16 +140,16 @@ abstract class _$Countries extends $AsyncNotifier<List<CatalogItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(Genders)
-const gendersProvider = GendersProvider._();
+final gendersProvider = GendersProvider._();
 
 final class GendersProvider
     extends $AsyncNotifierProvider<Genders, List<CatalogItem>> {
-  const GendersProvider._()
+  GendersProvider._()
     : super(
         from: null,
         argument: null,
@@ -177,8 +174,7 @@ abstract class _$Genders extends $AsyncNotifier<List<CatalogItem>> {
   FutureOr<List<CatalogItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CatalogItem>>, List<CatalogItem>>;
     final element =
@@ -189,16 +185,16 @@ abstract class _$Genders extends $AsyncNotifier<List<CatalogItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(IdentificationTypes)
-const identificationTypesProvider = IdentificationTypesProvider._();
+final identificationTypesProvider = IdentificationTypesProvider._();
 
 final class IdentificationTypesProvider
     extends $AsyncNotifierProvider<IdentificationTypes, List<CatalogItem>> {
-  const IdentificationTypesProvider._()
+  IdentificationTypesProvider._()
     : super(
         from: null,
         argument: null,
@@ -224,8 +220,7 @@ abstract class _$IdentificationTypes extends $AsyncNotifier<List<CatalogItem>> {
   FutureOr<List<CatalogItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CatalogItem>>, List<CatalogItem>>;
     final element =
@@ -236,16 +231,16 @@ abstract class _$IdentificationTypes extends $AsyncNotifier<List<CatalogItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(Languages)
-const languagesProvider = LanguagesProvider._();
+final languagesProvider = LanguagesProvider._();
 
 final class LanguagesProvider
     extends $AsyncNotifierProvider<Languages, List<CatalogItem>> {
-  const LanguagesProvider._()
+  LanguagesProvider._()
     : super(
         from: null,
         argument: null,
@@ -270,8 +265,7 @@ abstract class _$Languages extends $AsyncNotifier<List<CatalogItem>> {
   FutureOr<List<CatalogItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CatalogItem>>, List<CatalogItem>>;
     final element =
@@ -282,16 +276,16 @@ abstract class _$Languages extends $AsyncNotifier<List<CatalogItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(Skills)
-const skillsProvider = SkillsProvider._();
+final skillsProvider = SkillsProvider._();
 
 final class SkillsProvider
     extends $AsyncNotifierProvider<Skills, List<CatalogItem>> {
-  const SkillsProvider._()
+  SkillsProvider._()
     : super(
         from: null,
         argument: null,
@@ -316,8 +310,7 @@ abstract class _$Skills extends $AsyncNotifier<List<CatalogItem>> {
   FutureOr<List<CatalogItem>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<CatalogItem>>, List<CatalogItem>>;
     final element =
@@ -328,6 +321,6 @@ abstract class _$Skills extends $AsyncNotifier<List<CatalogItem>> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

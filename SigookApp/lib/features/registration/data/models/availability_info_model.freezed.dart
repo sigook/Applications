@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'availability_info_model.dart';
@@ -9,16 +9,14 @@ part of 'availability_info_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$AvailabilityInfoModel {
 
- String? get availabilityTypeId;// UUID from API (may be null)
- String get availabilityTypeName;// Name from API
- Map<String, String> get availableTimes;// {id: value} - only times with IDs
- List<String> get availableDays;
+ String? get availabilityTypeId; String get availabilityTypeName; Map<String, String> get availableTimes; List<String> get availableDays;
 /// Create a copy of AvailabilityInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -31,16 +29,21 @@ $AvailabilityInfoModelCopyWith<AvailabilityInfoModel> get copyWith => _$Availabi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AvailabilityInfoModel&&(identical(other.availabilityTypeId, availabilityTypeId) || other.availabilityTypeId == availabilityTypeId)&&(identical(other.availabilityTypeName, availabilityTypeName) || other.availabilityTypeName == availabilityTypeName)&&const DeepCollectionEquality().equals(other.availableTimes, availableTimes)&&const DeepCollectionEquality().equals(other.availableDays, availableDays));
+  final _this = this as AvailabilityInfoModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AvailabilityInfoModel&&(identical(other.availabilityTypeId, _this.availabilityTypeId) || other.availabilityTypeId == _this.availabilityTypeId)&&(identical(other.availabilityTypeName, _this.availabilityTypeName) || other.availabilityTypeName == _this.availabilityTypeName)&&const DeepCollectionEquality().equals(other.availableTimes, _this.availableTimes)&&const DeepCollectionEquality().equals(other.availableDays, _this.availableDays));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,availabilityTypeId,availabilityTypeName,const DeepCollectionEquality().hash(availableTimes),const DeepCollectionEquality().hash(availableDays));
+int get hashCode {
+  final _this = this as AvailabilityInfoModel;
+  return Object.hash(runtimeType,_this.availabilityTypeId,_this.availabilityTypeName,const DeepCollectionEquality().hash(_this.availableTimes),const DeepCollectionEquality().hash(_this.availableDays));
+}
 
 @override
 String toString() {
-  return 'AvailabilityInfoModel(availabilityTypeId: $availabilityTypeId, availabilityTypeName: $availabilityTypeName, availableTimes: $availableTimes, availableDays: $availableDays)';
+  final _this = this as AvailabilityInfoModel;
+  return 'AvailabilityInfoModel(availabilityTypeId: ${_this.availabilityTypeId}, availabilityTypeName: ${_this.availabilityTypeName}, availableTimes: ${_this.availableTimes}, availableDays: ${_this.availableDays})';
 }
 
 
@@ -69,7 +72,7 @@ class _$AvailabilityInfoModelCopyWithImpl<$Res>
 /// Create a copy of AvailabilityInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? availabilityTypeId = freezed,Object? availabilityTypeName = null,Object? availableTimes = null,Object? availableDays = null,}) {
-  return _then(_self.copyWith(
+  return _then(AvailabilityInfoModel(
 availabilityTypeId: freezed == availabilityTypeId ? _self.availabilityTypeId : availabilityTypeId // ignore: cast_nullable_to_non_nullable
 as String?,availabilityTypeName: null == availabilityTypeName ? _self.availabilityTypeName : availabilityTypeName // ignore: cast_nullable_to_non_nullable
 as String,availableTimes: null == availableTimes ? _self.availableTimes : availableTimes // ignore: cast_nullable_to_non_nullable
@@ -209,24 +212,19 @@ return $default(_that.availabilityTypeId,_that.availabilityTypeName,_that.availa
 @JsonSerializable()
 
 class _AvailabilityInfoModel extends AvailabilityInfoModel {
-  const _AvailabilityInfoModel({this.availabilityTypeId, required this.availabilityTypeName, required final  Map<String, String> availableTimes, required final  List<String> availableDays}): _availableTimes = availableTimes,_availableDays = availableDays,super._();
+  const _AvailabilityInfoModel({this.availabilityTypeId, required this.availabilityTypeName, required  Map<String, String> availableTimes, required  List<String> availableDays}): _availableTimes = availableTimes,_availableDays = availableDays,super._();
   factory _AvailabilityInfoModel.fromJson(Map<String, dynamic> json) => _$AvailabilityInfoModelFromJson(json);
 
 @override final  String? availabilityTypeId;
-// UUID from API (may be null)
 @override final  String availabilityTypeName;
-// Name from API
  final  Map<String, String> _availableTimes;
-// Name from API
 @override Map<String, String> get availableTimes {
   if (_availableTimes is EqualUnmodifiableMapView) return _availableTimes;
   // ignore: implicit_dynamic_type
   return EqualUnmodifiableMapView(_availableTimes);
 }
 
-// {id: value} - only times with IDs
  final  List<String> _availableDays;
-// {id: value} - only times with IDs
 @override List<String> get availableDays {
   if (_availableDays is EqualUnmodifiableListView) return _availableDays;
   // ignore: implicit_dynamic_type
@@ -247,16 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AvailabilityInfoModel&&(identical(other.availabilityTypeId, availabilityTypeId) || other.availabilityTypeId == availabilityTypeId)&&(identical(other.availabilityTypeName, availabilityTypeName) || other.availabilityTypeName == availabilityTypeName)&&const DeepCollectionEquality().equals(other._availableTimes, _availableTimes)&&const DeepCollectionEquality().equals(other._availableDays, _availableDays));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AvailabilityInfoModel&&(identical(other.availabilityTypeId, availabilityTypeId) || other.availabilityTypeId == availabilityTypeId)&&(identical(other.availabilityTypeName, availabilityTypeName) || other.availabilityTypeName == availabilityTypeName)&&const DeepCollectionEquality().equals(other.availableTimes, _availableTimes)&&const DeepCollectionEquality().equals(other.availableDays, _availableDays));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,availabilityTypeId,availabilityTypeName,const DeepCollectionEquality().hash(_availableTimes),const DeepCollectionEquality().hash(_availableDays));
+int get hashCode {
+    return Object.hash(runtimeType,availabilityTypeId,availabilityTypeName,const DeepCollectionEquality().hash(_availableTimes),const DeepCollectionEquality().hash(_availableDays));
+}
 
 @override
 String toString() {
-  return 'AvailabilityInfoModel(availabilityTypeId: $availabilityTypeId, availabilityTypeName: $availabilityTypeName, availableTimes: $availableTimes, availableDays: $availableDays)';
+    return 'AvailabilityInfoModel(availabilityTypeId: $availabilityTypeId, availabilityTypeName: $availabilityTypeName, availableTimes: $availableTimes, availableDays: $availableDays)';
 }
 
 

@@ -311,6 +311,8 @@ Pattern: the parent feature holds shared infrastructure (base datasource, helper
 
 ## Commands
 
+Pinned toolchain: Flutter `3.47.4`, JDK 17, Android SDK 36, Gradle 8.14.3, Kotlin 2.2.20.
+
 ```bash
 # Run tests
 flutter test
@@ -318,6 +320,11 @@ flutter test
 # Code generation (Freezed, json_serializable, Riverpod)
 dart run build_runner build --delete-conflicting-outputs
 
-# Run app
-flutter run
+# Run app — the entry point and its .env file must match
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
+flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
 ```
+
+`.env.staging` / `.env.local` / `.env.production` are gitignored; copy `.env.example` (its defaults already point at staging). Without `--dart-define-from-file` the app runs with no API or auth URLs.
+
+`--flavor` is iOS-only — `android/app/build.gradle.kts` declares no `productFlavors`.
