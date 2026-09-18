@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'job_experience_viewmodel.dart';
@@ -9,15 +9,13 @@ part of 'job_experience_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$JobExperienceState {
 
-// Add flow
- bool get isAdding; String? get addError; bool get justAdded; bool get showForm;// Edit flow
- String? get editingId; bool get isSaving; String? get saveError; bool get justSaved;// Delete flow
- String? get deletingId; String? get deleteError; bool get justDeleted;
+ bool get isAdding; String? get addError; bool get justAdded; bool get showForm; String? get editingId; bool get isSaving; String? get saveError; bool get justSaved; String? get deletingId; String? get deleteError; bool get justDeleted;
 /// Create a copy of JobExperienceState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +26,21 @@ $JobExperienceStateCopyWith<JobExperienceState> get copyWith => _$JobExperienceS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobExperienceState&&(identical(other.isAdding, isAdding) || other.isAdding == isAdding)&&(identical(other.addError, addError) || other.addError == addError)&&(identical(other.justAdded, justAdded) || other.justAdded == justAdded)&&(identical(other.showForm, showForm) || other.showForm == showForm)&&(identical(other.editingId, editingId) || other.editingId == editingId)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved)&&(identical(other.deletingId, deletingId) || other.deletingId == deletingId)&&(identical(other.deleteError, deleteError) || other.deleteError == deleteError)&&(identical(other.justDeleted, justDeleted) || other.justDeleted == justDeleted));
+  final _this = this as JobExperienceState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobExperienceState&&(identical(other.isAdding, _this.isAdding) || other.isAdding == _this.isAdding)&&(identical(other.addError, _this.addError) || other.addError == _this.addError)&&(identical(other.justAdded, _this.justAdded) || other.justAdded == _this.justAdded)&&(identical(other.showForm, _this.showForm) || other.showForm == _this.showForm)&&(identical(other.editingId, _this.editingId) || other.editingId == _this.editingId)&&(identical(other.isSaving, _this.isSaving) || other.isSaving == _this.isSaving)&&(identical(other.saveError, _this.saveError) || other.saveError == _this.saveError)&&(identical(other.justSaved, _this.justSaved) || other.justSaved == _this.justSaved)&&(identical(other.deletingId, _this.deletingId) || other.deletingId == _this.deletingId)&&(identical(other.deleteError, _this.deleteError) || other.deleteError == _this.deleteError)&&(identical(other.justDeleted, _this.justDeleted) || other.justDeleted == _this.justDeleted));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isAdding,addError,justAdded,showForm,editingId,isSaving,saveError,justSaved,deletingId,deleteError,justDeleted);
+int get hashCode {
+  final _this = this as JobExperienceState;
+  return Object.hash(runtimeType,_this.isAdding,_this.addError,_this.justAdded,_this.showForm,_this.editingId,_this.isSaving,_this.saveError,_this.justSaved,_this.deletingId,_this.deleteError,_this.justDeleted);
+}
 
 @override
 String toString() {
-  return 'JobExperienceState(isAdding: $isAdding, addError: $addError, justAdded: $justAdded, showForm: $showForm, editingId: $editingId, isSaving: $isSaving, saveError: $saveError, justSaved: $justSaved, deletingId: $deletingId, deleteError: $deleteError, justDeleted: $justDeleted)';
+  final _this = this as JobExperienceState;
+  return 'JobExperienceState(isAdding: ${_this.isAdding}, addError: ${_this.addError}, justAdded: ${_this.justAdded}, showForm: ${_this.showForm}, editingId: ${_this.editingId}, isSaving: ${_this.isSaving}, saveError: ${_this.saveError}, justSaved: ${_this.justSaved}, deletingId: ${_this.deletingId}, deleteError: ${_this.deleteError}, justDeleted: ${_this.justDeleted})';
 }
 
 
@@ -66,7 +69,7 @@ class _$JobExperienceStateCopyWithImpl<$Res>
 /// Create a copy of JobExperienceState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isAdding = null,Object? addError = freezed,Object? justAdded = null,Object? showForm = null,Object? editingId = freezed,Object? isSaving = null,Object? saveError = freezed,Object? justSaved = null,Object? deletingId = freezed,Object? deleteError = freezed,Object? justDeleted = null,}) {
-  return _then(_self.copyWith(
+  return _then(JobExperienceState(
 isAdding: null == isAdding ? _self.isAdding : isAdding // ignore: cast_nullable_to_non_nullable
 as bool,addError: freezed == addError ? _self.addError : addError // ignore: cast_nullable_to_non_nullable
 as String?,justAdded: null == justAdded ? _self.justAdded : justAdded // ignore: cast_nullable_to_non_nullable
@@ -222,17 +225,14 @@ class _JobExperienceState implements JobExperienceState {
   const _JobExperienceState({this.isAdding = false, this.addError, this.justAdded = false, this.showForm = false, this.editingId, this.isSaving = false, this.saveError, this.justSaved = false, this.deletingId, this.deleteError, this.justDeleted = false});
   
 
-// Add flow
 @override@JsonKey() final  bool isAdding;
 @override final  String? addError;
 @override@JsonKey() final  bool justAdded;
 @override@JsonKey() final  bool showForm;
-// Edit flow
 @override final  String? editingId;
 @override@JsonKey() final  bool isSaving;
 @override final  String? saveError;
 @override@JsonKey() final  bool justSaved;
-// Delete flow
 @override final  String? deletingId;
 @override final  String? deleteError;
 @override@JsonKey() final  bool justDeleted;
@@ -247,16 +247,18 @@ _$JobExperienceStateCopyWith<_JobExperienceState> get copyWith => __$JobExperien
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobExperienceState&&(identical(other.isAdding, isAdding) || other.isAdding == isAdding)&&(identical(other.addError, addError) || other.addError == addError)&&(identical(other.justAdded, justAdded) || other.justAdded == justAdded)&&(identical(other.showForm, showForm) || other.showForm == showForm)&&(identical(other.editingId, editingId) || other.editingId == editingId)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved)&&(identical(other.deletingId, deletingId) || other.deletingId == deletingId)&&(identical(other.deleteError, deleteError) || other.deleteError == deleteError)&&(identical(other.justDeleted, justDeleted) || other.justDeleted == justDeleted));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobExperienceState&&(identical(other.isAdding, isAdding) || other.isAdding == isAdding)&&(identical(other.addError, addError) || other.addError == addError)&&(identical(other.justAdded, justAdded) || other.justAdded == justAdded)&&(identical(other.showForm, showForm) || other.showForm == showForm)&&(identical(other.editingId, editingId) || other.editingId == editingId)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved)&&(identical(other.deletingId, deletingId) || other.deletingId == deletingId)&&(identical(other.deleteError, deleteError) || other.deleteError == deleteError)&&(identical(other.justDeleted, justDeleted) || other.justDeleted == justDeleted));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isAdding,addError,justAdded,showForm,editingId,isSaving,saveError,justSaved,deletingId,deleteError,justDeleted);
+int get hashCode {
+    return Object.hash(runtimeType,isAdding,addError,justAdded,showForm,editingId,isSaving,saveError,justSaved,deletingId,deleteError,justDeleted);
+}
 
 @override
 String toString() {
-  return 'JobExperienceState(isAdding: $isAdding, addError: $addError, justAdded: $justAdded, showForm: $showForm, editingId: $editingId, isSaving: $isSaving, saveError: $saveError, justSaved: $justSaved, deletingId: $deletingId, deleteError: $deleteError, justDeleted: $justDeleted)';
+    return 'JobExperienceState(isAdding: $isAdding, addError: $addError, justAdded: $justAdded, showForm: $showForm, editingId: $editingId, isSaving: $isSaving, saveError: $saveError, justSaved: $justSaved, deletingId: $deletingId, deleteError: $deleteError, justDeleted: $justDeleted)';
 }
 
 

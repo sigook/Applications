@@ -71,6 +71,7 @@ namespace Covenant.Tests.Accounting
             var timeService = new Mock<ITimeService>();
             _sut = new RequestService(
                 _companyRepository.Object,
+                Mock.Of<IAgencyRepository>(),
                 locationRepository.Object,
                 timeService.Object,
                 _requestRepository.Object,

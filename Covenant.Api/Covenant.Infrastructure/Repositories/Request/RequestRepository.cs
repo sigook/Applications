@@ -1096,7 +1096,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                             ? rc.Candidate.PhoneNumbers.FirstOrDefault().PhoneNumber
                             : rc.WorkerProfile.MobileNumber != null ? rc.WorkerProfile.MobileNumber : rc.WorkerProfile.Phone,
                         Email = rc.Candidate != null ? rc.Candidate.Email : rc.WorkerProfile.Worker.Email,
-                        Status = rc.Status
+                        Status = rc.Status,
+                        ComplianceTotal = rc.Request.ComplianceItems.Count(),
+                        ComplianceCompleted = rc.ComplianceItems.Count(),
+                        MandatoryPending = rc.Request.ComplianceItems
+                            .Count(ci => ci.IsMandatory && rc.ComplianceItems.All(c => c.RequestComplianceItemId != ci.Id))
                     };
         var predicateNew = ApplyFilterRequestApplicants(filter);
         query = query.Where(predicateNew);
@@ -1104,6 +1108,147 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var result = await query.ToPaginatedList(filter);
         return result;
     }
+
+    public IQueryable<AgencyApplicantListModel> GetAllAgencyApplicants(Guid agencyId, GetAgencyApplicantsFilter filter)
+    {
+        var applicants = ApplyRequestFilterAgencyApplicants(agencyId, filter);
+        var query = from ra in applicants
+                    select new AgencyApplicantListModel
+                    {
+                        Id = ra.Id,
+                        CandidateId = ra.CandidateId,
+                        WorkerProfileId = ra.WorkerProfileId,
+                        WorkerId = ra.Candidate != null ? null : ra.WorkerProfile.WorkerId,
+                        Name = ra.Candidate != null
+                            ? ra.Candidate.Name
+                            : ra.WorkerProfile.FirstName + " " + ra.WorkerProfile.MiddleName + " " + ra.WorkerProfile.LastName + " " + ra.WorkerProfile.SecondLastName,
+                        Email = ra.Candidate != null ? ra.Candidate.Email : ra.WorkerProfile.Worker.Email,
+                        PhoneNumber = ra.Candidate != null
+                            ? ra.Candidate.PhoneNumbers.FirstOrDefault().PhoneNumber
+                            : ra.WorkerProfile.MobileNumber != null ? ra.WorkerProfile.MobileNumber : ra.WorkerProfile.Phone,
+                        Comments = ra.Comments,
+                        Status = ra.Status,
+                        CreatedBy = ra.CreatedBy,
+                        CreatedAt = ra.CreatedAt,
+                        RequestId = ra.RequestId,
+                        RequestNumberId = ra.Request.NumberId,
+                        CompanyFullName = ra.Request.CompanyProfile.FullName,
+                        JobTitle = ra.Request.JobTitle,
+                        StartAt = ra.Request.StartAt,
+                        IsAsap = ra.Request.IsAsap,
+                        IsDirectHiring = ra.Request.WorkerSalary.HasValue,
+                        ComplianceTotal = ra.Request.ComplianceItems.Count(),
+                        ComplianceCompleted = ra.ComplianceItems.Count(),
+                        MandatoryPending = ra.Request.ComplianceItems
+                            .Count(ci => ci.IsMandatory && ra.ComplianceItems.All(c => c.RequestComplianceItemId != ci.Id))
+                    };
+        return query.Where(ApplyFilterAgencyApplicants(filter));
+    }
+
+    public async Task<AgencyApplicantsPagedResponse> GetAgencyApplicants(Guid agencyId, GetAgencyApplicantsFilter filter)
+    {
+        var query = GetAllAgencyApplicants(agencyId, filter);
+
+        var requestsQuery = query
+            .Select(ra => new { ra.RequestId, ra.RequestNumberId })
+            .Distinct();
+        requestsQuery = filter.IsDescending
+            ? requestsQuery.OrderByDescending(r => r.RequestNumberId)
+            : requestsQuery.OrderBy(r => r.RequestNumberId);
+        var pageOfRequests = await requestsQuery.ToPaginatedList(filter);
+        var requestIds = pageOfRequests.Items.Select(r => r.RequestId).ToList();
+
+        var pagedApplicants = await ApplySortAgencyApplicants(query.Where(ra => requestIds.Contains(ra.RequestId)), filter).ToListAsync();
+        var requests = await GetAgencyApplicantRequests(requestIds);
+
+        return new AgencyApplicantsPagedResponse
+        {
+            PageIndex = pageOfRequests.PageIndex,
+            TotalPages = pageOfRequests.TotalPages,
+            TotalItems = pageOfRequests.TotalItems,
+            TotalApplicants = await query.CountAsync(),
+            Items = pageOfRequests.Items
+                .Select(page => requests.Single(r => r.RequestId == page.RequestId))
+                .Select(request =>
+                {
+                    request.Applicants = pagedApplicants.Where(a => a.RequestId == request.RequestId).ToList();
+                    return request;
+                })
+                .ToList()
+        };
+    }
+
+    private async Task<List<AgencyRequestApplicantsModel>> GetAgencyApplicantRequests(List<Guid> requestIds) =>
+        await context.Requests
+            .Where(r => requestIds.Contains(r.Id))
+            .Select(r => new AgencyRequestApplicantsModel
+            {
+                RequestId = r.Id,
+                NumberId = r.NumberId,
+                CompanyFullName = r.CompanyProfile.FullName,
+                JobTitle = r.JobTitle,
+                City = r.JobLocation.City.Value,
+                ProvinceName = r.JobLocation.City.Province.Value,
+                DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
+                StartAt = r.StartAt,
+                IsAsap = r.IsAsap,
+                IsDirectHiring = r.WorkerSalary.HasValue,
+                WorkersQuantity = r.WorkersQuantity,
+                ConfirmedApplicants = context.RequestApplicants.Count(ra => ra.RequestId == r.Id && ra.Status == RequestApplicantStatus.Confirmed),
+                TotalApplicants = context.RequestApplicants.Count(ra => ra.RequestId == r.Id)
+            })
+            .ToListAsync();
+
+    private IQueryable<RequestApplicant> ApplyRequestFilterAgencyApplicants(Guid agencyId, GetAgencyApplicantsFilter filter)
+    {
+        var applicants = context.RequestApplicants.Where(ra => ra.Request.CompanyProfile.AgencyId == agencyId);
+        applicants = filter.RequestStatuses is { Count: > 0 }
+            ? applicants.Where(ra => filter.RequestStatuses.Contains(ra.Request.Status))
+            : applicants.Where(ra => ra.Request.Status == RequestStatus.Open);
+        if (filter.CompanyProfileId.HasValue)
+            applicants = applicants.Where(ra => ra.Request.CompanyProfileId == filter.CompanyProfileId.Value);
+        if (filter.NumberId.HasValue)
+            applicants = applicants.Where(ra => ra.Request.NumberId == filter.NumberId.Value);
+        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
+        {
+            var jobTitle = filter.JobTitle.ToLower();
+            applicants = applicants.Where(ra => ra.Request.JobTitle.ToLower().Contains(jobTitle));
+        }
+        if (!string.IsNullOrWhiteSpace(filter.Recruiter))
+        {
+            var recruiter = filter.Recruiter.ToLower();
+            applicants = applicants.Where(ra => ra.Request.Recruiters.Any(rr => rr.Recruiter.User.Email.ToLower() == recruiter));
+        }
+        if (filter.StartAtFrom.HasValue)
+            applicants = applicants.Where(ra => ra.Request.StartAt >= filter.StartAtFrom.Value.Date);
+        if (filter.StartAtTo.HasValue)
+            applicants = applicants.Where(ra => ra.Request.StartAt <= filter.StartAtTo.Value.Date);
+        return applicants;
+    }
+
+    private Expression<Func<AgencyApplicantListModel, bool>> ApplyFilterAgencyApplicants(GetAgencyApplicantsFilter filter)
+    {
+        var predicate = PredicateBuilder.New<AgencyApplicantListModel>(true);
+        if (!string.IsNullOrWhiteSpace(filter.Name))
+        {
+            var name = filter.Name.ToLower();
+            predicate = predicate.And(ra => ra.Name.ToLower().Contains(name) || ra.Email.ToLower().Contains(name));
+        }
+        if (!string.IsNullOrWhiteSpace(filter.CreatedBy))
+            predicate = predicate.And(ra => ra.CreatedBy.ToLower().Contains(filter.CreatedBy.ToLower()));
+        if (filter.Statuses is { Count: > 0 })
+            predicate = predicate.And(ra => filter.Statuses.Contains(ra.Status));
+        return predicate;
+    }
+
+    // Requests are already paginated and sorted by number, so this only decides
+    // the order of the applicants inside each one.
+    private static IQueryable<AgencyApplicantListModel> ApplySortAgencyApplicants(IQueryable<AgencyApplicantListModel> query, GetAgencyApplicantsFilter filter) =>
+        filter.SortBy switch
+        {
+            GetAgencyApplicantSortBy.CreatedAt => query.OrderBy(ra => ra.CreatedAt),
+            _ => query.OrderBy(ra => ra.Name)
+        };
 
     private Expression<Func<RequestApplicantDetailModel, bool>> ApplyFilterRequestApplicants(GetRequestApplicantFilter filter)
     {
@@ -1259,6 +1404,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     public async Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId) => await context.RequestCompanyUsers.Where(rcu => rcu.RequestId == requestId).ToListAsync();
 
     public async Task<IEnumerable<RequestComplianceItem>> GetComplianceItems(Guid requestId) => await context.RequestComplianceItems.Where(ci => ci.RequestId == requestId).ToListAsync();
+
+    public async Task<IEnumerable<RequestComplianceItem>> GetComplianceItems(IEnumerable<Guid> requestIds) =>
+        await context.RequestComplianceItems.Where(ci => requestIds.Contains(ci.RequestId)).ToListAsync();
 
     public async Task<RequestApplicantComplianceItem> GetApplicantComplianceItem(Guid applicantId, Guid complianceItemId) =>
         await context.RequestApplicantComplianceItems

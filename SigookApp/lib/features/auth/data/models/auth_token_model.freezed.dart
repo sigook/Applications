@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'auth_token_model.dart';
@@ -9,6 +9,7 @@ part of 'auth_token_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $AuthTokenModelCopyWith<AuthTokenModel> get copyWith => _$AuthTokenModelCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokenModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expirationDateTime, expirationDateTime) || other.expirationDateTime == expirationDateTime)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&const DeepCollectionEquality().equals(other.scopes, scopes)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
+  final _this = this as AuthTokenModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthTokenModel&&(identical(other.accessToken, _this.accessToken) || other.accessToken == _this.accessToken)&&(identical(other.idToken, _this.idToken) || other.idToken == _this.idToken)&&(identical(other.refreshToken, _this.refreshToken) || other.refreshToken == _this.refreshToken)&&(identical(other.expirationDateTime, _this.expirationDateTime) || other.expirationDateTime == _this.expirationDateTime)&&(identical(other.tokenType, _this.tokenType) || other.tokenType == _this.tokenType)&&const DeepCollectionEquality().equals(other.scopes, _this.scopes)&&(identical(other.userInfo, _this.userInfo) || other.userInfo == _this.userInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,accessToken,idToken,refreshToken,expirationDateTime,tokenType,const DeepCollectionEquality().hash(scopes),userInfo);
+int get hashCode {
+  final _this = this as AuthTokenModel;
+  return Object.hash(runtimeType,_this.accessToken,_this.idToken,_this.refreshToken,_this.expirationDateTime,_this.tokenType,const DeepCollectionEquality().hash(_this.scopes),_this.userInfo);
+}
 
 @override
 String toString() {
-  return 'AuthTokenModel(accessToken: $accessToken, idToken: $idToken, refreshToken: $refreshToken, expirationDateTime: $expirationDateTime, tokenType: $tokenType, scopes: $scopes, userInfo: $userInfo)';
+  final _this = this as AuthTokenModel;
+  return 'AuthTokenModel(accessToken: ${_this.accessToken}, idToken: ${_this.idToken}, refreshToken: ${_this.refreshToken}, expirationDateTime: ${_this.expirationDateTime}, tokenType: ${_this.tokenType}, scopes: ${_this.scopes}, userInfo: ${_this.userInfo})';
 }
 
 
@@ -66,7 +72,7 @@ class _$AuthTokenModelCopyWithImpl<$Res>
 /// Create a copy of AuthTokenModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? accessToken = freezed,Object? idToken = freezed,Object? refreshToken = freezed,Object? expirationDateTime = freezed,Object? tokenType = freezed,Object? scopes = freezed,Object? userInfo = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(AuthTokenModel(
 accessToken: freezed == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String?,idToken: freezed == idToken ? _self.idToken : idToken // ignore: cast_nullable_to_non_nullable
 as String?,refreshToken: freezed == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
@@ -227,7 +233,7 @@ return $default(_that.accessToken,_that.idToken,_that.refreshToken,_that.expirat
 @JsonSerializable()
 
 class _AuthTokenModel extends AuthTokenModel {
-  const _AuthTokenModel({this.accessToken, this.idToken, this.refreshToken, this.expirationDateTime, this.tokenType, final  List<String>? scopes, this.userInfo}): _scopes = scopes,super._();
+  const _AuthTokenModel({this.accessToken, this.idToken, this.refreshToken, this.expirationDateTime, this.tokenType,  List<String>? scopes, this.userInfo}): _scopes = scopes,super._();
   factory _AuthTokenModel.fromJson(Map<String, dynamic> json) => _$AuthTokenModelFromJson(json);
 
 @override final  String? accessToken;
@@ -259,16 +265,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokenModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expirationDateTime, expirationDateTime) || other.expirationDateTime == expirationDateTime)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&const DeepCollectionEquality().equals(other._scopes, _scopes)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthTokenModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.idToken, idToken) || other.idToken == idToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.expirationDateTime, expirationDateTime) || other.expirationDateTime == expirationDateTime)&&(identical(other.tokenType, tokenType) || other.tokenType == tokenType)&&const DeepCollectionEquality().equals(other.scopes, _scopes)&&(identical(other.userInfo, userInfo) || other.userInfo == userInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,accessToken,idToken,refreshToken,expirationDateTime,tokenType,const DeepCollectionEquality().hash(_scopes),userInfo);
+int get hashCode {
+    return Object.hash(runtimeType,accessToken,idToken,refreshToken,expirationDateTime,tokenType,const DeepCollectionEquality().hash(_scopes),userInfo);
+}
 
 @override
 String toString() {
-  return 'AuthTokenModel(accessToken: $accessToken, idToken: $idToken, refreshToken: $refreshToken, expirationDateTime: $expirationDateTime, tokenType: $tokenType, scopes: $scopes, userInfo: $userInfo)';
+    return 'AuthTokenModel(accessToken: $accessToken, idToken: $idToken, refreshToken: $refreshToken, expirationDateTime: $expirationDateTime, tokenType: $tokenType, scopes: $scopes, userInfo: $userInfo)';
 }
 
 

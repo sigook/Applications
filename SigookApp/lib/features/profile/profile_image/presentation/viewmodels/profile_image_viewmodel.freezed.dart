@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'profile_image_viewmodel.dart';
@@ -9,6 +9,7 @@ part of 'profile_image_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -24,23 +25,29 @@ $ProfileImageStateCopyWith<ProfileImageState> get copyWith => _$ProfileImageStat
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  final _this = this as ProfileImageState;
   properties
     ..add(DiagnosticsProperty('type', 'ProfileImageState'))
-    ..add(DiagnosticsProperty('isUploading', isUploading))..add(DiagnosticsProperty('uploadError', uploadError))..add(DiagnosticsProperty('justUploaded', justUploaded));
+    ..add(DiagnosticsProperty('isUploading', _this.isUploading))..add(DiagnosticsProperty('uploadError', _this.uploadError))..add(DiagnosticsProperty('justUploaded', _this.justUploaded));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileImageState&&(identical(other.isUploading, isUploading) || other.isUploading == isUploading)&&(identical(other.uploadError, uploadError) || other.uploadError == uploadError)&&(identical(other.justUploaded, justUploaded) || other.justUploaded == justUploaded));
+  final _this = this as ProfileImageState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfileImageState&&(identical(other.isUploading, _this.isUploading) || other.isUploading == _this.isUploading)&&(identical(other.uploadError, _this.uploadError) || other.uploadError == _this.uploadError)&&(identical(other.justUploaded, _this.justUploaded) || other.justUploaded == _this.justUploaded));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isUploading,uploadError,justUploaded);
+int get hashCode {
+  final _this = this as ProfileImageState;
+  return Object.hash(runtimeType,_this.isUploading,_this.uploadError,_this.justUploaded);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'ProfileImageState(isUploading: $isUploading, uploadError: $uploadError, justUploaded: $justUploaded)';
+  final _this = this as ProfileImageState;
+  return 'ProfileImageState(isUploading: ${_this.isUploading}, uploadError: ${_this.uploadError}, justUploaded: ${_this.justUploaded})';
 }
 
 
@@ -69,7 +76,7 @@ class _$ProfileImageStateCopyWithImpl<$Res>
 /// Create a copy of ProfileImageState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isUploading = null,Object? uploadError = freezed,Object? justUploaded = null,}) {
-  return _then(_self.copyWith(
+  return _then(ProfileImageState(
 isUploading: null == isUploading ? _self.isUploading : isUploading // ignore: cast_nullable_to_non_nullable
 as bool,uploadError: freezed == uploadError ? _self.uploadError : uploadError // ignore: cast_nullable_to_non_nullable
 as String?,justUploaded: null == justUploaded ? _self.justUploaded : justUploaded // ignore: cast_nullable_to_non_nullable
@@ -230,23 +237,25 @@ _$ProfileImageStateCopyWith<_ProfileImageState> get copyWith => __$ProfileImageS
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
+    properties
     ..add(DiagnosticsProperty('type', 'ProfileImageState'))
     ..add(DiagnosticsProperty('isUploading', isUploading))..add(DiagnosticsProperty('uploadError', uploadError))..add(DiagnosticsProperty('justUploaded', justUploaded));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileImageState&&(identical(other.isUploading, isUploading) || other.isUploading == isUploading)&&(identical(other.uploadError, uploadError) || other.uploadError == uploadError)&&(identical(other.justUploaded, justUploaded) || other.justUploaded == justUploaded));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfileImageState&&(identical(other.isUploading, isUploading) || other.isUploading == isUploading)&&(identical(other.uploadError, uploadError) || other.uploadError == uploadError)&&(identical(other.justUploaded, justUploaded) || other.justUploaded == justUploaded));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isUploading,uploadError,justUploaded);
+int get hashCode {
+    return Object.hash(runtimeType,isUploading,uploadError,justUploaded);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'ProfileImageState(isUploading: $isUploading, uploadError: $uploadError, justUploaded: $justUploaded)';
+    return 'ProfileImageState(isUploading: $isUploading, uploadError: $uploadError, justUploaded: $justUploaded)';
 }
 
 

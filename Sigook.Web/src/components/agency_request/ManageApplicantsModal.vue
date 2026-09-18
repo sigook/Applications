@@ -37,6 +37,7 @@ import { showAlertError } from "@/utils/toast";
 import { searchAgencyRequestApplicants } from "@/api/agencyRequestApi";
 import { useStickyForm } from '@/composables/useStickyForm';
 
+const props = defineProps<{ requestId?: string | null }>();
 const emit = defineEmits<{ (e: 'updateApplicants', value: { model: any }): void }>();
 
 const schema = yup.object({
@@ -54,7 +55,7 @@ const route = useRoute();
 
 const isLoading = ref(false);
 const isLoadingList = ref(false);
-const requestId = route.params.id;
+const requestId = props.requestId ?? (route.params.id as string);
 const applicants = ref<any[]>([]);
 const model = reactive<any>({
   workerProfileId: null,

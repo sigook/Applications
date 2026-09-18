@@ -10,11 +10,11 @@ part of 'licenses_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(LicensesViewModel)
-const licensesViewModelProvider = LicensesViewModelProvider._();
+final licensesViewModelProvider = LicensesViewModelProvider._();
 
 final class LicensesViewModelProvider
     extends $NotifierProvider<LicensesViewModel, LicensesState> {
-  const LicensesViewModelProvider._()
+  LicensesViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$LicensesViewModel extends $Notifier<LicensesState> {
   LicensesState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<LicensesState, LicensesState>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$LicensesViewModel extends $Notifier<LicensesState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

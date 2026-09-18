@@ -10,6 +10,7 @@ namespace Covenant.Core.BL.Interfaces
         Task<Result> SendInvitation(Guid requestId);
         Task<Result> OpenRequest(Guid requestId, string finalizedBy);
         Task<Result<Guid>> CreateRequest(RequestCreateModel model);
+        Task<Result<Guid>> DuplicateRequest(Guid sourceRequestId, RequestCreateModel model);
         Task<Result<Guid>> CompanyCreateRequest(RequestCreateModel model);
         Task<Result> UpdateRequest(Guid requestId, RequestCreateModel model);
         Task<Result> UpdateRequirements(Guid id, RequestUpdateRequirementsModel model);
@@ -24,6 +25,7 @@ namespace Covenant.Core.BL.Interfaces
         Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources);
         Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
         Task<ShiftModel> GetRequestShift(Guid requestId);
+        Task<RequestLookupModel> GetLookup(Guid companyProfileId, Guid? requestId);
         Task<ResultGenerateDocument<MemoryStream>> GetWorkersReportFile(Guid requestId);
     }
 }

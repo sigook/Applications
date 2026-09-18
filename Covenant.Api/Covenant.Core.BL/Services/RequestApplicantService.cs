@@ -29,6 +29,7 @@ public class RequestApplicantService(
     IIdentityServerService identityServerService,
     IOptions<FilesConfiguration> filesOptions,
     IValidator<ChangeRequestApplicantStatusModel> changeStatusValidator,
+    IValidator<ChangeApplicantsStatusModel> changeApplicantsStatusValidator,
     IValidator<CompleteApplicantComplianceItemModel> completeComplianceItemValidator) : IRequestApplicantService
 {
     private const string ApplicantNotFound = "Applicant not found";
@@ -85,6 +86,9 @@ public class RequestApplicantService(
     public Task<PaginatedList<RequestApplicantDetailModel>> GetApplicants(Guid requestId, GetRequestApplicantFilter filter) =>
         requestRepository.GetRequestApplicants(requestId, filter);
 
+    public Task<AgencyApplicantsPagedResponse> GetAgencyApplicants(GetAgencyApplicantsFilter filter) =>
+        requestRepository.GetAgencyApplicants(identityServerService.GetAgencyId(), filter);
+
     public Task<List<ApplicantSearchResultModel>> Search(Guid requestId, string searchTerm) =>
         requestRepository.SearchApplicants(identityServerService.GetAgencyId(), requestId, searchTerm);
 
@@ -123,6 +127,36 @@ public class RequestApplicantService(
         if (!result) return result;
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
+    }
+
+    public async Task<Result<ChangeApplicantsStatusResultModel>> ChangeApplicantsStatus(ChangeApplicantsStatusModel model)
+    {
+        var validationResult = await changeApplicantsStatusValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure<ChangeApplicantsStatusResultModel>();
+        var agencyId = identityServerService.GetAgencyId();
+        var applicants = (await requestRepository.GetRequestApplicants(ra => model.ApplicantIds.Contains(ra.Id)
+            && ra.Request.CompanyProfile.AgencyId == agencyId)).ToList();
+        var pendingItems = model.Status == RequestApplicantStatus.Confirmed
+            ? await PendingMandatoryItems(applicants)
+            : [];
+        var response = new ChangeApplicantsStatusResultModel();
+        foreach (var applicant in applicants)
+        {
+            Result result = model.Status switch
+            {
+                RequestApplicantStatus.InProgress => applicant.MoveToInProgress(),
+                RequestApplicantStatus.Cancelled => applicant.Cancel(),
+                RequestApplicantStatus.Confirmed => Confirm(applicant, pendingItems),
+                _ => Result.Fail("Invalid target status")
+            };
+            if (result) response.Updated++;
+            else response.Skipped.Add(new SkippedApplicantModel { ApplicantId = applicant.Id, Reason = result.StringErrors });
+        }
+        response.Skipped.AddRange(model.ApplicantIds
+            .Where(id => applicants.TrueForAll(a => a.Id != id))
+            .Select(id => new SkippedApplicantModel { ApplicantId = id, Reason = ApplicantNotFound }));
+        if (response.Updated > 0) await requestRepository.SaveChangesAsync();
+        return Result.Ok(response);
     }
 
     public async Task<Result<List<ApplicantComplianceItemModel>>> GetComplianceItems(Guid requestId, Guid applicantId)
@@ -171,7 +205,8 @@ public class RequestApplicantService(
         if (completion != null) return Result.Fail("The compliance item is already completed");
 
         var hasFile = !string.IsNullOrEmpty(model?.FileName);
-        if (!hasFile && entity.WorkerProfileId.HasValue && item.IsMandatory && item.DocumentTarget != ComplianceDocumentTarget.None)
+        if (!hasFile && entity.WorkerProfileId.HasValue && item.IsMandatory && item.DocumentTarget != ComplianceDocumentTarget.None
+            && !await HasExistingDocument(entity.WorkerProfileId.Value, item.DocumentTarget))
             return Result.Fail("A document is required to complete this item");
         var hasProfileData = hasFile
             || (entity.WorkerProfileId.HasValue && item.DocumentTarget != ComplianceDocumentTarget.None && HasProfileData(model));
@@ -261,10 +296,29 @@ public class RequestApplicantService(
         var items = await requestRepository.GetComplianceItems(requestId);
         var completedItemIds = (await requestRepository.GetApplicantComplianceItems(applicantId)).Select(c => c.RequestComplianceItemId).ToList();
         var pending = items.Where(i => i.IsMandatory && !completedItemIds.Contains(i.Id)).Select(i => i.Name).ToList();
-        return pending.Count == 0
-            ? Result.Ok()
-            : Result.Fail($"All mandatory compliance items must be completed before confirming. Pending: {string.Join(", ", pending)}");
+        return pending.Count == 0 ? Result.Ok() : Result.Fail(MandatoryItemsPending(pending));
     }
+
+    private async Task<Dictionary<Guid, List<string>>> PendingMandatoryItems(List<RequestApplicant> applicants)
+    {
+        var requestIds = applicants.Select(a => a.RequestId).Distinct().ToList();
+        var mandatoryItems = (await requestRepository.GetComplianceItems(requestIds)).Where(i => i.IsMandatory).ToList();
+        var completions = (await requestRepository.GetApplicantComplianceCompletions(mandatoryItems.Select(i => i.Id))).ToList();
+        return applicants.ToDictionary(a => a.Id, a => mandatoryItems
+            .Where(i => i.RequestId == a.RequestId
+                && !completions.Exists(c => c.RequestApplicantId == a.Id && c.RequestComplianceItemId == i.Id))
+            .Select(i => i.Name)
+            .ToList());
+    }
+
+    private static Result Confirm(RequestApplicant applicant, Dictionary<Guid, List<string>> pendingItems)
+    {
+        var pending = pendingItems.GetValueOrDefault(applicant.Id, []);
+        return pending.Count > 0 ? Result.Fail(MandatoryItemsPending(pending)) : applicant.Confirm();
+    }
+
+    private static string MandatoryItemsPending(IEnumerable<string> pending) =>
+        $"All mandatory compliance items must be completed before confirming. Pending: {string.Join(", ", pending)}";
 
     private static bool HasProfileData(CompleteApplicantComplianceItemModel model) =>
         !string.IsNullOrEmpty(model?.IdentificationNumber)
@@ -361,17 +415,25 @@ public class RequestApplicantService(
 
     private string GetExistingFileUrl(WorkerProfile profile, ComplianceDocumentTarget target)
     {
-        var fileName = target switch
-        {
-            ComplianceDocumentTarget.Identification1 => profile?.IdentificationType1File?.FileName,
-            ComplianceDocumentTarget.Identification2 => profile?.IdentificationType2File?.FileName,
-            ComplianceDocumentTarget.SocialInsurance => profile?.SocialInsuranceFile?.FileName,
-            ComplianceDocumentTarget.Resume => profile?.Resume?.FileName,
-            ComplianceDocumentTarget.PoliceCheck => profile?.PoliceCheckBackGround?.FileName,
-            _ => null
-        };
+        var fileName = GetExistingFileName(profile, target);
         return string.IsNullOrEmpty(fileName) ? null : string.Concat(filesConfiguration.FilesPath, fileName);
     }
+
+    private async Task<bool> HasExistingDocument(Guid workerProfileId, ComplianceDocumentTarget target)
+    {
+        var profile = await workerRepository.GetProfile(p => p.Id == workerProfileId);
+        return !string.IsNullOrEmpty(GetExistingFileName(profile, target));
+    }
+
+    private static string GetExistingFileName(WorkerProfile profile, ComplianceDocumentTarget target) => target switch
+    {
+        ComplianceDocumentTarget.Identification1 => profile?.IdentificationType1File?.FileName,
+        ComplianceDocumentTarget.Identification2 => profile?.IdentificationType2File?.FileName,
+        ComplianceDocumentTarget.SocialInsurance => profile?.SocialInsuranceFile?.FileName,
+        ComplianceDocumentTarget.Resume => profile?.Resume?.FileName,
+        ComplianceDocumentTarget.PoliceCheck => profile?.PoliceCheckBackGround?.FileName,
+        _ => null
+    };
 
     private async Task CreateNewFiles(params (CovenantFile Previous, CovenantFile Current)[] files)
     {

@@ -7,6 +7,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Models;
+using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
@@ -31,6 +32,7 @@ namespace Covenant.Core.BL.Services;
 public class RequestService : IRequestService
 {
     private readonly ICompanyRepository companyRepository;
+    private readonly IAgencyRepository agencyRepository;
     private readonly ILocationRepository locationRepository;
     private readonly ITimeService timeService;
     private readonly IRequestRepository requestRepository;
@@ -49,6 +51,7 @@ public class RequestService : IRequestService
 
     public RequestService(
         ICompanyRepository companyRepository,
+        IAgencyRepository agencyRepository,
         ILocationRepository locationRepository,
         ITimeService timeService,
         IRequestRepository requestRepository,
@@ -70,6 +73,7 @@ public class RequestService : IRequestService
         this.requestCreateValidator = requestCreateValidator;
         this.requestUpdateRequirementsValidator = requestUpdateRequirementsValidator;
         this.companyRepository = companyRepository;
+        this.agencyRepository = agencyRepository;
         this.locationRepository = locationRepository;
         this.timeService = timeService;
         this.requestRepository = requestRepository;
@@ -124,6 +128,30 @@ public class RequestService : IRequestService
         var notificationModel = NotificationModel.NewRequestNotification("Job Alert", $"{request.JobTitle} {currency} ${salary}", request.Id);
         await pushNotifications.SendNotification(notificationModel);
         return Result.Ok(request.Id);
+    }
+
+    public async Task<Result<Guid>> DuplicateRequest(Guid sourceRequestId, RequestCreateModel model)
+    {
+        var source = await requestRepository.GetRequest(r => r.Id == sourceRequestId);
+        if (source is null) return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
+        model.Shift ??= await requestRepository.GetRequestShift(sourceRequestId);
+        var rRequest = await CreateRequest(model);
+        if (!rRequest) return rRequest;
+        var requestId = rRequest.Value;
+        foreach (var skill in await requestRepository.GetSkills(sourceRequestId))
+        {
+            var rSkill = RequestSkill.Create(requestId, skill.Skill);
+            if (!rSkill) return Result.Fail<Guid>(rSkill.Errors);
+            await requestRepository.Create<RequestSkill>([rSkill.Value]);
+        }
+        var requestedBy = await requestRepository.GetRequestedByList(sourceRequestId, Pagination.Default);
+        await requestRepository.Create(requestedBy.Items.Select(p => new RequestRequestedBy(requestId, p.Id)).ToList());
+        var reportTo = await requestRepository.GetReportToList(sourceRequestId, Pagination.Default);
+        await requestRepository.Create(reportTo.Items.Select(p => new RequestReportTo(requestId, p.Id)).ToList());
+        var sources = await requestRepository.GetRequestSources(sourceRequestId);
+        await requestRepository.ReplaceRequestSources(requestId, sources.Select(s => new CreateRequestSourceModel { SourceId = s.SourceId }));
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok(requestId);
     }
 
     public async Task<Result<Guid>> CompanyCreateRequest(RequestCreateModel model)
@@ -526,6 +554,22 @@ public class RequestService : IRequestService
     }
 
     public Task<ShiftModel> GetRequestShift(Guid requestId) => requestRepository.GetRequestShift(requestId);
+
+    public async Task<RequestLookupModel> GetLookup(Guid companyProfileId, Guid? requestId)
+    {
+        var model = new RequestLookupModel();
+        if (requestId.HasValue)
+        {
+            model.Request = await requestRepository.GetRequestDetailForAgency(requestId.Value);
+            if (model.Request is null) return null;
+            companyProfileId = model.Request.CompanyProfileId;
+        }
+        model.JobPositions = await companyRepository.GetJobPositions(companyProfileId, new GetJobPositionsFilter());
+        model.Locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfileId == companyProfileId);
+        model.Personnel = await agencyRepository.GetAllPersonnel(identityServerService.GetAgencyId());
+        model.CompanyUsers = await companyRepository.GetAllCompanyUsers(companyProfileId);
+        return model;
+    }
 
     public async Task<ResultGenerateDocument<MemoryStream>> GetWorkersReportFile(Guid requestId)
     {

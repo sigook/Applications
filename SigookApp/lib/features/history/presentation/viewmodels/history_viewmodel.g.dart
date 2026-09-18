@@ -10,11 +10,11 @@ part of 'history_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(HistoryViewModel)
-const historyViewModelProvider = HistoryViewModelProvider._();
+final historyViewModelProvider = HistoryViewModelProvider._();
 
 final class HistoryViewModelProvider
     extends $NotifierProvider<HistoryViewModel, HistoryState> {
-  const HistoryViewModelProvider._()
+  HistoryViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -47,8 +47,7 @@ abstract class _$HistoryViewModel extends $Notifier<HistoryState> {
   HistoryState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<HistoryState, HistoryState>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$HistoryViewModel extends $Notifier<HistoryState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

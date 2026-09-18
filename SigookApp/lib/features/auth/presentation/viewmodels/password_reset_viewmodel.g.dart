@@ -10,11 +10,11 @@ part of 'password_reset_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(PasswordResetViewModel)
-const passwordResetViewModelProvider = PasswordResetViewModelProvider._();
+final passwordResetViewModelProvider = PasswordResetViewModelProvider._();
 
 final class PasswordResetViewModelProvider
     extends $NotifierProvider<PasswordResetViewModel, PasswordResetState> {
-  const PasswordResetViewModelProvider._()
+  PasswordResetViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -42,14 +42,13 @@ final class PasswordResetViewModelProvider
 }
 
 String _$passwordResetViewModelHash() =>
-    r'd54b59eb0e386ac120bf5b64417f84852102a9f7';
+    r'1e1b1f1a55a20e865f574df22a9f8367f44dddb8';
 
 abstract class _$PasswordResetViewModel extends $Notifier<PasswordResetState> {
   PasswordResetState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<PasswordResetState, PasswordResetState>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$PasswordResetViewModel extends $Notifier<PasswordResetState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

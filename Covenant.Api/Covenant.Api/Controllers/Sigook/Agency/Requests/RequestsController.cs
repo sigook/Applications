@@ -29,6 +29,15 @@ public class RequestsController(IRequestService requestService, IAgencyService a
     public async Task<IActionResult> GetById([FromServices] IRequestRepository repository, Guid id) =>
         this.GetByIdResult(await repository.GetRequestDetailForAgency(id));
 
+    /// <summary>Gets everything the request form needs: the catalogs of the company profile and, when a request is given, its detail plus the data that is copied when duplicating it.</summary>
+    /// <param name="companyProfileId">Identifier of the company profile. Ignored when <paramref name="requestId"/> is given.</param>
+    /// <param name="requestId">Identifier of the request being edited or duplicated.</param>
+    [HttpGet("lookup")]
+    [ProducesResponseType(typeof(RequestLookupModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetLookup([FromQuery] Guid companyProfileId, [FromQuery] Guid? requestId) =>
+        this.GetByIdResult(await requestService.GetLookup(companyProfileId, requestId));
+
     /// <summary>Creates a new request for the current agency.</summary>
     /// <param name="model">Request data.</param>
     [HttpPost]
@@ -38,6 +47,20 @@ public class RequestsController(IRequestService requestService, IAgencyService a
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var result = await requestService.CreateRequest(model);
+        if (result) return CreatedAtRoute(GetByIdRouteName, new { id = result.Value }, new AgencyRequestDetailModel { Id = result.Value });
+        return BadRequest(ModelState.AddErrors(result.Errors));
+    }
+
+    /// <summary>Creates a new request out of an existing one. The data of the form is taken from the body; the shift, skills, contact people and job boards are copied from the source request.</summary>
+    /// <param name="id">Identifier of the request being duplicated.</param>
+    /// <param name="model">Request data, already edited by the user.</param>
+    [HttpPost("{id:guid}/Duplicate")]
+    [ProducesResponseType(typeof(AgencyRequestDetailModel), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Duplicate([FromRoute] Guid id, [FromBody] RequestCreateModel model)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await requestService.DuplicateRequest(id, model);
         if (result) return CreatedAtRoute(GetByIdRouteName, new { id = result.Value }, new AgencyRequestDetailModel { Id = result.Value });
         return BadRequest(ModelState.AddErrors(result.Errors));
     }

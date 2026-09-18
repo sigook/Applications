@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'professional_info_model.dart';
@@ -9,14 +9,14 @@ part of 'professional_info_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$ProfessionalInfoModel {
 
- Map<String, String> get languages;// {id: value} - only languages with IDs
- List<String> get skills;
+ Map<String, String> get languages; List<String> get skills;
 /// Create a copy of ProfessionalInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,21 @@ $ProfessionalInfoModelCopyWith<ProfessionalInfoModel> get copyWith => _$Professi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfessionalInfoModel&&const DeepCollectionEquality().equals(other.languages, languages)&&const DeepCollectionEquality().equals(other.skills, skills));
+  final _this = this as ProfessionalInfoModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProfessionalInfoModel&&const DeepCollectionEquality().equals(other.languages, _this.languages)&&const DeepCollectionEquality().equals(other.skills, _this.skills));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(languages),const DeepCollectionEquality().hash(skills));
+int get hashCode {
+  final _this = this as ProfessionalInfoModel;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.languages),const DeepCollectionEquality().hash(_this.skills));
+}
 
 @override
 String toString() {
-  return 'ProfessionalInfoModel(languages: $languages, skills: $skills)';
+  final _this = this as ProfessionalInfoModel;
+  return 'ProfessionalInfoModel(languages: ${_this.languages}, skills: ${_this.skills})';
 }
 
 
@@ -67,7 +72,7 @@ class _$ProfessionalInfoModelCopyWithImpl<$Res>
 /// Create a copy of ProfessionalInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? languages = null,Object? skills = null,}) {
-  return _then(_self.copyWith(
+  return _then(ProfessionalInfoModel(
 languages: null == languages ? _self.languages : languages // ignore: cast_nullable_to_non_nullable
 as Map<String, String>,skills: null == skills ? _self.skills : skills // ignore: cast_nullable_to_non_nullable
 as List<String>,
@@ -205,7 +210,7 @@ return $default(_that.languages,_that.skills);case _:
 @JsonSerializable()
 
 class _ProfessionalInfoModel extends ProfessionalInfoModel {
-  const _ProfessionalInfoModel({required final  Map<String, String> languages, required final  List<String> skills}): _languages = languages,_skills = skills,super._();
+  const _ProfessionalInfoModel({required  Map<String, String> languages, required  List<String> skills}): _languages = languages,_skills = skills,super._();
   factory _ProfessionalInfoModel.fromJson(Map<String, dynamic> json) => _$ProfessionalInfoModelFromJson(json);
 
  final  Map<String, String> _languages;
@@ -215,9 +220,7 @@ class _ProfessionalInfoModel extends ProfessionalInfoModel {
   return EqualUnmodifiableMapView(_languages);
 }
 
-// {id: value} - only languages with IDs
  final  List<String> _skills;
-// {id: value} - only languages with IDs
 @override List<String> get skills {
   if (_skills is EqualUnmodifiableListView) return _skills;
   // ignore: implicit_dynamic_type
@@ -238,16 +241,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfessionalInfoModel&&const DeepCollectionEquality().equals(other._languages, _languages)&&const DeepCollectionEquality().equals(other._skills, _skills));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProfessionalInfoModel&&const DeepCollectionEquality().equals(other.languages, _languages)&&const DeepCollectionEquality().equals(other.skills, _skills));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_skills));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_skills));
+}
 
 @override
 String toString() {
-  return 'ProfessionalInfoModel(languages: $languages, skills: $skills)';
+    return 'ProfessionalInfoModel(languages: $languages, skills: $skills)';
 }
 
 

@@ -5,6 +5,7 @@ import type {
   PersonnelAgencyItem,
   AgencyListFilter,
   AgencyRequestFilter,
+  AgencyApplicantsFilter,
   AgencyWorkerFilter,
   AgencyCompanyFilter,
 } from '@/types/agency';
@@ -15,6 +16,7 @@ interface AgencyStoreState {
   agency: AgencyDetail;
   personnelAgencies: PersonnelAgencyItem[];
   agencyRequestFilter: AgencyRequestFilter | null;
+  agencyApplicantsFilter: AgencyApplicantsFilter | null;
   agencyCandidateFilter: AgencyCandidateFilter | null;
   agencyWorkerProfileFilter: AgencyWorkerFilter | null;
   agencyCompanyProfileFilter: AgencyCompanyFilter | null;
@@ -31,6 +33,7 @@ export const useAgencyStore = defineStore('agency', {
     agency: {} as AgencyDetail,
     personnelAgencies: [],
     agencyRequestFilter: null,
+    agencyApplicantsFilter: null,
     agencyCandidateFilter: null,
     agencyWorkerProfileFilter: null,
     agencyCompanyProfileFilter: null,
@@ -59,6 +62,9 @@ export const useAgencyStore = defineStore('agency', {
     },
     updateAgencyRequestFilter(data: AgencyRequestFilter | null) {
       this.agencyRequestFilter = data;
+    },
+    updateAgencyApplicantsFilter(data: AgencyApplicantsFilter | null) {
+      this.agencyApplicantsFilter = data;
     },
     updateAgencyCandidateFilter(data: AgencyCandidateFilter | null) {
       this.agencyCandidateFilter = data;

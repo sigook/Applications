@@ -19,6 +19,15 @@ interface DialogConfirmConfig {
   onCancel?: () => void;
 }
 
+interface DialogAlertConfig {
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  type?: string;
+  hasIcon?: boolean;
+  onConfirm?: () => void;
+}
+
 interface DialogPromptConfig {
   title?: string;
   message?: string;
@@ -37,6 +46,7 @@ interface ToastInstance {
 }
 
 interface DialogInstance {
+  alert(config: DialogAlertConfig): void;
   confirm(config: DialogConfirmConfig): void;
   prompt(config: DialogPromptConfig): void;
 }

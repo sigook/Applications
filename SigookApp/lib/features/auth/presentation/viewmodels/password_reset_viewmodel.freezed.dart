@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'password_reset_viewmodel.dart';
@@ -9,6 +9,7 @@ part of 'password_reset_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $PasswordResetStateCopyWith<PasswordResetState> get copyWith => _$PasswordResetS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PasswordResetState&&(identical(other.step, step) || other.step == step)&&(identical(other.email, email) || other.email == email)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorCode, errorCode) || other.errorCode == errorCode)&&(identical(other.resendCooldownSeconds, resendCooldownSeconds) || other.resendCooldownSeconds == resendCooldownSeconds)&&(identical(other.justCodeSent, justCodeSent) || other.justCodeSent == justCodeSent)&&(identical(other.justReset, justReset) || other.justReset == justReset));
+  final _this = this as PasswordResetState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PasswordResetState&&(identical(other.step, _this.step) || other.step == _this.step)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.error, _this.error) || other.error == _this.error)&&(identical(other.errorCode, _this.errorCode) || other.errorCode == _this.errorCode)&&(identical(other.resendCooldownSeconds, _this.resendCooldownSeconds) || other.resendCooldownSeconds == _this.resendCooldownSeconds)&&(identical(other.justCodeSent, _this.justCodeSent) || other.justCodeSent == _this.justCodeSent)&&(identical(other.justReset, _this.justReset) || other.justReset == _this.justReset));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,step,email,isLoading,error,errorCode,resendCooldownSeconds,justCodeSent,justReset);
+int get hashCode {
+  final _this = this as PasswordResetState;
+  return Object.hash(runtimeType,_this.step,_this.email,_this.isLoading,_this.error,_this.errorCode,_this.resendCooldownSeconds,_this.justCodeSent,_this.justReset);
+}
 
 @override
 String toString() {
-  return 'PasswordResetState(step: $step, email: $email, isLoading: $isLoading, error: $error, errorCode: $errorCode, resendCooldownSeconds: $resendCooldownSeconds, justCodeSent: $justCodeSent, justReset: $justReset)';
+  final _this = this as PasswordResetState;
+  return 'PasswordResetState(step: ${_this.step}, email: ${_this.email}, isLoading: ${_this.isLoading}, error: ${_this.error}, errorCode: ${_this.errorCode}, resendCooldownSeconds: ${_this.resendCooldownSeconds}, justCodeSent: ${_this.justCodeSent}, justReset: ${_this.justReset})';
 }
 
 
@@ -63,7 +69,7 @@ class _$PasswordResetStateCopyWithImpl<$Res>
 /// Create a copy of PasswordResetState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? step = null,Object? email = null,Object? isLoading = null,Object? error = freezed,Object? errorCode = freezed,Object? resendCooldownSeconds = null,Object? justCodeSent = null,Object? justReset = null,}) {
-  return _then(_self.copyWith(
+  return _then(PasswordResetState(
 step: null == step ? _self.step : step // ignore: cast_nullable_to_non_nullable
 as int,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
@@ -229,16 +235,18 @@ _$PasswordResetStateCopyWith<_PasswordResetState> get copyWith => __$PasswordRes
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PasswordResetState&&(identical(other.step, step) || other.step == step)&&(identical(other.email, email) || other.email == email)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorCode, errorCode) || other.errorCode == errorCode)&&(identical(other.resendCooldownSeconds, resendCooldownSeconds) || other.resendCooldownSeconds == resendCooldownSeconds)&&(identical(other.justCodeSent, justCodeSent) || other.justCodeSent == justCodeSent)&&(identical(other.justReset, justReset) || other.justReset == justReset));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PasswordResetState&&(identical(other.step, step) || other.step == step)&&(identical(other.email, email) || other.email == email)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorCode, errorCode) || other.errorCode == errorCode)&&(identical(other.resendCooldownSeconds, resendCooldownSeconds) || other.resendCooldownSeconds == resendCooldownSeconds)&&(identical(other.justCodeSent, justCodeSent) || other.justCodeSent == justCodeSent)&&(identical(other.justReset, justReset) || other.justReset == justReset));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,step,email,isLoading,error,errorCode,resendCooldownSeconds,justCodeSent,justReset);
+int get hashCode {
+    return Object.hash(runtimeType,step,email,isLoading,error,errorCode,resendCooldownSeconds,justCodeSent,justReset);
+}
 
 @override
 String toString() {
-  return 'PasswordResetState(step: $step, email: $email, isLoading: $isLoading, error: $error, errorCode: $errorCode, resendCooldownSeconds: $resendCooldownSeconds, justCodeSent: $justCodeSent, justReset: $justReset)';
+    return 'PasswordResetState(step: $step, email: $email, isLoading: $isLoading, error: $error, errorCode: $errorCode, resendCooldownSeconds: $resendCooldownSeconds, justCodeSent: $justCodeSent, justReset: $justReset)';
 }
 
 

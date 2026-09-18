@@ -10,11 +10,11 @@ part of 'emergency_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(EmergencyViewModel)
-const emergencyViewModelProvider = EmergencyViewModelProvider._();
+final emergencyViewModelProvider = EmergencyViewModelProvider._();
 
 final class EmergencyViewModelProvider
     extends $NotifierProvider<EmergencyViewModel, EmergencyState> {
-  const EmergencyViewModelProvider._()
+  EmergencyViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$EmergencyViewModel extends $Notifier<EmergencyState> {
   EmergencyState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<EmergencyState, EmergencyState>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$EmergencyViewModel extends $Notifier<EmergencyState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

@@ -36,9 +36,9 @@ steps:
       echo "========================================"
     displayName: 'Verify Flutter Installation'
 
-  # Create placeholder .env files for the Flutter asset bundler
-  # These files are declared in pubspec.yaml but are gitignored.
-  # The build stages overwrite the relevant .env file with real values from variable groups.
+  # Create placeholder .env files so tooling that expects them finds them.
+  # These files are gitignored; the build stages pass the real values from
+  # variable groups as --dart-define arguments.
   - script: |
       cd ${{ parameters.workingDirectory }}
       touch .env.staging .env.production .env.local

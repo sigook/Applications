@@ -10,11 +10,11 @@ part of 'profile_image_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ProfileImageViewModel)
-const profileImageViewModelProvider = ProfileImageViewModelProvider._();
+final profileImageViewModelProvider = ProfileImageViewModelProvider._();
 
 final class ProfileImageViewModelProvider
     extends $NotifierProvider<ProfileImageViewModel, ProfileImageState> {
-  const ProfileImageViewModelProvider._()
+  ProfileImageViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$ProfileImageViewModel extends $Notifier<ProfileImageState> {
   ProfileImageState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ProfileImageState, ProfileImageState>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$ProfileImageViewModel extends $Notifier<ProfileImageState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

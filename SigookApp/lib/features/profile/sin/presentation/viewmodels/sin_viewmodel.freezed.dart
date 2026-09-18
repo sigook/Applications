@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'sin_viewmodel.dart';
@@ -9,6 +9,7 @@ part of 'sin_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $SinStateCopyWith<SinState> get copyWith => _$SinStateCopyWithImpl<SinState>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SinState&&(identical(other.isEditing, isEditing) || other.isEditing == isEditing)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved));
+  final _this = this as SinState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SinState&&(identical(other.isEditing, _this.isEditing) || other.isEditing == _this.isEditing)&&(identical(other.isSaving, _this.isSaving) || other.isSaving == _this.isSaving)&&(identical(other.saveError, _this.saveError) || other.saveError == _this.saveError)&&(identical(other.justSaved, _this.justSaved) || other.justSaved == _this.justSaved));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isEditing,isSaving,saveError,justSaved);
+int get hashCode {
+  final _this = this as SinState;
+  return Object.hash(runtimeType,_this.isEditing,_this.isSaving,_this.saveError,_this.justSaved);
+}
 
 @override
 String toString() {
-  return 'SinState(isEditing: $isEditing, isSaving: $isSaving, saveError: $saveError, justSaved: $justSaved)';
+  final _this = this as SinState;
+  return 'SinState(isEditing: ${_this.isEditing}, isSaving: ${_this.isSaving}, saveError: ${_this.saveError}, justSaved: ${_this.justSaved})';
 }
 
 
@@ -63,7 +69,7 @@ class _$SinStateCopyWithImpl<$Res>
 /// Create a copy of SinState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isEditing = null,Object? isSaving = null,Object? saveError = freezed,Object? justSaved = null,}) {
-  return _then(_self.copyWith(
+  return _then(SinState(
 isEditing: null == isEditing ? _self.isEditing : isEditing // ignore: cast_nullable_to_non_nullable
 as bool,isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
 as bool,saveError: freezed == saveError ? _self.saveError : saveError // ignore: cast_nullable_to_non_nullable
@@ -227,16 +233,18 @@ _$SinStateCopyWith<_SinState> get copyWith => __$SinStateCopyWithImpl<_SinState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SinState&&(identical(other.isEditing, isEditing) || other.isEditing == isEditing)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SinState&&(identical(other.isEditing, isEditing) || other.isEditing == isEditing)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&(identical(other.saveError, saveError) || other.saveError == saveError)&&(identical(other.justSaved, justSaved) || other.justSaved == justSaved));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isEditing,isSaving,saveError,justSaved);
+int get hashCode {
+    return Object.hash(runtimeType,isEditing,isSaving,saveError,justSaved);
+}
 
 @override
 String toString() {
-  return 'SinState(isEditing: $isEditing, isSaving: $isSaving, saveError: $saveError, justSaved: $justSaved)';
+    return 'SinState(isEditing: $isEditing, isSaving: $isSaving, saveError: $saveError, justSaved: $justSaved)';
 }
 
 

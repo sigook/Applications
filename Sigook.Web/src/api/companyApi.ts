@@ -214,8 +214,12 @@ export function createDeal(model: CreateDealModel, file?: File | null): Promise<
   );
 }
 
-export function updateDeal(id: string, model: UpdateDealModel): Promise<void> {
-  return api.put(`${dealsBase}/${id}`, model);
+export function updateDeal(id: string, model: UpdateDealModel, file?: File | null): Promise<void> {
+  return api.put(
+    `${dealsBase}/${id}`,
+    buildMultipartFormData(model, file && model.fileName ? { [model.fileName]: file } : {}),
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
 }
 
 export function deleteDeal(id: string): Promise<void> {

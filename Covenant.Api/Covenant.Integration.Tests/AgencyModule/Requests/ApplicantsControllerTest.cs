@@ -243,6 +243,15 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             Assert.Equal(Startup.FakeWorkerList.Worker.Email, model.Email);
             Assert.Equal(entity.Comments, model.Comments);
             Assert.Equal(entity.CreatedBy, model.CreatedBy);
+
+            Assert.Equal(2, model.ComplianceTotal);
+            Assert.Equal(0, model.ComplianceCompleted);
+            Assert.Equal(1, model.MandatoryPending);
+
+            RequestApplicantDetailModel completed = list.Items.Single(c => c.Id == Startup.FakeApplicantComplianceGet.Id);
+            Assert.Equal(2, completed.ComplianceTotal);
+            Assert.Equal(1, completed.ComplianceCompleted);
+            Assert.Equal(0, completed.MandatoryPending);
         }
 
         [Fact]

@@ -55,11 +55,14 @@ public interface IRequestRepository
     Task<RequestApplicant> GetRequestApplicant(Expression<Func<RequestApplicant, bool>> expression);
     Task<IEnumerable<RequestApplicant>> GetRequestApplicants(Expression<Func<RequestApplicant, bool>> expression);
     Task<PaginatedList<RequestApplicantDetailModel>> GetRequestApplicants(Guid requestId, GetRequestApplicantFilter filter);
+    IQueryable<AgencyApplicantListModel> GetAllAgencyApplicants(Guid agencyId, GetAgencyApplicantsFilter filter);
+    Task<AgencyApplicantsPagedResponse> GetAgencyApplicants(Guid agencyId, GetAgencyApplicantsFilter filter);
     Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm);
     Task<List<ApplicantSearchResultModel>> SearchRunnerProspects(Guid agencyId, Guid requestId, string searchTerm);
     Task<RequestComission> GetRequestComission(Guid requestId);
     Task<IEnumerable<RequestCompanyUser>> GetRequestCompanyUsers(Guid requestId);
     Task<IEnumerable<RequestComplianceItem>> GetComplianceItems(Guid requestId);
+    Task<IEnumerable<RequestComplianceItem>> GetComplianceItems(IEnumerable<Guid> requestIds);
     Task<RequestApplicantComplianceItem> GetApplicantComplianceItem(Guid applicantId, Guid complianceItemId);
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceItems(Guid applicantId);
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceCompletions(IEnumerable<Guid> complianceItemIds);

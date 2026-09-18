@@ -57,6 +57,19 @@ export function showAlertSuccess(successMessage: string): void {
   });
 }
 
+export function showAlertSummary(title: string, message: string): Promise<void> {
+  return new Promise((resolve) => {
+    getDialog().alert({
+      title,
+      message,
+      type: 'is-warning',
+      hasIcon: true,
+      confirmText: 'Ok',
+      onConfirm: () => resolve(),
+    });
+  });
+}
+
 export function showAlertConfirm(title: string, message?: string, confirmBtnText?: string): Promise<boolean> {
   return new Promise((resolve) => {
     getDialog().confirm({

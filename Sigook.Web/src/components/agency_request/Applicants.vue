@@ -7,6 +7,7 @@
       </b-field>
       <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
         pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="createdBy"
+        detailed detail-key="id" detail-transition="fade" v-model:opened-detailed="openedApplicants"
         v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
         @cellclick="onCellClick">
         <template v-slot:empty>
@@ -46,6 +47,15 @@
             <template v-slot="props">
               <b-tag :type="statusTagType(props.row.status)">{{ statusLabel(props.row.status) }}</b-tag>
             </template>
+          </b-table-column>
+          <b-table-column field="compliance" label="Compliance" width="180" v-slot="props">
+            <div class="applicants-compliance">
+              <span class="applicants-compliance-bar">
+                <span :class="{ 'is-complete': !props.row.mandatoryPending }"
+                  :style="{ width: `${compliancePercent(props.row)}%` }"></span>
+              </span>
+              <span class="fz-1">{{ props.row.complianceCompleted }}/{{ props.row.complianceTotal }}</span>
+            </div>
           </b-table-column>
           <b-table-column field="phoneNumber" label="Phone" searchable>
             <template v-slot:searchable>
@@ -100,14 +110,17 @@
                 @click="showAddRunner(props.row)">
                 Add Runner
               </b-dropdown-item>
-              <b-dropdown-item aria-role="listitem" @click="openCompliance(toActionTarget(props.row))">
-                Compliance
-              </b-dropdown-item>
               <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
                 Delete
               </b-dropdown-item>
             </b-dropdown>
           </b-table-column>
+        </template>
+
+        <template #detail="props">
+          <ApplicantComplianceDetail :request-id="serverParams.requestId" :applicant-id="props.row.id"
+            :name="props.row.name ?? ''" :status="props.row.status" :worker-profile-id="props.row.workerProfileId"
+            @loaded="(value) => onComplianceLoaded(props.row, value)" @status-changed="loadApplicants" />
         </template>
       </b-table>
     </div>
@@ -131,7 +144,6 @@
         @updateContent="(data) => saveApplicantComment(data)"></EditTextarea>
     </b-modal>
 
-    <applicant-action-modals :target="target" v-model:compliance-open="showCompliance" @updated="loadApplicants" />
   </div>
 </template>
 <script setup lang="ts">
@@ -149,7 +161,12 @@ import {
 import { convertCandidateToWorker } from "@/api/agencyCandidateApi";
 import { createAgencyRunner } from "@/api/agencyRunnerApi";
 import type { RunnerType } from '@/types/runner';
-import type { CatalogItem } from '@/types/common';
+import type { CatalogItem, TableColumnRef } from '@/types/common';
+import type {
+  AgencyRequestApplicant,
+  AgencyRequestApplicantFilter,
+  CreateRequestApplicantModel,
+} from '@/types/agency';
 import {
   REQUEST_APPLICANT_STATUSES,
   REQUEST_APPLICANT_STATUS_LABELS,
@@ -157,8 +174,7 @@ import {
   requestApplicantStatusLabel,
   requestApplicantStatusTagType,
 } from '@/types/requestApplicant';
-import { useApplicantActions, type ApplicantActionTarget } from '@/composables/useApplicantActions';
-import ApplicantActionModals from '@/components/agency_request/ApplicantActionModals.vue';
+import ApplicantComplianceDetail from '@/components/agency_request/ApplicantComplianceDetail.vue';
 import ManageTabs from './ManageApplicantsModal.vue';
 import SelectRunnerTypeModal from '@/components/runner/SelectRunnerTypeModal.vue';
 import EditTextarea from '@/components/agency_request/EditTextarea.vue';
@@ -170,19 +186,20 @@ const route = useRoute();
 const router = useRouter();
 
 const isLoading = ref(false);
-const currentItem = ref<any>(null);
-const createdAtDatesSelected = ref<any[]>([]);
+const currentItem = ref<AgencyRequestApplicant | null>(null);
+const createdAtDatesSelected = ref<Date[]>([]);
 const modalManageWorkers = ref(false);
 const modalComment = ref(false);
 const modalCandidateDetail = ref(false);
 const modalAddRunner = ref(false);
-const runnerApplicant = ref<any>(null);
+const runnerApplicant = ref<AgencyRequestApplicant | null>(null);
 const candidateDetailId = ref<string | null>(null);
 const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const serverParams = reactive<any>({
+const rows = ref<AgencyRequestApplicant[]>([]);
+const openedApplicants = ref<string[]>([]);
+const serverParams = reactive<AgencyRequestApplicantFilter>({
   sortBy: 1,
-  requestId: route.params.id,
+  requestId: route.params.id as string,
   pageIndex: 1,
   pageSize: 30,
   isDescending: true
@@ -194,17 +211,19 @@ const statusesSelected = ref<CatalogItem<RequestApplicantStatus>[]>([]);
 const statusLabel = requestApplicantStatusLabel;
 const statusTagType = requestApplicantStatusTagType;
 
-const { target, showCompliance, openCompliance } = useApplicantActions();
+function compliancePercent(row: AgencyRequestApplicant): number {
+  return row.complianceTotal ? Math.round((row.complianceCompleted / row.complianceTotal) * 100) : 0;
+}
 
-function toActionTarget(row: any): ApplicantActionTarget {
-  return {
-    requestId: serverParams.requestId,
-    applicantId: row.id,
-    name: row.name,
-    status: row.status,
-    workerProfileId: row.workerProfileId,
-    candidateId: row.candidateId,
-  };
+// The checklist reports its state after every change, so the row's progress
+// stays live without reloading the grid.
+function onComplianceLoaded(
+  row: AgencyRequestApplicant,
+  value: { mandatoryCompleted: boolean; itemsCount: number; completedCount: number },
+) {
+  row.complianceTotal = value.itemsCount;
+  row.complianceCompleted = value.completedCount;
+  row.mandatoryPending = value.mandatoryCompleted ? 0 : Math.max(row.mandatoryPending, 1);
 }
 
 function onStatusChange() {
@@ -230,16 +249,26 @@ function onSortChange(field: string, order: string) {
   loadApplicants();
 }
 
-function onCellClick(row: any, column: any) {
+function onCellClick(row: AgencyRequestApplicant, column: TableColumnRef) {
   switch (column.field) {
     case 'comments':
     case 'actions':
+      break;
+    case 'compliance':
+    case 'status':
+      toggleCompliance(row);
       break;
     default:
       if (row.workerProfileId) {
         router.push(`/recruiting/workers/${row.workerProfileId}`);
       }
   }
+}
+
+function toggleCompliance(row: AgencyRequestApplicant) {
+  openedApplicants.value = openedApplicants.value.includes(row.id)
+    ? openedApplicants.value.filter((id) => id !== row.id)
+    : [...openedApplicants.value, row.id];
 }
 
 function onInputEntered(event: KeyboardEvent) {
@@ -254,8 +283,8 @@ function onCreatedAtCleared() {
 }
 
 function onCreatedAtSelected() {
-  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.createdAtTo = createdAtDatesSelected.value[1];
+  serverParams.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
   loadApplicants();
 }
 
@@ -263,7 +292,7 @@ function loadApplicants() {
   isLoading.value = true;
   getAgencyRequestApplicant(serverParams)
     .then((response) => {
-      rows.value = response.items.map((c: any) => ({ ...c, actions: null }));
+      rows.value = response.items;
       totalItems.value = response.totalItems;
       isLoading.value = false;
     })
@@ -273,7 +302,7 @@ function loadApplicants() {
     });
 }
 
-function addApplicant(model: any) {
+function addApplicant(model: CreateRequestApplicantModel) {
   modalManageWorkers.value = false;
   isLoading.value = true;
   postAgencyRequestApplicant(serverParams.requestId, model).then(() => {
@@ -285,7 +314,7 @@ function addApplicant(model: any) {
   });
 }
 
-function removeApplicant(item: any) {
+function removeApplicant(item: AgencyRequestApplicant) {
   isLoading.value = true;
   deleteAgencyRequestApplicant(serverParams.requestId, item.id).then(() => {
     isLoading.value = false;
@@ -296,15 +325,17 @@ function removeApplicant(item: any) {
   });
 }
 
-function showEditModal(item: any) {
+function showEditModal(item: AgencyRequestApplicant) {
   currentItem.value = item;
   modalComment.value = true;
 }
 
 function saveApplicantComment(comment: string) {
+  const applicant = currentItem.value;
+  if (!applicant) return;
   modalComment.value = false;
   isLoading.value = true;
-  updateAgencyRequestApplicant(serverParams.requestId, currentItem.value.id, { comments: comment })
+  updateAgencyRequestApplicant(serverParams.requestId, applicant.id, { comments: comment })
     .then(() => {
       isLoading.value = false;
       loadApplicants();
@@ -325,16 +356,18 @@ function onCandidateUpdated() {
   loadApplicants();
 }
 
-function showAddRunner(item: any) {
+function showAddRunner(item: AgencyRequestApplicant) {
   runnerApplicant.value = item;
   modalAddRunner.value = true;
 }
 
 function addRunner(type: RunnerType) {
+  const applicant = runnerApplicant.value;
+  if (!applicant?.workerProfileId) return;
   modalAddRunner.value = false;
   isLoading.value = true;
   createAgencyRunner(serverParams.requestId, {
-    workerProfileId: runnerApplicant.value.workerProfileId,
+    workerProfileId: applicant.workerProfileId,
     type
   })
     .then(() => {
@@ -347,7 +380,7 @@ function addRunner(type: RunnerType) {
     });
 }
 
-function convertToWorker(candidateId: any) {
+function convertToWorker(candidateId: string) {
   isLoading.value = true;
   convertCandidateToWorker(candidateId)
     .then(() => {

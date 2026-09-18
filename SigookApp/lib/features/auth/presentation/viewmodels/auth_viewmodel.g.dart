@@ -10,11 +10,11 @@ part of 'auth_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(AuthViewModel)
-const authViewModelProvider = AuthViewModelProvider._();
+final authViewModelProvider = AuthViewModelProvider._();
 
 final class AuthViewModelProvider
     extends $NotifierProvider<AuthViewModel, AuthState> {
-  const AuthViewModelProvider._()
+  AuthViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -41,14 +41,13 @@ final class AuthViewModelProvider
   }
 }
 
-String _$authViewModelHash() => r'b4cb23759c3337eb9b05632af31a717ecb0b7dcf';
+String _$authViewModelHash() => r'6ca0903a8fdc305dbb36dd56029b38d94cfcbf3a';
 
 abstract class _$AuthViewModel extends $Notifier<AuthState> {
   AuthState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AuthState, AuthState>;
     final element =
         ref.element
@@ -58,6 +57,6 @@ abstract class _$AuthViewModel extends $Notifier<AuthState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

@@ -10,11 +10,11 @@ part of 'contact_info_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(ContactInfoViewModel)
-const contactInfoViewModelProvider = ContactInfoViewModelProvider._();
+final contactInfoViewModelProvider = ContactInfoViewModelProvider._();
 
 final class ContactInfoViewModelProvider
     extends $NotifierProvider<ContactInfoViewModel, ContactInfoState> {
-  const ContactInfoViewModelProvider._()
+  ContactInfoViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$ContactInfoViewModel extends $Notifier<ContactInfoState> {
   ContactInfoState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<ContactInfoState, ContactInfoState>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$ContactInfoViewModel extends $Notifier<ContactInfoState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

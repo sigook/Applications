@@ -2,7 +2,7 @@ namespace Covenant.Common.Models.Accounting;
 
 public class TimesheetsReportResponse
 {
-    public int EmployeeId { get; set; }
+    public string EmployeeId { get; set; }
     public string FullName { get; set; }
     public string SocialInsurance { get; set; }
     public string WcCode { get; set; }

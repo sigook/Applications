@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'preferences_info_model.dart';
@@ -9,15 +9,14 @@ part of 'preferences_info_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$PreferencesInfoModel {
 
- Map<String, String> get availabilityType;// {id, value}
- List<Map<String, String>> get availableTimes; List<Map<String, String>> get availableDays; Map<String, String>? get liftingCapacity;// {id, value}
- bool get hasVehicle; List<Map<String, String>> get languages; List<String> get skills;
+ Map<String, String> get availabilityType; List<Map<String, String>> get availableTimes; List<Map<String, String>> get availableDays; Map<String, String>? get liftingCapacity; bool get hasVehicle; List<Map<String, String>> get languages; List<String> get skills;
 /// Create a copy of PreferencesInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +29,21 @@ $PreferencesInfoModelCopyWith<PreferencesInfoModel> get copyWith => _$Preference
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PreferencesInfoModel&&const DeepCollectionEquality().equals(other.availabilityType, availabilityType)&&const DeepCollectionEquality().equals(other.availableTimes, availableTimes)&&const DeepCollectionEquality().equals(other.availableDays, availableDays)&&const DeepCollectionEquality().equals(other.liftingCapacity, liftingCapacity)&&(identical(other.hasVehicle, hasVehicle) || other.hasVehicle == hasVehicle)&&const DeepCollectionEquality().equals(other.languages, languages)&&const DeepCollectionEquality().equals(other.skills, skills));
+  final _this = this as PreferencesInfoModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PreferencesInfoModel&&const DeepCollectionEquality().equals(other.availabilityType, _this.availabilityType)&&const DeepCollectionEquality().equals(other.availableTimes, _this.availableTimes)&&const DeepCollectionEquality().equals(other.availableDays, _this.availableDays)&&const DeepCollectionEquality().equals(other.liftingCapacity, _this.liftingCapacity)&&(identical(other.hasVehicle, _this.hasVehicle) || other.hasVehicle == _this.hasVehicle)&&const DeepCollectionEquality().equals(other.languages, _this.languages)&&const DeepCollectionEquality().equals(other.skills, _this.skills));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(availabilityType),const DeepCollectionEquality().hash(availableTimes),const DeepCollectionEquality().hash(availableDays),const DeepCollectionEquality().hash(liftingCapacity),hasVehicle,const DeepCollectionEquality().hash(languages),const DeepCollectionEquality().hash(skills));
+int get hashCode {
+  final _this = this as PreferencesInfoModel;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.availabilityType),const DeepCollectionEquality().hash(_this.availableTimes),const DeepCollectionEquality().hash(_this.availableDays),const DeepCollectionEquality().hash(_this.liftingCapacity),_this.hasVehicle,const DeepCollectionEquality().hash(_this.languages),const DeepCollectionEquality().hash(_this.skills));
+}
 
 @override
 String toString() {
-  return 'PreferencesInfoModel(availabilityType: $availabilityType, availableTimes: $availableTimes, availableDays: $availableDays, liftingCapacity: $liftingCapacity, hasVehicle: $hasVehicle, languages: $languages, skills: $skills)';
+  final _this = this as PreferencesInfoModel;
+  return 'PreferencesInfoModel(availabilityType: ${_this.availabilityType}, availableTimes: ${_this.availableTimes}, availableDays: ${_this.availableDays}, liftingCapacity: ${_this.liftingCapacity}, hasVehicle: ${_this.hasVehicle}, languages: ${_this.languages}, skills: ${_this.skills})';
 }
 
 
@@ -68,7 +72,7 @@ class _$PreferencesInfoModelCopyWithImpl<$Res>
 /// Create a copy of PreferencesInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? availabilityType = null,Object? availableTimes = null,Object? availableDays = null,Object? liftingCapacity = freezed,Object? hasVehicle = null,Object? languages = null,Object? skills = null,}) {
-  return _then(_self.copyWith(
+  return _then(PreferencesInfoModel(
 availabilityType: null == availabilityType ? _self.availabilityType : availabilityType // ignore: cast_nullable_to_non_nullable
 as Map<String, String>,availableTimes: null == availableTimes ? _self.availableTimes : availableTimes // ignore: cast_nullable_to_non_nullable
 as List<Map<String, String>>,availableDays: null == availableDays ? _self.availableDays : availableDays // ignore: cast_nullable_to_non_nullable
@@ -211,7 +215,7 @@ return $default(_that.availabilityType,_that.availableTimes,_that.availableDays,
 @JsonSerializable()
 
 class _PreferencesInfoModel extends PreferencesInfoModel {
-  const _PreferencesInfoModel({required final  Map<String, String> availabilityType, required final  List<Map<String, String>> availableTimes, required final  List<Map<String, String>> availableDays, required final  Map<String, String>? liftingCapacity, required this.hasVehicle, required final  List<Map<String, String>> languages, required final  List<String> skills}): _availabilityType = availabilityType,_availableTimes = availableTimes,_availableDays = availableDays,_liftingCapacity = liftingCapacity,_languages = languages,_skills = skills,super._();
+  const _PreferencesInfoModel({required  Map<String, String> availabilityType, required  List<Map<String, String>> availableTimes, required  List<Map<String, String>> availableDays, required  Map<String, String>? liftingCapacity, required this.hasVehicle, required  List<Map<String, String>> languages, required  List<String> skills}): _availabilityType = availabilityType,_availableTimes = availableTimes,_availableDays = availableDays,_liftingCapacity = liftingCapacity,_languages = languages,_skills = skills,super._();
   factory _PreferencesInfoModel.fromJson(Map<String, dynamic> json) => _$PreferencesInfoModelFromJson(json);
 
  final  Map<String, String> _availabilityType;
@@ -221,9 +225,7 @@ class _PreferencesInfoModel extends PreferencesInfoModel {
   return EqualUnmodifiableMapView(_availabilityType);
 }
 
-// {id, value}
  final  List<Map<String, String>> _availableTimes;
-// {id, value}
 @override List<Map<String, String>> get availableTimes {
   if (_availableTimes is EqualUnmodifiableListView) return _availableTimes;
   // ignore: implicit_dynamic_type
@@ -246,7 +248,6 @@ class _PreferencesInfoModel extends PreferencesInfoModel {
   return EqualUnmodifiableMapView(value);
 }
 
-// {id, value}
 @override final  bool hasVehicle;
  final  List<Map<String, String>> _languages;
 @override List<Map<String, String>> get languages {
@@ -276,16 +277,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PreferencesInfoModel&&const DeepCollectionEquality().equals(other._availabilityType, _availabilityType)&&const DeepCollectionEquality().equals(other._availableTimes, _availableTimes)&&const DeepCollectionEquality().equals(other._availableDays, _availableDays)&&const DeepCollectionEquality().equals(other._liftingCapacity, _liftingCapacity)&&(identical(other.hasVehicle, hasVehicle) || other.hasVehicle == hasVehicle)&&const DeepCollectionEquality().equals(other._languages, _languages)&&const DeepCollectionEquality().equals(other._skills, _skills));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _PreferencesInfoModel&&const DeepCollectionEquality().equals(other.availabilityType, _availabilityType)&&const DeepCollectionEquality().equals(other.availableTimes, _availableTimes)&&const DeepCollectionEquality().equals(other.availableDays, _availableDays)&&const DeepCollectionEquality().equals(other.liftingCapacity, _liftingCapacity)&&(identical(other.hasVehicle, hasVehicle) || other.hasVehicle == hasVehicle)&&const DeepCollectionEquality().equals(other.languages, _languages)&&const DeepCollectionEquality().equals(other.skills, _skills));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_availabilityType),const DeepCollectionEquality().hash(_availableTimes),const DeepCollectionEquality().hash(_availableDays),const DeepCollectionEquality().hash(_liftingCapacity),hasVehicle,const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_skills));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_availabilityType),const DeepCollectionEquality().hash(_availableTimes),const DeepCollectionEquality().hash(_availableDays),const DeepCollectionEquality().hash(_liftingCapacity),hasVehicle,const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_skills));
+}
 
 @override
 String toString() {
-  return 'PreferencesInfoModel(availabilityType: $availabilityType, availableTimes: $availableTimes, availableDays: $availableDays, liftingCapacity: $liftingCapacity, hasVehicle: $hasVehicle, languages: $languages, skills: $skills)';
+    return 'PreferencesInfoModel(availabilityType: $availabilityType, availableTimes: $availableTimes, availableDays: $availableDays, liftingCapacity: $liftingCapacity, hasVehicle: $hasVehicle, languages: $languages, skills: $skills)';
 }
 
 

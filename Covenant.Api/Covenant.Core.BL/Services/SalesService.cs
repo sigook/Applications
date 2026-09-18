@@ -22,6 +22,7 @@ public class SalesService(
     ICompanyRepository companyRepository,
     IIdentityServerService identityServerService,
     IUploadedFilesService uploadedFilesService,
+    IDocumentService documentService,
     IValidator<CreateCompanyInteractionModel> createInteractionValidator,
     IValidator<UpdateCompanyInteractionModel> updateInteractionValidator,
     IValidator<CreateDealModel> createDealValidator,
@@ -129,15 +130,34 @@ public class SalesService(
         return Result.Ok(deal.Id);
     }
 
-    public async Task<Result> UpdateDeal(Guid id, UpdateDealModel model)
+    public async Task<Result> UpdateDeal(Guid id)
     {
+        var validation = uploadedFilesService.Validate();
+        if (!validation) return Result.Fail(validation.Errors);
+        var model = uploadedFilesService.GetModel<UpdateDealModel>();
         var validationResult = await updateDealValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
         var result = await GetOwnedDeal(id);
         if (!result) return Result.Fail(result.Errors);
-        result.Value.Update(model.Title, model.Date, model.Value, model.Type, model.Status, model.DocumentId);
-        companyRepository.Update(result.Value);
+        var deal = result.Value;
+        var previousDocumentId = deal.DocumentId;
+        var documentId = model.DocumentId;
+        var hasNewFile = !string.IsNullOrWhiteSpace(model.FileName);
+        if (hasNewFile)
+        {
+            var file = CovenantFile.Create(model.FileName);
+            if (!file) return Result.Fail(file.Errors);
+            await companyRepository.Create(file.Value);
+            documentId = file.Value.Id;
+        }
+        deal.Update(model.Title, model.Date, model.Value, model.Type, model.Status, documentId);
+        companyRepository.Update(deal);
         await companyRepository.SaveChangesAsync();
+        if (hasNewFile)
+        {
+            await uploadedFilesService.Upload([model.FileName]);
+            if (previousDocumentId.HasValue) await documentService.DeleteFile(previousDocumentId.Value);
+        }
         return Result.Ok();
     }
 

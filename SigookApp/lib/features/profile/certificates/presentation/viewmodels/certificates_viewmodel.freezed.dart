@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'certificates_viewmodel.dart';
@@ -9,6 +9,7 @@ part of 'certificates_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $CertificatesStateCopyWith<CertificatesState> get copyWith => _$CertificatesStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CertificatesState&&(identical(other.isUploading, isUploading) || other.isUploading == isUploading)&&(identical(other.uploadError, uploadError) || other.uploadError == uploadError)&&(identical(other.justUploaded, justUploaded) || other.justUploaded == justUploaded)&&(identical(other.isDeleting, isDeleting) || other.isDeleting == isDeleting)&&(identical(other.deleteError, deleteError) || other.deleteError == deleteError)&&(identical(other.justDeleted, justDeleted) || other.justDeleted == justDeleted));
+  final _this = this as CertificatesState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CertificatesState&&(identical(other.isUploading, _this.isUploading) || other.isUploading == _this.isUploading)&&(identical(other.uploadError, _this.uploadError) || other.uploadError == _this.uploadError)&&(identical(other.justUploaded, _this.justUploaded) || other.justUploaded == _this.justUploaded)&&(identical(other.isDeleting, _this.isDeleting) || other.isDeleting == _this.isDeleting)&&(identical(other.deleteError, _this.deleteError) || other.deleteError == _this.deleteError)&&(identical(other.justDeleted, _this.justDeleted) || other.justDeleted == _this.justDeleted));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isUploading,uploadError,justUploaded,isDeleting,deleteError,justDeleted);
+int get hashCode {
+  final _this = this as CertificatesState;
+  return Object.hash(runtimeType,_this.isUploading,_this.uploadError,_this.justUploaded,_this.isDeleting,_this.deleteError,_this.justDeleted);
+}
 
 @override
 String toString() {
-  return 'CertificatesState(isUploading: $isUploading, uploadError: $uploadError, justUploaded: $justUploaded, isDeleting: $isDeleting, deleteError: $deleteError, justDeleted: $justDeleted)';
+  final _this = this as CertificatesState;
+  return 'CertificatesState(isUploading: ${_this.isUploading}, uploadError: ${_this.uploadError}, justUploaded: ${_this.justUploaded}, isDeleting: ${_this.isDeleting}, deleteError: ${_this.deleteError}, justDeleted: ${_this.justDeleted})';
 }
 
 
@@ -63,7 +69,7 @@ class _$CertificatesStateCopyWithImpl<$Res>
 /// Create a copy of CertificatesState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isUploading = null,Object? uploadError = freezed,Object? justUploaded = null,Object? isDeleting = null,Object? deleteError = freezed,Object? justDeleted = null,}) {
-  return _then(_self.copyWith(
+  return _then(CertificatesState(
 isUploading: null == isUploading ? _self.isUploading : isUploading // ignore: cast_nullable_to_non_nullable
 as bool,uploadError: freezed == uploadError ? _self.uploadError : uploadError // ignore: cast_nullable_to_non_nullable
 as String?,justUploaded: null == justUploaded ? _self.justUploaded : justUploaded // ignore: cast_nullable_to_non_nullable
@@ -231,16 +237,18 @@ _$CertificatesStateCopyWith<_CertificatesState> get copyWith => __$CertificatesS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CertificatesState&&(identical(other.isUploading, isUploading) || other.isUploading == isUploading)&&(identical(other.uploadError, uploadError) || other.uploadError == uploadError)&&(identical(other.justUploaded, justUploaded) || other.justUploaded == justUploaded)&&(identical(other.isDeleting, isDeleting) || other.isDeleting == isDeleting)&&(identical(other.deleteError, deleteError) || other.deleteError == deleteError)&&(identical(other.justDeleted, justDeleted) || other.justDeleted == justDeleted));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CertificatesState&&(identical(other.isUploading, isUploading) || other.isUploading == isUploading)&&(identical(other.uploadError, uploadError) || other.uploadError == uploadError)&&(identical(other.justUploaded, justUploaded) || other.justUploaded == justUploaded)&&(identical(other.isDeleting, isDeleting) || other.isDeleting == isDeleting)&&(identical(other.deleteError, deleteError) || other.deleteError == deleteError)&&(identical(other.justDeleted, justDeleted) || other.justDeleted == justDeleted));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isUploading,uploadError,justUploaded,isDeleting,deleteError,justDeleted);
+int get hashCode {
+    return Object.hash(runtimeType,isUploading,uploadError,justUploaded,isDeleting,deleteError,justDeleted);
+}
 
 @override
 String toString() {
-  return 'CertificatesState(isUploading: $isUploading, uploadError: $uploadError, justUploaded: $justUploaded, isDeleting: $isDeleting, deleteError: $deleteError, justDeleted: $justDeleted)';
+    return 'CertificatesState(isUploading: $isUploading, uploadError: $uploadError, justUploaded: $justUploaded, isDeleting: $isDeleting, deleteError: $deleteError, justDeleted: $justDeleted)';
 }
 
 

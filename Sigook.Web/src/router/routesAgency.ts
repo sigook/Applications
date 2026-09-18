@@ -3,12 +3,13 @@ import { recruitingAccess, agencyStaff, salesAccess, adminAccess } from "@/secur
 import {
   loadAgencyCompaniesResolver,
   loadCompanyToUpdateResolver,
-  loadAgencyRequestToUpdateResolver
+  loadAgencyRequestFormResolver
 } from "@/resolvers/agencyResolvers";
 
 const AgencyRequests = () => import("@/pages/agency/Requests.vue");
 const AgencyWeeklyBoard = () => import("@/pages/agency/WeeklyBoard.vue");
 const AgencyAttendanceReview = () => import("@/pages/agency/AttendanceReview.vue");
+const AgencyApplicants = () => import("@/pages/agency/Applicants.vue");
 const AgencyRequest = () => import("@/pages/agency/Request.vue");
 const AgencyCreateRequest = () => import("@/pages/agency/AgencyCreateRequest.vue");
 const AgencyWorkers = () => import("@/pages/agency/Workers.vue");
@@ -52,6 +53,15 @@ const routesAgency: RouteRecordRaw[] = [
     },
   },
   {
+    path: "/recruiting/applicants",
+    component: AgencyApplicants,
+    name: "agency-applicants",
+    meta: {
+      requiresAuth: true,
+      role: recruitingAccess,
+    },
+  },
+  {
     path: "/recruiting/attendance-review",
     component: AgencyAttendanceReview,
     name: "agency-attendance-review",
@@ -68,6 +78,7 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: recruitingAccess,
     },
+    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/recruiting/requests/update/:companyProfileId/:requestId",
@@ -77,7 +88,18 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: recruitingAccess,
     },
-    beforeEnter: loadAgencyRequestToUpdateResolver
+    beforeEnter: loadAgencyRequestFormResolver
+  },
+  {
+    path: "/recruiting/requests/duplicate/:companyProfileId/:requestId",
+    component: AgencyCreateRequest,
+    name: "agency-duplicate-request",
+    meta: {
+      requiresAuth: true,
+      role: recruitingAccess,
+      isDuplicate: true,
+    },
+    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/recruiting/requests/:id",
@@ -106,6 +128,7 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: salesAccess,
     },
+    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/sales/requests/update/:companyProfileId/:requestId",
@@ -115,7 +138,18 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: salesAccess,
     },
-    beforeEnter: loadAgencyRequestToUpdateResolver
+    beforeEnter: loadAgencyRequestFormResolver
+  },
+  {
+    path: "/sales/requests/duplicate/:companyProfileId/:requestId",
+    component: AgencyCreateRequest,
+    name: "sales-duplicate-request",
+    meta: {
+      requiresAuth: true,
+      role: salesAccess,
+      isDuplicate: true,
+    },
+    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/sales/requests/:id",

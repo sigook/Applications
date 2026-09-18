@@ -10,11 +10,11 @@ part of 'registration_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(RegistrationViewModel)
-const registrationViewModelProvider = RegistrationViewModelProvider._();
+final registrationViewModelProvider = RegistrationViewModelProvider._();
 
 final class RegistrationViewModelProvider
     extends $NotifierProvider<RegistrationViewModel, RegistrationForm> {
-  const RegistrationViewModelProvider._()
+  RegistrationViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$RegistrationViewModel extends $Notifier<RegistrationForm> {
   RegistrationForm build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<RegistrationForm, RegistrationForm>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$RegistrationViewModel extends $Notifier<RegistrationForm> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

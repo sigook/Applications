@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'registration_form_model.dart';
@@ -9,6 +9,7 @@ part of 'registration_form_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $RegistrationFormModelCopyWith<RegistrationFormModel> get copyWith => _$Registra
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegistrationFormModel&&(identical(other.basicInfo, basicInfo) || other.basicInfo == basicInfo)&&(identical(other.preferencesInfo, preferencesInfo) || other.preferencesInfo == preferencesInfo)&&(identical(other.documentsInfo, documentsInfo) || other.documentsInfo == documentsInfo)&&(identical(other.accountInfo, accountInfo) || other.accountInfo == accountInfo));
+  final _this = this as RegistrationFormModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegistrationFormModel&&(identical(other.basicInfo, _this.basicInfo) || other.basicInfo == _this.basicInfo)&&(identical(other.preferencesInfo, _this.preferencesInfo) || other.preferencesInfo == _this.preferencesInfo)&&(identical(other.documentsInfo, _this.documentsInfo) || other.documentsInfo == _this.documentsInfo)&&(identical(other.accountInfo, _this.accountInfo) || other.accountInfo == _this.accountInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,basicInfo,preferencesInfo,documentsInfo,accountInfo);
+int get hashCode {
+  final _this = this as RegistrationFormModel;
+  return Object.hash(runtimeType,_this.basicInfo,_this.preferencesInfo,_this.documentsInfo,_this.accountInfo);
+}
 
 @override
 String toString() {
-  return 'RegistrationFormModel(basicInfo: $basicInfo, preferencesInfo: $preferencesInfo, documentsInfo: $documentsInfo, accountInfo: $accountInfo)';
+  final _this = this as RegistrationFormModel;
+  return 'RegistrationFormModel(basicInfo: ${_this.basicInfo}, preferencesInfo: ${_this.preferencesInfo}, documentsInfo: ${_this.documentsInfo}, accountInfo: ${_this.accountInfo})';
 }
 
 
@@ -66,7 +72,7 @@ class _$RegistrationFormModelCopyWithImpl<$Res>
 /// Create a copy of RegistrationFormModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? basicInfo = freezed,Object? preferencesInfo = freezed,Object? documentsInfo = freezed,Object? accountInfo = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(RegistrationFormModel(
 basicInfo: freezed == basicInfo ? _self.basicInfo : basicInfo // ignore: cast_nullable_to_non_nullable
 as BasicInfoModel?,preferencesInfo: freezed == preferencesInfo ? _self.preferencesInfo : preferencesInfo // ignore: cast_nullable_to_non_nullable
 as PreferencesInfoModel?,documentsInfo: freezed == documentsInfo ? _self.documentsInfo : documentsInfo // ignore: cast_nullable_to_non_nullable
@@ -263,16 +269,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegistrationFormModel&&(identical(other.basicInfo, basicInfo) || other.basicInfo == basicInfo)&&(identical(other.preferencesInfo, preferencesInfo) || other.preferencesInfo == preferencesInfo)&&(identical(other.documentsInfo, documentsInfo) || other.documentsInfo == documentsInfo)&&(identical(other.accountInfo, accountInfo) || other.accountInfo == accountInfo));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegistrationFormModel&&(identical(other.basicInfo, basicInfo) || other.basicInfo == basicInfo)&&(identical(other.preferencesInfo, preferencesInfo) || other.preferencesInfo == preferencesInfo)&&(identical(other.documentsInfo, documentsInfo) || other.documentsInfo == documentsInfo)&&(identical(other.accountInfo, accountInfo) || other.accountInfo == accountInfo));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,basicInfo,preferencesInfo,documentsInfo,accountInfo);
+int get hashCode {
+    return Object.hash(runtimeType,basicInfo,preferencesInfo,documentsInfo,accountInfo);
+}
 
 @override
 String toString() {
-  return 'RegistrationFormModel(basicInfo: $basicInfo, preferencesInfo: $preferencesInfo, documentsInfo: $documentsInfo, accountInfo: $accountInfo)';
+    return 'RegistrationFormModel(basicInfo: $basicInfo, preferencesInfo: $preferencesInfo, documentsInfo: $documentsInfo, accountInfo: $accountInfo)';
 }
 
 

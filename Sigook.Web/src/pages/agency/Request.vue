@@ -37,6 +37,10 @@
             @click="router.push({ path: `${requestBase}/update/${request.companyProfileId}/${request.id}` })">
             Edit Request
           </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem"
+            @click="router.push({ path: `${requestBase}/duplicate/${request.companyProfileId}/${request.id}` })">
+            Duplicate Request
+          </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" @click="showShiftModal = true">
             Edit Shift
           </b-dropdown-item>
@@ -59,6 +63,10 @@
           </template>
           <b-dropdown-item aria-role="listitem" @click="onOpenRequest(request.id)">
             Reopen
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem"
+            @click="router.push({ path: `${requestBase}/duplicate/${request.companyProfileId}/${request.id}` })">
+            Duplicate Request
           </b-dropdown-item>
         </b-dropdown>
       </div>

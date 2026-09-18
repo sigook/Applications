@@ -10,11 +10,11 @@ part of 'documents_viewmodel.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(DocumentsViewModel)
-const documentsViewModelProvider = DocumentsViewModelProvider._();
+final documentsViewModelProvider = DocumentsViewModelProvider._();
 
 final class DocumentsViewModelProvider
     extends $NotifierProvider<DocumentsViewModel, DocumentsState> {
-  const DocumentsViewModelProvider._()
+  DocumentsViewModelProvider._()
     : super(
         from: null,
         argument: null,
@@ -48,8 +48,7 @@ abstract class _$DocumentsViewModel extends $Notifier<DocumentsState> {
   DocumentsState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<DocumentsState, DocumentsState>;
     final element =
         ref.element
@@ -59,6 +58,6 @@ abstract class _$DocumentsViewModel extends $Notifier<DocumentsState> {
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

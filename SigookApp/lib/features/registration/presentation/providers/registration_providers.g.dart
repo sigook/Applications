@@ -10,7 +10,7 @@ part of 'registration_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(RegistrationFormStateNotifier)
-const registrationFormStateProvider = RegistrationFormStateNotifierProvider._();
+final registrationFormStateProvider = RegistrationFormStateNotifierProvider._();
 
 final class RegistrationFormStateNotifierProvider
     extends
@@ -18,7 +18,7 @@ final class RegistrationFormStateNotifierProvider
           RegistrationFormStateNotifier,
           RegistrationFormState
         > {
-  const RegistrationFormStateNotifierProvider._()
+  RegistrationFormStateNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -53,8 +53,7 @@ abstract class _$RegistrationFormStateNotifier
   RegistrationFormState build();
   @$mustCallSuper
   @override
-  void runBuild() {
-    final created = build();
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<RegistrationFormState, RegistrationFormState>;
     final element =
         ref.element
@@ -64,6 +63,6 @@ abstract class _$RegistrationFormStateNotifier
               Object?,
               Object?
             >;
-    element.handleValue(ref, created);
+    return element.handleCreate(ref, build);
   }
 }

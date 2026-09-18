@@ -2,8 +2,7 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <form class="page-form" @submit.prevent="onSubmit">
-      <PageHeader :title="isUpdate ? `Update Request (${request.numberId})` : 'Create Request'"
-        :crumbs="crumbs" :back-to="requestBase" />
+      <PageHeader :title="pageTitle" :crumbs="crumbs" :back-to="requestBase" />
 
       <div class="columns">
         <div class="column is-8-desktop">
@@ -281,9 +280,8 @@ import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { useAdmin } from '@/composables/useAdmin';
 import { useModuleBase } from '@/composables/useModuleBase';
-import { getAgencyPersonnel } from '@/api/agencyApi';
-import { getAgencyCompanyJobPositions, getAgencyCompanyLocation, getCompanyUsers } from '@/api/agencyCompanyApi';
-import { postAgencyRequest, updateAgencyRequest } from '@/api/agencyRequestApi';
+import { getAgencyCompanyJobPositions, getAgencyCompanyLocation } from '@/api/agencyCompanyApi';
+import { postAgencyRequest, updateAgencyRequest, duplicateAgencyRequest } from '@/api/agencyRequestApi';
 import {
   DurationTerm,
   DurationTermLabels,
@@ -297,7 +295,7 @@ import LocationForm from '@/components/agency_company/LocationForm.vue';
 import RequestComplianceModal from '@/components/agency_request/RequestComplianceModal.vue';
 import { buildDefaultComplianceItems } from '@/constants/compliance';
 import type { PageBreadcrumb } from '@/types/common';
-import type { RequestComplianceItem } from '@/types/agency';
+import type { AgencyRequestDetail, AgencyRequestLookup, RequestComplianceItem } from '@/types/agency';
 
 const route = useRoute();
 const router = useRouter();
@@ -397,8 +395,17 @@ const errorMessage = 'Please make sure all required fields are filled out correc
 const showRolesModal = ref(false);
 const showLocationModal = ref(false);
 const showComplianceModal = ref(false);
-const isUpdate = ref(!!(route.meta as any).agencyRequest);
+const lookup = (route.meta as Record<string, unknown>).requestLookup as AgencyRequestLookup;
+const sourceRequest = lookup.request;
+const isDuplicate = ref(!!(route.meta as Record<string, unknown>).isDuplicate && !!sourceRequest);
+const isUpdate = ref(!!sourceRequest && !isDuplicate.value);
 const companyUserTagInput = ref<any>(null);
+
+const pageTitle = computed(() => {
+  if (isUpdate.value) return `Update Request (${request.value.numberId})`;
+  if (isDuplicate.value) return `Duplicate Request (from ${sourceRequest?.numberId})`;
+  return 'Create Request';
+});
 
 const finishDate = computed(() => dayjs(startAt.value).add(1, 'year').toDate());
 
@@ -473,66 +480,83 @@ watch(() => request.value.usesRunners, (val) => {
   }
 });
 
-(async () => {
-  const agencyRequest = (route.meta as any).agencyRequest;
+const clearedOnDuplicate = {
+  id: undefined,
+  numberId: undefined,
+  status: undefined,
+  cancellationDetail: undefined,
+  createdAt: undefined,
+  createdBy: undefined,
+  invitationSentItAt: undefined,
+  workersQuantityWorking: undefined,
+  displayRecruiters: undefined,
+  displayShift: undefined,
+  finishAt: null,
+};
+
+(() => {
   request.value.companyProfileId = companyProfileId.value;
-  if (agencyRequest) {
-    companyJobPositions.value = route.meta.companyJobPositions as unknown[];
-    locations.value = route.meta.companyLocations as unknown[];
-    salesRepresentatives.value = route.meta.agencyPersonnel as unknown[];
-    companyUsers.value = route.meta.companyUsers as unknown[];
+  companyJobPositions.value = lookup.jobPositions;
+  locations.value = lookup.locations;
+  salesRepresentatives.value = lookup.personnel;
+  companyUsers.value = lookup.companyUsers;
+  if (!sourceRequest) return;
+
+  const agencyRequest = sourceRequest;
+  request.value = {
+    ...agencyRequest,
+    durationBreak: agencyRequest.breakIsPaid ? dayjs(`${dayjs().format('YYYY-MM-DD')}T${agencyRequest.durationBreak}`).toDate() : dayjs().startOf('day').toDate(),
+    jobPositionRateId: agencyRequest.jobPositionId,
+    rate: agencyRequest.workerRate,
+    finishAt: agencyRequest.finishAt ? new Date(agencyRequest.finishAt) : null,
+  };
+  if (isDuplicate.value) {
     request.value = {
-      ...agencyRequest,
-      durationBreak: agencyRequest.breakIsPaid ? dayjs(`${dayjs().format('YYYY-MM-DD')}T${agencyRequest.durationBreak}`).toDate() : dayjs().startOf('day').toDate(),
-      jobPositionRateId: agencyRequest.jobPositionId,
-      rate: agencyRequest.workerRate,
-      finishAt: agencyRequest.finishAt ? new Date(agencyRequest.finishAt) : null,
+      ...request.value,
+      ...clearedOnDuplicate,
+      companyProfileId: agencyRequest.companyProfileId,
+      complianceItems: (agencyRequest.complianceItems ?? [])
+        .map(({ name, isMandatory, documentTarget }) => ({ name, isMandatory, documentTarget })),
     };
-    directHiring.value = agencyRequest.workerSalary ? true : false;
-    sameBillingTitle.value = agencyRequest.jobTitle === agencyRequest.billingTitle;
-    companyUsersSelected.value = companyUsers.value.filter((cu) => agencyRequest.companyUserIds.some((ar: any) => cu.id == ar));
-
-    let record: any = companyJobPositions.value.find((cjp) => cjp.id === agencyRequest.jobPositionId);
-    if (record) {
-      form.setFieldValue('jobPosition', record.jobPosition);
-      jobPositionSelected.value = record;
-    }
-    record = locations.value.find((l) => l.address === agencyRequest.jobLocation.address);
-    if (record) {
-      request.value.locationId = record.id;
-    }
-    record = locations.value.find((l) => l.id === request.value.locationId);
-    if (record) {
-      form.setFieldValue('branchOffice', record.formattedAddress);
-      locationSelected.value = record;
-    }
-    record = salesRepresentatives.value.find((sr) => sr.id === agencyRequest.salesRepresentativeId);
-    if (record) {
-      salesRepresentative.value = `${record.name} - ${record.email}`;
-      salesRepresentativeSelected.value = record;
-    }
-
-    form.hydrate({
-      jobTitle: agencyRequest.jobTitle,
-      billingTitle: agencyRequest.billingTitle,
-      jobCosting: agencyRequest.jobCosting,
-      workersQuantity: agencyRequest.workersQuantity,
-      workerSalary: agencyRequest.workerSalary,
-      jobPosition: jobPosition.value,
-      branchOffice: branchOffice.value,
-      description: agencyRequest.description,
-      requirements: agencyRequest.requirements,
-      incentive: agencyRequest.incentive,
-      incentiveDescription: agencyRequest.incentiveDescription,
-      startAt: new Date(agencyRequest.startAt),
-    });
-  } else {
-    companyJobPositions.value = await getAgencyCompanyJobPositions(companyProfileId.value);
-    locations.value = await getAgencyCompanyLocation(companyProfileId.value);
-    salesRepresentatives.value = await getAgencyPersonnel();
-    companyUsers.value = await getCompanyUsers(companyProfileId.value);
   }
-  isLoading.value = false;
+  directHiring.value = agencyRequest.workerSalary ? true : false;
+  sameBillingTitle.value = agencyRequest.jobTitle === agencyRequest.billingTitle;
+  companyUsersSelected.value = companyUsers.value.filter((cu) => (agencyRequest.companyUserIds ?? []).some((ar: any) => cu.id == ar));
+
+  let record: any = companyJobPositions.value.find((cjp) => cjp.id === agencyRequest.jobPositionId);
+  if (record) {
+    form.setFieldValue('jobPosition', record.jobPosition);
+    jobPositionSelected.value = record;
+  }
+  record = locations.value.find((l) => l.address === agencyRequest.jobLocation?.address);
+  if (record) {
+    request.value.locationId = record.id;
+  }
+  record = locations.value.find((l) => l.id === request.value.locationId);
+  if (record) {
+    form.setFieldValue('branchOffice', record.formattedAddress);
+    locationSelected.value = record;
+  }
+  record = salesRepresentatives.value.find((sr) => sr.id === agencyRequest.salesRepresentativeId);
+  if (record) {
+    salesRepresentative.value = `${record.name} - ${record.email}`;
+    salesRepresentativeSelected.value = record;
+  }
+
+  form.hydrate({
+    jobTitle: agencyRequest.jobTitle,
+    billingTitle: agencyRequest.billingTitle,
+    jobCosting: agencyRequest.jobCosting,
+    workersQuantity: agencyRequest.workersQuantity,
+    workerSalary: agencyRequest.workerSalary,
+    jobPosition: jobPosition.value,
+    branchOffice: branchOffice.value,
+    description: agencyRequest.description,
+    requirements: agencyRequest.requirements,
+    incentive: agencyRequest.incentive,
+    incentiveDescription: agencyRequest.incentiveDescription,
+    startAt: isDuplicate.value ? null : new Date(agencyRequest.startAt as string),
+  });
 })();
 
 function onJobPositionSelected(option: any) {
@@ -621,9 +645,12 @@ function onSubmit() {
 
 function createRequest(payload: any) {
   isLoading.value = true;
-  postAgencyRequest(payload)
-    .then((response: any) => {
-      showAlertSuccess('Request created');
+  const create = isDuplicate.value
+    ? duplicateAgencyRequest(sourceRequest!.id, payload)
+    : postAgencyRequest(payload);
+  create
+    .then((response: AgencyRequestDetail) => {
+      showAlertSuccess(isDuplicate.value ? 'Request duplicated' : 'Request created');
       router.push(requestBase.value + '/' + response.id);
       isLoading.value = false;
     })

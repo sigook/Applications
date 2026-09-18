@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'auth_viewmodel.dart';
@@ -9,6 +9,7 @@ part of 'auth_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -24,23 +25,29 @@ $AuthStateCopyWith<AuthState> get copyWith => _$AuthStateCopyWithImpl<AuthState>
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  final _this = this as AuthState;
   properties
     ..add(DiagnosticsProperty('type', 'AuthState'))
-    ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('errorCode', errorCode))..add(DiagnosticsProperty('token', token))..add(DiagnosticsProperty('isAuthenticated', isAuthenticated))..add(DiagnosticsProperty('isRestoringSession', isRestoringSession))..add(DiagnosticsProperty('sessionExpired', sessionExpired))..add(DiagnosticsProperty('justConfirmationSent', justConfirmationSent));
+    ..add(DiagnosticsProperty('isLoading', _this.isLoading))..add(DiagnosticsProperty('error', _this.error))..add(DiagnosticsProperty('errorCode', _this.errorCode))..add(DiagnosticsProperty('token', _this.token))..add(DiagnosticsProperty('isAuthenticated', _this.isAuthenticated))..add(DiagnosticsProperty('isRestoringSession', _this.isRestoringSession))..add(DiagnosticsProperty('sessionExpired', _this.sessionExpired))..add(DiagnosticsProperty('justConfirmationSent', _this.justConfirmationSent));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorCode, errorCode) || other.errorCode == errorCode)&&(identical(other.token, token) || other.token == token)&&(identical(other.isAuthenticated, isAuthenticated) || other.isAuthenticated == isAuthenticated)&&(identical(other.isRestoringSession, isRestoringSession) || other.isRestoringSession == isRestoringSession)&&(identical(other.sessionExpired, sessionExpired) || other.sessionExpired == sessionExpired)&&(identical(other.justConfirmationSent, justConfirmationSent) || other.justConfirmationSent == justConfirmationSent));
+  final _this = this as AuthState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.error, _this.error) || other.error == _this.error)&&(identical(other.errorCode, _this.errorCode) || other.errorCode == _this.errorCode)&&(identical(other.token, _this.token) || other.token == _this.token)&&(identical(other.isAuthenticated, _this.isAuthenticated) || other.isAuthenticated == _this.isAuthenticated)&&(identical(other.isRestoringSession, _this.isRestoringSession) || other.isRestoringSession == _this.isRestoringSession)&&(identical(other.sessionExpired, _this.sessionExpired) || other.sessionExpired == _this.sessionExpired)&&(identical(other.justConfirmationSent, _this.justConfirmationSent) || other.justConfirmationSent == _this.justConfirmationSent));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,error,errorCode,token,isAuthenticated,isRestoringSession,sessionExpired,justConfirmationSent);
+int get hashCode {
+  final _this = this as AuthState;
+  return Object.hash(runtimeType,_this.isLoading,_this.error,_this.errorCode,_this.token,_this.isAuthenticated,_this.isRestoringSession,_this.sessionExpired,_this.justConfirmationSent);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'AuthState(isLoading: $isLoading, error: $error, errorCode: $errorCode, token: $token, isAuthenticated: $isAuthenticated, isRestoringSession: $isRestoringSession, sessionExpired: $sessionExpired, justConfirmationSent: $justConfirmationSent)';
+  final _this = this as AuthState;
+  return 'AuthState(isLoading: ${_this.isLoading}, error: ${_this.error}, errorCode: ${_this.errorCode}, token: ${_this.token}, isAuthenticated: ${_this.isAuthenticated}, isRestoringSession: ${_this.isRestoringSession}, sessionExpired: ${_this.sessionExpired}, justConfirmationSent: ${_this.justConfirmationSent})';
 }
 
 
@@ -69,7 +76,7 @@ class _$AuthStateCopyWithImpl<$Res>
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? error = freezed,Object? errorCode = freezed,Object? token = freezed,Object? isAuthenticated = null,Object? isRestoringSession = null,Object? sessionExpired = null,Object? justConfirmationSent = null,}) {
-  return _then(_self.copyWith(
+  return _then(AuthState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,errorCode: freezed == errorCode ? _self.errorCode : errorCode // ignore: cast_nullable_to_non_nullable
@@ -234,23 +241,25 @@ _$AuthStateCopyWith<_AuthState> get copyWith => __$AuthStateCopyWithImpl<_AuthSt
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
+    properties
     ..add(DiagnosticsProperty('type', 'AuthState'))
     ..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('error', error))..add(DiagnosticsProperty('errorCode', errorCode))..add(DiagnosticsProperty('token', token))..add(DiagnosticsProperty('isAuthenticated', isAuthenticated))..add(DiagnosticsProperty('isRestoringSession', isRestoringSession))..add(DiagnosticsProperty('sessionExpired', sessionExpired))..add(DiagnosticsProperty('justConfirmationSent', justConfirmationSent));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorCode, errorCode) || other.errorCode == errorCode)&&(identical(other.token, token) || other.token == token)&&(identical(other.isAuthenticated, isAuthenticated) || other.isAuthenticated == isAuthenticated)&&(identical(other.isRestoringSession, isRestoringSession) || other.isRestoringSession == isRestoringSession)&&(identical(other.sessionExpired, sessionExpired) || other.sessionExpired == sessionExpired)&&(identical(other.justConfirmationSent, justConfirmationSent) || other.justConfirmationSent == justConfirmationSent));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorCode, errorCode) || other.errorCode == errorCode)&&(identical(other.token, token) || other.token == token)&&(identical(other.isAuthenticated, isAuthenticated) || other.isAuthenticated == isAuthenticated)&&(identical(other.isRestoringSession, isRestoringSession) || other.isRestoringSession == isRestoringSession)&&(identical(other.sessionExpired, sessionExpired) || other.sessionExpired == sessionExpired)&&(identical(other.justConfirmationSent, justConfirmationSent) || other.justConfirmationSent == justConfirmationSent));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,error,errorCode,token,isAuthenticated,isRestoringSession,sessionExpired,justConfirmationSent);
+int get hashCode {
+    return Object.hash(runtimeType,isLoading,error,errorCode,token,isAuthenticated,isRestoringSession,sessionExpired,justConfirmationSent);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'AuthState(isLoading: $isLoading, error: $error, errorCode: $errorCode, token: $token, isAuthenticated: $isAuthenticated, isRestoringSession: $isRestoringSession, sessionExpired: $sessionExpired, justConfirmationSent: $justConfirmationSent)';
+    return 'AuthState(isLoading: $isLoading, error: $error, errorCode: $errorCode, token: $token, isAuthenticated: $isAuthenticated, isRestoringSession: $isRestoringSession, sessionExpired: $sessionExpired, justConfirmationSent: $justConfirmationSent)';
 }
 
 

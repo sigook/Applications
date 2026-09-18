@@ -1480,6 +1480,368 @@
         }
       }
     },
+    "/api/agency/recruiting/applicants": {
+      "get": {
+        "tags": [
+          "Applicants"
+        ],
+        "summary": "Gets the applicants of every request of the current agency, paginated by request so no request is split across pages.",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "JobTitle",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CompanyProfileId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Covenant.Common.Enums.RequestApplicantStatus"
+              }
+            }
+          },
+          {
+            "name": "RequestStatuses",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Covenant.Common.Enums.RequestStatus"
+              }
+            }
+          },
+          {
+            "name": "OnlyMine",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Recruiter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CreatedBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "StartAtFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "StartAtTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.GetAgencyApplicantSortBy"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyApplicantsPagedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/applicants/Status": {
+      "put": {
+        "tags": [
+          "Applicants"
+        ],
+        "summary": "Changes the status of several applicants at once, skipping the ones the transition is not valid for.",
+        "requestBody": {
+          "description": "Applicants to change and the target status.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.ChangeApplicantsStatusModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.ChangeApplicantsStatusModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.ChangeApplicantsStatusModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.ChangeApplicantsStatusResultModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/applicants/File": {
+      "get": {
+        "tags": [
+          "Applicants"
+        ],
+        "summary": "Generates and downloads an Excel report with every applicant that matches the filter.",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "JobTitle",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CompanyProfileId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Covenant.Common.Enums.RequestApplicantStatus"
+              }
+            }
+          },
+          {
+            "name": "RequestStatuses",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Covenant.Common.Enums.RequestStatus"
+              }
+            }
+          },
+          {
+            "name": "OnlyMine",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Recruiter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CreatedBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "StartAtFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "StartAtTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.GetAgencyApplicantSortBy"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/candidates": {
       "get": {
         "tags": [
@@ -5836,26 +6198,6 @@
             }
           }
         ],
-        "requestBody": {
-          "description": "Updated deal data: title, date, value, type, status and optional document.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateDealModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateDealModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateDealModel"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK"
@@ -14368,6 +14710,65 @@
         }
       }
     },
+    "/api/agency/requests/lookup": {
+      "get": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Gets everything the request form needs: the catalogs of the company profile and, when a request is given, its detail plus the data that is copied when duplicating it.",
+        "parameters": [
+          {
+            "name": "companyProfileId",
+            "in": "query",
+            "description": "Identifier of the company profile. Ignored when requestId is given.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "description": "Identifier of the request being edited or duplicated.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestLookupModel"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/requests": {
       "post": {
         "tags": [
@@ -14376,6 +14777,77 @@
         "summary": "Creates a new request for the current agency.",
         "requestBody": {
           "description": "Request data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestCreateModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyRequestDetailModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/requests/{id}/Duplicate": {
+      "post": {
+        "tags": [
+          "Requests"
+        ],
+        "summary": "Creates a new request out of an existing one. The data of the form is taken from the body; the shift, skills, contact people and job boards are copied from the source request.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the request being duplicated.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Request data, already edited by the user.",
           "content": {
             "application/json": {
               "schema": {
@@ -26491,35 +26963,6 @@
         },
         "additionalProperties": false
       },
-      "Covenant.Common.Models.Company.UpdateDealModel": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "value": {
-            "type": "number",
-            "format": "double"
-          },
-          "type": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.DealType"
-          },
-          "status": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.DealStatus"
-          },
-          "documentId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "Covenant.Common.Models.ContactDto": {
         "type": "object",
         "properties": {
@@ -27509,6 +27952,190 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.AgencyApplicantListModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "candidateId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "workerProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "workerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "comments": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RequestApplicantStatus"
+          },
+          "createdBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestNumberId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "companyFullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isAsap": {
+            "type": "boolean"
+          },
+          "isDirectHiring": {
+            "type": "boolean"
+          },
+          "complianceTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "complianceCompleted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "mandatoryPending": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.AgencyApplicantsPagedResponse": {
+        "type": "object",
+        "properties": {
+          "pageIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalItems": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyRequestApplicantsModel"
+            },
+            "nullable": true
+          },
+          "totalApplicants": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.AgencyRequestApplicantsModel": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numberId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "companyFullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "provinceName": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayShift": {
+            "type": "string",
+            "nullable": true
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isAsap": {
+            "type": "boolean"
+          },
+          "isDirectHiring": {
+            "type": "boolean"
+          },
+          "workersQuantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "confirmedApplicants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalApplicants": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "applicants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyApplicantListModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Request.AgencyRequestDetailModel": {
         "type": "object",
         "properties": {
@@ -28087,6 +28714,40 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.ChangeApplicantsStatusModel": {
+        "type": "object",
+        "properties": {
+          "applicantIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RequestApplicantStatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.ChangeApplicantsStatusResultModel": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "skipped": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.SkippedApplicantModel"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Covenant.Common.Models.Request.ChangeRequestApplicantStatusModel": {
         "type": "object",
         "properties": {
@@ -28218,6 +28879,14 @@
         },
         "additionalProperties": false
       },
+      "Covenant.Common.Models.Request.GetAgencyApplicantSortBy": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "Covenant.Common.Models.Request.GetRequestApplicantSortBy": {
         "enum": [
           0,
@@ -28301,6 +28970,18 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
+          },
+          "complianceTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "complianceCompleted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "mandatoryPending": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -28647,6 +29328,43 @@
           "companyProfileId": {
             "type": "string",
             "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.RequestLookupModel": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Request.AgencyRequestDetailModel"
+          },
+          "jobPositions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileJobPositionRateModel"
+            },
+            "nullable": true
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Location.LocationDetailModel"
+            },
+            "nullable": true
+          },
+          "personnel": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Agency.AgencyPersonnelModel"
+            },
+            "nullable": true
+          },
+          "companyUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyUserModel"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -29033,6 +29751,20 @@
             "format": "date-time"
           },
           "comments": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Covenant.Common.Models.Request.SkippedApplicantModel": {
+        "type": "object",
+        "properties": {
+          "applicantId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
             "type": "string",
             "nullable": true
           }

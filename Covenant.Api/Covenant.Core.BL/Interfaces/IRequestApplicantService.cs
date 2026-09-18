@@ -10,9 +10,11 @@ public interface IRequestApplicantService
     Task<Result<RequestApplicantDetailModel>> Create(Guid requestId, RequestApplicantModel model);
     Task<Result> UpdateComments(Guid applicantId, string comments);
     Task<PaginatedList<RequestApplicantDetailModel>> GetApplicants(Guid requestId, GetRequestApplicantFilter filter);
+    Task<AgencyApplicantsPagedResponse> GetAgencyApplicants(GetAgencyApplicantsFilter filter);
     Task<List<ApplicantSearchResultModel>> Search(Guid requestId, string searchTerm);
     Task<Result> Delete(Guid applicantId);
     Task<Result> ChangeStatus(Guid requestId, Guid applicantId, ChangeRequestApplicantStatusModel model);
+    Task<Result<ChangeApplicantsStatusResultModel>> ChangeApplicantsStatus(ChangeApplicantsStatusModel model);
     Task<Result<List<ApplicantComplianceItemModel>>> GetComplianceItems(Guid requestId, Guid applicantId);
     Task<Result> CompleteComplianceItem(Guid requestId, Guid applicantId, Guid itemId, CompleteApplicantComplianceItemModel model);
     Task<Result> UncompleteComplianceItem(Guid requestId, Guid applicantId, Guid itemId);

@@ -79,12 +79,16 @@ HTTP:       Dio ^5.7.0 (lib/core/network/api_client.dart + auth_interceptor.dart
             injection, 401 refresh + retry)
 Auth:       native email/password screen → OAuth2 password grant (POST {authority}/connect/token,
             form-urlencoded, no id_token — role via /connect/userinfo; scopes
-            openid profile api1 roles offline_access); in-app 2-step forgot-password
+            openid profile api1 offline_access — the android/ios clients do NOT grant
+            `roles`, asking for it fails with invalid_scope); in-app 2-step forgot-password
             (/forgot-password → POST /Password/forgot + /Password/reset, 6-digit code,
-            60-s resend cooldown); flutter_appauth ^11.0.0 kept for token refresh;
-            tokens in FlutterSecureStorage
+            60-s resend cooldown); refresh handled by auth_interceptor against
+            /connect/token; tokens in FlutterSecureStorage
 Codegen:    build_runner, freezed ^3.2.3, json_serializable; Dartz for Either/Option
-Flavors:    staging / production (main_staging.dart / main_production.dart, .env.* configs)
+Envs:       local / staging / production — one entry point each (main_local.dart,
+            main_staging.dart, main_production.dart) over shared main_common.dart, with
+            config from --dart-define-from-file=.env.<env>. Xcode flavors (staging /
+            production schemes) exist on iOS only; Android declares no productFlavors
 ```
 
 Each feature under `lib/features/{name}/` has `domain/` (entities, repositories interfaces,

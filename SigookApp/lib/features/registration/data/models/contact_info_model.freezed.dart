@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'contact_info_model.dart';
@@ -9,14 +9,14 @@ part of 'contact_info_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$ContactInfoModel {
 
- String get email; String get password; String get identification; String? get identificationTypeId;// May be null from API
- String get identificationTypeName; String get mobileNumber;
+ String get email; String get password; String get identification; String? get identificationTypeId; String get identificationTypeName; String get mobileNumber;
 /// Create a copy of ContactInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,21 @@ $ContactInfoModelCopyWith<ContactInfoModel> get copyWith => _$ContactInfoModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContactInfoModel&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password)&&(identical(other.identification, identification) || other.identification == identification)&&(identical(other.identificationTypeId, identificationTypeId) || other.identificationTypeId == identificationTypeId)&&(identical(other.identificationTypeName, identificationTypeName) || other.identificationTypeName == identificationTypeName)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber));
+  final _this = this as ContactInfoModel;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ContactInfoModel&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.password, _this.password) || other.password == _this.password)&&(identical(other.identification, _this.identification) || other.identification == _this.identification)&&(identical(other.identificationTypeId, _this.identificationTypeId) || other.identificationTypeId == _this.identificationTypeId)&&(identical(other.identificationTypeName, _this.identificationTypeName) || other.identificationTypeName == _this.identificationTypeName)&&(identical(other.mobileNumber, _this.mobileNumber) || other.mobileNumber == _this.mobileNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,email,password,identification,identificationTypeId,identificationTypeName,mobileNumber);
+int get hashCode {
+  final _this = this as ContactInfoModel;
+  return Object.hash(runtimeType,_this.email,_this.password,_this.identification,_this.identificationTypeId,_this.identificationTypeName,_this.mobileNumber);
+}
 
 @override
 String toString() {
-  return 'ContactInfoModel(email: $email, password: $password, identification: $identification, identificationTypeId: $identificationTypeId, identificationTypeName: $identificationTypeName, mobileNumber: $mobileNumber)';
+  final _this = this as ContactInfoModel;
+  return 'ContactInfoModel(email: ${_this.email}, password: ${_this.password}, identification: ${_this.identification}, identificationTypeId: ${_this.identificationTypeId}, identificationTypeName: ${_this.identificationTypeName}, mobileNumber: ${_this.mobileNumber})';
 }
 
 
@@ -67,7 +72,7 @@ class _$ContactInfoModelCopyWithImpl<$Res>
 /// Create a copy of ContactInfoModel
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? email = null,Object? password = null,Object? identification = null,Object? identificationTypeId = freezed,Object? identificationTypeName = null,Object? mobileNumber = null,}) {
-  return _then(_self.copyWith(
+  return _then(ContactInfoModel(
 email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
 as String,identification: null == identification ? _self.identification : identification // ignore: cast_nullable_to_non_nullable
@@ -216,7 +221,6 @@ class _ContactInfoModel extends ContactInfoModel {
 @override final  String password;
 @override final  String identification;
 @override final  String? identificationTypeId;
-// May be null from API
 @override final  String identificationTypeName;
 @override final  String mobileNumber;
 
@@ -233,16 +237,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContactInfoModel&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password)&&(identical(other.identification, identification) || other.identification == identification)&&(identical(other.identificationTypeId, identificationTypeId) || other.identificationTypeId == identificationTypeId)&&(identical(other.identificationTypeName, identificationTypeName) || other.identificationTypeName == identificationTypeName)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ContactInfoModel&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password)&&(identical(other.identification, identification) || other.identification == identification)&&(identical(other.identificationTypeId, identificationTypeId) || other.identificationTypeId == identificationTypeId)&&(identical(other.identificationTypeName, identificationTypeName) || other.identificationTypeName == identificationTypeName)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,email,password,identification,identificationTypeId,identificationTypeName,mobileNumber);
+int get hashCode {
+    return Object.hash(runtimeType,email,password,identification,identificationTypeId,identificationTypeName,mobileNumber);
+}
 
 @override
 String toString() {
-  return 'ContactInfoModel(email: $email, password: $password, identification: $identification, identificationTypeId: $identificationTypeId, identificationTypeName: $identificationTypeName, mobileNumber: $mobileNumber)';
+    return 'ContactInfoModel(email: $email, password: $password, identification: $identification, identificationTypeId: $identificationTypeId, identificationTypeName: $identificationTypeName, mobileNumber: $mobileNumber)';
 }
 
 

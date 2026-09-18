@@ -151,7 +151,7 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 - Download keystore from secure files (`sigook.jks`)
 - Cache: Gradle + Flutter pub
 - Android NDK 28.2.13676358 installation
-- Build: `flutter build appbundle --flavor <env> -t <entry> --release` with `--dart-define` for all env vars
+- Build: `flutter build appbundle -t <entry> --release` with one `--dart-define` per env var (Android has no product flavors — the entry point plus the `--dart-define` values select the environment)
 - AAB signing verification with `jarsigner`
 - Publish artifact: `sigookapp-android-<env>`
 

@@ -19,17 +19,13 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.sigook.sigook"
 
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"   // ← string, not JavaVersion.VERSION_17
     }
 
     // Signing configuration for release builds
@@ -60,11 +56,7 @@ android {
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        
-        // Required for flutter_appauth
-        // Must match IdentityServer Android client RedirectUris: sigookcallback://
-        manifestPlaceholders["appAuthRedirectScheme"] = "sigookcallback"
-        
+
         // Add multiDex support
         multiDexEnabled = true
     }
@@ -82,6 +74,12 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 

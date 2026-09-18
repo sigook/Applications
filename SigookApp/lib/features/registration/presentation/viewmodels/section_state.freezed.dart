@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'section_state.dart';
@@ -9,6 +9,7 @@ part of 'section_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -20,7 +21,7 @@ mixin _$SectionState<T> {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SectionState<T>);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is SectionState<T>);
 }
 
 
@@ -29,7 +30,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'SectionState<$T>()';
+    return 'SectionState<$T>()';
 }
 
 
@@ -203,7 +204,7 @@ class _Initial<T> implements SectionState<T> {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial<T>);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Initial<T>);
 }
 
 
@@ -212,7 +213,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'SectionState<$T>.initial()';
+    return 'SectionState<$T>.initial()';
 }
 
 
@@ -240,16 +241,18 @@ _$EditingCopyWith<T, _Editing<T>> get copyWith => __$EditingCopyWithImpl<T, _Edi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Editing<T>&&const DeepCollectionEquality().equals(other.data, data));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Editing<T>&&const DeepCollectionEquality().equals(other.data, data));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(data));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(data));
+}
 
 @override
 String toString() {
-  return 'SectionState<$T>.editing(data: $data)';
+    return 'SectionState<$T>.editing(data: $data)';
 }
 
 
@@ -301,7 +304,7 @@ class _Validating<T> implements SectionState<T> {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Validating<T>);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Validating<T>);
 }
 
 
@@ -310,7 +313,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'SectionState<$T>.validating()';
+    return 'SectionState<$T>.validating()';
 }
 
 
@@ -338,16 +341,18 @@ _$ValidCopyWith<T, _Valid<T>> get copyWith => __$ValidCopyWithImpl<T, _Valid<T>>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Valid<T>&&const DeepCollectionEquality().equals(other.data, data));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Valid<T>&&const DeepCollectionEquality().equals(other.data, data));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(data));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(data));
+}
 
 @override
 String toString() {
-  return 'SectionState<$T>.valid(data: $data)';
+    return 'SectionState<$T>.valid(data: $data)';
 }
 
 
@@ -405,16 +410,18 @@ _$InvalidCopyWith<T, _Invalid<T>> get copyWith => __$InvalidCopyWithImpl<T, _Inv
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invalid<T>&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.error, error) || other.error == error));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invalid<T>&&const DeepCollectionEquality().equals(other.data, data)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(data),error);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(data),error);
+}
 
 @override
 String toString() {
-  return 'SectionState<$T>.invalid(data: $data, error: $error)';
+    return 'SectionState<$T>.invalid(data: $data, error: $error)';
 }
 
 
@@ -467,16 +474,21 @@ $RegistrationFormStateCopyWith<RegistrationFormState> get copyWith => _$Registra
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegistrationFormState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage));
+  final _this = this as RegistrationFormState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegistrationFormState&&(identical(other.currentStep, _this.currentStep) || other.currentStep == _this.currentStep)&&(identical(other.isSubmitting, _this.isSubmitting) || other.isSubmitting == _this.isSubmitting)&&(identical(other.errorMessage, _this.errorMessage) || other.errorMessage == _this.errorMessage)&&(identical(other.successMessage, _this.successMessage) || other.successMessage == _this.successMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentStep,isSubmitting,errorMessage,successMessage);
+int get hashCode {
+  final _this = this as RegistrationFormState;
+  return Object.hash(runtimeType,_this.currentStep,_this.isSubmitting,_this.errorMessage,_this.successMessage);
+}
 
 @override
 String toString() {
-  return 'RegistrationFormState(currentStep: $currentStep, isSubmitting: $isSubmitting, errorMessage: $errorMessage, successMessage: $successMessage)';
+  final _this = this as RegistrationFormState;
+  return 'RegistrationFormState(currentStep: ${_this.currentStep}, isSubmitting: ${_this.isSubmitting}, errorMessage: ${_this.errorMessage}, successMessage: ${_this.successMessage})';
 }
 
 
@@ -505,7 +517,7 @@ class _$RegistrationFormStateCopyWithImpl<$Res>
 /// Create a copy of RegistrationFormState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? currentStep = null,Object? isSubmitting = null,Object? errorMessage = freezed,Object? successMessage = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(RegistrationFormState(
 currentStep: null == currentStep ? _self.currentStep : currentStep // ignore: cast_nullable_to_non_nullable
 as int,isSubmitting: null == isSubmitting ? _self.isSubmitting : isSubmitting // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
@@ -663,16 +675,18 @@ _$RegistrationFormStateCopyWith<_RegistrationFormState> get copyWith => __$Regis
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegistrationFormState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegistrationFormState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.isSubmitting, isSubmitting) || other.isSubmitting == isSubmitting)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentStep,isSubmitting,errorMessage,successMessage);
+int get hashCode {
+    return Object.hash(runtimeType,currentStep,isSubmitting,errorMessage,successMessage);
+}
 
 @override
 String toString() {
-  return 'RegistrationFormState(currentStep: $currentStep, isSubmitting: $isSubmitting, errorMessage: $errorMessage, successMessage: $successMessage)';
+    return 'RegistrationFormState(currentStep: $currentStep, isSubmitting: $isSubmitting, errorMessage: $errorMessage, successMessage: $successMessage)';
 }
 
 

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'account_settings_viewmodel.dart';
@@ -9,6 +9,7 @@ part of 'account_settings_viewmodel.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $AccountSettingsStateCopyWith<AccountSettingsState> get copyWith => _$AccountSet
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccountSettingsState&&(identical(other.isChangingEmail, isChangingEmail) || other.isChangingEmail == isChangingEmail)&&(identical(other.isSavingEmail, isSavingEmail) || other.isSavingEmail == isSavingEmail)&&(identical(other.emailError, emailError) || other.emailError == emailError)&&(identical(other.justChangedEmail, justChangedEmail) || other.justChangedEmail == justChangedEmail));
+  final _this = this as AccountSettingsState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccountSettingsState&&(identical(other.isChangingEmail, _this.isChangingEmail) || other.isChangingEmail == _this.isChangingEmail)&&(identical(other.isSavingEmail, _this.isSavingEmail) || other.isSavingEmail == _this.isSavingEmail)&&(identical(other.emailError, _this.emailError) || other.emailError == _this.emailError)&&(identical(other.justChangedEmail, _this.justChangedEmail) || other.justChangedEmail == _this.justChangedEmail));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isChangingEmail,isSavingEmail,emailError,justChangedEmail);
+int get hashCode {
+  final _this = this as AccountSettingsState;
+  return Object.hash(runtimeType,_this.isChangingEmail,_this.isSavingEmail,_this.emailError,_this.justChangedEmail);
+}
 
 @override
 String toString() {
-  return 'AccountSettingsState(isChangingEmail: $isChangingEmail, isSavingEmail: $isSavingEmail, emailError: $emailError, justChangedEmail: $justChangedEmail)';
+  final _this = this as AccountSettingsState;
+  return 'AccountSettingsState(isChangingEmail: ${_this.isChangingEmail}, isSavingEmail: ${_this.isSavingEmail}, emailError: ${_this.emailError}, justChangedEmail: ${_this.justChangedEmail})';
 }
 
 
@@ -63,7 +69,7 @@ class _$AccountSettingsStateCopyWithImpl<$Res>
 /// Create a copy of AccountSettingsState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isChangingEmail = null,Object? isSavingEmail = null,Object? emailError = freezed,Object? justChangedEmail = null,}) {
-  return _then(_self.copyWith(
+  return _then(AccountSettingsState(
 isChangingEmail: null == isChangingEmail ? _self.isChangingEmail : isChangingEmail // ignore: cast_nullable_to_non_nullable
 as bool,isSavingEmail: null == isSavingEmail ? _self.isSavingEmail : isSavingEmail // ignore: cast_nullable_to_non_nullable
 as bool,emailError: freezed == emailError ? _self.emailError : emailError // ignore: cast_nullable_to_non_nullable
@@ -227,16 +233,18 @@ _$AccountSettingsStateCopyWith<_AccountSettingsState> get copyWith => __$Account
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccountSettingsState&&(identical(other.isChangingEmail, isChangingEmail) || other.isChangingEmail == isChangingEmail)&&(identical(other.isSavingEmail, isSavingEmail) || other.isSavingEmail == isSavingEmail)&&(identical(other.emailError, emailError) || other.emailError == emailError)&&(identical(other.justChangedEmail, justChangedEmail) || other.justChangedEmail == justChangedEmail));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccountSettingsState&&(identical(other.isChangingEmail, isChangingEmail) || other.isChangingEmail == isChangingEmail)&&(identical(other.isSavingEmail, isSavingEmail) || other.isSavingEmail == isSavingEmail)&&(identical(other.emailError, emailError) || other.emailError == emailError)&&(identical(other.justChangedEmail, justChangedEmail) || other.justChangedEmail == justChangedEmail));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isChangingEmail,isSavingEmail,emailError,justChangedEmail);
+int get hashCode {
+    return Object.hash(runtimeType,isChangingEmail,isSavingEmail,emailError,justChangedEmail);
+}
 
 @override
 String toString() {
-  return 'AccountSettingsState(isChangingEmail: $isChangingEmail, isSavingEmail: $isSavingEmail, emailError: $emailError, justChangedEmail: $justChangedEmail)';
+    return 'AccountSettingsState(isChangingEmail: $isChangingEmail, isSavingEmail: $isSavingEmail, emailError: $emailError, justChangedEmail: $justChangedEmail)';
 }
 
 

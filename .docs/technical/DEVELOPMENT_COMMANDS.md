@@ -13,17 +13,26 @@ dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure -
 
 Key: shared cloud PostgreSQL (no local DB setup), Azure Service Bus for messaging.
 
-## SigookApp (Flutter)
+## SigookApp (Flutter) - Requires Flutter `3.47.4`, JDK 17, Android SDK 36
 
 ```bash
 cd SigookApp
 flutter pub get
-flutter run --flavor staging -t lib/main_staging.dart
-flutter run --flavor production -t lib/main_production.dart
+cp .env.example .env.staging              # Gitignored. Defaults already point at staging.
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
+flutter run --dart-define-from-file=.env.local -t lib/main_local.dart        # Needs Api + IdentityServer running locally
 dart run build_runner build --delete-conflicting-outputs  # Code gen (Freezed, Riverpod)
 flutter test
 flutter analyze
 ```
+
+Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. See `.env.example` for the full variable list and the `10.0.2.2` host alias the Android emulator needs to reach local services.
+
+**Flavors are iOS-only.** `ios/Runner.xcodeproj` defines `staging` and `production` schemes, so `--flavor` works there. `android/app/build.gradle.kts` declares no `productFlavors`, so passing `--flavor` to an Android build fails.
+
+Android toolchain floor is enforced by Flutter itself and bumps with each release — 3.47.4 requires Gradle >= 8.14.0 (`android/gradle/wrapper/gradle-wrapper.properties`) and Kotlin >= 2.2.20 (`android/settings.gradle.kts`). Building with an older Flutter than the pinned one is untested.
+
+First-time Windows setup also needs **Developer Mode** enabled (`start ms-settings:developers`), otherwise `flutter pub get` aborts with *"Building with plugins requires symlink support"*.
 
 ## Sigook.Web (Vue.js 3) - Requires Node `^20.19.0 || >=22.12.0` (engine-strict: older 20.x hard-fails)
 

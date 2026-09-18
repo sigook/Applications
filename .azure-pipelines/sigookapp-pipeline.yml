@@ -43,7 +43,7 @@ variables:
 - name: isPR
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: flutterVersion
-  value: 'stable'
+  value: '3.47.4'
 # Environment name for display purposes
 - name: environment
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -86,7 +86,13 @@ stages:
           echo "Build Reason: $(Build.Reason)"
           echo "Working Directory: $(workingDirectory)"
           echo "========================================"
-    # Verify Flutter is available (pre-installed on VM)
+    - task: FlutterInstall@0
+      displayName: 'Install Flutter $(flutterVersion)'
+      inputs:
+        mode: 'auto'
+        channel: 'stable'
+        version: 'custom'
+        customVersion: '$(flutterVersion)'
     - script: |
         echo "Verifying Flutter installation..."
         flutter --version
@@ -235,7 +241,13 @@ stages:
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
 
-    # Verify Flutter is available (pre-installed on VM)
+    - task: FlutterInstall@0
+      displayName: 'Install Flutter $(flutterVersion)'
+      inputs:
+        mode: 'auto'
+        channel: 'stable'
+        version: 'custom'
+        customVersion: '$(flutterVersion)'
     - script: |
         echo "Verifying Flutter installation..."
         flutter --version
