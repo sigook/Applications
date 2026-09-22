@@ -4,7 +4,7 @@ Documentation for all Azure DevOps pipelines in `.azure-pipelines/`.
 
 ## Overview
 
-All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and use **path-based triggers** so each app deploys independently.
+All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and use **path-based triggers** so each app deploys independently. The only exception is the iOS build/upload of SigookApp, which runs on **Microsoft-hosted macOS** agents (`vmImage`, free tier: 1 parallel job, 1800 min/month, 60 min per job).
 
 ### Environment Strategy
 
@@ -38,7 +38,8 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 | Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check → Docker+Deploy → Notify | `sigook-web-staging` / `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | IdentityServer | `covenant-identityserver-pipeline.yml` | `Covenant.IdentityServer/**` | Build+Test → Docker+Deploy | `sigook-accounts-staging` / `sigook-accounts` |
-| SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Build AAB → Google Play → Notify | Google Play (internal/production) |
+| SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA → Google Play ‖ App Store Connect → Notify | Google Play (alpha/production) + TestFlight/App Store |
+| SigookApp iOS Bootstrap | `sigookapp-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build → Publish+Deploy | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build → Publish+Deploy | `sigook-cognitive-services` (production only) |
 | Database Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | Refresh | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) |
@@ -134,43 +135,78 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 - Staging: `https://sigook-accounts-staging.azurewebsites.net`
 - Production: `https://sigook-accounts.azurewebsites.net`
 
-### SigookApp (Flutter Android + Google Play)
+### SigookApp (Flutter iOS + Android)
 
 **Build naming:** `SigookApp-YYYYMMDDr`
 
-**Note:** iOS builds are handled by Xcode Cloud. This pipeline handles Android only.
+**Environment mapping** — a single app identity per store (`com.all2job.all2job` / `com.sigook.sigook`); staging and production differ only in the entry point and the `--dart-define` values, and are separated in the stores by track/group:
 
-**Stage 1 - Validate & Test** (all pushes and PRs):
-- Flutter verify (`flutter --version`, `flutter doctor`)
-- `flutter analyze --no-fatal-infos`
+| Branch | Environment | Android | iOS |
+|--------|-------------|---------|-----|
+| `dev` (auto) | staging (`lib/main_staging.dart`, group `SigookApp-Staging`) | Google Play closed testing track `alpha` | TestFlight internal group `Staging` |
+| `main` (manual run) | production (`lib/main_production.dart`, group `SigookApp-Production`) | Google Play `production` (live after Google review) | App Store, submitted for review automatically (`automatic_release`) |
+
+**Stage 1 - Validate & Test** (all pushes and PRs, Linux):
+- Pinned Flutter via `templates/flutter-setup.yml` (fails if the version on PATH is not `flutterVersion`)
+- `flutter analyze --no-fatal-infos`, `flutter test`
 - Verify build config: `flutter build apk --debug --dry-run`
 
-**Stage 2 - Build Android** (only on push to dev/main, not PRs):
-- Version: `YYYY.M.D` (name), `Build.BuildId` (code)
-- Variable groups: `SigookApp-Staging` or `SigookApp-Production` (env vars) + `SigookApp-Android` (signing)
+**Stage 2 - Version** (push to dev/main only, Linux, no checkout). One job computes and exposes:
+- `appVersionName` = `YYYY.M.D`
+- `appVersionCode` = `YYYYMMDDHH` (Android `versionCode`, cap 2100000000)
+- `iosBuildNumber` = `YYYYMMDDHHMM` (`CFBundleVersion`; minute precision so a same-hour dev + main upload never collides in App Store Connect)
+
+Both build stages read them as `stageDependencies.Version.Calculate.outputs['CalculateVersion.<name>']` at job level.
+
+**Stage 3 - Build Android** (Linux, parallel with Build iOS):
+- Variable groups: `SigookApp-Staging` or `SigookApp-Production` + `SigookApp-Android` (signing)
 - Download keystore from secure files (`sigook.jks`)
 - Cache: Gradle + Flutter pub
-- Android NDK 28.2.13676358 installation
-- Build: `flutter build appbundle -t <entry> --release` with one `--dart-define` per env var (Android has no product flavors — the entry point plus the `--dart-define` values select the environment)
-- AAB signing verification with `jarsigner`
-- Publish artifact: `sigookapp-android-<env>`
+- Android platform read from `compileSdk`/`compileSdkMinor` in `build.gradle.kts`; NDK 28.2.13676358
+- `SCOPES` must equal `openid,profile,api1,offline_access` exactly (extra scopes make IdentityServer answer `invalid_scope`)
+- Build: `flutter build appbundle -t <entry> --release` with one `--dart-define` per env var
+- AAB signing verification with `jarsigner`; publish artifact `sigookapp-android-<env>`
 
-**Stage 3 - Deploy to Google Play** (only on push to dev/main):
-- Download AAB artifact
-- Deploy via Fastlane: `fastlane android deploy`
-- Uses `GOOGLE_PLAY_JSON_KEY` from variable group
-- `continueOnError: true` (pipeline doesn't fail if Play Store deployment fails)
+**Stage 4 - Build iOS** (hosted macOS `macosImage`, parallel with Build Android, `timeoutInMinutes: 60`):
+- Variable groups: `SigookApp-Staging` or `SigookApp-Production` + `SigookApp-iOS`
+- `xcode-select` to `xcodeVersion` (fails listing the installed versions when the image no longer ships it)
+- Cache: Flutter pub + CocoaPods; `flutter-setup.yml` + `fastlane-setup.yml` (Bundler)
+- `pod install` with a retry that only re-runs on transient network errors
+- Same `SCOPES` check, then `bundle exec fastlane ios build entry_point: version: build_number: match_readonly:` (see Fastlane below)
+- Publish artifact `sigookapp-ios-<env>`
+- Pipeline parameter `matchReadonly` (default `true`): set to `false` only on the first run so match creates the certificate and profile
 
-**Stage 4 - Notify** (production only, uses `Sigook-Notifications` variable group):
-- Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `mobile`)
+**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:<alpha|production>` with `GOOGLE_PLAY_JSON_KEY`. `continueOnError: true`; the "Deploy Summary" step prints `deployStatus`.
+
+**Stage 6 - Deploy iOS to App Store Connect** (hosted macOS — fastlane uploads through Apple's Transporter, which does not exist on Linux): downloads the IPA and runs `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. `continueOnError: true`; the "Deploy Summary" step prints `deployStatus`.
+
+**Stage 7 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`).
+
+**Fastlane** (`SigookApp/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
+- `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
+- `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`)
+- `ios beta` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
+- `ios release` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, release notes from `IOS_RELEASE_NOTES` (default text), export compliance = no encryption
+- iOS plugins are kept on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`) because `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors under SPM
 
 **Required Variable Groups:**
-- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `GOOGLE_PLAY_JSON_KEY`
+- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_PLAY_JSON_KEY`
 - `SigookApp-Production`: Same variables with production values
 - `SigookApp-Android`: `KEYSTORE_FILE`, `KEY_PASSWORD`, `KEY_ALIAS`
+- `SigookApp-iOS`: `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY` (secret, base64 of the `.p8`, App Manager role), `MATCH_GIT_URL` (private Azure Repos git repo holding the encrypted certificate/profile), `MATCH_PASSWORD` (secret, match encryption passphrase), `IOS_RELEASE_NOTES` (optional)
 
 **Required Secure Files:**
 - `sigook.jks` - Android keystore for app signing
+
+**Apple / Google prerequisites outside the repo:**
+- App Store Connect API key (App Manager); the project build service needs `Contribute` on the `MATCH_GIT_URL` repo
+- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers)
+- Google Play closed testing track `alpha`; the service account behind `GOOGLE_PLAY_JSON_KEY` needs "Release to production" and "Manage testing tracks"; Managed publishing off
+- Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
+
+### SigookApp iOS Bootstrap (manual)
+
+`sigookapp-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever a Flutter upgrade rewrites the Xcode project (nobody on the team has a Mac): apply the patch locally with `git apply --index`, copy the lockfiles and commit, so CI never mutates an unreviewed checkout. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion`.
 
 ### Sigook.Functions (.NET 8 Azure Functions)
 
@@ -289,14 +325,13 @@ Frees disk space on self-hosted agents after builds.
 Always cleans `$(Build.ArtifactStagingDirectory)` regardless of parameters.
 
 ### flutter-setup.yml
-Installs Flutter SDK, creates placeholder `.env` files, runs `pub get` and `build_runner`.
+Installs an exact Flutter version with `FlutterInstall@0`, prepends `$(FlutterToolPath)` to `PATH` (the task alone does not touch `PATH`, so later `script:` steps would pick up the agent's own Flutter) and fails when `flutter --version` on `PATH` differs from the requested one.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `flutterVersion` | string | `stable` | Flutter channel or version |
-| `workingDirectory` | string | `$(System.DefaultWorkingDirectory)` | Flutter project directory |
+| `flutterVersion` | string | required | Exact Flutter version (e.g. `3.47.4`) |
 
-**Note:** Currently SigookApp pipeline uses pre-installed Flutter on the VM instead of this template.
+Used by every Flutter job of the SigookApp pipelines.
 
 ### fastlane-setup.yml
 Installs Fastlane via Bundler with gem caching.
@@ -306,7 +341,7 @@ Installs Fastlane via Bundler with gem caching.
 | `workingDirectory` | string | required | Directory containing `Gemfile` |
 | `continueOnError` | boolean | `false` | Continue on installation error |
 
-**Note:** Currently SigookApp pipeline uses pre-installed Fastlane on the VM instead of this template.
+Used by the hosted macOS jobs of SigookApp (`bundle exec fastlane`). The Linux Android jobs use the Fastlane pre-installed on the VM (`/home/azureuser/gems`).
 
 ### notify-deployment.yml
 Sends a deployment notification email via Microsoft Graph API using Azure AD OAuth authentication. No SMTP credentials needed — authenticates with an Azure AD App Registration.
@@ -358,7 +393,7 @@ variables:
 | IdentityServer | `sigook-accounts-staging.azurewebsites.net` | `sigook-accounts.azurewebsites.net` |
 | Sigook.Functions | N/A | `sigook-functions.azurewebsites.net` |
 | CognitiveServices | N/A | `sigook-cognitive-services.azurewebsites.net` |
-| SigookApp | Google Play (internal track) | Google Play (production track) |
+| SigookApp | Google Play closed testing (`alpha`) + TestFlight group `Staging` | Google Play `production` + App Store |
 
 ---
 
@@ -371,6 +406,7 @@ variables:
 ### Pipeline Variables / Variable Groups
 - **`SigookApp-Staging`** / **`SigookApp-Production`** - Flutter app env vars + Google Play key
 - **`SigookApp-Android`** - Android keystore signing credentials
+- **`SigookApp-iOS`** - App Store Connect API key + fastlane match settings (`MATCH_GIT_URL`, `MATCH_PASSWORD`)
 - **`Sigook-Notifications`** - Microsoft Graph API credentials for deployment email notifications:
   - `GraphTenantId` - Azure AD tenant ID
   - `GraphClientId` - App Registration client ID
@@ -402,3 +438,8 @@ variables:
 - Check NDK installation (version 28.2.13676358)
 - Ensure keystore file (`sigook.jks`) is in secure files
 - Verify variable groups have all required variables
+- "expected Flutter X but PATH resolves Y": `FlutterInstall@0` succeeded but a different Flutter won on `PATH`; the template's prepend step must run before any `flutter` call
+- "Xcode_X.app not found": Microsoft removed that Xcode from the hosted image; pick one from the listed versions and bump `xcodeVersion`
+- match "no profile/certificate found" on a fresh signing repo: run the pipeline once with `matchReadonly = false`; a 403 from Apple while creating them means the API key role is too low (use Admin)
+- App Store Connect rejects the upload with a duplicate build number: the same `iosBuildNumber` was already uploaded (a re-run of Build iOS reuses the Version stage outputs); run the pipeline again instead of re-running the stage
+- Google Play rejects the AAB: `versionCode` must exceed every code previously uploaded on any track; a dev and a main run in the same hour collide on `YYYYMMDDHH`

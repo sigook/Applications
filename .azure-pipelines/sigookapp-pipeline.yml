@@ -1,14 +1,25 @@
 name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 
-# PIPELINE: SigookApp Android CI/CD (iOS builds handled by Xcode Cloud)
+# PIPELINE: SigookApp iOS + Android CI/CD
 # ============================================
 # TRIGGER POLICY:
 # - Runs on direct pushes to dev branch (Staging)
-# - Runs on PRs to dev branch (not to main)
-# - Production (main) deployments are triggered manually
+# - Runs on PRs to dev branch (validation only, no build or deploy)
+# - Production (main) deployments are triggered manually (Run pipeline -> branch main)
 #
-# NOTE: iOS builds and TestFlight deployment are handled by Xcode Cloud.
-# This pipeline only handles Android builds and Google Play deployment.
+# DEPLOY TARGETS:
+# - dev  -> TestFlight internal group "Staging" + Google Play closed testing (alpha track)
+# - main -> App Store (submitted for review) + Google Play production track
+#
+# POOLS:
+# - Validate, Version, Android build/deploy: self-hosted covenant-build-pool (Linux)
+# - iOS build/deploy: Microsoft-hosted macOS ($(macosImage)); fastlane's
+#   upload goes through Apple's Transporter, which only exists on macOS
+#
+# iOS signing is handled by fastlane match (SigookApp/fastlane/Matchfile):
+# the certificate and profile live encrypted in the MATCH_GIT_URL repo and are
+# created by match itself on the first run (matchReadonly=false). No Apple
+# secure files are involved.
 # ============================================
 
 # Trigger on dev branch with SigookApp changes
@@ -33,6 +44,12 @@ pr:
     include:
       - SigookApp/**
 
+parameters:
+- name: matchReadonly
+  displayName: 'match readonly (false only on the first run so match creates the certificate and profile)'
+  type: boolean
+  default: true
+
 variables:
 - name: workingDirectory
   value: '$(System.DefaultWorkingDirectory)/SigookApp'
@@ -44,6 +61,11 @@ variables:
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: flutterVersion
   value: '3.47.4'
+- name: macosImage
+  value: 'macOS-26'
+# Must exist on the hosted image; Microsoft rotates the installed Xcode versions
+- name: xcodeVersion
+  value: '26.6'
 # Environment name for display purposes
 - name: environment
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -56,6 +78,18 @@ variables:
     value: 'lib/main_production.dart'
   ${{ else }}:
     value: 'lib/main_staging.dart'
+# Google Play track (alpha = closed testing)
+- name: playTrack
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'production'
+  ${{ else }}:
+    value: 'alpha'
+# fastlane iOS upload lane (beta = TestFlight, release = App Store review)
+- name: iosLane
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    value: 'release'
+  ${{ else }}:
+    value: 'beta'
 stages:
 # ============================================
 # Stage 1: Validate & Test (runs on all pushes and PRs)
@@ -86,18 +120,9 @@ stages:
           echo "Build Reason: $(Build.Reason)"
           echo "Working Directory: $(workingDirectory)"
           echo "========================================"
-    - task: FlutterInstall@0
-      displayName: 'Install Flutter $(flutterVersion)'
-      inputs:
-        mode: 'auto'
-        channel: 'stable'
-        version: 'custom'
-        customVersion: '$(flutterVersion)'
-    - script: |
-        echo "Verifying Flutter installation..."
-        flutter --version
-        flutter doctor
-      displayName: 'Verify Flutter $(flutterVersion)'
+    - template: templates/flutter-setup.yml
+      parameters:
+        flutterVersion: '$(flutterVersion)'
     - task: CmdLine@2
       displayName: 'Flutter Analyze'
       inputs:
@@ -132,12 +157,53 @@ stages:
           echo "🎯 Compilation verification passed!"
           echo "========================================"
 # ============================================
-# Stage 2: Build Android AAB (runs on merged PR to dev/main only)
+# Stage 2: Calculate Version (shared by Android and iOS)
+# ============================================
+# Version Name: YYYY.M.D (e.g., "2026.2.12")
+# Android Version Code: YYYYMMDDHH - always increasing, below the 2100000000 cap
+# iOS Build Number: YYYYMMDDHHMM - CFBundleVersion has no cap, so minute
+#   precision keeps a same-hour dev + main upload from colliding in App Store Connect
+# ============================================
+- stage: Version
+  displayName: 'Calculate Version'
+  dependsOn: Validate_and_Test
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
+  pool:
+    name: 'covenant-build-pool'
+  jobs:
+  - job: Calculate
+    displayName: 'Calculate App Version'
+    steps:
+    - checkout: none
+    - task: Bash@3
+      name: CalculateVersion
+      displayName: 'Calculate App Version'
+      inputs:
+        targetType: 'inline'
+        script: |
+          APP_VERSION_NAME="$(date +%Y).$(date +%-m).$(date +%-d)"
+          APP_VERSION_CODE=$(date +%Y%m%d%H)
+          IOS_BUILD_NUMBER=$(date +%Y%m%d%H%M)
+
+          echo "========================================"
+          echo "App Version - $(environment)"
+          echo "========================================"
+          echo "Version Name:         ${APP_VERSION_NAME}"
+          echo "Android Version Code: ${APP_VERSION_CODE}"
+          echo "iOS Build Number:     ${IOS_BUILD_NUMBER}"
+          echo "========================================"
+
+          echo "##vso[task.setvariable variable=appVersionName;isOutput=true]${APP_VERSION_NAME}"
+          echo "##vso[task.setvariable variable=appVersionCode;isOutput=true]${APP_VERSION_CODE}"
+          echo "##vso[task.setvariable variable=iosBuildNumber;isOutput=true]${IOS_BUILD_NUMBER}"
+# ============================================
+# Stage 3: Build Android AAB (runs on merged PR to dev/main only)
 # ============================================
 - stage: Build_Android
   displayName: 'Build Android'
-  dependsOn: Validate_and_Test
-  # Only run on merged PRs (push to dev or main), not during PR validation
+  dependsOn:
+  - Validate_and_Test
+  - Version
   condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
     name: 'covenant-build-pool'
@@ -152,53 +218,14 @@ stages:
   jobs:
   - job: Build_AAB
     displayName: 'Build Android AAB'
+    variables:
+      appVersionName: $[ stageDependencies.Version.Calculate.outputs['CalculateVersion.appVersionName'] ]
+      appVersionCode: $[ stageDependencies.Version.Calculate.outputs['CalculateVersion.appVersionCode'] ]
     steps:
     - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-    # ============================================
-    # Calculate App Version (Date-based)
-    # ============================================
-    # Version Name: YYYY.M.D format (e.g., "2026.2.12")
-    # Version Code: YYYYMMDDHH format (e.g., "2026021214") - always increasing, max ~2.1B
-    # ============================================
-    - task: Bash@3
-      name: CalculateVersion
-      displayName: 'Calculate App Version'
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "========================================"
-          echo "Calculating App Version (Date-based)"
-          echo "========================================"
-
-          # Get current date components
-          YEAR=$(date +%Y)
-          MONTH=$(date +%-m)  # Month without leading zero
-          DAY=$(date +%-d)    # Day without leading zero
-
-          # Version Name: YYYY.M.D format (e.g., "2026.2.12")
-          APP_VERSION_NAME="${YEAR}.${MONTH}.${DAY}"
-
-          # Version Code: YYYYMMDDHH format (e.g., "2026021214") - date-based, always increasing
-          APP_VERSION_CODE=$(date +%Y%m%d%H)
-
-          echo "========================================"
-          echo "Android Build - $(environment)"
-          echo "========================================"
-          echo "Build Number: $(Build.BuildNumber)"
-          echo "Source Branch: $(Build.SourceBranch)"
-          echo "Environment: $(environment)"
-          echo "========================================"
-          echo "APP VERSION INFO:"
-          echo "  Version Name: ${APP_VERSION_NAME}"
-          echo "  Version Code: ${APP_VERSION_CODE}"
-          echo "========================================"
-
-          # Export variables for subsequent steps
-          echo "##vso[task.setvariable variable=appVersionName;isOutput=true]${APP_VERSION_NAME}"
-          echo "##vso[task.setvariable variable=appVersionCode;isOutput=true]${APP_VERSION_CODE}"
     - task: CmdLine@2
       displayName: 'Free Disk Space'
       continueOnError: true
@@ -241,18 +268,9 @@ stages:
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
 
-    - task: FlutterInstall@0
-      displayName: 'Install Flutter $(flutterVersion)'
-      inputs:
-        mode: 'auto'
-        channel: 'stable'
-        version: 'custom'
-        customVersion: '$(flutterVersion)'
-    - script: |
-        echo "Verifying Flutter installation..."
-        flutter --version
-        flutter doctor
-      displayName: 'Verify Flutter $(flutterVersion)'
+    - template: templates/flutter-setup.yml
+      parameters:
+        flutterVersion: '$(flutterVersion)'
     - task: CmdLine@2
       displayName: 'Clean Android local.properties'
       continueOnError: true
@@ -347,7 +365,7 @@ stages:
     - task: CmdLine@2
       displayName: 'Build Android AAB'
       env:
-        # Variables from SigookApp-Android-Signing variable group
+        # Variables from SigookApp-Android variable group
         KEYSTORE_FILE: $(KEYSTORE_FILE)
         KEY_PASSWORD: $(KEY_PASSWORD)
         KEY_ALIAS: $(KEY_ALIAS)
@@ -396,9 +414,8 @@ stages:
           fi
           echo "SCOPES validated <$(SCOPES)>"
 
-          # Use calculated version from CalculateVersion step
-          VERSION_NAME="$(CalculateVersion.appVersionName)"
-          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+          VERSION_NAME="$(appVersionName)"
+          VERSION_CODE="$(appVersionCode)"
 
           echo "Building with Version Name: ${VERSION_NAME}"
           echo "Building with Version Code: ${VERSION_CODE}"
@@ -463,8 +480,8 @@ stages:
         script: |
           mkdir -p $(Build.ArtifactStagingDirectory)/android
 
-          VERSION_NAME="$(CalculateVersion.appVersionName)"
-          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+          VERSION_NAME="$(appVersionName)"
+          VERSION_CODE="$(appVersionCode)"
 
           AAB_PATH=$(find build/app/outputs/bundle -name "*.aab" | head -1)
           if [ -n "$AAB_PATH" ]; then
@@ -479,7 +496,7 @@ stages:
             exit 1
           fi
     - task: PublishBuildArtifacts@1
-      displayName: 'Publish Staging AAB'
+      displayName: 'Publish Android AAB'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/android'
         ArtifactName: 'sigookapp-android-$(environment)'
@@ -489,8 +506,8 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          VERSION_NAME="$(CalculateVersion.appVersionName)"
-          VERSION_CODE="$(CalculateVersion.appVersionCode)"
+          VERSION_NAME="$(appVersionName)"
+          VERSION_CODE="$(appVersionCode)"
 
           echo ""
           echo "========================================"
@@ -502,13 +519,181 @@ stages:
           echo "AAB: sigook-$(environment)-${VERSION_NAME}-${VERSION_CODE}.aab"
           echo "========================================"
 # ============================================
-# Stage 3: Deploy Android to Google Play (runs on merged PR to dev/main only)
+# Stage 4: Build iOS IPA (runs on merged PR to dev/main only, hosted macOS)
+# ============================================
+- stage: Build_iOS
+  displayName: 'Build iOS'
+  dependsOn:
+  - Validate_and_Test
+  - Version
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
+  pool:
+    vmImage: '$(macosImage)'
+  variables:
+  # Environment-specific variable group (staging for dev, production for main)
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    - group: SigookApp-Production
+  - ${{ else }}:
+    - group: SigookApp-Staging
+  # App Store Connect API key + match settings
+  - group: SigookApp-iOS
+  jobs:
+  - job: Build_IPA
+    displayName: 'Build iOS IPA'
+    # Free-tier hosted jobs are capped at 60 minutes
+    timeoutInMinutes: 60
+    variables:
+      appVersionName: $[ stageDependencies.Version.Calculate.outputs['CalculateVersion.appVersionName'] ]
+      iosBuildNumber: $[ stageDependencies.Version.Calculate.outputs['CalculateVersion.iosBuildNumber'] ]
+    steps:
+    - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
+      displayName: 'Checkout Repository'
+      inputs:
+        repository: self
+    - task: Bash@3
+      displayName: 'Display Build Information'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "========================================"
+          echo "iOS Build - $(environment)"
+          echo "========================================"
+          echo "Build Number: $(Build.BuildNumber)"
+          echo "Source Branch: $(Build.SourceBranch)"
+          echo "Version Name: $(appVersionName)"
+          echo "iOS Build Number: $(iosBuildNumber)"
+          echo "match readonly: ${{ parameters.matchReadonly }}"
+          echo "========================================"
+    - script: |
+        XCODE_APP="/Applications/Xcode_$(xcodeVersion).app"
+        if [ ! -d "$XCODE_APP" ]; then
+          echo "ERROR: $XCODE_APP not found on $(macosImage). Installed versions:"
+          ls -d /Applications/Xcode*.app
+          exit 1
+        fi
+        sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+        xcodebuild -version
+      displayName: 'Select Xcode $(xcodeVersion)'
+    - task: Cache@2
+      displayName: 'Cache Flutter Packages'
+      inputs:
+        key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
+        restoreKeys: |
+          pub | "$(Agent.OS)"
+        path: $(HOME)/.pub-cache
+    - task: Cache@2
+      displayName: 'Cache CocoaPods'
+      inputs:
+        key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile'
+        restoreKeys: |
+          pods | "$(Agent.OS)"
+        path: $(HOME)/Library/Caches/CocoaPods
+    - template: templates/flutter-setup.yml
+      parameters:
+        flutterVersion: '$(flutterVersion)'
+    - template: templates/fastlane-setup.yml
+      parameters:
+        workingDirectory: '$(workingDirectory)'
+    - task: CmdLine@2
+      displayName: 'Flutter Pub Get'
+      inputs:
+        script: |
+          cd $(workingDirectory)
+          flutter pub get
+    - task: Bash@3
+      displayName: 'Install CocoaPods Dependencies'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(workingDirectory)/ios'
+        script: |
+          # Retries only transient GitHub/CDN failures; dependency-resolution
+          # errors are deterministic and retrying them just burns minutes.
+          attempt=1
+          max_attempts=3
+          while true; do
+            if output="$(pod install 2>&1)"; then
+              echo "$output"
+              echo "✅ pod install succeeded (attempt $attempt)"
+              break
+            fi
+            echo "$output"
+            if ! echo "$output" | grep -qiE "timed out|timeout|502|503|could not connect|network is unreachable|failed to fetch|temporarily unavailable"; then
+              echo "❌ pod install failed with a non-transient error - not retrying"
+              exit 1
+            fi
+            if [ $attempt -ge $max_attempts ]; then
+              echo "❌ pod install failed after $max_attempts attempts"
+              exit 1
+            fi
+            echo "⚠️ transient pod install failure (attempt $attempt/$max_attempts), retrying in 15s..."
+            attempt=$((attempt + 1))
+            sleep 15
+          done
+    - task: CmdLine@2
+      displayName: 'Build iOS IPA (fastlane ios build)'
+      env:
+        # Secret variables are never exposed as environment variables implicitly
+        APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
+        MATCH_PASSWORD: $(MATCH_PASSWORD)
+        # Lets match push/pull the signing repo in Azure Repos without a PAT
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        FASTLANE_SKIP_UPDATE_CHECK: "true"
+      inputs:
+        script: |
+          cd $(workingDirectory)
+
+          # Validate auth scopes EXACTLY. An extra scope is as fatal as a
+          # missing one: 'roles' is not granted to the native clients and
+          # IdentityServer answers invalid_scope, which the app surfaces as a
+          # generic "invalid credentials" message.
+          EXPECTED_SCOPES="openid,profile,api1,offline_access"
+          if [ "$(SCOPES)" != "$EXPECTED_SCOPES" ]; then
+            echo "ERROR: SCOPES must be exactly <$EXPECTED_SCOPES>"
+            echo "   got: <$(SCOPES)>"
+            exit 1
+          fi
+          echo "SCOPES validated <$(SCOPES)>"
+
+          bundle exec fastlane ios build \
+            entry_point:"$(entryPoint)" \
+            version:"$(appVersionName)" \
+            build_number:"$(iosBuildNumber)" \
+            match_readonly:"${{ parameters.matchReadonly }}"
+
+          echo "✅ iOS IPA built successfully for $(environment)"
+          ls -la build/ios/ipa/
+    - task: Bash@3
+      displayName: 'Prepare IPA Artifact'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(workingDirectory)'
+        script: |
+          mkdir -p $(Build.ArtifactStagingDirectory)/ios
+
+          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+          if [ -n "$IPA_PATH" ]; then
+            ARTIFACT_NAME="sigook-$(environment)-$(appVersionName)-$(iosBuildNumber).ipa"
+            cp "$IPA_PATH" "$(Build.ArtifactStagingDirectory)/ios/${ARTIFACT_NAME}"
+            echo "✅ IPA copied: ${ARTIFACT_NAME}"
+            ls -la $(Build.ArtifactStagingDirectory)/ios/
+          else
+            echo "❌ IPA not found!"
+            find . -name "*.ipa" 2>/dev/null || echo "No IPAs found"
+            exit 1
+          fi
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish iOS IPA'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
+        ArtifactName: 'sigookapp-ios-$(environment)'
+        publishLocation: 'Container'
+# ============================================
+# Stage 5: Deploy Android to Google Play (runs on merged PR to dev/main only)
 # ============================================
 - stage: Deploy_Android_PlayStore
   displayName: 'Deploy Android to Google Play'
   dependsOn:
   - Build_Android
-  # Deploy only on merged PRs (push to dev or main), not during PR validation
   condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
   pool:
     name: 'covenant-build-pool'
@@ -520,7 +705,7 @@ stages:
     - group: SigookApp-Staging
   jobs:
   - job: Deploy_PlayStore
-    displayName: 'Deploy to Google Play'
+    displayName: 'Deploy to Google Play ($(playTrack))'
     continueOnError: true  # Don't fail pipeline if deployment fails
     steps:
     - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
@@ -537,6 +722,7 @@ stages:
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
           echo "Environment: $(environment)"
+          echo "Track: $(playTrack)"
           echo "========================================"
     - task: DownloadBuildArtifacts@1
       displayName: 'Download AAB Artifact'
@@ -573,7 +759,7 @@ stages:
           export GEM_HOME="/home/azureuser/gems"
           export PATH="$GEM_HOME/bin:$PATH"
           if [ -n "$AAB_PATH" ]; then
-            fastlane android deploy aab:"$AAB_PATH" environment:$(environment) && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+            fastlane android deploy aab:"$AAB_PATH" track:$(playTrack) && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
           else
             echo "⚠️ AAB not found, skipping deployment"
             echo "##vso[task.setvariable variable=deployStatus]skipped"
@@ -590,15 +776,100 @@ stages:
           echo "========================================"
           echo "Build ID: $(Build.BuildId)"
           echo "Environment: $(environment)"
+          echo "Track: $(playTrack)"
+          echo "Status: $(deployStatus)"
+          echo "========================================"
+# ============================================
+# Stage 6: Deploy iOS to App Store Connect (runs on merged PR to dev/main only, hosted macOS)
+# ============================================
+- stage: Deploy_iOS
+  displayName: 'Deploy iOS to App Store Connect'
+  dependsOn:
+  - Build_iOS
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
+  pool:
+    vmImage: '$(macosImage)'
+  variables:
+  - group: SigookApp-iOS
+  jobs:
+  - job: Deploy_AppStoreConnect
+    displayName: 'Deploy to App Store Connect ($(iosLane))'
+    continueOnError: true  # Don't fail pipeline if deployment fails
+    timeoutInMinutes: 60
+    variables:
+      appVersionName: $[ stageDependencies.Version.Calculate.outputs['CalculateVersion.appVersionName'] ]
+    steps:
+    - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
+      displayName: 'Checkout Repository'
+      inputs:
+        repository: self
+    - task: Bash@3
+      displayName: 'Display Deploy Information'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "========================================"
+          echo "Deploy iOS to App Store Connect - $(environment)"
+          echo "========================================"
+          echo "Build Number: $(Build.BuildNumber)"
+          echo "Environment: $(environment)"
+          echo "Lane: $(iosLane)"
+          echo "Version: $(appVersionName)"
+          echo "========================================"
+    - task: DownloadBuildArtifacts@1
+      displayName: 'Download IPA Artifact'
+      continueOnError: true
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'sigookapp-ios-$(environment)'
+        downloadPath: '$(System.ArtifactsDirectory)'
+    - template: templates/fastlane-setup.yml
+      parameters:
+        workingDirectory: '$(workingDirectory)'
+        continueOnError: true
+    - task: CmdLine@2
+      displayName: 'Deploy to App Store Connect'
+      continueOnError: true
+      env:
+        APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
+        FASTLANE_SKIP_UPDATE_CHECK: "true"
+      inputs:
+        script: |
+          cd $(workingDirectory)
+          IPA_PATH=$(find $(System.ArtifactsDirectory) -name "*.ipa" | head -1)
+          echo "Found IPA: $IPA_PATH"
+          echo "Environment: $(environment)"
+          if [ -n "$IPA_PATH" ]; then
+            bundle exec fastlane ios $(iosLane) ipa:"$IPA_PATH" version:"$(appVersionName)" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+          else
+            echo "⚠️ IPA not found, skipping deployment"
+            echo "##vso[task.setvariable variable=deployStatus]skipped"
+          fi
+    - task: Bash@3
+      displayName: 'Deploy Summary'
+      condition: always()
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo ""
+          echo "========================================"
+          echo "App Store Connect Deployment Summary"
+          echo "========================================"
+          echo "Build ID: $(Build.BuildId)"
+          echo "Environment: $(environment)"
+          echo "Lane: $(iosLane)"
           echo "Status: $(deployStatus)"
           echo "========================================"
 
 # ============================================
-# Stage 4: Notify Production Deployment
+# Stage 7: Notify Production Deployment
 # ============================================
 - stage: Notify
   displayName: 'Notify Production Deploy'
-  dependsOn: Deploy_Android_PlayStore
+  dependsOn:
+  - Deploy_Android_PlayStore
+  - Deploy_iOS
   condition: and(succeeded(), eq(variables.isMain, true))
   pool:
     name: 'covenant-build-pool'
@@ -607,9 +878,12 @@ stages:
     displayName: 'Send Deployment Email'
     variables:
     - group: Sigook-Notifications
+    - name: appVersionName
+      value: $[ stageDependencies.Version.Calculate.outputs['CalculateVersion.appVersionName'] ]
     steps:
     - checkout: none
     - template: templates/notify-deployment.yml
       parameters:
         appType: 'mobile'
         recipients: '$(NotificationRecipients)'
+        version: '$(appVersionName)'

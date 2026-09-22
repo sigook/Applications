@@ -150,7 +150,8 @@ flutter:
   # image_cropper (TOCropViewController 3.x) and file_picker's
   # DKImagePickerController (TOCropViewController 2.x) cannot be resolved
   # together; the podspecs do not pull the conflicting subspec.
-  disable-swift-package-manager: true
+  config:
+    enable-swift-package-manager: false
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
