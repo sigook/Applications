@@ -44,6 +44,14 @@ pr:
     include:
       - SigookApp/**
 
+# Declared so the job access token may reach the match signing repo (never
+# checked out; match clones it itself with System.AccessToken).
+resources:
+  repositories:
+  - repository: signing
+    type: git
+    name: sigook/sigook-ios-signing
+
 parameters:
 - name: matchReadonly
   displayName: 'match readonly (false only on the first run so match creates the certificate and profile)'

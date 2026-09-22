@@ -130,6 +130,9 @@ coverage/
 # Symbols
 app.*.symbols
 
+# Bundler local config written by fastlane-setup.yml (bundle config set --local path)
+.bundle/
+
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3
