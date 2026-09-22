@@ -183,7 +183,7 @@ platform :ios do
       api_key: api_key,
       type: "appstore",
       app_identifier: IOS_BUNDLE_ID,
-      readonly: options[:match_readonly].to_s != "false",
+      readonly: options[:match_readonly].to_s.downcase != "false",
       git_basic_authorization: match_git_authorization
     )
     profile_mapping = lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING]

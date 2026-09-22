@@ -380,6 +380,7 @@ stages:
         KEY_ALIAS: $(KEY_ALIAS)
       inputs:
         script: |
+          set -euo pipefail
           cd $(workingDirectory)
           echo "Building Android AAB..."
           echo "ANDROID_NDK_HOME: $(ANDROID_NDK_HOME)"
@@ -649,6 +650,7 @@ stages:
         FASTLANE_SKIP_UPDATE_CHECK: "true"
       inputs:
         script: |
+          set -euo pipefail
           cd $(workingDirectory)
 
           # Validate auth scopes EXACTLY. An extra scope is as fatal as a
@@ -663,11 +665,12 @@ stages:
           fi
           echo "SCOPES validated <$(SCOPES)>"
 
+          # Boolean parameters render as True/False; the lane compares case-insensitively
           bundle exec fastlane ios build \
             entry_point:"$(entryPoint)" \
             version:"$(appVersionName)" \
             build_number:"$(iosBuildNumber)" \
-            match_readonly:"${{ parameters.matchReadonly }}"
+            match_readonly:"${{ lower(parameters.matchReadonly) }}"
 
           echo "✅ iOS IPA built successfully for $(environment)"
           ls -la build/ios/ipa/
