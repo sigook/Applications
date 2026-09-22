@@ -136,7 +136,13 @@ stages:
               repository: 'sigook.azurecr.io/web'
               dockerfile: 'Sigook.Web/Dockerfile'
               buildContext: 'Sigook.Web'
-              tags: '$(dockerTag)'
+              # $(dockerTag) is mutable (latest_staging/latest_production) and is
+              # kept for anything that tracks the newest image. The deploy targets
+              # the immutable $(Build.BuildId) tag, so a restart cannot silently
+              # pull an image that was never deployed, and rollback stays possible.
+              tags: |
+                $(dockerTag)
+                $(Build.BuildId)
               arguments: '--build-arg ENV=$(buildEnvironment)'
 
           # Push Docker Image to ACR
@@ -146,7 +152,9 @@ stages:
               containerRegistry: 'acrServiceConnectionSigook'
               repository: 'web'
               command: 'push'
-              tags: '$(dockerTag)'
+              tags: |
+                $(dockerTag)
+                $(Build.BuildId)
 
           - task: Bash@3
             displayName: 'Docker Build Summary'
@@ -155,7 +163,7 @@ stages:
               script: |
                 echo ""
                 echo "✅ Docker Image Built and Pushed"
-                echo "Repository: sigook.azurecr.io/web:$(dockerTag)"
+                echo "Repository: sigook.azurecr.io/web:$(Build.BuildId) (also tagged $(dockerTag))"
                 echo "Environment: $(buildEnvironment) | Build ID: $(Build.BuildId)"
 
           # Cleanup after Docker build and push
@@ -191,7 +199,7 @@ stages:
               fi
               echo "##vso[task.setvariable variable=deployEnv]$deployEnv"
               echo "Deploying to: $(azureAppName) ($deployEnv)"
-              echo "Docker Tag: $(dockerTag)"
+              echo "Docker Tag: $(Build.BuildId) (also tagged $(dockerTag))"
             displayName: 'Set Environment Label'
 
           # Deploy to Azure App Service (Container)
@@ -200,7 +208,7 @@ stages:
             inputs:
               azureSubscription: 'SigookPipelines'
               appName: $(azureAppName)
-              containers: 'sigook.azurecr.io/web:$(dockerTag)'
+              containers: 'sigook.azurecr.io/web:$(Build.BuildId)'
               appSettings: '-CVN_VERSION $(Build.BuildId)'
 
           # Deployment Summary
@@ -212,7 +220,7 @@ stages:
                 echo ""
                 echo "🚀 Deployment Successful!"
                 echo "Environment: $(deployEnv) | App Service: $(azureAppName)"
-                echo "Image: sigook.azurecr.io/web:$(dockerTag)"
+                echo "Image: sigook.azurecr.io/web:$(Build.BuildId)"
                 if [ "$(isDev)" = "True" ]; then
                   echo "URL: https://sigook-web-staging.azurewebsites.net"
                 else

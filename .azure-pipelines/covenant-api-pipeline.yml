@@ -92,7 +92,13 @@ stages:
               command: 'buildAndPush'
               Dockerfile: 'Covenant.Api/Dockerfile'
               buildContext: 'Covenant.Api'
-              tags: $(tag)
+              # $(tag) is mutable (latest_staging/latest_production) and is kept
+              # for anything that tracks the newest image. The deploy targets the
+              # immutable $(Build.BuildId) tag, so a restart cannot silently pull
+              # an image that was never deployed, and rollback stays possible.
+              tags: |
+                $(tag)
+                $(Build.BuildId)
               arguments: '--build-arg BUILD_ID=$(Build.BuildId)'
 
           - task: Bash@3
@@ -102,8 +108,8 @@ stages:
               script: |
                 echo ""
                 echo "✅ Docker image built and pushed successfully!"
-                echo "📦 Image: sigook.azurecr.io/api:$(tag)"
-                echo "🏷️  Tag: $(tag)"
+                echo "📦 Image: sigook.azurecr.io/api:$(Build.BuildId)"
+                echo "🏷️  Tags: $(tag), $(Build.BuildId)"
                 echo ""
 
           # Cleanup after Docker build and push
@@ -140,7 +146,7 @@ stages:
               fi
               echo "##vso[task.setvariable variable=envLabel]$envLabel"
               echo "Target: $(azureAppName) ($envLabel)"
-              echo "Image: sigook.azurecr.io/api:$(imageTag)"
+              echo "Image: sigook.azurecr.io/api:$(Build.BuildId) (also tagged $(imageTag))"
             displayName: 'Set Environment Label'
 
           # Deploy to Azure App Service
@@ -149,7 +155,7 @@ stages:
             inputs:
               azureSubscription: 'SigookPipelines'
               appName: $(azureAppName)
-              containers: 'sigook.azurecr.io/api:$(imageTag)'
+              containers: 'sigook.azurecr.io/api:$(Build.BuildId)'
               appSettings: '-CVN_VERSION $(Build.BuildId)'
 
           # Deployment Summary
@@ -164,7 +170,7 @@ stages:
                 echo "============================================"
                 echo "Environment: $(envLabel)"
                 echo "App Service: $(azureAppName)"
-                echo "Docker Image: sigook.azurecr.io/api:$(imageTag)"
+                echo "Docker Image: sigook.azurecr.io/api:$(Build.BuildId)"
                 echo "Version: $(Build.BuildId)"
                 echo "============================================"
                 echo ""

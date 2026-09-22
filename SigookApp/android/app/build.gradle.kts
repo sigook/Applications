@@ -20,6 +20,7 @@ android {
     namespace = "com.sigook.sigook"
 
     compileSdk = 37
+    compileSdkMinor = 0
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

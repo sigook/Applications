@@ -1,62 +1,39 @@
-# Reusable template for Flutter SDK installation
+# Reusable template for a pinned Flutter SDK installation
 # Usage:
 #   - template: templates/flutter-setup.yml
 #     parameters:
-#       flutterVersion: '3.22.0'  # Optional, defaults to stable
+#       flutterVersion: '3.47.4'
+#
+# FlutterInstall@0 only exposes the SDK through $(FlutterToolPath); it does not
+# touch PATH, so plain `script:` steps would otherwise pick up whatever Flutter
+# the agent image ships. The template prepends the pinned SDK and fails fast
+# when the version on PATH is not the requested one.
 
 parameters:
   - name: flutterVersion
     type: string
-    default: 'stable'
-    displayName: 'Flutter version or channel (stable, beta, or specific version)'
-
-  - name: workingDirectory
-    type: string
-    default: '$(System.DefaultWorkingDirectory)'
-    displayName: 'Working directory for Flutter commands'
+    displayName: 'Exact Flutter version to install (e.g. 3.47.4)'
 
 steps:
-  # Install Flutter SDK
   - task: FlutterInstall@0
-    displayName: 'Install Flutter SDK (${{ parameters.flutterVersion }})'
+    displayName: 'Install Flutter ${{ parameters.flutterVersion }}'
     inputs:
       mode: 'auto'
-      channel: '${{ parameters.flutterVersion }}'
-      version: 'latest'
+      channel: 'stable'
+      version: 'custom'
+      customVersion: '${{ parameters.flutterVersion }}'
 
-  # Verify Flutter installation
   - script: |
-      echo "========================================"
-      echo "Flutter SDK Installation Verification"
-      echo "========================================"
+      echo "##vso[task.prependpath]$(FlutterToolPath)"
+    displayName: 'Prepend Flutter ${{ parameters.flutterVersion }} to PATH'
+
+  - script: |
       flutter --version
-      echo ""
-      echo "Flutter Doctor:"
-      flutter doctor -v
-      echo "========================================"
-    displayName: 'Verify Flutter Installation'
-
-  # Create placeholder .env files so tooling that expects them finds them.
-  # These files are gitignored; the build stages pass the real values from
-  # variable groups as --dart-define arguments.
-  - script: |
-      cd ${{ parameters.workingDirectory }}
-      touch .env.staging .env.production .env.local
-      echo "✅ Created placeholder .env files for asset bundler"
-    displayName: 'Create placeholder .env files'
-
-  # Get Flutter dependencies
-  - script: |
-      cd ${{ parameters.workingDirectory }}
-      echo "Installing Flutter dependencies..."
-      flutter pub get
-      echo "✅ Dependencies installed"
-    displayName: 'Flutter Pub Get'
-
-  # Run code generation (build_runner)
-  - script: |
-      cd ${{ parameters.workingDirectory }}
-      echo "Running code generation (build_runner)..."
-      flutter pub run build_runner build --delete-conflicting-outputs
-      echo "✅ Code generation completed"
-    displayName: 'Run Build Runner'
+      INSTALLED="$(flutter --version --machine | grep -o '"frameworkVersion":[^,]*' | head -1 | cut -d'"' -f4)"
+      if [ "$INSTALLED" != "${{ parameters.flutterVersion }}" ]; then
+        echo "ERROR: expected Flutter ${{ parameters.flutterVersion }} but PATH resolves ${INSTALLED:-unknown}"
+        exit 1
+      fi
+      echo "✅ Flutter ${{ parameters.flutterVersion }} confirmed on PATH"
+      flutter doctor
+    displayName: 'Verify Flutter ${{ parameters.flutterVersion }}'

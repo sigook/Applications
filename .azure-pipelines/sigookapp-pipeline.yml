@@ -271,6 +271,40 @@ stages:
           yes | sdkmanager --licenses || true
           echo "✅ Android SDK licenses accepted"
     - task: CmdLine@2
+      displayName: 'Install Android Platform SDK'
+      inputs:
+        script: |
+          cd $(workingDirectory)/android
+
+          # compileSdk/compileSdkMinor are read from build.gradle.kts so the agent
+          # stays in sync whenever the app bumps them. From API 36.1 onwards the
+          # platform hash carries the minor level (android-37.0), and a bare
+          # 'android-37' package does not exist in any SDK repository.
+          COMPILE_SDK=$(grep -oP 'compileSdk\s*=\s*\K[0-9]+' app/build.gradle.kts | head -1)
+          COMPILE_SDK_MINOR=$(grep -oP 'compileSdkMinor\s*=\s*\K[0-9]+' app/build.gradle.kts | head -1)
+          if [ -z "$COMPILE_SDK" ]; then
+            echo "ERROR: could not read compileSdk from app/build.gradle.kts"
+            exit 1
+          fi
+
+          if [ -n "$COMPILE_SDK_MINOR" ]; then
+            PLATFORM="android-${COMPILE_SDK}.${COMPILE_SDK_MINOR}"
+          else
+            PLATFORM="android-${COMPILE_SDK}"
+          fi
+          echo "=== Installing platforms;${PLATFORM} ==="
+
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" "platforms;${PLATFORM}"
+          yes | "$SDKMANAGER" "build-tools;${COMPILE_SDK}.0.0" || echo "build-tools ${COMPILE_SDK}.0.0 unavailable, AGP will use its default"
+
+          if [ ! -d "$ANDROID_HOME/platforms/${PLATFORM}" ]; then
+            echo "ERROR: platforms/${PLATFORM} not present after install"
+            "$SDKMANAGER" --list_installed || true
+            exit 1
+          fi
+          echo "✅ Android platform ${PLATFORM} installed"
+    - task: CmdLine@2
       displayName: 'Install and Configure Android NDK'
       inputs:
         script: |

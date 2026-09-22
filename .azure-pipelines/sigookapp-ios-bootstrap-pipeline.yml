@@ -1,0 +1,109 @@
+name: SigookApp-iOS-Bootstrap-$(Date:yyyyMMdd)$(Rev:.r)
+
+# PIPELINE: SigookApp iOS bootstrap (manual, one-off)
+# ============================================
+# Runs the iOS project migrations that a new Flutter release applies on first
+# build (Swift Package Manager, UIScene, Xcode project format) on a hosted
+# macOS agent, because nobody on the team has a Mac. It publishes the
+# resulting `git diff` plus the lockfiles as an artifact so the changes can be
+# reviewed and committed from Windows instead of letting CI mutate an
+# unreviewed checkout on every build.
+#
+# It also smoke-tests the hosted macOS image: Xcode selection, pinned Flutter
+# install, CocoaPods and Bundler, before the release pipeline depends on them.
+# ============================================
+
+trigger: none
+pr: none
+
+parameters:
+- name: macosImage
+  displayName: 'Hosted macOS image'
+  type: string
+  default: 'macOS-26'
+- name: xcodeVersion
+  displayName: 'Xcode version installed on the image'
+  type: string
+  default: '26.6'
+- name: flutterVersion
+  displayName: 'Flutter version (must match sigookapp-pipeline.yml)'
+  type: string
+  default: '3.47.4'
+
+variables:
+- name: workingDirectory
+  value: '$(System.DefaultWorkingDirectory)/SigookApp'
+
+stages:
+- stage: Bootstrap
+  displayName: 'Migrate iOS project'
+  pool:
+    vmImage: '${{ parameters.macosImage }}'
+  jobs:
+  - job: Migrate
+    displayName: 'Run Flutter iOS migrations'
+    timeoutInMinutes: 60
+    steps:
+    - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
+      displayName: 'Checkout Repository'
+      inputs:
+        repository: self
+        fetchDepth: 0
+    - script: |
+        sudo xcode-select -s /Applications/Xcode_${{ parameters.xcodeVersion }}.app/Contents/Developer
+        xcodebuild -version
+        sw_vers
+        uname -m
+      displayName: 'Select Xcode ${{ parameters.xcodeVersion }}'
+    - template: templates/flutter-setup.yml
+      parameters:
+        flutterVersion: '${{ parameters.flutterVersion }}'
+    - template: templates/fastlane-setup.yml
+      parameters:
+        workingDirectory: '$(workingDirectory)'
+    - task: CmdLine@2
+      displayName: 'Flutter Pub Get'
+      inputs:
+        script: |
+          cd $(workingDirectory)
+          flutter pub get
+    - task: CmdLine@2
+      displayName: 'Build iOS (applies project migrations)'
+      inputs:
+        script: |
+          cd $(workingDirectory)
+          flutter build ios --release --no-codesign -t lib/main_staging.dart
+    - task: Bash@3
+      displayName: 'Collect migration diff and lockfiles'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: '$(workingDirectory)'
+        script: |
+          OUT="$(Build.ArtifactStagingDirectory)/ios-bootstrap"
+          mkdir -p "$OUT"
+
+          git status --porcelain > "$OUT/git-status.txt"
+          git diff --binary > "$OUT/migration.patch"
+          git ls-files --others --exclude-standard > "$OUT/untracked-files.txt"
+
+          # Lockfiles are gitignored (*.lock) so they never show up in the diff
+          cp ios/Podfile.lock "$OUT/Podfile.lock"
+          cp Gemfile.lock "$OUT/Gemfile.lock"
+
+          flutter --version > "$OUT/toolchain.txt"
+          xcodebuild -version >> "$OUT/toolchain.txt"
+          pod --version >> "$OUT/toolchain.txt"
+          bundle exec fastlane --version >> "$OUT/toolchain.txt"
+
+          echo "=== git status ==="
+          cat "$OUT/git-status.txt"
+          echo "=== untracked ==="
+          cat "$OUT/untracked-files.txt"
+          echo "=== patch size ==="
+          wc -l "$OUT/migration.patch"
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Bootstrap Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios-bootstrap'
+        ArtifactName: 'ios-bootstrap'
+        publishLocation: 'Container'
