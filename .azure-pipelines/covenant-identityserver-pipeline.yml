@@ -79,7 +79,13 @@ stages:
               command: 'build'
               Dockerfile: '$(workingDirectory)/Dockerfile'
               buildContext: '$(workingDirectory)'
-              tags: $(tag)
+              # $(tag) is mutable (latest_staging/latest_production) and is kept
+              # for anything that tracks the newest image. The deploy targets the
+              # immutable $(Build.BuildId) tag, so a restart cannot silently pull
+              # an image that was never deployed, and rollback stays possible.
+              tags: |
+                $(tag)
+                $(Build.BuildId)
               arguments: '--build-arg PAT=$(PatSigookPackages)'
 
           - task: Docker@2
@@ -88,7 +94,9 @@ stages:
               containerRegistry: $(dockerRegistry)
               repository: $(dockerRepository)
               command: 'push'
-              tags: $(tag)
+              tags: |
+                $(tag)
+                $(Build.BuildId)
 
           # Cleanup after Docker build and push
           - template: templates/cleanup.yml
@@ -113,8 +121,7 @@ stages:
 
           - script: |
               echo "Deploying to $(azureAppName)"
-              echo "Using tag: $(imageTag)"
-              echo "Build ID: $(Build.BuildId)"
+              echo "Using tag: $(Build.BuildId) (also tagged $(imageTag))"
             displayName: 'Display Deployment Info'
 
           - task: AzureWebAppContainer@1
@@ -122,5 +129,5 @@ stages:
             inputs:
               azureSubscription: $(azureSubscription)
               appName: $(azureAppName)
-              containers: 'sigook.azurecr.io/$(dockerRepository):$(imageTag)'
+              containers: 'sigook.azurecr.io/$(dockerRepository):$(Build.BuildId)'
               appSettings: '-CVN_VERSION $(Build.BuildId)'

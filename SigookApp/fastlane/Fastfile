@@ -1,5 +1,4 @@
 # Fastfile for SigookApp Flutter Build Automation
-# Android-only — iOS builds are handled by Xcode Cloud
 #
 # IMPORTANT PATH HANDLING:
 # - Fastlane automatically changes directory to 'fastlane/' when executing
@@ -7,14 +6,66 @@
 # - SOLUTION: Use File.expand_path("../path", __dir__) to convert to absolute paths
 #
 # AZURE DEVOPS VARIABLE GROUPS:
-# - PROD-SigookApp-Android-Signing: KEY_ALIAS, KEY_PASSWORD, KEYSTORE_FILE
+# - SigookApp-Android: KEY_ALIAS, KEY_PASSWORD, KEYSTORE_FILE
 # - SigookApp-Staging / SigookApp-Production: API_BASE_URL, APP_NAME, AUTH_AUTHORITY, CLIENT_ID,
-#   GOOGLE_PLAY_JSON_KEY, POST_LOGOUT_REDIRECT_URI, REDIRECT_URI, SCOPES
+#   GOOGLE_PLAY_JSON_KEY, POST_LOGOUT_REDIRECT_URI, REDIRECT_URI, SCOPES, APP_INSIGHTS_CONNECTION_STRING
+# - SigookApp-iOS: APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_API_KEY
+#   (base64 .p8), MATCH_GIT_URL, MATCH_PASSWORD, IOS_RELEASE_NOTES (optional)
+#
+# LANE / TARGET MAPPING (see .azure-pipelines/sigookapp-pipeline.yml):
+# - dev  -> android deploy track:"Closed Testing - SIGOOK V2" | ios build + ios beta (TestFlight internal group "Staging")
+# - main -> android deploy track:production | ios build + ios release (App Store, submitted for review)
 
 default_platform(:android)
 
-# Android Play Store package name
 ANDROID_PACKAGE_NAME = "com.sigook.sigook"
+IOS_BUNDLE_ID = "com.all2job.all2job"
+IOS_TEAM_ID = "NGXFWU4H7Z"
+TESTFLIGHT_STAGING_GROUP = "Staging"
+
+# Every value the app reads through String.fromEnvironment (lib/core/config/environment.dart)
+DART_DEFINE_KEYS = %w[
+  ENVIRONMENT
+  AUTH_AUTHORITY
+  API_BASE_URL
+  CLIENT_ID
+  REDIRECT_URI
+  POST_LOGOUT_REDIRECT_URI
+  SCOPES
+  APP_NAME
+  APP_INSIGHTS_CONNECTION_STRING
+].freeze
+OPTIONAL_DART_DEFINE_KEYS = %w[APP_INSIGHTS_CONNECTION_STRING].freeze
+
+def project_path(relative)
+  File.expand_path("../#{relative}", __dir__)
+end
+
+# Azure DevOps secret variables hold the key material base64-encoded; local
+# runs may export the plain text instead.
+def decode_if_base64(raw, plain_prefix)
+  return raw if raw.strip.start_with?(plain_prefix)
+
+  require "base64"
+  Base64.decode64(raw)
+end
+
+# Azure Pipelines exposes its job token as SYSTEM_ACCESSTOKEN; Azure Repos
+# accepts it as a basic-auth password with any username. Local runs fall
+# back to whatever git credentials the developer already has.
+def match_git_authorization
+  token = ENV["SYSTEM_ACCESSTOKEN"]
+  return nil if token.nil? || token.empty?
+
+  require "base64"
+  Base64.strict_encode64("x:#{token}")
+end
+
+def require_ipa(options)
+  ipa_path = options[:ipa] || Dir.glob(project_path("build/ios/ipa/*.ipa")).first
+  UI.user_error!("❌ IPA not found. Build the app first with 'fastlane ios build'") if ipa_path.nil? || !File.exist?(ipa_path)
+  ipa_path
+end
 
 # ============================================
 # Android Lanes
@@ -22,9 +73,8 @@ ANDROID_PACKAGE_NAME = "com.sigook.sigook"
 platform :android do
   desc "Build and sign Android app bundle for production"
   lane :production do |options|
-    android_path = File.expand_path("../android", __dir__)
     gradle(
-      project_dir: android_path,
+      project_dir: project_path("android"),
       task: "bundle",
       build_type: "Release",
       print_command: true,
@@ -41,10 +91,8 @@ platform :android do
 
   desc "Build APK for local testing"
   lane :apk do
-    # Use absolute path for gradle to avoid path resolution issues
-    android_path = File.expand_path("../android", __dir__)
     gradle(
-      project_dir: android_path,
+      project_dir: project_path("android"),
       task: "assemble",
       build_type: "Release"
     )
@@ -52,65 +100,183 @@ platform :android do
 
   desc "Run Android tests"
   lane :test do
-    # Use absolute path for gradle to avoid path resolution issues
-    android_path = File.expand_path("../android", __dir__)
     gradle(
-      project_dir: android_path,
+      project_dir: project_path("android"),
       task: "test",
       build_type: "Debug"
     )
   end
 
-  desc "Deploy to Google Play Store (Internal Testing)"
+  desc "Deploy AAB to a Google Play track (track: internal | alpha | beta | production | custom closed track name)"
   lane :deploy do |options|
-    # Always use production package name (only one app identity now)
-    package_name = ANDROID_PACKAGE_NAME
-    aab_path = options[:aab] || Dir.glob(File.expand_path("../build/app/outputs/bundle/release/*.aab", __dir__)).first
+    track = options[:track].to_s.strip
+    UI.user_error!("❌ track: is required (internal, alpha, beta, production or a custom closed-testing track name)") if track.empty?
 
+    aab_path = options[:aab] || Dir.glob(project_path("build/app/outputs/bundle/release/*.aab")).first
     if aab_path.nil? || !File.exist?(aab_path)
       UI.user_error!("❌ AAB not found at expected path. Build the app first with 'fastlane android production'")
     end
 
-    UI.message("📤 Uploading to Google Play: #{aab_path}")
-    UI.message("📦 Package name: #{package_name}")
+    UI.message("📤 Uploading to Google Play (#{track}): #{aab_path}")
+    UI.message("📦 Package name: #{ANDROID_PACKAGE_NAME}")
 
-    # Get and decode the Google Play JSON key (base64 encoded in Azure DevOps)
     json_key_raw = ENV["GOOGLE_PLAY_JSON_KEY"]
     if json_key_raw.nil? || json_key_raw.empty?
       UI.user_error!("❌ GOOGLE_PLAY_JSON_KEY environment variable is not set")
     end
 
-    # Decode base64 if the key appears to be encoded (doesn't start with '{')
-    json_key_data = if json_key_raw.strip.start_with?('{')
-      json_key_raw
-    else
-      require 'base64'
-      Base64.decode64(json_key_raw)
-    end
-
-    # Upload to Google Play Internal Testing track
     upload_to_play_store(
-      track: "internal",
+      track: track,
+      release_status: "completed",
       aab: aab_path,
-      json_key_data: json_key_data,
-      package_name: package_name,
+      json_key_data: decode_if_base64(json_key_raw, "{"),
+      package_name: ANDROID_PACKAGE_NAME,
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true
     )
 
-    UI.success("✅ Successfully uploaded to Google Play Internal Testing!")
+    UI.success("✅ Successfully uploaded to Google Play track '#{track}'!")
   end
 
   desc "Clean Android build artifacts"
   lane :clean do
-    # Use absolute path for gradle to avoid path resolution issues
-    android_path = File.expand_path("../android", __dir__)
     gradle(
-      project_dir: android_path,
+      project_dir: project_path("android"),
       task: "clean"
     )
     UI.success("✅ Cleaned Android build artifacts")
+  end
+end
+
+# ============================================
+# iOS Lanes
+# ============================================
+platform :ios do
+  private_lane :asc_api_key do
+    raw = ENV["APP_STORE_CONNECT_API_KEY"]
+    UI.user_error!("❌ APP_STORE_CONNECT_API_KEY environment variable is not set") if raw.nil? || raw.empty?
+
+    app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: decode_if_base64(raw, "-----BEGIN"),
+      in_house: false
+    )
+  end
+
+  desc "Sign with match and build the App Store IPA (entry_point:, version:, build_number:, match_readonly:)"
+  lane :build do |options|
+    entry_point = options[:entry_point] || "lib/main_staging.dart"
+    version = options[:version]
+    build_number = options[:build_number]
+    UI.user_error!("❌ version: and build_number: are required") if version.to_s.empty? || build_number.to_s.empty?
+
+    missing = (DART_DEFINE_KEYS - OPTIONAL_DART_DEFINE_KEYS).select { |key| ENV[key].to_s.empty? }
+    UI.user_error!("❌ Missing dart-define values: #{missing.join(', ')}") unless missing.empty?
+
+    setup_ci(force: true)
+    api_key = asc_api_key
+
+    match(
+      api_key: api_key,
+      type: "appstore",
+      app_identifier: IOS_BUNDLE_ID,
+      readonly: options[:match_readonly].to_s.downcase != "false",
+      git_basic_authorization: match_git_authorization
+    )
+    profile_mapping = lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING]
+
+    update_code_signing_settings(
+      path: project_path("ios/Runner.xcodeproj"),
+      targets: ["Runner"],
+      build_configurations: ["Release"],
+      use_automatic_signing: false,
+      team_id: IOS_TEAM_ID,
+      bundle_identifier: IOS_BUNDLE_ID,
+      code_sign_identity: "Apple Distribution",
+      profile_name: profile_mapping[IOS_BUNDLE_ID]
+    )
+
+    dart_defines = DART_DEFINE_KEYS.map { |key| "--dart-define=#{key}=#{ENV[key]}" }
+    UI.message("🔨 flutter build ios (#{entry_point}, #{version} (#{build_number}))")
+    Dir.chdir(project_path(".")) do
+      sh(
+        "flutter", "build", "ios",
+        "--release",
+        "--no-codesign",
+        "-t", entry_point,
+        "--build-name=#{version}",
+        "--build-number=#{build_number}",
+        *dart_defines,
+        log: false
+      )
+    end
+
+    build_app(
+      workspace: project_path("ios/Runner.xcworkspace"),
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      export_team_id: IOS_TEAM_ID,
+      export_options: {
+        provisioningProfiles: profile_mapping,
+        signingStyle: "manual",
+        manageAppVersionAndBuildNumber: false
+      },
+      output_directory: project_path("build/ios/ipa"),
+      output_name: "Runner.ipa"
+    )
+
+    UI.success("✅ iOS IPA built and signed: #{lane_context[SharedValues::IPA_OUTPUT_PATH]}")
+  end
+
+  desc "Upload staging IPA to TestFlight and add it to the internal '#{TESTFLIGHT_STAGING_GROUP}' group"
+  lane :beta do |options|
+    ipa_path = require_ipa(options)
+    UI.message("📤 Uploading to TestFlight: #{ipa_path}")
+
+    upload_to_testflight(
+      api_key: asc_api_key,
+      ipa: ipa_path,
+      app_identifier: IOS_BUNDLE_ID,
+      groups: [TESTFLIGHT_STAGING_GROUP],
+      distribute_external: false,
+      notify_external_testers: false,
+      skip_waiting_for_build_processing: false
+    )
+
+    UI.success("✅ Build available to TestFlight group '#{TESTFLIGHT_STAGING_GROUP}'!")
+  end
+
+  desc "Upload production IPA and submit it for App Store review (version:)"
+  lane :release do |options|
+    ipa_path = require_ipa(options)
+    UI.user_error!("❌ version: is required") if options[:version].to_s.empty?
+    UI.message("📤 Uploading #{options[:version]} to App Store Connect: #{ipa_path}")
+
+    upload_to_app_store(
+      api_key: asc_api_key,
+      ipa: ipa_path,
+      app_identifier: IOS_BUNDLE_ID,
+      app_version: options[:version],
+      release_notes: { "default" => ENV.fetch("IOS_RELEASE_NOTES", "Bug fixes and performance improvements.") },
+      skip_screenshots: true,
+      skip_app_version_update: false,
+      force: true,
+      run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false,
+      submit_for_review: true,
+      automatic_release: true,
+      reject_if_possible: true,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false,
+        content_rights_contains_third_party_content: false
+      }
+    )
+
+    UI.success("✅ #{options[:version]} submitted for App Store review!")
   end
 end
 
@@ -124,9 +290,8 @@ lane :info do
   UI.message("Fastlane version: #{Fastlane::VERSION}")
   UI.message("Ruby version: #{RUBY_VERSION}")
   UI.message("Working directory: #{Dir.pwd}")
-
-  # Show the actual paths being used (fastlane runs from fastlane/ directory)
-  UI.message("Android project path: #{File.expand_path('../android', Dir.pwd)}")
+  UI.message("Android project path: #{project_path('android')}")
+  UI.message("iOS workspace path: #{project_path('ios/Runner.xcworkspace')}")
 
   if is_ci
     UI.message("Running in CI environment")

@@ -8,8 +8,11 @@
 *.class
 *.lock
 # Dart/Flutter apps commit their lockfile so CI resolves the exact same
-# dependency versions as the developer machine.
+# dependency versions as the developer machine. The same applies to the
+# CocoaPods and Bundler lockfiles used by the hosted macOS build.
 !pubspec.lock
+!ios/Podfile.lock
+!Gemfile.lock
 *.log
 *.pyc
 *.swp
@@ -126,6 +129,9 @@ coverage/
 
 # Symbols
 app.*.symbols
+
+# Bundler local config written by fastlane-setup.yml (bundle config set --local path)
+.bundle/
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3

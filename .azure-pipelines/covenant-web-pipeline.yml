@@ -29,14 +29,22 @@ pool:
   name: 'covenant-build-pool'
 
 # Environment detection variables
+# Target values resolve at compile time: main/master → production, anything else (PRs included) → staging
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/Covenant.Web'
-  nodeVersion: '20.x'
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
-  # For PRs, determine environment based on target branch
-  targetBranch: $[coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranchName'])]
+  ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'production'
+    swaName: 'covenantgroup-swa'
+    swaResourceGroup: 'CovenantGroup'
+    appUrl: 'https://www.covenantgroupl.com'
+  ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'staging'
+    swaName: 'covenantgroup-staging-swa'
+    swaResourceGroup: 'CovenantGroupStaging'
+    appUrl: 'https://lively-island-020c8260f.7.azurestaticapps.net'
 
 stages:
   - stage: CI_CD
@@ -52,46 +60,7 @@ stages:
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
-
-          # Determine environment and build command
-          - script: |
-              echo "Build Reason: $(Build.Reason)"
-              echo "Source Branch: $(Build.SourceBranch)"
-
-              # For Pull Requests, use target branch to determine environment
-              if [ "$(Build.Reason)" = "PullRequest" ]; then
-                targetBranch="$(System.PullRequest.TargetBranch)"
-                echo "Pull Request detected"
-                echo "Target Branch: $targetBranch"
-
-                # Determine environment based on PR target branch
-                if [[ "$targetBranch" == *"main"* ]] || [[ "$targetBranch" == *"master"* ]]; then
-                  environment=production
-                  buildCommand=build:production
-                else
-                  environment=staging
-                  buildCommand=build:staging
-                fi
-              else
-                # Regular push - use source branch
-                echo "Direct push to $(Build.SourceBranchName)"
-                if [ "$(isDev)" = True ]; then
-                  environment=staging
-                  buildCommand=build:staging
-                else
-                  environment=production
-                  buildCommand=build:production
-                fi
-              fi
-
-              echo "##vso[task.setvariable variable=environment]$environment"
-              echo "##vso[task.setvariable variable=environment;isOutput=true]$environment"
-              echo "##vso[task.setvariable variable=buildCommand]$buildCommand"
-              echo ""
-              echo "Environment: $environment"
-              echo "Build Command: pnpm run $buildCommand"
-            name: SetEnvironment
-            displayName: 'Determine Environment'
+            fetchDepth: 1
 
           # Setup Node.js (shared template — Vite 7 requires Node ^20.19 || >=22.12)
           - template: templates/node-setup.yml
@@ -106,24 +75,6 @@ stages:
             displayName: 'Setup pnpm'
             workingDirectory: $(workingDirectory)
 
-          # Display build information
-          - task: Bash@3
-            displayName: 'Build Information'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "============================================"
-                echo "CovenantWeb Build Pipeline"
-                echo "============================================"
-                echo "Build Number: $(Build.BuildNumber)"
-                echo "Build ID: $(Build.BuildId)"
-                echo "Branch: $(Build.SourceBranch)"
-                echo "Environment: $(environment)"
-                echo "Build Command: $(buildCommand)"
-                echo "Node: $(node --version)"
-                echo "pnpm: $(pnpm --version)"
-                echo "============================================"
-
           # Resolve pnpm store directory for caching
           - script: |
               echo "##vso[task.setvariable variable=pnpmStorePath]$(pnpm store path --silent)"
@@ -135,6 +86,8 @@ stages:
             displayName: 'Cache pnpm store'
             inputs:
               key: 'pnpm | "$(Agent.OS)" | $(workingDirectory)/pnpm-lock.yaml'
+              restoreKeys: |
+                pnpm | "$(Agent.OS)"
               path: '$(pnpmStorePath)'
 
           # Install dependencies (frozen lockfile + scripts blocked by .npmrc)
@@ -153,8 +106,8 @@ stages:
             workingDirectory: $(workingDirectory)
 
           # Build application
-          - script: pnpm run $(buildCommand)
-            displayName: 'Build $(environment)'
+          - script: pnpm run build:$(deployEnvironment)
+            displayName: 'Build $(deployEnvironment)'
             workingDirectory: $(workingDirectory)
 
           # Verify build output
@@ -186,23 +139,6 @@ stages:
               ArtifactName: 'covenantweb-dist'
               publishLocation: 'Container'
 
-          # Build summary
-          - task: Bash@3
-            displayName: 'Build Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "✅ Build completed successfully!"
-                echo "🌍 Environment: $(environment)"
-
-                # Show artifact info only if created (not on PRs)
-                if [ "$(Build.Reason)" != "PullRequest" ]; then
-                  echo "📦 Artifact: covenantweb-dist"
-                else
-                  echo "📋 PR validation completed - no artifacts created"
-                fi
-
           # Cleanup after build
           - template: templates/cleanup.yml
             parameters:
@@ -212,73 +148,45 @@ stages:
       # ============================================
       # Job 2: Deploy to Azure Static Web Apps
       # ============================================
-      - job: Deploy_to_Azure
+      - deployment: Deploy_to_Azure
         displayName: 'Deploy to Azure Static Web Apps'
         dependsOn: Build_and_Test
         # Only deploy on direct pushes to main/dev, NOT on Pull Requests
         condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)), ne(variables['isPR'], true))
-        variables:
-          environment: $[ dependencies.Build_and_Test.outputs['SetEnvironment.environment'] ]
-        steps:
-          - download: current
-            artifact: covenantweb-dist
-            displayName: 'Download Build Artifacts'
+        environment: ${{ variables.deployEnvironment }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: covenantweb-dist
+                  displayName: 'Download Build Artifacts'
 
-          # Determine target Static Web App and fetch its deployment token
-          - task: AzureCLI@2
-            displayName: 'Set Static Web App Target'
-            inputs:
-              azureSubscription: 'SigookPipelines'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                if [ "$(isDev)" = True ]; then
-                  envLabel="Staging"
-                  swaName="covenantgroup-staging-swa"
-                  swaResourceGroup="CovenantGroupStaging"
-                else
-                  envLabel="Production"
-                  swaName="covenantgroup-swa"
-                  swaResourceGroup="CovenantGroup"
-                fi
-                swaToken=$(az staticwebapp secrets list --name "$swaName" --resource-group "$swaResourceGroup" --query "properties.apiKey" -o tsv)
-                echo "##vso[task.setvariable variable=swaToken;issecret=true]$swaToken"
-                echo "##vso[task.setvariable variable=envLabel]$envLabel"
-                echo "##vso[task.setvariable variable=swaName]$swaName"
-                echo "Deploying to: $swaName ($envLabel)"
-                echo "Build ID: $(Build.BuildId)"
+                # Fetch the target Static Web App's deployment token
+                - task: AzureCLI@2
+                  displayName: 'Get Static Web App Token'
+                  inputs:
+                    azureSubscription: 'SigookPipelines'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      swaToken=$(az staticwebapp secrets list --name "$(swaName)" --resource-group "$(swaResourceGroup)" --query "properties.apiKey" -o tsv)
+                      echo "##vso[task.setvariable variable=swaToken;issecret=true]$swaToken"
 
-          # Deploy prebuilt dist to Azure Static Web Apps
-          - task: AzureStaticWebApp@0
-            displayName: 'Deploy to Azure Static Web Apps'
-            inputs:
-              cwd: '$(Pipeline.Workspace)'
-              app_location: 'covenantweb-dist'
-              skip_app_build: true
-              skip_api_build: true
-              azure_static_web_apps_api_token: '$(swaToken)'
+                # Deploy prebuilt dist to Azure Static Web Apps
+                - task: AzureStaticWebApp@0
+                  displayName: 'Deploy to $(swaName)'
+                  inputs:
+                    cwd: '$(Pipeline.Workspace)'
+                    app_location: 'covenantweb-dist'
+                    skip_app_build: true
+                    skip_api_build: true
+                    azure_static_web_apps_api_token: '$(swaToken)'
 
-          # Deployment summary
-          - task: Bash@3
-            displayName: 'Deployment Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "============================================"
-                echo "✅ Deployment Completed!"
-                echo "============================================"
-                echo "Environment: $(envLabel)"
-                echo "Static Web App: $(swaName)"
-                echo "Version: $(Build.BuildId)"
-                echo "============================================"
-                echo ""
-                echo "URLs:"
-                if [ "$(isDev)" = True ]; then
-                  echo "🌐 Staging: https://lively-island-020c8260f.7.azurestaticapps.net"
-                else
-                  echo "🌐 Production: https://www.covenantgroupl.com"
-                fi
+                - script: |
+                    echo "✅ Deployed build $(Build.BuildId) to $(swaName) ($(deployEnvironment))"
+                    echo "URL: $(appUrl)"
+                  displayName: 'Deployment Summary'
 
   # ============================================
   # Stage 2: Notify Production Deployment
@@ -287,8 +195,6 @@ stages:
     displayName: 'Notify Production Deploy'
     dependsOn: CI_CD
     condition: and(succeeded(), eq(variables['isMain'], true))
-    pool:
-      name: 'covenant-build-pool'
     jobs:
       - job: SendEmail
         displayName: 'Send Deployment Email'

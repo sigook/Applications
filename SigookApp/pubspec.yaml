@@ -146,6 +146,13 @@ flutter_launcher_icons:
 # The following section is specific to Flutter packages.
 flutter:
 
+  # Keep iOS plugins on CocoaPods. Under Swift Package Manager the manifests of
+  # image_cropper (TOCropViewController 3.x) and file_picker's
+  # DKImagePickerController (TOCropViewController 2.x) cannot be resolved
+  # together; the podspecs do not pull the conflicting subspec.
+  config:
+    enable-swift-package-manager: false
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

@@ -1,0 +1,9 @@
+# git_url is not set here on purpose: match reads it from MATCH_GIT_URL
+# (SigookApp-iOS variable group) so the signing repo never appears in source.
+# MATCH_PASSWORD (same group) is the passphrase that encrypts that repo.
+storage_mode("git")
+git_branch("main")
+type("appstore")
+app_identifier(["com.all2job.all2job"])
+team_id("NGXFWU4H7Z")
+readonly(true)

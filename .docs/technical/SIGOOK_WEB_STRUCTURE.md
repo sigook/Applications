@@ -39,7 +39,7 @@ Sigook.Web/
 ├── pnpm-lock.yaml
 ├── vite.config.ts          # envPrefix: 'VUE_APP_'
 ├── nginx.conf
-└── Dockerfile              # Node 22 + pnpm build → nginx
+└── Dockerfile              # nginx serving the prebuilt wwwroot/ (built by the pipeline)
 ```
 
 ---

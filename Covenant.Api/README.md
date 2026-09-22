@@ -134,8 +134,9 @@ The API will be available at:
 ### Build Docker Image
 
 ```bash
-# From the solution root directory
-docker build -f Covenant.Api/Dockerfile -t covenant-api .
+# From the solution root directory — the Dockerfile only packages a published output
+dotnet publish Covenant.Api/Covenant.Api.csproj -c Release -o publish
+docker build -f Dockerfile -t covenant-api publish
 ```
 
 ### Run with Docker

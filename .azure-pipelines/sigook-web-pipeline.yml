@@ -1,4 +1,4 @@
-# Azure Pipeline for Sigook.Web (Vue.js 2 Application)
+# Azure Pipeline for Sigook.Web (Vue.js 3 Application)
 # Builds Docker image and deploys to Azure App Service Container
 
 name: SigookWeb-$(Date:yyyyMMdd)$(Rev:.r)
@@ -29,23 +29,35 @@ pool:
   name: 'covenant-build-pool'
 
 # Environment detection variables
+# Target values resolve at compile time: main/master → production, anything else → staging
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/Sigook.Web'
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'production'
+    dockerTag: 'latest_production'
+    azureAppName: 'sigook'
+    appUrl: 'https://sigook.azurewebsites.net'
+  ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'staging'
+    dockerTag: 'latest_staging'
+    azureAppName: 'sigook-web-staging'
+    appUrl: 'https://sigook-web-staging.azurewebsites.net'
 
 stages:
   # ============================================
-  # Stage 1: Build and Validate
+  # Stage 1: Validate, Build and Docker Image
   # ============================================
   - stage: Build_and_Test
     displayName: 'Build and Validate'
     jobs:
       - job: Validate
-        displayName: 'Lint and Build Validation'
+        displayName: 'Lint, Type-check and Build'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
+            fetchDepth: 1
 
           # Setup Node.js (shared template — Vite 8 requires Node ^20.19 || >=22.12)
           - template: templates/node-setup.yml
@@ -85,140 +97,99 @@ stages:
             displayName: 'Lint Code'
             workingDirectory: $(workingDirectory)
 
-          # TypeScript type checking (validates compilation without generating artifacts)
+          # TypeScript type checking (the only vue-tsc run; the build below calls vite directly)
           - script: pnpm run type-check
             displayName: 'TypeScript Type Check'
             workingDirectory: $(workingDirectory)
 
-  # ============================================
-  # Stage 2: Docker Build and Deploy
-  # ============================================
-  - stage: CI_CD
-    displayName: 'Build Docker and Deploy'
-    dependsOn: Build_and_Test
-    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
-    jobs:
-      - job: Build_Docker_Image
-        displayName: 'Build and Push Docker Image'
-        steps:
-          - checkout: self
-            displayName: 'Checkout Repository'
+          - ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/dev', 'refs/heads/development') }}:
+            # Replace tokens in index.html (root) + public/*.json (version.json etc.)
+            # Vite 3+ moved index.html to the project root — previously was in public/.
+            - task: qetza.replacetokens.replacetokens-task.replacetokens@6
+              displayName: 'Set Version in index.html and version.json'
+              inputs:
+                root: '$(Build.SourcesDirectory)/Sigook.Web'
+                sources: |
+                  index.html
+                  public/**/*.html
+                  public/**/*.json
+                tokenPattern: 'custom'
+                tokenPrefix: '#{'
+                tokenSuffix: '}#'
+                actionOnMissing: 'warn'
+                writeBOM: true
+                encoding: 'auto'
 
-          # Calculate Docker tag using template
-          - template: templates/calculate-docker-tag.yml
-            parameters:
-              tagVariableName: 'dockerTag'
-              environmentVariableName: 'buildEnvironment'
-              stepName: 'SetDockerTag'
+          # Vite build — PRs resolve to staging and only build to catch bundling errors
+          - script: pnpm exec vite build --mode $(deployEnvironment)
+            displayName: 'Vite Build ($(deployEnvironment))'
+            workingDirectory: $(workingDirectory)
 
-          # Replace tokens in index.html (root) + public/*.json (version.json etc.)
-          # Vite 3+ moved index.html to the project root — previously was in public/.
-          - task: qetza.replacetokens.replacetokens-task.replacetokens@6
-            displayName: 'Set Version in index.html and version.json'
-            inputs:
-              root: '$(Build.SourcesDirectory)/Sigook.Web'
-              sources: |
-                index.html
-                public/**/*.html
-                public/**/*.json
-              tokenPattern: 'custom'
-              tokenPrefix: '#{'
-              tokenSuffix: '}#'
-              actionOnMissing: 'warn'
-              writeBOM: true
-              encoding: 'auto'
+          - ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/dev', 'refs/heads/development') }}:
+            # Build Docker Image (nginx + prebuilt wwwroot)
+            - task: Docker@2
+              displayName: 'Build Docker Image'
+              inputs:
+                command: 'build'
+                repository: 'sigook.azurecr.io/web'
+                dockerfile: 'Sigook.Web/Dockerfile'
+                buildContext: 'Sigook.Web'
+                # $(dockerTag) is mutable (latest_staging/latest_production) and is
+                # kept for anything that tracks the newest image. The deploy targets
+                # the immutable $(Build.BuildId) tag, so a restart cannot silently
+                # pull an image that was never deployed, and rollback stays possible.
+                tags: |
+                  $(dockerTag)
+                  $(Build.BuildId)
 
-          # Build Docker Image
-          - task: Docker@2
-            displayName: 'Build Docker Image'
-            inputs:
-              command: 'build'
-              repository: 'sigook.azurecr.io/web'
-              dockerfile: 'Sigook.Web/Dockerfile'
-              buildContext: 'Sigook.Web'
-              tags: '$(dockerTag)'
-              arguments: '--build-arg ENV=$(buildEnvironment)'
+            # Push Docker Image to ACR
+            - task: Docker@2
+              displayName: 'Push Docker Image to ACR'
+              inputs:
+                containerRegistry: 'acrServiceConnectionSigook'
+                repository: 'web'
+                command: 'push'
+                tags: |
+                  $(dockerTag)
+                  $(Build.BuildId)
 
-          # Push Docker Image to ACR
-          - task: Docker@2
-            displayName: 'Push Docker Image to ACR'
-            inputs:
-              containerRegistry: 'acrServiceConnectionSigook'
-              repository: 'web'
-              command: 'push'
-              tags: '$(dockerTag)'
-
-          - task: Bash@3
-            displayName: 'Docker Build Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "✅ Docker Image Built and Pushed"
-                echo "Repository: sigook.azurecr.io/web:$(dockerTag)"
-                echo "Environment: $(buildEnvironment) | Build ID: $(Build.BuildId)"
-
-          # Cleanup after Docker build and push
+          # Cleanup after build
           - template: templates/cleanup.yml
             parameters:
               cleanDocker: true
               cleanNodeModules: true
               workingDirectory: '$(workingDirectory)'
 
-      - job: Deploy_to_Azure
+  # ============================================
+  # Stage 2: Deploy
+  # ============================================
+  - stage: CI_CD
+    displayName: 'Deploy'
+    dependsOn: Build_and_Test
+    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
+    jobs:
+      - deployment: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
-        dependsOn: Build_Docker_Image
-        condition: succeeded()
-        variables:
-          dockerTag: $[ dependencies.Build_Docker_Image.outputs['SetDockerTag.dockerTag'] ]
-        steps:
-          - checkout: none
-            displayName: 'Skip Checkout'
+        environment: ${{ variables.deployEnvironment }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: none
 
-          # Calculate Azure App Service name using template
-          - template: templates/calculate-azure-appname.yml
-            parameters:
-              appNameVariableName: 'azureAppName'
-              stagingAppName: 'sigook-web-staging'
-              productionAppName: 'sigook'
-              stepName: 'SetAppName'
+                # Deploy to Azure App Service (Container)
+                - task: AzureWebAppContainer@1
+                  displayName: 'Deploy to $(azureAppName)'
+                  inputs:
+                    azureSubscription: 'SigookPipelines'
+                    appName: $(azureAppName)
+                    containers: 'sigook.azurecr.io/web:$(Build.BuildId)'
+                    appSettings: '-CVN_VERSION $(Build.BuildId)'
 
-          - script: |
-              if [ "$(isDev)" = "True" ]; then
-                deployEnv="Staging"
-              else
-                deployEnv="Production"
-              fi
-              echo "##vso[task.setvariable variable=deployEnv]$deployEnv"
-              echo "Deploying to: $(azureAppName) ($deployEnv)"
-              echo "Docker Tag: $(dockerTag)"
-            displayName: 'Set Environment Label'
-
-          # Deploy to Azure App Service (Container)
-          - task: AzureWebAppContainer@1
-            displayName: 'Deploy to $(deployEnv)'
-            inputs:
-              azureSubscription: 'SigookPipelines'
-              appName: $(azureAppName)
-              containers: 'sigook.azurecr.io/web:$(dockerTag)'
-              appSettings: '-CVN_VERSION $(Build.BuildId)'
-
-          # Deployment Summary
-          - task: Bash@3
-            displayName: 'Deployment Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "🚀 Deployment Successful!"
-                echo "Environment: $(deployEnv) | App Service: $(azureAppName)"
-                echo "Image: sigook.azurecr.io/web:$(dockerTag)"
-                if [ "$(isDev)" = "True" ]; then
-                  echo "URL: https://sigook-web-staging.azurewebsites.net"
-                else
-                  echo "URL: https://sigook.azurewebsites.net"
-                fi
-                echo "Version: $(Build.BuildId)"
+                - script: |
+                    echo "🚀 Deployed sigook.azurecr.io/web:$(Build.BuildId) to $(azureAppName) ($(deployEnvironment))"
+                    echo "URL: $(appUrl)"
+                  displayName: 'Deployment Summary'
 
   # ============================================
   # Stage 3: Notify Production Deployment

@@ -7,7 +7,6 @@ enum Environment { local, staging, production }
 /// Values are injected at build time using:
 /// - Local development: --dart-define-from-file=.env.staging (reads local .env file)
 /// - CI/CD (Azure DevOps): --dart-define=KEY=VALUE flags (from pipeline variable groups)
-/// - CI/CD (Xcode Cloud): --dart-define=KEY=VALUE flags (from Xcode Cloud env vars)
 ///
 /// String.fromEnvironment is resolved at compile time - values are baked into the binary.
 class EnvironmentConfig {
