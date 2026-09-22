@@ -20,7 +20,7 @@ steps:
     displayName: 'Cache Fastlane Gems'
     continueOnError: ${{ parameters.continueOnError }}
     inputs:
-      key: 'gems | "$(Agent.OS)" | ${{ parameters.workingDirectory }}/Gemfile'
+      key: 'gems | "$(Agent.OS)" | ${{ parameters.workingDirectory }}/Gemfile.lock'
       restoreKeys: |
         gems | "$(Agent.OS)"
       path: $(HOME)/.gem

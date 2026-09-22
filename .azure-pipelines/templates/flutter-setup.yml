@@ -3,18 +3,36 @@
 #   - template: templates/flutter-setup.yml
 #     parameters:
 #       flutterVersion: '3.47.4'
+#       cacheSdk: true        # hosted agents only
 #
 # FlutterInstall@0 only exposes the SDK through $(FlutterToolPath); it does not
 # touch PATH, so plain `script:` steps would otherwise pick up whatever Flutter
 # the agent image ships. The template prepends the pinned SDK and fails fast
 # when the version on PATH is not the requested one.
+#
+# cacheSdk restores the tool cache folder (SDK + bin/cache engine artifacts)
+# through pipeline caching, so FlutterInstall finds the version already
+# installed. Only worth it on hosted agents: self-hosted agents keep the tool
+# cache on disk between runs.
 
 parameters:
   - name: flutterVersion
     type: string
     displayName: 'Exact Flutter version to install (e.g. 3.47.4)'
 
+  - name: cacheSdk
+    type: boolean
+    default: false
+    displayName: 'Cache the Flutter SDK with pipeline caching (hosted agents)'
+
 steps:
+  - ${{ if eq(parameters.cacheSdk, true) }}:
+    - task: Cache@2
+      displayName: 'Cache Flutter SDK ${{ parameters.flutterVersion }}'
+      inputs:
+        key: 'flutter-sdk | "$(Agent.OS)" | "$(Agent.OSArchitecture)" | "${{ parameters.flutterVersion }}"'
+        path: $(Agent.ToolsDirectory)/Flutter
+
   - task: FlutterInstall@0
     displayName: 'Install Flutter ${{ parameters.flutterVersion }}'
     inputs:
@@ -35,5 +53,4 @@ steps:
         exit 1
       fi
       echo "✅ Flutter ${{ parameters.flutterVersion }} confirmed on PATH"
-      flutter doctor
     displayName: 'Verify Flutter ${{ parameters.flutterVersion }}'

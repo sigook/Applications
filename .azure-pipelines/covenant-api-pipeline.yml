@@ -29,23 +29,35 @@ pool:
   name: 'covenant-build-pool'
 
 # Environment detection variables
+# Target values resolve at compile time: main/master → production, anything else → staging
 variables:
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
   dotnetSdkVersion: '8.0.415'
+  ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'production'
+    dockerTag: 'latest_production'
+    azureAppName: 'sigook-api'
+    appUrl: 'https://sigook-api.azurewebsites.net'
+  ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'staging'
+    dockerTag: 'latest_staging'
+    azureAppName: 'sigook-api-staging'
+    appUrl: 'https://sigook-api-staging.azurewebsites.net'
 
 stages:
   # ============================================
-  # Stage 1: Build and Test
+  # Stage 1: Build, Test and Docker Image
   # ============================================
   - stage: Build_and_Test
     displayName: 'Build and Test'
     jobs:
       - job: Build_Test_Solution
-        displayName: 'Build and Run Tests'
+        displayName: 'Build, Test and Publish Image'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
+            fetchDepth: 1
 
           # Install .NET SDK using template
           - template: templates/dotnet-setup.yml
@@ -62,129 +74,73 @@ stages:
               runIntegrationTests: true
               integrationTestProjects: 'Covenant.Api/**/Covenant.Integration.Tests/*.csproj'
 
-  # ============================================
-  # Stage 2: Docker Build and Deploy
-  # ============================================
-  - stage: CI_CD
-    displayName: 'Build Docker and Deploy'
-    dependsOn: Build_and_Test
-    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
-    jobs:
-      - job: Build_Docker_Image
-        displayName: 'Build and Push Docker Image'
-        steps:
-          - checkout: self
-            displayName: 'Checkout Repository'
+          # Publish + Docker image only on dev/main (PRs just build and test)
+          - ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/dev', 'refs/heads/development') }}:
+            # Reuse the Release build from the previous step; the image only copies this output
+            - task: DotNetCoreCLI@2
+              displayName: 'Publish API'
+              inputs:
+                command: 'publish'
+                publishWebProjects: false
+                projects: 'Covenant.Api/Covenant.Api/Covenant.Api.csproj'
+                arguments: '--configuration Release --no-build --output $(Build.ArtifactStagingDirectory)/api'
+                zipAfterPublish: false
+                modifyOutputPath: false
 
-          # Calculate Docker tag using template
-          - template: templates/calculate-docker-tag.yml
-            parameters:
-              tagVariableName: 'tag'
-              environmentVariableName: 'environment'
-              stepName: 'SetDockerTag'
+            # Build and Push Docker Image
+            - task: Docker@2
+              displayName: 'Build and Push Docker Image'
+              inputs:
+                containerRegistry: 'acrServiceConnectionSigook'
+                repository: 'api'
+                command: 'buildAndPush'
+                Dockerfile: 'Covenant.Api/Dockerfile'
+                buildContext: '$(Build.ArtifactStagingDirectory)/api'
+                # $(dockerTag) is mutable (latest_staging/latest_production) and is
+                # kept for anything that tracks the newest image. The deploy targets
+                # the immutable $(Build.BuildId) tag, so a restart cannot silently
+                # pull an image that was never deployed, and rollback stays possible.
+                tags: |
+                  $(dockerTag)
+                  $(Build.BuildId)
 
-          # Build and Push Docker Image
-          - task: Docker@2
-            displayName: 'Build and Push Docker Image'
-            inputs:
-              containerRegistry: 'acrServiceConnectionSigook'
-              repository: 'api'
-              command: 'buildAndPush'
-              Dockerfile: 'Covenant.Api/Dockerfile'
-              buildContext: 'Covenant.Api'
-              # $(tag) is mutable (latest_staging/latest_production) and is kept
-              # for anything that tracks the newest image. The deploy targets the
-              # immutable $(Build.BuildId) tag, so a restart cannot silently pull
-              # an image that was never deployed, and rollback stays possible.
-              tags: |
-                $(tag)
-                $(Build.BuildId)
-              arguments: '--build-arg BUILD_ID=$(Build.BuildId)'
-
-          - task: Bash@3
-            displayName: 'Docker Build Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "✅ Docker image built and pushed successfully!"
-                echo "📦 Image: sigook.azurecr.io/api:$(Build.BuildId)"
-                echo "🏷️  Tags: $(tag), $(Build.BuildId)"
-                echo ""
-
-          # Cleanup after Docker build and push
+          # Cleanup after build (bin/obj must not leak into the next run's workspace)
           - template: templates/cleanup.yml
             parameters:
               cleanDocker: true
               cleanDotnet: true
               workingDirectory: 'Covenant.Api'
 
-      - job: Deploy_to_Azure
+  # ============================================
+  # Stage 2: Deploy
+  # ============================================
+  - stage: CI_CD
+    displayName: 'Deploy'
+    dependsOn: Build_and_Test
+    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
+    jobs:
+      - deployment: Deploy_to_Azure
         displayName: 'Deploy to Azure App Service'
-        dependsOn: Build_Docker_Image
-        variables:
-          imageTag: $[ dependencies.Build_Docker_Image.outputs['SetDockerTag.tag'] ]
-          environment: $[ dependencies.Build_Docker_Image.outputs['SetDockerTag.environment'] ]
-        steps:
-          - checkout: none
-            displayName: 'Skip Checkout'
+        environment: ${{ variables.deployEnvironment }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: none
 
-          # Determine App Service name
-          # Calculate Azure App Service name using template
-          - template: templates/calculate-azure-appname.yml
-            parameters:
-              appNameVariableName: 'azureAppName'
-              stagingAppName: 'sigook-api-staging'
-              productionAppName: 'sigook-api'
-              stepName: 'SetAppName'
+                # Deploy to Azure App Service
+                - task: AzureWebAppContainer@1
+                  displayName: 'Deploy to $(azureAppName)'
+                  inputs:
+                    azureSubscription: 'SigookPipelines'
+                    appName: $(azureAppName)
+                    containers: 'sigook.azurecr.io/api:$(Build.BuildId)'
+                    appSettings: '-CVN_VERSION $(Build.BuildId)'
 
-          - script: |
-              if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
-                envLabel="Staging"
-              else
-                envLabel="Production"
-              fi
-              echo "##vso[task.setvariable variable=envLabel]$envLabel"
-              echo "Target: $(azureAppName) ($envLabel)"
-              echo "Image: sigook.azurecr.io/api:$(Build.BuildId) (also tagged $(imageTag))"
-            displayName: 'Set Environment Label'
-
-          # Deploy to Azure App Service
-          - task: AzureWebAppContainer@1
-            displayName: 'Deploy Docker Container'
-            inputs:
-              azureSubscription: 'SigookPipelines'
-              appName: $(azureAppName)
-              containers: 'sigook.azurecr.io/api:$(Build.BuildId)'
-              appSettings: '-CVN_VERSION $(Build.BuildId)'
-
-          # Deployment Summary
-          - task: Bash@3
-            displayName: 'Deployment Summary'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo ""
-                echo "============================================"
-                echo "✅ Deployment Completed!"
-                echo "============================================"
-                echo "Environment: $(envLabel)"
-                echo "App Service: $(azureAppName)"
-                echo "Docker Image: sigook.azurecr.io/api:$(Build.BuildId)"
-                echo "Version: $(Build.BuildId)"
-                echo "============================================"
-                echo ""
-                echo "URLs:"
-                if [ "$(isDev)" = "True" ] || [ "$(isDev)" = "true" ]; then
-                  echo "🌐 Staging API: https://sigook-api-staging.azurewebsites.net"
-                else
-                  echo "🌐 Production API: https://sigook-api.azurewebsites.net"
-                fi
-                echo ""
-                echo "Next steps:"
-                echo "1. Verify API health endpoints"
-                echo "2. Check application logs if needed"
-                echo "3. Run smoke tests"
+                - script: |
+                    echo "✅ Deployed sigook.azurecr.io/api:$(Build.BuildId) to $(azureAppName) ($(deployEnvironment))"
+                    echo "URL: $(appUrl)"
+                  displayName: 'Deployment Summary'
 
   # ============================================
   # Stage 3: Notify Production Deployment

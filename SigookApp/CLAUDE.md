@@ -327,6 +327,6 @@ flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
 
 `.env.staging` / `.env.local` / `.env.production` are gitignored; copy `.env.example` (its defaults already point at staging). Without `--dart-define-from-file` the app runs with no API or auth URLs.
 
-Neither platform has flavors: `android/app/build.gradle.kts` declares no `productFlavors` and the three iOS schemes (`Runner`, `staging`, `production`) are identical. The entry point plus the `--dart-define` values select the environment. CI builds with `flutter build appbundle` and `fastlane ios build` (`flutter build ios --no-codesign` + `build_app`), see `.docs/technical/PIPELINES.md`.
+Neither platform has flavors: `android/app/build.gradle.kts` declares no `productFlavors` and iOS has a single scheme (`Runner`). The entry point plus the `--dart-define` values select the environment. CI builds with `flutter build appbundle` and `fastlane ios build` (`flutter build ios --no-codesign` + `build_app`), see `.docs/technical/PIPELINES.md`.
 
 iOS plugins stay on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`): under Swift Package Manager `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors.

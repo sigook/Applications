@@ -23,6 +23,7 @@ stages:
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
+            fetchDepth: 1
 
           - task: AzureKeyVault@2
             displayName: 'Fetch Secrets from Key Vault'

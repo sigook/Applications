@@ -13,7 +13,7 @@
 #   (base64 .p8), MATCH_GIT_URL, MATCH_PASSWORD, IOS_RELEASE_NOTES (optional)
 #
 # LANE / TARGET MAPPING (see .azure-pipelines/sigookapp-pipeline.yml):
-# - dev  -> android deploy track:alpha      | ios build + ios beta    (TestFlight internal group "Staging")
+# - dev  -> android deploy track:"Closed Testing - SIGOOK V2" | ios build + ios beta (TestFlight internal group "Staging")
 # - main -> android deploy track:production | ios build + ios release (App Store, submitted for review)
 
 default_platform(:android)
@@ -22,7 +22,6 @@ ANDROID_PACKAGE_NAME = "com.sigook.sigook"
 IOS_BUNDLE_ID = "com.all2job.all2job"
 IOS_TEAM_ID = "NGXFWU4H7Z"
 TESTFLIGHT_STAGING_GROUP = "Staging"
-PLAY_TRACKS = %w[internal alpha beta production].freeze
 
 # Every value the app reads through String.fromEnvironment (lib/core/config/environment.dart)
 DART_DEFINE_KEYS = %w[
@@ -108,10 +107,10 @@ platform :android do
     )
   end
 
-  desc "Deploy AAB to a Google Play track (track: internal | alpha | beta | production)"
+  desc "Deploy AAB to a Google Play track (track: internal | alpha | beta | production | custom closed track name)"
   lane :deploy do |options|
-    track = options[:track] || "internal"
-    UI.user_error!("❌ Unknown Google Play track <#{track}>; expected one of #{PLAY_TRACKS.join(', ')}") unless PLAY_TRACKS.include?(track)
+    track = options[:track].to_s.strip
+    UI.user_error!("❌ track: is required (internal, alpha, beta, production or a custom closed-testing track name)") if track.empty?
 
     aab_path = options[:aab] || Dir.glob(project_path("build/app/outputs/bundle/release/*.aab")).first
     if aab_path.nil? || !File.exist?(aab_path)

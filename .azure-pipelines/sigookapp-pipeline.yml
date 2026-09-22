@@ -8,7 +8,7 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 # - Production (main) deployments are triggered manually (Run pipeline -> branch main)
 #
 # DEPLOY TARGETS:
-# - dev  -> TestFlight internal group "Staging" + Google Play closed testing (alpha track)
+# - dev  -> TestFlight internal group "Staging" + Google Play closed testing track "Closed Testing - SIGOOK V2"
 # - main -> App Store (submitted for review) + Google Play production track
 #
 # POOLS:
@@ -24,7 +24,11 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 
 # Trigger on dev branch with SigookApp changes
 # Production (main) deployments are triggered manually
+# batch: pushes that land while a run is in progress are grouped into a single
+# next run, so a burst of commits does not spend one iOS build (hosted macOS
+# minutes) per push
 trigger:
+  batch: true
   branches:
     include:
       - dev
@@ -87,12 +91,14 @@ variables:
     value: 'lib/main_production.dart'
   ${{ else }}:
     value: 'lib/main_staging.dart'
-# Google Play track (alpha = closed testing)
+# Google Play track. Staging goes to the existing custom closed-testing track
+# (the one the testers are enrolled in); the Play API addresses custom tracks
+# by their display name.
 - name: playTrack
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     value: 'production'
   ${{ else }}:
-    value: 'alpha'
+    value: 'Closed Testing - SIGOOK V2'
 # fastlane iOS upload lane (beta = TestFlight, release = App Store review)
 - name: iosLane
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -116,6 +122,7 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
+        fetchDepth: 1
     - task: Bash@3
       displayName: 'Display Build Information'
       inputs:
@@ -235,19 +242,7 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-    - task: CmdLine@2
-      displayName: 'Free Disk Space'
-      continueOnError: true
-      inputs:
-        script: |
-          echo "=== Disk space before cleanup ==="
-          df -h /
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android/sdk/ndk
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache
-          echo "=== Disk space after cleanup ==="
-          df -h /
+        fetchDepth: 1
     # Download production keystore (always production signing)
     - task: DownloadSecureFile@1
       name: androidKeystore
@@ -260,23 +255,8 @@ stages:
         script: |
           cp $(androidKeystore.secureFilePath) $(workingDirectory)/android/app/$(KEYSTORE_FILE)
           echo "✅ Keystore copied: $(KEYSTORE_FILE)"
-    # Configure caches before Flutter setup
-    - task: Cache@2
-      displayName: 'Cache Gradle'
-      inputs:
-        key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts | $(workingDirectory)/android/gradle/wrapper/gradle-wrapper.properties'
-        restoreKeys: |
-          gradle | "$(Agent.OS)" | $(workingDirectory)/android/app/build.gradle.kts
-          gradle | "$(Agent.OS)"
-        path: $(HOME)/.gradle/caches
-    - task: Cache@2
-      displayName: 'Cache Flutter Packages'
-      inputs:
-        key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.yaml'
-        restoreKeys: |
-          pub | "$(Agent.OS)"
-        path: $(HOME)/.pub-cache
-
+    # No Cache@2 for Gradle/pub here: the self-hosted VM keeps ~/.gradle and
+    # ~/.pub-cache between runs, so uploading them to pipeline caching only adds time
     - template: templates/flutter-setup.yml
       parameters:
         flutterVersion: '$(flutterVersion)'
@@ -362,15 +342,6 @@ stages:
             echo "Checking available NDKs:"
             ls -la "$ANDROID_HOME/ndk/" 2>/dev/null || echo "No NDK directory found"
           fi
-    # Verify Fastlane is available (pre-installed on VM)
-    - script: |
-        export GEM_HOME="/home/azureuser/gems"
-        export PATH="$GEM_HOME/bin:$PATH"
-        echo "Verifying Fastlane installation..."
-        ruby --version
-        bundle --version
-        fastlane --version
-      displayName: 'Verify Fastlane Installation'
     - task: CmdLine@2
       displayName: 'Build Android AAB'
       env:
@@ -529,7 +500,7 @@ stages:
           echo "AAB: sigook-$(environment)-${VERSION_NAME}-${VERSION_CODE}.aab"
           echo "========================================"
 # ============================================
-# Stage 4: Build iOS IPA (runs on merged PR to dev/main only, hosted macOS)
+# Stage 4: Build iOS IPA and upload to App Store Connect (push to dev/main only, hosted macOS)
 # ============================================
 - stage: Build_iOS
   displayName: 'Build iOS'
@@ -549,7 +520,7 @@ stages:
   - group: SigookApp-iOS
   jobs:
   - job: Build_IPA
-    displayName: 'Build iOS IPA'
+    displayName: 'Build and Deploy iOS IPA'
     # Free-tier hosted jobs are capped at 60 minutes
     timeoutInMinutes: 60
     variables:
@@ -560,6 +531,7 @@ stages:
       displayName: 'Checkout Repository'
       inputs:
         repository: self
+        fetchDepth: 1
     - task: Bash@3
       displayName: 'Display Build Information'
       inputs:
@@ -594,13 +566,14 @@ stages:
     - task: Cache@2
       displayName: 'Cache CocoaPods'
       inputs:
-        key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile'
+        key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock'
         restoreKeys: |
           pods | "$(Agent.OS)"
         path: $(HOME)/Library/Caches/CocoaPods
     - template: templates/flutter-setup.yml
       parameters:
         flutterVersion: '$(flutterVersion)'
+        cacheSdk: true
     - template: templates/fastlane-setup.yml
       parameters:
         workingDirectory: '$(workingDirectory)'
@@ -699,6 +672,34 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
         ArtifactName: 'sigookapp-ios-$(environment)'
         publishLocation: 'Container'
+    # Upload from the same macOS job: a separate deploy job would boot another
+    # hosted agent and reinstall fastlane just to upload the IPA built here.
+    # The step never fails the run; its status reaches Notify as an output variable.
+    - task: CmdLine@2
+      name: DeployAppStoreConnect
+      displayName: 'Deploy to App Store Connect ($(iosLane))'
+      continueOnError: true
+      env:
+        APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
+        FASTLANE_SKIP_UPDATE_CHECK: "true"
+      inputs:
+        script: |
+          cd $(workingDirectory)
+          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+          echo "Found IPA: $IPA_PATH"
+          if [ -n "$IPA_PATH" ] && bundle exec fastlane ios $(iosLane) ipa:"$IPA_PATH" version:"$(appVersionName)"; then
+            STATUS=success
+          else
+            STATUS=failed
+          fi
+          echo "##vso[task.setvariable variable=deployStatus;isOutput=true]$STATUS"
+          echo "========================================"
+          echo "App Store Connect: $STATUS"
+          echo "Environment: $(environment) | Lane: $(iosLane) | Version: $(appVersionName) ($(iosBuildNumber))"
+          echo "========================================"
+          if [ "$STATUS" != "success" ]; then
+            echo "##vso[task.logissue type=warning]App Store Connect upload failed"
+          fi
 # ============================================
 # Stage 5: Deploy Android to Google Play (runs on merged PR to dev/main only)
 # ============================================
@@ -718,24 +719,12 @@ stages:
   jobs:
   - job: Deploy_PlayStore
     displayName: 'Deploy to Google Play ($(playTrack))'
-    continueOnError: true  # Don't fail pipeline if deployment fails
     steps:
     - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
       displayName: 'Checkout Repository'
       inputs:
         repository: self
-    - task: Bash@3
-      displayName: 'Display Deploy Information'
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "========================================"
-          echo "Deploy Android to Google Play - $(environment)"
-          echo "========================================"
-          echo "Build Number: $(Build.BuildNumber)"
-          echo "Environment: $(environment)"
-          echo "Track: $(playTrack)"
-          echo "========================================"
+        fetchDepth: 1
     - task: DownloadBuildArtifacts@1
       displayName: 'Download AAB Artifact'
       continueOnError: true
@@ -744,19 +733,9 @@ stages:
         downloadType: 'single'
         artifactName: 'sigookapp-android-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
-
-    # Verify Fastlane is available (pre-installed on VM)
-    - script: |
-        export GEM_HOME="/home/azureuser/gems"
-        export PATH="$GEM_HOME/bin:$PATH"
-        echo "Verifying Fastlane installation..."
-        ruby --version
-        bundle --version
-        fastlane --version
-      displayName: 'Verify Fastlane Installation'
-      continueOnError: true
-
+    # The step never fails the run; its status reaches Notify as an output variable
     - task: CmdLine@2
+      name: DeployGooglePlay
       displayName: 'Deploy to Google Play'
       continueOnError: true
       env:
@@ -764,125 +743,40 @@ stages:
         FASTLANE_SKIP_UPDATE_CHECK: "true"
       inputs:
         script: |
-          cd $(System.DefaultWorkingDirectory)/SigookApp
+          cd $(workingDirectory)
           AAB_PATH=$(find $(System.ArtifactsDirectory) -name "*.aab" | head -1)
           echo "Found AAB: $AAB_PATH"
-          echo "Environment: $(environment)"
           export GEM_HOME="/home/azureuser/gems"
           export PATH="$GEM_HOME/bin:$PATH"
-          if [ -n "$AAB_PATH" ]; then
-            fastlane android deploy aab:"$AAB_PATH" track:$(playTrack) && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
+          if [ -n "$AAB_PATH" ] && fastlane android deploy aab:"$AAB_PATH" track:"$(playTrack)"; then
+            STATUS=success
           else
-            echo "⚠️ AAB not found, skipping deployment"
-            echo "##vso[task.setvariable variable=deployStatus]skipped"
+            STATUS=failed
           fi
-    - task: Bash@3
-      displayName: 'Deploy Summary'
-      condition: always()
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo ""
+          echo "##vso[task.setvariable variable=deployStatus;isOutput=true]$STATUS"
           echo "========================================"
-          echo "Google Play Deployment Summary"
+          echo "Google Play: $STATUS"
+          echo "Environment: $(environment) | Track: $(playTrack)"
           echo "========================================"
-          echo "Build ID: $(Build.BuildId)"
-          echo "Environment: $(environment)"
-          echo "Track: $(playTrack)"
-          echo "Status: $(deployStatus)"
-          echo "========================================"
-# ============================================
-# Stage 6: Deploy iOS to App Store Connect (runs on merged PR to dev/main only, hosted macOS)
-# ============================================
-- stage: Deploy_iOS
-  displayName: 'Deploy iOS to App Store Connect'
-  dependsOn:
-  - Build_iOS
-  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
-  pool:
-    vmImage: '$(macosImage)'
-  variables:
-  - group: SigookApp-iOS
-  jobs:
-  - job: Deploy_AppStoreConnect
-    displayName: 'Deploy to App Store Connect ($(iosLane))'
-    continueOnError: true  # Don't fail pipeline if deployment fails
-    timeoutInMinutes: 60
-    variables:
-      appVersionName: $[ stageDependencies.Version.Calculate.outputs['CalculateVersion.appVersionName'] ]
-    steps:
-    - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
-      displayName: 'Checkout Repository'
-      inputs:
-        repository: self
-    - task: Bash@3
-      displayName: 'Display Deploy Information'
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "========================================"
-          echo "Deploy iOS to App Store Connect - $(environment)"
-          echo "========================================"
-          echo "Build Number: $(Build.BuildNumber)"
-          echo "Environment: $(environment)"
-          echo "Lane: $(iosLane)"
-          echo "Version: $(appVersionName)"
-          echo "========================================"
-    - task: DownloadBuildArtifacts@1
-      displayName: 'Download IPA Artifact'
-      continueOnError: true
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'sigookapp-ios-$(environment)'
-        downloadPath: '$(System.ArtifactsDirectory)'
-    - template: templates/fastlane-setup.yml
-      parameters:
-        workingDirectory: '$(workingDirectory)'
-        continueOnError: true
-    - task: CmdLine@2
-      displayName: 'Deploy to App Store Connect'
-      continueOnError: true
-      env:
-        APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
-        FASTLANE_SKIP_UPDATE_CHECK: "true"
-      inputs:
-        script: |
-          cd $(workingDirectory)
-          IPA_PATH=$(find $(System.ArtifactsDirectory) -name "*.ipa" | head -1)
-          echo "Found IPA: $IPA_PATH"
-          echo "Environment: $(environment)"
-          if [ -n "$IPA_PATH" ]; then
-            bundle exec fastlane ios $(iosLane) ipa:"$IPA_PATH" version:"$(appVersionName)" && echo "##vso[task.setvariable variable=deployStatus]success" || echo "##vso[task.setvariable variable=deployStatus]failed"
-          else
-            echo "⚠️ IPA not found, skipping deployment"
-            echo "##vso[task.setvariable variable=deployStatus]skipped"
+          if [ "$STATUS" != "success" ]; then
+            echo "##vso[task.logissue type=warning]Google Play upload failed"
           fi
-    - task: Bash@3
-      displayName: 'Deploy Summary'
-      condition: always()
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo ""
-          echo "========================================"
-          echo "App Store Connect Deployment Summary"
-          echo "========================================"
-          echo "Build ID: $(Build.BuildId)"
-          echo "Environment: $(environment)"
-          echo "Lane: $(iosLane)"
-          echo "Status: $(deployStatus)"
-          echo "========================================"
 
 # ============================================
-# Stage 7: Notify Production Deployment
+# Stage 6: Notify Production Deployment
 # ============================================
+# Only when both store uploads reported success: the upload steps never fail
+# the run, so succeeded() alone would also email after a rejected upload
 - stage: Notify
   displayName: 'Notify Production Deploy'
   dependsOn:
+  - Version
+  - Build_iOS
   - Deploy_Android_PlayStore
-  - Deploy_iOS
-  condition: and(succeeded(), eq(variables.isMain, true))
+  condition: >-
+    and(succeeded(), eq(variables.isMain, true),
+    eq(dependencies.Deploy_Android_PlayStore.outputs['Deploy_PlayStore.DeployGooglePlay.deployStatus'], 'success'),
+    eq(dependencies.Build_iOS.outputs['Build_IPA.DeployAppStoreConnect.deployStatus'], 'success'))
   pool:
     name: 'covenant-build-pool'
   jobs:

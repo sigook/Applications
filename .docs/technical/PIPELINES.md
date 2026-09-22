@@ -13,6 +13,10 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 | `dev` | Staging | Auto-deploy after build+test |
 | `main` | Production | Manual trigger only (run from Azure DevOps) |
 
+Covenant.Api, Sigook.Web and Covenant.Web resolve their targets (environment, Docker tag, App Service / Static Web App, URL) as compile-time variables: `main`/`master` → production values, any other ref (PRs and feature branches included) → staging values. Their deploy runs as a `deployment` job bound to the Azure DevOps environment `staging` or `production` (Pipelines → Environments), which records the deploy history per environment. Both environments are shared by the three apps and have no approvals or checks; adding one in the UI gates every production deploy of those apps without YAML changes. The three pipelines are authorized on both environments.
+
+All checkouts are shallow (`fetchDepth: 1`).
+
 ### PR Validation Strategy
 
 - **PRs to `dev`**: Full validation (build, test, lint). Primary quality gate.
@@ -34,14 +38,14 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 | Pipeline | File | Trigger Path | Stages | Deploy Target |
 |----------|------|-------------|--------|---------------|
-| Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test → Docker+Deploy → Notify | `sigook-api-staging` / `sigook-api` |
-| Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check → Docker+Deploy → Notify | `sigook-web-staging` / `sigook` |
+| Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test+Publish+Docker → Deploy → Notify | `sigook-api-staging` / `sigook-api` |
+| Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check+Build+Docker → Deploy → Notify | `sigook-web-staging` / `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | IdentityServer | `covenant-identityserver-pipeline.yml` | `Covenant.IdentityServer/**` | Build+Test → Docker+Deploy | `sigook-accounts-staging` / `sigook-accounts` |
-| SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA → Google Play ‖ App Store Connect → Notify | Google Play (alpha/production) + TestFlight/App Store |
+| SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
 | SigookApp iOS Bootstrap | `sigookapp-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
-| Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build → Publish+Deploy | `sigook-functions` (production only) |
-| CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build → Publish+Deploy | `sigook-cognitive-services` (production only) |
+| Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
+| CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
 | Database Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | Refresh | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
@@ -56,17 +60,18 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Build naming:** `CovenantApi-YYYY.M.D.r`
 
-**Stage 1 - Build and Test:**
+**Stage 1 - Build and Test** (one job):
 - .NET SDK 8.0.415 (template: `dotnet-setup.yml`)
 - Build solution + NuGet auth (template: `dotnet-build-test.yml`)
 - Unit tests: `Covenant.Tests`
 - Integration tests: `Covenant.Integration.Tests`
+- dev/main only (the steps are left out of PR runs at compile time): `dotnet publish --no-build` of `Covenant.Api.csproj` into `$(Build.ArtifactStagingDirectory)/api`, then Docker build + push with that folder as build context
+- Docker tags: `latest_staging` (dev) or `latest_production` (main), plus the immutable `$(Build.BuildId)`
+- Dockerfile: `Covenant.Api/Dockerfile` — runtime-only (`aspnet:8.0` + the published output); the solution is compiled once, on the agent
+- Cleanup of `bin/`/`obj/` runs on every run, PRs included
 
-**Stage 2 - Docker and Deploy** (only on push to dev/main, not PRs):
-- Docker tag: `latest_staging` (dev) or `latest_production` (main)
-- Image: `sigook.azurecr.io/api:<tag>`
-- Dockerfile: `Covenant.Api/Dockerfile`
-- Deploy: `AzureWebAppContainer@1` to Azure App Service
+**Stage 2 - Deploy** (only on push to dev/main, not PRs; `deployment` job on environment `staging`/`production`):
+- Deploy `sigook.azurecr.io/api:$(Build.BuildId)` with `AzureWebAppContainer@1` to Azure App Service
 - Staging: `https://sigook-api-staging.azurewebsites.net`
 - Production: `https://sigook-api.azurewebsites.net`
 
@@ -77,17 +82,18 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 **Build naming:** `SigookWeb-YYYYMMDDr`
 
-**Stage 1 - Build and Validate:**
+**Stage 1 - Build and Validate** (one job):
 - Node.js 22 via shared template
 - pnpm via corepack, version resolved from the `packageManager` field in package.json (the `npm i -g` fallback reads the same field)
 - Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
-- Lint with ESLint, TypeScript type-check
+- Lint with ESLint, TypeScript type-check (the only `vue-tsc` run)
+- dev/main only: token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
+- `pnpm exec vite build --mode staging|production` into `wwwroot/` — runs on PRs too (always `staging`) so bundling errors fail the PR
+- dev/main only: Docker build + push. `Sigook.Web/Dockerfile` is Nginx alpine copying the prebuilt `wwwroot/`; `.dockerignore` allowlists only `wwwroot` and `nginx.conf`
+- Image: `sigook.azurecr.io/web:<tag>` plus the immutable `$(Build.BuildId)`
 
-**Stage 2 - Docker and Deploy** (only on push to dev/main):
-- Token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
-- Multi-stage Docker: Node.js 22 + pnpm build → Nginx alpine
-- Build arg: `--build-arg ENV=staging|production`
-- Image: `sigook.azurecr.io/web:<tag>`
+**Stage 2 - Deploy** (only on push to dev/main; `deployment` job on environment `staging`/`production`):
+- Deploy `sigook.azurecr.io/web:$(Build.BuildId)` with `AzureWebAppContainer@1`
 - Staging: `https://sigook-web-staging.azurewebsites.net`
 - Production: `https://sigook.azurewebsites.net`
 
@@ -101,18 +107,18 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "Notify".
 
 **Stage 1 (CI_CD) - Job 1: Build and Test:**
-- Node.js 22 via shared template (the YAML also declares a stale, unused `nodeVersion: '20.x'` variable)
+- Node.js 22 via shared template
 - pnpm via corepack, version resolved from the `packageManager` field in package.json (the `npm i -g` fallback reads the same field)
-- Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
+- Cache pnpm content-addressable store (by `pnpm-lock.yaml`, with an OS-only restore key)
 - Type checking: `pnpm run type-check`
 - Linting: `pnpm run lint`
-- Build: `pnpm run build:staging` or `pnpm run build:production` — for PRs the environment resolves from the PR *target* branch, so a PR into `main` builds with production config
+- Build: `pnpm run build:staging` (dev and PRs) or `pnpm run build:production` (main)
 - Verify `dist/index.html` exists
 - Publish `dist/` as artifact `covenantweb-dist` (only on direct push, not PRs)
 
-**Stage 1 (CI_CD) - Job 2: Deploy** (only on direct push to dev/main):
+**Stage 1 (CI_CD) - Job 2: Deploy** (only on direct push to dev/main; `deployment` job on environment `staging`/`production`):
 - Deploy prebuilt `dist/` via `AzureStaticWebApp@0` (`skip_app_build: true`)
-- Deployment token fetched at deploy time via `AzureCLI@2` + `SigookPipelines` service connection (`az staticwebapp secrets list`) — no manual pipeline variables needed
+- Target SWA name and resource group are compile-time variables; the deployment token is fetched at deploy time via `AzureCLI@2` + `SigookPipelines` service connection (`az staticwebapp secrets list`) — no manual pipeline variables needed
 - SPA routing handled by `Covenant.Web/public/staticwebapp.config.json` (navigationFallback to `index.html`)
 - Staging: `https://lively-island-020c8260f.7.azurestaticapps.net` (SWA `covenantgroup-staging-swa`, Free tier)
 - Production: `https://www.covenantgroupl.com` (SWA `covenantgroup-swa`, Free tier, default host `ambitious-bush-0eb4f540f.7.azurestaticapps.net`)
@@ -143,8 +149,10 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 
 | Branch | Environment | Android | iOS |
 |--------|-------------|---------|-----|
-| `dev` (auto) | staging (`lib/main_staging.dart`, group `SigookApp-Staging`) | Google Play closed testing track `alpha` | TestFlight internal group `Staging` |
+| `dev` (auto) | staging (`lib/main_staging.dart`, group `SigookApp-Staging`) | Google Play closed testing track `Closed Testing - SIGOOK V2` (custom track, addressed by its display name) | TestFlight internal group `Staging` |
 | `main` (manual run) | production (`lib/main_production.dart`, group `SigookApp-Production`) | Google Play `production` (live after Google review) | App Store, submitted for review automatically (`automatic_release`) |
+
+The CI trigger uses `batch: true`: pushes that land while a run is in progress are grouped into one next run, so a burst of commits spends a single iOS build of hosted macOS minutes. All checkouts are shallow (`fetchDepth: 1`).
 
 **Stage 1 - Validate & Test** (all pushes and PRs, Linux):
 - Pinned Flutter via `templates/flutter-setup.yml` (fails if the version on PATH is not `flutterVersion`)
@@ -161,26 +169,25 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 **Stage 3 - Build Android** (Linux, parallel with Build iOS):
 - Variable groups: `SigookApp-Staging` or `SigookApp-Production` + `SigookApp-Android` (signing)
 - Download keystore from secure files (`sigook.jks`)
-- Cache: Gradle + Flutter pub
+- No pipeline caching: the self-hosted VM keeps `~/.gradle` and `~/.pub-cache` on disk between runs, so `Cache@2` only added upload/download time
 - Android platform read from `compileSdk`/`compileSdkMinor` in `build.gradle.kts`; NDK 28.2.13676358
 - `SCOPES` must equal `openid,profile,api1,offline_access` exactly (extra scopes make IdentityServer answer `invalid_scope`)
 - Build: `flutter build appbundle -t <entry> --release` with one `--dart-define` per env var
 - AAB signing verification with `jarsigner`; publish artifact `sigookapp-android-<env>`
 
-**Stage 4 - Build iOS** (hosted macOS `macosImage`, parallel with Build Android, `timeoutInMinutes: 60`):
+**Stage 4 - Build and Deploy iOS** (hosted macOS `macosImage`, parallel with Build Android, `timeoutInMinutes: 60`; a single job, so the upload does not boot a second hosted agent):
 - Variable groups: `SigookApp-Staging` or `SigookApp-Production` + `SigookApp-iOS`
 - `xcode-select` to `xcodeVersion` (fails listing the installed versions when the image no longer ships it)
-- Cache: Flutter pub + CocoaPods; `flutter-setup.yml` + `fastlane-setup.yml` (Bundler)
+- Cache: Flutter SDK (`flutter-setup.yml` with `cacheSdk: true`), Flutter pub (by `pubspec.lock`), CocoaPods (by `Podfile.lock`); `fastlane-setup.yml` (Bundler)
 - `pod install` with a retry that only re-runs on transient network errors
 - Same `SCOPES` check, then `bundle exec fastlane ios build entry_point: version: build_number: match_readonly:` (see Fastlane below)
 - Publish artifact `sigookapp-ios-<env>`
+- Upload step `DeployAppStoreConnect` (fastlane uploads through Apple's Transporter, which does not exist on Linux): `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. It never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable
 - Pipeline parameter `matchReadonly` (default `true`): set to `false` only on the first run so match creates the certificate and profile
 
-**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:<alpha|production>` with `GOOGLE_PLAY_JSON_KEY`. `continueOnError: true`; the "Deploy Summary" step prints `deployStatus`.
+**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. The step `DeployGooglePlay` never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable.
 
-**Stage 6 - Deploy iOS to App Store Connect** (hosted macOS — fastlane uploads through Apple's Transporter, which does not exist on Linux): downloads the IPA and runs `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. `continueOnError: true`; the "Deploy Summary" step prints `deployStatus`.
-
-**Stage 7 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`).
+**Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when both `deployStatus` outputs are `success`: since the upload steps never fail the run, `succeeded()` alone would also email after a rejected upload.
 
 **Fastlane** (`SigookApp/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
 - `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
@@ -199,14 +206,25 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 - `sigook.jks` - Android keystore for app signing
 
 **Apple / Google prerequisites outside the repo:**
-- App Store Connect API key (App Manager); the project build service needs `Contribute` on the `MATCH_GIT_URL` repo
+- App Store Connect API key (App Manager); the build service the jobs run as (the organization-level one unless the job authorization scope is limited to the project) needs `Contribute` on the `MATCH_GIT_URL` repo
 - TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers)
-- Google Play closed testing track `alpha`; the service account behind `GOOGLE_PLAY_JSON_KEY` needs "Release to production" and "Manage testing tracks"; Managed publishing off
+- Google Play closed testing track `Closed Testing - SIGOOK V2` with the tester list (a release on any other track is invisible to them); the service account behind `GOOGLE_PLAY_JSON_KEY` needs "Release to production" and "Manage testing tracks"; Managed publishing off
 - Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
 
 ### SigookApp iOS Bootstrap (manual)
 
-`sigookapp-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever a Flutter upgrade rewrites the Xcode project (nobody on the team has a Mac): apply the patch locally with `git apply --index`, copy the lockfiles and commit, so CI never mutates an unreviewed checkout. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion`.
+`sigookapp-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever `flutterVersion` changes (nobody on the team has a Mac), so CI never mutates an unreviewed checkout and the lockfiles stay reproducible. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion` (keep them equal to `sigookapp-pipeline.yml`).
+
+Applying the artifact from the repo root (Git Bash):
+
+```bash
+git apply --exclude='SigookApp/macos/*' ~/Downloads/ios-bootstrap/migration.patch
+cp ~/Downloads/ios-bootstrap/Podfile.lock SigookApp/ios/Podfile.lock
+cp ~/Downloads/ios-bootstrap/Gemfile.lock SigookApp/Gemfile.lock
+git diff --stat
+```
+
+Review the diff under `SigookApp/ios/` (the app has no macOS target, hence the exclude), then commit and push.
 
 ### Sigook.Functions (.NET 8 Azure Functions)
 
@@ -214,12 +232,10 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Trigger:** Manual only (production-only deployment).
 
-**Stage 1 - Build:**
+**Single stage and job - Build and Deploy to Production:**
 - .NET SDK 8.0.415
 - Build solution + unit tests (`Sigook.Functions.Tests`, via `runUnitTests: true`)
-
-**Stage 2 - Deploy to Production** (not on PRs):
-- `dotnet publish` with zip
+- Not on PRs (left out at compile time): `dotnet publish --no-build` with zip
 - Deploy: `AzureFunctionApp@2` to `sigook-functions`
 - Production: `https://sigook-functions.azurewebsites.net`
 
@@ -229,12 +245,10 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Trigger:** Manual only (production-only deployment).
 
-**Stage 1 - Build:**
+**Single stage and job - Build and Deploy to Production:**
 - .NET SDK 8.0.415
 - Build solution (no tests)
-
-**Stage 2 - Deploy to Production** (not on PRs):
-- `dotnet publish` of `Sigook.CognitiveServices.UI`
+- Not on PRs (left out at compile time): `dotnet publish --no-build` of `Sigook.CognitiveServices.UI`
 - Deploy: `AzureWebApp@1` (Linux) to `sigook-cognitive-services`
 - Production: `https://sigook-cognitive-services.azurewebsites.net`
 
@@ -300,10 +314,10 @@ Sets Docker tag and environment name based on branch.
 | `productionTag` | string | `latest_production` | Tag for main branch |
 | `stepName` | string | `SetTag` | Step name for cross-job output reference |
 
-Reads `isDev` pipeline variable to determine branch. Sets both job-scoped and output variables.
+Reads `isDev` pipeline variable to determine branch. Sets both job-scoped and output variables. Only used by the IdentityServer pipeline (the other pipelines use compile-time variables).
 
 ### calculate-azure-appname.yml
-Determines Azure App Service name based on branch.
+Determines Azure App Service name based on branch. Only used by the IdentityServer pipeline.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -325,16 +339,17 @@ Frees disk space on self-hosted agents after builds.
 Always cleans `$(Build.ArtifactStagingDirectory)` regardless of parameters.
 
 ### flutter-setup.yml
-Installs an exact Flutter version with `FlutterInstall@0`, prepends `$(FlutterToolPath)` to `PATH` (the task alone does not touch `PATH`, so later `script:` steps would pick up the agent's own Flutter) and fails when `flutter --version` on `PATH` differs from the requested one.
+Installs an exact Flutter version with `FlutterInstall@0`, prepends `$(FlutterToolPath)` to `PATH` (the task alone does not touch `PATH`, so later `script:` steps would pick up the agent's own Flutter) and fails when `flutter --version` on `PATH` differs from the requested one. No `flutter doctor` (it cost ~2.5 min per hosted run and gated nothing).
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `flutterVersion` | string | required | Exact Flutter version (e.g. `3.47.4`) |
+| `cacheSdk` | boolean | `false` | Restore `$(Agent.ToolsDirectory)/Flutter` through `Cache@2` (key: OS + arch + version) so `FlutterInstall@0` finds the SDK in its tool cache. Hosted agents only; self-hosted agents keep the tool cache on disk |
 
 Used by every Flutter job of the SigookApp pipelines.
 
 ### fastlane-setup.yml
-Installs Fastlane via Bundler with gem caching.
+Installs Fastlane via Bundler with gem caching (key: `Gemfile.lock`).
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -393,7 +408,7 @@ variables:
 | IdentityServer | `sigook-accounts-staging.azurewebsites.net` | `sigook-accounts.azurewebsites.net` |
 | Sigook.Functions | N/A | `sigook-functions.azurewebsites.net` |
 | CognitiveServices | N/A | `sigook-cognitive-services.azurewebsites.net` |
-| SigookApp | Google Play closed testing (`alpha`) + TestFlight group `Staging` | Google Play `production` + App Store |
+| SigookApp | Google Play closed testing (`Closed Testing - SIGOOK V2`) + TestFlight group `Staging` | Google Play `production` + App Store |
 
 ---
 
@@ -443,3 +458,4 @@ variables:
 - match "no profile/certificate found" on a fresh signing repo: run the pipeline once with `matchReadonly = false`; a 403 from Apple while creating them means the API key role is too low (use Admin)
 - App Store Connect rejects the upload with a duplicate build number: the same `iosBuildNumber` was already uploaded (a re-run of Build iOS reuses the Version stage outputs); run the pipeline again instead of re-running the stage
 - Google Play rejects the AAB: `versionCode` must exceed every code previously uploaded on any track; a dev and a main run in the same hour collide on `YYYYMMDDHH`
+- Testers do not see a staging build: Play only offers a release to the testers of the track it was uploaded to, and each track has its own opt-in link; check the release landed on `Closed Testing - SIGOOK V2` and is "Available to testers" (the first release on a new closed track waits for Google review)
