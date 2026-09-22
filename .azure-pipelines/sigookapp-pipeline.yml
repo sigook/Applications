@@ -51,6 +51,7 @@ resources:
   - repository: signing
     type: git
     name: sigook/sigook-ios-signing
+    ref: refs/heads/main
 
 parameters:
 - name: matchReadonly
