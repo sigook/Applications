@@ -198,7 +198,11 @@ stages:
         targetType: 'inline'
         script: |
           APP_VERSION_NAME="$(date +%Y).$(date +%-m).$(date +%-d)"
-          APP_VERSION_CODE=$(date +%Y%m%d%H)
+          # Android versionCode caps at 2,100,000,000, so YYYYMMDD leaves only two
+          # digits: the fraction of the day (0-99, 14.4 min slots) instead of the
+          # hour keeps a re-run from colliding with the code Play already accepted.
+          MINUTE_OF_DAY=$(( 10#$(date +%H) * 60 + 10#$(date +%M) ))
+          APP_VERSION_CODE=$(( 10#$(date +%Y%m%d) * 100 + MINUTE_OF_DAY * 100 / 1440 ))
           IOS_BUILD_NUMBER=$(date +%Y%m%d%H%M)
 
           echo "========================================"
@@ -685,7 +689,7 @@ stages:
       inputs:
         script: |
           cd $(workingDirectory)
-          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+          IPA_PATH=$(find "$(workingDirectory)/build/ios/ipa" -name "*.ipa" | head -1)
           echo "Found IPA: $IPA_PATH"
           if [ -n "$IPA_PATH" ] && bundle exec fastlane ios $(iosLane) ipa:"$IPA_PATH" version:"$(appVersionName)"; then
             STATUS=success

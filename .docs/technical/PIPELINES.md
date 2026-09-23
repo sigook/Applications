@@ -161,7 +161,7 @@ The CI trigger uses `batch: true`: pushes that land while a run is in progress a
 
 **Stage 2 - Version** (push to dev/main only, Linux, no checkout). One job computes and exposes:
 - `appVersionName` = `YYYY.M.D`
-- `appVersionCode` = `YYYYMMDDHH` (Android `versionCode`, cap 2100000000)
+- `appVersionCode` = `YYYYMMDDFF` where `FF` is the fraction of the UTC day (`minuteOfDay * 100 / 1440`, 0-99, 14.4-minute slots). The Android `versionCode` cap is 2100000000, so `YYYYMMDD` leaves exactly two digits; slots beat hours because a re-run in the same slot is the only collision left
 - `iosBuildNumber` = `YYYYMMDDHHMM` (`CFBundleVersion`; minute precision so a same-hour dev + main upload never collides in App Store Connect)
 
 Both build stages read them as `stageDependencies.Version.Calculate.outputs['CalculateVersion.<name>']` at job level.
@@ -457,5 +457,5 @@ variables:
 - "Xcode_X.app not found": Microsoft removed that Xcode from the hosted image; pick one from the listed versions and bump `xcodeVersion`
 - match "no profile/certificate found" on a fresh signing repo: run the pipeline once with `matchReadonly = false`; a 403 from Apple while creating them means the API key role is too low (use Admin)
 - App Store Connect rejects the upload with a duplicate build number: the same `iosBuildNumber` was already uploaded (a re-run of Build iOS reuses the Version stage outputs); run the pipeline again instead of re-running the stage
-- Google Play rejects the AAB: `versionCode` must exceed every code previously uploaded on any track; a dev and a main run in the same hour collide on `YYYYMMDDHH`
+- Google Play rejects the AAB with `Version code N has already been used`: `versionCode` must exceed every code previously uploaded on any track, so a re-run (or a dev + main run) inside the same 14.4-minute slot collides. Wait for the next slot and re-run; the earlier upload already reached its track
 - Testers do not see a staging build: Play only offers a release to the testers of the track it was uploaded to, and each track has its own opt-in link; check the release landed on `Closed Testing - SIGOOK V2` and is "Available to testers" (the first release on a new closed track waits for Google review)
