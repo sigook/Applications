@@ -193,7 +193,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 - `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
 - `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`)
 - `ios beta` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
-- `ios release` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, release notes from `IOS_RELEASE_NOTES` (default text), export compliance = no encryption
+- `ios release` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, export compliance = no encryption. Release notes come from `IOS_RELEASE_NOTES` (default text) and are written to every locale the App Store listing already has (`store_locales` private lane, resolved through the App Store Connect API): submission fails with `You must provide a value for the attribute 'whatsNew'` when any locale is left empty
 - iOS plugins are kept on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`) because `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors under SPM
 
 **Required Variable Groups:**
