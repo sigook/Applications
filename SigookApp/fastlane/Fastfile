@@ -61,8 +61,16 @@ def match_git_authorization
   Base64.strict_encode64("x:#{token}")
 end
 
+# fastlane runs lanes from fastlane/, so a relative artifact path handed in by
+# the pipeline must be resolved against the project root, not the cwd.
+def resolve_artifact(path, default_glob)
+  return Dir.glob(project_path(default_glob)).first if path.to_s.empty?
+
+  File.expand_path(path, project_path("."))
+end
+
 def require_ipa(options)
-  ipa_path = options[:ipa] || Dir.glob(project_path("build/ios/ipa/*.ipa")).first
+  ipa_path = resolve_artifact(options[:ipa], "build/ios/ipa/*.ipa")
   UI.user_error!("❌ IPA not found. Build the app first with 'fastlane ios build'") if ipa_path.nil? || !File.exist?(ipa_path)
   ipa_path
 end
@@ -112,7 +120,7 @@ platform :android do
     track = options[:track].to_s.strip
     UI.user_error!("❌ track: is required (internal, alpha, beta, production or a custom closed-testing track name)") if track.empty?
 
-    aab_path = options[:aab] || Dir.glob(project_path("build/app/outputs/bundle/release/*.aab")).first
+    aab_path = resolve_artifact(options[:aab], "build/app/outputs/bundle/release/*.aab")
     if aab_path.nil? || !File.exist?(aab_path)
       UI.user_error!("❌ AAB not found at expected path. Build the app first with 'fastlane android production'")
     end

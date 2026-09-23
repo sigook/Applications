@@ -685,7 +685,7 @@ stages:
       inputs:
         script: |
           cd $(workingDirectory)
-          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
+          IPA_PATH=$(find "$(workingDirectory)/build/ios/ipa" -name "*.ipa" | head -1)
           echo "Found IPA: $IPA_PATH"
           if [ -n "$IPA_PATH" ] && bundle exec fastlane ios $(iosLane) ipa:"$IPA_PATH" version:"$(appVersionName)"; then
             STATUS=success
