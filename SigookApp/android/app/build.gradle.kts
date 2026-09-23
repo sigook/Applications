@@ -62,6 +62,23 @@ android {
         multiDexEnabled = true
     }
 
+    // Staging ships as its own Play app (SIGOOK BETA) so a staging build can
+    // never replace the production install on a tester's phone: Play always
+    // serves the highest versionCode across every track a user is enrolled in.
+    flavorDimensions += "environment"
+    productFlavors {
+        create("staging") {
+            dimension = "environment"
+            applicationId = "com.sigook.beta"
+            resValue("string", "app_name", "SIGOOK Beta")
+        }
+        create("production") {
+            dimension = "environment"
+            applicationId = "com.sigook.sigook"
+            resValue("string", "app_name", "SIGOOK")
+        }
+    }
+
     buildTypes {
         debug {
             // Debug builds don't need signing

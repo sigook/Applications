@@ -17,6 +17,7 @@ export 'cards/profile_section_card.dart';
 
 // Feedback
 export 'feedback/empty_state_widget.dart';
+export 'feedback/environment_banner.dart';
 export 'feedback/error_state_widget.dart';
 export 'feedback/loading_indicator.dart';
 export 'feedback/network_status_banner.dart';
