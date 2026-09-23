@@ -389,7 +389,7 @@ stages:
 
           # Validate auth scopes EXACTLY. An extra scope is as fatal as a
           # missing one: 'roles' is not granted to the native clients and
-          # IdentityServer answers invalid_scope, which the app surfaces as a
+          # the authorization server answers invalid_scope, which the app surfaces as a
           # generic "invalid credentials" message.
           EXPECTED_SCOPES="openid,profile,api1,offline_access"
           if [ "$(SCOPES)" != "$EXPECTED_SCOPES" ]; then
@@ -633,7 +633,7 @@ stages:
 
           # Validate auth scopes EXACTLY. An extra scope is as fatal as a
           # missing one: 'roles' is not granted to the native clients and
-          # IdentityServer answers invalid_scope, which the app surfaces as a
+          # the authorization server answers invalid_scope, which the app surfaces as a
           # generic "invalid credentials" message.
           EXPECTED_SCOPES="openid,profile,api1,offline_access"
           if [ "$(SCOPES)" != "$EXPECTED_SCOPES" ]; then
