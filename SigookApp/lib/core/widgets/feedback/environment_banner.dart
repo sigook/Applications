@@ -15,21 +15,24 @@ class EnvironmentBanner extends StatelessWidget {
 
     return Column(
       children: [
-        Container(
-          width: double.infinity,
+        Material(
           color: AppTheme.warningOrange,
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              child: Text(
-                '${EnvironmentConfig.environmentName.toUpperCase()} · $apiHost',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
+          child: SizedBox(
+            width: double.infinity,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                child: Text(
+                  '${EnvironmentConfig.environmentName.toUpperCase()} · $apiHost',
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ),
