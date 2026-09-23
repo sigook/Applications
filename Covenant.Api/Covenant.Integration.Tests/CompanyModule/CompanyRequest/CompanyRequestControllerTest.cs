@@ -141,7 +141,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
-                services.AddSingleton(Mock.Of<IUserAdministrationService>());
                 services.AddSingleton<IIdentityServerService, UserAccountService>();
                 services.AddSingleton<ILocationRepository, LocationRepository>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);

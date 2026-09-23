@@ -1,3 +1,4 @@
+using Covenant.Api.Configuration;
 using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models.Identity;
 using FluentValidation;
@@ -5,12 +6,14 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Covenant.Api.Controllers.Identity;
 
 [ApiController]
 [AllowAnonymous]
 [ApiExplorerSettings(IgnoreApi = true)]
+[EnableRateLimiting(RateLimitingConfiguration.PasswordResetPolicy)]
 [Route("Password")]
 public class PasswordController(
     IPasswordResetService passwordResetService,

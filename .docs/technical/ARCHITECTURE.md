@@ -393,7 +393,15 @@ rather than constructing clients directly.
   different registration, used only to send email through Graph.
 - **Forgot password** is API-driven (`POST /Password/forgot` → 6-digit emailed code, 15-min TTL,
   5 attempts, 60-s resend cooldown; `POST /Password/reset` with `{email, code, newPassword}`).
-  Codes live in the `PasswordResetCode` table (hashed). Both Sigook.Web (`/forgot-password`)
+  Codes live in the `PasswordResetCode` table (hashed). Email flooding limits, all silent (the
+  response never changes, so they don't reveal whether an email exists): per user at most 3 codes
+  per hour and 6 per 24 h, counted from `PasswordResetCode`; the Razor link flow
+  (`POST /Account/RequestResetPassword`) sends at most 3 links per user per hour (in-memory counter,
+  reset on restart). On top of that, `/Password/*` and `POST /Account/RequestResetPassword` share the
+  `password-reset` rate-limit policy (`RateLimitingConfiguration`): 10 requests per client IP in a
+  sliding 10-minute window, answering `429` beyond it. The client IP comes from `X-Forwarded-For`
+  (`ForwardedHeadersOptions` trusts any proxy because the App Service front end is the only way
+  in). Both Sigook.Web (`/forgot-password`)
   and SigookApp (`/forgot-password` route, 2-step screen) consume it; SigookApp also offers a
   resend-confirmation action when login fails with `email_not_confirmed`
   (`POST /Account/ResendConfirmationLink`). The Razor pages (`/Account/Login`,

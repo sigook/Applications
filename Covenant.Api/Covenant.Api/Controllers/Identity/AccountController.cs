@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OpenIddict.Abstractions;
 
 namespace Covenant.Api.Controllers.Identity;
@@ -23,6 +24,7 @@ public class AccountController(
     SignInManager<CovenantUser> signInManager,
     IIdentityRepository identityRepository,
     IAccountNotificationService notifications,
+    IPasswordResetService passwordResetService,
     IOpenIddictApplicationManager applicationManager,
     IConfiguration configuration,
     ILogger<AccountController> logger) : Controller
@@ -179,14 +181,11 @@ public class AccountController(
 
     [HttpPost("RequestResetPassword")]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(RateLimitingConfiguration.PasswordResetPolicy)]
     public async Task<IActionResult> RequestResetPassword(RequestResetPasswordModel model)
     {
         if (!ModelState.IsValid) return View(model);
-        var user = await userManager.FindByEmailAsync(model.Email);
-        if (user is not null)
-        {
-            await notifications.SendPasswordResetLink(user);
-        }
+        await passwordResetService.RequestLink(model.Email);
         return RedirectToAction(nameof(HomeController.Success), "Home", new { message = AccountMessages.ResetPasswordSuccess });
     }
 

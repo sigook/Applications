@@ -38,5 +38,8 @@ public class IdentityRepository(IdentityContext context, IOpenIddictTokenManager
 
     public async Task AddResetCode(PasswordResetCode code) => await context.PasswordResetCodes.AddAsync(code);
 
+    public Task<int> CountResetCodesSince(Guid userId, DateTimeOffset since) =>
+        context.PasswordResetCodes.CountAsync(prc => prc.UserId == userId && prc.CreatedAt > since);
+
     public Task SaveChangesAsync() => context.SaveChangesAsync();
 }

@@ -374,7 +374,6 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
             services.AddSingleton<ICompanyRepository, CompanyRepository>();
             services.AddSingleton<IWorkerRepository, WorkerRepository>();
-            services.AddSingleton(Mock.Of<IUserAdministrationService>());
             services.AddSingleton<IIdentityServerService, UserAccountService>();
             services.AddSingleton<ILocationRepository, LocationRepository>();
             services.AddSingleton<AgencyIdFilter>();

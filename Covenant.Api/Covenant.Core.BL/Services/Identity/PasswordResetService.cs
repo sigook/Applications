@@ -4,7 +4,9 @@ using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models.Identity;
 using Covenant.Common.Repositories.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace Covenant.Core.BL.Services.Identity;
@@ -14,12 +16,17 @@ public class PasswordResetService(
     IIdentityRepository identityRepository,
     IPasswordHasher<CovenantUser> passwordHasher,
     IAccountNotificationService notifications,
+    IMemoryCache cache,
     ILogger<PasswordResetService> logger) : IPasswordResetService
 {
     public const string InvalidCode = "invalid_code";
     public const string CodeExpired = "code_expired";
     public const string TooManyAttempts = "too_many_attempts";
     public const string PasswordPolicy = "password_policy";
+
+    public const int MaxCodesPerHour = 3;
+    public const int MaxCodesPerDay = 6;
+    public const int MaxLinksPerHour = 3;
 
     private const int CodeLifetimeMinutes = 15;
     private const int MaxAttempts = 5;
@@ -50,6 +57,13 @@ public class PasswordResetService(
             return;
         }
 
+        if (await identityRepository.CountResetCodesSince(user.Id, now.AddHours(-1)) >= MaxCodesPerHour
+            || await identityRepository.CountResetCodesSince(user.Id, now.AddDays(-1)) >= MaxCodesPerDay)
+        {
+            logger.LogWarning("Password reset code request over the per-user limit. UserId={UserId}", user.Id);
+            return;
+        }
+
         previousCodes.ForEach(prc => prc.Consumed = true);
 
         var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
@@ -63,6 +77,30 @@ public class PasswordResetService(
         await identityRepository.SaveChangesAsync();
 
         await notifications.SendPasswordResetCode(user, code, CodeLifetimeMinutes);
+    }
+
+    public async Task RequestLink(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            logger.LogInformation("Password reset link requested for unknown email");
+            return;
+        }
+
+        var cacheKey = $"password-reset-link:{user.Id}";
+        var sent = cache.GetOrCreate(cacheKey, entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1);
+            return new StrongBox<int>(0);
+        });
+        if (Interlocked.Increment(ref sent.Value) > MaxLinksPerHour)
+        {
+            logger.LogWarning("Password reset link request over the per-user limit. UserId={UserId}", user.Id);
+            return;
+        }
+
+        await notifications.SendPasswordResetLink(user);
     }
 
     public async Task<PasswordResetResult> ResetPassword(string email, string code, string newPassword)

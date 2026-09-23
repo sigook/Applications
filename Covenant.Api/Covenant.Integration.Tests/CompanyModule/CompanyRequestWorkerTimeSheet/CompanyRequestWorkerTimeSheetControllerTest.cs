@@ -186,7 +186,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
                 services.AddSingleton(Rates.DefaultRates);
                 services.AddSingleton<CompanyIdFilter>();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
-                services.AddSingleton(Mock.Of<IUserAdministrationService>());
                 services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 

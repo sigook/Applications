@@ -866,8 +866,8 @@ The only API file that targets `VUE_APP_SECURITY_SERVER` instead of `VUE_APP_URL
 |----------|------------|----------|--------------|---------------|-------|
 | `requestPasswordToken(email, password)` | POST | `/connect/token` | form-urlencoded `grant_type=password`, `client_id`, `scope`, `username`, `password` | `TokenResponse` | No `id_token`. 400 → `TokenErrorResponse` with `error_description` ∈ `invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out` |
 | `fetchUserInfo(tokenType, accessToken)` | GET | `/connect/userinfo` | Bearer header | `UserInfoResponse` | `role` is string or string[] |
-| `requestPasswordResetCode(email)` | POST | `/Password/forgot` | `{ email }` | `void` | Always 202; 60-s resend cooldown server-side |
-| `resetPasswordWithCode(payload)` | POST | `/Password/reset` | `ResetPasswordWithCodePayload` | `void` | 400 → `PasswordResetErrorResponse` with `error` ∈ `invalid_code`, `code_expired`, `too_many_attempts`, `password_policy` (+ `messages`) |
+| `requestPasswordResetCode(email)` | POST | `/Password/forgot` | `{ email }` | `void` | 202 even when nothing is sent (60-s cooldown, 3 codes/hour and 6/day per user server-side); 429 past 10 requests per IP in 10 min |
+| `resetPasswordWithCode(payload)` | POST | `/Password/reset` | `ResetPasswordWithCodePayload` | `void` | 400 → `PasswordResetErrorResponse` with `error` ∈ `invalid_code`, `code_expired`, `too_many_attempts`, `password_policy` (+ `messages`); 429 past 10 requests per IP in 10 min (shared with `/Password/forgot`) |
 | `resendConfirmationLink(email)` | POST | `/Account/ResendConfirmationLink?userName=` | query param | `void` | Called from the `email_not_confirmed` login error |
 
 **Types:** `TokenResponse`, `TokenErrorResponse`, `UserInfoResponse`, `ResetPasswordWithCodePayload`, `PasswordResetErrorResponse` (`src/types/security`)

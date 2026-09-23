@@ -5,7 +5,6 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Security;
 using Covenant.Common.Utils.Extensions;
@@ -16,11 +15,9 @@ using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Moq;
-using Moq.Protected;
 using System.Net;
-using System.Text.Json;
 using Xunit;
 using System.Net.Http.Json;
 
@@ -46,23 +43,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
         {
             var factory = _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
-                {
-                    var mockMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-                    mockMessageHandler.Protected()
-                    .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                    .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent(JsonSerializer.Serialize(new IdModel(Data.NewUserId)))
-                    }).Verifiable();
-                    var client = new HttpClient(mockMessageHandler.Object)
-                    {
-                        BaseAddress = new Uri("https://localhost:5000/UserAdministration")
-                    };
-                    var clientFactoryMock = new Mock<IHttpClientFactory>();
-                    clientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-                    services.AddSingleton(clientFactoryMock.Object);
-                });
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton(UserAdministrationMock.Create(createdUserId: Data.NewUserId).Object));
             });
             var client = factory.CreateClient();
             var model = new AgencyPersonnelModel
@@ -101,20 +83,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
         {
             var factory = _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
-                {
-                    var mockMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-                    mockMessageHandler.Protected()
-                    .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                    .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)).Verifiable();
-                    var client = new HttpClient(mockMessageHandler.Object)
-                    {
-                        BaseAddress = new Uri("https://localhost:5000/UserAdministration")
-                    };
-                    var clientFactoryMock = new Mock<IHttpClientFactory>();
-                    clientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-                    services.AddSingleton(clientFactoryMock.Object);
-                });
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton(UserAdministrationMock.Create().Object));
             });
             var client = factory.CreateClient();
             var model = new AgencyPersonnelModel
@@ -137,28 +107,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
         {
             return _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
-                {
-                    var mockMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-                    mockMessageHandler.Protected()
-                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                        .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK));
-                    mockMessageHandler.Protected()
-                        .Setup<Task<HttpResponseMessage>>("SendAsync",
-                            ItExpr.Is<HttpRequestMessage>(r => r.RequestUri.ToString().Contains("UsersRoles")),
-                            ItExpr.IsAny<CancellationToken>())
-                        .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK)
-                        {
-                            Content = new StringContent(JsonSerializer.Serialize(roles))
-                        });
-                    var client = new HttpClient(mockMessageHandler.Object)
-                    {
-                        BaseAddress = new Uri("https://localhost:5000/UserAdministration")
-                    };
-                    var clientFactoryMock = new Mock<IHttpClientFactory>();
-                    clientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-                    services.AddSingleton(clientFactoryMock.Object);
-                });
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton(UserAdministrationMock.Create(roles: roles).Object));
             });
         }
 
@@ -272,23 +222,8 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
         {
             var factory = _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
-                {
-                    var mockMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-                    mockMessageHandler.Protected()
-                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                        .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-                        {
-                            Content = new StringContent(JsonSerializer.Serialize(true))
-                        }).Verifiable();
-                    var client = new HttpClient(mockMessageHandler.Object)
-                    {
-                        BaseAddress = new Uri("https://localhost:5000/UserAdministration")
-                    };
-                    var clientFactoryMock = new Mock<IHttpClientFactory>();
-                    clientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-                    services.AddSingleton(clientFactoryMock.Object);
-                });
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton(UserAdministrationMock.Create(userDeleted: true).Object));
             });
             var client = factory.CreateClient();
             Guid id = _data.PersonnelToDelete.Id;
@@ -354,7 +289,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
                 services.AddTestDatabase();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
-                services.AddSingleton(Mock.Of<IUserAdministrationService>());
                 services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 

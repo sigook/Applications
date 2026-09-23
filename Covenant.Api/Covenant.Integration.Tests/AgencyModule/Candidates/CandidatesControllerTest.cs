@@ -214,7 +214,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<ICandidateService, CandidateService>();
-                services.AddSingleton(Mock.Of<IUserAdministrationService>());
                 services.AddSingleton<IIdentityServerService, UserAccountService>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();

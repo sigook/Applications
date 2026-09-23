@@ -334,7 +334,6 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
                 });
             services.AddTestDatabase();
             services.AddSingleton<ITimeService, TimeService>();
-            services.AddSingleton(Mock.Of<IUserAdministrationService>());
             services.AddSingleton<IIdentityServerService, UserAccountService>();
             services.AddSingleton<IRequestRepository, RequestRepository>();
             services.AddSingleton<IRunnerRepository, RunnerRepository>();

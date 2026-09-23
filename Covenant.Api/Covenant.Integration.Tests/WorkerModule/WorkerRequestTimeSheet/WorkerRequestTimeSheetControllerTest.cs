@@ -123,7 +123,6 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(() => Data.Now);
                 timeService.Setup(s => s.GetCurrentDateTimeOffset()).Returns(() => new DateTimeOffset(Data.Now));
                 services.AddSingleton(timeService.Object);
-                services.AddSingleton(Mock.Of<IUserAdministrationService>());
                 services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 

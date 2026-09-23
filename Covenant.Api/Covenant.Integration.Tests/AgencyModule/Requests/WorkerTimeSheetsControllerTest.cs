@@ -131,7 +131,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
-                services.AddSingleton(Mock.Of<IUserAdministrationService>());
                 services.AddSingleton<IIdentityServerService, UserAccountService>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);
                 services.AddSingleton(Rates.DefaultRates);

@@ -14,11 +14,9 @@ using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
-using Moq;
-using Moq.Protected;
 using System.Net;
-using System.Text.Json;
 using Xunit;
 using System.Net.Http.Json;
 
@@ -42,23 +40,8 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
         {
             var factory = _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
-                {
-                    var mockMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-                    mockMessageHandler.Protected()
-                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                        .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-                        {
-                            Content = new StringContent(JsonSerializer.Serialize(new IdModel(Startup.NewUserId)))
-                        }).Verifiable();
-                    var client = new HttpClient(mockMessageHandler.Object)
-                    {
-                        BaseAddress = new Uri("https://localhost:5000/UserAdministration")
-                    };
-                    var clientFactoryMock = new Mock<IHttpClientFactory>();
-                    clientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-                    services.AddSingleton(clientFactoryMock.Object);
-                });
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton(UserAdministrationMock.Create(createdUserId: Startup.NewUserId).Object));
             });
             var client = factory.CreateClient();
             var model = new CompanyUserModel
@@ -139,23 +122,8 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
         {
             var factory = _factory.WithWebHostBuilder(builder =>
             {
-                builder.ConfigureServices(services =>
-                {
-                    var mockMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-                    mockMessageHandler.Protected()
-                        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                        .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-                        {
-                            Content = new StringContent(JsonSerializer.Serialize(true))
-                        }).Verifiable();
-                    var client = new HttpClient(mockMessageHandler.Object)
-                    {
-                        BaseAddress = new Uri("https://localhost:5000/UserAdministration")
-                    };
-                    var clientFactoryMock = new Mock<IHttpClientFactory>();
-                    clientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-                    services.AddSingleton(clientFactoryMock.Object);
-                });
+                builder.ConfigureTestServices(services =>
+                    services.AddSingleton(UserAdministrationMock.Create(userDeleted: true).Object));
             });
             var client = factory.CreateClient();
             Guid id = Startup.FakeCompanyUserToDelete.Id;
@@ -195,7 +163,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
                 services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<CompanyIdFilter>();
-                services.AddSingleton(Mock.Of<IUserAdministrationService>());
                 services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 

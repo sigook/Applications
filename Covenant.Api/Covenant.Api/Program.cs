@@ -107,7 +107,12 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Home/InvalidUser";
 });
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+builder.Services.AddCovenantRateLimiting();
 
 logger.LogInformation("Configuring database connection...");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -189,6 +194,7 @@ else
 
 app.UseRouting();
 app.UseCors("default");
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {

@@ -12,5 +12,6 @@ public interface IIdentityRepository
     Task<List<PasswordResetCode>> GetPendingResetCodes(Guid userId);
     Task<PasswordResetCode> GetLatestPendingResetCode(Guid userId);
     Task AddResetCode(PasswordResetCode code);
+    Task<int> CountResetCodesSince(Guid userId, DateTimeOffset since);
     Task SaveChangesAsync();
 }
