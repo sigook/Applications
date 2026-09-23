@@ -5,8 +5,9 @@
 		<NoWarn>$(NoWarn);1591</NoWarn>
 		<UserSecretsId>6f9fc3c1-578a-490d-a3c0-e9afb502fc69</UserSecretsId>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-		<OpenApiGenerateDocuments Condition="'$(TF_BUILD)' != 'true'">true</OpenApiGenerateDocuments>
-		<OpenApiGenerateDocumentsOnBuild Condition="'$(TF_BUILD)' != 'true'">true</OpenApiGenerateDocumentsOnBuild>
+		<OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+		<OpenApiGenerateDocuments Condition="'$(TF_BUILD)' == 'true'">false</OpenApiGenerateDocuments>
+		<OpenApiGenerateDocumentsOnBuild>$(OpenApiGenerateDocuments)</OpenApiGenerateDocumentsOnBuild>
 		<OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)\..\..\.docs\technical</OpenApiDocumentsDirectory>
 	</PropertyGroup>
 
