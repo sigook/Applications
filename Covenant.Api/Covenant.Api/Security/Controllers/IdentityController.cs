@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Security.Controllers
 {
+    [ApiController]
     [Route("identity")]
     [Authorize]
     public class IdentityController : Controller

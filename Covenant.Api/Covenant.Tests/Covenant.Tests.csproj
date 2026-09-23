@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	  <TargetFramework>net8.0</TargetFramework>
-	  <ImplicitUsings>enable</ImplicitUsings>
-    <IsPackable>false</IsPackable>
     <UserSecretsId>5C6C4958-E25A-4749-BAA3-37DE8CEC7EAD</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
@@ -123,7 +120,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Covenant.Api\Covenant.Api.csproj" />
   </ItemGroup>
-  <Target Name="CopyFiles">
-    <Copy SourceFiles="@(MySourceFiles)" DestinationFolder="c:\MyProject\Destination" />
-  </Target>
 </Project>

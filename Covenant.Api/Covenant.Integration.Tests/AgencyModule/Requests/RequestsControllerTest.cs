@@ -7,6 +7,7 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
@@ -373,7 +374,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
             services.AddSingleton<ICompanyRepository, CompanyRepository>();
             services.AddSingleton<IWorkerRepository, WorkerRepository>();
-            services.AddSingleton<IIdentityServerService, IdentityServerService>();
+            services.AddSingleton<IIdentityServerService, UserAccountService>();
             services.AddSingleton<ILocationRepository, LocationRepository>();
             services.AddSingleton<AgencyIdFilter>();
         }

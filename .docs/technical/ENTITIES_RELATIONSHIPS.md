@@ -40,7 +40,7 @@ erDiagram
 ### The `User` anchor (critical gotcha)
 
 `Covenant.Common/Entities/User.cs` is minimal — `Id`, `Email`, `Enabled`, `LastModified`.
-Credentials and roles live in Covenant.IdentityServer (same user id). Several "obvious" FKs
+Credentials and roles live in the identity database (`IdentityContext`, same user id). Several "obvious" FKs
 point at **User**, not at the profile entity:
 
 | FK | Points to | Not to |

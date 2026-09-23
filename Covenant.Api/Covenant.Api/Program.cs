@@ -3,7 +3,7 @@ using Azure.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Api.BackgroundServices;
 using Covenant.Api.Configuration;
-using Covenant.Api.Configuration.Swagger;
+using Covenant.Api.Configuration.OpenApi;
 using Covenant.Api.Extensions;
 using Covenant.Common.Resources;
 using Covenant.Documents;
@@ -11,15 +11,17 @@ using Covenant.Infrastructure.Contexts;
 using FluentValidation;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
+using OpenIddict.Validation.AspNetCore;
+using Scalar.AspNetCore;
 using System.Globalization;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,57 +63,13 @@ builder.Services
         });
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.AddSwaggerGen(opt =>
-    {
-        opt.SwaggerDoc("v1", new OpenApiInfo
-        {
-            Title = "Covenant/Sigook API",
-            Version = "v1",
-            Description = "Staffing and recruitment platform API for the Canadian market. "
-                + "Routes for the Agency, Company, Worker and Accounting modules.",
-            Contact = new OpenApiContact { Name = "Covenant/Sigook" }
-        });
-
-        opt.EnableAnnotations();
-        opt.SupportNonNullableReferenceTypes();
-        opt.OperationFilter<DefaultResponsesOperationFilter>();
-        opt.DocumentFilter<ServersDocumentFilter>();
-
-        // DTO names repeat across modules; use the full type name to avoid schema id collisions.
-        opt.CustomSchemaIds(t => t.FullName?.Replace("+", "."));
-
-        opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-        {
-            Name = "Authorization",
-            Description = "Ingrese un token JWT válido",
-            In = ParameterLocation.Header,
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
-            BearerFormat = "JWT"
-        });
-
-        var securityRequirement = new OpenApiSecurityRequirement
-        {
-            [
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                }
-            ] = []
-        };
-        opt.AddSecurityRequirement(securityRequirement);
-
-        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        if (File.Exists(xmlPath))
-        {
-            opt.IncludeXmlComments(xmlPath);
-        }
-    });
+builder.Services.AddOpenApi("v1", options =>
+{
+    options.CreateSchemaReferenceId = type => type.Type.FullName?.Replace("+", ".");
+    options.AddDocumentTransformer<BearerSecurityDocumentTransformer>();
+    options.AddDocumentTransformer<ServersDocumentTransformer>();
+    options.AddOperationTransformer<DefaultResponsesOperationTransformer>();
+});
 
 logger.LogInformation("Configuring services...");
 
@@ -139,13 +97,22 @@ builder.Services.AddApiVersioning(v =>
     v.DefaultApiVersion = new ApiVersion(1, 0);
 });
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration["AuthenticationOptions:Authority"];
-        options.RequireHttpsMetadata = false;
-        options.Audience = builder.Configuration["AuthenticationOptions:ApiName"];
-    });
+var authentication = builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+authentication.AddIdentityCookies();
+authentication.AddMicrosoftAuthentication365(builder.Configuration);
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Home/InvalidUser";
+});
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+builder.Services.AddCovenantRateLimiting();
 
 logger.LogInformation("Configuring database connection...");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -154,16 +121,22 @@ if (string.IsNullOrEmpty(connectionString))
 {
     logger.LogWarning("Database connection string is missing or empty. Application will start but health checks will report unhealthy.");
     // Register DbContext with empty connection string to prevent startup errors
-    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql(""));
-    builder.Services.AddDbContext<MyKeysContext>(b => b.UseNpgsql(""));
+    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql("").ConfigureWarnings(IgnorePendingModelChanges));
+    builder.Services.AddDbContext<MyKeysContext>(b => b.UseNpgsql("").ConfigureWarnings(IgnorePendingModelChanges));
 }
 else
 {
-    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql(connectionString));
-    builder.Services.AddDbContext<MyKeysContext>(b => b.UseNpgsql(connectionString))
+    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql(connectionString).ConfigureWarnings(IgnorePendingModelChanges));
+    builder.Services.AddDbContext<MyKeysContext>(b => b.UseNpgsql(connectionString).ConfigureWarnings(IgnorePendingModelChanges))
         .AddDataProtection()
         .PersistKeysToDbContext<MyKeysContext>();
 }
+
+static void IgnorePendingModelChanges(WarningsConfigurationBuilder warnings) =>
+    warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
+
+builder.Services.AddCovenantIdentity(builder.Configuration);
+builder.Services.AddCovenantOpenIddict(builder.Configuration, builder.Environment);
 
 builder.Services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
@@ -176,6 +149,16 @@ logger.LogInformation("Building application...");
 var app = builder.Build();
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+app.UseForwardedHeaders();
+if (!app.Environment.IsDevelopment())
+{
+    app.Use((context, next) =>
+    {
+        context.Request.Scheme = "https";
+        return next();
+    });
+}
 
 app.UseCovenantHealthChecks();
 
@@ -211,22 +194,15 @@ else
 
 app.UseRouting();
 app.UseCors("default");
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
-    app.UseSwagger(o => o.RouteTemplate = "sigook/swagger/{documentname}/swagger.json")
-       .UseSwaggerUI(o =>
-       {
-           o.SwaggerEndpoint("/sigook/swagger/v1/swagger.json", "Covenant/Sigook API v1");
-           o.RoutePrefix = string.Empty;
-           o.DocumentTitle = "Covenant/Sigook API";
-           o.DocExpansion(DocExpansion.None);
-           o.DefaultModelsExpandDepth(-1);
-           o.EnableFilter();
-           o.EnableDeepLinking();
-           o.EnablePersistAuthorization();
-           o.DisplayRequestDuration();
-       });
+    app.MapOpenApi();
+    app.MapScalarApiReference(options => options
+        .WithTitle("Covenant/Sigook API")
+        .AddPreferredSecuritySchemes(BearerSecurityDocumentTransformer.SchemeName)
+        .WithPersistentAuthentication());
 }
 app.UseAuthentication();
 app.UseAuthorization();

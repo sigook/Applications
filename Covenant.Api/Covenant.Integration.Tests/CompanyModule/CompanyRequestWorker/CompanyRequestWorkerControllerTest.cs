@@ -6,6 +6,7 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Models.Worker;
@@ -111,7 +112,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorker
                 services.AddSingleton<ILocationRepository, LocationRepository>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(Data.Now);

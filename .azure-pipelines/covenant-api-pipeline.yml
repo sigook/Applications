@@ -1,10 +1,11 @@
-# Azure Pipeline for Covenant.Api (.NET 8 API)
+# Azure Pipeline for Covenant.Api (.NET 10 API + OpenIddict authorization server)
 # Builds, tests, and deploys .NET API to Azure App Service via Docker
 
 name: CovenantApi-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
 # Only trigger when Covenant.Api files change on dev
 # Production (main) deployments are triggered manually
+# Sigook.Functions lives in the same solution but has its own pipeline
 trigger:
   branches:
     include:
@@ -14,6 +15,8 @@ trigger:
       - Covenant.Api/**
     exclude:
       - Covenant.Api/**/*.md
+      - Covenant.Api/Sigook.Functions/**
+      - Covenant.Api/Sigook.Functions.Tests/**
 
 # PR trigger - only validate PRs to dev (not to main)
 # PRs to main are trusted since dev is the quality gate
@@ -33,17 +36,19 @@ pool:
 variables:
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
-  dotnetSdkVersion: '8.0.415'
+  dotnetSdkVersion: '10.0.401'
   ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
     deployEnvironment: 'production'
     dockerTag: 'latest_production'
     azureAppName: 'sigook-api'
     appUrl: 'https://sigook-api.azurewebsites.net'
+    identityUrl: 'https://accounts.sigook.ca'
   ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
     deployEnvironment: 'staging'
     dockerTag: 'latest_staging'
     azureAppName: 'sigook-api-staging'
     appUrl: 'https://sigook-api-staging.azurewebsites.net'
+    identityUrl: 'https://staging.accounts.sigook.ca'
 
 stages:
   # ============================================
@@ -67,12 +72,14 @@ stages:
           # Build and Test using template
           - template: templates/dotnet-build-test.yml
             parameters:
-              buildProjects: 'Covenant.Api/**/*.sln'
+              buildProjects: 'Covenant.Api/Covenant.Api.slnx'
               buildConfiguration: 'Release'
               runUnitTests: true
-              unitTestProjects: 'Covenant.Api/**/Covenant.Tests/*.csproj'
+              unitTestProjects: |
+                Covenant.Api/Covenant.Tests/Covenant.Tests.csproj
+                Covenant.Api/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj
               runIntegrationTests: true
-              integrationTestProjects: 'Covenant.Api/**/Covenant.Integration.Tests/*.csproj'
+              integrationTestProjects: 'Covenant.Api/Covenant.Integration.Tests/Covenant.Integration.Tests.csproj'
 
           # Publish + Docker image only on dev/main (PRs just build and test)
           - ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/dev', 'refs/heads/development') }}:
@@ -140,6 +147,7 @@ stages:
                 - script: |
                     echo "✅ Deployed sigook.azurecr.io/api:$(Build.BuildId) to $(azureAppName) ($(deployEnvironment))"
                     echo "URL: $(appUrl)"
+                    echo "Identity: $(identityUrl)/.well-known/openid-configuration"
                   displayName: 'Deployment Summary'
 
   # ============================================

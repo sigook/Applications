@@ -3,6 +3,7 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using Covenant.Common.Repositories.Candidate;
@@ -23,6 +24,7 @@ using System.Net;
 using Xunit;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Moq;
 
 namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
@@ -212,7 +214,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<ICandidateService, CandidateService>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<AgencyIdFilter>();

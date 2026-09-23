@@ -2,7 +2,7 @@
 
 Defines the roles of the platform, what each one can reach, and the rules that scope the data they see.
 
-Roles live in IdentityServer (one role per user) and are mirrored in:
+Roles live in the identity database (`Rol` / `UserRole` tables managed by ASP.NET Identity inside Covenant.Api, one role per user) and are mirrored in:
 
 | Layer | Source of truth |
 |-------|-----------------|
@@ -136,7 +136,7 @@ so they are checked explicitly — relying on the database alone would wipe acco
 
 When nothing blocks, the delete removes the profile's own records (locations, contact people, job
 position rates, documents, notes, invoice notes, invoice recipients, company users) plus the
-company's login user and every company user, in IdentityServer and in the API database.
+company's login user and every company user, in the identity database and in the API database.
 Service: `ICompanyService.DeleteCompanyProfile`.
 
 ## User creation
@@ -172,17 +172,19 @@ It is the same `AgencyPersonnelModel` the `POST` takes, validated by `AgencyPers
   admin could demote themselves and lose access to user management.
 - **The role is global**, so changing it changes it in *every* agency the user belongs to. This is
   allowed on purpose, and the modal warns about it.
-- The new role only reaches the user's token on their **next sign-in**: `CustomProfileService` emits
-  roles from the session principal instead of re-reading them.
-- **Blocking sign-in in Microsoft 365 is enough to lock a staff user out.** Every session check in
-  IdentityServer asks Microsoft Graph whether the account is still enabled, so a user blocked in
-  the admin center loses access at their next token refresh (access token lifetime plus up to
-  5 minutes of cache). Deactivating a user in Sigook (`InactiveUsers`) cuts sessions the same way.
-- The email moves `Email` + `UserName` in IdentityServer plus the local `Users` row, reusing
+- The new role reaches the user's access token on the **next token refresh**: `AuthorizationController`
+  re-reads roles and user claims from the identity database every time it issues tokens (authorize,
+  refresh token, password grant).
+- **Blocking sign-in in Microsoft 365 is enough to lock a staff user out.** Every session check
+  (`IUserSessionValidator`) asks Microsoft Graph whether the account is still enabled, so a user
+  blocked in the admin center loses access at their next token refresh (access token lifetime plus
+  up to 5 minutes of cache). Deactivating a user in Sigook (`InactiveUsers`) cuts sessions the same
+  way and also revokes the user's OpenIddict tokens.
+- The email moves `Email` + `UserName` in the identity database plus the local `Users` row, reusing
   `IIdentityServerService.UpdateUserEmail` — which rejects an email that already belongs to another
   user with `EmailAlreadyTaken`. `EmailConfirmed` is untouched, so the user keeps their password and
   signs in with the new address.
 
-The role is not stored in the Covenant.Api database: `GET api/agency/personnel` fills it by asking
-IdentityServer (`POST /UserAdministration/UsersRoles`, ids in the body). If that call fails, the list
-is still returned with a null role instead of failing the request.
+The role is not stored in the Covenant.Api database: `GET api/agency/personnel` fills it through
+`IUserAdministrationService.GetUsersRoles`, which reads the identity database directly. If that read
+fails, the list is still returned with a null role instead of failing the request.

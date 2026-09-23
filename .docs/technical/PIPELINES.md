@@ -41,33 +41,32 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test+Publish+Docker → Deploy → Notify | `sigook-api-staging` / `sigook-api` |
 | Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check+Build+Docker → Deploy → Notify | `sigook-web-staging` / `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
-| IdentityServer | `covenant-identityserver-pipeline.yml` | `Covenant.IdentityServer/**` | Build+Test → Docker+Deploy | `sigook-accounts-staging` / `sigook-accounts` |
 | SigookApp | `sigookapp-pipeline.yml` | `SigookApp/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
 | SigookApp iOS Bootstrap | `sigookapp-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
-| Sigook.Functions | `sigook-functions-pipeline.yml` | `Sigook.Functions/**` | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
+| Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
 | Database Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | Refresh | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
-**Warning:** `Covenant.IdentityServer/azure-pipelines.yml` exists alongside the documented `.azure-pipelines/covenant-identityserver-pipeline.yml` and carries its own `main/master/dev` trigger. It is not the pipeline in use — do not extend it.
+The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `covenant-api-pipeline.yml` trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline.
 
 ---
 
 ## Pipeline Details
 
-### Covenant.Api (.NET 8)
+### Covenant.Api (.NET 10)
 
 **Build naming:** `CovenantApi-YYYY.M.D.r`
 
 **Stage 1 - Build and Test** (one job):
-- .NET SDK 8.0.415 (template: `dotnet-setup.yml`)
-- Build solution + NuGet auth (template: `dotnet-build-test.yml`)
-- Unit tests: `Covenant.Tests`
+- .NET SDK 10.0.401 (template: `dotnet-setup.yml`)
+- Build `Covenant.Api/Covenant.Api.slnx` (template: `dotnet-build-test.yml`; packages come from nuget.org only, see `Covenant.Api/nuget.config`)
+- Unit tests: `Covenant.Tests`, `Sigook.Functions.Tests`
 - Integration tests: `Covenant.Integration.Tests`
 - dev/main only (the steps are left out of PR runs at compile time): `dotnet publish --no-build` of `Covenant.Api.csproj` into `$(Build.ArtifactStagingDirectory)/api`, then Docker build + push with that folder as build context
 - Docker tags: `latest_staging` (dev) or `latest_production` (main), plus the immutable `$(Build.BuildId)`
-- Dockerfile: `Covenant.Api/Dockerfile` — runtime-only (`aspnet:8.0` + the published output); the solution is compiled once, on the agent
+- Dockerfile: `Covenant.Api/Dockerfile` — runtime-only (`aspnet:10.0` + the published output); the solution is compiled once, on the agent
 - Cleanup of `bin/`/`obj/` runs on every run, PRs included
 
 **Stage 2 - Deploy** (only on push to dev/main, not PRs; `deployment` job on environment `staging`/`production`):
@@ -126,21 +125,6 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 **Stage 2 - Notify** (production only, uses `Sigook-Notifications` variable group):
 - Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `website`)
 
-### Covenant.IdentityServer (.NET 6)
-
-**Build naming:** `CovenantIdentityServer-YYYYMMDDr`
-
-**Stage 1 - Build and Test:**
-- .NET SDK 6.0.400
-- Build + unit tests (`Covenant.IdentityServer.Tests`)
-- No integration tests
-
-**Stage 2 - Docker and Deploy** (only on direct push, not PRs):
-- Docker build (no private feed: IdentityServer has no Covenant.Common dependency)
-- Image: `sigook.azurecr.io/identityserver:<tag>`
-- Staging: `https://sigook-accounts-staging.azurewebsites.net`
-- Production: `https://sigook-accounts.azurewebsites.net`
-
 ### SigookApp (Flutter iOS + Android)
 
 **Build naming:** `SigookApp-YYYYMMDDr`
@@ -173,7 +157,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 - Download keystore from secure files (`sigook.jks`)
 - No pipeline caching: the self-hosted VM keeps `~/.gradle` and `~/.pub-cache` on disk between runs, so `Cache@2` only added upload/download time
 - Android platform read from `compileSdk`/`compileSdkMinor` in `build.gradle.kts`; NDK 28.2.13676358
-- `SCOPES` must equal `openid,profile,api1,offline_access` exactly (extra scopes make IdentityServer answer `invalid_scope`)
+- `SCOPES` must equal `openid,profile,api1,offline_access` exactly (extra scopes make the authorization server answer `invalid_scope`)
 - Build: `flutter build appbundle -t <entry> --flavor <env> --release` with one `--dart-define` per env var; the AAB lands in `build/app/outputs/bundle/<env>Release/`
 - AAB signing verification with `jarsigner`; publish artifact `sigookapp-android-<env>`
 
@@ -229,17 +213,17 @@ git diff --stat
 
 Review the diff under `SigookApp/ios/` (the app has no macOS target, hence the exclude), then commit and push.
 
-### Sigook.Functions (.NET 8 Azure Functions)
+### Sigook.Functions (.NET 10 Azure Functions, isolated worker)
 
 **Build naming:** `Sigook.Functions-YYYY.M.D.r`
 
-**Trigger:** Manual only (production-only deployment).
+**Trigger:** Manual only (production-only deployment). PRs to `main` touching `Covenant.Api/Sigook.Functions/**`, `Covenant.Api/Sigook.Functions.Tests/**` or `Covenant.Api/Covenant.Common/**` run the build stage.
 
 **Single stage and job - Build and Deploy to Production:**
-- .NET SDK 8.0.415
-- Build solution + unit tests (`Sigook.Functions.Tests`, via `runUnitTests: true`)
-- Not on PRs (left out at compile time): `dotnet publish --no-build` with zip
-- Deploy: `AzureFunctionApp@2` to `sigook-functions`
+- .NET SDK 10.0.401
+- Build `Covenant.Api/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj` (pulls the Functions project and `Covenant.Common`) + unit tests
+- Not on PRs (left out at compile time): `dotnet publish --no-build` of `Covenant.Api/Sigook.Functions/Sigook.Functions.csproj` with zip
+- Deploy: `AzureFunctionApp@2` to `sigook-functions` (runtime stack `DOTNET-ISOLATED|10.0`, configured on the Function App, not in the repo)
 - Production: `https://sigook-functions.azurewebsites.net`
 
 ### Sigook.CognitiveServices (.NET 8 Web App)
@@ -262,7 +246,7 @@ Review the diff under `SigookApp/ios/` (the app has no macOS target, hence the e
 **Trigger:** Manual only (run from Azure DevOps). Refreshes **both** databases in one run.
 
 **Stage 1 - Refresh Staging Databases:**
-- Fetches secrets from Key Vault `Sigook` via `AzureKeyVault@2` (`SigookPipelines` service connection): production connection strings for API (`CovenantCore`) and IdentityServer (`CovenantSecurity`), plus `pipelines--DbRefresh--StagingPasswordHash`
+- Fetches secrets from Key Vault `Sigook` via `AzureKeyVault@2` (`SigookPipelines` service connection): production connection strings for the API database (`CovenantCore`) and the identity database (`CovenantSecurity`), plus `pipelines--DbRefresh--StagingPasswordHash`
 - Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
 - Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
 - `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
@@ -282,7 +266,7 @@ Installs .NET SDK via `UseDotNet@2` task.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `sdkVersion` | string | required | .NET SDK version (e.g., `8.0.415`) |
+| `sdkVersion` | string | required | .NET SDK version (e.g., `10.0.401`) |
 | `includePreviewVersions` | boolean | `false` | Include preview SDK versions |
 
 ### node-setup.yml
@@ -317,10 +301,10 @@ Sets Docker tag and environment name based on branch.
 | `productionTag` | string | `latest_production` | Tag for main branch |
 | `stepName` | string | `SetTag` | Step name for cross-job output reference |
 
-Reads `isDev` pipeline variable to determine branch. Sets both job-scoped and output variables. Only used by the IdentityServer pipeline (the other pipelines use compile-time variables).
+Reads `isDev` pipeline variable to determine branch. Sets both job-scoped and output variables. Not referenced by any pipeline (they all use compile-time variables).
 
 ### calculate-azure-appname.yml
-Determines Azure App Service name based on branch. Only used by the IdentityServer pipeline.
+Determines Azure App Service name based on branch. Not referenced by any pipeline.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -406,9 +390,9 @@ variables:
 | App | Staging | Production |
 |-----|---------|------------|
 | Covenant.Api | `sigook-api-staging.azurewebsites.net` | `sigook-api.azurewebsites.net` |
+| Identity (OpenIddict, same App Service as the API) | `staging.accounts.sigook.ca` | `accounts.sigook.ca` |
 | Sigook.Web | `sigook-web-staging.azurewebsites.net` | `sigook.azurewebsites.net` |
 | Covenant.Web | `lively-island-020c8260f.7.azurestaticapps.net` | `www.covenantgroupl.com` (SWA) |
-| IdentityServer | `sigook-accounts-staging.azurewebsites.net` | `sigook-accounts.azurewebsites.net` |
 | Sigook.Functions | N/A | `sigook-functions.azurewebsites.net` |
 | CognitiveServices | N/A | `sigook-cognitive-services.azurewebsites.net` |
 | SigookApp | SIGOOK Beta: Google Play `internal` testing + TestFlight group `Staging` | SIGOOK: Google Play `production` + App Store |
@@ -444,8 +428,8 @@ variables:
 - Sigook.Functions and CognitiveServices are manual-only (no automatic triggers)
 
 ### NuGet restore fails
-- Ensure `NuGetAuthenticate@1` runs before `dotnet build`
-- For IdentityServer Docker build, verify `PatSigookPackages` variable is set
+- All packages come from nuget.org (`Covenant.Api/nuget.config`); there is no private feed, so no authentication step is needed
+- Versions are pinned in `Covenant.Api/Directory.Packages.props` (central package management)
 
 ### Docker build fails
 - Check disk space on self-hosted agent (cleanup template should help)

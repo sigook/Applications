@@ -6,6 +6,7 @@ using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
@@ -185,7 +186,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
                 services.AddSingleton(Rates.DefaultRates);
                 services.AddSingleton<CompanyIdFilter>();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

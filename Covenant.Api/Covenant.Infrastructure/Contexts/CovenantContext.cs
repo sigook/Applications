@@ -120,7 +120,7 @@ public class CovenantContext : DbContext
     public DbSet<Deal> Deals { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly, type => type.Namespace != IdentityContext.ConfigurationsNamespace);
         if (Database.IsNpgsql())
         {
             modelBuilder.AddPostgresFunctions();

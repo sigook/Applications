@@ -18,7 +18,7 @@
 | Document | Description |
 |----------|-------------|
 | [ARCHITECTURE.md](./technical/ARCHITECTURE.md) | Tech stack, layers, modules, and project organization |
-| `technical/openapi.json` | OpenAPI 3.0 specification — the source of truth for every endpoint. Generated on each API build and committed; regenerate after adding endpoints. Browse it via Swagger UI at the API site root in Dev/Staging |
+| `technical/openapi.json` | OpenAPI 3.0 specification — the source of truth for every endpoint. Generated on each API build and committed; regenerate after adding endpoints. Browse it with Scalar at `/scalar` on the API in Dev/Staging (raw document at `/openapi/v1.json`) |
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
@@ -36,7 +36,7 @@
 **Backend development:**
 1. [ARCHITECTURE.md](./technical/ARCHITECTURE.md) — layers and modules
 2. [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) — data model
-3. `technical/openapi.json` — available endpoints (OpenAPI spec; build it, or use Swagger UI)
+3. `technical/openapi.json` — available endpoints (OpenAPI spec; build it, or open `/scalar` on the API)
 
 **Modify payroll:**
 1. [PAYROLL_RULES.md](./business/PAYROLL_RULES.md) — calculation rules

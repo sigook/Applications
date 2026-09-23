@@ -5,6 +5,7 @@ using Covenant.Common.Entities.Request.Runners;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Models.Request.Runners;
@@ -21,6 +22,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
+using Moq;
 
 namespace Covenant.Integration.Tests.AgencyModule.Requests;
 
@@ -332,7 +334,7 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
                 });
             services.AddTestDatabase();
             services.AddSingleton<ITimeService, TimeService>();
-            services.AddSingleton<IIdentityServerService, IdentityServerService>();
+            services.AddSingleton<IIdentityServerService, UserAccountService>();
             services.AddSingleton<IRequestRepository, RequestRepository>();
             services.AddSingleton<IRunnerRepository, RunnerRepository>();
             services.AddSingleton<IWorkerRepository, WorkerRepository>();

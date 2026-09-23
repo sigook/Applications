@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Utils.Extensions;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -14,13 +14,15 @@ namespace Covenant.Api.Security.Controllers
 {
     [ApiController]
     [Authorize]
-    [Route("api/[controller]")]
-    public class AccountController : ControllerBase
+    [Route(RouteName)]
+    public class ApiAccountController : ControllerBase
     {
+        public const string RouteName = "api/Account";
+
         private readonly IIdentityServerService identityServerService;
         private readonly IUserRepository _userRepository;
 
-        public AccountController(
+        public ApiAccountController(
             IIdentityServerService identityServerService,
             IUserRepository userRepository)
         {

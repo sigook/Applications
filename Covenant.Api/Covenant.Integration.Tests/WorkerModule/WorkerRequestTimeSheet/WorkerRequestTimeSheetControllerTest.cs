@@ -4,6 +4,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
@@ -122,7 +123,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(() => Data.Now);
                 timeService.Setup(s => s.GetCurrentDateTimeOffset()).Returns(() => new DateTimeOffset(Data.Now));
                 services.AddSingleton(timeService.Object);
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton<IIdentityServerService, UserAccountService>();
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)
