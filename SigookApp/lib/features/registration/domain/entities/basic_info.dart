@@ -63,26 +63,43 @@ class BasicInfo extends Equatable {
         dateOfBirth.isAtSameMomentAs(eighteenYearsAgo);
   }
 
+  bool get hasGender => gender.id?.isNotEmpty ?? false;
+
   bool get isValid {
     return firstName.isValid &&
         lastName.isValid &&
         isAdult &&
+        hasGender &&
         country != null &&
         provinceState != null &&
         city != null &&
-        address.isNotEmpty &&
-        address.length >= 5 &&
+        addressError == null &&
         zipCode.value.isNotEmpty &&
         mobileNumber.isValid;
   }
 
+  String? get genderError => hasGender ? null : 'Gender is required';
   String? get countryError => country == null ? 'Country is required' : null;
   String? get provinceStateError =>
       provinceState == null ? 'Province/State is required' : null;
   String? get cityError => city == null ? 'City is required' : null;
-  String? get addressError {
+  static const int addressMinLength = 5;
+  static const int addressMaxLength = 100;
+  static final RegExp _addressAllowed = RegExp(r'^[-.#, a-zA-Z0-9]+$');
+
+  String? get addressError => validateAddress(address);
+
+  static String? validateAddress(String address) {
     if (address.isEmpty) return 'Address is required';
-    if (address.length < 5) return 'Address must be at least 5 characters';
+    if (address.length < addressMinLength) {
+      return 'Address must be at least $addressMinLength characters';
+    }
+    if (address.length > addressMaxLength) {
+      return 'Address must be at most $addressMaxLength characters';
+    }
+    if (!_addressAllowed.hasMatch(address)) {
+      return 'Address can only contain letters, numbers, spaces and - . # ,';
+    }
     return null;
   }
 

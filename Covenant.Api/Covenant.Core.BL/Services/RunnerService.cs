@@ -13,15 +13,15 @@ public class RunnerService(
     IRequestRepository requestRepository,
     IWorkerRepository workerRepository,
     ITimeService timeService,
-    IIdentityServerService identityServerService) : IRunnerService
+    ICurrentUserService currentUserService) : IRunnerService
 {
     private const int FollowUpDays = 3;
     private const string RunnersNotAllowed = "This order does not accept runners";
 
     public async Task<Result<Guid>> CreateRunner(Guid requestId, RunnerCreateModel model, Guid? requestRecruiterId = null)
     {
-        var agencyId = identityServerService.GetAgencyId();
-        var createdBy = identityServerService.GetUserId();
+        var agencyId = currentUserService.GetAgencyId();
+        var createdBy = currentUserService.GetUserId();
         var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail<Guid>("Request not found");
         if (!request.UsesRunners) return Result.Fail<Guid>(RunnersNotAllowed);
@@ -40,7 +40,7 @@ public class RunnerService(
 
     public async Task<Result> DeleteRunner(Guid runnerId)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var runner = await runnerRepository.GetRunner(r => r.Id == runnerId && r.Request.CompanyProfile.AgencyId == agencyId);
         if (runner is null) return Result.Fail("Runner not found");
         runnerRepository.Delete(runner);
@@ -50,7 +50,7 @@ public class RunnerService(
 
     public async Task<Result> ChangeStatus(Guid runnerId, ChangeRunnerStatusModel model)
     {
-        var changedBy = identityServerService.GetUserId();
+        var changedBy = currentUserService.GetUserId();
         var runner = await runnerRepository.GetRunner(r => r.Id == runnerId);
         if (runner is null) return Result.Fail("Runner not found");
         if (!await RunnersAllowed(runner.RequestId)) return Result.Fail(RunnersNotAllowed);
@@ -62,7 +62,7 @@ public class RunnerService(
 
     public async Task<Result<Guid>> AddInterview(Guid runnerId, RunnerInterviewCreateModel model)
     {
-        var createdBy = identityServerService.GetUserId();
+        var createdBy = currentUserService.GetUserId();
         var runner = await runnerRepository.GetRunner(r => r.Id == runnerId);
         if (runner is null) return Result.Fail<Guid>("Runner not found");
         if (!await RunnersAllowed(runner.RequestId)) return Result.Fail<Guid>(RunnersNotAllowed);
@@ -74,7 +74,7 @@ public class RunnerService(
 
     public async Task<Result> RescheduleInterview(Guid runnerId, Guid interviewId, RunnerInterviewRescheduleModel model)
     {
-        var rescheduledBy = identityServerService.GetUserId();
+        var rescheduledBy = currentUserService.GetUserId();
         var runner = await runnerRepository.GetRunner(r => r.Id == runnerId);
         if (runner is null) return Result.Fail("Runner not found");
         if (!await RunnersAllowed(runner.RequestId)) return Result.Fail(RunnersNotAllowed);
@@ -93,8 +93,8 @@ public class RunnerService(
     public async Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday()
     {
         var date = timeService.GetCurrentDateTime();
-        var agencyId = identityServerService.GetAgencyId();
-        var userId = identityServerService.GetUserId();
+        var agencyId = currentUserService.GetAgencyId();
+        var userId = currentUserService.GetUserId();
         var today = date.Date;
         var windowStart = today.AddDays(-FollowUpDays);
         var windowEnd = today.AddDays(1);

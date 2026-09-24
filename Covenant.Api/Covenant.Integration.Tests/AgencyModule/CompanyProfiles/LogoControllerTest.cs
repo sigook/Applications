@@ -33,7 +33,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
         public async Task Put()
         {
             Guid id = Startup.FakeCompanyProfile.Id;
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.Equal(CompanyProfile.DefaultImageLogo, entity.Logo.FileName);
 

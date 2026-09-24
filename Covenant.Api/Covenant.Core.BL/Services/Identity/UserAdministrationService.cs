@@ -16,6 +16,9 @@ public class UserAdministrationService(
     IIdentityRepository identityRepository,
     IAccountNotificationService notifications) : IUserAdministrationService
 {
+    private const string UserNotFound = "User not found";
+    private const string ConfirmAccountWorker = "Thank you for registering on Sigook, your best option to find a job that fits your needs. Please complete the following steps to complete the application process and become part of the Sigook family, where you will find a vast number of work opportunities with several employers.";
+
     public async Task<Result<Guid>> CreateUser(CreateUserModel model)
     {
         if (!await roleManager.RoleExistsAsync(model.Role))
@@ -24,7 +27,7 @@ public class UserAdministrationService(
         }
 
         var existing = await userManager.FindByEmailAsync(model.Email);
-        if (existing is not null) return Result.Fail<Guid>(AccountMessages.UserAlreadyExists);
+        if (existing is not null) return Result.Fail<Guid>("User already exists");
 
         var user = new CovenantUser
         {
@@ -56,11 +59,11 @@ public class UserAdministrationService(
                 await notifications.SendConfirmAndSetPassword(user);
                 break;
             case UserType.Company:
-                if (!user.EmailConfirmed) await notifications.SendConfirmAccount(user, AccountMessages.ConfirmAccountWorker);
+                if (!user.EmailConfirmed) await notifications.SendConfirmAccount(user, ConfirmAccountWorker);
                 break;
             case UserType.Worker:
                 if (!string.IsNullOrEmpty(model.ConfirmPassword))
-                    await notifications.SendConfirmAccount(user, AccountMessages.ConfirmAccountWorker);
+                    await notifications.SendConfirmAccount(user, ConfirmAccountWorker);
                 else
                     await notifications.SendConfirmAndSetPassword(user);
                 break;
@@ -76,7 +79,7 @@ public class UserAdministrationService(
     public async Task<Result> AddAgencyClaim(Guid userId, Guid agencyId)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
-        if (user is null) return Result.Fail(AccountMessages.UserNotFound);
+        if (user is null) return Result.Fail(UserNotFound);
 
         var claims = await userManager.GetClaimsAsync(user);
         if (claims.Any(c => c.Value.Equals(agencyId.ToString(), StringComparison.InvariantCultureIgnoreCase)))
@@ -90,7 +93,7 @@ public class UserAdministrationService(
     public async Task<Result<bool>> RemoveClaimOrDeleteUser(Guid userId, Guid claimValue)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
-        if (user is null) return Result.Fail<bool>(AccountMessages.UserNotFound);
+        if (user is null) return Result.Fail<bool>(UserNotFound);
 
         var claims = await userManager.GetClaimsAsync(user);
         if (claims.Count > 1)
@@ -108,7 +111,7 @@ public class UserAdministrationService(
     public async Task<Result> Deactivate(Guid userId)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
-        if (user is null) return Result.Fail(AccountMessages.UserNotFound);
+        if (user is null) return Result.Fail(UserNotFound);
 
         await identityRepository.AddInactiveUser(user.Id);
         await identityRepository.SaveChangesAsync();
@@ -119,7 +122,7 @@ public class UserAdministrationService(
     public async Task<Result> UpdateEmail(UpdateEmailModel model)
     {
         var user = await userManager.FindByIdAsync(model.Id.ToString());
-        if (user is null) return Result.Fail(AccountMessages.UserNotFound);
+        if (user is null) return Result.Fail(UserNotFound);
 
         user.Email = model.NewEmail;
         user.UserName = model.NewEmail;
@@ -134,7 +137,7 @@ public class UserAdministrationService(
         }
 
         var user = await userManager.FindByIdAsync(model.Id.ToString());
-        if (user is null) return Result.Fail(AccountMessages.UserNotFound);
+        if (user is null) return Result.Fail(UserNotFound);
 
         var currentRoles = await userManager.GetRolesAsync(user);
         if (currentRoles.Count == 1 && currentRoles[0].Equals(model.Role, StringComparison.OrdinalIgnoreCase)) return Result.Ok();
@@ -150,9 +153,6 @@ public class UserAdministrationService(
 
     public Task<IReadOnlyList<UserRoleModel>> GetUsersRoles(IEnumerable<Guid> userIds) =>
         identityRepository.GetUsersRoles(userIds.Distinct().ToList());
-
-    public string HashPassword(string password) =>
-        new PasswordHasher<CovenantUser>().HashPassword(new CovenantUser(), password);
 
     private static Result ToResult(IdentityResult result) =>
         result.Succeeded ? Result.Ok() : Result.Fail(Errors(result));

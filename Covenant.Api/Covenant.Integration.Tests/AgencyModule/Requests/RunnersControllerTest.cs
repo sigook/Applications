@@ -40,7 +40,7 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
     private static string RequestUri(Guid requestId = default) =>
         $"api/agency/requests/{(requestId == default ? Startup.FakeRequest.Id : requestId)}/Runners";
 
-    private CovenantContext Context => _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+    private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 
     private Task<Runner> GetRunner(Guid id) => Context.Runners
         .Include(r => r.StatusHistory)
@@ -334,7 +334,7 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
                 });
             services.AddTestDatabase();
             services.AddSingleton<ITimeService, TimeService>();
-            services.AddSingleton<IIdentityServerService, UserAccountService>();
+            services.AddSingleton<IUserAccountService, UserAccountService>();
             services.AddSingleton<IRequestRepository, RequestRepository>();
             services.AddSingleton<IRunnerRepository, RunnerRepository>();
             services.AddSingleton<IWorkerRepository, WorkerRepository>();

@@ -35,9 +35,33 @@ class _ResumeSectionCardState extends ConsumerState<ResumeSectionCard> {
   Future<void> _pickFile() async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: FilePickerService.documentExtensions);
     if (!result.isSuccess || result.file == null) return;
     setState(() => _pendingFile = result.file);
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Resume'),
+        content: const Text('Are you sure you want to delete your resume? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      ref.read(resumeViewModelProvider.notifier).delete();
+    }
   }
 
   Future<void> _upload() async {
@@ -58,6 +82,12 @@ class _ResumeSectionCardState extends ConsumerState<ResumeSectionCard> {
       }
       if (next.uploadError != null && next.uploadError != prev?.uploadError) {
         showProfileError(context, 'Failed to upload resume: ${next.uploadError}');
+      }
+      if (next.justDeleted && !(prev?.justDeleted ?? false)) {
+        showProfileSuccess(context, 'Resume deleted successfully!');
+      }
+      if (next.deleteError != null && next.deleteError != prev?.deleteError) {
+        showProfileError(context, 'Failed to delete resume: ${next.deleteError}');
       }
     });
 
@@ -121,6 +151,16 @@ class _ResumeSectionCardState extends ConsumerState<ResumeSectionCard> {
                   icon: const Icon(Icons.visibility_outlined, size: 20),
                   color: AppTheme.primaryBlue,
                   tooltip: 'Preview',
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+              if (hasResume && _pendingFile == null)
+                IconButton(
+                  onPressed: vm.isDeleting ? null : _confirmDelete,
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  color: Colors.red.shade400,
+                  tooltip: 'Delete',
                   padding: EdgeInsets.zero,
                   constraints:
                       const BoxConstraints(minWidth: 32, minHeight: 32),

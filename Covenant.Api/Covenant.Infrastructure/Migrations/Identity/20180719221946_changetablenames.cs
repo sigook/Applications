@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Covenant.Infrastructure.Migrations.Identity
 {
-    public partial class changetablenames : Migration
+    public partial class ChangeTableNames : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

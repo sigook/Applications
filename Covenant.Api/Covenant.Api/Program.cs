@@ -14,11 +14,9 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenIddict.Validation.AspNetCore;
 using Scalar.AspNetCore;
 using System.Globalization;
@@ -138,8 +136,6 @@ static void IgnorePendingModelChanges(WarningsConfigurationBuilder warnings) =>
 builder.Services.AddCovenantIdentity(builder.Configuration);
 builder.Services.AddCovenantOpenIddict(builder.Configuration, builder.Environment);
 
-builder.Services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-
 logger.LogInformation("Configuring health checks...");
 builder.Services.AddCovenantHealthChecks(builder.Configuration, builder.Environment);
 
@@ -202,7 +198,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
     app.MapScalarApiReference(options => options
         .WithTitle("Covenant/Sigook API")
         .AddPreferredSecuritySchemes(BearerSecurityDocumentTransformer.SchemeName)
-        .WithPersistentAuthentication());
+        .EnablePersistentAuthentication());
 }
 app.UseAuthentication();
 app.UseAuthorization();

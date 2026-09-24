@@ -14,6 +14,7 @@ class LicensesRemoteDataSource extends ProfileBaseDatasource {
   Future<void> uploadLicense(
     String workerId, {
     required String filePath,
+    required String description,
     required String number,
     required String issued,
     required String expires,
@@ -26,14 +27,14 @@ class LicensesRemoteDataSource extends ProfileBaseDatasource {
           ...existingLicenses.map((l) => {
             'license': {
               'fileName': l.license?.fileName ?? '',
-              'description': l.license?.description ?? 'license',
+              'description': l.license?.description ?? '',
             },
             'number': l.number ?? '',
             'issued': l.issued ?? '',
             'expires': l.expires ?? '',
           }),
           {
-            'license': {'fileName': fileName, 'description': 'license'},
+            'license': {'fileName': fileName, 'description': description},
             'number': number,
             'issued': issued,
             'expires': expires,

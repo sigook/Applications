@@ -12,18 +12,18 @@ namespace Covenant.Core.BL.Services.Accounting;
 
 public class AccountingService : IAccountingService
 {
-    private readonly IIdentityServerService identityServerService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IPayStubRepository payStubRepository;
     private readonly ISubcontractorRepository subcontractorRepository;
     private readonly IMediator mediator;
 
     public AccountingService(
-        IIdentityServerService identityServerService,
+        ICurrentUserService currentUserService,
         IPayStubRepository payStubRepository,
         ISubcontractorRepository subcontractorRepository,
         IMediator mediator)
     {
-        this.identityServerService = identityServerService;
+        this.currentUserService = currentUserService;
         this.payStubRepository = payStubRepository;
         this.subcontractorRepository = subcontractorRepository;
         this.mediator = mediator;
@@ -31,7 +31,7 @@ public class AccountingService : IAccountingService
 
     public async Task<PaginatedList<WeeklyPayrollModel>> GetWeeklyPayrollGroupByPaymentDate(Pagination pagination)
     {
-        var agencyIds = identityServerService.GetAgencyIds();
+        var agencyIds = currentUserService.GetAgencyIds();
         var result = await payStubRepository.GetWeeklyPayrollGroupByPaymentDate(agencyIds, pagination);
         return result;
     }
@@ -48,7 +48,7 @@ public class AccountingService : IAccountingService
 
     public async Task<PaginatedList<PayrollSubContractorListModel>> GetSubcontractors(Pagination filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var result = await subcontractorRepository.GetPayrollsSubcontractor(agencyId, filter);
         return result;
     }
@@ -69,7 +69,7 @@ public class AccountingService : IAccountingService
         {
             return Result.Fail($"Invalid date format ({weekEnding})");
         }
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         int deleted = await subcontractorRepository.DeleteReportsByWeekEnding(agencyId, weekEndingDate);
         if (deleted == 0)
         {

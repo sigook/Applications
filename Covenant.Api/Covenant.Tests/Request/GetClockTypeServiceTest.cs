@@ -28,12 +28,12 @@ public class GetClockTypeServiceTest
     private readonly Mock<ITimeService> _timeService = new();
     private readonly Mock<IWorkerRequestRepository> _workerRequestRepository = new();
     private readonly Mock<ITimesheetRepository> _timeSheetRepository = new();
-    private readonly Mock<IIdentityServerService> _identityServerService = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly TimesheetService _sut;
 
     public GetClockTypeServiceTest()
     {
-        _identityServerService.Setup(i => i.GetUserId()).Returns(_workerId);
+        _currentUserService.Setup(i => i.GetUserId()).Returns(_workerId);
         _sut = new TimesheetService(
             _timeService.Object,
             _workerRequestRepository.Object,
@@ -41,7 +41,7 @@ public class GetClockTypeServiceTest
             Mock.Of<IRequestRepository>(),
             Mock.Of<ICatalogRepository>(),
             Mock.Of<IConfiguration>(),
-            _identityServerService.Object,
+            _currentUserService.Object,
             Mock.Of<IMediator>(),
             new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }));
     }

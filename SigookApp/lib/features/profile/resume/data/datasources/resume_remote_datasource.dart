@@ -30,4 +30,17 @@ class ResumeRemoteDataSource extends ProfileBaseDatasource {
           data: formData,
         );
       });
+
+  Future<void> deleteResume(String workerId) =>
+      execute(() async {
+        final formData = FormData();
+        formData.fields.add(MapEntry(
+          'data',
+          jsonEncode({'fileName': '', 'description': ''}),
+        ));
+        await apiClient.dio.post(
+          '/WorkerProfile/$workerId/Resume',
+          data: formData,
+        );
+      });
 }

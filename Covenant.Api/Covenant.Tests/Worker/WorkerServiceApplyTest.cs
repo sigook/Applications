@@ -39,7 +39,7 @@ public class WorkerServiceApplyTest
     private readonly Mock<IRequestRepository> _requestRepository = new();
     private readonly Mock<IWorkerRequestRepository> _workerRequestRepository = new();
     private readonly Mock<ICandidateRepository> _candidateRepository = new();
-    private readonly Mock<IIdentityServerService> _identityServerService = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly Mock<IRequestApplicantNotificationService> _applicantNotificationService = new();
     private readonly WorkerService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
@@ -54,7 +54,8 @@ public class WorkerServiceApplyTest
             Mock.Of<INotificationRepository>(),
             _requestRepository.Object,
             _workerRequestRepository.Object,
-            _identityServerService.Object,
+            Mock.Of<IUserAccountService>(),
+            _currentUserService.Object,
             Mock.Of<ITeamsService>(),
             Mock.Of<IEmailService>(),
             Mock.Of<IRazorViewToStringRenderer>(),
@@ -265,7 +266,7 @@ public class WorkerServiceApplyTest
     {
         var request = SetupRequest();
         var profile = SetupWorker("worker@mail.com");
-        _identityServerService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
+        _currentUserService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
         var result = await ApplyAsSelf(request.Id, "Hard Worker");
         Assert.True(result);
         Assert.Equal(profile.Id, result.Value.WorkerProfileId);
@@ -281,7 +282,7 @@ public class WorkerServiceApplyTest
     {
         var request = SetupRequest();
         var profile = SetupWorker("worker@mail.com");
-        _identityServerService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
+        _currentUserService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
         var result = await _sut.Apply(new WorkerRequestApplyModel { Email = "someone.else@mail.com" }, request.Id);
         Assert.True(result);
         _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
@@ -302,7 +303,7 @@ public class WorkerServiceApplyTest
     {
         var request = SetupRequest();
         var profile = SetupWorker("worker@mail.com");
-        _identityServerService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
+        _currentUserService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
         _workerRequestRepository.Setup(r => r.WorkerRequestExists(profile.Id, request.Id)).ReturnsAsync(true);
         var result = await ApplyAsSelf(request.Id);
         Assert.False(result);
@@ -315,7 +316,7 @@ public class WorkerServiceApplyTest
         var request = SetupRequest();
         request.Cancel(DateTime.Now);
         var profile = SetupWorker("worker@mail.com");
-        _identityServerService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
+        _currentUserService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
         var result = await ApplyAsSelf(request.Id);
         Assert.False(result);
         _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);

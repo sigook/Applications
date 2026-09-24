@@ -32,7 +32,7 @@ namespace Covenant.Integration.Tests.NotificationModule.EmailPreferences
                 TypeId = NotificationType.NewRequestNotifyWorker.Id.ToString()
             });
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.True(await context.UserNotificationTypes.AnyAsync());
         }
 
@@ -45,7 +45,7 @@ namespace Covenant.Integration.Tests.NotificationModule.EmailPreferences
                 Email = Startup.FakeUser.Email
             });
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.True(await context.UserNotificationTypes
                 .AnyAsync(t => t.NotificationTypeId == NotificationType.NewRequestNotifyWorker.Id));
         }

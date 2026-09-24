@@ -41,7 +41,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<NoteModel>();
             Assert.NotNull(detail.CreatedBy);
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.WorkerRequestNotes.SingleAsync(c => c.NoteId == detail.Id);
             Assert.Equal(model.Note, entity.Note.Note);
             Assert.Equal(model.Color, entity.Note.Color);
@@ -57,7 +57,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var id = Startup.FakeUpdateNote.NoteId;
             var response = await HttpClientJsonExtensions.PutAsJsonAsync(_client, $"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.WorkerRequestNotes.SingleAsync(c => c.NoteId == id);
             Assert.Equal(model.Note, entity.Note.Note);
             Assert.Equal(model.Color, entity.Note.Color);
@@ -103,7 +103,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var id = Startup.FakeDeleteNote.NoteId;
             var response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.WorkerRequestNotes.SingleAsync(c => c.NoteId == id);
             Assert.True(entity.Note.IsDeleted);
             Assert.NotNull(entity.Note.UpdatedBy);

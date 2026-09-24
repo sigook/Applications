@@ -9,7 +9,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback/error_state_widget.dart';
 import '../../../../core/widgets/feedback/loading_indicator.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
-import '../../profile_image/presentation/providers/profile_image_providers.dart';
 import '../../profile_image/presentation/viewmodels/profile_image_viewmodel.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import 'profile_header.dart';

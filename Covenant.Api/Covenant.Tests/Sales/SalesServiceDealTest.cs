@@ -19,7 +19,7 @@ namespace Covenant.Tests.Sales
     public class SalesServiceDealTest
     {
         private readonly Mock<ICompanyRepository> _companyRepository = new();
-        private readonly Mock<IIdentityServerService> _identityServerService = new();
+        private readonly Mock<ICurrentUserService> _currentUserService = new();
         private readonly Mock<IUploadedFilesService> _uploadedFilesService = new();
         private readonly Mock<IDocumentService> _documentService = new();
         private readonly ISalesService _sut;
@@ -28,14 +28,14 @@ namespace Covenant.Tests.Sales
 
         public SalesServiceDealTest()
         {
-            _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
-            _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
+            _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+            _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
             _uploadedFilesService.Setup(u => u.Validate()).Returns(Result.Ok());
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
                 Mock.Of<IRequestRepository>(),
                 _companyRepository.Object,
-                _identityServerService.Object,
+                _currentUserService.Object,
                 _uploadedFilesService.Object,
                 _documentService.Object,
                 new CreateCompanyInteractionModelValidator(),
@@ -261,7 +261,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task UpdateDealFailsWhenSalesUserIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             var deal = OwnedDeal(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
@@ -275,7 +275,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetDealsScopesToOwnerForSalesUser()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             GetDealsFilter captured = null;
             _companyRepository
                 .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
@@ -288,7 +288,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetDealsIsNotScopedForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             GetDealsFilter captured = null;
             _companyRepository
                 .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
@@ -301,7 +301,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetDealsKeepsRequestedOwnerForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var otherUserId = Guid.NewGuid();
             GetDealsFilter captured = null;
             _companyRepository
@@ -315,7 +315,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task UpdateDealSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var deal = OwnedDeal(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
@@ -328,7 +328,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task DeleteDealSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var deal = OwnedDeal(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/file_picker_provider.dart';
+import '../../../../core/services/file_picker_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/documents_info.dart';
 import '../../domain/entities/uploaded_file.dart';
@@ -42,8 +43,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
     try {
       final filePickerService = ref.read(filePickerServiceProvider);
       final result = await filePickerService.pickFile(
-        allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png'],
-        maxFileSizeMB: 10,
+        allowedExtensions: FilePickerService.documentExtensions,
       );
       if (!mounted) return;
       if (result.isSuccess) {
@@ -101,6 +101,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   Future<void> _showFileUploadModal({
     required String title,
     required String description,
+    String? excludedTypeId,
     required Function(
       String fileName,
       CatalogItem identificationType,
@@ -112,8 +113,11 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
   }) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) =>
-          FileUploadModal(title: title, description: description),
+      builder: (context) => FileUploadModal(
+        title: title,
+        description: description,
+        excludedTypeId: excludedTypeId,
+      ),
     );
 
     if (result != null && mounted) {
@@ -179,6 +183,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                     title: 'Upload Primary Identification',
                     description:
                         'Select identification type and upload identification document',
+                    excludedTypeId: _identification2?.identificationTypeId,
                     onFileUploaded:
                         (
                           fileName,
@@ -238,6 +243,7 @@ class _DocumentsPageState extends ConsumerState<DocumentsPage> {
                     title: 'Upload Secondary Identification',
                     description:
                         'Select identification type and upload identification document',
+                    excludedTypeId: _identification1?.identificationTypeId,
                     onFileUploaded:
                         (
                           fileName,

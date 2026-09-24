@@ -66,6 +66,23 @@ class WorkerCertificate extends Equatable {
   List<Object?> get props => [id, fileUrl, fileName, description];
 }
 
+class WorkerOtherDocument extends Equatable {
+  final String? id;
+  final String? fileUrl;
+  final String? fileName;
+  final String? description;
+
+  const WorkerOtherDocument({
+    this.id,
+    this.fileUrl,
+    this.fileName,
+    this.description,
+  });
+
+  @override
+  List<Object?> get props => [id, fileUrl, fileName, description];
+}
+
 class WorkerProfile extends Equatable {
   final String id;
   final int? numberId;
@@ -76,6 +93,7 @@ class WorkerProfile extends Equatable {
   final String? secondLastName;
   final String? birthDay;
   final String? gender;
+  final String? genderId;
   final String? socialInsurance;
   final bool socialInsuranceExpire;
   final String? dueDate;
@@ -85,6 +103,8 @@ class WorkerProfile extends Equatable {
   final String? identificationNumber2;
   final String? identificationType1;
   final String? identificationType2;
+  final String? identificationType1Id;
+  final String? identificationType2Id;
   final String? identificationType1FileName;
   final String? identificationType1FileUrl;
   final String? identificationType2FileName;
@@ -98,7 +118,9 @@ class WorkerProfile extends Equatable {
   final String? city;
   final String? cityId;
   final String? province;
+  final String? provinceId;
   final String? country;
+  final String? countryCode;
   final String? postalCode;
   final bool hasVehicle;
   final List<String> availabilities;
@@ -107,6 +129,8 @@ class WorkerProfile extends Equatable {
   final List<String> availabilityTimeIds;
   final List<String> availabilityDays;
   final List<String> availabilityDayIds;
+  final List<String> locationPreferences;
+  final List<String> locationPreferenceIds;
   final String? liftCapacity;
   final String? liftId;
   final List<String> languages;
@@ -118,9 +142,12 @@ class WorkerProfile extends Equatable {
   final String? resumeFileUrl;
   final List<WorkerLicense> licenses;
   final List<WorkerCertificate> certificates;
+  final List<WorkerOtherDocument> otherDocuments;
   final bool approvedToWork;
   final String? punchCardId;
   final bool haveAnyHealthProblem;
+  final String? healthProblem;
+  final String? otherHealthProblem;
   final String? contactEmergencyName;
   final String? contactEmergencyLastName;
   final String? contactEmergencyPhone;
@@ -135,6 +162,7 @@ class WorkerProfile extends Equatable {
     this.secondLastName,
     this.birthDay,
     this.gender,
+    this.genderId,
     this.socialInsurance,
     this.socialInsuranceExpire = false,
     this.dueDate,
@@ -144,6 +172,8 @@ class WorkerProfile extends Equatable {
     this.identificationNumber2,
     this.identificationType1,
     this.identificationType2,
+    this.identificationType1Id,
+    this.identificationType2Id,
     this.identificationType1FileName,
     this.identificationType1FileUrl,
     this.identificationType2FileName,
@@ -157,7 +187,9 @@ class WorkerProfile extends Equatable {
     this.city,
     this.cityId,
     this.province,
+    this.provinceId,
     this.country,
+    this.countryCode,
     this.postalCode,
     this.hasVehicle = false,
     this.availabilities = const [],
@@ -166,6 +198,8 @@ class WorkerProfile extends Equatable {
     this.availabilityTimeIds = const [],
     this.availabilityDays = const [],
     this.availabilityDayIds = const [],
+    this.locationPreferences = const [],
+    this.locationPreferenceIds = const [],
     this.liftCapacity,
     this.liftId,
     this.languages = const [],
@@ -177,13 +211,18 @@ class WorkerProfile extends Equatable {
     this.resumeFileUrl,
     this.licenses = const [],
     this.certificates = const [],
+    this.otherDocuments = const [],
     this.approvedToWork = false,
     this.punchCardId,
     this.haveAnyHealthProblem = false,
+    this.healthProblem,
+    this.otherHealthProblem,
     this.contactEmergencyName,
     this.contactEmergencyLastName,
     this.contactEmergencyPhone,
   });
+
+  bool get isCanada => countryCode?.toUpperCase() == 'CA';
 
   String get fullName {
     final parts = [firstName, middleName, lastName, secondLastName]
@@ -241,24 +280,27 @@ class WorkerProfile extends Equatable {
   @override
   List<Object?> get props => [
     id, numberId, profilePhotoUrl, firstName, middleName, lastName,
-    secondLastName, birthDay, gender, socialInsurance,
+    secondLastName, birthDay, gender, genderId, socialInsurance,
     socialInsuranceExpire, dueDate, socialInsuranceFileName, socialInsuranceFileUrl,
     identificationNumber1, identificationNumber2,
     identificationType1, identificationType2,
+    identificationType1Id, identificationType2Id,
     identificationType1FileName, identificationType1FileUrl,
     identificationType2FileName, identificationType2FileUrl,
     havePoliceCheckBackground, policeCheckBackgroundFileName,
-    mobileNumber, phone, email, address, city, cityId, province, country,
-    postalCode, hasVehicle,
+    mobileNumber, phone, email, address, city, cityId, province, provinceId,
+    country, countryCode, postalCode, hasVehicle,
     availabilities, availabilityIds,
     availabilityTimes, availabilityTimeIds,
     availabilityDays, availabilityDayIds,
+    locationPreferences, locationPreferenceIds,
     liftCapacity, liftId,
     languages, languageIds,
     skills, skillIds,
     hasResume, resumeFileName, resumeFileUrl,
-    licenses, certificates,
+    licenses, certificates, otherDocuments,
     approvedToWork, punchCardId, haveAnyHealthProblem,
+    healthProblem, otherHealthProblem,
     contactEmergencyName, contactEmergencyLastName, contactEmergencyPhone,
   ];
 }

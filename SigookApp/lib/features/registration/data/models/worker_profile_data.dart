@@ -21,6 +21,7 @@ class WorkerProfileData {
   final String? phone;
   final Location location;
   final LiftingCapacity? lift;
+  final bool hasVehicle;
   final List<AvailabilityType> availabilities;
   final List<AvailableTime> availabilityTimes;
   final List<DayOfWeekEntity> availabilityDays;
@@ -48,6 +49,7 @@ class WorkerProfileData {
     this.phone,
     required this.location,
     this.lift,
+    required this.hasVehicle,
     required this.availabilities,
     required this.availabilityTimes,
     required this.availabilityDays,
@@ -79,6 +81,7 @@ class WorkerProfileData {
       if (phone != null) 'phone': phone,
       'location': location.toJson(),
       if (lift != null) 'lift': lift!.toJson(),
+      'hasVehicle': hasVehicle,
       'availabilities': availabilities.map((a) => a.toJson()).toList(),
       'availabilityTimes': availabilityTimes.map((a) => a.toJson()).toList(),
       'availabilityDays': availabilityDays.map((d) => d.toJson()).toList(),

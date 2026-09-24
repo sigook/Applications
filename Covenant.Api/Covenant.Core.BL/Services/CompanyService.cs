@@ -44,7 +44,8 @@ public class CompanyService : ICompanyService
     private readonly ICatalogRepository catalogRepository;
     private readonly IRequestRepository requestRepository;
     private readonly IInvoiceRepository invoiceRepository;
-    private readonly IIdentityServerService identityServerService;
+    private readonly IUserAccountService userAccountService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IEmailService emailService;
     private readonly IGeocodeService geocodeService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
@@ -58,7 +59,8 @@ public class CompanyService : ICompanyService
         ICatalogRepository catalogRepository,
         IRequestRepository requestRepository,
         IInvoiceRepository invoiceRepository,
-        IIdentityServerService identityServerService,
+        IUserAccountService userAccountService,
+        ICurrentUserService currentUserService,
         IEmailService emailService,
         IGeocodeService geocodeService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
@@ -72,7 +74,8 @@ public class CompanyService : ICompanyService
         this.catalogRepository = catalogRepository;
         this.requestRepository = requestRepository;
         this.invoiceRepository = invoiceRepository;
-        this.identityServerService = identityServerService;
+        this.userAccountService = userAccountService;
+        this.currentUserService = currentUserService;
         this.emailService = emailService;
         this.geocodeService = geocodeService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
@@ -85,7 +88,7 @@ public class CompanyService : ICompanyService
         var email = CvnEmail.Create(model.Email);
         if (!email) return Result.Fail<Guid>(email.Errors);
         if (await userRepository.UserExists(email.Value.Email)) return Result.Fail<Guid>(ApiResources.EmailAlreadyTaken);
-        var user = await identityServerService.CreateUser(new CreateUserModel
+        var user = await userAccountService.CreateUser(new CreateUserModel
         {
             Email = email.Value,
             Password = model.Password,
@@ -141,7 +144,7 @@ public class CompanyService : ICompanyService
     {
         if (!profileId.HasValue)
         {
-            var companyId = identityServerService.GetCompanyId();
+            var companyId = currentUserService.GetCompanyId();
             var profile = await companyRepository.GetCompanyProfileDetail(cp => cp.CompanyId == companyId);
             profileId = profile.Id;
         }
@@ -200,7 +203,7 @@ public class CompanyService : ICompanyService
 
     public async Task<Result> RequestNewJobPosition(ContactDto contact)
     {
-        var companyId = identityServerService.GetCompanyId();
+        var companyId = currentUserService.GetCompanyId();
         var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == companyId);
         contact.Email = companyProfile.Company.Email;
         var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnContactAgency/AgencyTemplate.cshtml", contact);
@@ -210,7 +213,7 @@ public class CompanyService : ICompanyService
 
     public async Task<Result> RequestNewWorker(Guid requestId, CommentsModel model)
     {
-        var companyId = identityServerService.GetCompanyId();
+        var companyId = currentUserService.GetCompanyId();
         var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == companyId);
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
@@ -230,7 +233,7 @@ public class CompanyService : ICompanyService
 
     public async Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter)
     {
-        var companyId = identityServerService.GetCompanyId();
+        var companyId = currentUserService.GetCompanyId();
         var companyDetail = await companyRepository.GetCompanyProfileDetail(cp => cp.CompanyId == companyId);
         var locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfile.CompanyId == companyId);
         var mainLocation = locations.FirstOrDefault(l => l.IsBilling);
@@ -263,7 +266,7 @@ public class CompanyService : ICompanyService
                     UserType = UserType.CompanyUser,
                     Role = CovenantConstants.Role.CompanyUser
                 };
-                var newUser = await identityServerService.CreateUser(userModel);
+                var newUser = await userAccountService.CreateUser(userModel);
                 if (newUser)
                 {
                     var entity = new CompanyUser(profile.Id, newUser.Value)
@@ -293,7 +296,7 @@ public class CompanyService : ICompanyService
         {
             companyRepository.Delete(entity);
             await companyRepository.SaveChangesAsync();
-            var identityServiceResult = await identityServerService.DeleteUserOrClaim(userId, profile.CompanyId);
+            var identityServiceResult = await userAccountService.DeleteUserOrClaim(userId, profile.CompanyId);
             if (identityServiceResult)
             {
                 return Result.Ok();
@@ -322,16 +325,16 @@ public class CompanyService : ICompanyService
 
         foreach (var userId in companyUserIds)
         {
-            var companyUserResult = await identityServerService.DeleteUserOrClaim(userId, profile.CompanyId);
+            var companyUserResult = await userAccountService.DeleteUserOrClaim(userId, profile.CompanyId);
             if (!companyUserResult) return companyUserResult;
         }
-        return await identityServerService.DeleteUserOrClaim(profile.CompanyId, profile.CompanyId);
+        return await userAccountService.DeleteUserOrClaim(profile.CompanyId, profile.CompanyId);
     }
 
     private Task<CompanyProfileIdsModel> GetCompanyProfileIds(Guid? companyProfileId) =>
         companyProfileId.HasValue
             ? companyRepository.GetCompanyProfileId(p => p.Id == companyProfileId.Value)
-            : companyRepository.GetCompanyProfileId(p => p.CompanyId == identityServerService.GetCompanyId());
+            : companyRepository.GetCompanyProfileId(p => p.CompanyId == currentUserService.GetCompanyId());
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCompany(Guid agencyId, IFormFile file)
     {
@@ -410,7 +413,7 @@ public class CompanyService : ICompanyService
 
     public async Task<Result> CreateContact(CompanyProfileContactPersonModel model)
     {
-        var profile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == identityServerService.GetCompanyId());
+        var profile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == currentUserService.GetCompanyId());
         var entity = new CompanyProfileContactPerson(profile.Id)
         {
             Title = model.Title,

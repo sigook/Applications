@@ -7,7 +7,7 @@ using Covenant.Common.Models.Security;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
-using Microsoft.AspNetCore.Http;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
@@ -18,9 +18,13 @@ public class UserAccountService(
     IUserRepository userRepository,
     IUserAdministrationService userAdministration,
     IConfiguration configuration,
-    IHttpContextAccessor httpContextAccessor,
-    ILogger<UserAccountService> logger) : IIdentityServerService
+    ICurrentUserService currentUserService,
+    IValidator<ChangeEmailModel> changeEmailValidator,
+    ILogger<UserAccountService> logger) : IUserAccountService
 {
+    public const string UserNotFound = "User not found";
+    public const string EmailEqualToCurrent = "Your new email is equal to your current email";
+
     public async Task<Result<User>> CreateUser(CreateUserModel model)
     {
         try
@@ -82,8 +86,6 @@ public class UserAccountService(
         }
     }
 
-    public Result<string> HashPassword(string password) => Result.Ok(userAdministration.HashPassword(password));
-
     public async Task<Result> InactiveUser(Guid id)
     {
         try
@@ -126,6 +128,18 @@ public class UserAccountService(
         }
     }
 
+    public async Task<Result> ChangeEmail(ChangeEmailModel model)
+    {
+        var validation = await changeEmailValidator.ValidateAsync(model);
+        if (!validation.IsValid) return validation.ToResultFailure();
+        var email = CvnEmail.Create(model.NewEmail);
+        if (!email) return email;
+        var user = await userRepository.GetUserById(currentUserService.GetUserId());
+        if (user is null) return Result.Fail(UserNotFound);
+        if (user.Email == email.Value.Email) return Result.Fail(EmailEqualToCurrent);
+        return await UpdateUserEmail(new UpdateEmailModel(user.Id) { NewEmail = email.Value.Email });
+    }
+
     public async Task<Result> UpdateUserRole(UpdateRoleModel model)
     {
         try
@@ -154,26 +168,6 @@ public class UserAccountService(
             return Result.Fail<IEnumerable<UserRoleModel>>("There was an error getting the roles please try again later");
         }
     }
-
-    public string GetNickname() => httpContextAccessor.HttpContext?.User?.GetNickname();
-
-    public Guid GetCompanyId() => httpContextAccessor.HttpContext.User.GetCompanyId();
-
-    public Guid GetAgencyId() => httpContextAccessor.HttpContext.User.GetAgencyId();
-
-    public bool IsAgencyStaff() => httpContextAccessor.HttpContext.User.IsAgencyStaff();
-
-    public Guid GetAgencyPersonnelId() => httpContextAccessor.HttpContext.User.GetAgencyPersonnelId();
-
-    public Guid GetUserId() => httpContextAccessor.HttpContext.User.GetUserId();
-
-    public bool IsAdmin() => httpContextAccessor.HttpContext.User.IsAdmin();
-
-    public bool IsSales() => httpContextAccessor.HttpContext.User.IsSales();
-
-    public bool IsSuperAdmin() => httpContextAccessor.HttpContext.User.IsSuperAdmin();
-
-    public IEnumerable<Guid> GetAgencyIds() => httpContextAccessor.HttpContext.User.GetAgencyIds();
 
     private string RandomPassword()
     {

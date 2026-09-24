@@ -47,7 +47,7 @@ public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory
         HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<CompanyProfileLocationDetailModel>();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         CompanyProfileLocation entity = await context.Set<CompanyProfileLocation>().SingleAsync(c => c.LocationId == detail.Id);
         Assert.Equal(model.Address, entity.Location.Address);
         Assert.Equal(model.PostalCode, entity.Location.PostalCode);
@@ -72,7 +72,7 @@ public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory
         var id = Startup.FakeUpdateLocation.LocationId;
         var response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}", model);
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.Set<CompanyProfileLocation>().SingleAsync(c => c.LocationId == id);
         Assert.Equal(model.Address, entity.Location.Address);
         Assert.Equal(model.PostalCode, entity.Location.PostalCode);
@@ -128,7 +128,7 @@ public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory
         Guid id = Startup.FakeDeleteLocation.LocationId;
         HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}");
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.False(await context.Set<CompanyProfileLocation>().AnyAsync(c => c.LocationId == id));
     }
 

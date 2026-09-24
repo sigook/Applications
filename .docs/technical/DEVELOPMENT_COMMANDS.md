@@ -35,24 +35,24 @@ cd Covenant.Api/Sigook.Functions && func start   # Local run (requires Azure Fun
 
 Functions (three, in two files): `NotificationSinExpiration` and `WarnLicensesExpiration` (Timer triggers, `Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs`); `CraTableUploaded` (Blob trigger, `Covenant.Api/Sigook.Functions/Functions/CraTables.cs`). They call the API over HTTP with a client-credentials token issued by the API itself (`ScheduleTasks:AccountsUrl`).
 
-## SigookApp (Flutter) - Requires Flutter `3.47.4`, JDK 17, Android SDK 36
+## SigookApp (Flutter) - Requires Flutter `3.47.4`, JDK 17, Android SDK 37
 
 ```bash
 cd SigookApp
 flutter pub get
 cp .env.example .env.staging              # Gitignored. Defaults already point at staging.
 flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
-flutter run --dart-define-from-file=.env.local -t lib/main_local.dart        # Needs Api + IdentityServer running locally
+flutter run --dart-define-from-file=.env.local -t lib/main_local.dart        # Needs Covenant.Api running locally (it also serves the OAuth endpoints)
 dart run build_runner build --delete-conflicting-outputs  # Code gen (Freezed, Riverpod)
 flutter test
 flutter analyze
 ```
 
-Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. See `.env.example` for the full variable list and the `10.0.2.2` host alias the Android emulator needs to reach local services.
+Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. See `.env.example` for the full variable list and the `10.0.2.2` host alias the Android emulator needs to reach local services. Running a release build locally (signing with the debug key) is described in `SigookApp/README.md` → *Release Build (Local)*.
 
 **Flavors are iOS-only.** `ios/Runner.xcodeproj` defines `staging` and `production` schemes, so `--flavor` works there. `android/app/build.gradle.kts` declares no `productFlavors`, so passing `--flavor` to an Android build fails.
 
-Android toolchain floor is enforced by Flutter itself and bumps with each release — 3.47.4 requires Gradle >= 8.14.0 (`android/gradle/wrapper/gradle-wrapper.properties`) and Kotlin >= 2.2.20 (`android/settings.gradle.kts`). Building with an older Flutter than the pinned one is untested.
+Android toolchain floor is enforced by Flutter itself and bumps with each release — 3.47.4 requires Gradle >= 8.14.0 (`android/gradle/wrapper/gradle-wrapper.properties`) and Kotlin >= 2.2.20 (`android/settings.gradle.kts`), and warns below Gradle 9.1.0 / AGP 9.0.1 / Kotlin 2.3.20, which is what the project uses. The app still applies the Kotlin Gradle Plugin (`android.builtInKotlin=false`) because `file_picker` and `package_info_plus` apply KGP themselves. Building with an older Flutter than the pinned one is untested.
 
 First-time Windows setup also needs **Developer Mode** enabled (`start ms-settings:developers`), otherwise `flutter pub get` aborts with *"Building with plugins requires symlink support"*.
 

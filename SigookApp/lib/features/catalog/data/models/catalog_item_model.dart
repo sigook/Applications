@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/entities/catalog_item.dart';
 
 class CatalogItemModel extends CatalogItem {
-  const CatalogItemModel({required super.id, required super.value});
+  const CatalogItemModel({required super.id, required super.value, super.code});
 
   static CatalogItemModel? fromJsonSafe(Map<String, dynamic> json) {
     try {
@@ -31,8 +31,13 @@ class CatalogItemModel extends CatalogItem {
           json['countryId'];
 
       final id = rawId?.toString();
+      final rawCode = json['code'];
 
-      return CatalogItemModel(id: id, value: valueString);
+      return CatalogItemModel(
+        id: id,
+        value: valueString,
+        code: rawCode is int ? rawCode : null,
+      );
     } catch (e) {
       debugPrint('⚠️ Catalog: Parse error - $e');
       return null;
@@ -52,10 +57,14 @@ class CatalogItemModel extends CatalogItem {
   }
 
   factory CatalogItemModel.fromEntity(CatalogItem entity) {
-    return CatalogItemModel(id: entity.id, value: entity.value);
+    return CatalogItemModel(
+      id: entity.id,
+      value: entity.value,
+      code: entity.code,
+    );
   }
 
   CatalogItem toEntity() {
-    return CatalogItem(id: id, value: value);
+    return CatalogItem(id: id, value: value, code: code);
   }
 }

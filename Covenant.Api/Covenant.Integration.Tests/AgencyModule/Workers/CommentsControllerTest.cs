@@ -33,7 +33,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             var model = new CreateCommentModel { Comment = "Bad worker", Rate = 5 };
             HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             WorkerComment entity = await context.WorkerComments.SingleAsync();
             Assert.Equal(model.Comment, entity.Comment);
             Assert.Equal(model.Rate, entity.Rate);

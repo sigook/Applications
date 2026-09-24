@@ -4,8 +4,7 @@ import '../../../../core/network/api_client.dart';
 import '../models/worker_comment_model.dart';
 
 abstract class CommentsRemoteDataSource {
-  Future<List<WorkerCommentModel>> getComments(
-    String workerId, {
+  Future<List<WorkerCommentModel>> getComments({
     int pageSize = 10,
     int pageIndex = 1,
   });
@@ -17,14 +16,13 @@ class CommentsRemoteDataSourceImpl implements CommentsRemoteDataSource {
   CommentsRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<List<WorkerCommentModel>> getComments(
-    String workerId, {
+  Future<List<WorkerCommentModel>> getComments({
     int pageSize = 10,
     int pageIndex = 1,
   }) async {
     try {
       final response = await apiClient.dio.get(
-        '/worker/$workerId/comment',
+        '/WorkerProfile/me/Comments',
         queryParameters: {'PageSize': pageSize, 'PageIndex': pageIndex},
       );
 

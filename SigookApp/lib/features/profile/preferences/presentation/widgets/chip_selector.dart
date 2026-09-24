@@ -11,6 +11,8 @@ class ChipSelector extends StatelessWidget {
   final Set<String> selectedIds;
   final bool singleSelect;
   final void Function(String id, bool selected) onToggle;
+  final String? selectAllLabel;
+  final void Function(Set<String> ids)? onSelectAll;
 
   const ChipSelector({
     super.key,
@@ -20,6 +22,8 @@ class ChipSelector extends StatelessWidget {
     required this.selectedIds,
     required this.singleSelect,
     required this.onToggle,
+    this.selectAllLabel,
+    this.onSelectAll,
   });
 
   @override
@@ -47,38 +51,68 @@ class ChipSelector extends StatelessWidget {
         asyncValue.when(
           data: (items) {
             final list = items as List;
+            final allIds = list
+                .map((item) => (item.id as String?) ?? '')
+                .where((id) => id.isNotEmpty)
+                .toSet();
+            final allSelected =
+                allIds.isNotEmpty && selectedIds.containsAll(allIds);
             return Wrap(
               spacing: 6,
               runSpacing: 4,
-              children: list.map((item) {
-                final id = (item.id as String?) ?? '';
-                final value = item.value != null
-                    ? item.value as String
-                    : item.toString();
-                final isSelected = selectedIds.contains(id);
-                return FilterChip(
-                  label: Text(value, style: const TextStyle(fontSize: 12)),
-                  selected: isSelected,
-                  onSelected: (s) => onToggle(id, s),
-                  selectedColor:
-                      AppTheme.primaryBlue.withValues(alpha: 0.15),
-                  checkmarkColor: AppTheme.primaryBlue,
-                  labelStyle: TextStyle(
-                    color: isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
+              children: [
+                if (onSelectAll != null)
+                  FilterChip(
+                    label: Text(
+                      selectAllLabel ?? 'All',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    selected: allSelected,
+                    onSelected: (s) => onSelectAll!(s ? allIds : {}),
+                    selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.15),
+                    checkmarkColor: AppTheme.primaryBlue,
+                    labelStyle: const TextStyle(
+                      color: AppTheme.primaryBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    side: const BorderSide(color: AppTheme.primaryBlue),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 0,
+                    ),
                   ),
-                  side: BorderSide(
-                    color: isSelected
-                        ? AppTheme.primaryBlue
-                        : Colors.grey.shade300,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 0,
-                  ),
-                );
-              }).toList(),
+                ...list.map((item) {
+                  final id = (item.id as String?) ?? '';
+                  final value = item.value != null
+                      ? item.value as String
+                      : item.toString();
+                  final isSelected = selectedIds.contains(id);
+                  return FilterChip(
+                    label: Text(value, style: const TextStyle(fontSize: 12)),
+                    selected: isSelected,
+                    onSelected: (s) => onToggle(id, s),
+                    selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.15),
+                    checkmarkColor: AppTheme.primaryBlue,
+                    labelStyle: TextStyle(
+                      color: isSelected
+                          ? AppTheme.primaryBlue
+                          : AppTheme.textDark,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppTheme.primaryBlue
+                          : Colors.grey.shade300,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 0,
+                    ),
+                  );
+                }),
+              ],
             );
           },
           loading: () => const SizedBox(

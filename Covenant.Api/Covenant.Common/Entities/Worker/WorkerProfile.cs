@@ -330,6 +330,12 @@ public class WorkerProfile :
         return Result.Ok();
     }
 
+    public void RemoveResume()
+    {
+        Resume = null;
+        ResumeId = null;
+    }
+
     public Result PatchResume(ICovenantFile resume)
     {
         if (string.IsNullOrEmpty(resume?.FileName)) return Result.Ok();

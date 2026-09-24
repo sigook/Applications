@@ -14,6 +14,7 @@ class CertificatesRemoteDataSource extends ProfileBaseDatasource {
   Future<void> uploadCertificate(
     String workerId, {
     required String filePath,
+    required String description,
     required List<ProfileImageModel> existingCertificates,
   }) =>
       execute(() async {
@@ -22,9 +23,9 @@ class CertificatesRemoteDataSource extends ProfileBaseDatasource {
         final dataArray = [
           ...existingCertificates.map((c) => {
             'fileName': c.fileName ?? '',
-            'description': c.description ?? 'CERTIFICATE',
+            'description': c.description ?? '',
           }),
-          {'fileName': fileName, 'description': 'CERTIFICATE'},
+          {'fileName': fileName, 'description': description},
         ];
         formData.fields.add(MapEntry('data', jsonEncode(dataArray)));
         formData.files.add(MapEntry(

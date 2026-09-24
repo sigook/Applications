@@ -6,6 +6,7 @@ import '../../../../../../core/utils/phone_formatter.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
+import '../../../../domain/validators/profile_validators.dart';
 import '../../../../emergency/presentation/viewmodels/emergency_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/section_edit_actions.dart';
@@ -27,13 +28,48 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _healthProblemController = TextEditingController();
+  final _otherHealthProblemController = TextEditingController();
   bool _haveAllergies = false;
+  Map<String, String?> _errors = {};
+
+  void _save() {
+    setState(
+      () => _errors = {
+        'name': ProfileValidators.emergencyName(_nameController.text, 'Name'),
+        'lastName': ProfileValidators.emergencyName(
+          _lastNameController.text,
+          'Last name',
+        ),
+        'phone': ProfileValidators.phone(_phoneController.text, 'Phone'),
+        if (_haveAllergies) ...{
+          'healthProblem': ProfileValidators.healthProblem(
+            _healthProblemController.text,
+          ),
+          'otherHealthProblem': ProfileValidators.otherHealthProblem(
+            _otherHealthProblemController.text,
+          ),
+        },
+      },
+    );
+    if (_errors.values.any((e) => e != null)) return;
+    ref.read(emergencyViewModelProvider.notifier).save({
+      'haveAnyHealthProblem': _haveAllergies.toString(),
+      'healthProblem': _healthProblemController.text.trim(),
+      'otherHealthProblem': _otherHealthProblemController.text.trim(),
+      'contactEmergencyName': _nameController.text.trim(),
+      'contactEmergencyLastName': _lastNameController.text.trim(),
+      'contactEmergencyPhone': _phoneController.text,
+    });
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _lastNameController.dispose();
     _phoneController.dispose();
+    _healthProblemController.dispose();
+    _otherHealthProblemController.dispose();
     super.dispose();
   }
 
@@ -44,7 +80,12 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
     _phoneController.text = _emergencyPhoneMaskFormatter.maskText(
       profile?.contactEmergencyPhone ?? '',
     );
-    setState(() => _haveAllergies = profile?.haveAnyHealthProblem ?? false);
+    _healthProblemController.text = profile?.healthProblem ?? '';
+    _otherHealthProblemController.text = profile?.otherHealthProblem ?? '';
+    setState(() {
+      _haveAllergies = profile?.haveAnyHealthProblem ?? false;
+      _errors = {};
+    });
   }
 
   @override
@@ -52,12 +93,12 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
     final vm = ref.watch(emergencyViewModelProvider);
     final profile = ref.watch(cachedWorkerProfileProvider).asData?.value;
 
-    ref.listen(
-      emergencyViewModelProvider.select((s) => s.isEditing),
-      (prev, next) {
-        if (prev == false && next == true) _populateFields();
-      },
-    );
+    ref.listen(emergencyViewModelProvider.select((s) => s.isEditing), (
+      prev,
+      next,
+    ) {
+      if (prev == false && next == true) _populateFields();
+    });
 
     ref.listen<EmergencyState>(emergencyViewModelProvider, (prev, next) {
       if (!mounted) return;
@@ -81,13 +122,7 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
             ? ref.read(emergencyViewModelProvider.notifier).startEditing
             : null,
         onCancel: ref.read(emergencyViewModelProvider.notifier).cancelEditing,
-        onSave: () =>
-            ref.read(emergencyViewModelProvider.notifier).save({
-              'haveAnyHealthProblem': _haveAllergies.toString(),
-              'contactEmergencyName': _nameController.text,
-              'contactEmergencyLastName': _lastNameController.text,
-              'contactEmergencyPhone': _phoneController.text,
-            }),
+        onSave: _save,
       ),
       children: [
         if (vm.isEditing)
@@ -98,8 +133,10 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
               'Do you have any health problems / allergies?',
               style: TextStyle(fontSize: 14),
             ),
-            secondary: Icon(Icons.health_and_safety_outlined,
-                color: AppTheme.primaryBlue),
+            secondary: Icon(
+              Icons.health_and_safety_outlined,
+              color: AppTheme.primaryBlue,
+            ),
             activeThumbColor: AppTheme.primaryBlue,
             contentPadding: EdgeInsets.zero,
           )
@@ -109,6 +146,28 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
             value: profile?.haveAnyHealthProblem == true ? 'Yes' : 'No',
             icon: Icons.health_and_safety_outlined,
           ),
+        if (vm.isEditing
+            ? _haveAllergies
+            : profile?.haveAnyHealthProblem == true) ...[
+          ProfileInfoRow(
+            label: 'Which? *',
+            value: profile?.healthProblem ?? 'N/A',
+            icon: Icons.medical_information_outlined,
+            isEditing: vm.isEditing,
+            controller: vm.isEditing ? _healthProblemController : null,
+            errorText: _errors['healthProblem'],
+          ),
+          ProfileInfoRow(
+            label: 'Other allergies',
+            value: profile?.otherHealthProblem?.isNotEmpty == true
+                ? profile!.otherHealthProblem!
+                : 'N/A',
+            icon: Icons.medical_information_outlined,
+            isEditing: vm.isEditing,
+            controller: vm.isEditing ? _otherHealthProblemController : null,
+            errorText: _errors['otherHealthProblem'],
+          ),
+        ],
         const Padding(
           padding: EdgeInsets.only(bottom: 8),
           child: Text(
@@ -130,6 +189,7 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
           icon: Icons.person_outline,
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _nameController : null,
+          errorText: _errors['name'],
         ),
         if (vm.isEditing)
           ProfileInfoRow(
@@ -138,6 +198,7 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
             icon: Icons.person_outline,
             isEditing: true,
             controller: _lastNameController,
+            errorText: _errors['lastName'],
           ),
         ProfileInfoRow(
           label: 'Phone',
@@ -146,6 +207,7 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _phoneController : null,
           inputFormatters: vm.isEditing ? [_emergencyPhoneMaskFormatter] : null,
+          errorText: _errors['phone'],
         ),
       ],
     );

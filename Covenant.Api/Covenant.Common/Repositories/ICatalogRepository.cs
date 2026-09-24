@@ -20,7 +20,7 @@ public interface ICatalogRepository
     Task<List<BaseModel<Guid>>> GetAvailabilityTime();
     Task<List<BaseModel<Guid>>> GetDay();
     Task<List<BaseModel<Guid>>> GetGender();
-    Task<List<BaseModel<Guid>>> GetIdentificationType();
+    Task<List<IdentificationTypeModel>> GetIdentificationType();
     Task<IdentificationTypeCode> GetIdentificationTypeCode(Guid id);
     Task<List<BaseModel<Guid>>> GetLanguage();
     Task<List<BaseModel<Guid>>> GetLift();

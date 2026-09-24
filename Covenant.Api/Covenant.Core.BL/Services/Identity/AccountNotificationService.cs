@@ -1,5 +1,4 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
@@ -19,6 +18,7 @@ public class AccountNotificationService(
     IOptions<IdentityConfiguration> options,
     ILogger<AccountNotificationService> logger) : IAccountNotificationService
 {
+    private const string ConfirmYourAccount = "Confirm your account";
     private const string ConfirmAccountView = "/Views/Notifications/Identity/ConfirmAccount.cshtml";
     private const string ResetPasswordView = "/Views/Notifications/Identity/ResetPassword.cshtml";
     private const string PasswordResetCodeView = "/Views/Notifications/Identity/PasswordResetCode.cshtml";
@@ -27,25 +27,25 @@ public class AccountNotificationService(
     {
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var url = AccountLink("ConfirmEmailAddress", token, user.Id);
-        await Send(user.Email, AccountMessages.ConfirmYourAccount, ConfirmAccountView, new ConfirmAccountViewModel { Url = url, Message = message });
+        await Send(user.Email, ConfirmYourAccount, ConfirmAccountView, new ConfirmAccountViewModel { Url = url, Message = message });
     }
 
     public async Task SendConfirmAndSetPassword(CovenantUser user)
     {
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
         var url = AccountLink("CreatePassword", token, user.Id);
-        await Send(user.Email, AccountMessages.ConfirmYourAccount, ConfirmAccountView, new ConfirmAccountViewModel { Url = url, Message = AccountMessages.ConfirmAndSetPassword });
+        await Send(user.Email, ConfirmYourAccount, ConfirmAccountView, new ConfirmAccountViewModel { Url = url, Message = "Welcome to Sigook. Please confirm your account and create your password by clicking bellow." });
     }
 
     public async Task SendPasswordResetLink(CovenantUser user)
     {
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
         var url = AccountLink("ResetPassword", token, user.Id);
-        await Send(user.Email, AccountMessages.ResetPassword, ResetPasswordView, new ResetPasswordViewModel { Url = url });
+        await Send(user.Email, "Reset Password", ResetPasswordView, new ResetPasswordViewModel { Url = url });
     }
 
     public Task SendPasswordResetCode(CovenantUser user, string code, int expiresMinutes) =>
-        Send(user.Email, AccountMessages.PasswordResetCode, PasswordResetCodeView, new PasswordResetCodeViewModel { Code = code, ExpiresMinutes = expiresMinutes });
+        Send(user.Email, "Your password reset code", PasswordResetCodeView, new PasswordResetCodeViewModel { Code = code, ExpiresMinutes = expiresMinutes });
 
     private string AccountLink(string action, string token, Guid userId) =>
         $"{options.Value.IssuerUri?.TrimEnd('/')}/Account/{action}?token={Uri.EscapeDataString(token)}&id={userId}";

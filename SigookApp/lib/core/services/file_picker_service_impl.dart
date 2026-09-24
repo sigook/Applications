@@ -11,7 +11,7 @@ class FilePickerServiceImpl implements FilePickerService {
   @override
   Future<FilePickerResult> pickFile({
     List<String>? allowedExtensions,
-    int maxFileSizeMB = 10,
+    int maxFileSizeMB = FilePickerService.maxDocumentSizeMB,
   }) async {
     try {
       final FileType fileType =
@@ -58,7 +58,7 @@ class FilePickerServiceImpl implements FilePickerService {
   @override
   Future<List<FilePickerResult>> pickMultipleFiles({
     List<String>? allowedExtensions,
-    int maxFileSizeMB = 10,
+    int maxFileSizeMB = FilePickerService.maxDocumentSizeMB,
     int maxFiles = 5,
   }) async {
     try {
@@ -110,7 +110,7 @@ class FilePickerServiceImpl implements FilePickerService {
 
   @override
   Future<FilePickerResult> pickImage({
-    int maxFileSizeMB = 10,
+    int maxFileSizeMB = FilePickerService.maxDocumentSizeMB,
     bool allowCamera = false,
   }) async {
     try {

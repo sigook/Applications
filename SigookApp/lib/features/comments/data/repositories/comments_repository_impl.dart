@@ -16,8 +16,7 @@ class CommentsRepositoryImpl implements CommentsRepository {
   });
 
   @override
-  Future<Either<Failure, List<WorkerComment>>> getComments(
-    String workerId, {
+  Future<Either<Failure, List<WorkerComment>>> getComments({
     int pageSize = 10,
     int pageIndex = 1,
   }) async {
@@ -25,7 +24,6 @@ class CommentsRepositoryImpl implements CommentsRepository {
 
     try {
       final models = await datasource.getComments(
-        workerId,
         pageSize: pageSize,
         pageIndex: pageIndex,
       );

@@ -48,7 +48,8 @@ public class AgencyService : IAgencyService
     private readonly INotificationDataRepository notificationDataRepository;
     private readonly ICatalogRepository catalogRepository;
     private readonly ITimeService timeService;
-    private readonly IIdentityServerService identityServerService;
+    private readonly IUserAccountService userAccountService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IDocumentService documentService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
@@ -68,7 +69,8 @@ public class AgencyService : IAgencyService
         INotificationDataRepository notificationDataRepository,
         ICatalogRepository catalogRepository,
         ITimeService timeService,
-        IIdentityServerService identityServerService,
+        IUserAccountService userAccountService,
+        ICurrentUserService currentUserService,
         IDocumentService documentService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
@@ -87,7 +89,8 @@ public class AgencyService : IAgencyService
         this.workerRequestRepository = workerRequestRepository;
         this.notificationDataRepository = notificationDataRepository;
         this.catalogRepository = catalogRepository;
-        this.identityServerService = identityServerService;
+        this.userAccountService = userAccountService;
+        this.currentUserService = currentUserService;
         this.documentService = documentService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
@@ -107,12 +110,12 @@ public class AgencyService : IAgencyService
             return companyProfileValidation.ToResultFailure<Guid>();
         }
 
-        if (identityServerService.IsSales())
+        if (currentUserService.IsSales())
         {
-            model.SalesRepresentativeId = identityServerService.GetAgencyPersonnelId();
+            model.SalesRepresentativeId = currentUserService.GetAgencyPersonnelId();
         }
 
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
 
         var rFullName = CompanyName.Create(model.FullName);
 
@@ -127,7 +130,7 @@ public class AgencyService : IAgencyService
 
         var rIndustry = CompanyProfileIndustry.Create(model.Industry.Industry, model.Industry.OtherIndustry);
 
-        var user = await identityServerService.CreateUser(new CreateUserModel
+        var user = await userAccountService.CreateUser(new CreateUserModel
         {
             Email = model.Email,
             Password = model.Password,
@@ -135,7 +138,7 @@ public class AgencyService : IAgencyService
             Role = CovenantConstants.Role.Company
         });
 
-        var createdBy = identityServerService.GetNickname();
+        var createdBy = currentUserService.GetNickname();
         var rProfile = CompanyProfile.AgencyCreateCompany(
             user.Value,
             agencyId,
@@ -166,7 +169,7 @@ public class AgencyService : IAgencyService
 
     public async Task<Result> UpdateCompany(Guid companyProfileId, CompanyProfileDetailModel model)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var fullName = CompanyName.Create(model.FullName);
         if (!fullName) return Result.Fail(fullName.Errors);
         var company = await companyRepository.GetCompanyProfile(cp => cp.Id == companyProfileId);
@@ -200,7 +203,7 @@ public class AgencyService : IAgencyService
         if (company.CompanyStatus != model.CompanyStatus)
         {
             company.CompanyStatus = model.CompanyStatus;
-            company.UpdatedBy = identityServerService.GetNickname();
+            company.UpdatedBy = currentUserService.GetNickname();
             company.UpdatedAt = DateTime.Now;
         }
         company.SalesRepresentativeId = model.SalesRepresentativeId;
@@ -352,7 +355,7 @@ public class AgencyService : IAgencyService
         if (request is null) return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
         var workerProfile = await GetWorkerProfile(workerProfileId, requestId);
         if (!workerProfile) return Result.Fail<Guid>(workerProfile.Errors);
-        var createdBy = identityServerService.GetNickname();
+        var createdBy = currentUserService.GetNickname();
         var result = request.AddWorker(workerProfileId, model.StartWorking ?? timeService.GetCurrentDateTime().Date, createdBy);
         if (!result) return result;
         await requestRepository.Update(request);
@@ -370,7 +373,7 @@ public class AgencyService : IAgencyService
 
     private Result<CompanyProfileJobPositionRate> ToJobPosition(Guid profileId, CompanyProfileJobPositionRateModel model)
     {
-        var createdBy = identityServerService.GetNickname();
+        var createdBy = currentUserService.GetNickname();
         var result = CompanyProfileJobPositionRate.Create(profileId, model.JobPosition,
             model.Rate, model.WorkerRate, model.Description, createdBy);
         if (!result) return result;
@@ -490,7 +493,7 @@ public class AgencyService : IAgencyService
         {
             return Result.Fail<CompanyProfileDocument>(covenantFile.Errors);
         }
-        var entity = new CompanyProfileDocument(companyProfileId, covenantFile.Value, identityServerService.GetNickname());
+        var entity = new CompanyProfileDocument(companyProfileId, covenantFile.Value, currentUserService.GetNickname());
         entity.DocumentType = model.DocumentType;
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
@@ -500,8 +503,8 @@ public class AgencyService : IAgencyService
 
     public async Task<PaginatedList<CompanyProfileDocumentModel>> GetCompanyDocuments(Guid compnayProfileId, Pagination pagination)
     {
-        var agencyPersonnel = await agencyRepository.GetPersonnelByUserId(identityServerService.GetUserId());
-        var isAdmin = identityServerService.IsAdmin();
+        var agencyPersonnel = await agencyRepository.GetPersonnelByUserId(currentUserService.GetUserId());
+        var isAdmin = currentUserService.IsAdmin();
         var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.Id == compnayProfileId);
         var companyDocuments = await companyRepository.GetDocuments(compnayProfileId, pagination);
         foreach (var document in companyDocuments.Items)
@@ -535,7 +538,7 @@ public class AgencyService : IAgencyService
                 if (existingUser != null)
                 {
                     var updateRole = new UpdateRoleModel { Id = currentUserId, Role = CovenantConstants.Role.Company };
-                    var roleUpdated = await identityServerService.UpdateUserRole(updateRole);
+                    var roleUpdated = await userAccountService.UpdateUserRole(updateRole);
                     if (roleUpdated)
                     {
                         var agencyPersonnel = agencyRepository.GetPersonnel(existingUser.Id);
@@ -557,7 +560,7 @@ public class AgencyService : IAgencyService
                 else
                 {
                     var updateEmail = new UpdateEmailModel { Id = currentUserId, NewEmail = email.Value };
-                    var emailUpdated = await identityServerService.UpdateUserEmail(updateEmail);
+                    var emailUpdated = await userAccountService.UpdateUserEmail(updateEmail);
                     if (emailUpdated)
                     {
                         var user = await userRepository.GetUserById(currentUserId);
@@ -595,7 +598,7 @@ public class AgencyService : IAgencyService
     }
 
     public string[] GetAssignableRoles() =>
-        identityServerService.IsSuperAdmin()
+        currentUserService.IsSuperAdmin()
             ? CovenantConstants.Role.SuperAdminAssignable
             : CovenantConstants.Role.AgencyAssignable;
 
@@ -616,7 +619,7 @@ public class AgencyService : IAgencyService
     private async Task SetPersonnelRoles(IReadOnlyCollection<AgencyPersonnelModel> personnel)
     {
         if (personnel.Count == 0) return;
-        var roles = await identityServerService.GetUsersRoles(personnel.Select(p => p.UserId));
+        var roles = await userAccountService.GetUsersRoles(personnel.Select(p => p.UserId));
         if (!roles)
         {
             logger.LogError("Unable to load the roles of the agency personnel: {Error}", roles.StringErrors);
@@ -634,7 +637,7 @@ public class AgencyService : IAgencyService
         var validation = await agencyPersonnelValidator.ValidateAsync(model);
         if (!validation.IsValid) return validation.ToResultFailure();
         var entity = await agencyRepository.GetPersonnel(id);
-        if (entity is null || entity.AgencyId != identityServerService.GetAgencyId())
+        if (entity is null || entity.AgencyId != currentUserService.GetAgencyId())
         {
             return Result.Fail("The user does not belong to this agency");
         }
@@ -644,22 +647,22 @@ public class AgencyService : IAgencyService
         }
         var email = CvnEmail.Create(model.Email);
         if (!email) return Result.Fail(email.Errors);
-        var roles = await identityServerService.GetUsersRoles([entity.UserId]);
+        var roles = await userAccountService.GetUsersRoles([entity.UserId]);
         if (!roles) return Result.Fail(roles.Errors);
         var currentRole = roles.Value.FirstOrDefault(r => r.Id == entity.UserId)?.Role;
         var roleChanged = !string.Equals(currentRole, model.Role, StringComparison.OrdinalIgnoreCase);
-        if (roleChanged && entity.UserId == identityServerService.GetUserId())
+        if (roleChanged && entity.UserId == currentUserService.GetUserId())
         {
             return Result.Fail("You cannot change your own role");
         }
         if (!string.Equals(entity.User.Email, email.Value, StringComparison.OrdinalIgnoreCase))
         {
-            var emailUpdated = await identityServerService.UpdateUserEmail(new UpdateEmailModel(entity.UserId) { NewEmail = email.Value });
+            var emailUpdated = await userAccountService.UpdateUserEmail(new UpdateEmailModel(entity.UserId) { NewEmail = email.Value });
             if (!emailUpdated) return emailUpdated;
         }
         if (roleChanged)
         {
-            var roleUpdated = await identityServerService.UpdateUserRole(new UpdateRoleModel { Id = entity.UserId, Role = model.Role });
+            var roleUpdated = await userAccountService.UpdateUserRole(new UpdateRoleModel { Id = entity.UserId, Role = model.Role });
             if (!roleUpdated) return roleUpdated;
         }
         entity.UpdateName(model.Name);
@@ -678,12 +681,12 @@ public class AgencyService : IAgencyService
         var email = CvnEmail.Create(model.Email);
         if (email)
         {
-            agencyId = agencyId ?? identityServerService.GetAgencyId();
+            agencyId = agencyId ?? currentUserService.GetAgencyId();
             var user = await userRepository.GetUserByEmail(email.Value);
             AgencyPersonnel entity = null;
             if (user == null)
             {
-                var newUser = await identityServerService.CreateUser(new CreateUserModel
+                var newUser = await userAccountService.CreateUser(new CreateUserModel
                 {
                     AgencyId = agencyId,
                     Email = email.Value,
@@ -706,7 +709,7 @@ public class AgencyService : IAgencyService
                 {
                     return Result.Fail(ApiResources.EmailAlreadyTaken);
                 }
-                var result = await identityServerService.UpdateAgencyUser(user.Id, new IdModel(agencyId.Value));
+                var result = await userAccountService.UpdateAgencyUser(user.Id, new IdModel(agencyId.Value));
                 if (!result)
                 {
                     return Result.Fail(result.Errors);
@@ -722,13 +725,13 @@ public class AgencyService : IAgencyService
 
     public async Task<Result> CreateAgency(AgencyModel model)
     {
-        var agencyParentId = identityServerService.GetAgencyId();
+        var agencyParentId = currentUserService.GetAgencyId();
         var validator = serviceProvider.GetService<IValidator<AgencyModel>>();
         var agencyValidation = await validator.ValidateAsync(model);
         if (agencyValidation.IsValid)
         {
             var agency = new Agency(model.FullName, model.PhonePrincipal);
-            var user = await identityServerService.CreateUser(new CreateUserModel
+            var user = await userAccountService.CreateUser(new CreateUserModel
             {
                 Email = model.Email,
                 UserType = UserType.Agency,

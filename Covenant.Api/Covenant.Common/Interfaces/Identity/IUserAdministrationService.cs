@@ -12,5 +12,4 @@ public interface IUserAdministrationService
     Task<Result> UpdateEmail(UpdateEmailModel model);
     Task<Result> UpdateRole(UpdateRoleModel model);
     Task<IReadOnlyList<UserRoleModel>> GetUsersRoles(IEnumerable<Guid> userIds);
-    string HashPassword(string password);
 }

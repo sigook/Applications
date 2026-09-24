@@ -612,7 +612,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
 import { useAppStore } from '@/stores/app';
@@ -624,12 +624,14 @@ import { useCreateWorker } from '@/composables/useCreateWorker';
 import { usePubSub } from '@/composables/usePubSub';
 import { filename } from '@/utils/filters';
 import { createMultipartFormData } from '@/utils/buildWorkerFormData';
+import { identificationNumberSchema } from '@/utils/validation';
 import UploadImage from '../../components/PreviewImage.vue';
 import AddressComponent from '../../components/Address.vue';
 import PhoneInput from '../../components/PhoneInput.vue';
 import EyebrowPill from '@/components/landing/shared/ui/EyebrowPill.vue';
 
 const router = useRouter();
+const route = useRoute();
 const appStore = useAppStore();
 const securityStore = useSecurityStore();
 const createWorker = useCreateWorker();
@@ -664,9 +666,10 @@ const validationSchema = computed(() => {
     birthDay: yup.mixed().required('Date of birth is required'),
     gender: yup.mixed().required('Gender is required'),
     identificationType1: yup.mixed().required('Identification type is required'),
-    identificationNumber1: yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
+    identificationNumber1: identificationNumberSchema('identificationType1'),
     email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
-    password: yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters'),
+    password: yup.string().required('Password is required').min(6, 'Min 6 characters').max(100, 'Max 100 characters')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S+$/, 'Must include an uppercase letter, a lowercase letter and a number, with no spaces'),
     confirmPassword: yup
       .string()
       .required('Confirm password is required')
@@ -674,7 +677,7 @@ const validationSchema = computed(() => {
   };
   if (hasSecondId.value) {
     shape.identificationType2 = yup.mixed().required('Identification type is required');
-    shape.identificationNumber2 = yup.string().required('Identification number is required').min(5, 'Min 5 characters').max(15, 'Max 15 characters');
+    shape.identificationNumber2 = identificationNumberSchema('identificationType2');
   }
   if (!isLogin.value) {
     shape.agreeTermsAndConditions = yup
@@ -784,11 +787,11 @@ async function registerWorkerFn() {
 
   try {
     const formData = await createMultipartFormData(worker, fileObjects);
-    const id = await registerWorker(formData);
+    const requestId = Number(route.params.requestId);
+    const id = await registerWorker(formData, Number.isInteger(requestId) && requestId > 0 ? requestId : undefined);
     isLoading.value = false;
     showAlertSuccess('Your account has been created');
-    const route = isLogin.value ? `/recruiting/workers/${id}` : '/home';
-    router.push(route);
+    router.push(isLogin.value ? `/recruiting/workers/${id}` : '/home');
   } catch (error: unknown) {
     isLoading.value = false;
     showAlertError((error as { data?: unknown }).data);

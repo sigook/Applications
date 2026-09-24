@@ -117,8 +117,10 @@ namespace Covenant.Infrastructure.Repositories
         public Task<List<BaseModel<Guid>>> GetGender() =>
             _context.Genders.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
-        public Task<List<BaseModel<Guid>>> GetIdentificationType() =>
-            _context.IdentificationTypes.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+        public Task<List<IdentificationTypeModel>> GetIdentificationType() =>
+            _context.IdentificationTypes.OrderBy(c => c.Value)
+                .Select(c => new IdentificationTypeModel { Id = c.Id, Value = c.Value, Code = c.Code })
+                .ToListAsync();
 
         public Task<IdentificationTypeCode> GetIdentificationTypeCode(Guid id) =>
             _context.IdentificationTypes.Where(c => c.Id == id).Select(c => c.Code).FirstOrDefaultAsync();

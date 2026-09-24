@@ -8,10 +8,8 @@ class GetWorkerComments {
 
   GetWorkerComments(this.repository);
 
-  Future<Either<Failure, List<WorkerComment>>> call(
-    String workerId, {
+  Future<Either<Failure, List<WorkerComment>>> call({
     int pageSize = 10,
     int pageIndex = 1,
-  }) =>
-      repository.getComments(workerId, pageSize: pageSize, pageIndex: pageIndex);
+  }) => repository.getComments(pageSize: pageSize, pageIndex: pageIndex);
 }

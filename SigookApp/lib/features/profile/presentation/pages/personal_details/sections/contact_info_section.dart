@@ -6,6 +6,7 @@ import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../contact_info/presentation/viewmodels/contact_info_viewmodel.dart';
+import '../../../../domain/validators/profile_validators.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../../registration/domain/entities/city.dart';
 import '../../../../../registration/domain/entities/country.dart';
@@ -40,6 +41,38 @@ class _ContactInfoSectionCardState
   Country? _editCountry;
   Province? _editProvince;
   City? _editCity;
+  Map<String, String?> _errors = {};
+
+  bool _validate() {
+    final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
+    final countryCode = _editCountry != null
+        ? (_editCountry!.code ?? _editCountry!.value)
+        : (profile?.countryCode ?? profile?.country);
+    setState(() => _errors = {
+      'mobileNumber': ProfileValidators.phone(
+          _mobileNumberController.text, 'Mobile number',
+          required: true),
+      'phone': ProfileValidators.phone(_phoneController.text, 'Phone'),
+      'address': ProfileValidators.address(_addressController.text),
+      'postalCode': ProfileValidators.postalCode(
+          _postalCodeController.text, countryCode),
+      'city': _editCountry != null && _editCity == null
+          ? 'Select a city to change the location'
+          : null,
+    });
+    return _errors.values.every((e) => e == null);
+  }
+
+  void _save() {
+    if (!_validate()) return;
+    ref.read(contactInfoViewModelProvider.notifier).save({
+      'mobileNumber': _mobileNumberController.text,
+      'phone': _phoneController.text,
+      'address': _addressController.text.trim(),
+      'postalCode': _postalCodeController.text.trim(),
+      if (_editCity?.id != null) 'cityId': _editCity!.id!,
+    });
+  }
 
   @override
   void dispose() {
@@ -62,6 +95,7 @@ class _ContactInfoSectionCardState
       _editCountry = null;
       _editProvince = null;
       _editCity = null;
+      _errors = {};
     });
   }
 
@@ -100,13 +134,7 @@ class _ContactInfoSectionCardState
             : null,
         onCancel:
             ref.read(contactInfoViewModelProvider.notifier).cancelEditing,
-        onSave: () => ref.read(contactInfoViewModelProvider.notifier).save({
-          'mobileNumber': _mobileNumberController.text,
-          'phone': _phoneController.text,
-          'address': _addressController.text,
-          'postalCode': _postalCodeController.text,
-          if (_editCity?.id != null) 'cityId': _editCity!.id!,
-        }),
+        onSave: _save,
       ),
       children: [
         ProfileInfoRow(
@@ -116,6 +144,7 @@ class _ContactInfoSectionCardState
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _mobileNumberController : null,
           inputFormatters: vm.isEditing ? [_mobileMaskFormatter] : null,
+          errorText: _errors['mobileNumber'],
         ),
         ProfileInfoRow(
           label: 'Phone',
@@ -124,6 +153,7 @@ class _ContactInfoSectionCardState
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _phoneController : null,
           inputFormatters: vm.isEditing ? [_phoneMaskFormatter] : null,
+          errorText: _errors['phone'],
         ),
         ProfileInfoRow(
           label: 'Email',
@@ -177,6 +207,14 @@ class _ContactInfoSectionCardState
             }),
             onCityChanged: (c) => setState(() => _editCity = c),
           ),
+          if (_errors['city'] != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                _errors['city']!,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            ),
           const SizedBox(height: 8),
         ],
         ProfileInfoRow(
@@ -185,6 +223,7 @@ class _ContactInfoSectionCardState
           icon: Icons.home_outlined,
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _addressController : null,
+          errorText: _errors['address'],
         ),
         ProfileInfoRow(
           label: 'Postal / ZIP Code',
@@ -192,6 +231,7 @@ class _ContactInfoSectionCardState
           icon: Icons.markunread_mailbox_outlined,
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _postalCodeController : null,
+          errorText: _errors['postalCode'],
         ),
       ],
     );

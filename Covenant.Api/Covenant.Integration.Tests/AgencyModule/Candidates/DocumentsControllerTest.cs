@@ -45,7 +45,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             HttpResponseMessage response = await _client.PostAsync(RequestUri(), content);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<Guid>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.CandidateDocuments.SingleAsync(c => c.DocumentId == detail);
             Assert.Equal(model.FileName, entity.Document.FileName);
             Assert.Equal(model.Description, entity.Document.Description);

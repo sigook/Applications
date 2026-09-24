@@ -14,7 +14,7 @@ namespace Covenant.Tests.Sales;
 public class SalesServiceDashboardTest
 {
     private readonly Mock<ICompanyRepository> _companyRepository = new();
-    private readonly Mock<IIdentityServerService> _identityServerService = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly Mock<ITimeService> _timeService = new();
     private readonly ISalesService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
@@ -29,14 +29,14 @@ public class SalesServiceDashboardTest
 
     public SalesServiceDashboardTest()
     {
-        _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
-        _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
+        _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
         _timeService.Setup(t => t.GetCurrentDateTimeOffset()).Returns(Now);
         _sut = new SalesService(
             Mock.Of<IRequestService>(),
             Mock.Of<IRequestRepository>(),
             _companyRepository.Object,
-            _identityServerService.Object,
+            _currentUserService.Object,
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<IDocumentService>(),
             new CreateCompanyInteractionModelValidator(),
@@ -74,7 +74,7 @@ public class SalesServiceDashboardTest
     [Fact]
     public async Task GetDealsByStatusIsNotScopedForAdmin()
     {
-        _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         Guid? capturedOwner = Guid.NewGuid();
         _companyRepository
             .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
@@ -89,7 +89,7 @@ public class SalesServiceDashboardTest
     [Fact]
     public async Task GetDealsByStatusKeepsRequestedOwnerForAdmin()
     {
-        _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         var requestedOwner = Guid.NewGuid();
         Guid? capturedOwner = null;
         _companyRepository

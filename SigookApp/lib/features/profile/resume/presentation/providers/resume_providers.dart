@@ -4,6 +4,7 @@ import '../../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/resume_remote_datasource.dart';
 import '../../data/repositories/resume_repository_impl.dart';
 import '../../domain/repositories/resume_repository.dart';
+import '../../domain/usecases/delete_resume.dart';
 import '../../domain/usecases/upload_resume.dart';
 
 final resumeDatasourceProvider = Provider<ResumeRemoteDataSource>((ref) {
@@ -21,4 +22,8 @@ final resumeRepositoryProvider = Provider<ResumeRepository>((ref) {
 
 final uploadResumeUseCaseProvider = Provider<UploadResume>((ref) {
   return UploadResume(ref.read(resumeRepositoryProvider));
+});
+
+final deleteResumeUseCaseProvider = Provider<DeleteResume>((ref) {
+  return DeleteResume(ref.read(resumeRepositoryProvider));
 });

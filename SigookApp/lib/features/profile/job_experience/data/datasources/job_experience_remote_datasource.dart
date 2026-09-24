@@ -25,7 +25,7 @@ class JobExperienceRemoteDataSource extends ProfileBaseDatasource {
             if (supervisor?.isNotEmpty ?? false) 'supervisor': supervisor,
             if (duties?.isNotEmpty ?? false) 'duties': duties,
             'startDate': startDate,
-            if (endDate != null) 'endDate': endDate,
+            'endDate': ?endDate,
             'isCurrentJobPosition': isCurrentJobPosition,
           },
         );
@@ -49,7 +49,7 @@ class JobExperienceRemoteDataSource extends ProfileBaseDatasource {
             if (supervisor?.isNotEmpty ?? false) 'supervisor': supervisor,
             if (duties?.isNotEmpty ?? false) 'duties': duties,
             'startDate': startDate,
-            if (endDate != null) 'endDate': endDate,
+            'endDate': ?endDate,
             'isCurrentJobPosition': isCurrentJobPosition,
           },
         );

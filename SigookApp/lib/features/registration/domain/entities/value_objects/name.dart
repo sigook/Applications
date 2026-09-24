@@ -2,18 +2,15 @@ import 'package:equatable/equatable.dart';
 
 class Name extends Equatable {
   final String value;
+  final int minLength;
 
-  const Name(this.value);
+  const Name(this.value, {this.minLength = 2});
 
-  static const int minLength = 2;
+  static const int maxLength = 20;
 
-  static const int maxLength = 50;
+  static final RegExp _allowed = RegExp(r"^[\p{L}\s\-']+$", unicode: true);
 
-  bool get isValid {
-    if (value.isEmpty) return false;
-    if (value.length < minLength || value.length > maxLength) return false;
-    return RegExp(r"^[\p{L}\s\-']+$", unicode: true).hasMatch(value);
-  }
+  bool get isValid => errorMessage == null;
 
   String? get errorMessage {
     if (value.isEmpty) return 'Name is required';
@@ -21,9 +18,9 @@ class Name extends Equatable {
       return 'Name must be at least $minLength characters';
     }
     if (value.length > maxLength) {
-      return 'Name must be less than $maxLength characters';
+      return 'Name must be at most $maxLength characters';
     }
-    if (!RegExp(r"^[\p{L}\s\-']+$", unicode: true).hasMatch(value)) {
+    if (!_allowed.hasMatch(value)) {
       return 'Name can only contain letters, spaces, hyphens, or apostrophes';
     }
     return null;

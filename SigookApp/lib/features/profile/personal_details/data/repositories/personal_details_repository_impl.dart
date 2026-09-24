@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/network/network_info.dart';
+import '../../../data/models/worker_profile_model.dart';
 import '../../../data/repositories/profile_repository_helpers.dart';
 import '../datasources/personal_details_remote_datasource.dart';
 import '../../domain/repositories/personal_details_repository.dart';
@@ -23,6 +24,13 @@ class PersonalDetailsRepositoryImpl implements PersonalDetailsRepository {
           middleName: fields['middleName'] ?? current.middleName,
           lastName: fields['lastName'] ?? current.lastName,
           secondLastName: fields['secondLastName'] ?? current.secondLastName,
+          birthDay: fields['birthDay'] ?? current.birthDay,
+          gender: fields['genderId'] != null
+              ? CatalogItemModel(
+                  id: fields['genderId'],
+                  value: fields['genderValue'],
+                )
+              : current.gender,
           hasVehicle: fields['hasVehicle'] != null
               ? fields['hasVehicle'] == 'true'
               : current.hasVehicle,

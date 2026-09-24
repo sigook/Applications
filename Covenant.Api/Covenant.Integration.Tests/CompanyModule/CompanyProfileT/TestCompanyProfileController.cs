@@ -76,9 +76,9 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyProfileT
                 agencyRepositoryMock.Setup(ar => ar.GetAgencyMasterByLocation(It.IsAny<CityModel>())).ReturnsAsync(MasterAgency);
                 services.AddSingleton(agencyRepositoryMock.Object);
                 services.AddSingleton<ITimeService, TimeService>();
-                var identityServerService = new Mock<IIdentityServerService>();
-                identityServerService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("company@company.com", FakeCompanyId)));
-                services.AddSingleton(identityServerService.Object);
+                var userAccountService = new Mock<IUserAccountService>();
+                userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("company@company.com", FakeCompanyId)));
+                services.AddSingleton(userAccountService.Object);
                 services.AddSingleton<CompanyIdFilter>();
             }
 

@@ -26,6 +26,7 @@ class LicensesViewModel extends _$LicensesViewModel {
 
   Future<void> upload({
     required String filePath,
+    required String description,
     required String number,
     required String issued,
     required String expires,
@@ -34,6 +35,7 @@ class LicensesViewModel extends _$LicensesViewModel {
 
     final result = await ref.read(uploadLicenseUseCaseProvider)(
       filePath: filePath,
+      description: description,
       number: number,
       issued: issued,
       expires: expires,

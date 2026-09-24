@@ -40,7 +40,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             HttpResponseMessage response = await client.PutAsJsonAsync(url, new UpdateEmailModel { NewEmail = newEmail });
             response.EnsureSuccessStatusCode();
 
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             User updatedUser = await context.Users.FirstAsync(f => f.Id == Startup.FakeCompany.CompanyId);
             Assert.Equal(newEmail.Email, updatedUser.Email);
         }
@@ -58,10 +58,10 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                 services.AddHttpClient();
                 services.AddTestDatabase();
                 services.AddSingleton<IAgencyService, AgencyService>();
-                var identityServerService = new Mock<IIdentityServerService>();
-                identityServerService.Setup(m => m.UpdateUserEmail(It.IsAny<UpdateEmailModel>())).ReturnsAsync(Result.Ok());
-                identityServerService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
-                services.AddSingleton(identityServerService.Object);
+                var userAccountService = new Mock<IUserAccountService>();
+                userAccountService.Setup(m => m.UpdateUserEmail(It.IsAny<UpdateEmailModel>())).ReturnsAsync(Result.Ok());
+                userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
+                services.AddSingleton(userAccountService.Object);
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();

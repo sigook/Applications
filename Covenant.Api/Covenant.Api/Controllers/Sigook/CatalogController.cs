@@ -12,7 +12,6 @@ namespace Covenant.Api.Controllers.Sigook;
 
 [Route(RouteName)]
 [ApiController]
-[AllowAnonymous]
 public class CatalogController(ICatalogRepository repository) : ControllerBase
 {
     public const string RouteName = "api/Catalog";
@@ -71,7 +70,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     /// <summary>Gets the list of identification type options.</summary>
     [HttpGet("identificationType")]
     [ResponseCache(Duration = 3600)]
-    [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<IdentificationTypeModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetIdentificationType()
     {
         var identificationTypes = await _repository.GetIdentificationType();

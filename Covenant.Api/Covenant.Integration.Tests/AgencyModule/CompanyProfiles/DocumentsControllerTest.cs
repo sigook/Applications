@@ -51,7 +51,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             HttpResponseMessage response = await _client.PostAsync(RequestUri(), content);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<Guid>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.CompanyProfileDocuments.SingleAsync(c => c.DocumentId == detail);
             Assert.NotNull(entity.CreatedBy);
             Assert.True(entity.CreatedAt <= DateTime.Now);

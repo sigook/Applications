@@ -17,6 +17,7 @@ class LicensesRepositoryImpl implements LicensesRepository {
   @override
   Future<Either<Failure, void>> upload({
     required String filePath,
+    required String description,
     required String number,
     required String issued,
     required String expires,
@@ -26,6 +27,7 @@ class LicensesRepositoryImpl implements LicensesRepository {
         await datasource.uploadLicense(
           profile.id,
           filePath: filePath,
+          description: description,
           number: number,
           issued: issued,
           expires: expires,

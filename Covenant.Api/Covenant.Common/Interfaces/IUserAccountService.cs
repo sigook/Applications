@@ -1,28 +1,18 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Security;
 
 namespace Covenant.Common.Interfaces;
 
-public interface IIdentityServerService
+public interface IUserAccountService
 {
     Task<Result<User>> CreateUser(CreateUserModel model);
     Task<Result> UpdateAgencyUser(Guid userId, IdModel agency);
     Task<Result> DeleteUserOrClaim(Guid userId, IdModel claim);
-    Result<string> HashPassword(string password);
     Task<Result> InactiveUser(Guid id);
     Task<Result> UpdateUserEmail(UpdateEmailModel model);
+    Task<Result> ChangeEmail(ChangeEmailModel model);
     Task<Result> UpdateUserRole(UpdateRoleModel model);
     Task<Result<IEnumerable<UserRoleModel>>> GetUsersRoles(IEnumerable<Guid> userIds);
-    Guid GetCompanyId();
-    Guid GetAgencyId();
-    Guid GetAgencyPersonnelId();
-    string GetNickname();
-    Guid GetUserId();
-    bool IsAdmin();
-    bool IsAgencyStaff();
-    bool IsSales();
-    bool IsSuperAdmin();
-    IEnumerable<Guid> GetAgencyIds();
 }

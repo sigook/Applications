@@ -28,6 +28,10 @@ public class AuthorizationController(
     ILogger<AuthorizationController> logger) : Controller
 {
     private const string ExternalProviderAcrValue = "idp:" + Microsoft365OpenIdConnect.Scheme;
+    private const string InvalidCredentials = "invalid_credentials";
+    private const string InactiveUser = "inactive_user";
+    private const string EmailNotConfirmed = "email_not_confirmed";
+    private const string LockedOut = "locked_out";
 
     [HttpGet("~/connect/authorize"), HttpPost("~/connect/authorize")]
     [IgnoreAntiforgeryToken]
@@ -174,30 +178,30 @@ public class AuthorizationController(
         if (user is null)
         {
             logger.LogWarning("Native login failed: user not found for {Email}", request.Username);
-            return InvalidGrant(SignInErrors.InvalidCredentials);
+            return InvalidGrant(InvalidCredentials);
         }
 
         if (await identityRepository.IsInactive(user.Id))
         {
             logger.LogWarning("Native login failed: user is inactive. UserId={UserId}", user.Id);
-            return InvalidGrant(SignInErrors.InactiveUser);
+            return InvalidGrant(InactiveUser);
         }
 
         var passwordCheck = await signInManager.CheckPasswordSignInAsync(user, request.Password ?? string.Empty, lockoutOnFailure: true);
         if (passwordCheck.IsLockedOut)
         {
             logger.LogWarning("Native login failed: user is locked out. UserId={UserId}", user.Id);
-            return InvalidGrant(SignInErrors.LockedOut);
+            return InvalidGrant(LockedOut);
         }
         if (!passwordCheck.Succeeded)
         {
             logger.LogWarning("Native login failed: invalid password for {Email}", request.Username);
-            return InvalidGrant(SignInErrors.InvalidCredentials);
+            return InvalidGrant(InvalidCredentials);
         }
         if (!await userManager.IsEmailConfirmedAsync(user))
         {
             logger.LogWarning("Native login failed: email not confirmed for {Email}", request.Username);
-            return InvalidGrant(SignInErrors.EmailNotConfirmed);
+            return InvalidGrant(EmailNotConfirmed);
         }
 
         logger.LogInformation("Native login succeeded for UserId={UserId}", user.Id);

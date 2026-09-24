@@ -60,7 +60,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<TimeSheetListModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             TimeSheet entity = await context.TimeSheets.SingleAsync(c => c.Id == detail.Id);
             var totalHours = model.Hours;
             Assert.Equal(detail.Id, entity.Id);
@@ -131,7 +131,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
-                services.AddSingleton<IIdentityServerService, UserAccountService>();
+                services.AddSingleton<IUserAccountService, UserAccountService>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);
                 services.AddSingleton(Rates.DefaultRates);
                 var timeService = new Mock<ITimeService>();

@@ -13,6 +13,9 @@ abstract class ResumeState with _$ResumeState {
     @Default(false) bool isUploading,
     String? uploadError,
     @Default(false) bool justUploaded,
+    @Default(false) bool isDeleting,
+    String? deleteError,
+    @Default(false) bool justDeleted,
   }) = _ResumeState;
 }
 
@@ -38,6 +41,23 @@ class ResumeViewModel extends _$ResumeViewModel {
           name: 'profile_section_saved',
           parameters: {'section': 'resume'},
         );
+      },
+    );
+  }
+
+  Future<void> delete() async {
+    state = state.copyWith(isDeleting: true, deleteError: null, justDeleted: false);
+
+    final result = await ref.read(deleteResumeUseCaseProvider)();
+
+    result.fold(
+      (failure) => state = state.copyWith(
+        isDeleting: false,
+        deleteError: failure.message,
+      ),
+      (_) {
+        state = state.copyWith(isDeleting: false, justDeleted: true);
+        ref.invalidate(cachedWorkerProfileProvider);
       },
     );
   }

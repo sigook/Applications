@@ -38,7 +38,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<PhoneNumberModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.CandidatePhones.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(detail.Id, entity.Id);
             Assert.Equal(model.PhoneNumber, entity.PhoneNumber);
@@ -60,7 +60,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Guid id = Startup.FakeDeletePhone.Id;
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.False(await context.CandidatePhones.AnyAsync(c => c.Id == id));
         }
 

@@ -3,4 +3,5 @@ import '../../../../../core/error/failures.dart';
 
 abstract class ResumeRepository {
   Future<Either<Failure, void>> upload(String filePath);
+  Future<Either<Failure, void>> delete();
 }

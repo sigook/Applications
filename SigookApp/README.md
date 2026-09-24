@@ -408,8 +408,6 @@ CacheException           →  CacheFailure
 
 The `.vscode/` folder is gitignored, so you must create it manually. Copy the block below and save it as `.vscode/launch.json` at the root of `SigookApp/`:
 
-Copy the block below and save it as `.vscode/launch.json`:
-
 ```json
 {
   "version": "0.2.0",
@@ -524,3 +522,41 @@ flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 # Production
 flutter build apk --dart-define-from-file=.env.production -t lib/main_production.dart --release
 ```
+
+### Devices
+
+```bash
+flutter devices                              # Connected phones, emulators and simulators
+flutter emulators                            # Available Android emulators (AVDs)
+flutter emulators --launch <emulator-id>     # Boot one
+```
+
+A physical Android phone needs *Developer options → USB debugging* enabled. When several devices are connected, pick one with `-d <device-id>`. In the Android emulator, `Ctrl+←` / `Ctrl+→` rotates the screen.
+
+### Release Build (Local)
+
+Release builds are the only ones that run R8 (minification, obfuscation, resource shrinking), so they are the way to check a change to `android/app/proguard-rules.pro`, the Gradle toolchain or anything that behaves differently under R8.
+
+The `release` signing config reads `android/key.properties` (gitignored) and fails with *"Keystore file … not found"* without it. The real keystore only lives in the CI pipeline; locally, sign with the debug key:
+
+```properties
+# android/key.properties
+storeFile=C:/Users/<you>/.android/debug.keystore
+storePassword=android
+keyAlias=androiddebugkey
+keyPassword=android
+```
+
+On macOS/Linux the keystore is at `~/.android/debug.keystore`. It is created the first time you run a debug build.
+
+```bash
+# Install and run on the connected device
+flutter run --release --dart-define-from-file=.env.staging -t lib/main_staging.dart
+
+# Or build the artifacts Play Console receives
+flutter build appbundle --release --dart-define-from-file=.env.staging -t lib/main_staging.dart
+```
+
+- The R8 mapping lands in `build/app/outputs/mapping/release/mapping.txt`; use it to resolve obfuscated class names reported by Play Console (e.g. `c.u.b`). `seeds.txt` next to it lists the classes kept by `-keep` rules.
+- A build signed with the debug key cannot be uploaded to Play and cannot update an install that came from the store; uninstall that one first.
+- Delete `android/key.properties` when you are done.

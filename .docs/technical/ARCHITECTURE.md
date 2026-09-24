@@ -178,6 +178,7 @@ Two coexisting layouts:
 |---|---|
 | `Controllers/Identity/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (Razor login, logout, confirm email, create/reset password, resend confirmation), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/`, `/Home/Success`, `/Home/InvalidUser`, `/Home/Error`). All excluded from the OpenAPI document |
 | `Controllers/Sigook/` | `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint) |
+| `Controllers/Sigook/Account/` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/Account/ChangeEmail`, `GET api/Account/GetEmail`, `PATCH /identity` to deactivate — routes kept because installed SigookApp builds call them), `UserNotificationController` (`api/UserNotification` preferences) |
 | `Controllers/Sigook/Agency/` | `AgencyController`, `AgencyLocationController`, `NotificationsController` |
 | `Controllers/Sigook/Agency/Accounting/` | `InvoicesController`, `PayStubsController`, `ReportsController`, `LocationTaxController`, `DeductionsController` |
 | `Controllers/Sigook/Agency/CompanyProfiles/` | company detail: profile, contacts, documents, invoice notes/recipients, job positions, locations, logo, notes, users |
@@ -194,7 +195,6 @@ Two coexisting layouts:
 | `Controllers/Sigook/Company/Workers/` | `CommentsController` |
 | `Controllers/WebSite/` | `WebSiteController` (public marketing endpoints) |
 | `Controllers/Jobs/` | `ScheduleTasksController` (called by Sigook.Functions timers) |
-| `Security/Controllers/` | `ApiAccountController` (`api/Account`: change email, claims, hash password), `IdentityController`, `UserNotificationController` |
 
 **2. Module folders** under `Covenant.Api/{Module}Module/{Resource}/Controllers/`:
 
@@ -230,8 +230,13 @@ Identity lives under `Services/Identity/` (interfaces in `Covenant.Common/Interf
 
 - `UserAdministrationService` — creates users (with confirmation emails), agency/company claims,
   role changes, email changes, deactivation (adds `InactiveUsers` and revokes OpenIddict tokens).
-  `Covenant.Infrastructure/Services/UserAccountService.cs` implements `IIdentityServerService` on
-  top of it and keeps the `Users` mirror table of the API database in sync.
+  `Covenant.Infrastructure/Services/UserAccountService.cs` implements `IUserAccountService` on
+  top of it and keeps the `Users` mirror table of the API database in sync. The split follows the
+  two databases: integration tests replace `IUserAdministrationService` with a mock and run the real
+  `UserAccountService` without an identity database.
+- `ICurrentUserService` (`Covenant.Infrastructure/Services/CurrentUserService.cs`) — who is calling:
+  user, company, agency and personnel ids, nickname and role checks, read from the claims of the
+  current `HttpContext`. Services use it instead of reading `HttpContext` themselves.
 - `AccountNotificationService` — confirmation / set-password / reset-password links (rendered from
   `Covenant.Api/Views/Notifications/Identity/`) and the 6-digit reset code email.
 - `UserSessionValidator` — the session kill switch (`InactiveUsers` + Microsoft Graph
@@ -272,7 +277,7 @@ Scripts/          raw SQL (views, functions, stored procedures) run at startup
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
-                  UserAccountService (IIdentityServerService), Microsoft365AccountService (Graph
+                  UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
                   accountEnabled check), TimeService, CraPdfParser (PdfPig reader for the CRA
                   deduction tables), SigookBusClient / SigookBusAdministrationClient (Service Bus)
 Services/Storage/ Azure Blob containers, one class per container (see below)

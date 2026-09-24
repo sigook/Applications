@@ -41,7 +41,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             HttpResponseMessage response = await _client.PutAsJsonAsync(url, new UpdateEmailModel { NewEmail = newEmail });
             response.EnsureSuccessStatusCode();
 
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             User updatedUser = await context.Users.FirstAsync(f => f.Id == Startup.FakeWorker.WorkerId);
             Assert.Equal(newEmail.Email, updatedUser.Email);
         }
@@ -69,7 +69,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 services.AddHttpClient();
                 services.AddTestDatabase();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
-                services.AddSingleton<IIdentityServerService, UserAccountService>();
+                services.AddSingleton<IUserAccountService, UserAccountService>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }

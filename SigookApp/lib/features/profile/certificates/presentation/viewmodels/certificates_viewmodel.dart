@@ -24,10 +24,16 @@ class CertificatesViewModel extends _$CertificatesViewModel {
   @override
   CertificatesState build() => const CertificatesState();
 
-  Future<void> upload(String filePath) async {
+  Future<void> upload({
+    required String filePath,
+    required String description,
+  }) async {
     state = state.copyWith(isUploading: true, uploadError: null, justUploaded: false);
 
-    final result = await ref.read(uploadCertificateUseCaseProvider)(filePath);
+    final result = await ref.read(uploadCertificateUseCaseProvider)(
+      filePath: filePath,
+      description: description,
+    );
 
     result.fold(
       (failure) => state = state.copyWith(

@@ -17,7 +17,7 @@ namespace Covenant.Api.Controllers.Sigook.Company;
 public class UsersController(
     ICompanyService companyService,
     ICompanyRepository companyRepository,
-    IIdentityServerService identityServerService) : ControllerBase
+    ICurrentUserService currentUserService) : ControllerBase
 {
     public const string RouteName = "api/company/Users";
 
@@ -76,7 +76,7 @@ public class UsersController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById()
     {
-        var id = identityServerService.GetUserId();
+        var id = currentUserService.GetUserId();
         var model = await companyRepository.GetCompanyUserDetail(id);
         if (model is null) return NotFound();
         return Ok(model);

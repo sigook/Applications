@@ -135,15 +135,15 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
 
                 services.AddTestDatabase();
 
-                var identityServerService = new Mock<IIdentityServerService>();
-                identityServerService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>()))
+                var userAccountService = new Mock<IUserAccountService>();
+                userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>()))
                     .ReturnsAsync(Result.Ok(new User(FakeWorker.Email, FakeWorker.Id)));
 
                 var teamNotification = new Mock<ITeamsService>();
                 teamNotification.Setup(t => t.SendNotification(It.IsAny<string>(), It.IsAny<TeamsNotificationModel>()))
                     .ReturnsAsync(Result.Ok());
 
-                services.AddSingleton(identityServerService.Object);
+                services.AddSingleton(userAccountService.Object);
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();

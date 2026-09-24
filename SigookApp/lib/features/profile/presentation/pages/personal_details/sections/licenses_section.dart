@@ -11,6 +11,7 @@ import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../licenses/presentation/viewmodels/licenses_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../licenses/presentation/widgets/license_card.dart';
+import '../../../widgets/document_description_field.dart';
 import '../../../widgets/pending_file_row.dart';
 import '../../../widgets/upload_action_row.dart';
 
@@ -25,12 +26,15 @@ class LicensesSectionCard extends ConsumerStatefulWidget {
 class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
   PickedFileData? _pendingFile;
   final _licenseNumberController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  String? _descriptionError;
   DateTime? _issuedDate;
   DateTime? _expiresDate;
 
   @override
   void dispose() {
     _licenseNumberController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -71,7 +75,7 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
   Future<void> _pickFile() async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: FilePickerService.documentExtensions);
     if (!result.isSuccess || result.file == null) return;
     setState(() => _pendingFile = result.file);
   }
@@ -103,6 +107,10 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
 
   Future<void> _upload() async {
     if (_pendingFile == null) return;
+    final descriptionError =
+        DocumentDescriptionField.validate(_descriptionController.text);
+    setState(() => _descriptionError = descriptionError);
+    if (descriptionError != null) return;
     if (_licenseNumberController.text.isEmpty ||
         _issuedDate == null ||
         _expiresDate == null) {
@@ -111,6 +119,7 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
     }
     await ref.read(licensesViewModelProvider.notifier).upload(
       filePath: _pendingFile!.path,
+      description: _descriptionController.text.trim(),
       number: _licenseNumberController.text,
       issued: _issuedDate!.toUtc().toIso8601String(),
       expires: _expiresDate!.toUtc().toIso8601String(),
@@ -121,6 +130,8 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
     setState(() {
       _pendingFile = null;
       _licenseNumberController.clear();
+      _descriptionController.clear();
+      _descriptionError = null;
       _issuedDate = null;
       _expiresDate = null;
     });
@@ -134,12 +145,7 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
     ref.listen<LicensesState>(licensesViewModelProvider, (prev, next) {
       if (!mounted) return;
       if (next.justUploaded && !(prev?.justUploaded ?? false)) {
-        setState(() {
-          _pendingFile = null;
-          _licenseNumberController.clear();
-          _issuedDate = null;
-          _expiresDate = null;
-        });
+        _cancel();
         showProfileSuccess(context, 'License uploaded successfully!');
       }
       if (next.uploadError != null && next.uploadError != prev?.uploadError) {
@@ -194,6 +200,16 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
                   : 'License file',
             ),
           ),
+          DocumentDescriptionField(
+            controller: _descriptionController,
+            errorText: _descriptionError,
+            onChanged: (_) {
+              if (_descriptionError != null) {
+                setState(() => _descriptionError = null);
+              }
+            },
+          ),
+          const SizedBox(height: 12),
           TextField(
             controller: _licenseNumberController,
             decoration: InputDecoration(

@@ -3,7 +3,6 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Common.Models;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -56,30 +55,5 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
             if (model is null) return NotFound();
             return Ok(model);
         }
-
-        /// <summary>
-        /// Gets the detail of a worker profile by its identifier.
-        /// </summary>
-        /// <param name="repository">Worker repository service.</param>
-        /// <param name="profileId">Identifier of the worker profile.</param>
-        [HttpGet("{profileId}")]
-        [ProducesResponseType(typeof(WorkerProfileDetailModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> GetById([FromServices] IWorkerRepository repository, Guid profileId)
-        {
-            var model = await repository.GetWorkerProfileDetail(wp => wp.Id == profileId);
-            if (model is null) return NotFound();
-            return Ok(model);
-        }
-
-        /// <summary>
-        /// Lists the other documents of a worker profile.
-        /// </summary>
-        /// <param name="repository">Worker repository service.</param>
-        /// <param name="profileId">Identifier of the worker profile.</param>
-        [HttpGet("{profileId:guid}/OtherDocument")]
-        [ProducesResponseType(typeof(List<CovenantFileModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> OtherDocument([FromServices] IWorkerRepository repository, Guid profileId) =>
-            Ok(await repository.GetOtherDocuments(profileId));
     }
 }

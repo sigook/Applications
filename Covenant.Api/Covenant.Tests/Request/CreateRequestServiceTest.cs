@@ -33,7 +33,7 @@ namespace Covenant.Tests.Accounting
         private readonly Mock<IRequestRepository> _requestRepository;
         private readonly Mock<ICompanyRepository> _companyRepository;
         private readonly Mock<ILocationRepository> locationRepository;
-        private readonly Mock<IIdentityServerService> identityServerService;
+        private readonly Mock<ICurrentUserService> currentUserService;
         private readonly IRequestService _sut;
         private readonly Guid _agencyId = Guid.NewGuid();
         private readonly Guid _workerId = Guid.NewGuid();
@@ -66,8 +66,8 @@ namespace Covenant.Tests.Accounting
                     }
                 }
             });
-            identityServerService = new Mock<IIdentityServerService>();
-            identityServerService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
+            currentUserService = new Mock<ICurrentUserService>();
+            currentUserService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
             var timeService = new Mock<ITimeService>();
             _sut = new RequestService(
                 _companyRepository.Object,
@@ -77,7 +77,7 @@ namespace Covenant.Tests.Accounting
                 _requestRepository.Object,
                 Mock.Of<INotificationDataRepository>(),
                 Mock.Of<IPushNotifications>(),
-                identityServerService.Object,
+                currentUserService.Object,
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
                 Mock.Of<ISigookBusClient>(),

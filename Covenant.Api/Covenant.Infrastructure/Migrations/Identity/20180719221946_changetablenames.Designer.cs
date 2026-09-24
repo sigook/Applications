@@ -11,7 +11,7 @@ namespace Covenant.Infrastructure.Migrations.Identity
 {
     [DbContext(typeof(IdentityContext))]
     [Migration("20180719221946_changetablenames")]
-    partial class changetablenames
+    partial class ChangeTableNames
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

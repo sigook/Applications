@@ -100,7 +100,8 @@ public static class ApiServicesConfiguration
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IUploadedFilesService, UploadedFilesService>();
         services.AddScoped<IGeocodeService, GeocodeService>();
-        services.AddScoped<IIdentityServerService, UserAccountService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IUserAccountService, UserAccountService>();
         services.AddScoped<IUserAdministrationService, UserAdministrationService>();
         services.AddScoped<IAccountNotificationService, AccountNotificationService>();
         services.AddScoped<IUserSessionValidator, UserSessionValidator>();

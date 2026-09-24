@@ -41,7 +41,7 @@ final class ResumeViewModelProvider
   }
 }
 
-String _$resumeViewModelHash() => r'685f402806621e5d2012191361a52e0ac557981b';
+String _$resumeViewModelHash() => r'0126ab87a2d1e8274308b43887202b14748b6bb2';
 
 abstract class _$ResumeViewModel extends $Notifier<ResumeState> {
   ResumeState build();

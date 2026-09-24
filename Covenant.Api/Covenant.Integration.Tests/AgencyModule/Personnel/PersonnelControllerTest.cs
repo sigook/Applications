@@ -55,7 +55,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
             };
             HttpResponseMessage response = await client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var context = factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.AgencyPersonnel.FirstOrDefaultAsync(ap => ap.User.Email == model.Email);
             Assert.Equal(Data.NewUserId, entity.UserId);
             Assert.Equal(model.Email, entity.User.Email);
@@ -74,7 +74,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
             HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.False(await context.AgencyPersonnel.AnyAsync(ap => ap.User.Email == model.Email));
         }
 
@@ -95,7 +95,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
             };
             HttpResponseMessage response = await client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var context = factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = factory.Services.GetRequiredService<CovenantContext>();
             var list = await context.AgencyPersonnel.Where(w => w.UserId == _data.PersonnelExisting.UserId).ToListAsync();
             Assert.Equal(2, list.Count);
 
@@ -126,7 +126,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
             };
             HttpResponseMessage response = await client.PutAsJsonAsync($"{RequestUri()}/{entity.Id}", model);
             response.EnsureSuccessStatusCode();
-            var context = factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = factory.Services.GetRequiredService<CovenantContext>();
             var updated = await context.AgencyPersonnel.Include(ap => ap.User)
                 .SingleAsync(ap => ap.Id == entity.Id);
             Assert.Equal(model.Name, updated.Name);
@@ -229,7 +229,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
             Guid id = _data.PersonnelToDelete.Id;
             HttpResponseMessage response = await client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
-            var ctx = factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var ctx = factory.Services.GetRequiredService<CovenantContext>();
             Assert.False(await ctx.AgencyPersonnel.AnyAsync(a => a.Id == id));
             Assert.False(await ctx.Users.AnyAsync(a => a.Id == _data.PersonnelToDelete.UserId));
         }
@@ -289,7 +289,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
                 services.AddTestDatabase();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
-                services.AddSingleton<IIdentityServerService, UserAccountService>();
+                services.AddSingleton<IUserAccountService, UserAccountService>();
             }
 
 

@@ -181,7 +181,7 @@ It is the same `AgencyPersonnelModel` the `POST` takes, validated by `AgencyPers
   up to 5 minutes of cache). Deactivating a user in Sigook (`InactiveUsers`) cuts sessions the same
   way and also revokes the user's OpenIddict tokens.
 - The email moves `Email` + `UserName` in the identity database plus the local `Users` row, reusing
-  `IIdentityServerService.UpdateUserEmail` — which rejects an email that already belongs to another
+  `IUserAccountService.UpdateUserEmail` — which rejects an email that already belongs to another
   user with `EmailAlreadyTaken`. `EmailConfirmed` is untouched, so the user keeps their password and
   signs in with the new address.
 

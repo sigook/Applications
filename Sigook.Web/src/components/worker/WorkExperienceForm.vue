@@ -15,7 +15,7 @@
         <b-field :type="formErrors.supervisor ? 'is-danger' : ''"
           :message="formErrors.supervisor || ''">
           <template #label>
-            Supervisor <span class="has-text-danger">*</span>
+            Supervisor
           </template>
           <b-input type="text" v-model="supervisor" :name="'supervisor'" />
         </b-field>
@@ -49,8 +49,11 @@
         </b-field>
       </div>
       <div class="column is-6" v-if="!workExperience.isCurrentJobPosition">
-        <b-field :type="formErrors.endDate ? 'is-danger' : ''" :label="'End date'"
+        <b-field :type="formErrors.endDate ? 'is-danger' : ''"
           :message="formErrors.endDate || ''">
+          <template #label>
+            End date <span class="has-text-danger">*</span>
+          </template>
           <b-datepicker v-model="endDate" :name="'endDate'"
             :max-date="disableStartDate" :min-date="startDate" append-to-body position="is-top-right">
           </b-datepicker>
@@ -87,11 +90,13 @@ const emit = defineEmits<{ (e: 'updateExperience'): void }>();
 const schema = yup.object({
   company: yup.string().required('Company is required')
     .min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
-  supervisor: yup.string().required('Supervisor is required')
-    .min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
-  duties: yup.string().required('Duties is required').max(5000, 'Max 5000 characters'),
+  supervisor: yup.string().max(50, 'Max 50 characters')
+    .test('min-length', 'Min 2 characters', v => !v || v.trim().length >= 2),
+  duties: yup.string().required('Duties is required')
+    .min(2, 'Min 2 characters').max(5000, 'Max 5000 characters'),
   startDate: yup.mixed().required('Start date is required'),
-  endDate: yup.mixed().nullable(),
+  endDate: yup.mixed().nullable()
+    .test('required-if-not-current', 'End date is required', v => workExperience.isCurrentJobPosition || !!v),
 });
 
 const form = useStickyForm<ExperienceForm>({
@@ -144,10 +149,6 @@ function saveEditExperience(payload: any) {
 function validateAll() {
   form.markInteracted();
   form.handleSubmit((values: any) => {
-    if (!workExperience.isCurrentJobPosition && !values.endDate) {
-      showAlertError('Please make sure all required fields are filled out correctly');
-      return;
-    }
     const payload = {
       ...workExperience,
       company: values.company,

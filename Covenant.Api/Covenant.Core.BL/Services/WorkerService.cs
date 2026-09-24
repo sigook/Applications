@@ -42,7 +42,8 @@ public class WorkerService(
     INotificationRepository notificationRepository,
     IRequestRepository requestRepository,
     IWorkerRequestRepository workerRequestRepository,
-    IIdentityServerService identityServerService,
+    IUserAccountService userAccountService,
+    ICurrentUserService currentUserService,
     ITeamsService teamsNotification,
     IEmailService emailService,
     IRazorViewToStringRenderer razorViewToStringRenderer,
@@ -64,7 +65,8 @@ public class WorkerService(
     private readonly INotificationRepository notificationRepository = notificationRepository;
     private readonly IRequestRepository requestRepository = requestRepository;
     private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
-    private readonly IIdentityServerService identityServerService = identityServerService;
+    private readonly IUserAccountService userAccountService = userAccountService;
+    private readonly ICurrentUserService currentUserService = currentUserService;
     private readonly ITeamsService teamsNotification = teamsNotification;
     private readonly IEmailService emailService = emailService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
@@ -94,7 +96,7 @@ public class WorkerService(
         var agency = await agencyRepository.GetAgencyMasterByLocation(model.Location.City);
         if (agency is null) return Result.Fail<Guid>(ApiResources.AgencyNotFound);
 
-        var user = await identityServerService.CreateUser(new CreateUserModel
+        var user = await userAccountService.CreateUser(new CreateUserModel
         {
             Email = model.Email,
             Password = model.Password,
@@ -176,7 +178,7 @@ public class WorkerService(
         if (request is null || !request.IsAvailableToApply) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
 
         var workerProfile = requestId.HasValue
-            ? await workerRepository.GetProfile(p => p.WorkerId == identityServerService.GetUserId())
+            ? await workerRepository.GetProfile(p => p.WorkerId == currentUserService.GetUserId())
             : await workerRepository.GetProfile(p => p.AgencyId == request.CompanyProfile.AgencyId && p.Worker.Email.ToLower() == email.Email.ToLower());
 
         if (workerProfile is not null) return await ApplyAsWorker(request, workerProfile, model.Comments);
@@ -241,14 +243,14 @@ public class WorkerService(
 
     public Task<PaginatedList<WorkerCommentModel>> GetAgencyComments(Guid workerProfileId, Pagination pagination)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         return workerRepository.GetComments(
             c => c.WorkerProfileId == workerProfileId && c.WorkerProfile.AgencyId == agencyId, pagination);
     }
 
     public Task<PaginatedList<WorkerCommentModel>> GetMyComments(Pagination pagination)
     {
-        var workerId = identityServerService.GetUserId();
+        var workerId = currentUserService.GetUserId();
         return workerRepository.GetComments(c => c.WorkerProfile.WorkerId == workerId, pagination);
     }
 
@@ -257,7 +259,7 @@ public class WorkerService(
 
     public async Task<Result> AddCompanyComment(Guid workerProfileId, string comment, decimal rate)
     {
-        var companyId = identityServerService.GetCompanyId();
+        var companyId = currentUserService.GetCompanyId();
         var companyProfile = await companyRepository.GetCompanyProfileId(p => p.CompanyId == companyId);
         if (companyProfile is null) return Result.Fail("Company profile not found");
         return await CreateComment(WorkerComment.CommentPostByCompany(workerProfileId, companyProfile.Id, comment, rate));
@@ -363,7 +365,7 @@ public class WorkerService(
         {
             var note = WorkerProfileNote.Create(entity.Id,
                 string.Format(ApiResources.SocialInsuranceReplacedNote, previousMaskedSocialInsurance, number.MaskSIN()),
-                identityServerService.GetNickname());
+                currentUserService.GetNickname());
             if (!note) return Result.Fail(note.Errors);
             await workerRepository.Create(note.Value);
         }
@@ -389,6 +391,11 @@ public class WorkerService(
     private static Result<IEnumerable<string>> HandleResume(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<CovenantFileModel>();
+        if (string.IsNullOrEmpty(model?.FileName))
+        {
+            entity.RemoveResume();
+            return Result.Ok(Enumerable.Empty<string>());
+        }
         var result = entity.PatchResume(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
         return Result.Ok<IEnumerable<string>>([model?.FileName]);

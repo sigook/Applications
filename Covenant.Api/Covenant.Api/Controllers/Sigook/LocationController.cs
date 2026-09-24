@@ -8,7 +8,6 @@ namespace Covenant.Api.Controllers.Sigook;
 
 [Route(RouteName)]
 [ApiController]
-[AllowAnonymous]
 public class LocationController(ILocationService locationService) : ControllerBase
 {
     public const string RouteName = "api/Location";

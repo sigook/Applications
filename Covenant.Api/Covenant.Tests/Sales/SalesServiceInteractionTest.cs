@@ -18,20 +18,20 @@ namespace Covenant.Tests.Sales
     public class SalesServiceInteractionTest
     {
         private readonly Mock<ICompanyRepository> _companyRepository = new();
-        private readonly Mock<IIdentityServerService> _identityServerService = new();
+        private readonly Mock<ICurrentUserService> _currentUserService = new();
         private readonly ISalesService _sut;
         private readonly Guid _agencyId = Guid.NewGuid();
         private readonly Guid _userId = Guid.NewGuid();
 
         public SalesServiceInteractionTest()
         {
-            _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
-            _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
+            _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+            _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
                 Mock.Of<IRequestRepository>(),
                 _companyRepository.Object,
-                _identityServerService.Object,
+                _currentUserService.Object,
                 Mock.Of<IUploadedFilesService>(),
                 Mock.Of<IDocumentService>(),
                 new CreateCompanyInteractionModelValidator(),
@@ -141,7 +141,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task UpdateInteractionFailsWhenSalesUserIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             var interaction = OwnedInteraction(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
@@ -155,7 +155,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetInteractionsScopesToOwnerForSalesUser()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             GetCompanyInteractionsFilter captured = null;
             _companyRepository
                 .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
@@ -168,7 +168,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetInteractionsIsNotScopedForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             GetCompanyInteractionsFilter captured = null;
             _companyRepository
                 .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
@@ -181,7 +181,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetInteractionsKeepsRequestedOwnerForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var otherUserId = Guid.NewGuid();
             GetCompanyInteractionsFilter captured = null;
             _companyRepository
@@ -195,7 +195,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task UpdateInteractionSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var interaction = OwnedInteraction(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
@@ -208,7 +208,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task DeleteInteractionSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var interaction = OwnedInteraction(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))

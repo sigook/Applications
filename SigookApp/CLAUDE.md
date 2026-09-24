@@ -311,7 +311,9 @@ Pattern: the parent feature holds shared infrastructure (base datasource, helper
 
 ## Commands
 
-Pinned toolchain: Flutter `3.47.4`, JDK 17, Android SDK 36, Gradle 8.14.3, Kotlin 2.2.20.
+Pinned toolchain: Flutter `3.47.4`, JDK 17, Android SDK 37 (compile) / 36 (target), Gradle 9.1.0, AGP 9.0.1, Kotlin 2.3.20.
+
+Android release builds rely on the library consumer rules for R8; `android/app/proguard-rules.pro` must not add broad `-keep` rules (`io.flutter.**`, gson), since Play scores the app's optimization/obfuscation/shrinking rates. The remaining bulk of kept classes comes from plugin consumer rules (Apache Tika via `file_picker`, UCrop via `image_cropper`).
 
 ```bash
 # Run tests

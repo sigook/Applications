@@ -38,7 +38,8 @@ public class CandidateService : ICandidateService
     private readonly IAgencyRepository agencyRepository;
     private readonly IWorkerRepository workerRepository;
     private readonly ICandidateAdapter candidateAdapter;
-    private readonly IIdentityServerService identityServerService;
+    private readonly IUserAccountService userAccountService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IDocumentService documentService;
     private readonly IValidator<CandidateCsvModel> bulkCandidateValidator;
     private readonly IUploadedFilesService uploadedFilesService;
@@ -51,7 +52,8 @@ public class CandidateService : ICandidateService
         IAgencyRepository agencyRepository,
         IWorkerRepository workerRepository,
         ICandidateAdapter candidateAdapter,
-        IIdentityServerService identityServerService,
+        IUserAccountService userAccountService,
+        ICurrentUserService currentUserService,
         IDocumentService documentService,
         IValidator<CandidateCsvModel> bulkCandidateValidator,
         IUploadedFilesService uploadedFilesService,
@@ -63,7 +65,8 @@ public class CandidateService : ICandidateService
         this.agencyRepository = agencyRepository;
         this.workerRepository = workerRepository;
         this.candidateAdapter = candidateAdapter;
-        this.identityServerService = identityServerService;
+        this.userAccountService = userAccountService;
+        this.currentUserService = currentUserService;
         this.documentService = documentService;
         this.bulkCandidateValidator = bulkCandidateValidator;
         this.uploadedFilesService = uploadedFilesService;
@@ -160,11 +163,11 @@ public class CandidateService : ICandidateService
         {
             if (await userRepository.UserIsWorker(existingUser.Id))
                 return Result.Fail("This email is already associated with a worker");
-            var deleteResult = await identityServerService.DeleteUserOrClaim(existingUser.Id, new IdModel(existingUser.Id));
+            var deleteResult = await userAccountService.DeleteUserOrClaim(existingUser.Id, new IdModel(existingUser.Id));
             if (!deleteResult) return Result.Fail(deleteResult.Errors);
         }
 
-        var user = await identityServerService.CreateUser(new CreateUserModel
+        var user = await userAccountService.CreateUser(new CreateUserModel
         {
             Email = candidate.Email,
             UserType = UserType.Worker,
@@ -337,7 +340,7 @@ public class CandidateService : ICandidateService
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
         if (candidate == null) return Result.Fail();
-        candidate.Recruiter = identityServerService.GetNickname();
+        candidate.Recruiter = currentUserService.GetNickname();
         await candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();

@@ -143,7 +143,7 @@ public class WorkersController(
     [HttpPut("{workerProfileId:guid}/Email")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Email([FromServices] IIdentityServerService service, [FromRoute] Guid workerProfileId, [FromBody] UpdateEmailModel model)
+    public async Task<IActionResult> Email([FromServices] IUserAccountService service, [FromRoute] Guid workerProfileId, [FromBody] UpdateEmailModel model)
     {
         var validation = await updateEmailValidator.ValidateAsync(model);
         if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));

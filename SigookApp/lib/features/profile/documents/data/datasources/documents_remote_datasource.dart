@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../../../../core/network/api_client.dart';
+import '../../../../../core/services/file_naming_service.dart';
 import '../../../data/datasources/profile_base_datasource.dart';
 import '../../../data/models/worker_profile_model.dart';
 
@@ -16,27 +17,33 @@ class DocumentsRemoteDataSource extends ProfileBaseDatasource {
     Map<String, String>? newFilePaths,
   }) =>
       execute(() async {
-        String? resolveFileName(String key, String? Function() fallback) {
+        String? resolveFileName(
+          String key,
+          String Function(String path) generate,
+          String? Function() fallback,
+        ) {
           final path = newFilePaths?[key];
-          return path != null
-              ? ProfileBaseDatasource.basenameOf(path)
-              : fallback();
+          return path != null ? generate(path) : fallback();
         }
 
         final id1FileName = resolveFileName(
           'id1File',
+          FileNamingService.generateDocumentName,
           () => profile.identificationType1File?.fileName,
         );
         final id2FileName = resolveFileName(
           'id2File',
+          FileNamingService.generateDocumentName,
           () => profile.identificationType2File?.fileName,
         );
         final policeCheckFileName = resolveFileName(
           'policeCheckFile',
+          FileNamingService.generateDocumentName,
           () => profile.policeCheckBackGround?.fileName,
         );
         final resumeFileName = resolveFileName(
           'resumeFile',
+          FileNamingService.generateResumeName,
           () => profile.resume?.fileName,
         );
 

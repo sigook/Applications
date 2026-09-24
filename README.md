@@ -61,7 +61,7 @@ cd Sigook.Web && pnpm install && pnpm run dev
 cd Covenant.Web && pnpm install && pnpm run dev
 
 # Worker mobile app
-cd SigookApp && flutter pub get && flutter run --flavor staging -t lib/main_staging.dart
+cd SigookApp && flutter pub get && flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 ```
 
 Full command reference (tests, migrations, builds per environment): [DEVELOPMENT_COMMANDS.md](.docs/technical/DEVELOPMENT_COMMANDS.md).

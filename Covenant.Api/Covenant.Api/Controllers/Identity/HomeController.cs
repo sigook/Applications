@@ -1,6 +1,5 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Constants;
 using Covenant.Common.Models.Identity;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +14,6 @@ namespace Covenant.Api.Controllers.Identity;
 public class HomeController(IConfiguration configuration) : Controller
 {
     [HttpGet("~/")]
-    [Authorize(AuthenticationSchemes = "Identity.Application")]
     public IActionResult Index()
     {
         var webClientUrl = configuration.GetWebClientUrl();
@@ -38,7 +36,7 @@ public class HomeController(IConfiguration configuration) : Controller
     public IActionResult Success(string message)
     {
         ViewData["WebClientUrl"] = configuration.GetWebClientUrl();
-        ViewData["Message"] = string.IsNullOrEmpty(message) ? AccountMessages.ThatIsAll : message;
+        ViewData["Message"] = string.IsNullOrEmpty(message) ? "That's all, thanks" : message;
         return View();
     }
 

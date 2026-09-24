@@ -29,6 +29,10 @@ class FileNamingService {
     return generateFileName('Document', originalFilePath);
   }
 
+  static String generateSinName(String originalFilePath) {
+    return generateFileName('SIN-SSN', originalFilePath);
+  }
+
   static String generateResumeName(String originalFilePath) {
     return generateFileName('Resume', originalFilePath);
   }
@@ -39,5 +43,9 @@ class FileNamingService {
 
   static String generateCertificateName(String originalFilePath) {
     return generateFileName('Certificate', originalFilePath);
+  }
+
+  static String generateOtherDocumentName(String originalFilePath) {
+    return generateFileName('OtherDocument', originalFilePath);
   }
 }

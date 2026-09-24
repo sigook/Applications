@@ -275,5 +275,17 @@ namespace Covenant.Tests.Worker
             Assert.False(worker.HavePoliceCheckBackground);
             Assert.Equal("resume.pdf", worker.Resume.FileName);
         }
+
+        [Fact]
+        public void RemoveResumeClearsFileAndForeignKey()
+        {
+            var worker = new WorkerProfile();
+            worker.PatchResume(new CovenantFile("resume.pdf"));
+
+            worker.RemoveResume();
+
+            Assert.Null(worker.Resume);
+            Assert.Null(worker.ResumeId);
+        }
     }
 }

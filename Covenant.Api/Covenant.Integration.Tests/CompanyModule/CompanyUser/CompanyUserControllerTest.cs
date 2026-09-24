@@ -55,7 +55,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
             var response = await client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
 
-            var entity = await factory.Server.Host.Services.GetRequiredService<CovenantContext>().CompanyUsers
+            var entity = await factory.Services.GetRequiredService<CovenantContext>().CompanyUsers
                 .FirstOrDefaultAsync(cu => cu.User.Email == Startup.NewUserEmail.Email);
             Assert.Equal(Startup.NewUserId, entity.Id);
             Assert.Equal(model.Email, entity.User.Email);
@@ -79,7 +79,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
             var response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
 
-            var entity = await _factory.Server.Host.Services.GetRequiredService<CovenantContext>().CompanyUsers.FindAsync(id);
+            var entity = await _factory.Services.GetRequiredService<CovenantContext>().CompanyUsers.FindAsync(id);
             Assert.Equal(model.Name, entity.Name);
             Assert.Equal(model.Lastname, entity.Lastname);
             Assert.Equal(model.MobileNumber, entity.MobileNumber);
@@ -129,7 +129,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
             Guid id = Startup.FakeCompanyUserToDelete.Id;
             var response = await client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
-            var ctx = factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var ctx = factory.Services.GetRequiredService<CovenantContext>();
             Assert.False(await ctx.CompanyUsers.AnyAsync(a => a.Id == id));
             Assert.False(await ctx.Users.AnyAsync(a => a.Id == id));
         }
@@ -163,7 +163,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyUser
                 services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<CompanyIdFilter>();
-                services.AddSingleton<IIdentityServerService, UserAccountService>();
+                services.AddSingleton<IUserAccountService, UserAccountService>();
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

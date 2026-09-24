@@ -63,7 +63,7 @@ public class GeneratePayStubHolidayPayTest
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IPdfGeneratorService>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<IIdentityServerService>(),
+            Mock.Of<ICurrentUserService>(),
             Mock.Of<ISkipPayrollNumberRepository>(),
             Mock.Of<IMediator>(),
             rates,

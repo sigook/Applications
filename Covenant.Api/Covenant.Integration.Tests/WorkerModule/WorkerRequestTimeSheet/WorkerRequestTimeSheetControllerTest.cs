@@ -50,7 +50,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
             HttpResponseMessage response = await _client.PostAsJsonAsync(_url, payload);
             response.EnsureSuccessStatusCode();
             var model = await response.Content.ReadFromJsonAsync<RegisterTimeSheetResultModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.NotNull(context.TimeSheets.Single(s => s.Id == model.TimeSheetId).ClockIn);
         }
 
@@ -123,7 +123,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                 timeService.Setup(s => s.GetCurrentDateTime()).Returns(() => Data.Now);
                 timeService.Setup(s => s.GetCurrentDateTimeOffset()).Returns(() => new DateTimeOffset(Data.Now));
                 services.AddSingleton(timeService.Object);
-                services.AddSingleton<IIdentityServerService, UserAccountService>();
+                services.AddSingleton<IUserAccountService, UserAccountService>();
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

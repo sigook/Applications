@@ -29,6 +29,8 @@ public class AccountController(
     IConfiguration configuration,
     ILogger<AccountController> logger) : Controller
 {
+    private const string InvalidCredentials = "Invalid username or password.";
+    private const string InvalidRequest = "Invalid Request";
     private static readonly TimeSpan RememberMeDuration = TimeSpan.FromDays(30);
     private static readonly string[] HomeLinkClients = ["all2job", "all2job.us", "all2job.com", "sigook.com"];
     private static readonly string[] StaffRedirectPrefixes = ["https://staging.web.sigook.ca", "https://covenant.sigook.ca", "http://localhost:3001"];
@@ -54,26 +56,26 @@ public class AccountController(
         if (user is null)
         {
             logger.LogWarning("Login failed: user not found for {Email}", model.Username);
-            return await LoginError(model, AccountMessages.InvalidCredentials);
+            return await LoginError(model, InvalidCredentials);
         }
 
         if (await identityRepository.IsInactive(user.Id))
         {
             logger.LogWarning("Login failed: user is inactive. UserId={UserId}", user.Id);
-            return await LoginError(model, AccountMessages.InactiveUser);
+            return await LoginError(model, "You deleted your account");
         }
 
         var passwordCheck = await signInManager.CheckPasswordSignInAsync(user, model.Password, false);
         if (!passwordCheck.Succeeded)
         {
             logger.LogWarning("Login failed: invalid password for {Email}", model.Username);
-            return await LoginError(model, AccountMessages.InvalidCredentials);
+            return await LoginError(model, InvalidCredentials);
         }
 
         if (!await userManager.IsEmailConfirmedAsync(user))
         {
             logger.LogWarning("Login failed: email not confirmed for {Email}", model.Username);
-            return await LoginError(model, AccountMessages.AccountNotConfirmed, isAccountConfirmed: false);
+            return await LoginError(model, "Please confirm your account.", isAccountConfirmed: false);
         }
 
         AuthenticationProperties properties = null;
@@ -109,14 +111,14 @@ public class AccountController(
     {
         if (!ModelState.IsValid)
         {
-            ModelState.AddModelError(string.Empty, AccountMessages.InvalidRequest);
+            ModelState.AddModelError(string.Empty, InvalidRequest);
             return View(model);
         }
 
         var user = await userManager.FindByIdAsync(model.Id);
         if (user is null)
         {
-            ModelState.AddModelError(string.Empty, AccountMessages.InvalidRequest);
+            ModelState.AddModelError(string.Empty, InvalidRequest);
             return View(model);
         }
 
@@ -186,7 +188,7 @@ public class AccountController(
     {
         if (!ModelState.IsValid) return View(model);
         await passwordResetService.RequestLink(model.Email);
-        return RedirectToAction(nameof(HomeController.Success), "Home", new { message = AccountMessages.ResetPasswordSuccess });
+        return RedirectToAction(nameof(HomeController.Success), "Home", new { message = "An email with instructions on how to reset your password has been sent to your email. Check your spam or junk folder if you don’t see the email in your inbox." });
     }
 
     [HttpPost("ResendConfirmationLink")]
@@ -197,7 +199,7 @@ public class AccountController(
         var user = await userManager.FindByEmailAsync(userName);
         if (user is null) return BadRequest();
         if (user.EmailConfirmed) return Ok();
-        await notifications.SendConfirmAccount(user, AccountMessages.ConfirmAccountGeneric);
+        await notifications.SendConfirmAccount(user, "Welcome to Sigook. Please confirm your account by clicking bellow.");
         return Ok();
     }
 

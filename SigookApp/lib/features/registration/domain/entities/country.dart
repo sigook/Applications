@@ -19,9 +19,12 @@ class Country extends Equatable {
 
   /// Returns the ISO country code, resolving from the explicit [code]
   /// field first, then falling back to matching the country [value] name.
-  String? get isoCode {
-    if (code != null && code!.isNotEmpty) return code!.toUpperCase();
-    return _nameToIsoCode[value.toLowerCase().trim()];
+  String? get isoCode => toIsoCode(code) ?? toIsoCode(value);
+
+  static String? toIsoCode(String? codeOrName) {
+    if (codeOrName == null || codeOrName.trim().isEmpty) return null;
+    final key = codeOrName.toLowerCase().trim();
+    return _nameToIsoCode[key] ?? (key.length == 2 ? key.toUpperCase() : null);
   }
 
   Map<String, dynamic> toJson() {

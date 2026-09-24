@@ -17,7 +17,6 @@ public static class UserAdministrationMock
         mock.Setup(m => m.UpdateEmail(It.IsAny<UpdateEmailModel>())).ReturnsAsync(Result.Ok());
         mock.Setup(m => m.UpdateRole(It.IsAny<UpdateRoleModel>())).ReturnsAsync(Result.Ok());
         mock.Setup(m => m.GetUsersRoles(It.IsAny<IEnumerable<Guid>>())).ReturnsAsync(roles);
-        mock.Setup(m => m.HashPassword(It.IsAny<string>())).Returns<string>(password => $"hashed:{password}");
         return mock;
     }
 }

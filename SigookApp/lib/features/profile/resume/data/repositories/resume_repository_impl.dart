@@ -20,4 +20,11 @@ class ResumeRepositoryImpl implements ResumeRepository {
         final profile = await datasource.getWorkerProfile();
         await datasource.uploadResume(profile.id, filePath: filePath);
       });
+
+  @override
+  Future<Either<Failure, void>> delete() =>
+      guardedProfileCall(networkInfo, () async {
+        final profile = await datasource.getWorkerProfile();
+        await datasource.deleteResume(profile.id);
+      });
 }

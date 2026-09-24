@@ -30,7 +30,7 @@ final commentsListProvider = FutureProvider<List<WorkerComment>>((ref) async {
   if (profile == null) return [];
 
   final useCase = ref.read(getWorkerCommentsUseCaseProvider);
-  final result = await useCase(profile.id);
+  final result = await useCase();
   return result.fold(
     (failure) => throw Exception(failure.message),
     (comments) => comments,

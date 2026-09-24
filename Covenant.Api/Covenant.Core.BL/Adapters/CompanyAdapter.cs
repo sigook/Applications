@@ -16,29 +16,21 @@ using System;
 
 namespace Covenant.Core.BL.Adapters;
 
-public class CompanyAdapter : ICompanyAdapter
+public class CompanyAdapter(IUserAccountService userAccountService, ICurrentUserService currentUserService) : ICompanyAdapter
 {
-
-    public readonly IIdentityServerService identityServerService;
-
-    public CompanyAdapter(IIdentityServerService identityServerService)
-    {
-        this.identityServerService = identityServerService;
-    }
-
     public async Task<BulkCompany> ConvertCompanyCsvToCompanyBulk(CompanyCsvModel model, Guid agencyId, BaseModel<Guid> industry, CityModel city)
     {
 
         var bulkCompany = new BulkCompany();
 
-        var user = await identityServerService.CreateUser(new CreateUserModel
+        var user = await userAccountService.CreateUser(new CreateUserModel
         {
             Email = model.ContactEmail,
             UserType = UserType.Company,
             Role = CovenantConstants.Role.Company
         });
 
-        var createdBy = identityServerService.GetNickname();
+        var createdBy = currentUserService.GetNickname();
 
         var rIndustry = CompanyProfileIndustry.Create(industry);
 

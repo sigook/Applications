@@ -766,8 +766,7 @@ Public landing site endpoints (no auth).
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getMyProfile()` | GET | `/api/WorkerProfile/me` | — | `WorkerProfile` | |
-| `registerWorker(payload)` | POST | `/api/WorkerProfile` | FormData (multipart) | `string` (profile id) | Registration |
-| `uploadWorker(id, worker)` | PUT | `/api/WorkerProfile/{id}` | `WorkerProfile` | `void` | Update profile |
+| `registerWorker(payload, requestId?)` | POST | `/api/WorkerProfile?requestId=` | FormData (multipart) | `string` (profile id) | Registration; `requestId` (request number from `/register-worker/:requestId`) also adds the new worker as applicant |
 
 ### Request History
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
