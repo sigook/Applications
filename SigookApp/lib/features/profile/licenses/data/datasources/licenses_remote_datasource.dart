@@ -15,9 +15,9 @@ class LicensesRemoteDataSource extends ProfileBaseDatasource {
     String workerId, {
     required String filePath,
     required String description,
-    required String number,
-    required String issued,
-    required String expires,
+    required String? number,
+    required String? issued,
+    required String? expires,
     required List<LicenseItemModel> existingLicenses,
   }) =>
       execute(() async {
@@ -29,9 +29,9 @@ class LicensesRemoteDataSource extends ProfileBaseDatasource {
               'fileName': l.license?.fileName ?? '',
               'description': l.license?.description ?? '',
             },
-            'number': l.number ?? '',
-            'issued': l.issued ?? '',
-            'expires': l.expires ?? '',
+            'number': l.number,
+            'issued': l.issued,
+            'expires': l.expires,
           }),
           {
             'license': {'fileName': fileName, 'description': description},

@@ -20,6 +20,7 @@ class WorkerLicense extends Equatable {
   });
 
   String get formattedIssued => _formatDate(issued);
+  bool get doesNotExpire => expires == null || expires!.isEmpty;
   String get formattedExpires => _formatDate(expires);
 
   bool get isExpired {

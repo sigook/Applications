@@ -352,7 +352,7 @@
                       </div>
                     </div>
                     <div class="columns is-multiline">
-                      <div class="column is-8">
+                      <div class="column is-6">
                         <b-field :type="itemErrors['description' + index] ? 'is-danger' : ''"
                           :message="itemErrors['description' + index] || ''">
                           <template #label>
@@ -362,7 +362,15 @@
                             :name="'description' + index" />
                         </b-field>
                       </div>
-                      <div class="column is-4">
+                      <div class="column is-2">
+                        <b-field :label="'Expires'">
+                          <b-switch v-model="item.doesExpire" :true-value="true" :false-value="false"
+                            @update:modelValue="(v: boolean) => { if (!v) item.expires = null; }">
+                            {{ item.doesExpire ? 'Yes' : 'No' }}
+                          </b-switch>
+                        </b-field>
+                      </div>
+                      <div class="column is-4" v-if="item.doesExpire">
                         <b-field :type="itemErrors['licenseExpires' + index] ? 'is-danger' : ''"
                           :message="itemErrors['licenseExpires' + index] || ''">
                           <template #label>
@@ -855,7 +863,7 @@ async function validateStep3() {
       next['description' + i] = 'Only letters, numbers, spaces and -_';
       valid = false;
     }
-    if (!item.expires) {
+    if (item.doesExpire && !item.expires) {
       next['licenseExpires' + i] = 'Expiration date is required';
       valid = false;
     }
@@ -942,7 +950,7 @@ function handleIdentificationUpload(file: File | null) {
 
 function addLicense(file: File) {
   fileObjects.licenses.push(file);
-  worker.licenses.push({ license: { fileName: file.name, description: '' } });
+  worker.licenses.push({ license: { fileName: file.name, description: '' }, doesExpire: true });
 }
 
 function handleLicenseUpload(file: File | null) {

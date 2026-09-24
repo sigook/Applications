@@ -21,13 +21,8 @@
 .claude/
 .vscode/
 
-# Environment Configuration
-# These files contain environment-specific URLs and are not committed
-.env.local
-.env.staging
-.env.production
 .env
-!.env.example
+!/android/app/src/debug/
 
 # Flutter repo-specific
 /bin/cache/

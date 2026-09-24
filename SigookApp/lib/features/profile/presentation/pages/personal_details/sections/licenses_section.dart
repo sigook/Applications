@@ -30,6 +30,8 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
   String? _descriptionError;
   DateTime? _issuedDate;
   DateTime? _expiresDate;
+  bool _expires = true;
+  String? _expiresError;
 
   @override
   void dispose() {
@@ -43,7 +45,9 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete License'),
-        content: const Text('Are you sure you want to delete this license? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this license? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -82,15 +86,15 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
 
   Future<void> _pickDate({required bool isIssued}) async {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
-      initialDate: isIssued ? (_issuedDate ?? now) : (_expiresDate ?? now),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialDate: isIssued ? (_issuedDate ?? today) : (_expiresDate ?? today),
+      firstDate: isIssued ? DateTime(2000) : today,
+      lastDate: isIssued ? today : DateTime(2100),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme:
-              const ColorScheme.light(primary: AppTheme.primaryBlue),
+          colorScheme: const ColorScheme.light(primary: AppTheme.primaryBlue),
         ),
         child: child!,
       ),
@@ -101,29 +105,32 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
         _issuedDate = picked;
       } else {
         _expiresDate = picked;
+        _expiresError = null;
       }
     });
   }
 
   Future<void> _upload() async {
     if (_pendingFile == null) return;
-    final descriptionError =
-        DocumentDescriptionField.validate(_descriptionController.text);
-    setState(() => _descriptionError = descriptionError);
-    if (descriptionError != null) return;
-    if (_licenseNumberController.text.isEmpty ||
-        _issuedDate == null ||
-        _expiresDate == null) {
-      showProfileError(context, 'Please fill in all license fields');
-      return;
-    }
-    await ref.read(licensesViewModelProvider.notifier).upload(
-      filePath: _pendingFile!.path,
-      description: _descriptionController.text.trim(),
-      number: _licenseNumberController.text,
-      issued: _issuedDate!.toUtc().toIso8601String(),
-      expires: _expiresDate!.toUtc().toIso8601String(),
-    );
+    setState(() {
+      _descriptionError = DocumentDescriptionField.validate(
+        _descriptionController.text,
+      );
+      _expiresError = _expires && _expiresDate == null
+          ? 'Expiration date is required'
+          : null;
+    });
+    if (_descriptionError != null || _expiresError != null) return;
+    final number = _licenseNumberController.text.trim();
+    await ref
+        .read(licensesViewModelProvider.notifier)
+        .upload(
+          filePath: _pendingFile!.path,
+          description: _descriptionController.text.trim(),
+          number: number.isEmpty ? null : number,
+          issued: _issuedDate?.toUtc().toIso8601String(),
+          expires: _expires ? _expiresDate!.toUtc().toIso8601String() : null,
+        );
   }
 
   void _cancel() {
@@ -134,6 +141,8 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
       _descriptionError = null;
       _issuedDate = null;
       _expiresDate = null;
+      _expires = true;
+      _expiresError = null;
     });
   }
 
@@ -149,13 +158,19 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
         showProfileSuccess(context, 'License uploaded successfully!');
       }
       if (next.uploadError != null && next.uploadError != prev?.uploadError) {
-        showProfileError(context, 'Failed to upload license: ${next.uploadError}');
+        showProfileError(
+          context,
+          'Failed to upload license: ${next.uploadError}',
+        );
       }
       if (next.justDeleted && !(prev?.justDeleted ?? false)) {
         showProfileSuccess(context, 'License deleted successfully!');
       }
       if (next.deleteError != null && next.deleteError != prev?.deleteError) {
-        showProfileError(context, 'Failed to delete license: ${next.deleteError}');
+        showProfileError(
+          context,
+          'Failed to delete license: ${next.deleteError}',
+        );
       }
     });
 
@@ -170,7 +185,9 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
               license: license,
               onPreview: license.fileUrl != null
                   ? () => _previewDocument(
-                      license.fileUrl!, license.description ?? 'License')
+                      license.fileUrl!,
+                      license.description ?? 'License',
+                    )
                   : null,
               onDelete: license.id != null
                   ? () => _confirmDelete(license.id!)
@@ -226,25 +243,31 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: DatePickerField(
-                  label: 'Issued Date',
-                  value: _issuedDate,
-                  onTap: () => _pickDate(isIssued: true),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: DatePickerField(
-                  label: 'Expires Date',
-                  value: _expiresDate,
-                  onTap: () => _pickDate(isIssued: false),
-                ),
-              ),
-            ],
+          DatePickerField(
+            label: 'Issued Date',
+            value: _issuedDate,
+            onTap: () => _pickDate(isIssued: true),
           ),
+          SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            title: const Text('Expires', style: TextStyle(fontSize: 14)),
+            value: _expires,
+            activeThumbColor: AppTheme.primaryBlue,
+            onChanged: (v) => setState(() {
+              _expires = v;
+              if (!v) {
+                _expiresDate = null;
+                _expiresError = null;
+              }
+            }),
+          ),
+          if (_expires)
+            DatePickerField(
+              label: 'Expiration Date *',
+              value: _expiresDate,
+              onTap: () => _pickDate(isIssued: false),
+              errorText: _expiresError,
+            ),
           const SizedBox(height: 12),
           UploadActionRow(
             isUploading: vm.isUploading,

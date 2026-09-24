@@ -477,27 +477,21 @@ The `.vscode/` folder is gitignored, so you must create it manually. Copy the bl
 }
 ```
 
-#### 2. Create your `.env` file
+#### 2. `.env` files
 
-The `.env.*` files are gitignored and contain real credentials — never commit them. Ask a teammate for the values, then create the file for the environment you need:
+`.env.local`, `.env.staging` and `.env.production` are committed and ready to use. They only hold public values (URLs, client id, scopes) that end up inside the binary anyway. `APP_INSIGHTS_CONNECTION_STRING` stays empty in them; CI injects it from the variable groups.
 
-```bash
-# Most common: connect to staging servers
-cp .env.example .env.staging
-# Then edit .env.staging and fill in the real values
+`.env.local` targets the Android emulator over plain HTTP (`http://10.0.2.2:5000`, the Api's `http` endpoint). The emulator does not trust the Kestrel dev certificate, so HTTPS on `44307` fails with a connection error. Cleartext to `10.0.2.2` is allowed only in debug builds (`android/app/src/debug/res/xml/debug_network_security_config.xml`).
 
-# For local backend development
-cp .env.example .env.local
-# Then edit .env.local — see URL notes below
-```
-
-**Local URL notes** — update `API_BASE_URL` and `AUTH_AUTHORITY` in `.env.local` based on your setup:
+For other targets, edit `.env.local` locally without committing the change:
 
 | Target           | API_BASE_URL                          | AUTH_AUTHORITY                  |
 | ---------------- | ------------------------------------- | ------------------------------- |
-| Android Emulator | `https://10.0.2.2:44307/api/`         | `https://10.0.2.2:44307/`       |
-| iOS Simulator    | `https://localhost:44307/api/`        | `https://localhost:44307/`      |
-| Physical device  | `https://<your-LAN-IP>:44307/api/`    | `https://<your-LAN-IP>:44307/`  |
+| Android Emulator | `http://10.0.2.2:5000/api/`           | `http://10.0.2.2:5000/`         |
+| iOS Simulator    | `http://localhost:5000/api/`          | `http://localhost:5000/`        |
+| Physical device  | `http://<your-LAN-IP>:5000/api/`      | `http://<your-LAN-IP>:5000/`    |
+
+A physical device also needs the Api listening on all interfaces and the LAN IP added to the debug network security config.
 
 #### 3. Run
 

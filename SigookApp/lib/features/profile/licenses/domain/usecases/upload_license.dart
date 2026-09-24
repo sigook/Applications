@@ -9,9 +9,9 @@ class UploadLicense {
   Future<Either<Failure, void>> call({
     required String filePath,
     required String description,
-    required String number,
-    required String issued,
-    required String expires,
+    required String? number,
+    required String? issued,
+    required String? expires,
   }) =>
       repository.upload(
         filePath: filePath,

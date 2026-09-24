@@ -40,7 +40,6 @@ Functions (three, in two files): `NotificationSinExpiration` and `WarnLicensesEx
 ```bash
 cd SigookApp
 flutter pub get
-cp .env.example .env.staging              # Gitignored. Defaults already point at staging.
 flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 flutter run --dart-define-from-file=.env.local -t lib/main_local.dart        # Needs Covenant.Api running locally (it also serves the OAuth endpoints)
 dart run build_runner build --delete-conflicting-outputs  # Code gen (Freezed, Riverpod)
@@ -48,7 +47,7 @@ flutter test
 flutter analyze
 ```
 
-Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. See `.env.example` for the full variable list and the `10.0.2.2` host alias the Android emulator needs to reach local services. Running a release build locally (signing with the debug key) is described in `SigookApp/README.md` → *Release Build (Local)*.
+Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. `.env.local`, `.env.staging` and `.env.production` are committed (public values only; `APP_INSIGHTS_CONNECTION_STRING` stays empty and CI injects it). `.env.local` reaches the local Api from the Android emulator over plain HTTP (`http://10.0.2.2:5000`), allowed only in debug builds. Running a release build locally (signing with the debug key) is described in `SigookApp/README.md` → *Release Build (Local)*.
 
 **Flavors are iOS-only.** `ios/Runner.xcodeproj` defines `staging` and `production` schemes, so `--flavor` works there. `android/app/build.gradle.kts` declares no `productFlavors`, so passing `--flavor` to an Android build fails.
 

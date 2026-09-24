@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Core.BL.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
@@ -51,6 +51,8 @@ public class WorkerService(
     ILogger<WorkerService> logger,
     IWorkerAdapter workerAdapter,
     IValidator<WorkerProfileCreateModel> workerProfileValidator,
+    IValidator<WorkerProfileLicenseModel> licenseValidator,
+    IValidator<CovenantFileModel> documentFileValidator,
     IHttpContextAccessor httpContextAccessor,
     IFilesContainer filesContainer,
     IDocumentService documentService,
@@ -226,10 +228,10 @@ public class WorkerService(
         var handlerResult = documentType switch
         {
             WorkerDocumentType.Identification  => await HandleIdentification(entity, form, profileId),
-            WorkerDocumentType.Licenses        => HandleLicenses(entity, form),
-            WorkerDocumentType.Certificates    => HandleCertificates(entity, form),
-            WorkerDocumentType.Resume          => HandleResume(entity, form),
-            WorkerDocumentType.OtherDocument   => HandleOtherDocument(entity, form),
+            WorkerDocumentType.Licenses        => await HandleLicenses(entity, form),
+            WorkerDocumentType.Certificates    => await HandleCertificates(entity, form),
+            WorkerDocumentType.Resume          => await HandleResume(entity, form),
+            WorkerDocumentType.OtherDocument   => await HandleOtherDocument(entity, form),
             WorkerDocumentType.SocialInsurance => await HandleSocialInsurance(entity, form),
             _ => throw new ArgumentOutOfRangeException(nameof(documentType))
         };
@@ -372,23 +374,40 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    private static Result<IEnumerable<string>> HandleLicenses(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleLicenses(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<List<WorkerProfileLicenseModel>>();
+        var newLicenses = model.Where(m => !entity.Licenses.Any(l => l.License.FileName == m.License?.FileName));
+        var validation = await ValidateEach(licenseValidator, newLicenses);
+        if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
         var result = entity.PatchLicenses(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
         return Result.Ok(model.Select(l => l.License?.FileName));
     }
 
-    private static Result<IEnumerable<string>> HandleCertificates(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleCertificates(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<List<CovenantFileModel>>();
+        var newCertificates = model.Where(m => !entity.Certificates.Any(c => c.Certificate.FileName == m.FileName));
+        var validation = await ValidateEach(documentFileValidator, newCertificates);
+        if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
         var result = entity.PatchCertificates(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
         return Result.Ok(model.Select(c => c.FileName));
     }
 
-    private static Result<IEnumerable<string>> HandleResume(WorkerProfile entity, IFormCollection form)
+    private static async Task<Result> ValidateEach<T>(IValidator<T> validator, IEnumerable<T> items)
+    {
+        foreach (var item in items)
+        {
+            var validationResult = await validator.ValidateAsync(item);
+            if (!validationResult.IsValid)
+                return Result.Fail(validationResult.Errors.Select(e => new ResultError(e.PropertyName, e.ErrorMessage)));
+        }
+        return Result.Ok();
+    }
+
+    private async Task<Result<IEnumerable<string>>> HandleResume(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<CovenantFileModel>();
         if (string.IsNullOrEmpty(model?.FileName))
@@ -396,14 +415,18 @@ public class WorkerService(
             entity.RemoveResume();
             return Result.Ok(Enumerable.Empty<string>());
         }
+        var previousFiles = ProfileFiles(entity);
         var result = entity.PatchResume(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
-        return Result.Ok<IEnumerable<string>>([model?.FileName]);
+        await TrackFilesCreatedByPatch(entity, previousFiles);
+        return Result.Ok<IEnumerable<string>>([model.FileName]);
     }
 
-    private static Result<IEnumerable<string>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<CovenantFileModel>();
+        var validation = await ValidateEach(documentFileValidator, model is null ? [] : [model]);
+        if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
         var fileResult = CovenantFile.Create(model);
         if (!fileResult) return Result.Fail<IEnumerable<string>>(fileResult.Errors);
         var docResult = WorkerProfileOtherDocument.Create(entity.Id, fileResult.Value);

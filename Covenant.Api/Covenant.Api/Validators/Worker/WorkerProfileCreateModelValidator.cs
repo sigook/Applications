@@ -4,6 +4,7 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Worker;
 using Covenant.Common.Resources;
+using Covenant.Common.Utils.Extensions;
 using FluentValidation;
 
 namespace Covenant.Api.Validators.Worker;
@@ -151,6 +152,8 @@ public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfile
                 license.RuleFor(l => l.License.FileName).NotEmpty()
                     .When(l => l.License != null)
                     .WithMessage(ValidationMessages.RequiredMsg(ApiResources.LicenseFile));
+                license.RuleFor(l => l.License.Description).DocumentDescription()
+                    .When(l => l.License != null);
             });
 
         RuleForEach(c => c.Certificates)
@@ -158,6 +161,14 @@ public class WorkerProfileCreateModelValidator : AbstractValidator<WorkerProfile
             {
                 certificate.RuleFor(c => c.FileName).NotEmpty()
                     .WithMessage(ValidationMessages.RequiredMsg(ApiResources.Certificates));
+                certificate.RuleFor(c => c.Description).DocumentDescription();
+            });
+
+        RuleForEach(c => c.OtherDocuments)
+            .ChildRules(document =>
+            {
+                document.RuleFor(d => d.FileName).NotEmpty();
+                document.RuleFor(d => d.Description).DocumentDescription();
             });
     }
 }

@@ -9,6 +9,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Models.WebSite;
 using Covenant.Common.Models.Worker;
@@ -63,6 +64,8 @@ public class WorkerServiceApplyTest
             Mock.Of<ILogger<WorkerService>>(),
             Mock.Of<IWorkerAdapter>(),
             Mock.Of<IValidator<WorkerProfileCreateModel>>(),
+            Mock.Of<IValidator<WorkerProfileLicenseModel>>(),
+            Mock.Of<IValidator<CovenantFileModel>>(),
             Mock.Of<IHttpContextAccessor>(),
             Mock.Of<IFilesContainer>(),
             Mock.Of<IDocumentService>(),

@@ -27,9 +27,9 @@ class LicensesViewModel extends _$LicensesViewModel {
   Future<void> upload({
     required String filePath,
     required String description,
-    required String number,
-    required String issued,
-    required String expires,
+    required String? number,
+    required String? issued,
+    required String? expires,
   }) async {
     state = state.copyWith(isUploading: true, uploadError: null, justUploaded: false);
 
