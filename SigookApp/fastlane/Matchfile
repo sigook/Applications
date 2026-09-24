@@ -4,6 +4,6 @@
 storage_mode("git")
 git_branch("main")
 type("appstore")
-app_identifier(["com.all2job.all2job", "com.all2job.beta"])
+app_identifier(["com.all2job.all2job"])
 team_id("NGXFWU4H7Z")
 readonly(true)

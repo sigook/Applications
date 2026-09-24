@@ -129,21 +129,19 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 
 **Build naming:** `SigookApp-YYYYMMDDr`
 
-**Environment mapping** — each environment is its own app in both stores. Play (and TestFlight) always install the highest version a user is entitled to across every track/group they belong to, so with a shared identity a staging upload replaces the production install on every tester's phone; separate identities keep both apps installed side by side. The environment name is also the Android product flavor and the fastlane `environment:` option, which select the identity (`APPS` in the `Fastfile`, `productFlavors` in `build.gradle.kts`):
+**Environment mapping** — a single app identity per store (`com.all2job.all2job` / `com.sigook.sigook`); staging and production differ only in the entry point and the `--dart-define` values, and are separated in the stores by track/group:
 
 | Branch | Environment | Android | iOS |
 |--------|-------------|---------|-----|
-| `dev` (auto) | staging (`lib/main_staging.dart`, flavor `staging`, group `SigookApp-Staging`) | **SIGOOK Beta** `com.sigook.beta`, Google Play `internal` testing | **SIGOOK Beta** `com.all2job.beta`, TestFlight internal group `Staging` |
-| `main` (manual run) | production (`lib/main_production.dart`, flavor `production`, group `SigookApp-Production`) | **SIGOOK** `com.sigook.sigook`, Google Play `production` (live after Google review) | **SIGOOK** `com.all2job.all2job`, App Store, submitted for review automatically (`automatic_release`) |
-
-Staging and local builds show an orange `STAGING · <api host>` / `LOCAL · <api host>` strip above every screen (`EnvironmentBanner`, mounted in the `MaterialApp.router` builder); production renders nothing.
+| `dev` (auto) | staging (`lib/main_staging.dart`, group `SigookApp-Staging`) | Google Play closed testing track `Closed Testing - SIGOOK V2` (custom track, addressed by its display name) | TestFlight internal group `Staging` |
+| `main` (manual run) | production (`lib/main_production.dart`, group `SigookApp-Production`) | Google Play `production` (live after Google review) | App Store, submitted for review automatically (`automatic_release`) |
 
 The CI trigger uses `batch: true`: pushes that land while a run is in progress are grouped into one next run, so a burst of commits spends a single iOS build of hosted macOS minutes. All checkouts are shallow (`fetchDepth: 1`).
 
 **Stage 1 - Validate & Test** (all pushes and PRs, Linux):
 - Pinned Flutter via `templates/flutter-setup.yml` (fails if the version on PATH is not `flutterVersion`)
 - `flutter analyze --no-fatal-infos`, `flutter test`
-- Verify build config: `flutter build apk --debug --flavor <env> --dry-run`
+- Verify build config: `flutter build apk --debug --dry-run`
 
 **Stage 2 - Version** (push to dev/main only, Linux, no checkout). One job computes and exposes:
 - `appVersionName` = `YYYY.M.D`
@@ -158,7 +156,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 - No pipeline caching: the self-hosted VM keeps `~/.gradle` and `~/.pub-cache` on disk between runs, so `Cache@2` only added upload/download time
 - Android platform read from `compileSdk`/`compileSdkMinor` in `build.gradle.kts`; NDK 28.2.13676358
 - `SCOPES` must equal `openid,profile,api1,offline_access` exactly (extra scopes make the authorization server answer `invalid_scope`)
-- Build: `flutter build appbundle -t <entry> --flavor <env> --release` with one `--dart-define` per env var; the AAB lands in `build/app/outputs/bundle/<env>Release/`
+- Build: `flutter build appbundle -t <entry> --release` with one `--dart-define` per env var
 - AAB signing verification with `jarsigner`; publish artifact `sigookapp-android-<env>`
 
 **Stage 4 - Build and Deploy iOS** (hosted macOS `macosImage`, parallel with Build Android, `timeoutInMinutes: 60`; a single job, so the upload does not boot a second hosted agent):
@@ -166,20 +164,20 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 - `xcode-select` to `xcodeVersion` (fails listing the installed versions when the image no longer ships it)
 - Cache: Flutter SDK (`flutter-setup.yml` with `cacheSdk: true`), Flutter pub (by `pubspec.lock`), CocoaPods (by `Podfile.lock`); `fastlane-setup.yml` (Bundler)
 - `pod install` with a retry that only re-runs on transient network errors
-- Same `SCOPES` check, then `bundle exec fastlane ios build environment: entry_point: version: build_number: match_readonly:` (see Fastlane below)
+- Same `SCOPES` check, then `bundle exec fastlane ios build entry_point: version: build_number: match_readonly:` (see Fastlane below)
 - Publish artifact `sigookapp-ios-<env>`
-- Upload step `DeployAppStoreConnect` (fastlane uploads through Apple's Transporter, which does not exist on Linux): `bundle exec fastlane ios <beta|release> environment:<env> ipa:<path> version:<appVersionName>`. It never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable
-- Pipeline parameter `matchReadonly` (default `true`): set to `false` on the first run of each environment so match creates the certificate (once per team) and that bundle id's profile
+- Upload step `DeployAppStoreConnect` (fastlane uploads through Apple's Transporter, which does not exist on Linux): `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. It never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable
+- Pipeline parameter `matchReadonly` (default `true`): set to `false` only on the first run so match creates the certificate and profile
 
-**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy environment:<env> aab:<path> track:"<internal|production>"` with `GOOGLE_PLAY_JSON_KEY`. The step `DeployGooglePlay` never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable.
+**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. The step `DeployGooglePlay` never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable.
 
 **Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when both `deployStatus` outputs are `success`: since the upload steps never fail the run, `succeeded()` alone would also email after a rejected upload.
 
-**Fastlane** (`SigookApp/fastlane/`): `Appfile` (production bundle id, team, package), `Matchfile` (git storage, `appstore` type, both bundle ids, `readonly`), `Fastfile` (`APPS` maps each `environment:` to its Android package, iOS bundle id and display name; every store lane takes `environment:`):
-- `android deploy environment: track:` — `upload_to_play_store` to that environment's package with `release_status: completed`, no metadata/screenshots
-- `ios build environment:` — `setup_ci` (temporary keychain) → `match` for the environment's bundle id (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, the environment's bundle id and match profile; edits the checkout only, the xcconfig keeps the production id) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`, `APP_DISPLAY_NAME` overridden through `xcargs`). iOS has no flavors: the identity is swapped at archive time
-- `ios beta environment:` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
-- `ios release environment:` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, export compliance = no encryption. Release notes come from `IOS_RELEASE_NOTES` (default text) and are written to every locale the App Store listing already has (`store_locales` private lane, resolved through the App Store Connect API): submission fails with `You must provide a value for the attribute 'whatsNew'` when any locale is left empty
+**Fastlane** (`SigookApp/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
+- `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
+- `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`)
+- `ios beta` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
+- `ios release` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, export compliance = no encryption. Release notes come from `IOS_RELEASE_NOTES` (default text) and are written to every locale the App Store listing already has (`store_locales` private lane, resolved through the App Store Connect API): submission fails with `You must provide a value for the attribute 'whatsNew'` when any locale is left empty
 - iOS plugins are kept on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`) because `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors under SPM
 
 **Required Variable Groups:**
@@ -193,10 +191,10 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Apple / Google prerequisites outside the repo:**
 - App Store Connect API key (App Manager); the build service the jobs run as (the organization-level one unless the job authorization scope is limited to the project) needs `Contribute` on the `MATCH_GIT_URL` repo
-- Apple: App ID `com.all2job.beta` registered in Certificates, Identifiers & Profiles and the app **SIGOOK Beta** created in App Store Connect on it (the App Store Connect API cannot create apps, so both are manual); TestFlight internal group `Staging` inside SIGOOK Beta
-- Google Play: the app **SIGOOK Beta** (`com.sigook.beta`) with its internal testing tester list; the service account behind `GOOGLE_PLAY_JSON_KEY` needs access to both apps with "Release to production" and "Manage testing tracks"; Managed publishing off on both; SIGOOK Beta must be signed with the same upload key as SIGOOK (`sigook.jks`), otherwise Play answers "signed with the wrong key" and the upload key has to be reset from App integrity
-- Nobody should be enrolled in a testing track of the production app SIGOOK: the closed track `Closed Testing - SIGOOK V2` stays empty
-- Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run and reuses it for every bundle id
+- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers)
+- Google Play closed testing track `Closed Testing - SIGOOK V2` with the tester list (a release on any other track is invisible to them); the service account behind `GOOGLE_PLAY_JSON_KEY` needs "Release to production" and "Manage testing tracks"; Managed publishing off
+- Play serves every user the highest `versionCode` across all tracks they are enrolled in and never downgrades, so an enrolled tester runs the staging build whenever `dev` was released after `main` (and sees the "(Beta)" suffix in the store). Only people who accept that belong in the closed track; anyone who needs the production app must be removed from it and reinstall. Staging and local builds show an orange environment banner, so a phone running the wrong backend is obvious
+- Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
 
 ### SigookApp iOS Bootstrap (manual)
 
@@ -395,7 +393,7 @@ variables:
 | Covenant.Web | `lively-island-020c8260f.7.azurestaticapps.net` | `www.covenantgroupl.com` (SWA) |
 | Sigook.Functions | N/A | `sigook-functions.azurewebsites.net` |
 | CognitiveServices | N/A | `sigook-cognitive-services.azurewebsites.net` |
-| SigookApp | SIGOOK Beta: Google Play `internal` testing + TestFlight group `Staging` | SIGOOK: Google Play `production` + App Store |
+| SigookApp | Google Play closed testing (`Closed Testing - SIGOOK V2`) + TestFlight group `Staging` | Google Play `production` + App Store |
 
 ---
 
@@ -445,5 +443,4 @@ variables:
 - match "no profile/certificate found" on a fresh signing repo: run the pipeline once with `matchReadonly = false`; a 403 from Apple while creating them means the API key role is too low (use Admin)
 - App Store Connect rejects the upload with a duplicate build number: the same `iosBuildNumber` was already uploaded (a re-run of Build iOS reuses the Version stage outputs); run the pipeline again instead of re-running the stage
 - Google Play rejects the AAB with `Version code N has already been used`: `versionCode` must exceed every code previously uploaded on any track, so a re-run (or a dev + main run) inside the same 14.4-minute slot collides. Wait for the next slot and re-run; the earlier upload already reached its track
-- Testers do not see a staging build: Play only offers a release to the testers of the track it was uploaded to; check the SIGOOK Beta release landed on `internal` testing and the tester is on that app's list
-- The production app opens against staging (login only works with staging credentials, the Play listing shows "(Beta)"): the phone holds a build from a testing track of the production app. Remove the tester from that track, uninstall and reinstall from the listing; staging belongs in SIGOOK Beta only
+- Testers do not see a staging build: Play only offers a release to the testers of the track it was uploaded to, and each track has its own opt-in link; check the release landed on `Closed Testing - SIGOOK V2` and is "Available to testers" (the first release on a new closed track waits for Google review)

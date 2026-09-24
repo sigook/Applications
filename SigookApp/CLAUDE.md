@@ -320,13 +320,13 @@ flutter test
 # Code generation (Freezed, json_serializable, Riverpod)
 dart run build_runner build --delete-conflicting-outputs
 
-# Run app — the entry point, its .env file and the Android flavor must match
-flutter run --flavor staging --dart-define-from-file=.env.staging -t lib/main_staging.dart
-flutter run --flavor staging --dart-define-from-file=.env.local -t lib/main_local.dart
+# Run app — the entry point and its .env file must match
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
+flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
 ```
 
 `.env.staging` / `.env.local` / `.env.production` are gitignored; copy `.env.example` (its defaults already point at staging). Without `--dart-define-from-file` the app runs with no API or auth URLs.
 
-Each environment is a separate app in the stores. Android has the product flavors `staging` (`com.sigook.beta`, "SIGOOK Beta") and `production` (`com.sigook.sigook`, "SIGOOK") in `android/app/build.gradle.kts`, so every Android run/build needs `--flavor` (local uses `staging`); the app label comes from the flavor's `resValue`, there is no `strings.xml`. iOS keeps the single `Runner` scheme with the production bundle id in the xcconfigs; CI swaps the identity at archive time (`fastlane ios build environment:`), see `.docs/technical/PIPELINES.md`. The `--dart-define` values select the backend; staging and local builds show an environment banner (`EnvironmentBanner`) above every screen.
+Neither platform has flavors: `android/app/build.gradle.kts` declares no `productFlavors` and iOS has a single scheme (`Runner`). The entry point plus the `--dart-define` values select the environment; staging and local builds show an orange environment banner (`EnvironmentBanner`, wired in the `MaterialApp.router` builder) above every screen so a build pointing at the wrong backend is visible at a glance. CI builds with `flutter build appbundle` and `fastlane ios build` (`flutter build ios --no-codesign` + `build_app`), see `.docs/technical/PIPELINES.md`.
 
 iOS plugins stay on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`): under Swift Package Manager `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors.

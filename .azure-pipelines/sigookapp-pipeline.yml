@@ -7,10 +7,9 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 # - Runs on PRs to dev branch (validation only, no build or deploy)
 # - Production (main) deployments are triggered manually (Run pipeline -> branch main)
 #
-# DEPLOY TARGETS (each environment is its own app in both stores, so a staging
-# build can never replace the production install on a tester's device):
-# - dev  -> SIGOOK Beta (com.all2job.beta / com.sigook.beta): TestFlight internal group "Staging" + Google Play internal testing
-# - main -> SIGOOK (com.all2job.all2job / com.sigook.sigook): App Store (submitted for review) + Google Play production
+# DEPLOY TARGETS:
+# - dev  -> TestFlight internal group "Staging" + Google Play closed testing track "Closed Testing - SIGOOK V2"
+# - main -> App Store (submitted for review) + Google Play production track
 #
 # POOLS:
 # - Validate, Version, Android build/deploy: self-hosted covenant-build-pool (Linux)
@@ -80,8 +79,7 @@ variables:
 # Must exist on the hosted image; Microsoft rotates the installed Xcode versions
 - name: xcodeVersion
   value: '26.6'
-# Environment name; also the Android product flavor and the fastlane
-# environment: option (both pick the app identity per environment)
+# Environment name for display purposes
 - name: environment
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     value: 'production'
@@ -93,12 +91,14 @@ variables:
     value: 'lib/main_production.dart'
   ${{ else }}:
     value: 'lib/main_staging.dart'
-# Google Play track, inside the environment's own app (SIGOOK Beta for staging)
+# Google Play track. Staging goes to the existing custom closed-testing track
+# (the one the testers are enrolled in); the Play API addresses custom tracks
+# by their display name.
 - name: playTrack
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     value: 'production'
   ${{ else }}:
-    value: 'internal'
+    value: 'Closed Testing - SIGOOK V2'
 # fastlane iOS upload lane (beta = TestFlight, release = App Store review)
 - name: iosLane
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
@@ -165,7 +165,7 @@ stages:
           echo "========================================"
 
           echo "Verifying Android build configuration..."
-          flutter build apk --debug -t $(entryPoint) --flavor $(environment) --dry-run
+          flutter build apk --debug -t $(entryPoint) --dry-run
           echo "✅ Android build configuration valid"
 
           echo ""
@@ -407,7 +407,6 @@ stages:
 
           flutter build appbundle \
             -t $(entryPoint) \
-            --flavor $(environment) \
             --release \
             --build-name="${VERSION_NAME}" \
             --build-number="${VERSION_CODE}" \
@@ -423,7 +422,7 @@ stages:
 
           echo "✅ Android AAB built successfully for $(environment)"
           echo "   Version: ${VERSION_NAME} (${VERSION_CODE})"
-          find build/app/outputs/bundle -name "*.aab" -exec ls -la {} \;
+          ls -la build/app/outputs/bundle/release/
     - task: Bash@3
       displayName: 'Verify Android AAB Signing'
       inputs:
@@ -645,7 +644,6 @@ stages:
 
           # Boolean parameters render as True/False; the lane compares case-insensitively
           bundle exec fastlane ios build \
-            environment:"$(environment)" \
             entry_point:"$(entryPoint)" \
             version:"$(appVersionName)" \
             build_number:"$(iosBuildNumber)" \
@@ -693,7 +691,7 @@ stages:
           cd $(workingDirectory)
           IPA_PATH=$(find "$(workingDirectory)/build/ios/ipa" -name "*.ipa" | head -1)
           echo "Found IPA: $IPA_PATH"
-          if [ -n "$IPA_PATH" ] && bundle exec fastlane ios $(iosLane) environment:"$(environment)" ipa:"$IPA_PATH" version:"$(appVersionName)"; then
+          if [ -n "$IPA_PATH" ] && bundle exec fastlane ios $(iosLane) ipa:"$IPA_PATH" version:"$(appVersionName)"; then
             STATUS=success
           else
             STATUS=failed
@@ -754,7 +752,7 @@ stages:
           echo "Found AAB: $AAB_PATH"
           export GEM_HOME="/home/azureuser/gems"
           export PATH="$GEM_HOME/bin:$PATH"
-          if [ -n "$AAB_PATH" ] && fastlane android deploy environment:"$(environment)" aab:"$AAB_PATH" track:"$(playTrack)"; then
+          if [ -n "$AAB_PATH" ] && fastlane android deploy aab:"$AAB_PATH" track:"$(playTrack)"; then
             STATUS=success
           else
             STATUS=failed

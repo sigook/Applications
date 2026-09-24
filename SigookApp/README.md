@@ -345,7 +345,7 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```bash
 flutter analyze                # Check for static errors
 flutter test                   # Run unit tests
-flutter run --flavor staging --dart-define-from-file=.env.staging -t lib/main_staging.dart  # Manual test
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart  # Manual test
 ```
 
 ## Reusable Core Widgets
@@ -516,11 +516,11 @@ cp .env.example .env.local
 
 ```bash
 # Local (localhost services)
-flutter run --flavor staging --dart-define-from-file=.env.local -t lib/main_local.dart
+flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
 
-# Staging (installs as "SIGOOK Beta", com.sigook.beta)
-flutter run --flavor staging --dart-define-from-file=.env.staging -t lib/main_staging.dart
+# Staging
+flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 
-# Production (installs as "SIGOOK", com.sigook.sigook)
-flutter build apk --flavor production --dart-define-from-file=.env.production -t lib/main_production.dart --release
+# Production
+flutter build apk --dart-define-from-file=.env.production -t lib/main_production.dart --release
 ```
