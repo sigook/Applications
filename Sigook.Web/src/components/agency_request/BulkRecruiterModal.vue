@@ -22,10 +22,10 @@
         append-to-body>
       </b-taginput>
     </b-field>
-    <div class="text-right">
-      <b-button class="mr-2" @click="onCancel">Cancel</b-button>
-      <b-button v-if="selected.length === 0" type="is-danger" @click="onSubmit">Unassign all</b-button>
-      <b-button v-else type="is-primary" @click="onSubmit">Assign</b-button>
+    <div class="mt-4">
+      <b-button @click="onCancel">Cancel</b-button>
+      <b-button v-if="selected.length === 0" type="is-danger" class="ml-2" @click="onSubmit">Unassign all</b-button>
+      <b-button v-else type="is-primary" class="ml-2" @click="onSubmit">Assign</b-button>
     </div>
   </div>
 </template>

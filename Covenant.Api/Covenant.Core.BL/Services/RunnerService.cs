@@ -12,10 +12,8 @@ public class RunnerService(
     IRunnerRepository runnerRepository,
     IRequestRepository requestRepository,
     IWorkerRepository workerRepository,
-    ITimeService timeService,
     ICurrentUserService currentUserService) : IRunnerService
 {
-    private const int FollowUpDays = 3;
     private const string RunnersNotAllowed = "This order does not accept runners";
 
     public async Task<Result<Guid>> CreateRunner(Guid requestId, RunnerCreateModel model, Guid? requestRecruiterId = null)
@@ -88,19 +86,5 @@ public class RunnerService(
     {
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         return request is not null && request.UsesRunners;
-    }
-
-    public async Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday()
-    {
-        var date = timeService.GetCurrentDateTime();
-        var agencyId = currentUserService.GetAgencyId();
-        var userId = currentUserService.GetUserId();
-        var today = date.Date;
-        var windowStart = today.AddDays(-FollowUpDays);
-        var windowEnd = today.AddDays(1);
-        var runners = await runnerRepository.GetRunnersStartingToday(agencyId, userId, windowStart, windowEnd);
-        foreach (var runner in runners)
-            runner.DayNumber = (today - runner.StartDate.Date).Days + 1;
-        return runners.Where(r => r.DayNumber >= 1 && r.DayNumber <= FollowUpDays).ToList();
     }
 }

@@ -1,6 +1,6 @@
 <template>
-  <sales-list :is-empty="!items.length">
-    <sales-list-row
+  <dashboard-list :is-empty="!items.length">
+    <dashboard-list-row
       v-for="item in items"
       :key="item.id"
       class="sd-interaction-row"
@@ -19,13 +19,13 @@
       <template #trailing>
         <span class="sd-interaction-time">{{ relativeTime(item.createdAt, asOf) }}</span>
       </template>
-    </sales-list-row>
-  </sales-list>
+    </dashboard-list-row>
+  </dashboard-list>
 </template>
 
 <script setup lang="ts">
-import SalesList from './SalesList.vue';
-import SalesListRow from './SalesListRow.vue';
+import DashboardList from './DashboardList.vue';
+import DashboardListRow from './DashboardListRow.vue';
 import { INTERACTION_TYPE_ICONS, INTERACTION_TYPE_LABELS } from '@/types/company';
 import type { CompanyInteraction } from '@/types/company';
 import { relativeTime } from '@/utils/salesDashboardFormat';

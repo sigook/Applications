@@ -53,6 +53,12 @@
       <b-tab-item label="Requests" value="Requests" v-if="!requiresPayrollPermission">
         <requests v-if="visitedTabs.includes('Requests')" :company="company" class="p-2" />
       </b-tab-item>
+      <b-tab-item label="Interactions" value="Interactions" v-if="showSalesTabs">
+        <company-interactions v-if="visitedTabs.includes('Interactions')" :company="company" class="p-2" />
+      </b-tab-item>
+      <b-tab-item label="Deals" value="Deals" v-if="showSalesTabs">
+        <company-deals v-if="visitedTabs.includes('Deals')" :company="company" class="p-2" />
+      </b-tab-item>
     </b-tabs>
 
     <!-- update logo -->
@@ -67,6 +73,7 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
 import { useAdmin } from '@/composables/useAdmin';
+import { useSalesAccess } from '@/composables/useSalesAccess';
 import { useModuleBase } from '@/composables/useModuleBase';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import type { PageBreadcrumb } from '@/types/common';
@@ -80,13 +87,17 @@ import ContactPerson from '@/components/agency_company/ContactPersonList.vue';
 import JobPosition from '@/components/agency_company/JobPositionList.vue';
 import Requests from '@/components/agency_company/CompanyRequests.vue';
 import Workers from '@/components/agency_company/CompanyWorkers.vue';
+import CompanyInteractions from '@/components/agency_company/CompanyInteractions.vue';
+import CompanyDeals from '@/components/agency_company/CompanyDeals.vue';
 import CompanyUpdateLogo from '@/components/agency_company/CompanyUpdateLogo.vue';
 
 const route = useRoute();
 const router = useRouter();
-const { requestBase, companyBase, moduleCrumbs } = useModuleBase();
+const { isSalesView, requestBase, companyBase, moduleCrumbs } = useModuleBase();
 const crumbs = computed<PageBreadcrumb[]>(() => [...moduleCrumbs.value, { label: 'Clients', to: companyBase.value }]);
 const { isAdmin } = useAdmin();
+const { hasSalesAccess } = useSalesAccess();
+const showSalesTabs = computed(() => isSalesView.value && hasSalesAccess.value);
 
 const currentTab = ref<string>('Detail');
 const visitedTabs = ref<string[]>(['Detail']);

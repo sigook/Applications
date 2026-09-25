@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Azure.Core;
 using Azure.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Api.BackgroundServices;
@@ -20,17 +21,22 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using OpenIddict.Validation.AspNetCore;
 using Scalar.AspNetCore;
 using System.Globalization;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Azure Key Vault configuration
 var keyVaultUrl = builder.Configuration["KeyVault:Url"];
-if (!string.IsNullOrEmpty(keyVaultUrl))
+var isOpenApiBuild = Assembly.GetEntryAssembly()?.GetName().Name == "GetDocument.Insider";
+if (!string.IsNullOrEmpty(keyVaultUrl) && !isOpenApiBuild)
 {
     var env = builder.Environment.IsProduction() ? "production" : "staging";
+    TokenCredential credential = builder.Environment.IsDevelopment()
+        ? new ChainedTokenCredential(new AzureCliCredential(), new VisualStudioCredential())
+        : new DefaultAzureCredential();
     builder.Configuration.AddAzureKeyVault(
         new Uri(keyVaultUrl),
-        new DefaultAzureCredential(),
+        credential,
         new PrefixKeyVaultSecretManager($"{env}-api"));
 }
 
@@ -71,7 +77,10 @@ builder.Services.AddOpenApi("v1", options =>
 
 logger.LogInformation("Configuring services...");
 
-builder.Services.AddHostedService<SigookBackgroundService>();
+if (!isOpenApiBuild)
+{
+    builder.Services.AddHostedService<SigookBackgroundService>();
+}
 builder.Services.AddMediatR(config => config.RegisterServicesFromAssembly(typeof(ServicesConfiguration).Assembly));
 builder.Services.AddRepositories();
 builder.Services.AddServices();

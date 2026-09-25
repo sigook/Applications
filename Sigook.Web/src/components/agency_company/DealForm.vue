@@ -103,8 +103,7 @@ import type { ComponentPublicInstance } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { useDropdownReveal } from '@/composables/useDropdownReveal';
-import { getAgencyCompaniesList } from '@/api/agencyCompanyApi';
-import { createDeal, updateDeal } from '@/api/companyApi';
+import { createDeal, getAgencyCompaniesList, updateDeal } from '@/api/agencyCompanyApi';
 import {
   DealType,
   DealStatus,
@@ -114,26 +113,41 @@ import {
   DEAL_STATUS_LABELS,
 } from '@/types/company';
 import type { Deal } from '@/types/company';
+import type { SalesClientReference } from '@/types/sales';
 import type { CatalogItem } from '@/types/common';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { generateFileName } from '@/utils/fileNaming';
 import { UPLOAD_ACCEPT, validateUploadFile } from '@/utils/fileValidation';
-import SearchSelect from './SearchSelect.vue';
+import SearchSelect from '@/components/SearchSelect.vue';
 
 const MINIMUM_SEARCH_LENGTH = 3;
 const CLIENT_SEARCH_HINT = `Type at least ${MINIMUM_SEARCH_LENGTH} characters to search`;
 
-const props = defineProps<{ deal?: Deal | null }>();
+const props = defineProps<{
+  deal?: Deal | null;
+  initialClient?: SalesClientReference | null;
+}>();
 
 const isEditing = computed(() => !!props.deal);
 const hasDocument = computed(() => !!props.deal?.documentId);
 
-const clientOptions = computed(() => clients.value.map((c) => ({ value: c.id, label: c.value })));
+const clientOptions = computed(() => {
+  const options = clients.value.map((c) => ({ value: c.id, label: c.value }));
+  if (
+    props.initialClient &&
+    !clientSearchTerm.value.trim() &&
+    !options.some((o) => o.value === props.initialClient?.id)
+  ) {
+    options.unshift({ value: props.initialClient.id, label: props.initialClient.fullName });
+  }
+  return options;
+});
 const typeOptions = DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }));
 const statusOptions = DEAL_STATUSES.map((s) => ({ value: s, label: DEAL_STATUS_LABELS[s] }));
 
 const clients = ref<CatalogItem[]>([]);
 const isLoadingClients = ref(false);
+const clientSearchTerm = ref('');
 
 function loadClients(term: string): void {
   isLoadingClients.value = true;
@@ -148,6 +162,7 @@ function loadClients(term: string): void {
 }
 
 function onClientSearch(term: string): void {
+  clientSearchTerm.value = term;
   const normalized = term.trim();
   if (normalized.length < MINIMUM_SEARCH_LENGTH) {
     clients.value = [];
@@ -207,7 +222,10 @@ function onPickerActive(active: boolean): void {
 }
 
 onMounted(() => {
-  if (!props.deal) return;
+  if (!props.deal) {
+    if (props.initialClient) form.hydrate({ companyProfileId: props.initialClient.id });
+    return;
+  }
   form.hydrate({
     title: props.deal.title,
     companyProfileId: props.deal.companyProfileId,
@@ -234,7 +252,7 @@ function submit(): Promise<boolean> {
         try {
           const file = documentFile.value;
           if (props.deal) {
-            await updateDeal(props.deal.id, {
+            await updateDeal(props.deal.companyProfileId, props.deal.id, {
               title: values.title.trim(),
               date: dealDate.toISOString(),
               value: amount,
@@ -245,9 +263,8 @@ function submit(): Promise<boolean> {
             }, file);
             showAlertSuccess('Deal updated');
           } else {
-            await createDeal({
+            await createDeal(values.companyProfileId as string, {
               title: values.title.trim(),
-              companyProfileId: values.companyProfileId as string,
               date: dealDate.toISOString(),
               value: amount,
               type: values.type,

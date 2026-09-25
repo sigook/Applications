@@ -179,7 +179,7 @@ Both hang off `CompanyProfile` and carry the owning sales user; added by migrati
 | `Deal` | `Title`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; exposed as `OwnerId` in `DealListModel` / `GetDealsFilter`), `Date` (business date), `Value` (decimal), `Type` (`DealType`: Temporal 0, Permanent 1, TempToPerm 2), `Status` (`DealStatus`: ToSend 0, Sent 1, Rejected 2, Accepted 3), `DocumentId?` → CovenantFile, `CreatedAt` / `UpdatedAt`. `Update()` never touches `CompanyProfileId` or `UserId` |
 | `CompanyInteraction` | `Description`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; `OwnerId` in list/filter models), `InteractionPurpose` (Intro 0 … Closing 4), `InteractionType` (Call 0, Mail 1, Sms 2, LinkedIn 3), `InteractionStatus` (NotStarted 0 default, InProgress 1, Completed 2), `CreatedAt` / `UpdatedAt`. Same immutable `CompanyProfileId` / `UserId` on update |
 
-Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs` — rule in `.docs/business/ROLES_PERMISSIONS.md`.
+Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `SalesService`, behind `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{InteractionsController,DealsController}.cs` (routes `api/agency/companyprofiles/{profileId}/…`; the client comes from the route) — rule in `.docs/business/ROLES_PERMISSIONS.md`.
 
 ---
 

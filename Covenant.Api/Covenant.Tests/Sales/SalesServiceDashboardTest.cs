@@ -1,6 +1,8 @@
 using Covenant.Api.Validators.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models;
+using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -244,5 +246,80 @@ public class SalesServiceDashboardTest
 
         Assert.Equal(_userId, capturedDealsOwner);
         Assert.Equal(_userId, capturedInteractionsOwner);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRecentClientsScopesToOwnerUnlessAdmin(bool isAdmin)
+    {
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(isAdmin);
+        Guid? capturedOwner = Guid.NewGuid();
+        var capturedTake = 0;
+        _companyRepository
+            .Setup(r => r.GetRecentInteractionClients(_agencyId, It.IsAny<Guid?>(), It.IsAny<int>()))
+            .Callback<Guid, Guid?, int>((_, owner, take) =>
+            {
+                capturedOwner = owner;
+                capturedTake = take;
+            })
+            .ReturnsAsync([]);
+
+        await _sut.GetRecentClients();
+
+        Assert.Equal(isAdmin ? null : _userId, capturedOwner);
+        Assert.Equal(10, capturedTake);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRecentInteractionsSpansAllClientsAndScopesToOwnerUnlessAdmin(bool isAdmin)
+    {
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(isAdmin);
+        Guid? capturedCompany = Guid.NewGuid();
+        GetCompanyInteractionsFilter capturedFilter = null;
+        _companyRepository
+            .Setup(r => r.GetInteractions(_agencyId, It.IsAny<Guid?>(), It.IsAny<GetCompanyInteractionsFilter>()))
+            .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, company, filter) =>
+            {
+                capturedCompany = company;
+                capturedFilter = filter;
+            })
+            .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
+
+        await _sut.GetRecentInteractions();
+
+        Assert.Null(capturedCompany);
+        Assert.Equal(isAdmin ? null : _userId, capturedFilter.OwnerId);
+        Assert.Equal(6, capturedFilter.PageSize);
+        Assert.True(capturedFilter.IsDescending);
+        Assert.Equal(GetCompanyInteractionsSortBy.CreatedAt, capturedFilter.SortBy);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRecentDealsSpansAllClientsAndScopesToOwnerUnlessAdmin(bool isAdmin)
+    {
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(isAdmin);
+        Guid? capturedCompany = Guid.NewGuid();
+        GetDealsFilter capturedFilter = null;
+        _companyRepository
+            .Setup(r => r.GetDeals(_agencyId, It.IsAny<Guid?>(), It.IsAny<GetDealsFilter>()))
+            .Callback<Guid, Guid?, GetDealsFilter>((_, company, filter) =>
+            {
+                capturedCompany = company;
+                capturedFilter = filter;
+            })
+            .ReturnsAsync(new PaginatedList<DealListModel>());
+
+        await _sut.GetRecentDeals();
+
+        Assert.Null(capturedCompany);
+        Assert.Equal(isAdmin ? null : _userId, capturedFilter.OwnerId);
+        Assert.Equal(6, capturedFilter.PageSize);
+        Assert.True(capturedFilter.IsDescending);
+        Assert.Equal(GetDealsSortBy.Date, capturedFilter.SortBy);
     }
 }

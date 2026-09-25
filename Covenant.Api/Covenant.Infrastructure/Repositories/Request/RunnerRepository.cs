@@ -99,27 +99,6 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
             })
             .SingleOrDefaultAsync();
 
-    public Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday(Guid agencyId, Guid updatedBy, DateTime windowStart, DateTime windowEnd) =>
-        (from r in context.Runners.AsNoTracking()
-         where r.Request.CompanyProfile.AgencyId == agencyId
-               && r.Status == RunnerStatus.Hired
-               && r.UpdatedBy == updatedBy
-               && (r.Request.WorkerSalary == null || r.Request.WorkerSalary == 0)
-               && r.StartDate != null
-               && r.StartDate.Value.Date >= windowStart.Date
-               && r.StartDate.Value.Date <= windowEnd.Date
-         select new RunnerStartingTodayModel
-         {
-             RunnerId = r.Id,
-             RequestId = r.RequestId,
-             RequestNumberId = r.Request.NumberId,
-             JobTitle = r.Request.JobTitle,
-             CompanyName = r.Request.CompanyProfile.FullName,
-             WorkerProfileId = r.WorkerProfileId,
-             WorkerName = r.WorkerProfile.FirstName + " " + r.WorkerProfile.LastName,
-             StartDate = r.StartDate.Value
-         }).Distinct().ToListAsync();
-
     private static Expression<Func<RunnerListModel, bool>> ApplyFilter(Guid agencyId, GetRunnersFilter filter)
     {
         Expression<Func<RunnerListModel, bool>> predicate = r => r.AgencyId == agencyId;

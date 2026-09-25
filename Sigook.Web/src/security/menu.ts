@@ -66,11 +66,6 @@ export default {
           label: "Applicants",
         },
         {
-          to: "/recruiting/attendance-review",
-          icon: "clipboard-check-outline",
-          label: "Attendance Review",
-        },
-        {
           to: "/recruiting/candidates",
           icon: "account-hard-hat",
           label: "Candidates",
@@ -99,19 +94,9 @@ export default {
           label: "Dashboard",
         },
         {
-          to: "/sales/interactions",
-          icon: "message-text-outline",
-          label: "Interactions",
-        },
-        {
           to: "/sales/companies",
           icon: "domain",
           label: "Clients",
-        },
-        {
-          to: "/sales/deals",
-          icon: "handshake-outline",
-          label: "Deals",
         },
       ],
     };

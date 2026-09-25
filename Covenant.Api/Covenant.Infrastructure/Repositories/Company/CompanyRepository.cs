@@ -550,10 +550,11 @@ public class CompanyRepository : ICompanyRepository
 
     }
 
-    public async Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, GetDealsFilter filter)
+    public async Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, Guid? companyProfileId, GetDealsFilter filter)
     {
-        var query = _context.Deals
-            .Where(d => d.CompanyProfile.AgencyId == agencyId)
+        var deals = _context.Deals.Where(d => d.CompanyProfile.AgencyId == agencyId);
+        if (companyProfileId.HasValue) deals = deals.Where(d => d.CompanyProfileId == companyProfileId.Value);
+        var query = deals
             .Select(d => new DealListModel
             {
                 Id = d.Id,
@@ -580,10 +581,11 @@ public class CompanyRepository : ICompanyRepository
     public Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression) =>
         _context.Deals.FirstOrDefaultAsync(expression);
 
-    public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter)
+    public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, Guid? companyProfileId, GetCompanyInteractionsFilter filter)
     {
-        var query = _context.CompanyInteractions
-            .Where(i => i.CompanyProfile.AgencyId == agencyId)
+        var interactions = _context.CompanyInteractions.Where(i => i.CompanyProfile.AgencyId == agencyId);
+        if (companyProfileId.HasValue) interactions = interactions.Where(i => i.CompanyProfileId == companyProfileId.Value);
+        var query = interactions
             .Select(i => new CompanyInteractionListModel
             {
                 Id = i.Id,
@@ -634,6 +636,32 @@ public class CompanyRepository : ICompanyRepository
             {
                 Type = g.Key,
                 Count = g.Count()
+            })
+            .ToListAsync();
+    }
+
+    public Task<List<RecentClientModel>> GetRecentInteractionClients(Guid agencyId, Guid? ownerId, int take)
+    {
+        var interactions = _context.CompanyInteractions.AsQueryable();
+        if (ownerId.HasValue) interactions = interactions.Where(i => i.UserId == ownerId.Value);
+        return _context.CompanyProfiles
+            .Where(cp => cp.AgencyId == agencyId)
+            .Select(cp => new
+            {
+                cp.Id,
+                cp.FullName,
+                cp.Company.Email,
+                LastInteractionAt = interactions.Where(i => i.CompanyProfileId == cp.Id).Max(i => (DateTime?)i.CreatedAt)
+            })
+            .Where(c => c.LastInteractionAt != null)
+            .OrderByDescending(c => c.LastInteractionAt)
+            .Take(take)
+            .Select(c => new RecentClientModel
+            {
+                Id = c.Id,
+                FullName = c.FullName,
+                Email = c.Email,
+                LastInteractionAt = c.LastInteractionAt.Value
             })
             .ToListAsync();
     }
@@ -695,8 +723,6 @@ public class CompanyRepository : ICompanyRepository
     private static Expression<Func<DealListModel, bool>> ApplyFilterDeals(GetDealsFilter filter)
     {
         Expression<Func<DealListModel, bool>> predicate = d => true;
-        if (filter.CompanyProfileId.HasValue)
-            predicate = predicate.And(d => d.CompanyProfileId == filter.CompanyProfileId.Value);
         if (filter.OwnerId.HasValue)
             predicate = predicate.And(d => d.OwnerId == filter.OwnerId.Value);
         if (filter.Type.HasValue)
@@ -711,7 +737,6 @@ public class CompanyRepository : ICompanyRepository
     private static IQueryable<DealListModel> ApplySortDeals(IQueryable<DealListModel> query, GetDealsFilter filter) =>
         filter.SortBy switch
         {
-            GetDealsSortBy.Company => query.AddOrderBy(filter, d => d.CompanyName),
             GetDealsSortBy.Value => query.AddOrderBy(filter, d => d.Value),
             GetDealsSortBy.Status => query.AddOrderBy(filter, d => d.Status),
             GetDealsSortBy.Date => query.AddOrderBy(filter, d => d.Date),
@@ -721,8 +746,6 @@ public class CompanyRepository : ICompanyRepository
     private static Expression<Func<CompanyInteractionListModel, bool>> ApplyFilterCompanyInteractions(GetCompanyInteractionsFilter filter)
     {
         Expression<Func<CompanyInteractionListModel, bool>> predicate = i => true;
-        if (filter.CompanyProfileId.HasValue)
-            predicate = predicate.And(i => i.CompanyProfileId == filter.CompanyProfileId.Value);
         if (filter.OwnerId.HasValue)
             predicate = predicate.And(i => i.OwnerId == filter.OwnerId.Value);
         if (filter.InteractionPurpose.HasValue)
@@ -739,7 +762,6 @@ public class CompanyRepository : ICompanyRepository
     private static IQueryable<CompanyInteractionListModel> ApplySortCompanyInteractions(IQueryable<CompanyInteractionListModel> query, GetCompanyInteractionsFilter filter) =>
         filter.SortBy switch
         {
-            GetCompanyInteractionsSortBy.Company => query.AddOrderBy(filter, i => i.CompanyName),
             GetCompanyInteractionsSortBy.Status => query.AddOrderBy(filter, i => i.InteractionStatus),
             GetCompanyInteractionsSortBy.CreatedAt => query.AddOrderBy(filter, i => i.CreatedAt),
             _ => query.AddOrderBy(filter, i => i.CreatedAt)

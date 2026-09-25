@@ -1,4 +1,5 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Infrastructure.Contexts;
@@ -136,5 +137,55 @@ public class CompanyRepositoryDashboardTest
         var result = await _sut.GetInteractionsByType(_agencyId, _ownerId, FromUtc, ToUtcExclusive);
 
         Assert.Equal(1, Assert.Single(result).Count);
+    }
+
+    private Guid AddClient(string name)
+    {
+        var id = Guid.NewGuid();
+        _context.CompanyProfiles.Add(new CompanyProfile
+        {
+            Id = id,
+            AgencyId = _agencyId,
+            FullName = name,
+            Company = new User(CvnEmail.Create($"{name.ToLower()}@mail.com").Value)
+        });
+        return id;
+    }
+
+    [Fact]
+    public async Task GetRecentInteractionClientsOrdersByLastInteraction()
+    {
+        var older = AddClient("Older");
+        var newer = AddClient("Newer");
+        AddClient("Silent");
+        AddInteraction(new DateTime(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, companyProfileId: older);
+        AddInteraction(new DateTime(2026, 9, 10, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, companyProfileId: older);
+        AddInteraction(new DateTime(2026, 9, 5, 12, 0, 0, DateTimeKind.Utc), InteractionType.Mail, companyProfileId: newer);
+        AddInteraction(new DateTime(2026, 9, 11, 12, 0, 0, DateTimeKind.Utc), InteractionType.Mail, companyProfileId: _otherCompanyProfileId);
+        await _context.SaveChangesAsync();
+
+        var result = await _sut.GetRecentInteractionClients(_agencyId, null, 10);
+
+        Assert.Equal([older, newer], result.Select(c => c.Id));
+        Assert.Equal(new DateTime(2026, 9, 10, 12, 0, 0, DateTimeKind.Utc), result[0].LastInteractionAt);
+        Assert.Equal("older@mail.com", result[0].Email);
+    }
+
+    [Fact]
+    public async Task GetRecentInteractionClientsFiltersByOwnerAndLimits()
+    {
+        var mine = AddClient("Mine");
+        var theirs = AddClient("Theirs");
+        var alsoMine = AddClient("AlsoMine");
+        AddInteraction(new DateTime(2026, 9, 1, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, companyProfileId: mine);
+        AddInteraction(new DateTime(2026, 9, 12, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, ownerId: _otherOwnerId, companyProfileId: mine);
+        AddInteraction(new DateTime(2026, 9, 11, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, ownerId: _otherOwnerId, companyProfileId: theirs);
+        AddInteraction(new DateTime(2026, 9, 3, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, companyProfileId: alsoMine);
+        await _context.SaveChangesAsync();
+
+        var result = await _sut.GetRecentInteractionClients(_agencyId, _ownerId, 1);
+
+        var client = Assert.Single(result);
+        Assert.Equal(alsoMine, client.Id);
     }
 }

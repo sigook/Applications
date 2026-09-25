@@ -157,10 +157,6 @@ public class AuthorizationController(
         if (roles.Count == 1) claims[Claims.Role] = roles[0];
         else if (roles.Count > 1) claims[Claims.Role] = roles.ToArray();
 
-        foreach (var claim in await userManager.GetClaimsAsync(user))
-        {
-            if (claim.Type is CovenantConstants.AgencyId or CovenantConstants.CompanyId) claims[claim.Type] = claim.Value;
-        }
         return Ok(claims);
     }
 
@@ -230,11 +226,6 @@ public class AuthorizationController(
             .SetClaim(IdentityClaims.IdentityProvider, identityProvider ?? IdentityClaims.LocalIdentityProvider)
             .SetClaims(Claims.Role, [.. await userManager.GetRolesAsync(user)]);
 
-        foreach (var claim in await userManager.GetClaimsAsync(user))
-        {
-            if (claim.Type is CovenantConstants.AgencyId or CovenantConstants.CompanyId) identity.SetClaim(claim.Type, claim.Value);
-        }
-
         identity.SetScopes(scopes);
         identity.SetResources(await scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());
         identity.SetDestinations(GetDestinations);
@@ -259,8 +250,6 @@ public class AuthorizationController(
             case Claims.Name:
             case Claims.PreferredUsername:
             case IdentityClaims.Nickname:
-            case CovenantConstants.AgencyId:
-            case CovenantConstants.CompanyId:
                 yield return Destinations.AccessToken;
                 if (claim.Subject.HasScope(Scopes.Profile)) yield return Destinations.IdentityToken;
                 yield break;

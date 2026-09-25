@@ -1,13 +1,13 @@
 <template>
-  <sales-list :is-empty="!items.length">
-    <sales-list-row
+  <dashboard-list :is-empty="!items.length" empty-text="No interactions yet">
+    <dashboard-list-row
       v-for="item in items"
       :key="item.id"
       class="sd-client-row"
       role="button"
       tabindex="0"
-      :title="`Log interaction for ${item.fullName}`"
-      :aria-label="`Log interaction for ${item.fullName}`"
+      :title="`View interactions for ${item.fullName}`"
+      :aria-label="`View interactions for ${item.fullName}`"
       @click="emit('select', item)"
       @keydown.enter="emit('select', item)"
       @keydown.space.prevent="emit('select', item)"
@@ -19,22 +19,26 @@
       <template #meta>
         <span class="sd-client-email">{{ item.email }}</span>
       </template>
-    </sales-list-row>
-  </sales-list>
+      <template #trailing>
+        <span class="sd-client-time">{{ relativeTime(item.lastInteractionAt, asOf) }}</span>
+      </template>
+    </dashboard-list-row>
+  </dashboard-list>
 </template>
 
 <script setup lang="ts">
-import SalesList from './SalesList.vue';
-import SalesListRow from './SalesListRow.vue';
-import type { AgencyCompanyListItem } from '@/types/agency';
-import { initialsOf } from '@/utils/salesDashboardFormat';
+import DashboardList from './DashboardList.vue';
+import DashboardListRow from './DashboardListRow.vue';
+import type { SalesRecentClient } from '@/types/sales';
+import { initialsOf, relativeTime } from '@/utils/salesDashboardFormat';
 
 defineProps<{
-  items: readonly AgencyCompanyListItem[];
+  items: readonly SalesRecentClient[];
+  asOf: string;
 }>();
 
 const emit = defineEmits<{
-  (e: 'select', client: AgencyCompanyListItem): void;
+  (e: 'select', client: SalesRecentClient): void;
 }>();
 </script>
 
@@ -54,6 +58,11 @@ const emit = defineEmits<{
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sd-client-time {
+  font-size: 0.69rem;
+  color: #b3b3b3;
 }
 
 .sd-client-avatar {

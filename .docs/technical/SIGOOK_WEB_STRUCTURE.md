@@ -87,8 +87,8 @@ Plain TypeScript functions wrapping HTTP calls to Covenant.Api. All import the `
 | candidate.ts | `Candidate`, `CandidateDocument`, `AgencyCandidateFilter`, phone/skill models |
 | company.ts | `CompanyProfile*`, `CompanyRequest*`, `TimeSheet*`, `ClockIn*`, `CompanyUser*`, `CompanyContactPerson*`, `CompanyInvoice*`, sales `Deal*`/`CompanyInteraction*` enums + models |
 | notification.ts | `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` |
-| runner.ts | `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, interview models, `RunnerStartingToday` |
-| sales.ts | `SalesPeriod`, dashboard response types (`DealsByStatusModel`, `SalesDashboardSummary`, `SalesPeriodRange`), `SalesBarPoint`, `SalesMeter`, `SalesCreateKind`, `SALES_PERIOD_TABS` |
+| runner.ts | `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, interview models |
+| sales.ts | `SalesPeriod`, dashboard response types (`DealsByStatusModel`, `SalesDashboardSummary`, `SalesPeriodRange`), `SalesRecentClient`, `SalesBarPoint`, `SalesMeter`, `SALES_PERIOD_TABS` |
 | security.ts | `ChangeEmailRequest`, `GetEmailResponse`, `UserProfile` |
 | website.ts | `JobSearchFilter`, `JobViewModel`, `ContactForm` |
 | weeklyBoard.ts | `WeeklyBoard`, `RecruiterWeeklyBoard`, assignment/runner payloads |
@@ -122,13 +122,13 @@ Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold
 
 Agency route map (from `routesAgency.ts`):
 - `/recruiting/requests[/create/:companyProfileId | /update/:companyProfileId/:requestId | /duplicate/:companyProfileId/:requestId | /:id]` — create, update and duplicate share `AgencyCreateRequest.vue` and the `loadAgencyRequestFormResolver` guard (one `GET /api/agency/requests/lookup` call); the duplicate routes are the ones carrying `meta.isDuplicate`
-- `/recruiting/weekly-board`, `/recruiting/attendance-review`
+- `/recruiting/weekly-board`
 - `/recruiting/workers[/register | /:id]`, `/recruiting/candidates`
 - `/recruiting/companies[/create | /update/:companyProfileId | /:id]`
-- `/sales/dashboard` (`sales-dashboard`), `/sales/interactions` (`sales-interactions`), `/sales/deals` (`sales-deals`) — `routesAgency.ts:169-194`, lazy imports at `:21-23`; guard `requiresAuth` + `salesAccess` (superadmin, admin, sales — `src/security/roles.ts:15`)
+- `/sales/dashboard` (`sales-dashboard`) — guard `requiresAuth` + `salesAccess` (superadmin, admin, sales — `src/security/roles.ts:15`). Interactions and deals have no route of their own: they are tabs of the client detail (`/sales/companies/:id?tab=Interactions|Deals`)
 - `/sales/requests[...]`, `/sales/companies[...]`, `/sales/agencies[/create | /:id]`
 
-Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboard-outline`) first, then Interactions, Clients (`/sales/companies`), Deals — plus Agencies for admins of a master agency. Admin/superadmin get the Sales group next to Recruiting and Accounting; sales users get only Sales. The dashboard is **not** the default home: sales lands on `/sales/requests` after sign-in (`menu.ts:205-206`, a route with no sidebar entry), so the dashboard is reached through the menu.
+Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboard-outline`) first, then Clients (`/sales/companies`) — plus Agencies for admins of a master agency. Admin/superadmin get the Sales group next to Recruiting and Accounting; sales users get only Sales. The dashboard is **not** the default home: sales lands on `/sales/requests` after sign-in (`menu.ts:205-206`, a route with no sidebar entry), so the dashboard is reached through the menu.
 - `/accounting/invoices[/create]`, `/accounting/paystubs[/create]`, `/accounting/reports`
 
 **Auth guard:** routes declare `meta: { requiresAuth: true, role: [...] }` with role groups from `src/security/roles.ts`; guard redirects to `/unauthorized`.
@@ -145,13 +145,11 @@ Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboar
 |------|---------|
 | Requests.vue / Request.vue / AgencyCreateRequest.vue | Request list, detail (workers, applicants, runners, notes), create/edit/duplicate |
 | WeeklyBoard.vue | Recruiting weekly board (admin + recruiter views) |
-| AttendanceReview.vue | Workers starting recently — attendance follow-up |
 | Workers.vue / DetailWorker.vue | Worker roster and detail (flags, holidays, history, notes) |
-| Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail |
+| Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail. The detail's Interactions and Deals tabs render only when the route is the sales view **and** the user has a sales-access role (`useModuleBase().isSalesView` + `useSalesAccess().hasSalesAccess`) |
 | Candidates.vue | Candidate pool; convert to worker, bulk import |
 | Agencies.vue / CreateAgency.vue / DetailAgency.vue | Sub-agencies (sales) |
 | Dashboard.vue | Sales dashboard — snapshot cards + deals/interactions CRUD (layout below) |
-| SalesInteractions.vue / SalesDeals.vue | Full paginated Buefy tables of interactions / deals (sorting via `useGridSort`), reusing the dashboard's `SalesCreateModal` for create/edit/delete |
 | AgencyProfile.vue | Own agency profile, locations, personnel |
 | accounting/Invoices.vue / accounting/CreateInvoice.vue | Invoice list and creation (preview → generate) |
 | accounting/PayStubs.vue / accounting/CreatePayStub.vue | Pay stub list and manual creation |
@@ -159,15 +157,17 @@ Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboar
 
 #### Sales dashboard layout (`Dashboard.vue`)
 
-`<script setup>`, all state in component-local refs — no Pinia store (stores hold filters only). Two CSS grids: a 3-card top row and a 2-card bottom row; below 1215px they collapse to 2/1 columns, below 768px to a single column and the period label hides. Header: "Sales Dashboard · {agent name}" (`useCurrentAgent`) + period label. Card titles link to `/sales/interactions`, `/sales/companies`, `/sales/deals`.
+`<script setup>`, all state in component-local refs — no Pinia store (stores hold filters only). Two CSS grids: a 3-card top row and a 2-card bottom row; below 1215px they collapse to 2/1 columns, below 768px to a single column and the period label hides. Header: "Sales Dashboard · {agent name}" (`useCurrentAgent`) + period label. Only the Clients card title links (to `/sales/companies`).
 
 | Card | Content | Data source | Actions |
 |------|---------|-------------|---------|
-| Log Interactions | `SalesInteractionList` — 6 most recent, icon per type, relative timestamps | **Live** — `getCompanyInteractions` (pageSize 6, newest first) | "+ Log interaction"; row click opens edit |
-| Clients | `SalesClientList` — initials avatar + industry; subtitle "N in your book" | **Live** — `getSalesCompanies` (pageSize 6, newest first) | "+ Create client" |
-| Deals | `SalesDealList` — 6 most recent: status pill, optional document link, compact value | **Live** — `getDeals` (pageSize 6, newest first) | "+ Create deal"; row click opens edit |
-| Deals by status | `SalesBarChart` (responsive SVG, d3-scale, one color per `DealStatus`) + `SalesRangeTabs` (Today / This week / This month) + a `b-taginput` status filter | **Live** — `getDealsByStatus` | Period tabs and status filter both re-query |
-| This quarter | Two `SalesMeterList`s: "Pipeline by status" (quarter), "Activity this week" | **Live** — `getSalesDashboardSummary` | — |
+| Log Interactions | `InteractionList` — 6 most recent, icon per type, relative timestamps | **Live** — `getRecentInteractions` (6 newest across all clients, owner-scoped) | "+ Log interaction"; row click opens edit |
+| Clients | `ClientList` — initials avatar, email, relative time of the last interaction; subtitle "Last 10 contacted" | **Live** — `getRecentClients` (10 clients with the most recent interaction, owner-scoped) | "+ Create client"; row click opens `ClientInteractionsModal` — that client's interactions (`getCompanyInteractions(clientId, …)`, 50 newest) with "+ Log interaction" (client preselected) and row click to edit, both via a stacked `InteractionModal` |
+| Deals | `DealList` — 6 most recent: status pill, optional document link, compact value | **Live** — `getRecentDeals` (6 latest by deal date across all clients, owner-scoped) | "+ Create deal"; row click opens edit |
+| Deals by status | `BarChart` (responsive SVG, d3-scale, one color per `DealStatus`) + `RangeTabs` (Today / This week / This month) + a `b-taginput` status filter | **Live** — `getDealsByStatus` | Period tabs and status filter both re-query |
+| This quarter | Two `MeterList`s: "Pipeline by status" (quarter), "Activity this week" | **Live** — `getSalesDashboardSummary` | — |
+
+Deleting an interaction or a deal happens only from the client's Interactions / Deals tab (row action); the modals only create and edit.
 
 Every card is live; period windows are resolved server-side in UTC. Endpoints and refresh behavior are in SIGOOK_WEB_API_MAP.md §18.
 
@@ -208,10 +208,10 @@ Domain folders + shared root-level components. Components take function refs (e.
 
 | Folder | Contents |
 |--------|----------|
-| (root) | Address, Breadcrumbs, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, PageHeader (sticky 52px title bar: crumbs › title · count + actions slot; on touch the heading teleports into the mobile topbar), Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SidebarLogged (sidebar + mobile topbar; user avatar with notifications dot and user menu at the footer), UserNotification |
+| (root) | Address, Breadcrumbs, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, PageHeader (sticky 52px title bar: crumbs › title · count + actions slot; on touch the heading teleports into the mobile topbar), Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SearchSelect (generic remote autocomplete, used by the interaction/deal client pickers), SidebarLogged (sidebar + mobile topbar; user avatar with notifications dot and user menu at the footer), UserNotification |
 | agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
 | agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4, TimesheetsReport |
-| agency_company/ | CompanyDetailTab, CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
+| agency_company/ | CompanyDetailTab, CompanyInteractions + CompanyDeals (sales tabs — sales view + sales-access role: table with filters, Add, edit/delete row actions), InteractionForm/Modal + DealForm/Modal (create/edit, client preselected via `initialClient`; also used by the sales dashboard), CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
 | agency_request/ | AgencyRequestDetail, AgencyRequestSkills, timesheet detail/modal, AgencyShiftDetail, Applicants, ManageApplicantsModal, ContactListModal, DatepickerModal, EditTextarea, JobBoardsModal, MassivePunchCard, punch-card container, ReportTo, RequestedBy, RequestNotes(+Table), Runners, TableRequests, WorkerStatusFilter |
 | calendar/ | CalendarPunchCard |
 | candidate/ | CreateCandidate, DetailAddress, DetailCandidate, DocumentsForm, ModalCandidateRequests, ModalDocuments |
@@ -221,7 +221,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | notes/ | ColorPicker, ModalNotes, NoteForm, NotesPopover |
 | request/ | ButtonSort, RequestDetail, RequestLocation, ShiftDetail, ShiftEditModal, ShiftsForm |
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
-| sales_dashboard/ | 14 components for the sales dashboard. Shells & lists: SalesCard (icon chip, linked title, action button, body slot), SalesList (scroll + empty state), SalesListRow, SalesInteractionList, SalesClientList, SalesDealList. Charts: SalesBarChart (d3-scale SVG, `useElementSize`, per-point color, labels wrap then rotate when the band is narrow), SalesMeterList, SalesRangeTabs (`SalesPeriod` `v-model`). Create/edit: SalesCreateModal (kind switcher + delete — wiring in SIGOOK_WEB_API_MAP.md §14), SalesInteractionForm, SalesDealForm (file upload), SalesClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info), SearchSelect (generic autocomplete for the client pickers) |
+| sales_dashboard/ | Sales dashboard only (no `Sales` prefix — the folder names the module). Shells & lists: DashboardCard (icon chip, linked title, action button, body slot), DashboardList (scroll + empty state), DashboardListRow, InteractionList, ClientList, DealList. Charts: BarChart (d3-scale SVG, `useElementSize`, per-point color, labels wrap then rotate when the band is narrow), MeterList, RangeTabs (`SalesPeriod` `v-model`). ClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info) + ClientModal (create), ClientInteractionsModal (a client's interaction history + "Log interaction"). Modals use the standard `custom-content-class="card"` layout with no own styles |
 | weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
 | worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 

@@ -8278,283 +8278,6 @@
         }
       }
     },
-    "/api/agency/sales/CompanyInteractions": {
-      "get": {
-        "tags": [
-          "CompanyInteractions"
-        ],
-        "summary": "Gets a paginated list of company interactions for the sales module. Sales users only see the interactions they own.",
-        "parameters": [
-          {
-            "name": "CompanyProfileId",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "OwnerId",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "InteractionPurpose",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InteractionPurpose, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-            }
-          },
-          {
-            "name": "InteractionType",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InteractionType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-            }
-          },
-          {
-            "name": "Statuses",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.InteractionStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-            }
-          },
-          {
-            "name": "CreatedAtFrom",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "CreatedAtTo",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "SortBy",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetCompanyInteractionsSortBy"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Company.CompanyInteractionListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "CompanyInteractions"
-        ],
-        "summary": "Logs a new interaction for a company profile, owned by the current sales user.",
-        "requestBody": {
-          "description": "Interaction data: company profile, description, purpose, type and status.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateCompanyInteractionModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateCompanyInteractionModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateCompanyInteractionModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Guid"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/agency/sales/CompanyInteractions/{id}": {
-      "put": {
-        "tags": [
-          "CompanyInteractions"
-        ],
-        "summary": "Updates an existing interaction. Sales users can only update the interactions they own.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the interaction.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Updated description, purpose, type and status.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateCompanyInteractionModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateCompanyInteractionModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateCompanyInteractionModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": { }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "CompanyInteractions"
-        ],
-        "summary": "Deletes an interaction. Sales users can only delete the interactions they own.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the interaction.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": { }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/agency/sales/CompanyProfiles": {
       "get": {
         "tags": [
@@ -8942,128 +8665,19 @@
         }
       }
     },
-    "/api/agency/sales/Deals": {
+    "/api/agency/sales/Dashboard/recent-clients": {
       "get": {
         "tags": [
-          "Deals"
+          "Dashboard"
         ],
-        "summary": "Gets a paginated list of deals for the sales module. Sales users only see the deals they own.",
-        "parameters": [
-          {
-            "name": "CompanyProfileId",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "OwnerId",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "Type",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.DealType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-            }
-          },
-          {
-            "name": "Statuses",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.DealStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-            }
-          },
-          {
-            "name": "DateFrom",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "DateTo",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          },
-          {
-            "name": "SortBy",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetDealsSortBy"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
+        "summary": "Gets the 10 clients with the most recent interactions, newest first. Sales users only count the interactions they own.",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Company.DealListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Deals"
-        ],
-        "summary": "Creates a deal for a company profile, owned by the current sales user.",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Guid"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                  "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Company.SalesDashboard.RecentClientModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -9080,36 +8694,19 @@
         }
       }
     },
-    "/api/agency/sales/Deals/{id}": {
-      "put": {
+    "/api/agency/sales/Dashboard/recent-interactions": {
+      "get": {
         "tags": [
-          "Deals"
+          "Dashboard"
         ],
-        "summary": "Updates an existing deal. Sales users can only update the deals they own.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the deal.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
+        "summary": "Gets the 6 most recent interactions across all clients, newest first. Sales users only see the interactions they own.",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
-              "application/json": { }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                  "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Company.CompanyInteractionListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -9124,36 +8721,21 @@
             "description": "Forbidden — insufficient permissions"
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/api/agency/sales/Dashboard/recent-deals": {
+      "get": {
         "tags": [
-          "Deals"
+          "Dashboard"
         ],
-        "summary": "Deletes a deal. Sales users can only delete the deals they own.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the deal.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
+        "summary": "Gets the 6 most recent deals across all clients, newest date first. Sales users only see the deals they own.",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
-              "application/json": { }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                  "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Company.DealListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -17735,6 +17317,265 @@
         }
       }
     },
+    "/api/agency/companyprofiles/{profileId}/Deals": {
+      "get": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "Gets a paginated list of the deals of a company profile. Sales users only see the deals they own.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.DealType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.DealStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetDealsSortBy"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Company.DealListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "Creates a deal for a company profile, owned by the current sales user.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Guid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/companyprofiles/{profileId}/Deals/{id}": {
+      "put": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "Updates a deal of a company profile. Sales users can only update the deals they own.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the deal.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "Deletes a deal of a company profile. Sales users can only delete the deals they own.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the deal.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/companyprofiles/{profileId}/Documents": {
       "post": {
         "tags": [
@@ -17902,6 +17743,314 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/companyprofiles/{profileId}/Interactions": {
+      "get": {
+        "tags": [
+          "Interactions"
+        ],
+        "summary": "Gets a paginated list of the interactions of a company profile. Sales users only see the interactions they own.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "InteractionPurpose",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InteractionPurpose, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "InteractionType",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InteractionType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.InteractionStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "CreatedAtFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "CreatedAtTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Company.GetCompanyInteractionsSortBy"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Company.CompanyInteractionListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Interactions"
+        ],
+        "summary": "Logs a new interaction for a company profile, owned by the current sales user.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Interaction data: description, purpose, type and status.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateCompanyInteractionModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateCompanyInteractionModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.CreateCompanyInteractionModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Guid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/companyprofiles/{profileId}/Interactions/{id}": {
+      "put": {
+        "tags": [
+          "Interactions"
+        ],
+        "summary": "Updates an interaction of a company profile. Sales users can only update the interactions they own.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the interaction.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Updated description, purpose, type and status.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateCompanyInteractionModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateCompanyInteractionModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.UpdateCompanyInteractionModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Interactions"
+        ],
+        "summary": "Deletes an interaction of a company profile. Sales users can only delete the interactions they own.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the interaction.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -25810,9 +25959,6 @@
       "Covenant.Common.Models.Company.CreateCompanyInteractionModel": {
         "type": "object",
         "properties": {
-          "companyProfileId": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
           "description": {
             "$ref": "#/components/schemas/System.String"
           },
@@ -25943,6 +26089,23 @@
           },
           "count": {
             "$ref": "#/components/schemas/System.Int32"
+          }
+        }
+      },
+      "Covenant.Common.Models.Company.SalesDashboard.RecentClientModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "fullName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "email": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "lastInteractionAt": {
+            "$ref": "#/components/schemas/System.DateTime"
           }
         }
       },
@@ -26335,12 +26498,7 @@
         }
       },
       "Covenant.Common.Models.Notifications.NotificationsModel": {
-        "type": "object",
-        "properties": {
-          "workersToReview": {
-            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.RunnerStartingTodayModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-          }
-        }
+        "type": "object"
       },
       "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Accounting.Invoice.InvoiceListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "object",
@@ -28351,38 +28509,6 @@
           },
           "createdBy": {
             "$ref": "#/components/schemas/System.Guid"
-          }
-        }
-      },
-      "Covenant.Common.Models.Request.Runners.RunnerStartingTodayModel": {
-        "type": "object",
-        "properties": {
-          "runnerId": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
-          "requestId": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
-          "requestNumberId": {
-            "$ref": "#/components/schemas/System.Int32"
-          },
-          "jobTitle": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "companyName": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "workerProfileId": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
-          "workerName": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "startDate": {
-            "$ref": "#/components/schemas/System.DateTime"
-          },
-          "dayNumber": {
-            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },
@@ -30577,6 +30703,12 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.InteractionTypeSummaryModel"
         }
       },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Company.SalesDashboard.RecentClientModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Company.SalesDashboard.RecentClientModel"
+        }
+      },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.CovenantFileModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
@@ -30689,12 +30821,6 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.RunnerListModel"
-        }
-      },
-      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.RunnerStartingTodayModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.RunnerStartingTodayModel"
         }
       },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.SkippedApplicantModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
@@ -31030,16 +31156,10 @@
       "name": "WageHistory"
     },
     {
-      "name": "CompanyInteractions"
-    },
-    {
       "name": "CompanyProfiles"
     },
     {
       "name": "Dashboard"
-    },
-    {
-      "name": "Deals"
     },
     {
       "name": "Applicants"
@@ -31078,7 +31198,13 @@
       "name": "ContactInformation"
     },
     {
+      "name": "Deals"
+    },
+    {
       "name": "Documents"
+    },
+    {
+      "name": "Interactions"
     },
     {
       "name": "InvoiceNotes"

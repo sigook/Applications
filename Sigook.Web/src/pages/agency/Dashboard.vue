@@ -11,9 +11,8 @@
     </div>
 
     <div class="sd-grid-top">
-      <sales-card
+      <dashboard-card
         title="Log Interactions"
-        title-to="/sales/interactions"
         subtitle="Recent activity"
         icon="message-text-outline"
         tone="primary"
@@ -21,25 +20,24 @@
         action-label="Log interaction"
         @action="startCreateInteraction"
       >
-        <sales-interaction-list :items="interactions" :as-of="nowIso" @edit="startEditInteraction" />
-      </sales-card>
+        <interaction-list :items="interactions" :as-of="nowIso" @edit="startEditInteraction" />
+      </dashboard-card>
 
-      <sales-card
+      <dashboard-card
         title="Clients"
         title-to="/sales/companies"
-        :subtitle="clientsSubtitle"
+        subtitle="Last 10 contacted"
         icon="domain"
         tone="primary"
         action-icon="plus"
         action-label="Create client"
-        @action="openDrawer('client')"
+        @action="isNewClientModalOpen = true"
       >
-        <sales-client-list :items="clients" @select="startInteractionForClient" />
-      </sales-card>
+        <client-list :items="clients" :as-of="nowIso" @select="openClientInteractions" />
+      </dashboard-card>
 
-      <sales-card
+      <dashboard-card
         title="Deals"
-        title-to="/sales/deals"
         subtitle=""
         icon="handshake-outline"
         tone="primary"
@@ -47,18 +45,18 @@
         action-label="Create deal"
         @action="startCreateDeal"
       >
-        <sales-deal-list :items="deals" @edit="startEditDeal" />
-      </sales-card>
+        <deal-list :items="deals" @edit="startEditDeal" />
+      </dashboard-card>
     </div>
 
     <div class="sd-grid-bottom">
-      <sales-card title="Deals by status">
+      <dashboard-card title="Deals by status">
         <template #subtitle>
           Total <span class="sd-total">{{ dealsByStatus?.totalCount ?? 0 }}</span>
           <span v-if="dealsByStatus"> · {{ compactMoney(dealsByStatus.totalValue) }} · {{ dealsByStatus.period.label }}</span>
         </template>
         <template #actions>
-          <sales-range-tabs v-model="period" />
+          <range-tabs v-model="period" />
         </template>
         <div class="sd-by-status">
           <b-taginput
@@ -76,68 +74,68 @@
           <p v-if="dealsByStatus && dealsByStatus.totalCount === 0" class="sd-by-status__empty">
             No deals dated in this period
           </p>
-          <sales-bar-chart v-else title="Deals by status" :points="dealPoints" />
+          <bar-chart v-else title="Deals by status" :points="dealPoints" />
         </div>
-      </sales-card>
+      </dashboard-card>
 
-      <sales-card title="This quarter">
+      <dashboard-card title="This quarter">
         <template #subtitle>
           <span v-if="summary">{{ summary.quarter.label }} · {{ shortDate(summary.quarter.from) }} – {{ shortDate(summary.quarter.to) }}</span>
         </template>
         <div class="sd-quarter">
-          <sales-meter-list title="Pipeline by status" :items="pipelineMeters" />
-          <sales-meter-list :title="activityTitle" :items="activityMeters" />
+          <meter-list title="Pipeline by status" :items="pipelineMeters" />
+          <meter-list :title="activityTitle" :items="activityMeters" />
         </div>
-      </sales-card>
+      </dashboard-card>
     </div>
 
-    <sales-create-modal
-      v-model="isModalOpen"
-      :kind="modalKind"
-      :interaction="editingInteraction"
-      :deal="editingDeal"
-      :interaction-client="interactionClient"
-      @saved="onSaved"
-    />
+    <interaction-modal v-model="isInteractionModalOpen" :interaction="editingInteraction" @saved="onSaved" />
+    <deal-modal v-model="isDealModalOpen" :deal="editingDeal" @saved="onSaved" />
+    <client-modal v-model="isNewClientModalOpen" @saved="onSaved" />
+    <client-interactions-modal v-model="isClientModalOpen" :client="selectedClient" @saved="onSaved" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import SalesCard from '@/components/sales_dashboard/SalesCard.vue';
-import SalesInteractionList from '@/components/sales_dashboard/SalesInteractionList.vue';
-import SalesClientList from '@/components/sales_dashboard/SalesClientList.vue';
-import SalesDealList from '@/components/sales_dashboard/SalesDealList.vue';
-import SalesRangeTabs from '@/components/sales_dashboard/SalesRangeTabs.vue';
-import SalesBarChart from '@/components/sales_dashboard/SalesBarChart.vue';
-import SalesMeterList from '@/components/sales_dashboard/SalesMeterList.vue';
-import SalesCreateModal from '@/components/sales_dashboard/SalesCreateModal.vue';
-import { getDealsByStatus, getSalesDashboardSummary } from '@/api/salesDashboardApi';
-import { getCompanyInteractions, getDeals } from '@/api/companyApi';
-import { getSalesCompanies } from '@/api/salesApi';
+import DashboardCard from '@/components/sales_dashboard/DashboardCard.vue';
+import InteractionList from '@/components/sales_dashboard/InteractionList.vue';
+import ClientList from '@/components/sales_dashboard/ClientList.vue';
+import DealList from '@/components/sales_dashboard/DealList.vue';
+import RangeTabs from '@/components/sales_dashboard/RangeTabs.vue';
+import BarChart from '@/components/sales_dashboard/BarChart.vue';
+import MeterList from '@/components/sales_dashboard/MeterList.vue';
+import InteractionModal from '@/components/agency_company/InteractionModal.vue';
+import DealModal from '@/components/agency_company/DealModal.vue';
+import ClientModal from '@/components/sales_dashboard/ClientModal.vue';
+import ClientInteractionsModal from '@/components/sales_dashboard/ClientInteractionsModal.vue';
+import {
+  getDealsByStatus,
+  getRecentClients,
+  getRecentDeals,
+  getRecentInteractions,
+  getSalesDashboardSummary,
+} from '@/api/salesDashboardApi';
 import { useCurrentAgent } from '@/composables/useCurrentAgent';
 import { compactMoney, shortDate } from '@/utils/salesDashboardFormat';
 import { showAlertError } from '@/utils/toast';
 import {
-  DealSortBy,
   DEAL_STATUSES,
   DEAL_STATUS_COLORS,
   DEAL_STATUS_LABELS,
-  CompanyInteractionSortBy,
   INTERACTION_TYPES,
   INTERACTION_TYPE_COLORS,
   INTERACTION_TYPE_LABELS,
 } from '@/types/company';
 import type { Deal, CompanyInteraction, DealStatus } from '@/types/company';
-import type { AgencyCompanyListItem } from '@/types/agency';
 import type { CatalogItem } from '@/types/common';
 import {
   SalesPeriod,
   type DealsByStatusModel,
   type SalesBarPoint,
-  type SalesCreateKind,
   type SalesDashboardSummary,
   type SalesMeter,
+  type SalesRecentClient,
 } from '@/types/sales';
 
 const { agentName, loadAgentName } = useCurrentAgent();
@@ -147,16 +145,17 @@ const summary = ref<SalesDashboardSummary | null>(null);
 const dealsByStatus = ref<DealsByStatusModel | null>(null);
 const interactions = ref<CompanyInteraction[]>([]);
 const editingInteraction = ref<CompanyInteraction | null>(null);
-const clients = ref<AgencyCompanyListItem[]>([]);
-const clientsTotal = ref<number | null>(null);
-const interactionClient = ref<AgencyCompanyListItem | null>(null);
+const clients = ref<SalesRecentClient[]>([]);
+const selectedClient = ref<SalesRecentClient | null>(null);
+const isClientModalOpen = ref(false);
 const deals = ref<Deal[]>([]);
 const editingDeal = ref<Deal | null>(null);
 const nowIso = new Date().toISOString();
 const period = ref<SalesPeriod>(SalesPeriod.Week);
 const statusesSelected = ref<CatalogItem<DealStatus>[]>([]);
-const isModalOpen = ref(false);
-const modalKind = ref<SalesCreateKind | null>(null);
+const isInteractionModalOpen = ref(false);
+const isDealModalOpen = ref(false);
+const isNewClientModalOpen = ref(false);
 
 // Drops out-of-order responses when the period or the status filter changes fast.
 let dealsByStatusRequest = 0;
@@ -165,10 +164,6 @@ const statusOptions: CatalogItem<DealStatus>[] = DEAL_STATUSES.map((status) => (
   id: status,
   value: DEAL_STATUS_LABELS[status],
 }));
-
-const clientsSubtitle = computed(() =>
-  clientsTotal.value === null ? '' : `${clientsTotal.value} in your book`
-);
 
 const activityTitle = computed(() =>
   summary.value ? `Activity this week · ${summary.value.week.label}` : 'Activity this week'
@@ -206,42 +201,29 @@ const activityMeters = computed<SalesMeter[]>(() => {
   }));
 });
 
-function openDrawer(kind: SalesCreateKind): void {
-  modalKind.value = kind;
-  isModalOpen.value = true;
-}
-
 function startCreateInteraction(): void {
   editingInteraction.value = null;
-  interactionClient.value = null;
-  modalKind.value = 'interaction';
-  isModalOpen.value = true;
+  isInteractionModalOpen.value = true;
 }
 
 function startEditInteraction(interaction: CompanyInteraction): void {
   editingInteraction.value = interaction;
-  interactionClient.value = null;
-  modalKind.value = 'interaction';
-  isModalOpen.value = true;
+  isInteractionModalOpen.value = true;
 }
 
-function startInteractionForClient(client: AgencyCompanyListItem): void {
-  editingInteraction.value = null;
-  interactionClient.value = client;
-  modalKind.value = 'interaction';
-  isModalOpen.value = true;
+function openClientInteractions(client: SalesRecentClient): void {
+  selectedClient.value = client;
+  isClientModalOpen.value = true;
 }
 
 function startCreateDeal(): void {
   editingDeal.value = null;
-  modalKind.value = 'deal';
-  isModalOpen.value = true;
+  isDealModalOpen.value = true;
 }
 
 function startEditDeal(deal: Deal): void {
   editingDeal.value = deal;
-  modalKind.value = 'deal';
-  isModalOpen.value = true;
+  isDealModalOpen.value = true;
 }
 
 function loadDealsByStatus(): void {
@@ -268,26 +250,25 @@ function loadSummary(): void {
 }
 
 function loadInteractions(): void {
-  getCompanyInteractions({ pageSize: 6, isDescending: true, sortBy: CompanyInteractionSortBy.CreatedAt })
+  getRecentInteractions()
     .then((result) => {
-      interactions.value = result.items;
+      interactions.value = result;
     })
     .catch((error) => showAlertError(error));
 }
 
 function loadClients(): void {
-  getSalesCompanies({ pageIndex: 1, pageSize: 6, sortBy: 3, isDescending: true })
+  getRecentClients()
     .then((result) => {
-      clients.value = result.items;
-      clientsTotal.value = result.totalItems;
+      clients.value = result;
     })
     .catch((error) => showAlertError(error));
 }
 
 function loadDeals(): void {
-  getDeals({ pageSize: 6, isDescending: true, sortBy: DealSortBy.Date })
+  getRecentDeals()
     .then((result) => {
-      deals.value = result.items;
+      deals.value = result;
     })
     .catch((error) => showAlertError(error));
 }

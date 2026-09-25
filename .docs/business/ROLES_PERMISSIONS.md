@@ -67,14 +67,19 @@ Concretely:
 
 ### Exception: deals & interactions are owner-scoped end-to-end
 
-The sales module's deals and company interactions (`api/agency/sales/deals`,
-`api/agency/sales/companyinteractions`) do **not** follow the list-is-the-boundary rule: a sales
-user lists, updates and deletes only the records they own, and `OwnerId` is overwritten server-side
-on create. The dashboard aggregates (`api/agency/sales/dashboard/deals-by-status`,
-`api/agency/sales/dashboard/summary`) count only those same owned rows. Admin and superadmin hit
-every one of these endpoints unscoped. Controllers:
-`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController,DashboardController}.cs`
-(Policy `Sales`). Business meaning of deals and interactions: `SALES_MODULE.md`; entities: `.docs/technical/ENTITIES_RELATIONSHIPS.md`.
+The sales module's deals and company interactions live under the client
+(`api/agency/companyprofiles/{profileId}/Deals`, `api/agency/companyprofiles/{profileId}/Interactions`)
+and do **not** follow the list-is-the-boundary rule: a sales user lists, updates and deletes only the
+records they own, and `OwnerId` is overwritten server-side on create. Update and delete also require
+the record to belong to the client in the route. The dashboard endpoints
+(`api/agency/sales/dashboard/deals-by-status`, `summary`, `recent-clients`, `recent-interactions`,
+`recent-deals`) count or list only those same owned rows. Admin and superadmin hit every one of these
+endpoints unscoped. Controllers (Policy `Sales` — sales, admin, superadmin):
+`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{InteractionsController,DealsController}.cs`
+and `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/DashboardController.cs`. In Sigook.Web the
+client's Interactions / Deals tabs render only on the sales route (`/sales/companies/:id`) **and** for a
+sales-access role (`useSalesAccess`), so recruiting never sees them. Business meaning of deals and
+interactions: `SALES_MODULE.md`; entities: `.docs/technical/ENTITIES_RELATIONSHIPS.md`.
 
 ## Sales auto-assignment
 

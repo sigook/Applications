@@ -8,8 +8,6 @@ export enum SalesPeriod {
   Quarter = 3,
 }
 
-export type SalesCreateKind = 'interaction' | 'client' | 'deal';
-
 // Mirrors backend SalesPeriodRangeModel. `from`/`to` are UTC calendar dates,
 // serialized without an offset so the browser renders them verbatim; `to` is inclusive.
 export interface SalesPeriodRange {
@@ -51,6 +49,17 @@ export interface SalesDashboardSummary {
   readonly week: SalesPeriodRange;
   readonly pipeline: readonly DealStatusSummary[];
   readonly activity: readonly InteractionTypeSummary[];
+}
+
+export interface SalesClientReference {
+  readonly id: string;
+  readonly fullName: string;
+}
+
+// GET /api/agency/sales/dashboard/recent-clients
+export interface SalesRecentClient extends SalesClientReference {
+  readonly email: string | null;
+  readonly lastInteractionAt: string;
 }
 
 export interface SalesBarPoint {

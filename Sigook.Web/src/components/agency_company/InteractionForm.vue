@@ -70,8 +70,7 @@
 import { computed, onMounted, ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
-import { getAgencyCompaniesList } from '@/api/agencyCompanyApi';
-import { createCompanyInteraction, updateCompanyInteraction } from '@/api/companyApi';
+import { createCompanyInteraction, getAgencyCompaniesList, updateCompanyInteraction } from '@/api/agencyCompanyApi';
 import {
   InteractionType,
   InteractionPurpose,
@@ -84,17 +83,17 @@ import {
   INTERACTION_STATUS_LABELS,
 } from '@/types/company';
 import type { CompanyInteraction } from '@/types/company';
-import type { AgencyCompanyListItem } from '@/types/agency';
+import type { SalesClientReference } from '@/types/sales';
 import type { CatalogItem } from '@/types/common';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
-import SearchSelect from './SearchSelect.vue';
+import SearchSelect from '@/components/SearchSelect.vue';
 
 const MINIMUM_SEARCH_LENGTH = 3;
 const CLIENT_SEARCH_HINT = `Type at least ${MINIMUM_SEARCH_LENGTH} characters to search`;
 
 const props = defineProps<{
   interaction?: CompanyInteraction | null;
-  initialClient?: AgencyCompanyListItem | null;
+  initialClient?: SalesClientReference | null;
 }>();
 
 const isEditing = computed(() => !!props.interaction);
@@ -192,7 +191,7 @@ function submit(): Promise<boolean> {
       async (values) => {
         try {
           if (props.interaction) {
-            await updateCompanyInteraction(props.interaction.id, {
+            await updateCompanyInteraction(props.interaction.companyProfileId, props.interaction.id, {
               description: values.description.trim(),
               interactionPurpose: values.purpose,
               interactionType: values.type,
@@ -200,8 +199,7 @@ function submit(): Promise<boolean> {
             });
             showAlertSuccess('Interaction updated');
           } else {
-            await createCompanyInteraction({
-              companyProfileId: values.companyProfileId as string,
+            await createCompanyInteraction(values.companyProfileId as string, {
               description: values.description.trim(),
               interactionPurpose: values.purpose,
               interactionType: values.type,
@@ -228,6 +226,7 @@ defineExpose({ submit });
 </script>
 
 <style scoped lang="scss">
+@use "sass:color";
 @import "../../assets/scss/variables";
 
 .sd-readonly {
@@ -254,7 +253,7 @@ defineExpose({ submit });
   transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: darken($gray-bg, 5%);
+    background: color.adjust($gray-bg, $lightness: -5%);
     color: $grey-font;
   }
 

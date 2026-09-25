@@ -1,5 +1,4 @@
 import { api } from '@/security/apiService';
-import { buildMultipartFormData } from '@/utils/multipart';
 import type { PaginatedList } from '@/types/common';
 import type { CreateAgencyRequestModel, RequestShiftModel } from '@/types/agency';
 import type { InvoiceSummaryModel } from '@/types/accounting';
@@ -21,14 +20,6 @@ import type {
   CompanyInvoiceFilter,
   CompanyInvoiceListItem,
   CommentsModel,
-  Deal,
-  DealFilter,
-  CreateDealModel,
-  UpdateDealModel,
-  CompanyInteraction,
-  CompanyInteractionFilter,
-  CreateCompanyInteractionModel,
-  UpdateCompanyInteractionModel,
 } from '@/types/company';
 import type { WorkerCommentCreateModel } from '@/types/worker';
 
@@ -197,50 +188,4 @@ export function getCompanyInvoiceDetail(id: string): Promise<InvoiceSummaryModel
 // Request timesheets
 export function getCompanyRequestTimeSheetFile(requestId: string): Promise<Blob> {
   return api.get<Blob>(`/api/company/requests/${requestId}/TimeSheets/File`, { responseType: 'blob' });
-}
-
-// Sales - Deals
-const dealsBase = '/api/agency/sales/deals';
-
-export function getDeals(filter: DealFilter): Promise<PaginatedList<Deal>> {
-  return api.get<PaginatedList<Deal>>(dealsBase, { params: { ...filter } });
-}
-
-export function createDeal(model: CreateDealModel, file?: File | null): Promise<string> {
-  return api.post<string>(
-    dealsBase,
-    buildMultipartFormData(model, file && model.fileName ? { [model.fileName]: file } : {}),
-    { headers: { 'Content-Type': 'multipart/form-data' } },
-  );
-}
-
-export function updateDeal(id: string, model: UpdateDealModel, file?: File | null): Promise<void> {
-  return api.put(
-    `${dealsBase}/${id}`,
-    buildMultipartFormData(model, file && model.fileName ? { [model.fileName]: file } : {}),
-    { headers: { 'Content-Type': 'multipart/form-data' } },
-  );
-}
-
-export function deleteDeal(id: string): Promise<void> {
-  return api.del(`${dealsBase}/${id}`);
-}
-
-// Sales - Company Interactions
-const companyInteractionsBase = '/api/agency/sales/companyinteractions';
-
-export function getCompanyInteractions(filter: CompanyInteractionFilter): Promise<PaginatedList<CompanyInteraction>> {
-  return api.get<PaginatedList<CompanyInteraction>>(companyInteractionsBase, { params: { ...filter } });
-}
-
-export function createCompanyInteraction(model: CreateCompanyInteractionModel): Promise<string> {
-  return api.post<string>(companyInteractionsBase, model);
-}
-
-export function updateCompanyInteraction(id: string, model: UpdateCompanyInteractionModel): Promise<void> {
-  return api.put(`${companyInteractionsBase}/${id}`, model);
-}
-
-export function deleteCompanyInteraction(id: string): Promise<void> {
-  return api.del(`${companyInteractionsBase}/${id}`);
 }

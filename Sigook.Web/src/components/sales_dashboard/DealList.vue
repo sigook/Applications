@@ -1,6 +1,6 @@
 <template>
-  <sales-list :is-empty="!items.length">
-    <sales-list-row
+  <dashboard-list :is-empty="!items.length">
+    <dashboard-list-row
       v-for="item in items"
       :key="item.id"
       class="sd-deal-row"
@@ -28,13 +28,13 @@
         </a>
         <span class="sd-deal-value">{{ compactMoney(item.value) }}</span>
       </template>
-    </sales-list-row>
-  </sales-list>
+    </dashboard-list-row>
+  </dashboard-list>
 </template>
 
 <script setup lang="ts">
-import SalesList from './SalesList.vue';
-import SalesListRow from './SalesListRow.vue';
+import DashboardList from './DashboardList.vue';
+import DashboardListRow from './DashboardListRow.vue';
 import { DEAL_STATUS_LABELS } from '@/types/company';
 import type { Deal } from '@/types/company';
 import { compactMoney } from '@/utils/salesDashboardFormat';

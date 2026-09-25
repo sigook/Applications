@@ -10,9 +10,6 @@ public class CreateCompanyInteractionModelValidator : AbstractValidator<CreateCo
     public CreateCompanyInteractionModelValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
-        RuleFor(m => m.CompanyProfileId)
-            .NotEmpty()
-            .WithName(ApiResources.Company);
         RuleFor(m => m.Description)
             .NotEmpty()
             .MaximumLength(5000)

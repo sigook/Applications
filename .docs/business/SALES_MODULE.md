@@ -95,7 +95,7 @@ Landing page of the module (`/sales/dashboard`, reached from the sidebar — sig
 | Card | What it answers |
 |------|-----------------|
 | Log Interactions | What were my last touchpoints? (6 most recent, newest first) |
-| Clients | Who are my clients? How many are active, how many are new this month? |
+| Clients | Which clients did I contact last? (10 clients with the most recent interaction, newest first; a sales rep only counts the interactions they own, admin/superadmin count everyone's). Clicking a client opens its interaction history with a shortcut to log a new one |
 | Deals | What are my latest proposals and where are they? (6 most recent) |
 | Deals by status | How many deals are To Send, Sent, Under Review, Accepted, Rejected, Closed or Completed for today / this week / this month? |
 | This quarter | Two breakdowns: **pipeline by status** (how many deals sit in each `DealStatus` this quarter) and **activity this week** (how many interactions per channel) |
@@ -106,8 +106,7 @@ Served live by `GET api/agency/sales/dashboard/*` (see `.docs/technical/SIGOOK_W
 
 | KPI | Definition |
 |-----|------------|
-| Active clients | Companies in an active status (not Blocked / Inactive) |
-| New this month | Companies created in the current calendar month |
+| Recent clients | Companies ordered by the `CreatedAt` of their latest interaction, newest first, top 10; companies without interactions are left out |
 | Deals by status | Count of deals per `DealStatus`, plus the summed `Value` per status, over deals whose `Date` falls in the selected period |
 | Pipeline by status | Count of deals per `DealStatus` over deals whose `Date` falls in the current quarter |
 | Activity this week | Count of interactions per `InteractionType` whose `CreatedAt` falls in the current week |
@@ -134,7 +133,7 @@ zero-filled, so the chart keeps a stable column order.
 
 ## Full pages
 
-Beyond the dashboard, the module has full paginated lists for **Interactions** (`/sales/interactions`) and **Deals** (`/sales/deals`) with the same create / edit / delete actions, plus the sales-scoped **Clients** (`/sales/companies`) and **Orders** (`/sales/requests`) lists described in `ROLES_PERMISSIONS.md`.
+Beyond the dashboard, interactions and deals are managed per client: the client detail in the sales view (`/sales/companies/:id`) has **Interactions** and **Deals** tabs with the full list, filters, create, edit and delete. Deleting only happens there; the dashboard creates and edits. The sales-scoped **Clients** (`/sales/companies`) and **Orders** (`/sales/requests`) lists are described in `ROLES_PERMISSIONS.md`.
 
 ---
 

@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
@@ -17,9 +18,12 @@ var keyVaultUrl = builder.Configuration["KeyVault:Url"];
 if (!string.IsNullOrEmpty(keyVaultUrl))
 {
     var prefix = builder.Environment.IsProduction() ? "production" : "staging";
+    TokenCredential credential = builder.Environment.IsDevelopment()
+        ? new ChainedTokenCredential(new AzureCliCredential(), new VisualStudioCredential())
+        : new DefaultAzureCredential();
     builder.Configuration.AddAzureKeyVault(
         new Uri(keyVaultUrl),
-        new DefaultAzureCredential(),
+        credential,
         new PrefixKeyVaultSecretManager($"{prefix}-func"));
 }
 
