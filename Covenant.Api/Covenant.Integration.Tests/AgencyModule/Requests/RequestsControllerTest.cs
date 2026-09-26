@@ -362,7 +362,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             services.AddTestAuthenticationBuilder()
                 .AddTestAuth(o =>
                 {
-                    o.AddSub(Data.AgencyId);
+                    o.AddSub(Data.FakeUserRecruiter.Id);
                     o.AddAgencyPersonnelRole(Data.AgencyId);
                     o.AddName(Data.FakeUserRecruiter.Email);
                 });
