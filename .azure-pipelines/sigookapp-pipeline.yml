@@ -176,7 +176,7 @@ stages:
 # Stage 2: Calculate Version (shared by Android and iOS)
 # ============================================
 # Version Name: YYYY.M.D (e.g., "2026.2.12")
-# Android Version Code: YYYYMMDDHH - always increasing, below the 2100000000 cap
+# Android Version Code: YYYYMMDDFF (FF = fraction of the UTC day, 14.4-minute slots) - always increasing, below the 2100000000 cap
 # iOS Build Number: YYYYMMDDHHMM - CFBundleVersion has no cap, so minute
 #   precision keeps a same-hour dev + main upload from colliding in App Store Connect
 # ============================================
@@ -389,7 +389,7 @@ stages:
 
           # Validate auth scopes EXACTLY. An extra scope is as fatal as a
           # missing one: 'roles' is not granted to the native clients and
-          # IdentityServer answers invalid_scope, which the app surfaces as a
+          # the authorization server answers invalid_scope, which the app surfaces as a
           # generic "invalid credentials" message.
           EXPECTED_SCOPES="openid,profile,api1,offline_access"
           if [ "$(SCOPES)" != "$EXPECTED_SCOPES" ]; then
@@ -632,7 +632,7 @@ stages:
 
           # Validate auth scopes EXACTLY. An extra scope is as fatal as a
           # missing one: 'roles' is not granted to the native clients and
-          # IdentityServer answers invalid_scope, which the app surfaces as a
+          # the authorization server answers invalid_scope, which the app surfaces as a
           # generic "invalid credentials" message.
           EXPECTED_SCOPES="openid,profile,api1,offline_access"
           if [ "$(SCOPES)" != "$EXPECTED_SCOPES" ]; then

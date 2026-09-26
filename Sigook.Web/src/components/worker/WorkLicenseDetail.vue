@@ -34,6 +34,7 @@
           </p>
           <span v-if="item.issued">Issued: {{ dateMonth(item.issued) }} | </span>
           <span v-if="item.expires">Expire: {{dateMonth(item.expires) }}</span>
+          <span v-else>Does not expire</span>
         </div>
       </div>
     </div>

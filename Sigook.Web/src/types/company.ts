@@ -391,9 +391,8 @@ export enum DealStatus {
 // GetDealsSortBy on the backend: Date=0, Company=1, Value=2, Status=3.
 export enum DealSortBy {
   Date = 0,
-  Company = 1,
-  Value = 2,
-  Status = 3,
+  Value = 1,
+  Status = 2,
 }
 
 export const DEAL_TYPE_LABELS: Record<DealType, string> = {
@@ -453,7 +452,7 @@ export interface Deal {
   updatedAt: string;
 }
 
-// Filter for GET .../deals. Mirrors backend GetDealsFilter.
+// Filter for GET .../Deals. Mirrors backend GetDealsFilter.
 // ownerId is honoured only for admin/superadmin; for a sales user the backend overwrites it
 // with their own user id (SalesService.OwnerScope).
 export interface DealFilter {
@@ -461,7 +460,6 @@ export interface DealFilter {
   pageSize?: number;
   isDescending?: boolean;
   sortBy?: DealSortBy;
-  companyProfileId?: string | null;
   ownerId?: string | null;
   type?: DealType | null;
   statuses?: DealStatus[];
@@ -472,7 +470,6 @@ export interface DealFilter {
 // Body for POST. Mirrors backend CreateDealModel.
 export interface CreateDealModel {
   title: string;
-  companyProfileId: string;
   date: string;
   value: number;
   type: DealType;
@@ -518,8 +515,7 @@ export enum InteractionStatus {
 // GetCompanyInteractionsSortBy on the backend: CreatedAt=0, Company=1, Status=2.
 export enum CompanyInteractionSortBy {
   CreatedAt = 0,
-  Company = 1,
-  Status = 2,
+  Status = 1,
 }
 
 export const INTERACTION_TYPE_LABELS: Record<InteractionType, string> = {
@@ -593,7 +589,7 @@ export interface CompanyInteraction {
   updatedAt: string;
 }
 
-// Filter for GET .../companyinteractions. Mirrors backend GetCompanyInteractionsFilter.
+// Filter for GET .../Interactions. Mirrors backend GetCompanyInteractionsFilter.
 // ownerId is honoured only for admin/superadmin; for a sales user the backend overwrites it
 // with their own user id (SalesService.OwnerScope).
 export interface CompanyInteractionFilter {
@@ -601,7 +597,6 @@ export interface CompanyInteractionFilter {
   pageSize?: number;
   isDescending?: boolean;
   sortBy?: CompanyInteractionSortBy;
-  companyProfileId?: string | null;
   ownerId?: string | null;
   interactionPurpose?: InteractionPurpose | null;
   interactionType?: InteractionType | null;
@@ -612,7 +607,6 @@ export interface CompanyInteractionFilter {
 
 // Body for POST. Mirrors backend CreateCompanyInteractionModel.
 export interface CreateCompanyInteractionModel {
-  companyProfileId: string;
   description: string;
   interactionPurpose: InteractionPurpose;
   interactionType: InteractionType;

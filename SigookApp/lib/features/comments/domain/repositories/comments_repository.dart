@@ -3,8 +3,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/worker_comment.dart';
 
 abstract class CommentsRepository {
-  Future<Either<Failure, List<WorkerComment>>> getComments(
-    String workerId, {
+  Future<Either<Failure, List<WorkerComment>>> getComments({
     int pageSize = 10,
     int pageIndex = 1,
   });

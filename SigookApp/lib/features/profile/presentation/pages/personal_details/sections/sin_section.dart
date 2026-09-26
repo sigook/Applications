@@ -7,6 +7,7 @@ import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/navigation/document_preview_page.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
+import '../../../../domain/validators/profile_validators.dart';
 import '../../../../sin/presentation/viewmodels/sin_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/document_file_row.dart';
@@ -25,6 +26,30 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
   PickedFileData? _replaceSinFile;
   bool _expiresSin = false;
   DateTime? _dueDate;
+  String? _sinError;
+  String? _dueDateError;
+
+  void _save() {
+    setState(() {
+      _sinError = ProfileValidators.socialInsurance(_sinController.text);
+      _dueDateError = ProfileValidators.sinDueDate(
+        socialInsurance: _sinController.text,
+        expires: _expiresSin,
+        dueDate: _dueDate,
+      );
+    });
+    if (_sinError != null || _dueDateError != null) return;
+    ref.read(sinViewModelProvider.notifier).save(
+      {
+        'socialInsurance': _sinController.text.trim(),
+        'socialInsuranceExpire': _expiresSin.toString(),
+        if (_expiresSin && _dueDate != null)
+          'dueDate': _dueDate!.toIso8601String(),
+        if (_deleteSinFile) '_deleteSinFile': 'true',
+      },
+      filePath: _replaceSinFile?.path,
+    );
+  }
 
   @override
   void dispose() {
@@ -44,6 +69,8 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
       _replaceSinFile = null;
       _expiresSin = profile?.socialInsuranceExpire ?? false;
       _dueDate = parsed;
+      _sinError = null;
+      _dueDateError = null;
     });
   }
 
@@ -55,13 +82,18 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
       firstDate: now,
       lastDate: DateTime(now.year + 20),
     );
-    if (picked != null) setState(() => _dueDate = picked);
+    if (picked != null) {
+      setState(() {
+        _dueDate = picked;
+        _dueDateError = null;
+      });
+    }
   }
 
   Future<void> _pickFile() async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: FilePickerService.documentExtensions);
     if (!result.isSuccess || result.file == null) return;
     setState(() {
       _replaceSinFile = result.file;
@@ -113,16 +145,7 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
             ? ref.read(sinViewModelProvider.notifier).startEditing
             : null,
         onCancel: ref.read(sinViewModelProvider.notifier).cancelEditing,
-        onSave: () => ref.read(sinViewModelProvider.notifier).save(
-          {
-            'socialInsurance': _sinController.text,
-            'socialInsuranceExpire': _expiresSin.toString(),
-            if (_expiresSin && _dueDate != null)
-              'dueDate': _dueDate!.toIso8601String(),
-            if (_deleteSinFile) '_deleteSinFile': 'true',
-          },
-          filePath: _replaceSinFile?.path,
-        ),
+        onSave: _save,
       ),
       children: [
         ProfileInfoRow(
@@ -133,6 +156,7 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
           icon: Icons.lock_outlined,
           isEditing: vm.isEditing,
           controller: vm.isEditing ? _sinController : null,
+          errorText: _sinError,
         ),
         if (!vm.isEditing) ...[
           ProfileInfoRow(
@@ -176,6 +200,12 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
                   color: _dueDate != null ? Colors.black87 : Colors.grey,
                 ),
               ),
+              subtitle: _dueDateError != null
+                  ? Text(
+                      _dueDateError!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    )
+                  : null,
               trailing: const Icon(Icons.edit_calendar_outlined, size: 18),
               onTap: _pickDueDate,
             ),

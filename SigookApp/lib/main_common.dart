@@ -11,6 +11,7 @@ import 'core/services/azure_app_insights_client.dart';
 import 'core/services/azure_crash_reporting_service.dart';
 import 'core/services/crash_reporting_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/feedback/environment_banner.dart';
 import 'core/constants/error_messages.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/profile/presentation/providers/cached_worker_profile_provider.dart';
@@ -161,11 +162,13 @@ class _MyAppState extends ConsumerState<MyApp> {
       routerConfig: _router,
       theme: AppTheme.lightTheme,
       builder: (context, child) {
-        return GestureDetector(
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: child,
+        return EnvironmentBanner(
+          child: GestureDetector(
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: child!,
+          ),
         );
       },
     );

@@ -408,8 +408,6 @@ CacheException           →  CacheFailure
 
 The `.vscode/` folder is gitignored, so you must create it manually. Copy the block below and save it as `.vscode/launch.json` at the root of `SigookApp/`:
 
-Copy the block below and save it as `.vscode/launch.json`:
-
 ```json
 {
   "version": "0.2.0",
@@ -479,27 +477,21 @@ Copy the block below and save it as `.vscode/launch.json`:
 }
 ```
 
-#### 2. Create your `.env` file
+#### 2. `.env` files
 
-The `.env.*` files are gitignored and contain real credentials — never commit them. Ask a teammate for the values, then create the file for the environment you need:
+`.env.local`, `.env.staging` and `.env.production` are committed and ready to use. They only hold public values (URLs, client id, scopes) that end up inside the binary anyway. `APP_INSIGHTS_CONNECTION_STRING` stays empty in them; CI injects it from the variable groups.
 
-```bash
-# Most common: connect to staging servers
-cp .env.example .env.staging
-# Then edit .env.staging and fill in the real values
+`.env.local` targets the Android emulator over plain HTTP (`http://10.0.2.2:5000`, the Api's `http` endpoint). The emulator does not trust the Kestrel dev certificate, so HTTPS on `44307` fails with a connection error. Cleartext to `10.0.2.2` is allowed only in debug builds (`android/app/src/debug/res/xml/debug_network_security_config.xml`).
 
-# For local backend development
-cp .env.example .env.local
-# Then edit .env.local — see URL notes below
-```
-
-**Local URL notes** — update `API_BASE_URL` and `AUTH_AUTHORITY` in `.env.local` based on your setup:
+For other targets, edit `.env.local` locally without committing the change:
 
 | Target           | API_BASE_URL                          | AUTH_AUTHORITY                  |
 | ---------------- | ------------------------------------- | ------------------------------- |
-| Android Emulator | `https://10.0.2.2:44307/api/`         | `https://10.0.2.2:44381/`       |
-| iOS Simulator    | `https://localhost:44307/api/`        | `https://localhost:44381/`      |
-| Physical device  | `https://<your-LAN-IP>:44307/api/`    | `https://<your-LAN-IP>:44381/`  |
+| Android Emulator | `http://10.0.2.2:5000/api/`           | `http://10.0.2.2:5000/`         |
+| iOS Simulator    | `http://localhost:5000/api/`          | `http://localhost:5000/`        |
+| Physical device  | `http://<your-LAN-IP>:5000/api/`      | `http://<your-LAN-IP>:5000/`    |
+
+A physical device also needs the Api listening on all interfaces and the LAN IP added to the debug network security config.
 
 #### 3. Run
 
@@ -507,7 +499,7 @@ cp .env.example .env.local
 2. Select a configuration from the dropdown:
    - **Debug — Staging** — day-to-day development against staging servers
    - **Profile — Staging** — performance profiling (DevTools)
-   - **Debug — Local** — requires local backend (`Covenant.Api` + `Covenant.IdentityServer` running)
+   - **Debug — Local** — requires the local backend (`Covenant.Api`, which also serves the OAuth endpoints)
    - **Debug — Staging (Android/iOS)** — forces a specific platform when multiple devices are connected
    - **Attach to Device** — attach the debugger to an already-running app
 3. Press `F5`
@@ -524,3 +516,41 @@ flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 # Production
 flutter build apk --dart-define-from-file=.env.production -t lib/main_production.dart --release
 ```
+
+### Devices
+
+```bash
+flutter devices                              # Connected phones, emulators and simulators
+flutter emulators                            # Available Android emulators (AVDs)
+flutter emulators --launch <emulator-id>     # Boot one
+```
+
+A physical Android phone needs *Developer options → USB debugging* enabled. When several devices are connected, pick one with `-d <device-id>`. In the Android emulator, `Ctrl+←` / `Ctrl+→` rotates the screen.
+
+### Release Build (Local)
+
+Release builds are the only ones that run R8 (minification, obfuscation, resource shrinking), so they are the way to check a change to `android/app/proguard-rules.pro`, the Gradle toolchain or anything that behaves differently under R8.
+
+The `release` signing config reads `android/key.properties` (gitignored) and fails with *"Keystore file … not found"* without it. The real keystore only lives in the CI pipeline; locally, sign with the debug key:
+
+```properties
+# android/key.properties
+storeFile=C:/Users/<you>/.android/debug.keystore
+storePassword=android
+keyAlias=androiddebugkey
+keyPassword=android
+```
+
+On macOS/Linux the keystore is at `~/.android/debug.keystore`. It is created the first time you run a debug build.
+
+```bash
+# Install and run on the connected device
+flutter run --release --dart-define-from-file=.env.staging -t lib/main_staging.dart
+
+# Or build the artifacts Play Console receives
+flutter build appbundle --release --dart-define-from-file=.env.staging -t lib/main_staging.dart
+```
+
+- The R8 mapping lands in `build/app/outputs/mapping/release/mapping.txt`; use it to resolve obfuscated class names reported by Play Console (e.g. `c.u.b`). `seeds.txt` next to it lists the classes kept by `-keep` rules.
+- A build signed with the debug key cannot be uploaded to Play and cannot update an install that came from the store; uninstall that one first.
+- Delete `android/key.properties` when you are done.

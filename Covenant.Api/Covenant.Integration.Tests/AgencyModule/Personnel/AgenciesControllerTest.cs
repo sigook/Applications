@@ -48,7 +48,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}", new { });
             response.EnsureSuccessStatusCode();
 
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.True((await context.AgencyPersonnel.SingleAsync(s => s.Id == id)).IsPrimary);
         }
 

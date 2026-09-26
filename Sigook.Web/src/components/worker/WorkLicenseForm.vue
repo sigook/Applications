@@ -43,7 +43,14 @@
             :mobile-native="false" append-to-body position="is-top-right" />
         </b-field>
       </div>
-      <div class="column is-6">
+      <div class="column is-12">
+        <b-field :label="'Expires'">
+          <b-switch v-model="doesExpire" :true-value="true" :false-value="false">
+            {{ doesExpire ? 'Yes' : 'No' }}
+          </b-switch>
+        </b-field>
+      </div>
+      <div class="column is-6" v-if="doesExpire">
         <b-field :type="formErrors.expires ? 'is-danger' : ''"
           :message="formErrors.expires || ''">
           <template #label>
@@ -82,11 +89,14 @@ interface LicenseForm {
 const props = defineProps<{ data?: any }>();
 const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 
+const doesExpire = ref(true);
+
 const schema = yup.object({
   description: yup.string().required('Description is required').max(100, 'Max 100 characters'),
   number: yup.string().nullable(),
   issued: yup.mixed().nullable(),
-  expires: yup.mixed().required('Expires is required'),
+  expires: yup.mixed().nullable()
+    .test('required-if-expires', 'Expires is required', v => !doesExpire.value || !!v),
 });
 
 const form = useStickyForm<LicenseForm>({
@@ -140,7 +150,7 @@ async function saveLicenses(values: any) {
       },
       number: values.number,
       issued: values.issued,
-      expires: values.expires,
+      expires: doesExpire.value ? values.expires : null,
     };
     const allLicenses = [...licenses.value, newLicense];
     const formData = new FormData();

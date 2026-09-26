@@ -5,7 +5,7 @@ import { ref, onMounted, onBeforeUnmount, type Ref } from 'vue'
  *
  * Bind the returned `el` as a template ref; `width`/`height` update on every
  * resize (rAF-debounced to dodge the "ResizeObserver loop" warning). Used by
- * the SVG charts that need real pixels (e.g. SalesBarChart's scaleBand range).
+ * the SVG charts that need real pixels (e.g. BarChart's scaleBand range).
  *
  * @param fallbackWidth   width used before the first measure / when clientWidth is 0.
  * @param fallbackHeight  height used before the first measure / when clientHeight is 0.

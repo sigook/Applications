@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Core.BL.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
@@ -42,7 +42,8 @@ public class WorkerService(
     INotificationRepository notificationRepository,
     IRequestRepository requestRepository,
     IWorkerRequestRepository workerRequestRepository,
-    IIdentityServerService identityServerService,
+    IUserAccountService userAccountService,
+    ICurrentUserService currentUserService,
     ITeamsService teamsNotification,
     IEmailService emailService,
     IRazorViewToStringRenderer razorViewToStringRenderer,
@@ -50,6 +51,8 @@ public class WorkerService(
     ILogger<WorkerService> logger,
     IWorkerAdapter workerAdapter,
     IValidator<WorkerProfileCreateModel> workerProfileValidator,
+    IValidator<WorkerProfileLicenseModel> licenseValidator,
+    IValidator<CovenantFileModel> documentFileValidator,
     IHttpContextAccessor httpContextAccessor,
     IFilesContainer filesContainer,
     IDocumentService documentService,
@@ -64,7 +67,8 @@ public class WorkerService(
     private readonly INotificationRepository notificationRepository = notificationRepository;
     private readonly IRequestRepository requestRepository = requestRepository;
     private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
-    private readonly IIdentityServerService identityServerService = identityServerService;
+    private readonly IUserAccountService userAccountService = userAccountService;
+    private readonly ICurrentUserService currentUserService = currentUserService;
     private readonly ITeamsService teamsNotification = teamsNotification;
     private readonly IEmailService emailService = emailService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
@@ -94,7 +98,7 @@ public class WorkerService(
         var agency = await agencyRepository.GetAgencyMasterByLocation(model.Location.City);
         if (agency is null) return Result.Fail<Guid>(ApiResources.AgencyNotFound);
 
-        var user = await identityServerService.CreateUser(new CreateUserModel
+        var user = await userAccountService.CreateUser(new CreateUserModel
         {
             Email = model.Email,
             Password = model.Password,
@@ -176,7 +180,7 @@ public class WorkerService(
         if (request is null || !request.IsAvailableToApply) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
 
         var workerProfile = requestId.HasValue
-            ? await workerRepository.GetProfile(p => p.WorkerId == identityServerService.GetUserId())
+            ? await workerRepository.GetProfile(p => p.WorkerId == currentUserService.GetUserId())
             : await workerRepository.GetProfile(p => p.AgencyId == request.CompanyProfile.AgencyId && p.Worker.Email.ToLower() == email.Email.ToLower());
 
         if (workerProfile is not null) return await ApplyAsWorker(request, workerProfile, model.Comments);
@@ -224,10 +228,10 @@ public class WorkerService(
         var handlerResult = documentType switch
         {
             WorkerDocumentType.Identification  => await HandleIdentification(entity, form, profileId),
-            WorkerDocumentType.Licenses        => HandleLicenses(entity, form),
-            WorkerDocumentType.Certificates    => HandleCertificates(entity, form),
-            WorkerDocumentType.Resume          => HandleResume(entity, form),
-            WorkerDocumentType.OtherDocument   => HandleOtherDocument(entity, form),
+            WorkerDocumentType.Licenses        => await HandleLicenses(entity, form),
+            WorkerDocumentType.Certificates    => await HandleCertificates(entity, form),
+            WorkerDocumentType.Resume          => await HandleResume(entity, form),
+            WorkerDocumentType.OtherDocument   => await HandleOtherDocument(entity, form),
             WorkerDocumentType.SocialInsurance => await HandleSocialInsurance(entity, form),
             _ => throw new ArgumentOutOfRangeException(nameof(documentType))
         };
@@ -241,14 +245,14 @@ public class WorkerService(
 
     public Task<PaginatedList<WorkerCommentModel>> GetAgencyComments(Guid workerProfileId, Pagination pagination)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         return workerRepository.GetComments(
             c => c.WorkerProfileId == workerProfileId && c.WorkerProfile.AgencyId == agencyId, pagination);
     }
 
     public Task<PaginatedList<WorkerCommentModel>> GetMyComments(Pagination pagination)
     {
-        var workerId = identityServerService.GetUserId();
+        var workerId = currentUserService.GetUserId();
         return workerRepository.GetComments(c => c.WorkerProfile.WorkerId == workerId, pagination);
     }
 
@@ -257,7 +261,7 @@ public class WorkerService(
 
     public async Task<Result> AddCompanyComment(Guid workerProfileId, string comment, decimal rate)
     {
-        var companyId = identityServerService.GetCompanyId();
+        var companyId = currentUserService.GetCompanyId();
         var companyProfile = await companyRepository.GetCompanyProfileId(p => p.CompanyId == companyId);
         if (companyProfile is null) return Result.Fail("Company profile not found");
         return await CreateComment(WorkerComment.CommentPostByCompany(workerProfileId, companyProfile.Id, comment, rate));
@@ -363,40 +367,66 @@ public class WorkerService(
         {
             var note = WorkerProfileNote.Create(entity.Id,
                 string.Format(ApiResources.SocialInsuranceReplacedNote, previousMaskedSocialInsurance, number.MaskSIN()),
-                identityServerService.GetNickname());
+                currentUserService.GetNickname());
             if (!note) return Result.Fail(note.Errors);
             await workerRepository.Create(note.Value);
         }
         return Result.Ok();
     }
 
-    private static Result<IEnumerable<string>> HandleLicenses(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleLicenses(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<List<WorkerProfileLicenseModel>>();
+        var newLicenses = model.Where(m => !entity.Licenses.Any(l => l.License.FileName == m.License?.FileName));
+        var validation = await ValidateEach(licenseValidator, newLicenses);
+        if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
         var result = entity.PatchLicenses(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
         return Result.Ok(model.Select(l => l.License?.FileName));
     }
 
-    private static Result<IEnumerable<string>> HandleCertificates(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleCertificates(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<List<CovenantFileModel>>();
+        var newCertificates = model.Where(m => !entity.Certificates.Any(c => c.Certificate.FileName == m.FileName));
+        var validation = await ValidateEach(documentFileValidator, newCertificates);
+        if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
         var result = entity.PatchCertificates(model);
         if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
         return Result.Ok(model.Select(c => c.FileName));
     }
 
-    private static Result<IEnumerable<string>> HandleResume(WorkerProfile entity, IFormCollection form)
+    private static async Task<Result> ValidateEach<T>(IValidator<T> validator, IEnumerable<T> items)
     {
-        var model = form.DeserializeData<CovenantFileModel>();
-        var result = entity.PatchResume(model);
-        if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
-        return Result.Ok<IEnumerable<string>>([model?.FileName]);
+        foreach (var item in items)
+        {
+            var validationResult = await validator.ValidateAsync(item);
+            if (!validationResult.IsValid)
+                return Result.Fail(validationResult.Errors.Select(e => new ResultError(e.PropertyName, e.ErrorMessage)));
+        }
+        return Result.Ok();
     }
 
-    private static Result<IEnumerable<string>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleResume(WorkerProfile entity, IFormCollection form)
     {
         var model = form.DeserializeData<CovenantFileModel>();
+        if (string.IsNullOrEmpty(model?.FileName))
+        {
+            entity.RemoveResume();
+            return Result.Ok(Enumerable.Empty<string>());
+        }
+        var previousFiles = ProfileFiles(entity);
+        var result = entity.PatchResume(model);
+        if (!result) return Result.Fail<IEnumerable<string>>(result.Errors);
+        await TrackFilesCreatedByPatch(entity, previousFiles);
+        return Result.Ok<IEnumerable<string>>([model.FileName]);
+    }
+
+    private async Task<Result<IEnumerable<string>>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
+    {
+        var model = form.DeserializeData<CovenantFileModel>();
+        var validation = await ValidateEach(documentFileValidator, model is null ? [] : [model]);
+        if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
         var fileResult = CovenantFile.Create(model);
         if (!fileResult) return Result.Fail<IEnumerable<string>>(fileResult.Errors);
         var docResult = WorkerProfileOtherDocument.Create(entity.Id, fileResult.Value);

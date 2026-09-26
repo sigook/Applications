@@ -60,19 +60,33 @@ class FilePickerResult {
 }
 
 abstract class FilePickerService {
+  static const List<String> documentExtensions = [
+    'pdf',
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'doc',
+    'docx',
+    'xls',
+    'xlsx',
+  ];
+
+  static const int maxDocumentSizeMB = 15;
+
   Future<FilePickerResult> pickFile({
     List<String>? allowedExtensions,
-    int maxFileSizeMB = 10,
+    int maxFileSizeMB = maxDocumentSizeMB,
   });
 
   Future<List<FilePickerResult>> pickMultipleFiles({
     List<String>? allowedExtensions,
-    int maxFileSizeMB = 10,
+    int maxFileSizeMB = maxDocumentSizeMB,
     int maxFiles = 5,
   });
 
   Future<FilePickerResult> pickImage({
-    int maxFileSizeMB = 10,
+    int maxFileSizeMB = maxDocumentSizeMB,
     bool allowCamera = false,
   });
 }

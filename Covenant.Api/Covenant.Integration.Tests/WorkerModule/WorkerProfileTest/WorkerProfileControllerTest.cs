@@ -108,8 +108,81 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                 Assert.Equal(model.Location?.Address, detail.Location?.Address);
                 Assert.Equal(model.Location?.City?.Id, detail.Location?.City?.Id);
                 Assert.Equal(model.MobileNumber, detail.MobileNumber);
-                Assert.Equal(model.Lift?.Id, detail.Lift?.Id);
+                Assert.Equal(model.Lift?.Id, detail.LiftId);
             }
+        }
+
+        [Fact]
+        public async Task Resume_Can_Be_Added_To_A_Profile_Without_One_And_Then_Removed()
+        {
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
+            context.ChangeTracker.Clear();
+            var profile = FakeData.FakeWorkerProfile();
+            context.WorkerProfiles.Add(profile);
+            await context.SaveChangesAsync();
+
+            using (var content = new MultipartFormDataContent())
+            {
+                content.Add(new StringContent(JsonSerializer.Serialize(new { fileName = "resume.pdf", description = "" })), "data");
+                content.Add(new ByteArrayContent([1, 2, 3]), "resume.pdf", "resume.pdf");
+
+                var response = await _client.PostAsync($"api/WorkerProfile/{profile.Id}/Resume", content);
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+
+            var saved = await context.WorkerProfiles.AsNoTracking().Include(p => p.Resume).SingleAsync(p => p.Id == profile.Id);
+            Assert.Equal("resume.pdf", saved.Resume?.FileName);
+
+            using (var content = new MultipartFormDataContent())
+            {
+                content.Add(new StringContent(JsonSerializer.Serialize(new { fileName = "", description = "" })), "data");
+
+                var response = await _client.PostAsync($"api/WorkerProfile/{profile.Id}/Resume", content);
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+
+            var cleared = await context.WorkerProfiles.AsNoTracking().SingleAsync(p => p.Id == profile.Id);
+            Assert.Null(cleared.ResumeId);
+        }
+
+        [Fact]
+        public async Task New_License_Requires_Description_But_Existing_Ones_Without_It_Are_Accepted()
+        {
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
+            context.ChangeTracker.Clear();
+            var profile = FakeData.FakeWorkerProfile();
+            profile.PatchLicenses(new List<WorkerProfileLicenseModel>
+            {
+                new() { License = new CovenantFileModel("legacy.pdf", string.Empty) }
+            });
+            context.WorkerProfiles.Add(profile);
+            await context.SaveChangesAsync();
+
+            async Task<HttpResponseMessage> PostLicenses(string newDescription)
+            {
+                var licenses = new[]
+                {
+                    new { license = new { fileName = "legacy.pdf", description = "" } },
+                    new { license = new { fileName = "new.pdf", description = newDescription } }
+                };
+                using var content = new MultipartFormDataContent();
+                content.Add(new StringContent(JsonSerializer.Serialize(licenses)), "data");
+                content.Add(new ByteArrayContent([1, 2, 3]), "new.pdf", "new.pdf");
+                return await _client.PostAsync($"api/WorkerProfile/{profile.Id}/Licenses", content);
+            }
+
+            var rejected = await PostLicenses("");
+            Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+
+            var accepted = await PostLicenses("Forklift");
+            Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+
+            var saved = await context.WorkerProfiles.AsNoTracking()
+                .Include(p => p.Licenses).ThenInclude(l => l.License)
+                .SingleAsync(p => p.Id == profile.Id);
+            Assert.Contains(saved.Licenses, l => l.License.FileName == "new.pdf" && l.License.Description == "Forklift");
         }
 
         public class Startup
@@ -135,15 +208,15 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
 
                 services.AddTestDatabase();
 
-                var identityServerService = new Mock<IIdentityServerService>();
-                identityServerService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>()))
+                var userAccountService = new Mock<IUserAccountService>();
+                userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>()))
                     .ReturnsAsync(Result.Ok(new User(FakeWorker.Email, FakeWorker.Id)));
 
                 var teamNotification = new Mock<ITeamsService>();
                 teamNotification.Setup(t => t.SendNotification(It.IsAny<string>(), It.IsAny<TeamsNotificationModel>()))
                     .ReturnsAsync(Result.Ok());
 
-                services.AddSingleton(identityServerService.Object);
+                services.AddSingleton(userAccountService.Object);
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();

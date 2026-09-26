@@ -3,11 +3,7 @@ using Covenant.Core.BL.Interfaces;
 
 namespace Covenant.Core.BL.Services;
 
-public class NotificationService(IRunnerService runnerService) : INotificationService
+public class NotificationService : INotificationService
 {
-    public async Task<NotificationsModel> GetNotifications() =>
-        new()
-        {
-            WorkersToReview = await runnerService.GetRunnersStartingToday()
-        };
+    public Task<NotificationsModel> GetNotifications() => Task.FromResult(new NotificationsModel());
 }

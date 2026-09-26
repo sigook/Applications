@@ -21,7 +21,7 @@ namespace Covenant.Tests.Worker
     {
         private const string createdBy = "payroll@covenantgroupl.com";
 
-        private readonly Mock<IIdentityServerService> identityServerService;
+        private readonly Mock<ICurrentUserService> currentUserService;
         private readonly Mock<ITimeService> _timeService;
         private readonly Mock<ITimesheetRepository> _timeSheetRepository;
         private readonly WorkerRequest _workerRequest = WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
@@ -49,7 +49,7 @@ namespace Covenant.Tests.Worker
             var catalogRepository = new Mock<ICatalogRepository>();
             _timeSheetRepository = new Mock<ITimesheetRepository>();
             var workerRequestRepository = new Mock<IWorkerRequestRepository>();
-            identityServerService = new Mock<IIdentityServerService>();
+            currentUserService = new Mock<ICurrentUserService>();
             _sut = new TimesheetService(
                 _timeService.Object,
                 workerRequestRepository.Object,
@@ -57,11 +57,11 @@ namespace Covenant.Tests.Worker
                 Mock.Of<IRequestRepository>(),
                 catalogRepository.Object,
                 Mock.Of<IConfiguration>(),
-                identityServerService.Object,
+                currentUserService.Object,
                 Mock.Of<IMediator>(),
                 new TelemetryClient(new TelemetryConfiguration()));
             workerRequestRepository.Setup(r => r.GetWorkerRequestByWorkerProfileId(_workerRequest.WorkerProfileId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
-            identityServerService.Setup(iss => iss.GetNickname()).Returns(createdBy);
+            currentUserService.Setup(iss => iss.GetNickname()).Returns(createdBy);
         }
 
         [Fact]

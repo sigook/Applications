@@ -20,7 +20,7 @@ public class SalesService(
     IRequestService requestService,
     IRequestRepository requestRepository,
     ICompanyRepository companyRepository,
-    IIdentityServerService identityServerService,
+    ICurrentUserService currentUserService,
     IUploadedFilesService uploadedFilesService,
     IDocumentService documentService,
     IValidator<CreateCompanyInteractionModel> createInteractionValidator,
@@ -30,13 +30,16 @@ public class SalesService(
     ITimeService timeService,
     IValidator<GetDealsByStatusFilter> dealsByStatusValidator) : ISalesService
 {
-    private Guid? SalesScope => identityServerService.IsSales() ? identityServerService.GetAgencyPersonnelId() : null;
+    private const int RecentClientsLimit = 10;
+    private const int RecentActivityLimit = 6;
 
-    private Guid? OwnerScope => identityServerService.IsAdmin() ? null : identityServerService.GetUserId();
+    private Guid? SalesScope => currentUserService.IsSales() ? currentUserService.GetAgencyPersonnelId() : null;
+
+    private Guid? OwnerScope => currentUserService.IsAdmin() ? null : currentUserService.GetUserId();
 
     public async Task<AgencyRequestsPagedResponse> GetRequests(GetRequestForAgencyFilter filter)
     {
-        Guid agencyId = filter.AgencyId ?? identityServerService.GetAgencyId();
+        Guid agencyId = filter.AgencyId ?? currentUserService.GetAgencyId();
         ApplyScope(filter);
         return await requestService.GetRequestsForAgency(agencyId, filter);
     }
@@ -44,45 +47,45 @@ public class SalesService(
     public IEnumerable<AgencyRequestListModel> GetRequestsForReport(GetRequestForAgencyFilter filter)
     {
         ApplyScope(filter);
-        return requestRepository.GetAllRequestsForAgency(identityServerService.GetAgencyId(), filter);
+        return requestRepository.GetAllRequestsForAgency(currentUserService.GetAgencyId(), filter);
     }
 
     public async Task<PaginatedList<CompanyProfileListModel>> GetCompanies(GetCompanyForAgencyFilter filter)
     {
         filter.SalesPersonnelId = SalesScope;
-        return await companyRepository.GetCompaniesProfileForAgency(identityServerService.GetAgencyId(), filter);
+        return await companyRepository.GetCompaniesProfileForAgency(currentUserService.GetAgencyId(), filter);
     }
 
     public IEnumerable<CompanyProfileListModel> GetCompaniesForReport(GetCompanyForAgencyFilter filter)
     {
         filter.SalesPersonnelId = SalesScope;
-        return companyRepository.GetAllCompaniesProfileForAgency(identityServerService.GetAgencyId(), filter);
+        return companyRepository.GetAllCompaniesProfileForAgency(currentUserService.GetAgencyId(), filter);
     }
 
-    public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(GetCompanyInteractionsFilter filter)
+    public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid companyProfileId, GetCompanyInteractionsFilter filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
-        return await companyRepository.GetInteractions(agencyId, filter);
+        return await companyRepository.GetInteractions(agencyId, companyProfileId, filter);
     }
 
-    public async Task<Result<Guid>> CreateInteraction(CreateCompanyInteractionModel model)
+    public async Task<Result<Guid>> CreateInteraction(Guid companyProfileId, CreateCompanyInteractionModel model)
     {
         var validationResult = await createInteractionValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Guid>();
-        var userId = identityServerService.GetUserId();
-        var interaction = new CompanyInteraction(model.Description, userId, model.CompanyProfileId,
+        var userId = currentUserService.GetUserId();
+        var interaction = new CompanyInteraction(model.Description, userId, companyProfileId,
             model.InteractionPurpose, model.InteractionType, model.InteractionStatus);
         await companyRepository.Create(interaction);
         await companyRepository.SaveChangesAsync();
         return Result.Ok(interaction.Id);
     }
 
-    public async Task<Result> UpdateInteraction(Guid id, UpdateCompanyInteractionModel model)
+    public async Task<Result> UpdateInteraction(Guid companyProfileId, Guid id, UpdateCompanyInteractionModel model)
     {
         var validationResult = await updateInteractionValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
-        var interaction = await GetOwnedInteraction(id);
+        var interaction = await GetOwnedInteraction(companyProfileId, id);
         if (!interaction) return Result.Fail(interaction.Errors);
         interaction.Value.Update(model.Description, model.InteractionPurpose, model.InteractionType, model.InteractionStatus);
         companyRepository.Update(interaction.Value);
@@ -90,31 +93,31 @@ public class SalesService(
         return Result.Ok();
     }
 
-    public async Task<Result> DeleteInteraction(Guid id)
+    public async Task<Result> DeleteInteraction(Guid companyProfileId, Guid id)
     {
-        var interaction = await GetOwnedInteraction(id);
+        var interaction = await GetOwnedInteraction(companyProfileId, id);
         if (!interaction) return Result.Fail(interaction.Errors);
         companyRepository.Delete(interaction.Value);
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
 
-    public async Task<PaginatedList<DealListModel>> GetDeals(GetDealsFilter filter)
+    public async Task<PaginatedList<DealListModel>> GetDeals(Guid companyProfileId, GetDealsFilter filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
-        return await companyRepository.GetDeals(agencyId, filter);
+        return await companyRepository.GetDeals(agencyId, companyProfileId, filter);
     }
 
-    public async Task<Result<Guid>> CreateDeal()
+    public async Task<Result<Guid>> CreateDeal(Guid companyProfileId)
     {
         var validation = uploadedFilesService.Validate();
         if (!validation) return Result.Fail<Guid>(validation.Errors);
         var model = uploadedFilesService.GetModel<CreateDealModel>();
         var validationResult = await createDealValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Guid>();
-        var userId = identityServerService.GetUserId();
-        var deal = new Deal(model.Title, userId, model.CompanyProfileId, model.Date, model.Value,
+        var userId = currentUserService.GetUserId();
+        var deal = new Deal(model.Title, userId, companyProfileId, model.Date, model.Value,
             model.Type, model.Status, model.DocumentId);
         if (!string.IsNullOrWhiteSpace(model.FileName))
         {
@@ -130,14 +133,14 @@ public class SalesService(
         return Result.Ok(deal.Id);
     }
 
-    public async Task<Result> UpdateDeal(Guid id)
+    public async Task<Result> UpdateDeal(Guid companyProfileId, Guid id)
     {
         var validation = uploadedFilesService.Validate();
         if (!validation) return Result.Fail(validation.Errors);
         var model = uploadedFilesService.GetModel<UpdateDealModel>();
         var validationResult = await updateDealValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
-        var result = await GetOwnedDeal(id);
+        var result = await GetOwnedDeal(companyProfileId, id);
         if (!result) return Result.Fail(result.Errors);
         var deal = result.Value;
         var previousDocumentId = deal.DocumentId;
@@ -161,9 +164,9 @@ public class SalesService(
         return Result.Ok();
     }
 
-    public async Task<Result> DeleteDeal(Guid id)
+    public async Task<Result> DeleteDeal(Guid companyProfileId, Guid id)
     {
-        var result = await GetOwnedDeal(id);
+        var result = await GetOwnedDeal(companyProfileId, id);
         if (!result) return Result.Fail(result.Errors);
         companyRepository.Delete(result.Value);
         await companyRepository.SaveChangesAsync();
@@ -174,7 +177,7 @@ public class SalesService(
     {
         var validationResult = await dealsByStatusValidator.ValidateAsync(filter);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<DealsByStatusModel>();
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
         var statuses = (filter.Statuses ?? []).Distinct().OrderBy(s => s).ToList();
         var window = GetPeriodWindow(filter.Period, timeService.GetCurrentDateTimeOffset());
@@ -191,7 +194,7 @@ public class SalesService(
 
     public async Task<SalesDashboardSummaryModel> GetDashboardSummary(GetSalesDashboardSummaryFilter filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var ownerId = OwnerScope ?? filter.OwnerId;
         var now = timeService.GetCurrentDateTimeOffset();
         var quarter = GetPeriodWindow(SalesPeriod.Quarter, now);
@@ -206,6 +209,35 @@ public class SalesService(
             Pipeline = FillStatuses(pipeline, Enum.GetValues<DealStatus>().ToList()),
             Activity = FillTypes(activity)
         };
+    }
+
+    public Task<List<RecentClientModel>> GetRecentClients() =>
+        companyRepository.GetRecentInteractionClients(currentUserService.GetAgencyId(), OwnerScope, RecentClientsLimit);
+
+    public async Task<List<CompanyInteractionListModel>> GetRecentInteractions()
+    {
+        var filter = new GetCompanyInteractionsFilter
+        {
+            OwnerId = OwnerScope,
+            PageSize = RecentActivityLimit,
+            IsDescending = true,
+            SortBy = GetCompanyInteractionsSortBy.CreatedAt
+        };
+        var result = await companyRepository.GetInteractions(currentUserService.GetAgencyId(), null, filter);
+        return result.Items;
+    }
+
+    public async Task<List<DealListModel>> GetRecentDeals()
+    {
+        var filter = new GetDealsFilter
+        {
+            OwnerId = OwnerScope,
+            PageSize = RecentActivityLimit,
+            IsDescending = true,
+            SortBy = GetDealsSortBy.Date
+        };
+        var result = await companyRepository.GetDeals(currentUserService.GetAgencyId(), null, filter);
+        return result.Items;
     }
 
     private SalesPeriodWindow GetPeriodWindow(SalesPeriod period, DateTimeOffset now)
@@ -257,24 +289,24 @@ public class SalesService(
 
     private void ApplyScope(GetRequestForAgencyFilter filter)
     {
-        filter.HasPermissionToSeeInternalRequests = identityServerService.IsAdmin();
+        filter.HasPermissionToSeeInternalRequests = currentUserService.IsAdmin();
         filter.SalesPersonnelId = SalesScope;
     }
 
-    private async Task<Result<CompanyInteraction>> GetOwnedInteraction(Guid id)
+    private async Task<Result<CompanyInteraction>> GetOwnedInteraction(Guid companyProfileId, Guid id)
     {
-        var interaction = await companyRepository.GetInteraction(i => i.Id == id);
+        var interaction = await companyRepository.GetInteraction(i => i.Id == id && i.CompanyProfileId == companyProfileId);
         if (interaction is null) return Result.Fail<CompanyInteraction>("Interaction not found");
-        if (!identityServerService.IsAdmin() && interaction.UserId != identityServerService.GetUserId())
+        if (!currentUserService.IsAdmin() && interaction.UserId != currentUserService.GetUserId())
             return Result.Fail<CompanyInteraction>("You can only manage your own interactions");
         return Result.Ok(interaction);
     }
 
-    private async Task<Result<Deal>> GetOwnedDeal(Guid id)
+    private async Task<Result<Deal>> GetOwnedDeal(Guid companyProfileId, Guid id)
     {
-        var deal = await companyRepository.GetDeal(d => d.Id == id);
+        var deal = await companyRepository.GetDeal(d => d.Id == id && d.CompanyProfileId == companyProfileId);
         if (deal is null) return Result.Fail<Deal>("Deal not found");
-        if (!identityServerService.IsAdmin() && deal.UserId != identityServerService.GetUserId())
+        if (!currentUserService.IsAdmin() && deal.UserId != currentUserService.GetUserId())
             return Result.Fail<Deal>("You can only manage your own deals");
         return Result.Ok(deal);
     }

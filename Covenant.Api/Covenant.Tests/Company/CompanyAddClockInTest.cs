@@ -54,7 +54,7 @@ namespace Covenant.Tests.Company
                 Mock.Of<IRequestRepository>(),
                 catalogRepository.Object,
                 Mock.Of<IConfiguration>(),
-                Mock.Of<IIdentityServerService>(),
+                Mock.Of<ICurrentUserService>(),
                 Mock.Of<IMediator>(),
                 new TelemetryClient(new TelemetryConfiguration()));
         }

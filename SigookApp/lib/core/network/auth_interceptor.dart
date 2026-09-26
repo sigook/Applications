@@ -107,7 +107,7 @@ class AuthInterceptor extends QueuedInterceptorsWrapper {
           cachedAccessToken.isNotEmpty &&
           sentAuthorization != 'Bearer $cachedAccessToken') {
         handled = true;
-        return _retry(err, cachedAccessToken, handler);
+        return await _retry(err, cachedAccessToken, handler);
       }
 
       if (refreshToken == _rejectedRefreshToken) return passthrough();

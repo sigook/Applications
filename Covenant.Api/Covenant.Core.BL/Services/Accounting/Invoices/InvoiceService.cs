@@ -38,7 +38,7 @@ public abstract class InvoiceService(
     ISubcontractorRepository subcontractorRepository,
     TimeLimits timeLimits,
     ITimesheetCalculatorService calculatorService,
-    IIdentityServerService identityServerService,
+    ICurrentUserService currentUserService,
     IInvoicesContainer invoicesContainer,
     IRazorViewToStringRenderer renderer,
     IPdfGeneratorService pdfGenerator,
@@ -64,7 +64,7 @@ public abstract class InvoiceService(
     protected readonly TimeLimits timeLimits = timeLimits;
     protected readonly ITimesheetCalculatorService calculatorService = calculatorService;
 
-    private readonly IIdentityServerService identityServerService = identityServerService;
+    private readonly ICurrentUserService currentUserService = currentUserService;
     private readonly IInvoicesContainer invoicesContainer = invoicesContainer;
     private readonly IRazorViewToStringRenderer renderer = renderer;
     private readonly IPdfGeneratorService pdfGenerator = pdfGenerator;
@@ -86,26 +86,26 @@ public abstract class InvoiceService(
 
     public async Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilter filter)
     {
-        var agencyIds = identityServerService.GetAgencyIds();
+        var agencyIds = currentUserService.GetAgencyIds();
         return await FetchInvoices(agencyIds, filter);
     }
 
     public async Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilter filter)
     {
-        var agencyIds = identityServerService.GetAgencyIds();
+        var agencyIds = currentUserService.GetAgencyIds();
         var result = await FetchInvoicesForExport(agencyIds, filter);
         return await mediator.Send(new GenerateInvoicesReport(result));
     }
 
     public async Task<Result<InvoicePreviewModel>> PreviewInvoice(CreateInvoiceModel model)
     {
-        var agencyIds = identityServerService.GetAgencyIds();
+        var agencyIds = currentUserService.GetAgencyIds();
         return await PreviewAsync(agencyIds, model);
     }
 
     public async Task<Result<Guid>> CreateInvoice(CreateInvoiceModel model)
     {
-        var agencyIds = identityServerService.GetAgencyIds();
+        var agencyIds = currentUserService.GetAgencyIds();
         return await CreateAsync(agencyIds, model);
     }
 
@@ -150,7 +150,7 @@ public abstract class InvoiceService(
         await payStubsContainer.DeleteFilesIfExists(model?.PayStubs?.Select(p => p.ToPayStubBlobName()));
 
         string text = $"{invoiceNumber} {(payStubsDeleted.Any() ? " - " : string.Empty)}{string.Join(" - ", payStubsDeleted)}";
-        string name = identityServerService.GetNickname();
+        string name = currentUserService.GetNickname();
         await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning($"Invoice deleted by {name}", text));
     }
 

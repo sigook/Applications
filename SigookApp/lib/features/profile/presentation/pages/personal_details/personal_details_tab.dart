@@ -4,6 +4,7 @@ import 'sections/certificates_section.dart';
 import 'sections/contact_info_section.dart';
 import 'sections/documents_section.dart';
 import 'sections/licenses_section.dart';
+import 'sections/other_documents_section.dart';
 import 'sections/resume_section.dart';
 import 'sections/sin_section.dart';
 
@@ -29,6 +30,8 @@ class PersonalDetailsTab extends StatelessWidget {
         LicensesSectionCard(),
         SizedBox(height: 12),
         CertificatesSectionCard(),
+        SizedBox(height: 12),
+        OtherDocumentsSectionCard(),
         SizedBox(height: 24),
       ],
     );

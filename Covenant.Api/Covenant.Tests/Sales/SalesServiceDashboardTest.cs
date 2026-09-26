@@ -1,6 +1,8 @@
 using Covenant.Api.Validators.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models;
+using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
@@ -14,7 +16,7 @@ namespace Covenant.Tests.Sales;
 public class SalesServiceDashboardTest
 {
     private readonly Mock<ICompanyRepository> _companyRepository = new();
-    private readonly Mock<IIdentityServerService> _identityServerService = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly Mock<ITimeService> _timeService = new();
     private readonly ISalesService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
@@ -29,14 +31,14 @@ public class SalesServiceDashboardTest
 
     public SalesServiceDashboardTest()
     {
-        _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
-        _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
+        _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
         _timeService.Setup(t => t.GetCurrentDateTimeOffset()).Returns(Now);
         _sut = new SalesService(
             Mock.Of<IRequestService>(),
             Mock.Of<IRequestRepository>(),
             _companyRepository.Object,
-            _identityServerService.Object,
+            _currentUserService.Object,
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<IDocumentService>(),
             new CreateCompanyInteractionModelValidator(),
@@ -74,7 +76,7 @@ public class SalesServiceDashboardTest
     [Fact]
     public async Task GetDealsByStatusIsNotScopedForAdmin()
     {
-        _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         Guid? capturedOwner = Guid.NewGuid();
         _companyRepository
             .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
@@ -89,7 +91,7 @@ public class SalesServiceDashboardTest
     [Fact]
     public async Task GetDealsByStatusKeepsRequestedOwnerForAdmin()
     {
-        _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         var requestedOwner = Guid.NewGuid();
         Guid? capturedOwner = null;
         _companyRepository
@@ -244,5 +246,80 @@ public class SalesServiceDashboardTest
 
         Assert.Equal(_userId, capturedDealsOwner);
         Assert.Equal(_userId, capturedInteractionsOwner);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRecentClientsScopesToOwnerUnlessAdmin(bool isAdmin)
+    {
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(isAdmin);
+        Guid? capturedOwner = Guid.NewGuid();
+        var capturedTake = 0;
+        _companyRepository
+            .Setup(r => r.GetRecentInteractionClients(_agencyId, It.IsAny<Guid?>(), It.IsAny<int>()))
+            .Callback<Guid, Guid?, int>((_, owner, take) =>
+            {
+                capturedOwner = owner;
+                capturedTake = take;
+            })
+            .ReturnsAsync([]);
+
+        await _sut.GetRecentClients();
+
+        Assert.Equal(isAdmin ? null : _userId, capturedOwner);
+        Assert.Equal(10, capturedTake);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRecentInteractionsSpansAllClientsAndScopesToOwnerUnlessAdmin(bool isAdmin)
+    {
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(isAdmin);
+        Guid? capturedCompany = Guid.NewGuid();
+        GetCompanyInteractionsFilter capturedFilter = null;
+        _companyRepository
+            .Setup(r => r.GetInteractions(_agencyId, It.IsAny<Guid?>(), It.IsAny<GetCompanyInteractionsFilter>()))
+            .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, company, filter) =>
+            {
+                capturedCompany = company;
+                capturedFilter = filter;
+            })
+            .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
+
+        await _sut.GetRecentInteractions();
+
+        Assert.Null(capturedCompany);
+        Assert.Equal(isAdmin ? null : _userId, capturedFilter.OwnerId);
+        Assert.Equal(6, capturedFilter.PageSize);
+        Assert.True(capturedFilter.IsDescending);
+        Assert.Equal(GetCompanyInteractionsSortBy.CreatedAt, capturedFilter.SortBy);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRecentDealsSpansAllClientsAndScopesToOwnerUnlessAdmin(bool isAdmin)
+    {
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(isAdmin);
+        Guid? capturedCompany = Guid.NewGuid();
+        GetDealsFilter capturedFilter = null;
+        _companyRepository
+            .Setup(r => r.GetDeals(_agencyId, It.IsAny<Guid?>(), It.IsAny<GetDealsFilter>()))
+            .Callback<Guid, Guid?, GetDealsFilter>((_, company, filter) =>
+            {
+                capturedCompany = company;
+                capturedFilter = filter;
+            })
+            .ReturnsAsync(new PaginatedList<DealListModel>());
+
+        await _sut.GetRecentDeals();
+
+        Assert.Null(capturedCompany);
+        Assert.Equal(isAdmin ? null : _userId, capturedFilter.OwnerId);
+        Assert.Equal(6, capturedFilter.PageSize);
+        Assert.True(capturedFilter.IsDescending);
+        Assert.Equal(GetDealsSortBy.Date, capturedFilter.SortBy);
     }
 }

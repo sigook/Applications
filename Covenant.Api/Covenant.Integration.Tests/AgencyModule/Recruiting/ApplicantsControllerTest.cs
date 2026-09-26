@@ -124,7 +124,7 @@ public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactor
         Assert.Contains(result.Skipped, s => s.ApplicantId == Startup.FakeBulkConfirmed.Id && s.Reason.Contains("pending or cancelled"));
         Assert.Contains(result.Skipped, s => s.ApplicantId == missingId);
 
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         RequestApplicant started = await context.RequestApplicants.SingleAsync(a => a.Id == Startup.FakeBulkPending.Id);
         Assert.Equal(RequestApplicantStatus.InProgress, started.Status);
     }
@@ -145,7 +145,7 @@ public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactor
         Assert.Contains(result.Skipped, s => s.ApplicantId == Startup.FakeBulkBlocked.Id && s.Reason.Contains("mandatory"));
         Assert.Contains(result.Skipped, s => s.ApplicantId == Startup.FakeBulkCandidate.Id && s.Reason.Contains("candidate"));
 
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         RequestApplicant confirmed = await context.RequestApplicants.SingleAsync(a => a.Id == Startup.FakeBulkReady.Id);
         Assert.Equal(RequestApplicantStatus.Confirmed, confirmed.Status);
         RequestApplicant blocked = await context.RequestApplicants.SingleAsync(a => a.Id == Startup.FakeBulkBlocked.Id);

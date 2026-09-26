@@ -208,6 +208,16 @@ class _SkillAutocompleteFieldState
 
                         if (matchingSkill != null) {
                           _addSkill(Skill(skill: matchingSkill.value));
+                        } else if (trimmedValue.length > Skill.maxLength) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Skill must be at most ${Skill.maxLength} characters',
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
                         } else {
                           _addSkill(Skill(skill: trimmedValue));
                           ScaffoldMessenger.of(context).showSnackBar(

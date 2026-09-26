@@ -14,16 +14,19 @@ public interface ISalesService
     Task<PaginatedList<CompanyProfileListModel>> GetCompanies(GetCompanyForAgencyFilter filter);
     IEnumerable<CompanyProfileListModel> GetCompaniesForReport(GetCompanyForAgencyFilter filter);
 
-    Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(GetCompanyInteractionsFilter filter);
-    Task<Result<Guid>> CreateInteraction(CreateCompanyInteractionModel model);
-    Task<Result> UpdateInteraction(Guid id, UpdateCompanyInteractionModel model);
-    Task<Result> DeleteInteraction(Guid id);
+    Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid companyProfileId, GetCompanyInteractionsFilter filter);
+    Task<Result<Guid>> CreateInteraction(Guid companyProfileId, CreateCompanyInteractionModel model);
+    Task<Result> UpdateInteraction(Guid companyProfileId, Guid id, UpdateCompanyInteractionModel model);
+    Task<Result> DeleteInteraction(Guid companyProfileId, Guid id);
 
-    Task<PaginatedList<DealListModel>> GetDeals(GetDealsFilter filter);
-    Task<Result<Guid>> CreateDeal();
-    Task<Result> UpdateDeal(Guid id);
-    Task<Result> DeleteDeal(Guid id);
+    Task<PaginatedList<DealListModel>> GetDeals(Guid companyProfileId, GetDealsFilter filter);
+    Task<Result<Guid>> CreateDeal(Guid companyProfileId);
+    Task<Result> UpdateDeal(Guid companyProfileId, Guid id);
+    Task<Result> DeleteDeal(Guid companyProfileId, Guid id);
 
     Task<Result<DealsByStatusModel>> GetDealsByStatus(GetDealsByStatusFilter filter);
     Task<SalesDashboardSummaryModel> GetDashboardSummary(GetSalesDashboardSummaryFilter filter);
+    Task<List<RecentClientModel>> GetRecentClients();
+    Task<List<CompanyInteractionListModel>> GetRecentInteractions();
+    Task<List<DealListModel>> GetRecentDeals();
 }

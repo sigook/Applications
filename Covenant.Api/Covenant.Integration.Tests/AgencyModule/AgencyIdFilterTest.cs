@@ -4,12 +4,14 @@ using Covenant.Api.Utils;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Agency;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Net.Http.Json;
 using System.Reflection;
 using Xunit;
 
@@ -31,16 +33,27 @@ namespace Covenant.Integration.Tests.AgencyModule
             response.EnsureSuccessStatusCode();
         }
 
+        [Fact]
+        public async Task GetProfile_IgnoresAgencyIdClaimFromToken()
+        {
+            HttpResponseMessage response = await _client.GetAsync($"{AgencyController.RouteName}/Profile");
+            response.EnsureSuccessStatusCode();
+            var model = await response.Content.ReadFromJsonAsync<AgencyModel>();
+            Assert.Equal(Startup.FakeAgency.Id, model.Id);
+        }
+
         public class Startup
         {
             private static readonly User FakeUser = new User(CvnEmail.Create("a.a@sigook.com").Value);
+            public static readonly Agency FakeAgency = new Agency("agency", "3459876543") { User = FakeData.FakeUser() };
+
             public void ConfigureServices(IServiceCollection services)
             {
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder().AddTestAuth(o =>
                 {
                     o.AddSub(FakeUser.Id);
-                    o.AddAgencyPersonnelRole();
+                    o.AddAgencyPersonnelRole(Guid.NewGuid());
                 });
                 services.AddTestDatabase();
                 services.AddSingleton(new Mock<ITimeService>().Object);
@@ -61,9 +74,8 @@ namespace Covenant.Integration.Tests.AgencyModule
                         pattern: "{controller}/{action=Index}/{id?}");
                 });
 
-                var agency = new Agency("agency", "3459876543") { User = FakeData.FakeUser() };
-                var agencyPersonnel = AgencyPersonnel.CreatePrimary(agency.Id, FakeUser);
-                context.Agencies.Add(agency);
+                var agencyPersonnel = AgencyPersonnel.CreatePrimary(FakeAgency.Id, FakeUser);
+                context.Agencies.Add(FakeAgency);
                 context.AgencyPersonnel.Add(agencyPersonnel);
                 context.SaveChanges();
             }

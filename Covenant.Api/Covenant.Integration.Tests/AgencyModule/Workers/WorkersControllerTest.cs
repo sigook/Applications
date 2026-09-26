@@ -69,9 +69,9 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                         services.AddTestDatabase();
                         services.AddSingleton<IWorkerRepository, WorkerRepository>();
                         services.AddSingleton(new Mock<ITimeService>().Object);
-                        var identityServerService = new Mock<IIdentityServerService>();
-                        identityServerService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
-                        services.AddSingleton(identityServerService.Object);
+                        var userAccountService = new Mock<IUserAccountService>();
+                        userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
+                        services.AddSingleton(userAccountService.Object);
                         var filesContainer = new Mock<IFilesContainer>();
                         filesContainer.Setup(c => c.FileExist(It.IsAny<string>())).ReturnsAsync(true);
                         services.AddSingleton(filesContainer.Object);

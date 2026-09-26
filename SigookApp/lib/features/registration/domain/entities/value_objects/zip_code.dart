@@ -52,16 +52,12 @@ class ZipCode extends Equatable {
   }
 
   static String? _validateUS(String cleaned, String? stateCode) {
-    final parts = cleaned.split('-');
-    if (!RegExp(r'^\d{5}$').hasMatch(parts[0])) {
+    if (!RegExp(r'^\d{5}(-?\d{4})?$').hasMatch(cleaned)) {
       return 'US ZIP must be 5 digits (optional -XXXX)';
-    }
-    if (parts.length > 1 && !RegExp(r'^\d{4}$').hasMatch(parts[1])) {
-      return 'ZIP+4 must be 4 digits';
     }
 
     if (stateCode != null) {
-      final zip5 = int.parse(parts[0]);
+      final zip5 = int.parse(cleaned.substring(0, 5));
       final ranges = _usStateToZipRanges[stateCode];
       if (ranges == null || !ranges.any((r) => zip5 >= r.$1 && zip5 <= r.$2)) {
         return 'ZIP does not match selected state';
@@ -80,12 +76,13 @@ class ZipCode extends Equatable {
   static String _format(String input, String countryCode) {
     final code = countryCode.toUpperCase();
     final cleaned = input.replaceAll(' ', '').toUpperCase();
+    final digits = cleaned.replaceAll('-', '');
 
     return switch (code) {
       'US' =>
-        cleaned.length > 5
-            ? '${cleaned.substring(0, 5)}-${cleaned.substring(5)}'
-            : cleaned,
+        digits.length > 5
+            ? '${digits.substring(0, 5)}-${digits.substring(5)}'
+            : digits,
       'CA' =>
         cleaned.length > 3
             ? '${cleaned.substring(0, 3)} ${cleaned.substring(3)}'

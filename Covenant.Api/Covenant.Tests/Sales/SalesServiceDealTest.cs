@@ -19,23 +19,24 @@ namespace Covenant.Tests.Sales
     public class SalesServiceDealTest
     {
         private readonly Mock<ICompanyRepository> _companyRepository = new();
-        private readonly Mock<IIdentityServerService> _identityServerService = new();
+        private readonly Mock<ICurrentUserService> _currentUserService = new();
         private readonly Mock<IUploadedFilesService> _uploadedFilesService = new();
         private readonly Mock<IDocumentService> _documentService = new();
         private readonly ISalesService _sut;
         private readonly Guid _agencyId = Guid.NewGuid();
         private readonly Guid _userId = Guid.NewGuid();
+        private readonly Guid _companyProfileId = Guid.NewGuid();
 
         public SalesServiceDealTest()
         {
-            _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
-            _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
+            _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+            _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
             _uploadedFilesService.Setup(u => u.Validate()).Returns(Result.Ok());
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
                 Mock.Of<IRequestRepository>(),
                 _companyRepository.Object,
-                _identityServerService.Object,
+                _currentUserService.Object,
                 _uploadedFilesService.Object,
                 _documentService.Object,
                 new CreateCompanyInteractionModelValidator(),
@@ -49,7 +50,6 @@ namespace Covenant.Tests.Sales
         private static CreateDealModel ValidCreateModel() => new()
         {
             Title = "Warehouse staffing",
-            CompanyProfileId = Guid.NewGuid(),
             Date = new DateTime(2026, 1, 1),
             Value = 1000m,
             Type = DealType.Temporal,
@@ -73,13 +73,13 @@ namespace Covenant.Tests.Sales
         private Task<Result<Guid>> CreateDeal(CreateDealModel model)
         {
             _uploadedFilesService.Setup(u => u.GetModel<CreateDealModel>()).Returns(model);
-            return _sut.CreateDeal();
+            return _sut.CreateDeal(_companyProfileId);
         }
 
         private Task<Result> UpdateDeal(Guid id, UpdateDealModel model)
         {
             _uploadedFilesService.Setup(u => u.GetModel<UpdateDealModel>()).Returns(model);
-            return _sut.UpdateDeal(id);
+            return _sut.UpdateDeal(_companyProfileId, id);
         }
 
         [Fact]
@@ -171,13 +171,16 @@ namespace Covenant.Tests.Sales
         }
 
         [Fact]
-        public async Task CreateDealFailsWhenCompanyProfileMissing()
+        public async Task CreateDealUsesTheRouteCompanyProfile()
         {
-            var model = ValidCreateModel();
-            model.CompanyProfileId = Guid.Empty;
-            Result<Guid> result = await CreateDeal(model);
-            Assert.False(result);
-            Assert.Contains(result.Errors, e => e.Key == nameof(CreateDealModel.CompanyProfileId));
+            Deal created = null;
+            _companyRepository
+                .Setup(r => r.Create(It.IsAny<Deal>()))
+                .Callback<Deal>(d => created = d)
+                .Returns(Task.CompletedTask);
+            Result<Guid> result = await CreateDeal(ValidCreateModel());
+            Assert.True(result);
+            Assert.Equal(_companyProfileId, created.CompanyProfileId);
         }
 
         [Fact]
@@ -261,7 +264,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task UpdateDealFailsWhenSalesUserIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             var deal = OwnedDeal(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
@@ -275,47 +278,47 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetDealsScopesToOwnerForSalesUser()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             GetDealsFilter captured = null;
             _companyRepository
-                .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
-                .Callback<Guid, GetDealsFilter>((_, f) => captured = f)
+                .Setup(r => r.GetDeals(_agencyId, _companyProfileId, It.IsAny<GetDealsFilter>()))
+                .Callback<Guid, Guid?, GetDealsFilter>((_, _, f) => captured = f)
                 .ReturnsAsync(new PaginatedList<DealListModel>());
-            await _sut.GetDeals(new GetDealsFilter { OwnerId = Guid.NewGuid() });
+            await _sut.GetDeals(_companyProfileId, new GetDealsFilter { OwnerId = Guid.NewGuid() });
             Assert.Equal(_userId, captured.OwnerId);
         }
 
         [Fact]
         public async Task GetDealsIsNotScopedForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             GetDealsFilter captured = null;
             _companyRepository
-                .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
-                .Callback<Guid, GetDealsFilter>((_, f) => captured = f)
+                .Setup(r => r.GetDeals(_agencyId, _companyProfileId, It.IsAny<GetDealsFilter>()))
+                .Callback<Guid, Guid?, GetDealsFilter>((_, _, f) => captured = f)
                 .ReturnsAsync(new PaginatedList<DealListModel>());
-            await _sut.GetDeals(new GetDealsFilter());
+            await _sut.GetDeals(_companyProfileId, new GetDealsFilter());
             Assert.Null(captured.OwnerId);
         }
 
         [Fact]
         public async Task GetDealsKeepsRequestedOwnerForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var otherUserId = Guid.NewGuid();
             GetDealsFilter captured = null;
             _companyRepository
-                .Setup(r => r.GetDeals(_agencyId, It.IsAny<GetDealsFilter>()))
-                .Callback<Guid, GetDealsFilter>((_, f) => captured = f)
+                .Setup(r => r.GetDeals(_agencyId, _companyProfileId, It.IsAny<GetDealsFilter>()))
+                .Callback<Guid, Guid?, GetDealsFilter>((_, _, f) => captured = f)
                 .ReturnsAsync(new PaginatedList<DealListModel>());
-            await _sut.GetDeals(new GetDealsFilter { OwnerId = otherUserId });
+            await _sut.GetDeals(_companyProfileId, new GetDealsFilter { OwnerId = otherUserId });
             Assert.Equal(otherUserId, captured.OwnerId);
         }
 
         [Fact]
         public async Task UpdateDealSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var deal = OwnedDeal(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
@@ -328,12 +331,12 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task DeleteDealSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var deal = OwnedDeal(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
-            Result result = await _sut.DeleteDeal(deal.Id);
+            Result result = await _sut.DeleteDeal(_companyProfileId, deal.Id);
             Assert.True(result);
             _companyRepository.Verify(r => r.Delete(deal), Times.Once);
         }
@@ -345,7 +348,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync(deal);
-            Result result = await _sut.DeleteDeal(deal.Id);
+            Result result = await _sut.DeleteDeal(_companyProfileId, deal.Id);
             Assert.True(result);
             _companyRepository.Verify(r => r.Delete(deal), Times.Once);
             _companyRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
@@ -357,7 +360,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetDeal(It.IsAny<Expression<Func<Deal, bool>>>()))
                 .ReturnsAsync((Deal)null);
-            Result result = await _sut.DeleteDeal(Guid.NewGuid());
+            Result result = await _sut.DeleteDeal(_companyProfileId, Guid.NewGuid());
             Assert.False(result);
             Assert.Equal("Deal not found", result.Errors.First().Message);
             _companyRepository.Verify(r => r.Delete(It.IsAny<Deal>()), Times.Never);

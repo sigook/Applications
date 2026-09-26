@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../../../../core/network/api_client.dart';
+import '../../../../../core/services/file_naming_service.dart';
 import '../../../data/datasources/profile_base_datasource.dart';
 import '../../../data/models/worker_profile_model.dart';
 
@@ -17,7 +18,7 @@ class SinRemoteDataSource extends ProfileBaseDatasource {
   }) =>
       execute(() async {
         final String? fileName = sinFilePath != null
-            ? ProfileBaseDatasource.basenameOf(sinFilePath)
+            ? FileNamingService.generateSinName(sinFilePath)
             : profile.socialInsuranceFile?.fileName;
 
         final sinData = <String, dynamic>{

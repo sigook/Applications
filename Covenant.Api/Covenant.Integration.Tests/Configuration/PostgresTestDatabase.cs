@@ -31,8 +31,7 @@ public static class PostgresTestDatabase
     {
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-        var container = new PostgreSqlBuilder()
-            .WithImage(Image)
+        var container = new PostgreSqlBuilder(Image)
             .WithDatabase("postgres")
             .WithUsername("postgres")
             .WithPassword("postgres")

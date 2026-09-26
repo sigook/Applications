@@ -29,39 +29,74 @@ class DaySelector extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         if (catalogDays.isEmpty)
-          Text(
-            'Loading days...',
-            style: TextStyle(color: Colors.grey.shade600),
-          )
+          Text('Loading days...', style: TextStyle(color: Colors.grey.shade600))
         else
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: catalogDays.map((catalogDay) {
-              final isSelected = selectedDays.any((d) => d.id == catalogDay.id || d.value == catalogDay.value);
-              return FilterChip(
-                label: Text(catalogDay.value),
-                selected: isSelected,
-                onSelected: (selected) {
-                  final newDays = List<DayOfWeekEntity>.from(selectedDays);
-                  if (selected) {
-                    newDays.add(DayOfWeekEntity(
-                      id: catalogDay.id ?? '',
-                      value: catalogDay.value,
-                    ));
-                  } else {
-                    newDays.removeWhere((d) => d.id == catalogDay.id || d.value == catalogDay.value);
-                  }
-                  onChanged(newDays);
-                },
+            children: [
+              FilterChip(
+                label: const Text('All days'),
+                selected: catalogDays.every(
+                  (catalogDay) => selectedDays.any(
+                    (d) => d.id == catalogDay.id || d.value == catalogDay.value,
+                  ),
+                ),
+                onSelected: (selected) => onChanged(
+                  selected
+                      ? catalogDays
+                            .map(
+                              (catalogDay) => DayOfWeekEntity(
+                                id: catalogDay.id ?? '',
+                                value: catalogDay.value,
+                              ),
+                            )
+                            .toList()
+                      : [],
+                ),
                 selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.2),
                 checkmarkColor: AppTheme.primaryBlue,
-                labelStyle: TextStyle(
-                  color: isSelected ? AppTheme.primaryBlue : Colors.black87,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                labelStyle: const TextStyle(
+                  color: AppTheme.primaryBlue,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            }).toList(),
+              ),
+              ...catalogDays.map((catalogDay) {
+                final isSelected = selectedDays.any(
+                  (d) => d.id == catalogDay.id || d.value == catalogDay.value,
+                );
+                return FilterChip(
+                  label: Text(catalogDay.value),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    final newDays = List<DayOfWeekEntity>.from(selectedDays);
+                    if (selected) {
+                      newDays.add(
+                        DayOfWeekEntity(
+                          id: catalogDay.id ?? '',
+                          value: catalogDay.value,
+                        ),
+                      );
+                    } else {
+                      newDays.removeWhere(
+                        (d) =>
+                            d.id == catalogDay.id ||
+                            d.value == catalogDay.value,
+                      );
+                    }
+                    onChanged(newDays);
+                  },
+                  selectedColor: AppTheme.primaryBlue.withValues(alpha: 0.2),
+                  checkmarkColor: AppTheme.primaryBlue,
+                  labelStyle: TextStyle(
+                    color: isSelected ? AppTheme.primaryBlue : Colors.black87,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                );
+              }),
+            ],
           ),
         if (errorText != null) ...[
           const SizedBox(height: 8),

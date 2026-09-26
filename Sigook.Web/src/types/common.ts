@@ -102,7 +102,17 @@ export interface CatalogItem<T = string> {
 }
 
 export type Gender = CatalogItem;
-export type IdentificationType = CatalogItem;
+
+// Matches backend IdentificationTypeCode (only the values the client checks).
+export enum IdentificationTypeCode {
+  SinSsn = 12,
+}
+
+// Matches backend IdentificationTypeModel.
+export interface IdentificationType extends CatalogItem {
+  code?: IdentificationTypeCode | number;
+}
+
 export type Availability = CatalogItem;
 export type AvailabilityTime = CatalogItem;
 export type Day = CatalogItem;

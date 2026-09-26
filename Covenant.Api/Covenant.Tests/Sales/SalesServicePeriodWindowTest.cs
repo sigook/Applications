@@ -16,7 +16,7 @@ namespace Covenant.Tests.Sales;
 public class SalesServicePeriodWindowTest
 {
     private readonly Mock<ICompanyRepository> _companyRepository = new();
-    private readonly Mock<IIdentityServerService> _identityServerService = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly Mock<ITimeService> _timeService = new();
     private readonly ISalesService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
@@ -26,8 +26,8 @@ public class SalesServicePeriodWindowTest
 
     public SalesServicePeriodWindowTest()
     {
-        _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
-        _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+        _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         _companyRepository
             .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
             .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
@@ -43,7 +43,7 @@ public class SalesServicePeriodWindowTest
             Mock.Of<IRequestService>(),
             Mock.Of<IRequestRepository>(),
             _companyRepository.Object,
-            _identityServerService.Object,
+            _currentUserService.Object,
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<IDocumentService>(),
             new CreateCompanyInteractionModelValidator(),

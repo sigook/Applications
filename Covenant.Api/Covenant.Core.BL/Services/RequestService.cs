@@ -38,7 +38,7 @@ public class RequestService : IRequestService
     private readonly IRequestRepository requestRepository;
     private readonly INotificationDataRepository notificationDataRepository;
     private readonly IPushNotifications pushNotifications;
-    private readonly IIdentityServerService identityServerService;
+    private readonly ICurrentUserService currentUserService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
     private readonly ISigookBusClient busClient;
@@ -57,7 +57,7 @@ public class RequestService : IRequestService
         IRequestRepository requestRepository,
         INotificationDataRepository notificationDataRepository,
         IPushNotifications pushNotifications,
-        IIdentityServerService identityServerService,
+        ICurrentUserService currentUserService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
         ISigookBusClient busClient,
@@ -79,7 +79,7 @@ public class RequestService : IRequestService
         this.requestRepository = requestRepository;
         this.notificationDataRepository = notificationDataRepository;
         this.pushNotifications = pushNotifications;
-        this.identityServerService = identityServerService;
+        this.currentUserService = currentUserService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
         this.busClient = busClient;
@@ -90,9 +90,9 @@ public class RequestService : IRequestService
     public async Task<Result<Guid>> CreateRequest(RequestCreateModel model)
     {
         if (model.AgencyId == Guid.Empty)
-            model.AgencyId = identityServerService.GetAgencyId();
-        if (identityServerService.IsSales())
-            model.SalesRepresentativeId = identityServerService.GetAgencyPersonnelId();
+            model.AgencyId = currentUserService.GetAgencyId();
+        if (currentUserService.IsSales())
+            model.SalesRepresentativeId = currentUserService.GetAgencyPersonnelId();
         var rRequest = await MapRequest(model);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;
@@ -156,7 +156,7 @@ public class RequestService : IRequestService
 
     public async Task<Result<Guid>> CompanyCreateRequest(RequestCreateModel model)
     {
-        var companyId = identityServerService.GetCompanyId();
+        var companyId = currentUserService.GetCompanyId();
         var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == companyId);
         if (model.AnotherLocation?.City != null)
         {
@@ -372,7 +372,7 @@ public class RequestService : IRequestService
     {
         var rCancel = request.Cancel(timeService.GetCurrentDateTime());
         if (!rCancel) return rCancel;
-        var cancelBy = identityServerService.GetNickname();
+        var cancelBy = currentUserService.GetNickname();
         var entity = new RequestCancellationDetail
         {
             RequestId = request.Id,
@@ -469,7 +469,7 @@ public class RequestService : IRequestService
         if (!rIsAsap) return Result.Fail<Request>(rIsAsap.Errors);
         var rUsesRunners = entity.UpdateUsesRunners(model.UsesRunners);
         if (!rUsesRunners) return Result.Fail<Request>(rUsesRunners.Errors);
-        entity.CreatedBy = identityServerService.GetNickname();
+        entity.CreatedBy = currentUserService.GetNickname();
         return Result.Ok(entity);
     }
 
@@ -482,7 +482,7 @@ public class RequestService : IRequestService
         var canBeSent = request.CanInvitationBeSendIt(now);
         if (!canBeSent) return canBeSent;
 
-        var job = new SendInvitationJob(requestId, identityServerService.GetNickname());
+        var job = new SendInvitationJob(requestId, currentUserService.GetNickname());
         await busClient.SendMessageAsync(job, serviceBusConfiguration.InvitationQueue);
         return Result.Ok();
     }
@@ -511,7 +511,7 @@ public class RequestService : IRequestService
     {
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
-        var rejectedBy = identityServerService.GetNickname();
+        var rejectedBy = currentUserService.GetNickname();
         var result = request.RejectWorker(workerProfileId, model.Comments, rejectedBy);
         if (!result) return result;
         await requestRepository.Update(request);
@@ -566,7 +566,7 @@ public class RequestService : IRequestService
         }
         model.JobPositions = await companyRepository.GetJobPositions(companyProfileId, new GetJobPositionsFilter());
         model.Locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfileId == companyProfileId);
-        model.Personnel = await agencyRepository.GetAllPersonnel(identityServerService.GetAgencyId());
+        model.Personnel = await agencyRepository.GetAllPersonnel(currentUserService.GetAgencyId());
         model.CompanyUsers = await companyRepository.GetAllCompanyUsers(companyProfileId);
         return model;
     }

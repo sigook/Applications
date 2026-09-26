@@ -5,6 +5,8 @@ class Skill extends Equatable {
 
   const Skill({required this.skill});
 
+  static const int maxLength = 20;
+
   String get value => skill;
 
   Map<String, dynamic> toJson() => {'skill': skill};

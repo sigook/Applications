@@ -42,7 +42,7 @@ namespace Covenant.Tests.Request
                 requestRepository.Object,
                 Mock.Of<INotificationDataRepository>(),
                 Mock.Of<IPushNotifications>(),
-                Mock.Of<IIdentityServerService>(),
+                Mock.Of<ICurrentUserService>(),
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
                 Mock.Of<ISigookBusClient>(),

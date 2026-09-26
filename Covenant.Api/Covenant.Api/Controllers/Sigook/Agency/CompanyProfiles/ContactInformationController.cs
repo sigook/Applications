@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook.Agency.CompanyProfiles;
 
+[ApiController]
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]

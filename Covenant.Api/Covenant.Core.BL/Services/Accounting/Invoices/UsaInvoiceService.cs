@@ -30,7 +30,7 @@ public class UsaInvoiceService(
     ISubcontractorRepository subcontractorRepository,
     TimeLimits timeLimits,
     ITimesheetCalculatorService calculatorService,
-    IIdentityServerService identityServerService,
+    ICurrentUserService currentUserService,
     IInvoicesContainer invoicesContainer,
     IRazorViewToStringRenderer renderer,
     IPdfGeneratorService pdfGenerator,
@@ -39,7 +39,7 @@ public class UsaInvoiceService(
     IPayStubsContainer payStubsContainer,
     ITeamsService teamsService,
     IOptions<TeamsWebhookConfiguration> teamsOptions,
-    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService, identityServerService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
+    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService, currentUserService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
 {
     protected override Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
         => invoiceRepository.GetInvoicesUSAForAgency(agencyIds, filter);

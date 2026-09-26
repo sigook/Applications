@@ -2,7 +2,6 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Notification;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Sigook;

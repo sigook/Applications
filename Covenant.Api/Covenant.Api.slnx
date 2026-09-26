@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Covenant.Integration.Tests/Covenant.Integration.Tests.csproj" />
+    <Project Path="Covenant.Tests/Covenant.Tests.csproj" />
+    <Project Path="Sigook.Functions.Tests/Sigook.Functions.Tests.csproj" />
+  </Folder>
+  <Project Path="Covenant.Api/Covenant.Api.csproj" />
+  <Project Path="Covenant.Common/Covenant.Common.csproj" />
+  <Project Path="Covenant.Core.BL/Covenant.Core.BL.csproj" />
+  <Project Path="Covenant.Documents/Covenant.Documents.csproj" />
+  <Project Path="Covenant.Infrastructure/Covenant.Infrastructure.csproj" />
+  <Project Path="Sigook.Functions/Sigook.Functions.csproj" />
+</Solution>

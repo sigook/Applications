@@ -14,7 +14,6 @@ using Covenant.Common.Repositories.Request;
 using Covenant.Common.Resources;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
-using GeoCoordinatePortable;
 using MediatR;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Configuration;
@@ -28,7 +27,7 @@ public class TimesheetService(
     IRequestRepository requestRepository,
     ICatalogRepository catalogRepository,
     IConfiguration configuration,
-    IIdentityServerService identityServerService,
+    ICurrentUserService currentUserService,
     IMediator mediator,
     TelemetryClient telemetryClient) : ITimesheetService
 {
@@ -38,7 +37,7 @@ public class TimesheetService(
     private readonly IRequestRepository requestRepository = requestRepository;
     private readonly ICatalogRepository catalogRepository = catalogRepository;
     private readonly IConfiguration configuration = configuration;
-    private readonly IIdentityServerService identityServerService = identityServerService;
+    private readonly ICurrentUserService currentUserService = currentUserService;
     private readonly IMediator mediator = mediator;
     private readonly TelemetryClient telemetryClient = telemetryClient;
 
@@ -64,7 +63,7 @@ public class TimesheetService(
 
     public async Task<Result<Guid>> CreateTimesheet(Guid workerProfileId, Guid requestId, TimeSheetModel timeSheetModel)
     {
-        var createdBy = identityServerService.GetNickname();
+        var createdBy = currentUserService.GetNickname();
         var now = timeService.GetCurrentDateTime();
         var workerRequest = await workerRequestRepository.GetWorkerRequestByWorkerProfileId(workerProfileId, requestId);
         if (workerRequest is null)
@@ -107,7 +106,7 @@ public class TimesheetService(
 
     public async Task<Result> UpdateTimesheet(Guid timeSheetId, TimeSheetModel timeSheetModel)
     {
-        var updatedBy = identityServerService.GetNickname();
+        var updatedBy = currentUserService.GetNickname();
         var timeSheet = await timeSheetRepository.GetTimeSheet(timeSheetId);
         if (timeSheet is null)
         {
@@ -139,7 +138,7 @@ public class TimesheetService(
     public async Task<Result<RegisterTimeSheetResultModel>> Register(Guid requestId, WorkerLocationModel workerLocationModel)
     {
         var now = timeService.GetCurrentDateTimeOffset();
-        var workerId = identityServerService.GetUserId();
+        var workerId = currentUserService.GetUserId();
         var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, now.DateTime);
         Result<RegisterTimeSheetResultModel> result;
         if (configuration.GetValue<bool>("ValidateLocation"))
@@ -148,10 +147,10 @@ public class TimesheetService(
             {
                 if (info != null && info.Latitude.HasValue && info.Longitude.HasValue)
                 {
-                    var pinJob = new GeoCoordinate(info.Latitude.Value, info.Longitude.Value);
                     now = timeService.GetCurrentLocalDateTime(info.Latitude.Value, info.Longitude.Value);
-                    var pinWorker = new GeoCoordinate(workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
-                    var distanceBetween = pinJob.GetDistanceTo(pinWorker);
+                    var distanceBetween = DistanceInMeters(
+                        info.Latitude.Value, info.Longitude.Value,
+                        workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
                     telemetryClient.TrackEvent(
                         "TimesheetLocationDistanceCheck",
                         new Dictionary<string, string>
@@ -207,7 +206,7 @@ public class TimesheetService(
 
     public async Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var result = await timeSheetRepository.GetHoursWorked(agencyId, filter);
         var resume = new HoursWorkedResume
         {
@@ -235,7 +234,7 @@ public class TimesheetService(
 
     public async Task<ResultGenerateDocument<MemoryStream>> GetTimesheetsReportFile(TimesheetsReportFilter filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var result = await timeSheetRepository.GetTimesheetsReport(agencyId, filter);
         var request = await mediator.Send(new GenerateTimesheetsReport(result.ToList()));
         return request;
@@ -271,7 +270,7 @@ public class TimesheetService(
         {
             return Result.Ok(ClockType.None);
         }
-        var workerId = identityServerService.GetUserId();
+        var workerId = currentUserService.GetUserId();
         var workerNow = timeService.GetCurrentLocalDateTime(latitude, longitude).DateTime;
         var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, workerNow);
         var now = info is not null && info.Latitude.HasValue && info.Longitude.HasValue
@@ -331,5 +330,17 @@ public class TimesheetService(
         if (!belongsToCompany)
             return Result.Fail<ResultGenerateDocument<MemoryStream>>("Request doesn't exist");
         return Result.Ok(await GetRequestTimesheetFile(requestId));
+    }
+
+    private static double DistanceInMeters(double latitude1, double longitude1, double latitude2, double longitude2)
+    {
+        const double earthRadiusMeters = 6376500.0;
+        var lat1 = latitude1 * (Math.PI / 180.0);
+        var lon1 = longitude1 * (Math.PI / 180.0);
+        var lat2 = latitude2 * (Math.PI / 180.0);
+        var deltaLon = longitude2 * (Math.PI / 180.0) - lon1;
+        var a = Math.Pow(Math.Sin((lat2 - lat1) / 2.0), 2.0)
+                + Math.Cos(lat1) * Math.Cos(lat2) * Math.Pow(Math.Sin(deltaLon / 2.0), 2.0);
+        return earthRadiusMeters * (2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a)));
     }
 }

@@ -28,14 +28,14 @@ public class RequestApplicantServiceTest
     private readonly Mock<IWorkerRepository> _workerRepository = new();
     private readonly Mock<ICatalogRepository> _catalogRepository = new();
     private readonly Mock<IUploadedFilesService> _uploadedFilesService = new();
-    private readonly Mock<IIdentityServerService> _identityServerService = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly RequestApplicantService _sut;
 
     private readonly Guid _requestId = Guid.NewGuid();
 
     public RequestApplicantServiceTest()
     {
-        _identityServerService.Setup(s => s.GetNickname()).Returns("tester");
+        _currentUserService.Setup(s => s.GetNickname()).Returns("tester");
         _uploadedFilesService.Setup(s => s.Validate()).Returns(Result.Ok());
         _uploadedFilesService.Setup(s => s.Upload(It.IsAny<IEnumerable<string>>())).Returns(Task.CompletedTask);
         _catalogRepository.Setup(r => r.GetIdentificationTypeCode(It.IsAny<Guid>())).ReturnsAsync(IdentificationTypeCode.None);
@@ -48,7 +48,7 @@ public class RequestApplicantServiceTest
             _workerRepository.Object,
             _catalogRepository.Object,
             _uploadedFilesService.Object,
-            _identityServerService.Object,
+            _currentUserService.Object,
             filesOptions.Object,
             new ChangeRequestApplicantStatusModelValidator(),
             new ChangeApplicantsStatusModelValidator(),

@@ -18,20 +18,21 @@ namespace Covenant.Tests.Sales
     public class SalesServiceInteractionTest
     {
         private readonly Mock<ICompanyRepository> _companyRepository = new();
-        private readonly Mock<IIdentityServerService> _identityServerService = new();
+        private readonly Mock<ICurrentUserService> _currentUserService = new();
         private readonly ISalesService _sut;
         private readonly Guid _agencyId = Guid.NewGuid();
         private readonly Guid _userId = Guid.NewGuid();
+        private readonly Guid _companyProfileId = Guid.NewGuid();
 
         public SalesServiceInteractionTest()
         {
-            _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
-            _identityServerService.Setup(i => i.GetUserId()).Returns(_userId);
+            _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+            _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
             _sut = new SalesService(
                 Mock.Of<IRequestService>(),
                 Mock.Of<IRequestRepository>(),
                 _companyRepository.Object,
-                _identityServerService.Object,
+                _currentUserService.Object,
                 Mock.Of<IUploadedFilesService>(),
                 Mock.Of<IDocumentService>(),
                 new CreateCompanyInteractionModelValidator(),
@@ -44,7 +45,6 @@ namespace Covenant.Tests.Sales
 
         private static CreateCompanyInteractionModel ValidCreateModel() => new()
         {
-            CompanyProfileId = Guid.NewGuid(),
             Description = "Called the client to introduce our services",
             InteractionPurpose = InteractionPurpose.Intro,
             InteractionType = InteractionType.Call,
@@ -65,7 +65,7 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task CreateInteractionSucceedsWhenModelValid()
         {
-            Result<Guid> result = await _sut.CreateInteraction(ValidCreateModel());
+            Result<Guid> result = await _sut.CreateInteraction(_companyProfileId, ValidCreateModel());
             Assert.True(result);
             Assert.Empty(result.Errors);
             _companyRepository.Verify(r => r.Create(It.IsAny<CompanyInteraction>()), Times.Once);
@@ -77,20 +77,23 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidCreateModel();
             model.Description = string.Empty;
-            Result<Guid> result = await _sut.CreateInteraction(model);
+            Result<Guid> result = await _sut.CreateInteraction(_companyProfileId, model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateCompanyInteractionModel.Description));
             _companyRepository.Verify(r => r.Create(It.IsAny<CompanyInteraction>()), Times.Never);
         }
 
         [Fact]
-        public async Task CreateInteractionFailsWhenCompanyProfileMissing()
+        public async Task CreateInteractionUsesTheRouteCompanyProfile()
         {
-            var model = ValidCreateModel();
-            model.CompanyProfileId = Guid.Empty;
-            Result<Guid> result = await _sut.CreateInteraction(model);
-            Assert.False(result);
-            Assert.Contains(result.Errors, e => e.Key == nameof(CreateCompanyInteractionModel.CompanyProfileId));
+            CompanyInteraction created = null;
+            _companyRepository
+                .Setup(r => r.Create(It.IsAny<CompanyInteraction>()))
+                .Callback<CompanyInteraction>(i => created = i)
+                .Returns(Task.CompletedTask);
+            Result<Guid> result = await _sut.CreateInteraction(_companyProfileId, ValidCreateModel());
+            Assert.True(result);
+            Assert.Equal(_companyProfileId, created.CompanyProfileId);
         }
 
         [Fact]
@@ -98,7 +101,7 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidCreateModel();
             model.InteractionPurpose = (InteractionPurpose)99;
-            Result<Guid> result = await _sut.CreateInteraction(model);
+            Result<Guid> result = await _sut.CreateInteraction(_companyProfileId, model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(CreateCompanyInteractionModel.InteractionPurpose));
         }
@@ -110,7 +113,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
                 .ReturnsAsync(interaction);
-            Result result = await _sut.UpdateInteraction(interaction.Id, ValidUpdateModel());
+            Result result = await _sut.UpdateInteraction(_companyProfileId, interaction.Id, ValidUpdateModel());
             Assert.True(result);
             _companyRepository.Verify(r => r.Update(interaction), Times.Once);
             _companyRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
@@ -121,7 +124,7 @@ namespace Covenant.Tests.Sales
         {
             var model = ValidUpdateModel();
             model.Description = string.Empty;
-            Result result = await _sut.UpdateInteraction(Guid.NewGuid(), model);
+            Result result = await _sut.UpdateInteraction(_companyProfileId, Guid.NewGuid(), model);
             Assert.False(result);
             Assert.Contains(result.Errors, e => e.Key == nameof(UpdateCompanyInteractionModel.Description));
             _companyRepository.Verify(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()), Times.Never);
@@ -133,7 +136,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
                 .ReturnsAsync((CompanyInteraction)null);
-            Result result = await _sut.UpdateInteraction(Guid.NewGuid(), ValidUpdateModel());
+            Result result = await _sut.UpdateInteraction(_companyProfileId, Guid.NewGuid(), ValidUpdateModel());
             Assert.False(result);
             Assert.Equal("Interaction not found", result.Errors.First().Message);
         }
@@ -141,12 +144,12 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task UpdateInteractionFailsWhenSalesUserIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             var interaction = OwnedInteraction(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
                 .ReturnsAsync(interaction);
-            Result result = await _sut.UpdateInteraction(interaction.Id, ValidUpdateModel());
+            Result result = await _sut.UpdateInteraction(_companyProfileId, interaction.Id, ValidUpdateModel());
             Assert.False(result);
             Assert.Equal("You can only manage your own interactions", result.Errors.First().Message);
             _companyRepository.Verify(r => r.Update(It.IsAny<CompanyInteraction>()), Times.Never);
@@ -155,52 +158,52 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task GetInteractionsScopesToOwnerForSalesUser()
         {
-            _identityServerService.Setup(i => i.IsSales()).Returns(true);
+            _currentUserService.Setup(i => i.IsSales()).Returns(true);
             GetCompanyInteractionsFilter captured = null;
             _companyRepository
-                .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
-                .Callback<Guid, GetCompanyInteractionsFilter>((_, f) => captured = f)
+                .Setup(r => r.GetInteractions(_agencyId, _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
+                .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
                 .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
-            await _sut.GetInteractions(new GetCompanyInteractionsFilter { OwnerId = Guid.NewGuid() });
+            await _sut.GetInteractions(_companyProfileId, new GetCompanyInteractionsFilter { OwnerId = Guid.NewGuid() });
             Assert.Equal(_userId, captured.OwnerId);
         }
 
         [Fact]
         public async Task GetInteractionsIsNotScopedForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             GetCompanyInteractionsFilter captured = null;
             _companyRepository
-                .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
-                .Callback<Guid, GetCompanyInteractionsFilter>((_, f) => captured = f)
+                .Setup(r => r.GetInteractions(_agencyId, _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
+                .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
                 .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
-            await _sut.GetInteractions(new GetCompanyInteractionsFilter());
+            await _sut.GetInteractions(_companyProfileId, new GetCompanyInteractionsFilter());
             Assert.Null(captured.OwnerId);
         }
 
         [Fact]
         public async Task GetInteractionsKeepsRequestedOwnerForAdmin()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var otherUserId = Guid.NewGuid();
             GetCompanyInteractionsFilter captured = null;
             _companyRepository
-                .Setup(r => r.GetInteractions(_agencyId, It.IsAny<GetCompanyInteractionsFilter>()))
-                .Callback<Guid, GetCompanyInteractionsFilter>((_, f) => captured = f)
+                .Setup(r => r.GetInteractions(_agencyId, _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
+                .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
                 .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
-            await _sut.GetInteractions(new GetCompanyInteractionsFilter { OwnerId = otherUserId });
+            await _sut.GetInteractions(_companyProfileId, new GetCompanyInteractionsFilter { OwnerId = otherUserId });
             Assert.Equal(otherUserId, captured.OwnerId);
         }
 
         [Fact]
         public async Task UpdateInteractionSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var interaction = OwnedInteraction(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
                 .ReturnsAsync(interaction);
-            Result result = await _sut.UpdateInteraction(interaction.Id, ValidUpdateModel());
+            Result result = await _sut.UpdateInteraction(_companyProfileId, interaction.Id, ValidUpdateModel());
             Assert.True(result);
             _companyRepository.Verify(r => r.Update(interaction), Times.Once);
         }
@@ -208,12 +211,12 @@ namespace Covenant.Tests.Sales
         [Fact]
         public async Task DeleteInteractionSucceedsWhenAdminIsNotOwner()
         {
-            _identityServerService.Setup(i => i.IsAdmin()).Returns(true);
+            _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
             var interaction = OwnedInteraction(Guid.NewGuid());
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
                 .ReturnsAsync(interaction);
-            Result result = await _sut.DeleteInteraction(interaction.Id);
+            Result result = await _sut.DeleteInteraction(_companyProfileId, interaction.Id);
             Assert.True(result);
             _companyRepository.Verify(r => r.Delete(interaction), Times.Once);
         }
@@ -225,7 +228,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
                 .ReturnsAsync(interaction);
-            Result result = await _sut.DeleteInteraction(interaction.Id);
+            Result result = await _sut.DeleteInteraction(_companyProfileId, interaction.Id);
             Assert.True(result);
             _companyRepository.Verify(r => r.Delete(interaction), Times.Once);
             _companyRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
@@ -237,7 +240,7 @@ namespace Covenant.Tests.Sales
             _companyRepository
                 .Setup(r => r.GetInteraction(It.IsAny<Expression<Func<CompanyInteraction, bool>>>()))
                 .ReturnsAsync((CompanyInteraction)null);
-            Result result = await _sut.DeleteInteraction(Guid.NewGuid());
+            Result result = await _sut.DeleteInteraction(_companyProfileId, Guid.NewGuid());
             Assert.False(result);
             Assert.Equal("Interaction not found", result.Errors.First().Message);
             _companyRepository.Verify(r => r.Delete(It.IsAny<CompanyInteraction>()), Times.Never);

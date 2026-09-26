@@ -49,6 +49,8 @@ class WorkerRegistrationRequest {
   // Lifting capacity
   final LiftingCapacity? lift;
 
+  final bool hasVehicle;
+
   // Availability
   final List<AvailabilityType> availabilities;
   final List<AvailableTime> availabilityTimes;
@@ -81,6 +83,7 @@ class WorkerRegistrationRequest {
     this.phone,
     required this.location,
     this.lift,
+    required this.hasVehicle,
     required this.availabilities,
     required this.availabilityTimes,
     required this.availabilityDays,
@@ -209,7 +212,10 @@ class WorkerRegistrationRequest {
       phone: null,
       location: location,
       lift: lift,
-      availabilities: [availabilityType],
+      hasVehicle: preferencesInfo.hasVehicle,
+      availabilities: [
+        if (availabilityType.id?.isNotEmpty ?? false) availabilityType,
+      ],
       availabilityTimes: availabilityTimes,
       availabilityDays: availabilityDays,
       languages: preferencesInfo.languages,
@@ -240,6 +246,7 @@ class WorkerRegistrationRequest {
       phone: phone,
       location: location,
       lift: lift,
+      hasVehicle: hasVehicle,
       availabilities: availabilities,
       availabilityTimes: availabilityTimes,
       availabilityDays: availabilityDays,

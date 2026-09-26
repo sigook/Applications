@@ -3,6 +3,7 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using Covenant.Common.Repositories.Candidate;
@@ -23,6 +24,7 @@ using System.Net;
 using Xunit;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Moq;
 
 namespace Covenant.Integration.Tests.AgencyModule.Candidates
 {
@@ -69,7 +71,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             HttpResponseMessage response = await _client.PostAsync(RequestUri, content);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<CandidateDetailModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.Candidates.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.Name, entity.Name);
             Assert.Equal(model.Email, entity.Email);
@@ -129,7 +131,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Guid id = Startup.FakeCandidate.Id;
             var response = await _client.PutAsJsonAsync($"{RequestUri}/{id}", model);
             response.EnsureSuccessStatusCode();
-            var entity = await _factory.Server.Host.Services.GetRequiredService<CovenantContext>().Candidates.SingleAsync(s => s.Id == id);
+            var entity = await _factory.Services.GetRequiredService<CovenantContext>().Candidates.SingleAsync(s => s.Id == id);
             Assert.Equal(model.Name, entity.Name);
             Assert.Equal(model.Address, entity.Address);
             Assert.Equal(model.PostalCode, entity.PostalCode);
@@ -145,7 +147,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Guid id = Startup.FakeCandidate.Id;
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri}/{id.ToString()}/Recruiter", new { });
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.Candidates.SingleAsync(c => c.Id == id);
             Assert.Equal(Startup.CurrentUser, entity.Recruiter);
         }
@@ -156,7 +158,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
             Guid id = Startup.FakeDeleteCandidate.Id;
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri}/{id.ToString()}");
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.Candidates.FirstOrDefaultAsync(c => c.Id == id);
             Assert.True(entity == null);
         }
@@ -212,7 +214,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
                 services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<ICandidateService, CandidateService>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton<IUserAccountService, UserAccountService>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<AgencyIdFilter>();

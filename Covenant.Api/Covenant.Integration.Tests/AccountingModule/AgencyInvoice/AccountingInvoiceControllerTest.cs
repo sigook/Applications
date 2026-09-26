@@ -50,7 +50,7 @@ public class AccountingInvoiceControllerTest : BaseTestOrder, IClassFixture<Seed
         Assert.NotNull(preview);
         Assert.NotEmpty(preview.Items);
         Assert.NotEmpty(preview.Discounts);
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.Empty(await context.InvoicesUSA.ToListAsync());
     }
 
@@ -65,7 +65,7 @@ public class AccountingInvoiceControllerTest : BaseTestOrder, IClassFixture<Seed
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync("api/agency/accounting/Invoices", model);
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.Single(await context.InvoicesUSA.ToListAsync());
         Assert.Equal(_data.TimeSheets.Length, await context.TimeSheetTotals.CountAsync());
         Assert.Equal(3, (await context.InvoicesUSA.SingleAsync()).Items.Count());
@@ -90,10 +90,10 @@ public class AccountingInvoiceControllerTest : BaseTestOrder, IClassFixture<Seed
             services.AddSingleton(invoiceContainer.Object);
             var payStubContainer = new Mock<IPayStubsContainer>();
             services.AddSingleton(payStubContainer.Object);
-            var identityServerService = new Mock<Covenant.Common.Interfaces.IIdentityServerService>();
-            identityServerService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
-            identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
-            services.AddSingleton(identityServerService.Object);
+            var currentUserService = new Mock<Covenant.Common.Interfaces.ICurrentUserService>();
+            currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
+            currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
+            services.AddSingleton(currentUserService.Object);
         }
 
         public void Configure(IApplicationBuilder app)

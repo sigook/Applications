@@ -10,5 +10,4 @@ public interface IRunnerService
     Task<Result> ChangeStatus(Guid runnerId, ChangeRunnerStatusModel model);
     Task<Result<Guid>> AddInterview(Guid runnerId, RunnerInterviewCreateModel model);
     Task<Result> RescheduleInterview(Guid runnerId, Guid interviewId, RunnerInterviewRescheduleModel model);
-    Task<List<RunnerStartingTodayModel>> GetRunnersStartingToday();
 }

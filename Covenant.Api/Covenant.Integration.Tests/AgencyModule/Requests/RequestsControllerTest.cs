@@ -7,6 +7,7 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
@@ -138,7 +139,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         var response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<AgencyRequestDetailModel>();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.Requests.SingleAsync(c => c.Id == detail.Id);
         AssertModelAndEntity(model, entity);
         Assert.Equal(model.StartAt, entity.StartAt);
@@ -189,7 +190,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         var response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<AgencyRequestDetailModel>();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.Requests.SingleAsync(c => c.Id == detail.Id);
         AssertModelAndEntity(model, entity);
         Assert.Equal(model.StartAt, entity.StartAt);
@@ -213,7 +214,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         };
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, model);
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.Requests.SingleAsync(s => s.Id == request.Id);
         Assert.Equal(model.JobTitle, entity.JobTitle);
         Assert.Equal(model.Description, entity.Description);
@@ -230,7 +231,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         var updateUrl = $"{RequestUri()}/{request.Id}/IsAsap";
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, new { });
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.True((await context.Requests.SingleAsync(s => s.Id == request.Id)).IsAsap);
 
         response = await _client.PutAsJsonAsync(updateUrl, new { });
@@ -246,7 +247,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         var updateUrl = $"{RequestUri()}/{request.Id}/IncreaseWorkersQuantityByOne";
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, new { });
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.Equal(expected, (await context.Requests.SingleAsync(s => s.Id == request.Id)).WorkersQuantity);
     }
 
@@ -258,7 +259,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         var updateUrl = $"{RequestUri()}/{request.Id}/ReduceWorkersQuantityByOne";
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, new { });
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.Equal(expected, (await context.Requests.SingleAsync(s => s.Id == request.Id)).WorkersQuantity);
         response = await _client.PutAsJsonAsync(updateUrl, new { });
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -273,7 +274,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{updateUrl}/Cancel", model);
         response.EnsureSuccessStatusCode();
         Assert.Equal(model.OtherCancellationReason, (await (await _client.GetAsync(updateUrl)).Content.ReadFromJsonAsync<AgencyRequestDetailModel>()).CancellationDetail);
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.Equal(RequestStatus.Cancelled, (await context.Requests.SingleAsync(r => r.Id == request.Id)).Status);
         var detail = await context.RequestCancellationDetails.SingleAsync(c => c.RequestId == request.Id);
         Assert.Equal(model.OtherCancellationReason, detail.OtherReasonCancellationRequest);
@@ -287,7 +288,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Request request = Data.FakeRequestToOpen;
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{request.Id}/Open", new { });
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         Assert.Equal(RequestStatus.Open, (await context.Requests.SingleAsync(r => r.Id == request.Id)).Status);
         Assert.True(await context.RequestNotes.AnyAsync(a => a.RequestId == request.Id));
     }
@@ -361,7 +362,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             services.AddTestAuthenticationBuilder()
                 .AddTestAuth(o =>
                 {
-                    o.AddSub(Data.AgencyId);
+                    o.AddSub(Data.FakeUserRecruiter.Id);
                     o.AddAgencyPersonnelRole(Data.AgencyId);
                     o.AddName(Data.FakeUserRecruiter.Email);
                 });
@@ -373,7 +374,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
             services.AddSingleton<ICompanyRepository, CompanyRepository>();
             services.AddSingleton<IWorkerRepository, WorkerRepository>();
-            services.AddSingleton<IIdentityServerService, IdentityServerService>();
+            services.AddSingleton<IUserAccountService, UserAccountService>();
             services.AddSingleton<ILocationRepository, LocationRepository>();
             services.AddSingleton<AgencyIdFilter>();
         }

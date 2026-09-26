@@ -43,7 +43,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.FullName, entity.FullName);
             Assert.Equal(model.Phone, entity.Phone);
@@ -83,7 +83,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             response.EnsureSuccessStatusCode();
             var model = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
             Assert.NotNull(model);
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.Equal(entity.Id, model.Id);
             Assert.Equal(entity.NumberId, model.NumberId);
@@ -115,7 +115,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             Guid id = Startup.FakeCompanyProfile.Id;
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri(id)}/VaccinationRequired", model);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfiles.SingleAsync(s => s.Id == id);
             Assert.Equal(model.Required, entity.VaccinationRequired);
             Assert.Equal(model.Comments, entity.VaccinationRequiredComments);
@@ -146,10 +146,12 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                 var timeService = new Mock<ITimeService>();
                 timeService.Setup(c => c.GetCurrentDateTime()).Returns(FakeNow);
                 services.AddSingleton(timeService.Object);
-                var identityServerService = new Mock<IIdentityServerService>();
-                identityServerService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
-                identityServerService.Setup(c => c.GetAgencyId()).Returns(FakeAgency.Id);
-                services.AddSingleton(identityServerService.Object);
+                var userAccountService = new Mock<IUserAccountService>();
+                userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
+                services.AddSingleton(userAccountService.Object);
+                var currentUserService = new Mock<ICurrentUserService>();
+                currentUserService.Setup(c => c.GetAgencyId()).Returns(FakeAgency.Id);
+                services.AddSingleton(currentUserService.Object);
                 services.AddSingleton<AgencyIdFilter>();
             }
 

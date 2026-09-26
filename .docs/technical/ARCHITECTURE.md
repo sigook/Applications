@@ -1,47 +1,42 @@
 # Technical Architecture - Covenant/Sigook Platform
 
-Monorepo with seven applications. Each has its own `CLAUDE.md` with app-specific conventions.
+Monorepo with six applications. Each has its own `CLAUDE.md` with app-specific conventions.
 
 | Application | Stack | Purpose |
 |---|---|---|
-| `Covenant.Api/` | .NET 8 Web API | Backend for the whole platform |
-| `Covenant.IdentityServer/` | .NET 6 + IdentityServer4 4.1.2 | OIDC/OAuth2 authentication server |
+| `Covenant.Api/` | .NET 10 Web API + OpenIddict 7 | Backend for the whole platform and OIDC/OAuth2 authorization server (one solution, `Covenant.Api.slnx`) |
+| `Covenant.Api/Sigook.Functions/` | Azure Functions v4 (.NET 10 isolated) | Scheduled background triggers (same solution as the API) |
 | `Sigook.Web/` | Vue 3 + Pinia + buefy 3 | Agency web portal (main platform) |
 | `Covenant.Web/` | Vue 3 + Vuetify | Public marketing website |
 | `SigookApp/` | Flutter | Worker mobile app |
-| `Sigook.Functions/` | Azure Functions v4 (.NET 8 isolated) | Scheduled background triggers |
 | `Sigook.CognitiveServices/` | .NET 8 | AI/speech services (Azure Cognitive) |
 
 ---
 
 ## Tech Stacks
 
-### Covenant.Api (.NET 8)
+### Covenant.Api (.NET 10)
 
 ```
-Framework:  ASP.NET Core 8.0 Web API
-Database:   PostgreSQL (cloud-hosted), EF Core 8.0.11 + Npgsql 8.0.10
+Framework:  ASP.NET Core 10.0 Web API + MVC Razor views (login pages, email templates)
+Database:   PostgreSQL (cloud-hosted), EF Core 10.0.12 + Npgsql 10.0.3 — two databases:
+            CovenantContext (API data) and IdentityContext (users, roles, OpenIddict stores)
+Identity:   ASP.NET Core Identity (custom table names) + OpenIddict 7 server/validation
 Patterns:   Repository, Service Layer, MediatR (document generation)
-Packages:   MediatR 12.4.1, FluentValidation 11.10.0,
-            Swashbuckle 7.2.0, Azure.Messaging.ServiceBus 7.18.2,
-            Azure.Storage.Blobs 12.24.0, ClosedXML 0.104.2, PdfPig 0.1.15
+Packages:   MediatR 12.4.1, FluentValidation 11.10.0, OpenIddict 7.7.0,
+            Microsoft.AspNetCore.OpenApi (document) + Scalar.AspNetCore (UI),
+            Azure.Messaging.ServiceBus 7.18.2, Azure.Storage.Blobs 12.24.0,
+            ClosedXML 0.104.2, PdfPig 0.1.15, SixLabors.ImageSharp 3.1.12 (default avatar)
 Logging:    Microsoft.Extensions.Logging (Console/Debug) + Application Insights (no Serilog)
-Config:     Azure Key Vault via PrefixKeyVaultSecretManager (also used by Sigook.Functions)
+Config:     Azure Key Vault via PrefixKeyVaultSecretManager (prefix `{env}-api`)
 Cloud:      Azure App Service, Azure Service Bus, Azure Blob Storage, Azure Container Registry
+SDK:        10.0.401 (Covenant.Api/global.json); packages only from nuget.org (Covenant.Api/nuget.config)
 ```
 
-### Covenant.IdentityServer (.NET 6)
-
-```
-Framework: ASP.NET Core 6.0 + IdentityServer4 4.1.2 (+ AspNetIdentity, EntityFramework stores)
-ORM:       EF Core 6.0.13 + Npgsql 6.0.8
-Protocols: OpenID Connect, OAuth 2.0
-Staging:   https://sigook-accounts-staging.azurewebsites.net
-Prod:      https://sigook-accounts.azurewebsites.net
-```
-
-Pinned to .NET 6 — upgrading to .NET 8 deadlocks IdentityServer4 + AutoMapper. It does **not**
-reference `Covenant.Common` (see [Covenant.Common sharing](#covenantcommon-sharing)).
+The identity server is **inside the API process**: `accounts.sigook.ca` / `staging.accounts.sigook.ca`
+are custom domains bound to the same App Service as `api.sigook.com`, and the OpenID Connect issuer is
+`Identity:IssuerUri` (`appsettings.{Environment}.json`). See
+[Authentication & Authorization](#authentication--authorization).
 
 ### Sigook.Web (Vue 3, agency portal)
 
@@ -83,7 +78,7 @@ Auth:       native email/password screen → OAuth2 password grant (POST {author
             `roles`, asking for it fails with invalid_scope); in-app 2-step forgot-password
             (/forgot-password → POST /Password/forgot + /Password/reset, 6-digit code,
             60-s resend cooldown); refresh handled by auth_interceptor against
-            /connect/token; tokens in FlutterSecureStorage
+            /connect/token; tokens in FlutterSecureStorage. The authority is the API host.
 Codegen:    build_runner, freezed ^3.2.3, json_serializable; Dartz for Either/Option
 Envs:       local / staging / production — one entry point each (main_local.dart,
             main_staging.dart, main_production.dart) over shared main_common.dart, with
@@ -95,32 +90,37 @@ Each feature under `lib/features/{name}/` has `domain/` (entities, repositories 
 usecases — pure Dart), `data/` (Freezed models, local/remote datasources, repository impls),
 `presentation/` (pages, widgets, Riverpod viewmodels/providers).
 
-### Sigook.Functions (.NET 8, isolated worker)
+### Sigook.Functions (.NET 10, isolated worker, `Microsoft.Azure.Functions.Worker` 2.x)
 
-`Sigook.Functions/Sigook.Functions/Functions/ScheduleTasks.cs` holds two timer triggers
+`Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs` holds two timer triggers
 (`0 0 0 * * 1-5`): `NotificationSinExpiration` and `WarnLicensesExpiration`.
 `Functions/CraTables.cs` holds a blob trigger, `CraTableUploaded`, on the `cra-tables` container
 (`CraTablesStorage` connection): it reads the table, the pay period and the year from the blob name
 (`Utils/CraBlobName.cs`) and asks the API to import the CRA CPP or income tax table.
 
-Every function gets a client-credentials token and POSTs to Covenant.Api (`ScheduleTasks:ApiUrl`,
-`CraTables:CppApiUrl`, `CraTables:TaxApiUrl`), reporting the outcome to Teams. Email/invitation sending does **not** live
-here — that moved to Service Bus consumers inside Covenant.Api
-(see [Async messaging](#async-messaging-azure-service-bus)).
+Every function gets a client-credentials token from the API's own token endpoint
+(`ScheduleTasks:AccountsUrl`, client `Identity:FunctionsClientId` seeded by the API) and POSTs to
+Covenant.Api (`ScheduleTasks:ApiUrl`, `CraTables:CppApiUrl`, `CraTables:TaxApiUrl`), reporting the
+outcome to Teams. The project references only `Covenant.Common` (shared enums and models such as
+`PayPeriod`, `ImportCraTableFromBlobModel`, `TeamsNotificationModel`); it has no database access.
+Email/invitation sending does **not** live here — that moved to Service Bus consumers inside
+Covenant.Api (see [Async messaging](#async-messaging-azure-service-bus)).
 
-Unit tests live in `Sigook.Functions/Sigook.Functions.Tests` and run in the pipeline.
+Unit tests live in `Covenant.Api/Sigook.Functions.Tests` and run in both the API and the Functions
+pipelines.
 
 The blob-trigger connection is resolved by the Functions **host**, not by the isolated worker's
-`IConfiguration`, so it can never come from Key Vault through `ConfigureAppConfiguration`. It is
-declared as an **identity-based connection** instead of a connection string, which keeps secrets out
-of the repo: `CraTablesStorage__blobServiceUri` + `CraTablesStorage__queueServiceUri` (the polling
-trigger needs the queue endpoint too, for its internal scan queues).
+`IConfiguration`, so it can never come from Key Vault. It is declared as an **identity-based
+connection** instead of a connection string, which keeps secrets out of the repo:
+`CraTablesStorage__blobServiceUri` + `CraTablesStorage__queueServiceUri` (the polling trigger needs
+the queue endpoint too, for its internal scan queues).
 
 - Locally it authenticates with `az login`; in Azure, with the Function App's managed identity.
 - Whoever runs it needs **Storage Blob Data Contributor** and **Storage Queue Data Contributor** on
   the storage account.
 - Local settings point at `sigookfilesstaging`; production points at `sigookfiles` through the same
   two App Settings on `sigook-functions`.
+- Key Vault prefix for the worker's own settings: `{env}-func`.
 
 ### Sigook.CognitiveServices (.NET 8)
 
@@ -134,26 +134,25 @@ Runs on an F1 App Service plan (intentional — do not suggest upgrading).
 ### Projects
 
 ```
-Covenant.Api/
-├── Covenant.Api/               # Web API: controllers, auth filters, background service, DI
-├── Covenant.Common/            # Entities, enums, models/DTOs, repository+service interfaces
-├── Covenant.Core.BL/           # Services (business logic) + Service Bus consumers
-├── Covenant.Infrastructure/    # EF Core (CovenantContext), repositories, integrations, deductions
-├── Covenant.Documents/         # Excel/PDF report generators (MediatR handlers)
-├── Covenant.Tests/             # Unit tests
-└── Covenant.Integration.Tests/ # Integration tests
+Covenant.Api/                       # Covenant.Api.slnx, Directory.Build.props (net10.0), Directory.Packages.props, global.json, nuget.config
+├── Covenant.Api/                   # Web API + identity host: controllers, auth filters, Razor views, background service, DI
+├── Covenant.Common/                # Entities (incl. Entities/Identity), enums, models/DTOs, repository+service interfaces, constants
+├── Covenant.Core.BL/               # Services (business logic, incl. Services/Identity) + Service Bus consumers
+├── Covenant.Infrastructure/        # EF Core (CovenantContext, IdentityContext), repositories, integrations, deductions
+├── Covenant.Documents/             # Excel/PDF report generators (MediatR handlers)
+├── Sigook.Functions/               # Azure Functions (timers + blob trigger), references Covenant.Common only
+├── Covenant.Tests/                 # API unit tests
+├── Covenant.Integration.Tests/     # API integration tests (Testcontainers Postgres)
+└── Sigook.Functions.Tests/         # Functions unit tests
 ```
+
+`Directory.Build.props` sets `TargetFramework=net10.0`, `ImplicitUsings`, `LangVersion=latest` and
+`IsPackable=false` for every project; individual csproj files only carry what differs.
 
 ### Covenant.Common sharing
 
-- `Covenant.Common.csproj` has `IsPackable=False`; it is consumed **only by `ProjectReference`
-  inside the Covenant.Api solution**.
-- `Covenant.IdentityServer` does NOT reference it (no package, no project reference). It vendors
-  the few types it needs under `Covenant.IdentityServer/Covenant.IdentityServer/Entities/`
-  (`CovenantUser`, `CovenantRole`, `InactiveUser`) and `Enums/` (`UserType`, `EmailSettingName`).
-  Keep these in sync with `Covenant.Common` by hand — the API exchanges DTOs with IdentityServer
-  over HTTP.
-- `Sigook.Functions` doesn't reference it either; it only calls the API over HTTP.
+- `Covenant.Common` is consumed only by `ProjectReference` inside the solution — by the API layers
+  and by `Sigook.Functions`.
 - **Declare what you use**: every project lists a `PackageReference` for each package its own code
   compiles against, even when a referenced project already brings it in transitively. Duplicated
   declarations cost nothing (NuGet resolves one package, one version) and keep a lower layer from
@@ -165,7 +164,9 @@ Covenant.Api/
   the `PackageVersion` in that file so every project resolves the same version.
 - Keep infrastructure concerns out of `Covenant.Common`: Excel helpers live in `Covenant.Documents`,
   ASP.NET-bound helpers (`IFormFile`, `IConfiguration`, Razor helpers) in `Covenant.Api`/
-  `Covenant.Core.BL`, and test-only helpers inside each test project.
+  `Covenant.Core.BL`, and test-only helpers inside each test project. For that reason
+  `PrefixKeyVaultSecretManager` exists twice on purpose (Api and Sigook.Functions), so the worker
+  does not have to reference `Covenant.Infrastructure`.
 
 ### Controllers (presentation layer)
 
@@ -175,13 +176,15 @@ Two coexisting layouts:
 
 | Path | Controllers |
 |---|---|
+| `Controllers/Identity/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (Razor login, logout, confirm email, create/reset password, resend confirmation), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/`, `/Home/Success`, `/Home/InvalidUser`, `/Home/Error`). All excluded from the OpenAPI document |
 | `Controllers/Sigook/` | `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint) |
+| `Controllers/Sigook/Account/` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/Account/ChangeEmail`, `GET api/Account/GetEmail`, `PATCH /identity` to deactivate — routes kept because installed SigookApp builds call them), `UserNotificationController` (`api/UserNotification` preferences) |
 | `Controllers/Sigook/Agency/` | `AgencyController`, `AgencyLocationController`, `NotificationsController` |
 | `Controllers/Sigook/Agency/Accounting/` | `InvoicesController`, `PayStubsController`, `ReportsController`, `LocationTaxController`, `DeductionsController` |
-| `Controllers/Sigook/Agency/CompanyProfiles/` | company detail: profile, contacts, documents, invoice notes/recipients, job positions, locations, logo, notes, users |
+| `Controllers/Sigook/Agency/CompanyProfiles/` | company detail: profile, contacts, documents, invoice notes/recipients, job positions, locations, logo, notes, users — plus the sales-only, owner-scoped `InteractionsController` and `DealsController` (Policy `Sales`) |
 | `Controllers/Sigook/Agency/Requests/` | request detail: `RequestsController`, `ApplicantsController`, `RunnersController`, `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController` (per-worker notes on a request), notes, shift, skills, report-to, requested-by |
 | `Controllers/Sigook/Agency/Recruiting/` | recruiting-scoped lists: `RequestsController`, `CompanyProfilesController`, `WeeklyBoardController` |
-| `Controllers/Sigook/Agency/Sales/` | sales-scoped lists and owner-scoped records: `RequestsController`, `CompanyProfilesController`, `DealsController`, `CompanyInteractionsController`, `DashboardController` |
+| `Controllers/Sigook/Agency/Sales/` | sales-scoped lists and the dashboard: `RequestsController`, `CompanyProfilesController`, `DashboardController` |
 | `Controllers/Sigook/Agency/Candidates/` | candidate domain: `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
 | `Controllers/Sigook/Agency/Workers/` | worker-profile management: `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController` |
 | `Controllers/Sigook/Agency/Personnel/` | `PersonnelController` (agency back-office users), `AgenciesController` (agencies the caller belongs to) |
@@ -203,7 +206,8 @@ Routing: some controllers declare `public const string RouteName = "api/..."` +
 `[Route(RouteName)]` (grep for `RouteName =` to find an endpoint); others use attribute
 literals like `[Route("api/agency/accounting/[controller]")]` or
 `[Route("api/agency/sales/[controller]")]`. There is no `{Module}{Resource}V{N}Controller`
-convention.
+convention. Every API controller carries `[ApiController]`; the built-in OpenAPI generator only
+describes controllers that have it.
 
 ### Services (business logic) — `Covenant.Core.BL/Services/`
 
@@ -222,39 +226,61 @@ Everything billing/payroll lives under `Services/Accounting/`:
 - `Services/Accounting/Shared/` — `TimesheetCalculatorService` (hours breakdown + payroll
   deductions), shared by payroll and invoicing.
 
+Identity lives under `Services/Identity/` (interfaces in `Covenant.Common/Interfaces/Identity/`):
+
+- `UserAdministrationService` — creates users (with confirmation emails), agency/company claims,
+  role changes, email changes, deactivation (adds `InactiveUsers` and revokes OpenIddict tokens).
+  `Covenant.Infrastructure/Services/UserAccountService.cs` implements `IUserAccountService` on
+  top of it and keeps the `Users` mirror table of the API database in sync. The split follows the
+  two databases: integration tests replace `IUserAdministrationService` with a mock and run the real
+  `UserAccountService` without an identity database.
+- `ICurrentUserService` (`Covenant.Infrastructure/Services/CurrentUserService.cs`) — who is calling:
+  user, company, agency and personnel ids, nickname and role checks, read from the claims of the
+  current `HttpContext`. Services use it instead of reading `HttpContext` themselves.
+- `AccountNotificationService` — confirmation / set-password / reset-password links (rendered from
+  `Covenant.Api/Views/Notifications/Identity/`) and the 6-digit reset code email.
+- `UserSessionValidator` — the session kill switch (`InactiveUsers` + Microsoft Graph
+  `accountEnabled` through `Microsoft365AccountService`).
+- `PasswordResetService` — code-based forgot password.
+
 Also in `Covenant.Core.BL/`: `Adapters/` (entity→model adapters for candidate, company, worker,
 interfaces in `Covenant.Common/Interfaces/Adapters/`), `Extensions/Accounting/` (Razor view-model
 extensions for the invoice and payroll templates) and `Consumers/` (Service Bus).
 
-Services depend only on repository interfaces from `Covenant.Common/Repositories/`; controllers
-only delegate to services. DI registration (services/repositories/adapters/containers
-`AddScoped`; Service Bus clients + consumers and config option objects (`Rates`, `TimeLimits`,
-`AzureStorageConfiguration`) `AddSingleton`) lives in
-`Covenant.Api/Configuration/ApiServicesConfiguration.cs`.
+Services depend only on repository interfaces from `Covenant.Common/Repositories/` (plus ASP.NET
+Identity's `UserManager`/`RoleManager` for the identity services); controllers only delegate to
+services. DI registration (services/repositories/adapters/containers `AddScoped`; Service Bus
+clients + consumers and config option objects (`Rates`, `TimeLimits`, `AzureStorageConfiguration`)
+`AddSingleton`; `AddCovenantIdentity` for `IdentityContext`, ASP.NET Identity core and the
+OpenIddict core stores) lives in `Covenant.Api/Configuration/ApiServicesConfiguration.cs`.
+`Covenant.Api/Configuration/OpenIddictConfiguration.cs` configures the OpenIddict server and
+validation.
 
 ### Infrastructure — `Covenant.Infrastructure/`
 
 ```
-Contexts/         CovenantContext.cs (main DbContext), MyKeysContext (DataProtection keys),
+Contexts/         CovenantContext.cs (main DbContext), IdentityContext.cs (ASP.NET Identity tables
+                  User/Rol/UserClaim/UserRole/UserLogin/RoleClaim/UserToken + InactiveUsers +
+                  PasswordResetCode + OpenIddict stores), MyKeysContext (DataProtection keys),
                   PostgresFunctions.cs (EF DbFunction mappings backing
                   Scripts/Functions/get_week_start_sunday.sql)
-Repositories/     by domain: Accounting/, Agency/, Candidate/, Company/, Notification/,
+Repositories/     by domain: Accounting/, Agency/, Candidate/, Company/, Identity/, Notification/,
                   Request/, Worker/ + root repositories (Catalog, Location, Shift, User);
                   shared plumbing in BaseRepository.cs
 Mappers/          entity→model projection extensions used inside repositories:
                   AgencyExtensionsMapping, CandidateExtensionsMapping, CompanyExtensionsMapping,
                   RequestExtensionsMapping, WorkerRequestExtensionsMapping
-Configurations/   EF Core IEntityTypeConfiguration classes, mirrored by domain
-Migrations/       EF Core migrations
+Configurations/   EF Core IEntityTypeConfiguration classes, mirrored by domain. Configurations/Identity/
+                  belongs to IdentityContext only (both contexts filter by namespace)
+Migrations/       EF Core migrations for CovenantContext; Migrations/Identity/ for IdentityContext
 Scripts/          raw SQL (views, functions, stored procedures) run at startup
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
-                  IdentityServerService, TimeService, CraPdfParser (PdfPig reader for the CRA
+                  UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
+                  accountEnabled check), TimeService, CraPdfParser (PdfPig reader for the CRA
                   deduction tables), SigookBusClient / SigookBusAdministrationClient (Service Bus)
 Services/Storage/ Azure Blob containers, one class per container (see below)
-Services/Handlers/ Microsoft365TokenHandler (DelegatingHandler: Entra client-credentials bearer
-                  token, attached to the IdentityServer HttpClient in AddClients)
 ```
 
 **Blob storage** — one typed container class per Azure Blob container, all deriving from
@@ -269,16 +295,22 @@ regeneration after fixing a Razor template.
 Payroll deductions are **DB table lookups, not formulas**: `TimesheetCalculatorService` →
 `DeductionsRepository` range lookups by earnings/year. EI is the only computed deduction.
 Import flow: a CRA PDF is uploaded to the `cra-tables` blob container → the Azure Function
-`CraTableUploaded` (blob trigger, `Sigook.Functions/Functions/CraTables.cs`) calls the API's
-`DeductionsController` (`POST api/Accounting/Deduction/Cpp/Blob` / `Tax/Blob`, which takes a
+`CraTableUploaded` (blob trigger, `Covenant.Api/Sigook.Functions/Functions/CraTables.cs`) calls the
+API's `DeductionsController` (`POST api/Accounting/Deduction/Cpp/Blob` / `Tax/Blob`, which takes a
 blob reference) → `DeductionImportService` (uses `CraPdfParser` + `CraTablesContainer`) →
 `DeductionsRepository.ImportCpp/ImportTax(year, payPeriod, rows, yearsKept)`, keeping the last
 2 years. Reads happen only through `TimesheetCalculatorService`; there is no endpoint to read
 the tables back.
 
 **Health checks** — `AddCovenantHealthChecks` + `Covenant.Api/HealthChecks/` (tagged
-`config`/`ready`/`live`) probe the four connection strings: `DefaultConnection`,
+`config`/`ready`/`live`) probe the connection strings `DefaultConnection`, `IdentityConnection`,
 `AccountingStorageConnection`, `FileStorageConnection`, `ServiceBusConnection`.
+
+**API reference** — the OpenAPI document is generated by `Microsoft.AspNetCore.OpenApi`
+(`AddOpenApi("v1")` + transformers in `Covenant.Api/Configuration/OpenApi/`) and written to
+`.docs/technical/openapi.json` on every build by `Microsoft.Extensions.ApiDescription.Server`.
+In Development and Staging the API serves the document at `/openapi/v1.json` and the Scalar UI at
+`/scalar`.
 
 For entities, enums, and the data model, see
 [ENTITIES_RELATIONSHIPS.md](ENTITIES_RELATIONSHIPS.md). For the Request lifecycle rule
@@ -300,8 +332,11 @@ Custom implementation on `Azure.Messaging.ServiceBus` — **there is no MassTran
 | Queue/topic names | `Covenant.Common/Configuration/ServiceBusConfiguration.cs` |
 
 `SigookBackgroundService` (a `BackgroundService` registered in `Program.cs`) runs at startup:
-applies pending EF migrations for both contexts, executes the raw SQL in
-`Covenant.Infrastructure/Scripts/`, creates queues/topics/subscriptions if missing
+applies pending EF migrations for `MyKeysContext`, `CovenantContext` and (when
+`ConnectionStrings:IdentityConnection` is set) `IdentityContext`, executes the raw SQL in
+`Covenant.Infrastructure/Scripts/`, seeds the 7 roles, runs `OpenIddictSeeder` (the
+`api1`/`roles` scopes, the Sigook.Functions confidential client, and the `sigook.com`/`android`
+public clients in Development), creates queues/topics/subscriptions if missing
 (`ValidateCandidateQueue`, `BulkPayStubEmailQueue`, `InvitationQueue`, `CreateApplicantTopic`
 with Teams/Email/RequestApplicant subscriptions), then calls `OnInit()` on every registered
 consumer.
@@ -318,47 +353,82 @@ rather than constructing clients directly.
 
 ## Authentication & Authorization
 
-- All apps authenticate against Covenant.IdentityServer. Sigook.Web and SigookApp use the
-  OAuth2 **password grant** (`POST /connect/token`, `grant_type=password`) from their own
-  native login screens — no browser redirect. The custom `CovenantResourceOwnerPasswordValidator`
+- **Covenant.Api is the OpenID Connect provider.** OpenIddict 7 serves `/connect/authorize`,
+  `/connect/token`, `/connect/userinfo`, `/connect/endsession` and `/connect/revocation`
+  (`Covenant.Api/Configuration/OpenIddictConfiguration.cs`, controller
+  `Controllers/Identity/AuthorizationController.cs`). Enabled flows: authorization code + PKCE
+  (Sigook.Web browser login), password (Sigook.Web and SigookApp native login screens), refresh
+  token (non-rolling, 30 days; access tokens last 1 hour) and client credentials (Sigook.Functions).
+  Access tokens are plain signed JWTs (encryption disabled) with `aud = api1`; the API validates
+  them in-process (`AddValidation().UseLocalServer()`), so there is no discovery round-trip.
+  The issuer is `Identity:IssuerUri`; signing/encryption certificates come from Key Vault
+  (`Identity:SigningCertificateName`, `Identity:EncryptionCertificateName`) outside Development,
+  where OpenIddict's development certificates are used.
+- **Clients and scopes** are rows in the identity database (`OpenIddictApplications`,
+  `OpenIddictScopes`), managed through migrations or `OpenIddictSeeder`; there is no admin UI.
+  The `android`/`ios` public clients use `password` + `refresh_token`; the web clients (`sigook.com`,
+  `all2job*`) add `authorization_code` with PKCE. Public clients send `client_id` only.
+- **Claims**: `sub`, `name`/`preferred_username`/`email`, `email_verified`, `nickname` (the
+  Microsoft 365 email for staff), `role` (one claim per role; userinfo returns a string for one role
+  and an array for several), `agencyId`/`companyId` user claims, `idp` (`local` or `oidc`). Roles and
+  user claims are re-read from the database on every token issuance, so a role change reaches the
+  token at the next refresh. The API reads the subject through `PrincipalExtensions.GetSubject()`
+  (`sub`, falling back to `ClaimTypes.NameIdentifier` for the test handlers) and roles through
+  `IsInRole` (OpenIddict identities use `role` as the role claim type).
+- The **password grant** (`Controllers/Identity/AuthorizationController.cs`, `ExchangePassword`)
   enforces the same rules as the Razor login (inactive users, unconfirmed email) plus lockout
-  (5 attempts / 5 min) and returns machine-readable `error_description` codes
+  (5 attempts / 5 min) and returns `error = invalid_grant` with machine-readable
+  `error_description` codes from `Covenant.Common/Constants/SignInErrors.cs`
   (`invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out`). Password grant
   issues no `id_token`; clients build the profile from `/connect/userinfo`.
   Sigook.Web keeps `oidc-client-ts` (`src/security/`) for token storage/refresh and for the
   "Sign in with Microsoft 365" button (`signinRedirect` with `acr_values=idp:oidc`, which skips
-  the IdentityServer login page and goes straight to the external provider via `/callback`).
-  Covenant.Api validates the JWT Bearer token on every request.
+  the login page and goes straight to the external provider via `Controllers/Identity/ExternalController.cs`).
 - **Microsoft 365 accounts are re-checked after login.** The external callback stores the Entra
   `oid` as the `microsoft_oid` user claim and rejects the login when Graph reports
-  `accountEnabled = false`. `CustomProfileService.IsActiveAsync` repeats that Graph check (and the
-  `InactiveUsers` check) every time IdentityServer validates a session — refresh tokens, the
-  authorize endpoint, userinfo — so blocking sign-in in the Microsoft 365 admin center or
-  deactivating a user in Sigook ends their session at the next token refresh. Results are cached
-  5 minutes per user (`Microsoft365AccountService`); a Graph outage or missing
-  `Microsoft365ClientId/Secret` fails open (session allowed, error logged). Requires the
-  IdentityServer app registration to hold the `User.Read.All` application permission.
+  `accountEnabled = false`. `UserSessionValidator` repeats that Graph check (and the
+  `InactiveUsers` check) every time a token is issued or userinfo is served, so blocking sign-in in
+  the Microsoft 365 admin center or deactivating a user in Sigook ends their session at the next
+  token refresh. Results are cached 5 minutes per user (`Microsoft365AccountService`); a Graph
+  outage or missing credentials fails open (session allowed, error logged).
+  The OIDC sign-in and the Graph check use the identity app registration
+  (`Identity:Microsoft365ClientId` / `Identity:Microsoft365ClientSecret`, tenant from
+  `Microsoft365Configuration:TenantId`), which holds the `User.Read.All` application permission and
+  the `{IssuerUri}/signin-oidc` redirect URIs. `Microsoft365Configuration:ClientId/ClientSecret` is a
+  different registration, used only to send email through Graph.
 - **Forgot password** is API-driven (`POST /Password/forgot` → 6-digit emailed code, 15-min TTL,
   5 attempts, 60-s resend cooldown; `POST /Password/reset` with `{email, code, newPassword}`).
-  Codes live in the `PasswordResetCode` table (hashed). Both Sigook.Web (`/forgot-password`)
+  Codes live in the `PasswordResetCode` table (hashed). Email flooding limits, all silent (the
+  response never changes, so they don't reveal whether an email exists): per user at most 3 codes
+  per hour and 6 per 24 h, counted from `PasswordResetCode`; the Razor link flow
+  (`POST /Account/RequestResetPassword`) sends at most 3 links per user per hour (in-memory counter,
+  reset on restart). On top of that, `/Password/*` and `POST /Account/RequestResetPassword` share the
+  `password-reset` rate-limit policy (`RateLimitingConfiguration`): 10 requests per client IP in a
+  sliding 10-minute window, answering `429` beyond it. The client IP comes from `X-Forwarded-For`
+  (`ForwardedHeadersOptions` trusts any proxy because the App Service front end is the only way
+  in). Both Sigook.Web (`/forgot-password`)
   and SigookApp (`/forgot-password` route, 2-step screen) consume it; SigookApp also offers a
   resend-confirmation action when login fails with `email_not_confirmed`
-  (`POST /Account/ResendConfirmationLink`). The Razor pages (`Login`,
-  `RequestResetPassword`, `CreatePassword`, `ConfirmEmailAddress`) remain for the
-  `accounting.sigook.com` client, older mobile builds (authorization_code is still enabled on
-  the `android`/`ios` clients) and account-activation emails.
+  (`POST /Account/ResendConfirmationLink`). The Razor pages (`/Account/Login`,
+  `RequestResetPassword`, `CreatePassword`, `ConfirmEmailAddress`, `ResetPassword`) remain for the
+  `accounting.sigook.com` client, browser-based flows and account-activation emails.
+- **User administration** (create user, agency/company claims, role and email changes,
+  deactivation) happens in-process through `IUserAdministrationService`; the API writes the
+  identity database directly (`ConnectionStrings:IdentityConnection`) and mirrors the user in its
+  own `Users` table.
 - **Roles** (exactly 7, lowercase, defined in `Covenant.Common/Constants/CovenantConstants.cs`):
   `superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker`. Role groups:
   `RecruitingAccess` (superadmin/admin/recruiting), `SalesAccess` (superadmin/admin/sales),
   `AgencyStaff` (recruiting access + sales), `AdminAccess` (superadmin/admin),
   `AgencyAssignable` (admin/recruiting/sales), `SuperAdminAssignable` (`CovenantConstants.cs`).
-  Always reference via `CovenantConstants.Role.*`.
+  Always reference via `CovenantConstants.Role.*`. They are seeded at startup.
 - **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency`, `Recruiting`,
   `Sales`, `Company`, `Worker`, `Admin`, `SuperAdmin`. Every policy requires a role — there is no
   authenticated-only policy, no `Accounting` policy, and no cross-actor policies. An endpoint
   reachable by two actors is exposed once per actor (`Controllers/Sigook/Agency/`, `Controllers/Sigook/Company/`,
   `WorkerModule/`), each under its own policy, with the shared behaviour in a `Covenant.Core.BL`
-  service.
+  service. The default authentication scheme is the OpenIddict validation (bearer) scheme; the
+  Identity application cookie only backs the Razor login pages and the authorize endpoint.
 
 ### Data isolation (multi-tenancy)
 
@@ -387,26 +457,34 @@ Scoping rules:
 | | Staging | Production |
 |---|---|---|
 | Branch | `dev` (auto-deploy on push) | `main` (manual deploy from Azure DevOps) |
-| API | sigook-api-staging.azurewebsites.net | sigook-api.azurewebsites.net |
+| API + identity | sigook-api-staging.azurewebsites.net (`staging.accounts.sigook.ca`) | sigook-api.azurewebsites.net (`accounts.sigook.ca`) |
 | Web | sigook-web-staging.azurewebsites.net | sigook.azurewebsites.net |
-| Identity | sigook-accounts-staging.azurewebsites.net | sigook-accounts.azurewebsites.net |
 | Marketing | lively-island-020c8260f.7.azurestaticapps.net | www.covenantgroupl.com |
+| Functions | — | sigook-functions.azurewebsites.net |
 
 Azure DevOps pipelines with path-based triggers and reusable templates
-(`.azure-pipelines/templates/`); Docker builds for backend/Sigook.Web, static build for
+(`.azure-pipelines/templates/`); Docker builds for the API (context `Covenant.Api/`, image
+`sigook.azurecr.io/api`) and Sigook.Web, zip deploy for the Functions, static build for
 Covenant.Web. Full details: [PIPELINES.md](PIPELINES.md).
 
 ---
 
 ## Database
 
-PostgreSQL + EF Core 8. Migrations are applied **automatically at API startup** by
-`SigookBackgroundService`; to add one:
+PostgreSQL + EF Core 10, two databases with one context each. Migrations are applied
+**automatically at API startup** by `SigookBackgroundService`; to add one:
 
 ```bash
-cd Covenant.Api
-dotnet ef migrations add MigrationName --project Covenant.Infrastructure --startup-project Covenant.Api
+dotnet ef migrations add MigrationName --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context CovenantContext
+dotnet ef migrations add MigrationName --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context IdentityContext --output-dir Migrations/Identity
 ```
+
+`IdentityContext` does not call `IdentityDbContext.OnModelCreating` (the identity tables keep their
+historical shape: custom table names, `UserLogin`/`UserToken` keyed by `UserId` only, no
+`AspNet*` indexes) and ignores the .NET 10 passkey entity. `Npgsql.EnableLegacyTimestampBehavior`
+is switched on after `builder.Build()` in `Program.cs`; keep it there — `dotnet ef` runs `Program`
+only up to the host build, so moving it earlier changes the design-time column types of every
+`DateTime` property.
 
 Conventions: PK `Id` (Guid) + human-facing sequential `NumberId` on major entities; FKs `{Entity}Id`;
 `CreatedAt`/`UpdatedAt` timestamps; `CreatedBy`/`UpdatedBy` audit strings on newer entities.

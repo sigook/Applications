@@ -14,9 +14,6 @@ public class CreateDealModelValidator : AbstractValidator<CreateDealModel>
             .NotEmpty()
             .MaximumLength(500)
             .WithName(ApiResources.Title);
-        RuleFor(m => m.CompanyProfileId)
-            .NotEmpty()
-            .WithName(ApiResources.Company);
         RuleFor(m => m.Date)
             .NotEmpty();
         RuleFor(m => m.Value)

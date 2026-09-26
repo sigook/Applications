@@ -10,6 +10,7 @@ class ProfileInfoRow extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
+  final String? errorText;
 
   const ProfileInfoRow({
     super.key,
@@ -20,6 +21,7 @@ class ProfileInfoRow extends StatelessWidget {
     this.controller,
     this.onChanged,
     this.inputFormatters,
+    this.errorText,
   });
 
   @override
@@ -52,6 +54,8 @@ class ProfileInfoRow extends StatelessWidget {
                     inputFormatters: inputFormatters,
                     decoration: InputDecoration(
                       isDense: true,
+                      errorText: errorText,
+                      errorMaxLines: 2,
                       filled: true,
                       fillColor: Colors.grey.shade50,
                       border: OutlineInputBorder(

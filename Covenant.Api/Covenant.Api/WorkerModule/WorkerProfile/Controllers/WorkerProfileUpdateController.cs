@@ -322,21 +322,5 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
             await documentService.DeleteFile(otherDocument.DocumentId);
             return Ok();
         }
-
-        /// <summary>
-        /// Registers the push notifications device identifier for a worker profile.
-        /// </summary>
-        /// <param name="profileId">Identifier of the worker profile.</param>
-        /// <param name="model">Push notifications device data.</param>
-        [HttpPost]
-        [Route("PushNotificationsId")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PushNotificationsId(Guid profileId, [FromBody] PushNotificationsIdModel model)
-        {
-            if (string.IsNullOrEmpty(model?.Id)) return BadRequest(ModelState.AddError("Id is required"));
-            await System.IO.File.WriteAllTextAsync(Path.Combine(Path.GetTempPath(), $"{profileId:N}.txt"), $"{model.Id}-{model.Platform}");
-            return Ok();
-        }
     }
 }

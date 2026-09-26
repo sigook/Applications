@@ -31,7 +31,7 @@ public class WorkerRequestControllerApplyTest : BaseTestOrder, IClassFixture<Cus
     private Task<HttpResponseMessage> Apply(int numberId, string email) =>
         _client.PostAsJsonAsync(RequestUri, new WorkerRequestApplyModel { NumberId = numberId, Email = email });
 
-    private CovenantContext GetContext() => _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+    private CovenantContext GetContext() => _factory.Services.GetRequiredService<CovenantContext>();
 
     [Fact]
     public async Task ApplyAsWorker()

@@ -5,15 +5,18 @@ import '../../../../core/providers/file_picker_provider.dart';
 import '../../../../core/services/file_picker_service.dart';
 import '../../../catalog/domain/entities/catalog_item.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../domain/entities/value_objects/identification_number.dart';
 
 class FileUploadModal extends ConsumerStatefulWidget {
   final String title;
   final String description;
+  final String? excludedTypeId;
 
   const FileUploadModal({
     super.key,
     required this.title,
     required this.description,
+    this.excludedTypeId,
   });
 
   @override
@@ -29,6 +32,19 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _identificationNumberController =
       TextEditingController();
+
+  String? get _identificationNumberError => _identificationNumber.isEmpty
+      ? null
+      : IdentificationNumber.validate(
+          _identificationNumber,
+          typeCode: _selectedIdentificationType?.code,
+        );
+
+  bool get _canConfirm =>
+      _selectedIdentificationType != null &&
+      _identificationNumber.isNotEmpty &&
+      _identificationNumberError == null &&
+      _selectedFile != null;
 
   @override
   void dispose() {
@@ -46,8 +62,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
       final filePickerService = ref.read(filePickerServiceProvider);
 
       final result = await filePickerService.pickFile(
-        allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png'],
-        maxFileSizeMB: 10,
+        allowedExtensions: FilePickerService.documentExtensions,
       );
 
       if (!mounted) return;
@@ -168,9 +183,10 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                     identificationTypesAsync.when(
                       data: (identificationTypes) {
                         final filteredTypes = identificationTypes.where((type) {
-                          return type.value.toLowerCase().contains(
-                            _searchQuery.toLowerCase(),
-                          );
+                          return type.id != widget.excludedTypeId &&
+                              type.value.toLowerCase().contains(
+                                _searchQuery.toLowerCase(),
+                              );
                         }).toList();
 
                         return Column(
@@ -390,6 +406,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                         controller: _identificationNumberController,
                         decoration: InputDecoration(
                           hintText: 'Enter identification number',
+                          errorText: _identificationNumberError,
                           prefixIcon: const Icon(Icons.numbers),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -549,7 +566,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Supported: PDF, JPG, PNG (Max 10MB)',
+                                  'Supported: PDF, images, Word, Excel (Max ${FilePickerService.maxDocumentSizeMB}MB)',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
@@ -580,10 +597,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton.icon(
-                    onPressed:
-                        (_selectedIdentificationType != null &&
-                            _identificationNumber.isNotEmpty &&
-                            _selectedFile != null)
+                    onPressed: _canConfirm
                         ? () {
                             Navigator.of(context).pop({
                               'identificationType': _selectedIdentificationType,

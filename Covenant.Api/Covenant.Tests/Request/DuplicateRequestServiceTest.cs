@@ -63,8 +63,8 @@ namespace Covenant.Tests.Request
             {
                 City = new City { Province = new Province { Country = new Country { Code = "USA" } } }
             });
-            var identityServerService = new Mock<IIdentityServerService>();
-            identityServerService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
+            var currentUserService = new Mock<ICurrentUserService>();
+            currentUserService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
 
             _sut = new RequestService(
                 companyRepository.Object,
@@ -74,7 +74,7 @@ namespace Covenant.Tests.Request
                 _requestRepository.Object,
                 Mock.Of<INotificationDataRepository>(),
                 Mock.Of<IPushNotifications>(),
-                identityServerService.Object,
+                currentUserService.Object,
                 Mock.Of<IRazorViewToStringRenderer>(),
                 Mock.Of<IEmailService>(),
                 Mock.Of<ISigookBusClient>(),

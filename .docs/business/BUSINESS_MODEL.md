@@ -78,7 +78,7 @@ AgencyRate ($25/hr billed to Company) − WorkerRate ($18/hr paid to Worker) = $
 
 Agency costs against that markup: employer CPP/EI contributions, insurance, overhead.
 
-**Direct Hiring:** a Request with `WorkerSalary` set (`Covenant.Common/Entities/Request/Request.cs:53`) is a permanent-placement order — the company hires the worker directly for a salary. These orders change billing and attendance behavior (no punch-card billing; excluded from attendance-review notifications — see `WORKFLOWS.md` section 6).
+**Direct Hiring:** a Request with `WorkerSalary` set (`Covenant.Common/Entities/Request/Request.cs:53`) is a permanent-placement order — the company hires the worker directly for a salary. These orders change billing behavior (no punch-card billing — see `WORKFLOWS.md` section 6).
 
 ---
 

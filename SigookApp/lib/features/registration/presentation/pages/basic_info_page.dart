@@ -47,6 +47,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   String? _firstNameError;
   String? _lastNameError;
   String? _dateError;
+  String? _genderError;
   String? _countryError;
   String? _provinceStateError;
   String? _cityError;
@@ -100,8 +101,13 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
   }
 
   void _validate() {
-    final firstName = Name(_firstNameController.text);
+    final firstName = Name(_firstNameController.text, minLength: 1);
     final lastName = Name(_lastNameController.text);
+    final zipResult = ZipCode.parse(
+      input: _zipCodeController.text,
+      countryCode: _selectedCountry?.isoCode ?? 'CA',
+      provinceCode: _selectedProvince?.code,
+    );
 
     final currentPhoto =
         ref.read(registrationViewModelProvider).basicInfo?.profilePhoto ??
@@ -117,17 +123,12 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       provinceState: _selectedProvince,
       city: _selectedCity,
       address: _addressController.text,
-      zipCode:
-          ZipCode.parse(
-            input: _zipCodeController.text,
-            countryCode: _selectedCountry?.isoCode ?? 'CA',
-            provinceCode: _selectedProvince?.code,
-          ).fold(
-            (error) => _selectedCountry?.isoCode == 'CA'
-                ? ZipCode.emptyCA
-                : ZipCode.emptyUS,
-            (validZip) => validZip,
-          ),
+      zipCode: zipResult.fold(
+        (error) => _selectedCountry?.isoCode == 'CA'
+            ? ZipCode.emptyCA
+            : ZipCode.emptyUS,
+        (validZip) => validZip,
+      ),
       mobileNumber: _mobileNumber,
     );
 
@@ -141,6 +142,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
       _dateError = _shouldShowError('dateOfBirth') && _selectedDate == null
           ? 'Date of birth is required'
           : null;
+      _genderError = _shouldShowError('gender') ? basicInfo.genderError : null;
       _countryError = _shouldShowError('country')
           ? basicInfo.countryError
           : null;
@@ -152,7 +154,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
           ? basicInfo.addressError
           : null;
       _zipCodeError = _shouldShowError('zipCode')
-          ? basicInfo.zipCodeError
+          ? zipResult.fold((error) => error, (_) => null)
           : null;
       _mobileNumberError = _shouldShowError('mobileNumber')
           ? basicInfo.mobileNumberError
@@ -380,7 +382,7 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                 errorText: _zipCodeError,
                 isRequired: true,
                 keyboardType: TextInputType.text,
-                maxLength: 6,
+                maxLength: 10,
                 onChanged: (value) => _validate(),
                 onFocusChanged: (hasFocus) {
                   if (!hasFocus) _markTouched('zipCode');
@@ -458,6 +460,13 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               );
             }).toList(),
           ),
+        if (_genderError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _genderError!,
+            style: const TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ],
       ],
     );
   }

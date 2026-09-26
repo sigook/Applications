@@ -4,6 +4,7 @@ import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/inputs/date_picker_field.dart';
+import '../../../../domain/validators/profile_validators.dart';
 import '../../../../job_experience/domain/entities/job_experience.dart';
 import '../../../../job_experience/presentation/providers/job_experience_providers.dart';
 import '../../../../job_experience/presentation/viewmodels/job_experience_viewmodel.dart';
@@ -112,18 +113,31 @@ class _JobExperienceSectionCardState
     });
   }
 
+  String? _firstError({
+    required String company,
+    required String supervisor,
+    required String duties,
+    required DateTime? start,
+    required DateTime? end,
+    required bool isCurrent,
+  }) =>
+      ProfileValidators.company(company) ??
+      ProfileValidators.supervisor(supervisor) ??
+      ProfileValidators.duties(duties) ??
+      ProfileValidators.startDate(start) ??
+      ProfileValidators.endDate(start: start, end: end, isCurrent: isCurrent);
+
   Future<void> _submitAdd() async {
-    if (_companyController.text.trim().isEmpty) {
-      showProfileError(context, 'Company name is required');
-      return;
-    }
-    if (_startDate == null) {
-      showProfileError(context, 'Start date is required');
-      return;
-    }
-    if (!_isCurrent && _endDate == null) {
-      showProfileError(
-          context, 'Enter an end date or check "Currently working here"');
+    final error = _firstError(
+      company: _companyController.text,
+      supervisor: _supervisorController.text,
+      duties: _dutiesController.text,
+      start: _startDate,
+      end: _endDate,
+      isCurrent: _isCurrent,
+    );
+    if (error != null) {
+      showProfileError(context, error);
       return;
     }
 
@@ -142,17 +156,16 @@ class _JobExperienceSectionCardState
   }
 
   Future<void> _submitEdit(String id) async {
-    if (_editCompanyController.text.trim().isEmpty) {
-      showProfileError(context, 'Company name is required');
-      return;
-    }
-    if (_editStartDate == null) {
-      showProfileError(context, 'Start date is required');
-      return;
-    }
-    if (!_editIsCurrent && _editEndDate == null) {
-      showProfileError(
-          context, 'Enter an end date or check "Currently working here"');
+    final error = _firstError(
+      company: _editCompanyController.text,
+      supervisor: _editSupervisorController.text,
+      duties: _editDutiesController.text,
+      start: _editStartDate,
+      end: _editEndDate,
+      isCurrent: _editIsCurrent,
+    );
+    if (error != null) {
+      showProfileError(context, error);
       return;
     }
 
@@ -351,7 +364,7 @@ class _JobExperienceSectionCardState
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
-            labelText: 'Duties / Responsibilities',
+            labelText: 'Duties / Responsibilities *',
             alignLabelWithHint: true,
             prefixIcon: const Padding(
               padding: EdgeInsets.only(bottom: 44),
@@ -502,7 +515,7 @@ class _JobExperienceSectionCardState
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
-            labelText: 'Duties / Responsibilities',
+            labelText: 'Duties / Responsibilities *',
             alignLabelWithHint: true,
             prefixIcon: const Padding(
               padding: EdgeInsets.only(bottom: 44),

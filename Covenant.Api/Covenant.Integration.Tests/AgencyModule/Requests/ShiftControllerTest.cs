@@ -77,7 +77,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             };
             HttpResponseMessage response = await _client.PutAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Request entity = await context.Requests.SingleAsync(c => c.Id == Data.FakeRequest.Id);
             Assert.Equal(model.Monday, entity.Shift?.Monday);
             Assert.Equal(model.MondayStart, entity.Shift?.MondayStart);

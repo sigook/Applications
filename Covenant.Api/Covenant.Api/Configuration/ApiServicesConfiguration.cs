@@ -2,9 +2,12 @@
 using Covenant.Api.HealthChecks;
 using Covenant.Api.Utils;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities;
+using Covenant.Common.Entities.Identity;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Accounting;
 using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories;
@@ -12,6 +15,7 @@ using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Agency;
 using Covenant.Common.Repositories.Candidate;
 using Covenant.Common.Repositories.Company;
+using Covenant.Common.Repositories.Identity;
 using Covenant.Common.Repositories.Notification;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Repositories.Worker;
@@ -22,20 +26,24 @@ using Covenant.Core.BL.Services;
 using Covenant.Core.BL.Services.Accounting;
 using Covenant.Core.BL.Services.Accounting.Invoices;
 using Covenant.Core.BL.Services.Accounting.Shared;
+using Covenant.Core.BL.Services.Identity;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Covenant.Infrastructure.Repositories.Agency;
 using Covenant.Infrastructure.Repositories.Candidate;
 using Covenant.Infrastructure.Repositories.Company;
+using Covenant.Infrastructure.Repositories.Identity;
 using Covenant.Infrastructure.Repositories.Notification;
 using Covenant.Infrastructure.Repositories.Request;
 using Covenant.Infrastructure.Repositories.Worker;
 using Covenant.Infrastructure.Services;
-using Covenant.Infrastructure.Services.Handlers;
 using Covenant.Infrastructure.Services.Storage;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Globalization;
 
@@ -46,6 +54,7 @@ public static class ApiServicesConfiguration
     public const string EnUsCulture = "en-US";
     public const string EsCulture = "es";
     public const string FrCulture = "fr";
+    public const string IdentityConnection = "IdentityConnection";
 
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
@@ -68,6 +77,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<ILocationRepository, LocationRepository>();
         services.AddScoped<INotificationDataRepository, NotificationDataRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IIdentityRepository, IdentityRepository>();
         return services;
     }
 
@@ -90,7 +100,13 @@ public static class ApiServicesConfiguration
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IUploadedFilesService, UploadedFilesService>();
         services.AddScoped<IGeocodeService, GeocodeService>();
-        services.AddScoped<IIdentityServerService, IdentityServerService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IUserAccountService, UserAccountService>();
+        services.AddScoped<IUserAdministrationService, UserAdministrationService>();
+        services.AddScoped<IAccountNotificationService, AccountNotificationService>();
+        services.AddScoped<IUserSessionValidator, UserSessionValidator>();
+        services.AddScoped<IPasswordResetService, PasswordResetService>();
+        services.AddSingleton<IMicrosoft365AccountService, Microsoft365AccountService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISendGridService, SendGridService>();
         services.AddScoped<IPushNotifications, PushNotifications>();
@@ -175,10 +191,36 @@ public static class ApiServicesConfiguration
 
     public static IServiceCollection AddClients(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<Microsoft365TokenHandler>();
-        services.AddHttpClient(IdentityServerService.IdentityClient, c => c.BaseAddress = new Uri($"{configuration["AuthenticationOptions:Authority"]}/UserAdministration/"))
-            .AddHttpMessageHandler<Microsoft365TokenHandler>();
         services.AddHttpClient(PdfGeneratorService.PdfGeneratorClient, c => c.BaseAddress = new Uri(configuration["PdfGeneratorUrl"]));
+        return services;
+    }
+
+    public static IServiceCollection AddCovenantIdentity(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString(IdentityConnection) ?? string.Empty;
+        services.Configure<IdentityConfiguration>(configuration.GetSection(IdentityConfiguration.SectionName));
+        services.AddDbContext<IdentityContext>(options => options
+            .UseNpgsql(connectionString)
+            .UseOpenIddict()
+            .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
+        services.AddOpenIddict().AddCore(options => options.UseEntityFrameworkCore().UseDbContext<IdentityContext>());
+        services.AddScoped<OpenIddictSeeder>();
+        services.AddMemoryCache();
+        services.AddIdentityCore<CovenantUser>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            })
+            .AddRoles<CovenantRole>()
+            .AddEntityFrameworkStores<IdentityContext>()
+            .AddDefaultTokenProviders()
+            .AddSignInManager();
         return services;
     }
 
@@ -257,6 +299,14 @@ public static class ApiServicesConfiguration
                 "database-connectivity",
                 HealthStatus.Unhealthy,
                 tags: ["connectivity", "ready", "live"]);
+        }
+
+        if (!string.IsNullOrEmpty(configuration.GetConnectionString(IdentityConnection)))
+        {
+            healthChecksBuilder.AddDbContextCheck<IdentityContext>(
+                "identity-database-connectivity",
+                HealthStatus.Unhealthy,
+                tags: ["connectivity", "ready"]);
         }
 
         healthChecksBuilder.AddCheck("azure-storage-accounting-connectivity",

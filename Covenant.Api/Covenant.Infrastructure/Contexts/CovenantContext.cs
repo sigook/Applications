@@ -118,9 +118,10 @@ public class CovenantContext : DbContext
     public DbSet<ReportSubcontractorPublicHoliday> ReportSubcontractorPublicHolidays { get; set; }
     public DbSet<CompanyInteraction> CompanyInteractions { get; set; }
     public DbSet<Deal> Deals { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly, type => type.Namespace != IdentityContext.ConfigurationsNamespace);
         if (Database.IsNpgsql())
         {
             modelBuilder.AddPostgresFunctions();

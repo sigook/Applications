@@ -26,7 +26,7 @@ public class RequestApplicantService(
     IWorkerRepository workerRepository,
     ICatalogRepository catalogRepository,
     IUploadedFilesService uploadedFilesService,
-    IIdentityServerService identityServerService,
+    ICurrentUserService currentUserService,
     IOptions<FilesConfiguration> filesOptions,
     IValidator<ChangeRequestApplicantStatusModel> changeStatusValidator,
     IValidator<ChangeApplicantsStatusModel> changeApplicantsStatusValidator,
@@ -39,7 +39,7 @@ public class RequestApplicantService(
     {
         var existing = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == model.WorkerProfileId && ra.CandidateId == model.CandidateId);
         if (existing != null) return Result.Fail<RequestApplicantDetailModel>("The candidate is already in the request as an applicant");
-        var createdBy = identityServerService.GetNickname();
+        var createdBy = currentUserService.GetNickname();
         RequestApplicant entity;
         if (model.CandidateId.HasValue)
         {
@@ -87,10 +87,10 @@ public class RequestApplicantService(
         requestRepository.GetRequestApplicants(requestId, filter);
 
     public Task<AgencyApplicantsPagedResponse> GetAgencyApplicants(GetAgencyApplicantsFilter filter) =>
-        requestRepository.GetAgencyApplicants(identityServerService.GetAgencyId(), filter);
+        requestRepository.GetAgencyApplicants(currentUserService.GetAgencyId(), filter);
 
     public Task<List<ApplicantSearchResultModel>> Search(Guid requestId, string searchTerm) =>
-        requestRepository.SearchApplicants(identityServerService.GetAgencyId(), requestId, searchTerm);
+        requestRepository.SearchApplicants(currentUserService.GetAgencyId(), requestId, searchTerm);
 
     public async Task<Result> Delete(Guid applicantId)
     {
@@ -133,7 +133,7 @@ public class RequestApplicantService(
     {
         var validationResult = await changeApplicantsStatusValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<ChangeApplicantsStatusResultModel>();
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var applicants = (await requestRepository.GetRequestApplicants(ra => model.ApplicantIds.Contains(ra.Id)
             && ra.Request.CompanyProfile.AgencyId == agencyId)).ToList();
         var pendingItems = model.Status == RequestApplicantStatus.Confirmed
@@ -218,7 +218,7 @@ public class RequestApplicantService(
             socialInsurancePopulated = applied.Value;
         }
 
-        var completedBy = identityServerService.GetNickname();
+        var completedBy = currentUserService.GetNickname();
         var completions = new List<RequestApplicantComplianceItem>();
         var completionResult = RequestApplicantComplianceItem.Create(applicantId, itemId, completedBy);
         if (!completionResult) return completionResult;
@@ -368,7 +368,7 @@ public class RequestApplicantService(
                     {
                         var note = WorkerProfileNote.Create(profile.Id,
                             string.Format(ApiResources.SocialInsuranceReplacedNote, previousMaskedSocialInsurance, identificationNumber.MaskSIN()),
-                            identityServerService.GetNickname());
+                            currentUserService.GetNickname());
                         if (!note) return Result.Fail<bool>(note.Errors);
                         await requestRepository.Create([note.Value]);
                     }

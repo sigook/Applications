@@ -64,6 +64,7 @@ public static class TestStartupExtensions
         mockSendGridService.Setup(ss => ss.SendTemplateBatch(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<TemplateRecipient>>())).ReturnsAsync(Result.Ok());
         services.AddSingleton(mockSendGridService.Object);
         services.AddSingleton(Mock.Of<ISigookBusClient>());
+        services.AddSingleton(UserAdministrationMock.Create().Object);
         var mockServiceBusConfiguration = new Mock<IOptions<ServiceBusConfiguration>>();
         mockServiceBusConfiguration.Setup(m => m.Value).Returns(new ServiceBusConfiguration());
         services.AddSingleton(mockServiceBusConfiguration.Object);

@@ -46,12 +46,13 @@ public interface ICompanyRepository
     Task<CompanyUserModel> GetCompanyUserDetail(Guid id);
     Task<CompanyUser> GetCompanyUser(Guid id);
     Task BulkCompanies(IEnumerable<BulkCompany> bulk);
-    Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, GetDealsFilter filter);
+    Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, Guid? companyProfileId, GetDealsFilter filter);
     Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression);
-    Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, GetCompanyInteractionsFilter filter);
+    Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, Guid? companyProfileId, GetCompanyInteractionsFilter filter);
     Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression);
     Task<List<DealStatusSummaryModel>> GetDealsByStatus(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive, List<DealStatus> statuses);
     Task<List<InteractionTypeSummaryModel>> GetInteractionsByType(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive);
+    Task<List<RecentClientModel>> GetRecentInteractionClients(Guid agencyId, Guid? ownerId, int take);
     Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm);
     Task<CompanyDeletionCheckModel> GetDeletionCheck(Guid companyProfileId);
     Task<List<Guid>> GetCompanyUserIds(Guid companyProfileId);

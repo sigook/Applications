@@ -104,7 +104,9 @@ class LicenseCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Issued: ${license.formattedIssued}  ·  Expires: ${license.formattedExpires}',
+                    license.doesNotExpire
+                        ? 'Issued: ${license.formattedIssued}  ·  Does not expire'
+                        : 'Issued: ${license.formattedIssued}  ·  Expires: ${license.formattedExpires}',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ),

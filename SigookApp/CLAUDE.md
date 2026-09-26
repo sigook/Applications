@@ -311,7 +311,9 @@ Pattern: the parent feature holds shared infrastructure (base datasource, helper
 
 ## Commands
 
-Pinned toolchain: Flutter `3.47.4`, JDK 17, Android SDK 36, Gradle 8.14.3, Kotlin 2.2.20.
+Pinned toolchain: Flutter `3.47.4`, JDK 17, Android SDK 37 (compile) / 36 (target), Gradle 9.1.0, AGP 9.0.1, Kotlin 2.3.20.
+
+Android release builds rely on the library consumer rules for R8; `android/app/proguard-rules.pro` must not add broad `-keep` rules (`io.flutter.**`, gson), since Play scores the app's optimization/obfuscation/shrinking rates. The remaining bulk of kept classes comes from plugin consumer rules (Apache Tika via `file_picker`, UCrop via `image_cropper`).
 
 ```bash
 # Run tests
@@ -325,8 +327,8 @@ flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
 ```
 
-`.env.staging` / `.env.local` / `.env.production` are gitignored; copy `.env.example` (its defaults already point at staging). Without `--dart-define-from-file` the app runs with no API or auth URLs.
+`.env.staging` / `.env.local` / `.env.production` are committed and hold only public values; keep `APP_INSIGHTS_CONNECTION_STRING` empty in them (CI injects it from the variable groups). `.env.local` targets the Android emulator over plain HTTP (`http://10.0.2.2:5000`) because the emulator rejects the Kestrel dev certificate; cleartext to `10.0.2.2` is allowed only by the debug manifest. Without `--dart-define-from-file` the app runs with no API or auth URLs.
 
-Neither platform has flavors: `android/app/build.gradle.kts` declares no `productFlavors` and iOS has a single scheme (`Runner`). The entry point plus the `--dart-define` values select the environment. CI builds with `flutter build appbundle` and `fastlane ios build` (`flutter build ios --no-codesign` + `build_app`), see `.docs/technical/PIPELINES.md`.
+Neither platform has flavors: `android/app/build.gradle.kts` declares no `productFlavors` and iOS has a single scheme (`Runner`). The entry point plus the `--dart-define` values select the environment; staging and local builds show an orange environment banner (`EnvironmentBanner`, wired in the `MaterialApp.router` builder) above every screen so a build pointing at the wrong backend is visible at a glance. CI builds with `flutter build appbundle` and `fastlane ios build` (`flutter build ios --no-codesign` + `build_app`), see `.docs/technical/PIPELINES.md`.
 
 iOS plugins stay on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`): under Swift Package Manager `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors.

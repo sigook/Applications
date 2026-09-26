@@ -37,7 +37,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<SkillModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestSkill entity = await context.RequestSkills.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(detail.Id, entity.Id);
             Assert.Equal(model.Skill, entity.Skill);
@@ -61,7 +61,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             Guid id = Startup.FakeDeleteSkill.Id;
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.False(await context.RequestSkills.AnyAsync(c => c.Id == id));
         }
 

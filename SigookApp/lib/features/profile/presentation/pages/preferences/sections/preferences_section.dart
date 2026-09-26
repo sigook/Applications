@@ -6,6 +6,7 @@ import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/chip_display_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
+import '../../../../../catalog/domain/entities/catalog_item.dart';
 import '../../../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../../../../registration/domain/entities/language.dart';
 import '../../../../../registration/domain/entities/skill.dart';
@@ -14,6 +15,7 @@ import '../../../../../registration/presentation/widgets/skill_autocomplete_fiel
 import '../../../../preferences/presentation/viewmodels/preferences_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../preferences/presentation/widgets/chip_selector.dart';
+import '../../../../preferences/presentation/widgets/city_autocomplete_field.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class PreferencesSectionCard extends ConsumerStatefulWidget {
@@ -29,6 +31,7 @@ class _PreferencesSectionCardState
   Set<String> _availabilityIds = {};
   Set<String> _availabilityTimeIds = {};
   Set<String> _availabilityDayIds = {};
+  Set<String> _locationPreferenceIds = {};
   String? _liftId;
   List<Language> _selectedLanguages = [];
   List<Skill> _selectedSkills = [];
@@ -40,6 +43,7 @@ class _PreferencesSectionCardState
       _availabilityIds = Set.from(profile?.availabilityIds ?? []);
       _availabilityTimeIds = Set.from(profile?.availabilityTimeIds ?? []);
       _availabilityDayIds = Set.from(profile?.availabilityDayIds ?? []);
+      _locationPreferenceIds = Set.from(profile?.locationPreferenceIds ?? []);
       _liftId = profile?.liftId;
       _selectedLanguages = (profile?.languageIds ?? []).map((id) {
         final match = langCatalog.where((l) => l.id == id).firstOrNull;
@@ -79,6 +83,20 @@ class _PreferencesSectionCardState
         .toList();
   }
 
+  AsyncValue<List<CatalogItem>> _locationOptions(String provinceId) {
+    final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
+    return ref.watch(citiesProvider(provinceId)).whenData((cities) {
+      final cityIds = cities.map((c) => c.id).toSet();
+      final ids = profile?.locationPreferenceIds ?? const <String>[];
+      final names = profile?.locationPreferences ?? const <String>[];
+      final outside = [
+        for (var i = 0; i < ids.length && i < names.length; i++)
+          if (!cityIds.contains(ids[i])) CatalogItem(id: ids[i], value: names[i]),
+      ];
+      return [...cities, ...outside];
+    });
+  }
+
   Map<String, String> _buildFields() {
     final availabilities =
         _resolveItems(_availabilityIds, ref.read(availabilityListProvider));
@@ -111,6 +129,9 @@ class _PreferencesSectionCardState
         _selectedLanguages.map((l) => {'id': l.id, 'value': l.value}).toList(),
       ),
       'skills': jsonEncode(_selectedSkills.map((s) => s.skill).toList()),
+      'locationPreferences': jsonEncode(
+        _locationPreferenceIds.map((id) => {'id': id, 'value': ''}).toList(),
+      ),
       // ignore: use_null_aware_elements
       if (liftJson != null) 'lift': liftJson,
     };
@@ -180,6 +201,11 @@ class _PreferencesSectionCardState
             chips: profile?.availabilityDays ?? [],
           ),
           ChipDisplayRow(
+            label: 'Preferred Locations',
+            icon: Icons.location_city_outlined,
+            chips: profile?.locationPreferences ?? [],
+          ),
+          ChipDisplayRow(
             label: 'Skills',
             icon: Icons.stars_outlined,
             chips: profile?.skills ?? [],
@@ -236,8 +262,22 @@ class _PreferencesSectionCardState
           singleSelect: false,
           onToggle: (id, selected) =>
               _toggle(_availabilityDayIds, id, selected),
+          selectAllLabel: 'All days',
+          onSelectAll: (ids) =>
+              setState(() => _availabilityDayIds = Set.of(ids)),
         ),
         const SizedBox(height: 12),
+        if (profile?.provinceId != null) ...[
+          CityAutocompleteField(
+            label: 'Preferred Locations',
+            icon: Icons.location_city_outlined,
+            citiesAsync: _locationOptions(profile!.provinceId!),
+            selectedIds: _locationPreferenceIds,
+            onToggle: (id, selected) =>
+                _toggle(_locationPreferenceIds, id, selected),
+          ),
+          const SizedBox(height: 12),
+        ],
         SkillAutocompleteField(
           selectedSkills: _selectedSkills,
           onChanged: (skills) => setState(() => _selectedSkills = skills),

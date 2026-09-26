@@ -1,10 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
@@ -14,7 +9,6 @@
 	  <PackageReference Include="ClosedXML" />
 	  <PackageReference Include="CsvHelper" />
 	  <PackageReference Include="FluentValidation" />
-	  <PackageReference Include="GeoCoordinate.NetCore" />
 	  <PackageReference Include="MediatR" />
 	  <PackageReference Include="Microsoft.ApplicationInsights" />
 	</ItemGroup>

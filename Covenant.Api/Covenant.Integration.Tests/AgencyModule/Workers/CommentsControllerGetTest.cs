@@ -66,6 +66,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 });
                 context.WorkerProfiles.Add(Data.WorkerProfile);
                 context.CompanyProfiles.Add(Data.CompanyProfile);
+                context.AgencyPersonnel.Add(Common.Entities.Agency.AgencyPersonnel.CreatePrimary(Data.WorkerProfile.Agency.Id, Data.LoginUser.Id, Data.LoginUser.Email));
                 context.WorkerComments.AddRange(Data.AgencyComment, Data.CompanyComment);
                 context.SaveChanges();
             }

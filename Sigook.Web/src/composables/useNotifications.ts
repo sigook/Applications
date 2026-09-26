@@ -9,21 +9,10 @@ import {
   type NotificationsResponse,
 } from '@/types/notification';
 
-const FOLLOW_UP_DAYS = 3;
-
 // Maps each typed list of the backend payload into generic AppNotification[].
 // Adding a new kind = add a mapper entry; the bell renders the result unchanged.
-function mapResponse(response: NotificationsResponse): AppNotification[] {
-  const workersToReview: AppNotification[] = response.workersToReview.map((r): AppNotification => ({
-    id: r.runnerId,
-    type: NotificationType.WorkerAttendanceReview,
-    title: r.workerName,
-    lines: [`#${r.requestNumberId} · ${r.companyName}`, r.jobTitle],
-    badge: `Day ${r.dayNumber} of ${FOLLOW_UP_DAYS}`,
-    route: `/recruiting/requests/${r.requestId}?tab=PunchCard`,
-  }));
-
-  return [...workersToReview];
+function mapResponse(_response: NotificationsResponse): AppNotification[] {
+  return [];
 }
 
 export function useNotifications(): {

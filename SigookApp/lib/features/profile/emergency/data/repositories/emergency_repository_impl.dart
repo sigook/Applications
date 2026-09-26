@@ -18,10 +18,17 @@ class EmergencyRepositoryImpl implements EmergencyRepository {
   Future<Either<Failure, void>> update(Map<String, String> fields) =>
       guardedProfileCall(networkInfo, () async {
         final current = await datasource.getWorkerProfile();
+        final haveAnyHealthProblem = fields.containsKey('haveAnyHealthProblem')
+            ? fields['haveAnyHealthProblem'] == 'true'
+            : current.haveAnyHealthProblem;
         final updated = current.copyWith(
-          haveAnyHealthProblem: fields.containsKey('haveAnyHealthProblem')
-              ? fields['haveAnyHealthProblem'] == 'true'
-              : current.haveAnyHealthProblem,
+          haveAnyHealthProblem: haveAnyHealthProblem,
+          healthProblem: haveAnyHealthProblem
+              ? fields['healthProblem'] ?? current.healthProblem
+              : null,
+          otherHealthProblem: haveAnyHealthProblem
+              ? fields['otherHealthProblem'] ?? current.otherHealthProblem
+              : null,
           contactEmergencyName:
               fields['contactEmergencyName'] ?? current.contactEmergencyName,
           contactEmergencyLastName: fields['contactEmergencyLastName'] ??

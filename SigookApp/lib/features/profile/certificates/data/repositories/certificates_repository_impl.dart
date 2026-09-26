@@ -15,12 +15,16 @@ class CertificatesRepositoryImpl implements CertificatesRepository {
   });
 
   @override
-  Future<Either<Failure, void>> upload(String filePath) =>
+  Future<Either<Failure, void>> upload({
+    required String filePath,
+    required String description,
+  }) =>
       guardedProfileCall(networkInfo, () async {
         final profile = await datasource.getWorkerProfile();
         await datasource.uploadCertificate(
           profile.id,
           filePath: filePath,
+          description: description,
           existingCertificates: profile.certificates,
         );
       });

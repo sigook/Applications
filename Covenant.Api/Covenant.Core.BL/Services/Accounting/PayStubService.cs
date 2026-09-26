@@ -34,7 +34,7 @@ public class PayStubService : IPayStubService
     private readonly IRazorViewToStringRenderer renderer;
     private readonly IPdfGeneratorService pdfGenerator;
     private readonly IEmailService emailService;
-    private readonly IIdentityServerService identityServerService;
+    private readonly ICurrentUserService currentUserService;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
     private readonly IMediator mediator;
     private readonly Rates rates;
@@ -50,7 +50,7 @@ public class PayStubService : IPayStubService
         IRazorViewToStringRenderer renderer,
         IPdfGeneratorService pdfGenerator,
         IEmailService emailService,
-        IIdentityServerService identityServerService,
+        ICurrentUserService currentUserService,
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
         IMediator mediator,
         Rates rates,
@@ -65,7 +65,7 @@ public class PayStubService : IPayStubService
         this.renderer = renderer;
         this.pdfGenerator = pdfGenerator;
         this.emailService = emailService;
-        this.identityServerService = identityServerService;
+        this.currentUserService = currentUserService;
         this.skipPayrollNumberRepository = skipPayrollNumberRepository;
         this.mediator = mediator;
         this.rates = rates;
@@ -503,14 +503,14 @@ public class PayStubService : IPayStubService
 
     public async Task<PaginatedList<PayStubListModel>> GetPayStubs(GetPayStubsFilter filter)
     {
-        var agencyIds = identityServerService.GetAgencyIds();
+        var agencyIds = currentUserService.GetAgencyIds();
         var result = await payStubRepository.GetPayStubs(agencyIds, filter);
         return result;
     }
 
     public async Task<ResultGenerateDocument<byte[]>> GetPayStubsFile(GetPayStubsFilter filter)
     {
-        var agencyIds = identityServerService.GetAgencyIds();
+        var agencyIds = currentUserService.GetAgencyIds();
         var payStubs = await payStubRepository.GetAllPayStubs(agencyIds, filter);
         return await mediator.Send(new GeneratePayStubsReport(payStubs));
     }

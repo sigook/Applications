@@ -79,7 +79,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Seeded
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/{worker.Id}/Book", new { });
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.WorkerRequests.SingleAsync(s => s.Id == detail.Id);
         Assert.Equal(worker.Id, entity.WorkerProfileId);
         Assert.Equal(WorkerRequestStatus.Booked, entity.WorkerRequestStatus);
@@ -92,7 +92,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Seeded
         var model = new CommentsModel { Comments = "Worker was hired by the company" };
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerProfileId}/Reject", model);
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.WorkerRequests.SingleAsync(s => s.Id == worker.Id);
         Assert.Equal(WorkerRequestStatus.Rejected, entity.WorkerRequestStatus);
         Assert.Equal(model.Comments, entity.RejectComments);
@@ -112,7 +112,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Seeded
         var model = new AgencyBookWorkerModel { StartWorking = new DateTime(2019, 01, 01) };
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.Id}", model);
         response.EnsureSuccessStatusCode();
-        var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.WorkerRequests.SingleAsync(s => s.Id == worker.Id);
         DateAssert.Equal(model.StartWorking, entity.StartWorking);
     }

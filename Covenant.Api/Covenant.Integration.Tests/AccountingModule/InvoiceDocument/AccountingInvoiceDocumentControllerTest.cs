@@ -156,10 +156,10 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                     })
                     .ReturnsAsync(Result.Ok(File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Common", "Fake_Invoice.pdf"))));
                 services.AddSingleton(pdfGeneratorService.Object);
-                var identityServerService = new Mock<IIdentityServerService>();
-                identityServerService.Setup(s => s.GetAgencyId()).Returns(FakeAgency.Id);
-                identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { FakeAgency.Id });
-                services.AddSingleton(identityServerService.Object);
+                var currentUserService = new Mock<ICurrentUserService>();
+                currentUserService.Setup(s => s.GetAgencyId()).Returns(FakeAgency.Id);
+                currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { FakeAgency.Id });
+                services.AddSingleton(currentUserService.Object);
                 services.AddSingleton<AgencyIdFilter>();
                 var emailService = new Mock<IEmailService>();
                 emailService.Setup(s => s.SendCovenantEmail(It.IsAny<EmailParams>()))

@@ -50,7 +50,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<CompanyProfileContactPersonModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             var entity = await context.Set<CompanyProfileContactPerson>().SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.Title, entity.Title);
             Assert.Equal(model.FirstName, entity.FirstName);
@@ -81,7 +81,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             Guid id = Startup.FakeUpdateContactPerson.Id;
             HttpResponseMessage response = await HttpClientJsonExtensions.PutAsJsonAsync(_client, $"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             CompanyProfileContactPerson entity = await context.Set<CompanyProfileContactPerson>().SingleAsync(c => c.Id == id);
             Assert.Equal(model.Title, entity.Title);
             Assert.Equal(model.FirstName, entity.FirstName);
@@ -122,7 +122,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             Guid id = Startup.FakeDeleteContactPerson.Id;
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.False(await context.Set<CompanyProfileContactPerson>().AnyAsync(c => c.Id == id));
         }
 

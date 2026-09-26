@@ -1,5 +1,6 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
+using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Core.BL.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -33,4 +34,22 @@ public class DashboardController(ISalesService salesService) : ControllerBase
     [ProducesResponseType(typeof(SalesDashboardSummaryModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSummary([FromQuery] GetSalesDashboardSummaryFilter filter) =>
         Ok(await salesService.GetDashboardSummary(filter));
+
+    /// <summary>Gets the 10 clients with the most recent interactions, newest first. Sales users only count the interactions they own.</summary>
+    [HttpGet("recent-clients")]
+    [ProducesResponseType(typeof(List<RecentClientModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRecentClients() =>
+        Ok(await salesService.GetRecentClients());
+
+    /// <summary>Gets the 6 most recent interactions across all clients, newest first. Sales users only see the interactions they own.</summary>
+    [HttpGet("recent-interactions")]
+    [ProducesResponseType(typeof(List<CompanyInteractionListModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRecentInteractions() =>
+        Ok(await salesService.GetRecentInteractions());
+
+    /// <summary>Gets the 6 most recent deals across all clients, newest date first. Sales users only see the deals they own.</summary>
+    [HttpGet("recent-deals")]
+    [ProducesResponseType(typeof(List<DealListModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetRecentDeals() =>
+        Ok(await salesService.GetRecentDeals());
 }

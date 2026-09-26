@@ -4,13 +4,15 @@ import '../../../../../core/services/file_picker_service.dart';
 import '../../../../catalog/domain/entities/catalog_item.dart';
 import '../../../../registration/presentation/widgets/file_upload_modal.dart';
 
-/// A slot for adding a new identity document when none is set by the agency.
+/// A slot for adding a new identity document or replacing an existing one.
 /// Shows a pending preview when [pendingType] and [pendingFile] are set,
-/// otherwise shows an "Add" button that opens the upload modal.
+/// otherwise shows a button that opens the upload modal.
 class NewDocumentSlot extends StatelessWidget {
   final String docType;
   final CatalogItem? pendingType;
   final PickedFileData? pendingFile;
+  final String? excludedTypeId;
+  final bool isReplacement;
   final VoidCallback onUndo;
   final void Function(CatalogItem type, String number, PickedFileData file)
   onDocumentPicked;
@@ -20,20 +22,26 @@ class NewDocumentSlot extends StatelessWidget {
     required this.docType,
     required this.pendingType,
     required this.pendingFile,
+    this.excludedTypeId,
+    this.isReplacement = false,
     required this.onUndo,
     required this.onDocumentPicked,
   });
 
-  String get _buttonLabel =>
-      docType == 'id1File' ? 'Add Document 1' : 'Add Document 2';
+  String get _buttonLabel => isReplacement
+      ? 'Replace with another document type'
+      : docType == 'id1File'
+      ? 'Add Document 1'
+      : 'Add Document 2';
 
   Future<void> _showModal(BuildContext context) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (_) => const FileUploadModal(
-        title: 'Add Document',
+      builder: (_) => FileUploadModal(
+        title: isReplacement ? 'Replace Document' : 'Add Document',
         description:
             'Select identification type, enter the number, and upload the file.',
+        excludedTypeId: excludedTypeId,
       ),
     );
     if (result == null) return;
@@ -103,7 +111,7 @@ class NewDocumentSlot extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: OutlinedButton.icon(
         onPressed: () => _showModal(context),
-        icon: const Icon(Icons.add, size: 18),
+        icon: Icon(isReplacement ? Icons.swap_horiz : Icons.add, size: 18),
         label: Text(_buttonLabel),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppTheme.primaryBlue,

@@ -43,7 +43,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicants.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.CandidateId, entity.CandidateId);
             Assert.Equal(model.Comments, entity.Comments);
@@ -60,7 +60,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicants.SingleAsync(c => c.Id == detail.Id);
             Assert.Equal(model.WorkerProfileId, entity.WorkerProfileId);
             Assert.Equal(model.Comments, entity.Comments);
@@ -77,7 +77,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var model = new ChangeRequestApplicantStatusModel { Status = RequestApplicantStatus.InProgress };
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}/Status", model);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicants.SingleAsync(c => c.Id == id);
             Assert.Equal(RequestApplicantStatus.InProgress, entity.Status);
         }
@@ -89,7 +89,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var model = new ChangeRequestApplicantStatusModel { Status = RequestApplicantStatus.Confirmed };
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}/Status", model);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicants.SingleAsync(c => c.Id == id);
             Assert.Equal(RequestApplicantStatus.Confirmed, entity.Status);
         }
@@ -130,7 +130,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             using var content = new MultipartFormDataContent { { new StringContent("{}"), "data" } };
             HttpResponseMessage response = await _client.PostAsync($"{RequestUri()}/{id}/ComplianceItems/{itemId}", content);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestApplicantComplianceItem completion = await context.RequestApplicantComplianceItems
                 .SingleAsync(c => c.RequestApplicantId == id && c.RequestComplianceItemId == itemId);
             Assert.NotNull(completion.CompletedBy);
@@ -142,7 +142,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
         {
             Guid id = Startup.FakeApplicantUncomplete.Id;
             Guid itemId = Startup.FakeComplianceItemW4.Id;
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.True(await context.RequestApplicantComplianceItems.AnyAsync(c => c.RequestApplicantId == id && c.RequestComplianceItemId == itemId));
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}/ComplianceItems/{itemId}");
             response.EnsureSuccessStatusCode();
@@ -168,7 +168,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             using var content = SinIdentificationContent("222-333-444");
             HttpResponseMessage response = await _client.PostAsync($"{SinRequestUri()}/{id}/ComplianceItems/{itemId}", content);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             WorkerProfile profile = await context.WorkerProfiles.SingleAsync(w => w.Id == Startup.FakeWorkerSinFill.Id);
             Assert.Equal("222-333-444", profile.SocialInsurance);
             Assert.NotNull(profile.SocialInsuranceFileId);
@@ -197,7 +197,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             using var content = SinIdentificationContent("555-666-777");
             HttpResponseMessage response = await _client.PostAsync($"{SinRequestUri()}/{id}/ComplianceItems/{itemId}", content);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             WorkerProfile profile = await context.WorkerProfiles.SingleAsync(w => w.Id == Startup.FakeWorkerSinConflict.Id);
             Assert.Equal("555-666-777", profile.SocialInsurance);
             WorkerProfileNote note = await context.WorkerProfileNotes.SingleAsync(n => n.WorkerProfileId == Startup.FakeWorkerSinConflict.Id);
@@ -261,7 +261,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var model = new CommentsModel { Comments = "Worker didn't show up" };
             HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}", model);
             response.EnsureSuccessStatusCode();
-            RequestApplicant entity = await _factory.Server.Host.Services.GetRequiredService<CovenantContext>().RequestApplicants.SingleAsync(s => s.Id == id);
+            RequestApplicant entity = await _factory.Services.GetRequiredService<CovenantContext>().RequestApplicants.SingleAsync(s => s.Id == id);
             Assert.Equal(model.Comments, entity.Comments);
         }
 
@@ -269,7 +269,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
         public async Task Delete()
         {
             Guid id = Startup.FakeRequestApplicantDelete.Id;
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             Assert.True(await context.RequestApplicants.AnyAsync(c => c.Id == id));
             HttpResponseMessage response = await _client.DeleteAsync($"{RequestUri()}/{id}");
             response.EnsureSuccessStatusCode();

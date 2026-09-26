@@ -84,13 +84,6 @@
           </b-field>
         </b-field>
       </div>
-      <div class="column is-12">
-        <b-field :label="'Got Police Check/Background?'">
-          <b-switch v-model="worker.havePoliceCheckBackground" :true-value="true" :false-value="false">
-            {{ worker.havePoliceCheckBackground ? "Yes" : "No" }}
-          </b-switch>
-        </b-field>
-      </div>
       <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateAll()" :disabled="isLoading">
           {{ "Save" }}
@@ -109,6 +102,8 @@ import { filename } from '@/utils/filters';
 import { generateFileName } from "@/utils/fileNaming";
 import { getIdentificationTypes } from "@/api/catalogApi";
 import { createWorkerDocuments } from '@/api/workerApi';
+import { identificationNumberSchema } from '@/utils/validation';
+import type { IdentificationType } from '@/types/common';
 
 interface DocsForm {
   identificationType1: any;
@@ -122,9 +117,9 @@ const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 
 const schema = yup.object({
   identificationType1: yup.mixed().required('Identification type is required'),
-  identificationNumber1: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
+  identificationNumber1: identificationNumberSchema('identificationType1'),
   identificationType2: yup.mixed().required('Identification type is required'),
-  identificationNumber2: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(5, 'Min 5 characters').max(15, 'Max 15 characters'),
+  identificationNumber2: identificationNumberSchema('identificationType2'),
 });
 
 const form = useStickyForm<DocsForm>({
@@ -141,7 +136,12 @@ const formErrors = form.errors;
 
 const isLoading = ref(false);
 const worker = ref<any>({});
-const identificationTypes = ref<any[]>([]);
+const identificationTypes = ref<IdentificationType[]>([]);
+
+function catalogType(type: IdentificationType | null | undefined): IdentificationType | null {
+  if (!type) return null;
+  return identificationTypes.value.find(t => t.id === type.id) ?? type;
+}
 const selectedFile1 = ref<any>(null);
 const selectedFile2 = ref<any>(null);
 const fileObjects = reactive<{ identificationType1: any; identificationType2: any }>({
@@ -230,9 +230,9 @@ function validateAll() {
   if (props.data != null) {
     worker.value = { ...props.data };
     form.hydrate({
-      identificationType1: props.data.identificationType1 || null,
+      identificationType1: catalogType(props.data.identificationType1),
       identificationNumber1: props.data.identificationNumber1 || '',
-      identificationType2: props.data.identificationType2 || null,
+      identificationType2: catalogType(props.data.identificationType2),
       identificationNumber2: props.data.identificationNumber2 || '',
     });
   }

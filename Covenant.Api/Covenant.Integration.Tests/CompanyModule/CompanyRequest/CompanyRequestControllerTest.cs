@@ -7,6 +7,7 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
@@ -108,7 +109,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
         {
             HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, Url, Data.NewRequest);
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             List<CompanyProfileJobPositionRate> rates = await context.CompanyProfileJobPositionRates.ToListAsync();
             foreach (CompanyProfileJobPositionRate rate in rates) rate.Delete(default);
             context.CompanyProfileJobPositionRates.UpdateRange(rates);
@@ -140,7 +141,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequest
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
-                services.AddSingleton<IIdentityServerService, IdentityServerService>();
+                services.AddSingleton<IUserAccountService, UserAccountService>();
                 services.AddSingleton<ILocationRepository, LocationRepository>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);
                 services.AddSingleton<CompanyIdFilter>();

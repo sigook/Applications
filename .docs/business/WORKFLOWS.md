@@ -304,7 +304,7 @@ PUT api/agency/requests/{requestId}/Runners/{id}/Status              → RunnerS
 - Any status can move to any other (no fixed order) **except** a `Hired` runner, which is terminal and rejects further changes.
 - Each change appends a row to the status history (previous → new, who, when, comments) — never overwrites.
 - Moving to `Hired` **requires** a `StartDate` (the date the runner would begin working); the transition is rejected without it.
-- Every runner is a worker (`WorkerProfileId` is required at creation), so a hire always surfaces in attendance review (which is per worker).
+- Every runner is a worker (`WorkerProfileId` is required at creation).
 
 **Pipeline states** (`Covenant.Common/Enums/RunnerStatus.cs`): `SentToClient(1)`, `InterviewScheduled(2)`, `InterviewRescheduled(3)`, `NoLongerAvailable(4)`, `NoShow(5)`, `WaitingForInterviewFeedback(6)`, `WaitingForFinalDecision(7)`, `Rejected(8)`, `InOnboardingProcess(9)`, `Hired(10)`.
 
@@ -330,19 +330,8 @@ PUT api/agency/requests/{requestId}/Runners/{id}/Interview/{interviewId}/Resched
 
 All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
 
-### Step 5: Attendance-review notification (first days after hire)
+### Punch card gating
 
-Once a runner is `Hired` with a `StartDate`, the recruiter who hired them is reminded to confirm the worker showed up, during the worker's **first 3 days** (Day 1 = the `StartDate`).
-
-```
-GET api/agency/Notifications      → NotificationsController → NotificationService.GetNotifications
-                                  → { workersToReview: [ { ...worker, dayNumber }, ... ] }
-```
-
-- **Per-user:** only the recruiter who performed the hire sees it. The hire stamps `Runner.UpdatedBy` with the acting user's id (`User.GetUserId()`); the query filters by it (`Hired` is terminal, so `UpdatedBy` = the hirer). No nickname/`StatusHistory` involved.
-- **Scope:** excludes **Direct Hiring** orders (`Request.WorkerSalary` set).
-- **3-day window:** the DB does a generous prefilter; `DayNumber = (today − StartDate).Days + 1` is computed in the service and is authoritative (kept only when `1..3`). This avoids a `timestamptz` timezone off-by-one between the window and the day count.
-- **Aggregated, multi-type:** a single endpoint returns `NotificationsModel` (a container with one list per notification kind — today only `WorkersToReview`). The web bell shows a per-type summary + count; clicking opens the **Attendance Review** page (`/recruiting/attendance-review`), and each row links to that order's **Punch Card** tab where the recruiter enters `0` to mark attendance.
 - **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` composable, used in `AgencyPunchCardWorkerContainer.vue` via `v-if="isAdmin"` / `:disabled="!isAdmin || ..."`); the attendance `0` is entered by whoever may edit.
 
 ### 6.1 Compliance checklist (orders without runners)

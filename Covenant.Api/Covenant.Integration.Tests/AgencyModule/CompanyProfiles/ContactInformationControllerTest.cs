@@ -44,7 +44,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             HttpResponseMessage response = await _client.PutAsJsonAsync(RequestUri(), model);
             response.EnsureSuccessStatusCode();
             Guid id = Startup.FakeCompanyProfile.Id;
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.Equal(model.Phone, entity.Phone);
             Assert.Equal(model.PhoneExt, entity.PhoneExt);

@@ -6,6 +6,9 @@ class UploadCertificate {
   final CertificatesRepository repository;
   UploadCertificate(this.repository);
 
-  Future<Either<Failure, void>> call(String filePath) =>
-      repository.upload(filePath);
+  Future<Either<Failure, void>> call({
+    required String filePath,
+    required String description,
+  }) =>
+      repository.upload(filePath: filePath, description: description);
 }

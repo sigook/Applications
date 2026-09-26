@@ -40,7 +40,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var requestUri = $"{RequestUri()}/{id}";
             HttpResponseMessage response = await _client.PostAsJsonAsync(requestUri, new { });
             response.EnsureSuccessStatusCode();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestRequestedBy entity = await context.RequestRequestedBys.SingleAsync(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == id);
             Assert.NotNull(entity);
         }
@@ -88,7 +88,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
             var requestUri = $"{RequestUri()}/{entity.Id}";
             HttpResponseMessage response = await _client.DeleteAsync(requestUri);
             response.EnsureSuccessStatusCode();
-            Assert.False(_factory.Server.Host.Services.GetRequiredService<CovenantContext>()
+            Assert.False(_factory.Services.GetRequiredService<CovenantContext>()
                 .RequestRequestedBys.Any(c => c.RequestId == Startup.FakeRequest.Id && c.ContactPersonId == entity.Id));
         }
 

@@ -75,14 +75,11 @@ export function getMyProfile(): Promise<WorkerProfile> {
   return api.get<WorkerProfile>('/api/WorkerProfile/me');
 }
 
-export function registerWorker(payload: FormData): Promise<string> {
+export function registerWorker(payload: FormData, requestId?: number): Promise<string> {
   return api.post<string>('/api/WorkerProfile', payload, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+    headers: { 'Content-Type': 'multipart/form-data' },
+    params: requestId ? { requestId } : undefined
   });
-}
-
-export function uploadWorker(profileId: string, worker: WorkerProfile): Promise<void> {
-  return api.put(`/api/WorkerProfile/${profileId}`, worker);
 }
 
 // Request History

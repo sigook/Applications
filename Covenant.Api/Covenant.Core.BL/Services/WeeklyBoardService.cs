@@ -15,12 +15,12 @@ public class WeeklyBoardService(
     IRequestRepository requestRepository,
     IRunnerService runnerService,
     IAgencyRepository agencyRepository,
-    IIdentityServerService identityServerService,
+    ICurrentUserService currentUserService,
     ITimeService timeService) : IWeeklyBoardService
 {
     public async Task<WeeklyBoardModel> GetWeeklyBoard(WeeklyBoardFilter filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var assignments = (await requestRepository.GetWeeklyBoardAssignments(agencyId, filter.From, filter.To)).ToList();
 
         var recruiters = assignments
@@ -48,7 +48,7 @@ public class WeeklyBoardService(
 
     public async Task<RecruiterWeeklyBoardModel> GetRecruiterWeeklyBoard(WeeklyBoardFilter filter)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var recruiter = await GetCurrentRecruiter(agencyId);
         var model = new RecruiterWeeklyBoardModel { WeekStart = filter.From.Date, WeekEnd = filter.To.Date };
         if (recruiter is null) return model;
@@ -65,13 +65,13 @@ public class WeeklyBoardService(
 
     public async Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         return await requestRepository.GetOrderRunners(agencyId, requestId);
     }
 
     public async Task<Result> AssignRecruiters(AssignRecruitersModel model)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
@@ -94,7 +94,7 @@ public class WeeklyBoardService(
 
     public async Task<Result> UnassignRecruiter(Guid requestId, Guid recruiterId, DateTime workDate)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
@@ -108,7 +108,7 @@ public class WeeklyBoardService(
 
     public async Task<Result> MoveAssignment(MoveAssignmentModel model)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
@@ -128,7 +128,7 @@ public class WeeklyBoardService(
 
     public async Task<Result> AddRunner(AddRunnerModel model)
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var recruiter = await GetCurrentRecruiter(agencyId);
         if (recruiter is null) return Result.Fail("Recruiter not found");
 
@@ -153,6 +153,6 @@ public class WeeklyBoardService(
     }
 
     private async Task<AgencyPersonnel> GetCurrentRecruiter(Guid agencyId) =>
-        (await agencyRepository.GetPersonnelByUserId(identityServerService.GetUserId()))
+        (await agencyRepository.GetPersonnelByUserId(currentUserService.GetUserId()))
             .FirstOrDefault(p => p.AgencyId == agencyId);
 }

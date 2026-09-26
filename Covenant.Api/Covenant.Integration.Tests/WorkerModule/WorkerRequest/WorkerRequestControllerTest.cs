@@ -96,7 +96,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
             HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
             response.EnsureSuccessStatusCode();
             var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
-            var context = _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
             RequestApplicant entity = await context.RequestApplicants.SingleAsync(s => s.Id == detail.Id);
             Assert.Equal(detail.WorkerProfileId, entity.WorkerProfileId);
             Assert.Equal(model.Comments, entity.Comments);

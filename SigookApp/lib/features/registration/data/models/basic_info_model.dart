@@ -55,7 +55,7 @@ sealed class BasicInfoModel with _$BasicInfoModel {
   BasicInfo toEntity() {
     return BasicInfo(
       profilePhoto: ProfilePhoto(path: ''),
-      firstName: Name(firstName),
+      firstName: Name(firstName, minLength: 1),
       lastName: Name(lastName),
       dateOfBirth: DateTime.parse(dateOfBirth),
       gender: Gender(id: genderId, value: genderValue),

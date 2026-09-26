@@ -7,12 +7,14 @@ class DatePickerField extends StatelessWidget {
   final String label;
   final DateTime? value;
   final VoidCallback onTap;
+  final String? errorText;
 
   const DatePickerField({
     super.key,
     required this.label,
     required this.value,
     required this.onTap,
+    this.errorText,
   });
 
   @override
@@ -23,6 +25,7 @@ class DatePickerField extends StatelessWidget {
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
+          errorText: errorText,
           prefixIcon: const Icon(Icons.calendar_today_outlined, size: 20),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding:

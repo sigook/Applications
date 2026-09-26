@@ -8,6 +8,7 @@ import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../../auth/presentation/widgets/logout_confirmation_dialog.dart';
 import '../../../../account_settings/presentation/viewmodels/account_settings_viewmodel.dart';
+import '../../../../domain/validators/profile_validators.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 
 class AccountSettingsSectionCard extends ConsumerStatefulWidget {
@@ -38,8 +39,9 @@ class _AccountSettingsSectionCardState
   Future<void> _submitEmailChange() async {
     final newEmail = _newEmailController.text.trim();
     final confirmEmail = _confirmEmailController.text.trim();
-    if (newEmail.isEmpty) {
-      showProfileError(context, 'New email is required');
+    final emailError = ProfileValidators.email(newEmail);
+    if (emailError != null) {
+      showProfileError(context, emailError);
       return;
     }
     if (confirmEmail != newEmail) {

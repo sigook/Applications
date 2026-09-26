@@ -154,134 +154,133 @@ Map<String, dynamic> _$WorkerProfileListItemModelToJson(
   'agencyLogo': instance.agencyLogo,
 };
 
-_WorkerProfileModel _$WorkerProfileModelFromJson(Map<String, dynamic> json) =>
-    _WorkerProfileModel(
-      id: json['id'] as String,
-      numberId: (json['numberId'] as num?)?.toInt(),
-      profileImage: json['profileImage'] == null
-          ? null
-          : ProfileImageModel.fromJson(
-              json['profileImage'] as Map<String, dynamic>,
-            ),
-      firstName: json['firstName'] as String?,
-      middleName: json['middleName'] as String?,
-      lastName: json['lastName'] as String?,
-      secondLastName: json['secondLastName'] as String?,
-      birthDay: json['birthDay'] as String?,
-      gender: json['gender'] == null
-          ? null
-          : CatalogItemModel.fromJson(json['gender'] as Map<String, dynamic>),
-      socialInsurance: json['socialInsurance'] as String?,
-      socialInsuranceExpire: json['socialInsuranceExpire'] as bool? ?? false,
-      dueDate: json['dueDate'] as String?,
-      socialInsuranceFile: json['socialInsuranceFile'] == null
-          ? null
-          : ProfileImageModel.fromJson(
-              json['socialInsuranceFile'] as Map<String, dynamic>,
-            ),
-      identificationNumber1: json['identificationNumber1'] as String?,
-      identificationNumber2: json['identificationNumber2'] as String?,
-      havePoliceCheckBackground:
-          json['havePoliceCheckBackground'] as bool? ?? false,
-      identificationType1File: json['identificationType1File'] == null
-          ? null
-          : ProfileImageModel.fromJson(
-              json['identificationType1File'] as Map<String, dynamic>,
-            ),
-      identificationType2File: json['identificationType2File'] == null
-          ? null
-          : ProfileImageModel.fromJson(
-              json['identificationType2File'] as Map<String, dynamic>,
-            ),
-      identificationType1: json['identificationType1'] == null
-          ? null
-          : CatalogItemModel.fromJson(
-              json['identificationType1'] as Map<String, dynamic>,
-            ),
-      identificationType2: json['identificationType2'] == null
-          ? null
-          : CatalogItemModel.fromJson(
-              json['identificationType2'] as Map<String, dynamic>,
-            ),
-      policeCheckBackGround: json['policeCheckBackGround'] == null
-          ? null
-          : ProfileImageModel.fromJson(
-              json['policeCheckBackGround'] as Map<String, dynamic>,
-            ),
-      mobileNumber: json['mobileNumber'] as String?,
-      phone: json['phone'] as String?,
-      phoneExt: json['phoneExt'] as String?,
-      location: json['location'] == null
-          ? null
-          : LocationModel.fromJson(json['location'] as Map<String, dynamic>),
-      hasVehicle: json['hasVehicle'] as bool? ?? false,
-      licenses:
-          (json['licenses'] as List<dynamic>?)
-              ?.map((e) => LicenseItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      certificates:
-          (json['certificates'] as List<dynamic>?)
-              ?.map(
-                (e) => ProfileImageModel.fromJson(e as Map<String, dynamic>),
-              )
-              .toList() ??
-          const [],
-      otherDocuments:
-          (json['otherDocuments'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      availabilities:
-          (json['availabilities'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      availabilityTimes:
-          (json['availabilityTimes'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      availabilityDays:
-          (json['availabilityDays'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      locationPreferences:
-          (json['locationPreferences'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      lift: json['lift'] == null
-          ? null
-          : CatalogItemModel.fromJson(json['lift'] as Map<String, dynamic>),
-      languages:
-          (json['languages'] as List<dynamic>?)
-              ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      skills:
-          (json['skills'] as List<dynamic>?)
-              ?.map((e) => SkillItemModel.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      resume: json['resume'] == null
-          ? null
-          : ProfileImageModel.fromJson(json['resume'] as Map<String, dynamic>),
-      haveAnyHealthProblem: json['haveAnyHealthProblem'] as bool? ?? false,
-      healthProblem: json['healthProblem'] as String?,
-      otherHealthProblem: json['otherHealthProblem'] as String?,
-      contactEmergencyName: json['contactEmergencyName'] as String?,
-      contactEmergencyLastName: json['contactEmergencyLastName'] as String?,
-      contactEmergencyPhone: json['contactEmergencyPhone'] as String?,
-      email: json['email'] as String?,
-      approvedToWork: json['approvedToWork'] as bool? ?? false,
-      workerId: json['workerId'] as String?,
-      isSubcontractor: json['isSubcontractor'] as bool? ?? false,
-      isContractor: json['isContractor'] as bool? ?? false,
-      dnu: json['dnu'] as bool? ?? false,
-      punchCardId: json['punchCardId'] as String?,
-    );
+_WorkerProfileModel _$WorkerProfileModelFromJson(
+  Map<String, dynamic> json,
+) => _WorkerProfileModel(
+  id: json['id'] as String,
+  numberId: (json['numberId'] as num?)?.toInt(),
+  profileImage: json['profileImage'] == null
+      ? null
+      : ProfileImageModel.fromJson(
+          json['profileImage'] as Map<String, dynamic>,
+        ),
+  firstName: json['firstName'] as String?,
+  middleName: json['middleName'] as String?,
+  lastName: json['lastName'] as String?,
+  secondLastName: json['secondLastName'] as String?,
+  birthDay: json['birthDay'] as String?,
+  gender: json['gender'] == null
+      ? null
+      : CatalogItemModel.fromJson(json['gender'] as Map<String, dynamic>),
+  socialInsurance: json['socialInsurance'] as String?,
+  socialInsuranceExpire: json['socialInsuranceExpire'] as bool? ?? false,
+  dueDate: json['dueDate'] as String?,
+  socialInsuranceFile: json['socialInsuranceFile'] == null
+      ? null
+      : ProfileImageModel.fromJson(
+          json['socialInsuranceFile'] as Map<String, dynamic>,
+        ),
+  identificationNumber1: json['identificationNumber1'] as String?,
+  identificationNumber2: json['identificationNumber2'] as String?,
+  havePoliceCheckBackground:
+      json['havePoliceCheckBackground'] as bool? ?? false,
+  identificationType1File: json['identificationType1File'] == null
+      ? null
+      : ProfileImageModel.fromJson(
+          json['identificationType1File'] as Map<String, dynamic>,
+        ),
+  identificationType2File: json['identificationType2File'] == null
+      ? null
+      : ProfileImageModel.fromJson(
+          json['identificationType2File'] as Map<String, dynamic>,
+        ),
+  identificationType1: json['identificationType1'] == null
+      ? null
+      : CatalogItemModel.fromJson(
+          json['identificationType1'] as Map<String, dynamic>,
+        ),
+  identificationType2: json['identificationType2'] == null
+      ? null
+      : CatalogItemModel.fromJson(
+          json['identificationType2'] as Map<String, dynamic>,
+        ),
+  policeCheckBackGround: json['policeCheckBackGround'] == null
+      ? null
+      : ProfileImageModel.fromJson(
+          json['policeCheckBackGround'] as Map<String, dynamic>,
+        ),
+  mobileNumber: json['mobileNumber'] as String?,
+  phone: json['phone'] as String?,
+  phoneExt: (json['phoneExt'] as num?)?.toInt(),
+  location: json['location'] == null
+      ? null
+      : LocationModel.fromJson(json['location'] as Map<String, dynamic>),
+  hasVehicle: json['hasVehicle'] as bool? ?? false,
+  licenses:
+      (json['licenses'] as List<dynamic>?)
+          ?.map((e) => LicenseItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  certificates:
+      (json['certificates'] as List<dynamic>?)
+          ?.map((e) => ProfileImageModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  otherDocuments:
+      (json['otherDocuments'] as List<dynamic>?)
+          ?.map((e) => ProfileImageModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  availabilities:
+      (json['availabilities'] as List<dynamic>?)
+          ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  availabilityTimes:
+      (json['availabilityTimes'] as List<dynamic>?)
+          ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  availabilityDays:
+      (json['availabilityDays'] as List<dynamic>?)
+          ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  locationPreferences:
+      (json['locationPreferences'] as List<dynamic>?)
+          ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  lift: json['lift'] == null
+      ? null
+      : CatalogItemModel.fromJson(json['lift'] as Map<String, dynamic>),
+  languages:
+      (json['languages'] as List<dynamic>?)
+          ?.map((e) => CatalogItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  skills:
+      (json['skills'] as List<dynamic>?)
+          ?.map((e) => SkillItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  resume: json['resume'] == null
+      ? null
+      : ProfileImageModel.fromJson(json['resume'] as Map<String, dynamic>),
+  haveAnyHealthProblem: json['haveAnyHealthProblem'] as bool? ?? false,
+  healthProblem: json['healthProblem'] as String?,
+  otherHealthProblem: json['otherHealthProblem'] as String?,
+  contactEmergencyName: json['contactEmergencyName'] as String?,
+  contactEmergencyLastName: json['contactEmergencyLastName'] as String?,
+  contactEmergencyPhone: json['contactEmergencyPhone'] as String?,
+  email: json['email'] as String?,
+  approvedToWork: json['approvedToWork'] as bool? ?? false,
+  workerId: json['workerId'] as String?,
+  isSubcontractor: json['isSubcontractor'] as bool? ?? false,
+  isContractor: json['isContractor'] as bool? ?? false,
+  dnu: json['dnu'] as bool? ?? false,
+  punchCardId: json['punchCardId'] as String?,
+);
 
 Map<String, dynamic> _$WorkerProfileModelToJson(_WorkerProfileModel instance) =>
     <String, dynamic>{

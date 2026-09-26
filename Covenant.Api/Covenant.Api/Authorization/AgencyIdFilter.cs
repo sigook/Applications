@@ -28,11 +28,21 @@ public class AgencyIdFilter : IAsyncActionFilter
         {
             if (controller.User.IsAgencyStaff())
             {
-                string sub = controller.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                string sub = controller.User.GetSubject();
                 if (Guid.TryParse(sub, out Guid userId))
                 {
                     Guid agencyId = await _repository.GetAgencyIdForUser(userId);
                     List<Guid> agencyIds = await _repository.GetAgencyIdsForUser(userId);
+
+                    foreach (var identity in controller.User.Identities)
+                    {
+                        foreach (var claim in identity.Claims
+                            .Where(c => c.Type is CovenantConstants.AgencyId or CovenantConstants.AgencyIds)
+                            .ToList())
+                        {
+                            identity.TryRemoveClaim(claim);
+                        }
+                    }
 
                     var claims = new List<Claim>
                     {

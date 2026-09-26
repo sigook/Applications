@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     
     <PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-        <IsPackable>false</IsPackable>
         <DefineConstants>$(RUN_BAMBORA)</DefineConstants>
         <UserSecretsId>6f9fc3c1-578a-490d-a3c0-e9afb502fc69</UserSecretsId>
     </PropertyGroup>

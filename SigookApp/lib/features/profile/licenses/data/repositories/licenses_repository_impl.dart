@@ -17,15 +17,17 @@ class LicensesRepositoryImpl implements LicensesRepository {
   @override
   Future<Either<Failure, void>> upload({
     required String filePath,
-    required String number,
-    required String issued,
-    required String expires,
+    required String description,
+    required String? number,
+    required String? issued,
+    required String? expires,
   }) =>
       guardedProfileCall(networkInfo, () async {
         final profile = await datasource.getWorkerProfile();
         await datasource.uploadLicense(
           profile.id,
           filePath: filePath,
+          description: description,
           number: number,
           issued: issued,
           expires: expires,

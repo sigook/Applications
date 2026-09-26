@@ -30,7 +30,7 @@ stages:
             inputs:
               azureSubscription: 'SigookPipelines'
               KeyVaultName: $(keyVaultName)
-              SecretsFilter: 'production-api--ConnectionStrings--DefaultConnection,production-ids--ConnectionStrings--DefaultConnection,pipelines--DbRefresh--StagingPasswordHash'
+              SecretsFilter: 'production-api--ConnectionStrings--DefaultConnection,production-api--ConnectionStrings--IdentityConnection,pipelines--DbRefresh--StagingPasswordHash'
               RunAsPreJob: false
 
           - task: Bash@3
@@ -48,18 +48,17 @@ stages:
               targetType: 'filePath'
               filePath: 'Sigook.Database/Scripts/database-refresh.sh'
             env:
-              CONNECTION_STRING: $(production-ids--ConnectionStrings--DefaultConnection)
+              CONNECTION_STRING: $(production-api--ConnectionStrings--IdentityConnection)
               RESET_USERS: 'true'
               PASSWORD_HASH: $(pipelines--DbRefresh--StagingPasswordHash)
 
-          # Staging apps apply pending EF migrations on startup, so a restart
-          # brings the restored production schema up to the dev branch state
+          # The staging Api applies pending EF migrations (Core and Identity) on
+          # startup, so a restart brings the restored production schema up to dev
           - task: AzureCLI@2
-            displayName: 'Restart Staging Apps'
+            displayName: 'Restart Staging Api'
             inputs:
               azureSubscription: 'SigookPipelines'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
                 az webapp restart --resource-group SigookStaging --name sigook-api-staging
-                az webapp restart --resource-group SigookStaging --name sigook-accounts-staging

@@ -12,16 +12,16 @@ namespace Covenant.Tests.Accounting;
 public class DeleteSubcontractorReportTest
 {
     private readonly Mock<ISubcontractorRepository> _subcontractorRepository = new();
-    private readonly Mock<IIdentityServerService> _identityServerService = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
     private readonly IAccountingService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
     private static readonly DateTime WeekEnding = new(2026, 9, 5);
 
     public DeleteSubcontractorReportTest()
     {
-        _identityServerService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
         _sut = new AccountingService(
-            _identityServerService.Object,
+            _currentUserService.Object,
             Mock.Of<IPayStubRepository>(),
             _subcontractorRepository.Object,
             Mock.Of<IMediator>());

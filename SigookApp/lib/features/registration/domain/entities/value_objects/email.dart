@@ -9,11 +9,17 @@ class Email extends Equatable {
     r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
   );
 
-  bool get isValid => _emailRegex.hasMatch(value);
+  static const int minLength = 6;
+  static const int maxLength = 100;
+
+  bool get isValid => errorMessage == null;
 
   String? get errorMessage {
     if (value.isEmpty) return 'Email is required';
-    if (!isValid) return 'Invalid email format';
+    if (value.length < minLength || value.length > maxLength) {
+      return 'Email must be between $minLength and $maxLength characters';
+    }
+    if (!_emailRegex.hasMatch(value)) return 'Invalid email format';
     return null;
   }
 

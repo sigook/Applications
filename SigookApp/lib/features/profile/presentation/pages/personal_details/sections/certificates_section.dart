@@ -10,6 +10,7 @@ import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../certificates/presentation/viewmodels/certificates_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../certificates/presentation/widgets/certificate_card.dart';
+import '../../../widgets/document_description_field.dart';
 import '../../../widgets/pending_file_row.dart';
 import '../../../widgets/upload_action_row.dart';
 
@@ -24,6 +25,22 @@ class CertificatesSectionCard extends ConsumerStatefulWidget {
 class _CertificatesSectionCardState
     extends ConsumerState<CertificatesSectionCard> {
   PickedFileData? _pendingFile;
+  final _descriptionController = TextEditingController();
+  String? _descriptionError;
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _reset() {
+    setState(() {
+      _pendingFile = null;
+      _descriptionController.clear();
+      _descriptionError = null;
+    });
+  }
 
   Future<void> _confirmDelete(String certificateId) async {
     final confirmed = await showDialog<bool>(
@@ -62,16 +79,20 @@ class _CertificatesSectionCardState
   Future<void> _pickFile() async {
     final result = await ref
         .read(filePickerServiceProvider)
-        .pickFile(allowedExtensions: ['pdf', 'docx', 'jpg', 'jpeg', 'png']);
+        .pickFile(allowedExtensions: FilePickerService.documentExtensions);
     if (!result.isSuccess || result.file == null) return;
     setState(() => _pendingFile = result.file);
   }
 
   Future<void> _upload() async {
     if (_pendingFile == null) return;
-    await ref
-        .read(certificatesViewModelProvider.notifier)
-        .upload(_pendingFile!.path);
+    final error = DocumentDescriptionField.validate(_descriptionController.text);
+    setState(() => _descriptionError = error);
+    if (error != null) return;
+    await ref.read(certificatesViewModelProvider.notifier).upload(
+      filePath: _pendingFile!.path,
+      description: _descriptionController.text.trim(),
+    );
   }
 
   @override
@@ -82,7 +103,7 @@ class _CertificatesSectionCardState
     ref.listen<CertificatesState>(certificatesViewModelProvider, (prev, next) {
       if (!mounted) return;
       if (next.justUploaded && !(prev?.justUploaded ?? false)) {
-        setState(() => _pendingFile = null);
+        _reset();
         showProfileSuccess(context, 'Certificate uploaded successfully!');
       }
       if (next.uploadError != null && next.uploadError != prev?.uploadError) {
@@ -125,11 +146,21 @@ class _CertificatesSectionCardState
                   : 'Certificate file',
             ),
           ),
+          DocumentDescriptionField(
+            controller: _descriptionController,
+            errorText: _descriptionError,
+            onChanged: (_) {
+              if (_descriptionError != null) {
+                setState(() => _descriptionError = null);
+              }
+            },
+          ),
+          const SizedBox(height: 12),
           UploadActionRow(
             isUploading: vm.isUploading,
             label: 'Upload Certificate',
             onUpload: _upload,
-            onCancel: () => setState(() => _pendingFile = null),
+            onCancel: _reset,
           ),
         ] else
           SizedBox(

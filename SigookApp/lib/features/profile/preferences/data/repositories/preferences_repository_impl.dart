@@ -55,7 +55,7 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
               availabilityDays: availabilityDays),
           datasource.updateSkills(workerId, skills: skills),
           datasource.updateLanguages(workerId, languages: languages),
-          if (locationPreferences.isNotEmpty)
+          if (fields.containsKey('locationPreferences'))
             datasource.updateLocationPreferences(workerId,
                 locationPreferences: locationPreferences),
           if (lift != null)

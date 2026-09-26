@@ -31,7 +31,7 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
         _data = factory.Data;
     }
 
-    private CovenantContext Context => _factory.Server.Host.Services.GetRequiredService<CovenantContext>();
+    private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 
     [Fact, TestOrder(1)]
     public async Task DeleteReturnsBadRequestWhenTheDateIsInvalid()
@@ -96,10 +96,10 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
             services.AddTestDatabase();
             services.AddSingleton<AgencyIdFilter>();
             services.AddSingleton(Mock.Of<IPayStubsContainer>());
-            var identityServerService = new Mock<IIdentityServerService>();
-            identityServerService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
-            identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
-            services.AddSingleton(identityServerService.Object);
+            var currentUserService = new Mock<ICurrentUserService>();
+            currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
+            currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
+            services.AddSingleton(currentUserService.Object);
         }
 
         public void Configure(IApplicationBuilder app)

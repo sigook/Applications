@@ -19,20 +19,20 @@ public class CandidateAdapter : ICandidateAdapter
 {
     private readonly IAgencyRepository agencyRepository;
     private readonly ICatalogRepository catalogRepository;
-    private readonly IIdentityServerService identityServerService;
+    private readonly ICurrentUserService currentUserService;
     private readonly ITeamsService teamsService;
     private readonly IFilesContainer filesContainer;
 
     public CandidateAdapter(
         IAgencyRepository agencyRepository,
         ICatalogRepository catalogRepository,
-        IIdentityServerService identityServerService,
+        ICurrentUserService currentUserService,
         ITeamsService teamsService,
         IFilesContainer filesContainer)
     {
         this.agencyRepository = agencyRepository;
         this.catalogRepository = catalogRepository;
-        this.identityServerService = identityServerService;
+        this.currentUserService = currentUserService;
         this.teamsService = teamsService;
         this.filesContainer = filesContainer;
     }
@@ -85,7 +85,7 @@ public class CandidateAdapter : ICandidateAdapter
 
     public Result<Candidate> ConvertCandidateModelToCandidate(CandidateCreateModel model, Guid agencyId)
     {
-        var recruiter = identityServerService.GetNickname();
+        var recruiter = currentUserService.GetNickname();
         var candidate = new Candidate(agencyId, model.Name)
         {
             Address = model.Address,
@@ -138,7 +138,7 @@ public class CandidateAdapter : ICandidateAdapter
         model.LastName = string.Join(" ", name.Skip(1));
         model.Email = candidate.Email;
         model.Phone = candidate.PhoneNumbers.FirstOrDefault()?.PhoneNumber;
-        var agencyLocation = (await agencyRepository.GetLocations(identityServerService.GetAgencyId())).FirstOrDefault();
+        var agencyLocation = (await agencyRepository.GetLocations(currentUserService.GetAgencyId())).FirstOrDefault();
         model.Location = new LocationModel
         {
             Address = candidate.Address,

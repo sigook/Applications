@@ -161,6 +161,30 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | `createCompanyProfileUser(id, user)` | POST | `/api/agency/companyprofiles/{id}/Users` | `CreateCompanyUserModel` | `{ id: string }` | |
 | `deleteCompanyProfileUser(id, userId)` | DELETE | `/api/agency/companyprofiles/{id}/Users/{userId}` | — | `void` | |
 
+### Interactions & Deals (sales)
+Policy `Sales` (sales, admin, superadmin). Owner-scoped: a sales user lists, updates and deletes only the rows they own, `OwnerId` is forced server-side on create; admin/superadmin are unscoped and may pass `ownerId`. The client comes from the route — never from the body or the filter — and update/delete also check that the record belongs to that client (otherwise "not found").
+
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `getCompanyInteractions(profileId, filter)` | GET | `/api/agency/companyprofiles/{profileId}/Interactions` | `CompanyInteractionFilter` (params) | `PaginatedList<CompanyInteraction>` | Sort: `CreatedAt` / `Status` |
+| `createCompanyInteraction(profileId, model)` | POST | `/api/agency/companyprofiles/{profileId}/Interactions` | `CreateCompanyInteractionModel` | `string` (id) | |
+| `updateCompanyInteraction(profileId, id, model)` | PUT | `/api/agency/companyprofiles/{profileId}/Interactions/{id}` | `UpdateCompanyInteractionModel` | `void` | |
+| `deleteCompanyInteraction(profileId, id)` | DELETE | `/api/agency/companyprofiles/{profileId}/Interactions/{id}` | — | `void` | |
+| `getDeals(profileId, filter)` | GET | `/api/agency/companyprofiles/{profileId}/Deals` | `DealFilter` (params) | `PaginatedList<Deal>` | Sort: `Date` / `Value` / `Status` |
+| `createDeal(profileId, model, file?)` | POST | `/api/agency/companyprofiles/{profileId}/Deals` | `CreateDealModel` (multipart: `data` + optional document) | `string` (id) | |
+| `updateDeal(profileId, id, model, file?)` | PUT | `/api/agency/companyprofiles/{profileId}/Deals/{id}` | `UpdateDealModel` (multipart: `data` + optional document) | `void` | A new file replaces the current document and deletes the previous one |
+| `deleteDeal(profileId, id)` | DELETE | `/api/agency/companyprofiles/{profileId}/Deals/{id}` | — | `void` | |
+
+Backend: `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{InteractionsController,DealsController}.cs` → `SalesService`; entities in ENTITIES_RELATIONSHIPS.md ("Sales entities"). The dashboard's cross-client "latest 6" lists come from `salesDashboardApi.ts` (§18), not from here.
+
+**UI:** the client detail's Interactions / Deals tabs (`components/agency_company/CompanyInteractions.vue` / `CompanyDeals.vue`) — rendered only when the route is the sales view **and** the user has a sales-access role (`useModuleBase().isSalesView` + `useSalesAccess()`); delete is a row action behind a confirm dialog. Create/edit go through one modal per entity — `agency_company/InteractionModal`, `agency_company/DealModal` (and `sales_dashboard/ClientModal` for new clients) — each a plain `b-modal custom-content-class="card"` wrapping its form, emitting `saved` so the host reloads:
+
+| Form | API functions | Notes |
+|------|---------------|-------|
+| `InteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` | Client picker via `getAgencyCompaniesList`; read-only when editing (the id comes from the record); preselected (`initialClient`) from a client's tab or `ClientInteractionsModal` |
+| `DealForm` | `createDeal` / `updateDeal` | Same client picker rules; create is `multipart/form-data` with an optional document (`utils/multipart.ts` + `utils/fileNaming.ts`) |
+| `ClientForm` | `createAgencyCompany` | Create-only; catalogs via `getIndustries` / `getCompanyStatus` (catalogApi.ts); ordinary company endpoint, so sales auto-assignment applies |
+
 ### Cross-Cutting
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -455,7 +479,7 @@ Reference data (lookup tables).
 
 ## 14. companyApi.ts
 
-Company portal (client) view of their profile, requests and workers — plus the agency sales module's deals & company-interactions CRUD (bases `/api/agency/sales/deals`, `/api/agency/sales/companyinteractions`).
+Company portal (client) view of their profile, requests and workers.
 
 ### Profile & Locations
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -520,37 +544,11 @@ Company portal (client) view of their profile, requests and workers — plus the
 | `getCompanyInvoiceDetail(id)` | GET | `/api/company/accounting/Invoices/{id}` | — | `InvoiceSummaryModel` | |
 | `getCompanyRequestTimeSheetFile(requestId)` | GET | `/api/company/requests/{requestId}/TimeSheets/File` | — | Blob | Excel punch-card export, ownership-checked server-side |
 
-### Sales — Deals
-| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
-|----------|------------|----------|--------------|---------------|-------|
-| `getDeals(filter)` | GET | `/api/agency/sales/deals` | `DealFilter` (params) | `PaginatedList<Deal>` | Sales users only see deals they own; admin/superadmin unscoped, with optional `ownerId` filter |
-| `createDeal(model, file?)` | POST | `/api/agency/sales/deals` | `CreateDealModel` (multipart: `data` + optional document) | `string` (id) | `OwnerId` forced server-side |
-| `updateDeal(id, model, file?)` | PUT | `/api/agency/sales/deals/{id}` | `UpdateDealModel` (multipart: `data` + optional document) | `void` | Owner-checked for sales; admin/superadmin may edit any. A new file replaces the current document and deletes the previous one |
-| `deleteDeal(id)` | DELETE | `/api/agency/sales/deals/{id}` | — | `void` | Owner-checked for sales; admin/superadmin may delete any |
-
-### Sales — Company Interactions
-| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
-|----------|------------|----------|--------------|---------------|-------|
-| `getCompanyInteractions(filter)` | GET | `/api/agency/sales/companyinteractions` | `CompanyInteractionFilter` (params) | `PaginatedList<CompanyInteraction>` | Sales users only see interactions they own; admin/superadmin unscoped, with optional `ownerId` filter |
-| `createCompanyInteraction(model)` | POST | `/api/agency/sales/companyinteractions` | `CreateCompanyInteractionModel` | `string` (id) | `OwnerId` forced server-side |
-| `updateCompanyInteraction(id, model)` | PUT | `/api/agency/sales/companyinteractions/{id}` | `UpdateCompanyInteractionModel` | `void` | Owner-checked for sales; admin/superadmin may edit any |
-| `deleteCompanyInteraction(id)` | DELETE | `/api/agency/sales/companyinteractions/{id}` | — | `void` | Owner-checked for sales; admin/superadmin may delete any |
-
-**Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`); deals/interactions enums + models at `src/types/company.ts:344-589`.
+**Types:** from `src/types/company` (+ `InvoiceSummaryModel` from `src/types/accounting`). The sales deals/interactions enums + models also live in `src/types/company.ts`, but their API calls are in `agencyCompanyApi.ts` (§4).
 
 > **Enum mirror gotcha.** The API serializes enums as **ints** (System.Text.Json, no `JsonStringEnumConverter`), so `DealType`, `DealStatus`, `InteractionType`, `InteractionPurpose` and `InteractionStatus` in `src/types/company.ts` must match `Covenant.Common/Enums/` **numerically** — adding or reordering a member on one side without the other silently mislabels records. Label/color/icon maps (`DEAL_TYPE_LABELS`, `INTERACTION_TYPE_ICONS`, …) live next to the enums; `InteractionType.Mail` is labelled "Email" in the UI. Meaning of each value: `.docs/business/SALES_MODULE.md`.
 
 **Pinia:** `companyRequestFilter` in `useCompanyStore`.
-
-**UI (sales sections):** `pages/agency/Dashboard.vue`, `pages/agency/SalesDeals.vue`, `pages/agency/SalesInteractions.vue`. All three create/edit through `components/sales_dashboard/SalesCreateModal.vue` — a Buefy modal that switches between three forms by `kind` (`SalesCreateKind = 'interaction' | 'client' | 'deal'`, `src/types/sales.ts`), shows create vs edit titles, offers Delete behind a confirm dialog in edit mode, and emits `saved` so the host page reloads its lists:
-
-| Kind | Form | API functions | Notes |
-|------|------|---------------|-------|
-| `interaction` | `SalesInteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` / `deleteCompanyInteraction` (above) | Client picker via `getAgencyCompaniesList` (agencyCompanyApi.ts); client is read-only when editing |
-| `deal` | `SalesDealForm` | `createDeal` / `updateDeal` / `deleteDeal` (above) | Create is `multipart/form-data` with an optional document (`utils/multipart.ts` + `utils/fileNaming.ts`) |
-| `client` | `SalesClientForm` | `createAgencyCompany` (agencyCompanyApi.ts) | Create-only from the modal; catalogs via `getIndustries` / `getCompanyStatus` (catalogApi.ts); ordinary company endpoint, so sales auto-assignment applies |
-
-The deals/interactions CRUD lives here in `companyApi.ts`, **not** in `salesApi.ts`. Backend: `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/{DealsController,CompanyInteractionsController}.cs`, `[Authorize(Policy = PolicyConfiguration.Sales)]`; entities in ENTITIES_RELATIONSHIPS.md ("Sales entities").
 
 **Business Logic:** timesheet validation by the company feeds invoicing; clock-in captures GPS + time. Deals/interactions are owner-scoped end-to-end for sales users (admin/superadmin unscoped) — stricter than the list-only scoping of orders/clients (ROLES_PERMISSIONS.md). Concepts, catalogs and deal lifecycle: `.docs/business/SALES_MODULE.md`.
 
@@ -580,15 +578,15 @@ In-app notification bell (agency roles). A single aggregated call returns every 
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getNotifications()` | GET | `/api/agency/Notifications` | — | `NotificationsResponse` | Grouped by type (today only `workersToReview: RunnerStartingToday[]`) |
+| `getNotifications()` | GET | `/api/agency/Notifications` | — | `NotificationsResponse` | Grouped by type; no notification kinds are defined, so the payload is empty |
 
-**Types:** `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` (`src/types/notification`); `RunnerStartingToday` (`src/types/runner`)
+**Types:** `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` (`src/types/notification`)
 
 **Composable:** `useNotifications` loads once, maps each typed list to generic `AppNotification[]` grouped by `NotificationType`.
 
-**UI:** `SidebarLogged.vue` owns the load; the user avatar at the sidebar footer shows a red dot and the user menu opens with a "Notifications" section (per-type count, or "Nothing to review"); `WorkerAttendanceReview` type links to `/recruiting/attendance-review`, each row links to the order's Punch Card.
+**UI:** `SidebarLogged.vue` owns the load; the user avatar at the sidebar footer shows a red dot when there are notifications and the user menu opens with a "Notifications" section (per-type count, or "Nothing to review").
 
-**Extensibility:** a new kind = new list on backend `NotificationsModel` + new `NotificationType`/label/route + a mapper in `useNotifications`. See WORKFLOWS.md → Runner Pipeline Flow → STEP 5.
+**Extensibility:** a new kind = new list on backend `NotificationsModel` + new `NotificationType`/label/route + a mapper in `useNotifications`.
 
 ---
 
@@ -619,13 +617,16 @@ sales user always sees only their own rows, admin/superadmin see the whole agenc
 |----------|------------|----------|--------------|---------------|-------|
 | `getDealsByStatus(filter)` | GET | `/api/agency/sales/dashboard/deals-by-status` | `DealsByStatusFilter` | `DealsByStatusModel` | Feeds the "Deals by status" column chart |
 | `getSalesDashboardSummary()` | GET | `/api/agency/sales/dashboard/summary` | — | `SalesDashboardSummary` | Feeds the "This quarter" meters and the header period label |
+| `getRecentClients()` | GET | `/api/agency/sales/dashboard/recent-clients` | — | `SalesRecentClient[]` | Feeds the "Clients" card: the 10 clients with the most recent interaction, newest first; no `ownerId` param |
+| `getRecentInteractions()` | GET | `/api/agency/sales/dashboard/recent-interactions` | — | `CompanyInteraction[]` | Feeds the "Log Interactions" card: the 6 newest interactions across all clients; no `ownerId` param |
+| `getRecentDeals()` | GET | `/api/agency/sales/dashboard/recent-deals` | — | `Deal[]` | Feeds the "Deals" card: the 6 deals with the latest `Date` across all clients; no `ownerId` param |
 
 **Query params (`DealsByStatusFilter`):** `period` (`SalesPeriod` 0 Day / 1 Week / 2 Month / 3 Quarter,
 default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&statuses[1]=3` by the qs
 `indices` format), `ownerId` (honored only for admin/superadmin).
 
 **Types** (`src/types/sales.ts`): `SalesPeriod`, `SalesPeriodRange`, `DealStatusSummary`,
-`InteractionTypeSummary`, `DealsByStatusFilter`, `DealsByStatusModel`, `SalesDashboardSummary`,
+`InteractionTypeSummary`, `DealsByStatusFilter`, `DealsByStatusModel`, `SalesDashboardSummary`, `SalesRecentClient`,
 `SalesBarPoint`, `SalesMeter`, `SALES_PERIOD_TABS`. Enum fields travel as numeric values.
 
 **UI:** `pages/agency/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions:
@@ -651,6 +652,11 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
   "pipeline": [ { "status": 0, "count": 24, "totalValue": 180000.00 } ],  // 7 rows, enum order
   "activity": [ { "type": 0, "count": 42 } ]                              // 4 rows, enum order
 }
+
+// GET /api/agency/sales/dashboard/recent-clients
+[
+  { "id": "…", "fullName": "Acme", "email": "ops@acme.com", "lastInteractionAt": "2026-09-10T12:00:00" }
+]  // up to 10, newest interaction first; clients without interactions never appear
 ```
 
 `from`/`to` are **UTC calendar dates**, serialized without an offset so the browser renders them
@@ -663,13 +669,13 @@ verbatim; `to` is inclusive. Windows are resolved server-side by
 Dashboard.vue onMounted
 ├─ getSalesDashboardSummary()      → GET .../dashboard/summary               [LIVE]
 ├─ getDealsByStatus({period})      → GET .../dashboard/deals-by-status       [LIVE]
-├─ getCompanyInteractions({...6})  → GET /api/agency/sales/companyinteractions [LIVE]
-├─ getSalesCompanies({...6})       → GET /api/agency/sales/companyprofiles     [LIVE]
-├─ getDeals({...6})                → GET /api/agency/sales/deals               [LIVE]
+├─ getRecentInteractions()         → GET .../dashboard/recent-interactions   [LIVE]
+├─ getRecentClients()              → GET .../dashboard/recent-clients        [LIVE]
+├─ getRecentDeals()                → GET .../dashboard/recent-deals          [LIVE]
 └─ useCurrentAgent.loadAgentName() → GET /api/agency/personnel                 [LIVE]
 
 period tab change / status filter change → getDealsByStatus() only
-SalesCreateModal @saved → onSaved → all five data loaders re-run
+{Interaction,Deal,Client,ClientInteractions}Modal @saved → onSaved → all five data loaders re-run
 ```
 
 The whole dashboard is live; nothing is cached and there is no static JSON left. `loadDealsByStatus`
@@ -766,8 +772,7 @@ Public landing site endpoints (no auth).
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getMyProfile()` | GET | `/api/WorkerProfile/me` | — | `WorkerProfile` | |
-| `registerWorker(payload)` | POST | `/api/WorkerProfile` | FormData (multipart) | `string` (profile id) | Registration |
-| `uploadWorker(id, worker)` | PUT | `/api/WorkerProfile/{id}` | `WorkerProfile` | `void` | Update profile |
+| `registerWorker(payload, requestId?)` | POST | `/api/WorkerProfile?requestId=` | FormData (multipart) | `string` (profile id) | Registration; `requestId` (request number from `/register-worker/:requestId`) also adds the new worker as applicant |
 
 ### Request History
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -866,8 +871,8 @@ The only API file that targets `VUE_APP_SECURITY_SERVER` instead of `VUE_APP_URL
 |----------|------------|----------|--------------|---------------|-------|
 | `requestPasswordToken(email, password)` | POST | `/connect/token` | form-urlencoded `grant_type=password`, `client_id`, `scope`, `username`, `password` | `TokenResponse` | No `id_token`. 400 → `TokenErrorResponse` with `error_description` ∈ `invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out` |
 | `fetchUserInfo(tokenType, accessToken)` | GET | `/connect/userinfo` | Bearer header | `UserInfoResponse` | `role` is string or string[] |
-| `requestPasswordResetCode(email)` | POST | `/Password/forgot` | `{ email }` | `void` | Always 202; 60-s resend cooldown server-side |
-| `resetPasswordWithCode(payload)` | POST | `/Password/reset` | `ResetPasswordWithCodePayload` | `void` | 400 → `PasswordResetErrorResponse` with `error` ∈ `invalid_code`, `code_expired`, `too_many_attempts`, `password_policy` (+ `messages`) |
+| `requestPasswordResetCode(email)` | POST | `/Password/forgot` | `{ email }` | `void` | 202 even when nothing is sent (60-s cooldown, 3 codes/hour and 6/day per user server-side); 429 past 10 requests per IP in 10 min |
+| `resetPasswordWithCode(payload)` | POST | `/Password/reset` | `ResetPasswordWithCodePayload` | `void` | 400 → `PasswordResetErrorResponse` with `error` ∈ `invalid_code`, `code_expired`, `too_many_attempts`, `password_policy` (+ `messages`); 429 past 10 requests per IP in 10 min (shared with `/Password/forgot`) |
 | `resendConfirmationLink(email)` | POST | `/Account/ResendConfirmationLink?userName=` | query param | `void` | Called from the `email_not_confirmed` login error |
 
 **Types:** `TokenResponse`, `TokenErrorResponse`, `UserInfoResponse`, `ResetPasswordWithCodePayload`, `PasswordResetErrorResponse` (`src/types/security`)

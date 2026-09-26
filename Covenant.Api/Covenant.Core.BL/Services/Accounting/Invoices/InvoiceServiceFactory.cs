@@ -8,11 +8,11 @@ namespace Covenant.Core.BL.Services.Accounting.Invoices;
 public class InvoiceServiceFactory(
     IServiceProvider serviceProvider,
     IAgencyRepository agencyRepository,
-    IIdentityServerService identityServerService)
+    ICurrentUserService currentUserService)
 {
     public async Task<IInvoiceService> Resolve()
     {
-        var agencyId = identityServerService.GetAgencyId();
+        var agencyId = currentUserService.GetAgencyId();
         var billingLocation = await agencyRepository.GetBillingLocation(agencyId);
 
         return billingLocation?.IsUSA == true

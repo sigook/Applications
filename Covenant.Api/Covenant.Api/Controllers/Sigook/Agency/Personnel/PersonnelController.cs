@@ -81,7 +81,7 @@ public class PersonnelController(IAgencyService agencyService, IAgencyRepository
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(
-        [FromServices] IIdentityServerService service,
+        [FromServices] IUserAccountService service,
         [FromRoute] Guid id)
     {
         Guid agencyId = User.GetAgencyId();

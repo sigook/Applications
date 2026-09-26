@@ -43,10 +43,10 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument.Pdf
             services.AddTestDatabase();
             services.AddSingleton(Mock.Of<IInvoicesContainer>());
             services.AddSingleton(Mock.Of<IPayStubsContainer>());
-            var identityServerService = new Mock<IIdentityServerService>();
-            identityServerService.Setup(s => s.GetAgencyId()).Returns(Data.Agency.Id);
-            identityServerService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.Agency.Id });
-            services.AddSingleton(identityServerService.Object);
+            var currentUserService = new Mock<ICurrentUserService>();
+            currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.Agency.Id);
+            currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.Agency.Id });
+            services.AddSingleton(currentUserService.Object);
             var pdfService = new Mock<IPdfGeneratorService>();
             pdfService.Setup(s => s.GeneratePdfFromHtml(It.IsAny<PdfParams>()))
                 .ReturnsAsync(() => Result.Ok(Encoding.UTF8.GetBytes("%PDF-1.4 fake invoice")));
