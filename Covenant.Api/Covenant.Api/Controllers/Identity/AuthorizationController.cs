@@ -27,7 +27,6 @@ public class AuthorizationController(
     IOpenIddictScopeManager scopeManager,
     ILogger<AuthorizationController> logger) : Controller
 {
-    private const string ExternalProviderAcrValue = "idp:" + Microsoft365OpenIdConnect.Scheme;
     private const string InvalidCredentials = "invalid_credentials";
     private const string InactiveUser = "inactive_user";
     private const string EmailNotConfirmed = "email_not_confirmed";
@@ -54,11 +53,7 @@ public class AuthorizationController(
             }
 
             var returnUrl = Request.PathBase + Request.Path + Request.QueryString;
-            if (request.GetAcrValues().Contains(ExternalProviderAcrValue))
-            {
-                return RedirectToAction(nameof(ExternalController.Challenge), "External", new { provider = Microsoft365OpenIdConnect.Scheme, returnUrl });
-            }
-            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, IdentityConstants.ApplicationScheme);
+            return RedirectToAction(nameof(ExternalController.Challenge), "External", new { provider = Microsoft365OpenIdConnect.Scheme, returnUrl });
         }
 
         var user = await userManager.GetUserAsync(result.Principal);

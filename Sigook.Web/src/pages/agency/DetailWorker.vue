@@ -3,28 +3,40 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <Breadcrumbs :crumbs="crumbs" back-to="/recruiting/workers" />
-    <section class="wrapper-worker-top mb-0">
-      <div>
-        <image-detail class="is-inline-block align-text-top" :data="worker" @updateProfile="() => loadWorker()" />
-        <div class="is-inline-block pl-4 align-text-top">
-          <h2 class="fz1 has-text-weight-bold">
-            <span class="has-text-weight-normal" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
-              {{ worker.numberId }}
-            </span>
-            {{ lowercase(worker.firstName) }}
-            {{ lowercase(worker.middleName) }}
-            {{ lowercase(worker.lastName) }}
-            {{ lowercase(worker.secondLastName) }}
-            <b-tooltip v-if="worker.dnu" label="DNU" type="is-dark" append-to-body>
-              <b-icon icon="alert" size="is-small" type="is-danger"></b-icon>
-            </b-tooltip>
-          </h2>
+    <section class="worker-card worker-header">
+      <image-detail class="worker-header-photo" :data="worker" @updateProfile="() => loadWorker()" />
+      <div class="worker-header-main">
+        <h2 class="worker-header-name">
+          {{ lowercase(worker.firstName) }}
+          {{ lowercase(worker.middleName) }}
+          {{ lowercase(worker.lastName) }}
+          {{ lowercase(worker.secondLastName) }}
+          <span class="worker-header-number" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
+            #{{ worker.numberId }}
+          </span>
+        </h2>
+        <div class="worker-chips">
+          <span v-if="worker.approvedToWork" class="worker-chip is-success">Approved to work</span>
+          <span v-else class="worker-chip is-danger">Not approved</span>
+          <span v-if="worker.isSubcontractor" class="worker-chip is-info">Subcontractor</span>
+          <span v-if="worker.isContractor" class="worker-chip">Contractor</span>
+          <span v-if="worker.dnu" class="worker-chip is-danger">DNU</span>
+          <button v-if="attentionItems.length" type="button" class="worker-chip is-warning"
+            @click="scrollToWorkerSection(attentionItems[0].sectionId)">
+            {{ attentionItems.length }} {{ attentionItems.length === 1 ? 'item needs' : 'items need' }} attention
+          </button>
+        </div>
+        <div class="worker-header-contact">
+          <span v-if="worker.mobileNumber"><b-icon icon="cellphone" size="is-small" />{{ worker.mobileNumber }}</span>
+          <a v-if="worker.email" :href="`mailto:${worker.email}`"><b-icon icon="email-outline" size="is-small" />{{ worker.email }}</a>
+          <span v-if="worker.location?.city"><b-icon icon="map-marker-outline" size="is-small" />{{ headerCity }}</span>
         </div>
       </div>
-      <div>
-        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block">
+      <div class="worker-header-actions">
+        <b-button icon-left="comment-outline" @click="openCommentDialog">Add comment</b-button>
+        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
           <template #trigger>
-            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
+            <b-button icon-right="dots-vertical" aria-label="More actions" />
           </template>
           <b-dropdown-item aria-role="listitem" v-if="!worker.approvedToWork" @click="onUpdateApprovedToWork(worker)">
             Approve to work
@@ -37,84 +49,44 @@
     </section>
     <b-tabs v-model="currentTab" @update:modelValue="changeTab">
       <b-tab-item label="Profile" value="profile">
-        <div v-if="visitedTabs.includes('profile')" class="wrapper-request">
-        <div class="columns is-multiline">
-          <section class="column is-9">
-            <basic-information :worker="worker" @updateProfile="() => loadWorker()" />
+        <div v-if="visitedTabs.includes('profile')" class="worker-profile-layout">
+          <profile-index class="worker-profile-layout-index" :sections="sections" :completeness="completeness"
+            :missing-labels="missingLabels" :active-id="activeSectionId" @select="selectSection" />
 
-            <span class="line-gray" />
-            <email-detail :worker="worker" @updateProfile="() => loadWorker()" />
+          <div class="worker-profile-layout-content">
+            <personal-card :id="workerSectionAnchor('personal')" class="worker-card worker-section" :worker="worker"
+              @updateProfile="loadWorker" />
+            <contact-card :id="workerSectionAnchor('contact')" class="worker-card worker-section" :worker="worker"
+              @updateProfile="loadWorker" />
+            <documents-card :id="workerSectionAnchor('documents')" class="worker-card worker-section" :worker="worker"
+              @updateProfile="loadWorker" @loading="(value) => (isLoading = value)" />
+            <preferences-card :id="workerSectionAnchor('preferences')" class="worker-card worker-section" :worker="worker"
+              @updateProfile="loadWorker" />
+            <skills-card :id="workerSectionAnchor('skills')" class="worker-card worker-section" :worker="worker"
+              @updateProfile="loadWorker" />
+            <experience-card :id="workerSectionAnchor('experience')" class="worker-card worker-section" :worker="worker"
+              @updateProfile="loadWorker" @loading="(value) => (isLoading = value)" />
 
-            <span class="line-gray" />
-            <social-insurance :worker="worker" @updateProfile="() => loadWorker()" />
+            <comments-card v-if="commentsData" ref="commentsCard" :id="workerSectionAnchor('comments')"
+              class="worker-card worker-section" :worker-profile-id="worker.id" :comments="commentsData"
+              :page-index="commentPageIndex" :page-size="commentSize" @commentCreated="updateComments"
+              @changePage="changePageComments" @loading="(value) => (isLoading = value)" />
+          </div>
 
-            <span class="line-gray" />
-            <documents :worker="worker" @updateProfile="() => loadWorker()" />
-            <resume :worker="worker" @updateProfile="() => loadWorker()" />
-
-            <span class="line-gray" />
-            <contact-information :worker="worker" @updateProfile="() => loadWorker()" />
-
-            <span class="line-gray" />
-            <emergency-information :worker="worker" @updateProfile="() => loadWorker()" />
-
-            <span class="line-gray" />
-            <section class="worker-information">
-              <h3>{{ "Work information" }}</h3>
-              <availability :worker="worker" @updateProfile="() => loadWorker()" />
-              <availability-times :worker="worker" @updateProfile="() => loadWorker()" />
-              <availability-days :worker="worker" @updateProfile="() => loadWorker()" />
-              <location-preferences :worker="worker" @updateProfile="() => loadWorker()" />
-              <lift :worker="worker" @updateProfile="() => loadWorker()" />
-              <languages :worker="worker" @updateProfile="() => loadWorker()" />
-            </section>
-
-            <span class="padding-top" id="skills" />
-            <skills :worker="worker" @updateProfile="() => loadWorker()" />
-
-            <span class="line-gray" />
-            <b-checkbox v-model="worker.dnu" @update:modelValue="toggleWorkerProfileDNU"
-              :disabled="hasDnuPermission">
-              {{ "DNU" }}
-            </b-checkbox>
-
-            <span class="line-gray" />
-            <licenses v-model:worker="worker" @updateProfile="() => loadWorker()" />
-
-            <span class="line-gray" />
-            <certificates v-model:worker="worker" @updateProfile="() => loadWorker()" />
-
-            <span class="line-gray"></span>
-            <other-documents :worker="worker" @updateProfile="() => loadWorker()" />
-
-            <span class="line-gray" />
-            <section class="worker-experience" id="experience">
-              <div class="is-flex is-align-items-center is-justify-content-space-between">
-                <h3 class="has-text-weight-bold fz-0">{{ "Work Experience" }}</h3>
-                <b-button type="is-primary" icon-right="plus" @click="modalWorkExperience = true">
-                  Add experience
-                </b-button>
+          <aside class="worker-profile-layout-rail">
+            <needs-attention :items="attentionItems" @select="selectSection" />
+            <div class="worker-card">
+              <notes />
+            </div>
+            <div class="worker-card">
+              <div class="worker-card-header">
+                <h3>Flags</h3>
               </div>
-              <ul>
-                <li v-for="(item, index) in worker.jobExperiences" v-bind:class="{ active: currentJobEx === index }"
-                  v-on:click="currentJobEx = Number(index)" v-bind:key="'jobExperiences' + index">
-                  <work-experience-detail :item="item" :workerId="worker.id" @getWorker="() => loadWorker()" />
-                </li>
-              </ul>
-
-              <b-modal custom-content-class="card" v-model="modalWorkExperience" width="500px">
-                <work-experience-form :workerId="worker.id" @updateExperience="() => updateExperience()" />
-              </b-modal>
-            </section>
-
-            <span class="line-gray" id="comments" />
-            <comments v-if="commentsData" :worker-profile-id="worker.id" :data="commentsData" :size-comments="commentSize"
-              @newComment="() => updateComments()" @changePage="(page) => changePageComments(page)" />
-          </section>
-          <aside class="column is-3 section-right">
-            <notes />
+              <b-checkbox v-model="worker.dnu" @update:modelValue="toggleWorkerProfileDNU" :disabled="hasDnuPermission">
+                Do not use (DNU)
+              </b-checkbox>
+            </div>
           </aside>
-        </div>
         </div>
       </b-tab-item>
       <b-tab-item label="Settings" value="workerSettings" v-if="isAdmin">
@@ -134,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
@@ -146,31 +118,22 @@ import { workerColor } from '@/utils/workerStatus';
 import { getAgencyWorker, getAgencyWorkerComments, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
 import { lowercase } from '@/utils/filters';
 import imageDetail from '@/components/worker/WorkImageDetail.vue';
-import Comments from '@/components/Comments.vue';
-import workExperienceForm from '@/components/worker/WorkExperienceForm.vue';
-import workExperienceDetail from '@/components/worker/WorkExperienceDetail.vue';
-import socialInsurance from '@/components/worker/WorkSinDetail.vue';
-import basicInformation from '@/components/worker/WorkBasicInformationDetail.vue';
-import emergencyInformation from '@/components/worker/WorkEmergencyInformationDetail.vue';
-import documents from '@/components/worker/WorkDocumentsDetail.vue';
-import resume from '@/components/worker/WorkResumeDetail.vue';
-import contactInformation from '@/components/worker/WorkContactInformationDetail.vue';
-import emailDetail from '@/components/worker/WorkEmailDetail.vue';
-import availability from '@/components/worker/WorkAvailabilitiesDetail.vue';
-import availabilityTimes from '@/components/worker/WorkAvailabilityTimesDetail.vue';
-import availabilityDays from '@/components/worker/WorkAvailabilityDaysDetail.vue';
-import locationPreferences from '@/components/worker/WorkLocationPreferencesDetail.vue';
-import lift from '@/components/worker/WorkLiftDetail.vue';
-import languages from '@/components/worker/WorkLanguagesDetail.vue';
-import skills from '@/components/worker/WorkSkillsDetail.vue';
-import licenses from '@/components/worker/WorkLicenseDetail.vue';
-import certificates from '@/components/worker/WorkCertificatesDetail.vue';
 import workerSettings from '@/components/worker/WorkerSettings.vue';
 import wageHistory from '@/components/worker/WorkWageHistory.vue';
 import requestHistory from '@/components/agency/AgencyWorkerRequestHistory.vue';
 import timeSheetHistory from '@/components/worker/TimeSheetHistory.vue';
 import notes from '@/components/worker/Notes.vue';
-import otherDocuments from '@/components/worker/WorkerOtherDocumentsDetail.vue';
+import ProfileIndex from '@/components/agency_worker/ProfileIndex.vue';
+import NeedsAttention from '@/components/agency_worker/NeedsAttention.vue';
+import PersonalCard from '@/components/agency_worker/PersonalCard.vue';
+import ContactCard from '@/components/agency_worker/ContactCard.vue';
+import DocumentsCard from '@/components/agency_worker/DocumentsCard.vue';
+import PreferencesCard from '@/components/agency_worker/PreferencesCard.vue';
+import SkillsCard from '@/components/agency_worker/SkillsCard.vue';
+import ExperienceCard from '@/components/agency_worker/ExperienceCard.vue';
+import CommentsCard from '@/components/agency_worker/CommentsCard.vue';
+import { scrollToWorkerSection, useWorkerProfileStatus, workerSectionAnchor } from '@/composables/useWorkerProfileStatus';
+import type { WorkerCommentList, WorkerProfileDetail, WorkerProfileSectionId } from '@/types/worker';
 
 const route = useRoute();
 const router = useRouter();
@@ -178,24 +141,66 @@ const { moduleCrumbs } = useModuleBase();
 const crumbs = computed<PageBreadcrumb[]>(() => [...moduleCrumbs.value, { label: 'Workers', to: '/recruiting/workers' }]);
 const { isAdmin } = useAdmin();
 
-const currentJobEx = ref(0);
 const isLoading = ref(true);
 const commentSize = ref(10);
 const commentPageIndex = ref(1);
-const modalWorkExperience = ref(false);
 const currentTab = ref<string>('profile');
 const visitedTabs = ref<string[]>(['profile']);
-const worker = ref<any>(null);
-const commentsData = ref<any>({});
+const worker = ref<WorkerProfileDetail | null>(null);
+const commentsData = ref<WorkerCommentList | null>(null);
+const commentsCard = ref<InstanceType<typeof CommentsCard> | null>(null);
+const activeSectionId = ref<WorkerProfileSectionId | null>('personal');
+let sectionObserver: IntersectionObserver | null = null;
+
+const { attentionItems, sections, completeness, missingLabels } = useWorkerProfileStatus(worker);
+
+const headerCity = computed(() => {
+  const city = worker.value?.location?.city;
+  if (!city) {
+    return '';
+  }
+  return city.province?.code ? `${city.value}, ${city.province.code}` : city.value;
+});
 
 const hasDnuPermission = computed(() => {
-  if (!worker.value.dnu) {
+  if (!worker.value?.dnu) {
     return false;
-  } else if (worker.value.dnu && isAdmin.value) {
+  } else if (isAdmin.value) {
     return false;
   }
   return true;
 });
+
+function selectSection(id: WorkerProfileSectionId) {
+  activeSectionId.value = id;
+  scrollToWorkerSection(id);
+}
+
+function observeSections() {
+  if (sectionObserver || typeof IntersectionObserver === 'undefined') {
+    return;
+  }
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.find((e) => e.isIntersecting);
+      if (visible) {
+        const id = sections.value.find((s) => workerSectionAnchor(s.id) === visible.target.id)?.id;
+        if (id) {
+          activeSectionId.value = id;
+        }
+      }
+    },
+    { rootMargin: '-80px 0px -70% 0px' },
+  );
+  sections.value.forEach((s) => {
+    const el = document.getElementById(workerSectionAnchor(s.id));
+    if (el) {
+      sectionObserver?.observe(el);
+    }
+  });
+}
+
+onBeforeUnmount(() => sectionObserver?.disconnect());
 
 loadWorker();
 if (route.query && route.query.tab) {
@@ -217,18 +222,23 @@ function changeTab(tab: string) {
 
 function updateComments() {
   isLoading.value = true;
-  getAgencyWorkerComments(worker.value.id, {
+  getAgencyWorkerComments(worker.value!.id, {
     size: commentSize.value,
     pageIndex: commentPageIndex.value,
-  }).then((data) => {
-    commentsData.value = data;
-    isLoading.value = false;
-  });
+  })
+    .then((data) => {
+      commentsData.value = data;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
 }
 
-function updateExperience() {
-  modalWorkExperience.value = false;
-  loadWorker();
+function openCommentDialog() {
+  scrollToWorkerSection('comments');
+  commentsCard.value?.open();
 }
 
 function changePageComments(page: number) {
@@ -239,10 +249,11 @@ function changePageComments(page: number) {
 function loadWorker() {
   isLoading.value = true;
   getAgencyWorker(route.params.id as string)
-    .then((w: any) => {
+    .then((w) => {
       isLoading.value = false;
       worker.value = w;
       updateComments();
+      nextTick(observeSections);
     })
     .catch((error) => {
       showAlertError(error);
@@ -252,7 +263,7 @@ function loadWorker() {
 
 function toggleWorkerProfileDNU() {
   isLoading.value = true;
-  updateAgencyWorkerProfileDNU(worker.value.id)
+  updateAgencyWorkerProfileDNU(worker.value!.id)
     .then(() => {
       showAlertSuccess('Updated');
       isLoading.value = false;
@@ -265,7 +276,7 @@ function toggleWorkerProfileDNU() {
     });
 }
 
-function confirmDelete(w: any) {
+function confirmDelete(w: WorkerProfileDetail) {
   showAlertConfirm(
     'Are you sure?',
     'You want to disable the worker' + '. ' + 'This worker will not be able to apply to new requests',
@@ -280,7 +291,7 @@ function confirmDelete(w: any) {
     });
 }
 
-function onUpdateApprovedToWork(w: any) {
+function onUpdateApprovedToWork(w: WorkerProfileDetail) {
   isLoading.value = true;
   updateApprovedToWork(w.id)
     .then(() => {
@@ -297,7 +308,180 @@ function onUpdateApprovedToWork(w: any) {
 </script>
 
 <style lang="scss" scoped>
-@import "../../assets/scss/detail-worker";
+@import "../../assets/scss/variables";
+@import "../../assets/scss/breakpoints";
+
+.worker-card {
+  background: $white;
+  border: 1px solid $gray-border;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 0;
+}
+
+.worker-profile-index.worker-card {
+  padding: 12px;
+}
+
+.worker-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-weight: 700;
+  }
+}
+
+.worker-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+
+  &.worker-card {
+    margin-bottom: 16px;
+  }
+
+  @include mobile {
+    flex-wrap: wrap;
+  }
+}
+
+.worker-header-photo {
+  flex-shrink: 0;
+}
+
+.worker-header-main {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.worker-header-name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.worker-header-number {
+  margin-left: 6px;
+  font-size: 1rem;
+  font-weight: 400;
+  color: $grey-font;
+}
+
+.worker-header-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+  font-size: 0.9rem;
+  color: $grey-font;
+
+  span,
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  a {
+    color: $blue;
+  }
+}
+
+.worker-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @include mobile {
+    width: 100%;
+  }
+}
+
+.worker-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.worker-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: $gray-bg;
+  color: $grey-font;
+
+  &.is-success {
+    background: rgba($green, 0.18);
+    color: $green-text;
+  }
+
+  &.is-danger {
+    background: rgba($danger, 0.1);
+    color: $danger-hover;
+  }
+
+  &.is-warning {
+    background: rgba($accent, 0.16);
+    color: $accent-text;
+  }
+
+  &.is-info {
+    background: rgba($blue, 0.1);
+    color: $blue-dark;
+  }
+}
+
+button.worker-chip {
+  cursor: pointer;
+}
+
+.worker-profile-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+
+  @include compact-desktop {
+    grid-template-columns: 190px minmax(0, 1fr) 260px;
+    gap: 16px;
+  }
+
+  @include touch {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.worker-profile-layout-index {
+  position: sticky;
+  top: 68px;
+
+  @include touch {
+    display: none;
+  }
+}
+
+.worker-profile-layout-content,
+.worker-profile-layout-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.worker-section {
+  scroll-margin-top: 68px;
+}
 
 .icon-hash {
   font-weight: 200;

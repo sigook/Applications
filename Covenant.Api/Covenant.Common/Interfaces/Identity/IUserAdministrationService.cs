@@ -9,6 +9,7 @@ public interface IUserAdministrationService
     Task<Result> AddAgencyClaim(Guid userId, Guid agencyId);
     Task<Result<bool>> RemoveClaimOrDeleteUser(Guid userId, Guid claimValue);
     Task<Result> Deactivate(Guid userId);
+    Task<Result> ConfirmEmail(Guid userId, string token);
     Task<Result> UpdateEmail(UpdateEmailModel model);
     Task<Result> UpdateRole(UpdateRoleModel model);
     Task<IReadOnlyList<UserRoleModel>> GetUsersRoles(IEnumerable<Guid> userIds);

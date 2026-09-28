@@ -119,6 +119,15 @@ public class UserAdministrationService(
         return Result.Ok();
     }
 
+    public async Task<Result> ConfirmEmail(Guid userId, string token)
+    {
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null) return Result.Fail(UserNotFound);
+        if (user.EmailConfirmed) return Result.Ok();
+
+        return ToResult(await userManager.ConfirmEmailAsync(user, token));
+    }
+
     public async Task<Result> UpdateEmail(UpdateEmailModel model)
     {
         var user = await userManager.FindByIdAsync(model.Id.ToString());

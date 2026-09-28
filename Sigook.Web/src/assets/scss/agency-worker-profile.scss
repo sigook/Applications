@@ -1,0 +1,140 @@
+@import './variables';
+@import './breakpoints';
+
+.profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $blue;
+  cursor: pointer;
+
+  &:hover {
+    color: $blue-dark;
+    text-decoration: underline;
+  }
+}
+
+.profile-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: $grey-font;
+  cursor: pointer;
+
+  &:hover {
+    background: $gray-bg;
+    color: $navy;
+  }
+
+  &.is-danger:hover {
+    color: $danger-hover;
+  }
+}
+
+.profile-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 24px;
+  margin: 0;
+
+  &.is-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include compact-desktop {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include mobile {
+    &,
+    &.is-two {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  color: $navy;
+  overflow-wrap: anywhere;
+}
+
+.profile-field-label {
+  font-size: 0.75rem;
+  color: $grey-font;
+}
+
+.profile-empty {
+  color: $grey-light;
+}
+
+.profile-group-title {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $grey-font;
+}
+
+.profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.profile-tag {
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: $gray-bg;
+  font-size: 0.8rem;
+  color: $navy;
+
+  &.is-outlined {
+    border: 1px solid $border-input;
+    border-radius: 999px;
+    background: none;
+  }
+}
+
+.profile-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: $gray-bg;
+  color: $grey-font;
+
+  &.is-success {
+    background: rgba($green, 0.18);
+    color: $green-text;
+  }
+
+  &.is-warning {
+    background: rgba($accent, 0.16);
+    color: $accent-text;
+  }
+
+  &.is-danger {
+    background: rgba($danger, 0.1);
+    color: $danger-hover;
+  }
+}

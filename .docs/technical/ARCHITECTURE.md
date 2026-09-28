@@ -18,7 +18,7 @@ Monorepo with six applications. Each has its own `CLAUDE.md` with app-specific c
 ### Covenant.Api (.NET 10)
 
 ```
-Framework:  ASP.NET Core 10.0 Web API + MVC Razor views (login pages, email templates)
+Framework:  ASP.NET Core 10.0 Web API + Razor views (email and PDF templates only)
 Database:   PostgreSQL (cloud-hosted), EF Core 10.0.12 + Npgsql 10.0.3 — two databases:
             CovenantContext (API data) and IdentityContext (users, roles, OpenIddict stores)
 Identity:   ASP.NET Core Identity (custom table names) + OpenIddict 7 server/validation
@@ -176,7 +176,7 @@ Two coexisting layouts:
 
 | Path | Controllers |
 |---|---|
-| `Controllers/Identity/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (Razor login, logout, confirm email, create/reset password, resend confirmation), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/`, `/Home/Success`, `/Home/InvalidUser`, `/Home/Error`). All excluded from the OpenAPI document |
+| `Controllers/Identity/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
 | `Controllers/Sigook/` | `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint) |
 | `Controllers/Sigook/Account/` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/Account/ChangeEmail`, `GET api/Account/GetEmail`, `PATCH /identity` to deactivate — routes kept because installed SigookApp builds call them), `UserNotificationController` (`api/UserNotification` preferences) |
 | `Controllers/Sigook/Agency/` | `AgencyController`, `AgencyLocationController`, `NotificationsController` |
@@ -376,14 +376,14 @@ rather than constructing clients directly.
   (`sub`, falling back to `ClaimTypes.NameIdentifier` for the test handlers) and roles through
   `IsInRole` (OpenIddict identities use `role` as the role claim type).
 - The **password grant** (`Controllers/Identity/AuthorizationController.cs`, `ExchangePassword`)
-  enforces the same rules as the Razor login (inactive users, unconfirmed email) plus lockout
+  rejects inactive users and unconfirmed emails, applies lockout
   (5 attempts / 5 min) and returns `error = invalid_grant` with machine-readable
   `error_description` codes from `Covenant.Common/Constants/SignInErrors.cs`
   (`invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out`). Password grant
   issues no `id_token`; clients build the profile from `/connect/userinfo`.
   Sigook.Web keeps `oidc-client-ts` (`src/security/`) for token storage/refresh and for the
-  "Sign in with Microsoft 365" button (`signinRedirect` with `acr_values=idp:oidc`, which skips
-  the login page and goes straight to the external provider via `Controllers/Identity/ExternalController.cs`).
+  "Sign in with Microsoft 365" button (`signinRedirect` with `acr_values=idp:oidc`, which goes
+  straight to the external provider via `Controllers/Identity/ExternalController.cs`).
 - **Microsoft 365 accounts are re-checked after login.** The external callback stores the Entra
   `oid` as the `microsoft_oid` user claim and rejects the login when Graph reports
   `accountEnabled = false`. `UserSessionValidator` repeats that Graph check (and the
@@ -400,18 +400,25 @@ rather than constructing clients directly.
   5 attempts, 60-s resend cooldown; `POST /Password/reset` with `{email, code, newPassword}`).
   Codes live in the `PasswordResetCode` table (hashed). Email flooding limits, all silent (the
   response never changes, so they don't reveal whether an email exists): per user at most 3 codes
-  per hour and 6 per 24 h, counted from `PasswordResetCode`; the Razor link flow
-  (`POST /Account/RequestResetPassword`) sends at most 3 links per user per hour (in-memory counter,
-  reset on restart). On top of that, `/Password/*` and `POST /Account/RequestResetPassword` share the
+  per hour and 6 per 24 h, counted from `PasswordResetCode`. On top of that, `/Password/*` and the
+  anonymous `POST /Account/*` endpoints share the
   `password-reset` rate-limit policy (`RateLimitingConfiguration`): 10 requests per client IP in a
   sliding 10-minute window, answering `429` beyond it. The client IP comes from `X-Forwarded-For`
   (`ForwardedHeadersOptions` trusts any proxy because the App Service front end is the only way
   in). Both Sigook.Web (`/forgot-password`)
-  and SigookApp (`/forgot-password` route, 2-step screen) consume it; SigookApp also offers a
+  and SigookApp (`/forgot-password` route, 2-step screen) consume it; Web and App also offer a
   resend-confirmation action when login fails with `email_not_confirmed`
-  (`POST /Account/ResendConfirmationLink`). The Razor pages (`/Account/Login`,
-  `RequestResetPassword`, `CreatePassword`, `ConfirmEmailAddress`, `ResetPassword`) remain for the
-  `accounting.sigook.com` client, browser-based flows and account-activation emails.
+  (`POST /Account/ResendConfirmationLink`, always `200` so it does not reveal whether an email exists).
+- **Account-activation emails** link to Sigook.Web (`{WebClientUrl}/confirm-email` or
+  `/create-password`, `?token=&id=`), built by `AccountNotificationService`. The pages post back to
+  `POST /Account/ConfirmEmail` (`IUserAdministrationService.ConfirmEmail`) and
+  `POST /Account/CreatePassword` (`IPasswordResetService.CreatePassword`, which also confirms the
+  email); a bad or expired token answers `400 { error: "invalid_token" }`. The old
+  `GET /Account/ConfirmEmailAddress|CreatePassword|ResetPassword` links still in inboxes redirect to
+  those pages. The API serves no HTML pages: `Views/` only holds email and PDF templates.
+- **Browser sign-in is Microsoft 365 only.** `/connect/authorize` without a session always goes to
+  `External/Challenge` (also the cookie `LoginPath`); a rejected staff login lands on
+  `{WebClientUrl}/login?error=invalid_user`.
 - **User administration** (create user, agency/company claims, role and email changes,
   deactivation) happens in-process through `IUserAdministrationService`; the API writes the
   identity database directly (`ConnectionStrings:IdentityConnection`) and mirrors the user in its
@@ -428,7 +435,7 @@ rather than constructing clients directly.
   reachable by two actors is exposed once per actor (`Controllers/Sigook/Agency/`, `Controllers/Sigook/Company/`,
   `WorkerModule/`), each under its own policy, with the shared behaviour in a `Covenant.Core.BL`
   service. The default authentication scheme is the OpenIddict validation (bearer) scheme; the
-  Identity application cookie only backs the Razor login pages and the authorize endpoint.
+  Identity application cookie only backs the Microsoft 365 sign-in and the authorize endpoint.
 
 ### Data isolation (multi-tenancy)
 

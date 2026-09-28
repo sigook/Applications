@@ -68,7 +68,7 @@ const { value: email } = useField<string>('email');
 const { value: password } = useField<string>('password');
 
 const isLoading = ref(false);
-const errorCode = ref('');
+const errorCode = ref(typeof route.query.error === 'string' ? route.query.error : '');
 const loginError = computed(() => (errorCode.value ? authErrorMessage(errorCode.value) : ''));
 const showResend = computed(() => errorCode.value === 'email_not_confirmed');
 

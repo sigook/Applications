@@ -46,6 +46,17 @@ export interface ResetPasswordWithCodePayload {
   newPassword: string;
 }
 
+export interface ConfirmEmailPayload {
+  id: string;
+  token: string;
+}
+
+export interface CreatePasswordPayload {
+  id: string;
+  token: string;
+  password: string;
+}
+
 export interface PasswordResetErrorResponse {
   error: string;
   messages?: string[];

@@ -1,6 +1,12 @@
 import axios from "axios";
 import qs from "qs";
-import type { ResetPasswordWithCodePayload, TokenResponse, UserInfoResponse } from "@/types/security";
+import type {
+  ConfirmEmailPayload,
+  CreatePasswordPayload,
+  ResetPasswordWithCodePayload,
+  TokenResponse,
+  UserInfoResponse,
+} from "@/types/security";
 
 const authority = import.meta.env.VUE_APP_SECURITY_SERVER.replace(/\/+$/, "");
 const clientId = import.meta.env.VUE_APP_CLIENT;
@@ -38,6 +44,14 @@ export function requestPasswordResetCode(email: string): Promise<void> {
 
 export function resetPasswordWithCode(payload: ResetPasswordWithCodePayload): Promise<void> {
   return authHttp.post("/Password/reset", payload).then(() => undefined);
+}
+
+export function confirmEmail(payload: ConfirmEmailPayload): Promise<void> {
+  return authHttp.post("/Account/ConfirmEmail", payload).then(() => undefined);
+}
+
+export function createPassword(payload: CreatePasswordPayload): Promise<void> {
+  return authHttp.post("/Account/CreatePassword", payload).then(() => undefined);
 }
 
 export function resendConfirmationLink(email: string): Promise<void> {

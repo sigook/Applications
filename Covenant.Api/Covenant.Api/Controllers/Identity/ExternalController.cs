@@ -1,8 +1,7 @@
-using Covenant.Api.Authorization;
+using Covenant.Api.Configuration;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +10,6 @@ using System.Security.Claims;
 
 namespace Covenant.Api.Controllers.Identity;
 
-[SecurityHeaders]
 [AllowAnonymous]
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("External")]
@@ -19,7 +17,7 @@ public class ExternalController(
     UserManager<CovenantUser> userManager,
     SignInManager<CovenantUser> signInManager,
     IMicrosoft365AccountService accountService,
-    ILogger<ExternalController> logger) : Controller
+    ILogger<ExternalController> logger) : ControllerBase
 {
     private const string StaffEmailDomain = "@covenantgroupl.com";
     private const string ReturnUrlItem = "returnUrl";
@@ -28,6 +26,7 @@ public class ExternalController(
     [HttpGet("Challenge")]
     public IActionResult Challenge(string provider, string returnUrl)
     {
+        if (string.IsNullOrEmpty(provider)) provider = Microsoft365OpenIdConnect.Scheme;
         if (string.IsNullOrEmpty(returnUrl)) returnUrl = "~/";
         if (!Url.IsLocalUrl(returnUrl))
         {
@@ -70,11 +69,7 @@ public class ExternalController(
         ]);
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-        if (!returnUrl.StartsWith("http", StringComparison.Ordinal) && !returnUrl.StartsWith('/') && !returnUrl.StartsWith("~/"))
-        {
-            return View("Redirect", new RedirectViewModel { RedirectUrl = returnUrl });
-        }
-        return Redirect(returnUrl);
+        return LocalRedirect(returnUrl);
     }
 
     private static string GetEmail(ClaimsPrincipal externalUser) =>

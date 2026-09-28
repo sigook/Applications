@@ -7,7 +7,7 @@ nuget.org only through `nuget.config`).
 ## Code Navigation
 
 ```
-Controllers:     Covenant.Api/Controllers/Identity/                     (AuthorizationController = OpenIddict /connect/* passthrough; AccountController = Razor login/confirm/reset pages; ExternalController = Microsoft 365 sign-in; PasswordController = /Password/forgot|reset; HomeController = /, /Home/Success, /Home/InvalidUser, /Home/Error)
+Controllers:     Covenant.Api/Controllers/Identity/                     (AuthorizationController = OpenIddict /connect/* passthrough; AccountController = POST /Account/ConfirmEmail|CreatePassword|ResendConfirmationLink + legacy email-link redirects; ExternalController = Microsoft 365 sign-in; PasswordController = /Password/forgot|reset; HomeController = / and /Home/InvalidUser, redirects to Sigook.Web)
                  Covenant.Api/Controllers/Sigook/                       (root: Catalog, File, Location, EmailPreferences)
                  Covenant.Api/Controllers/Sigook/Account/               (the caller's own account, bearer: UserAccount = api/Account/* + PATCH /identity; UserNotification)
                  Covenant.Api/Controllers/Sigook/Agency/                (Agency, AgencyLocation)
@@ -29,9 +29,8 @@ Module controllers: Covenant.Api/{Module}Module/                        (WorkerM
 Identity config: Covenant.Api/Configuration/OpenIddictConfiguration.cs  (server + local validation, certificates)
                  Covenant.Api/Configuration/Microsoft365OpenIdConnect.cs (scheme "oidc")
                  Covenant.Api/Configuration/OpenIddictSeeder.cs         (scopes, Functions client, dev clients)
-Razor views:     Covenant.Api/Views/Account/, Views/Home/, Views/External/ (login UI, layout _LayoutLogin)
-                 Covenant.Api/Views/Notifications/Identity/            (account emails) + Billing/, Notifications/, Website/
-Static assets:   Covenant.Api/wwwroot/                                  (css/login.css, js/site.js, assets/ for the login pages)
+Razor views:     Covenant.Api/Views/Notifications/Identity/            (account emails) + Billing/, Notifications/, Website/ — email/PDF templates only, no pages
+Static assets:   Covenant.Api/wwwroot/assets/images/                    (images referenced by the email templates)
 OpenAPI:         Covenant.Api/Configuration/OpenApi/                    (document/operation transformers; UI = Scalar at /scalar)
 Services:        Covenant.Core.BL/Services/                             (RequestService, WorkerService, etc.)
                  Covenant.Core.BL/Services/Identity/                    (UserAdministrationService, AccountNotificationService, UserSessionValidator, PasswordResetService)
@@ -70,7 +69,7 @@ Tests:           Covenant.Tests/, Covenant.Integration.Tests/ (Docker), Sigook.F
 ## Patterns
 
 - **Every model/DTO lives in `Covenant.Common/Models/{Domain}/`** — request bodies, responses, filters, view models. No `Models/` folders inside `Covenant.Api`, even for a DTO used by a single endpoint. Keep ASP.NET types (`IFormFile`) out of them: bind files as a separate controller parameter (see `InvoicesController.SendInvoiceEmail`).
-- **Validators live in `Covenant.Api/Validators/{Domain}/`**, one per file, named `{Model}Validator`. Never inline them next to the model. Razor form models under `Models/Identity` keep DataAnnotations because MVC tag helpers render their validation summaries.
+- **Validators live in `Covenant.Api/Validators/{Domain}/`**, one per file, named `{Model}Validator`. Never inline them next to the model.
 - All services/repos registered as `AddScoped<>` in `ApiServicesConfiguration.cs`
 - Repository pattern with interfaces in `Covenant.Common`, implementations in `Covenant.Infrastructure`
 - Services in `Covenant.Core.BL` depend only on repository interfaces (identity services also use ASP.NET Identity's `UserManager`/`RoleManager`)
@@ -97,13 +96,14 @@ Tests:           Covenant.Tests/, Covenant.Integration.Tests/ (Docker), Sigook.F
 - **`IdentityContext` must not call `base.OnModelCreating`**: the identity tables keep their historical shape (`User`, `Rol`, `UserLogin`/`UserToken` keyed by `UserId` only, no `AspNet*` indexes). It also `Ignore`s `IdentityUserPasskey` (.NET 10). Migrations: `dotnet ef migrations add X -p Covenant.Infrastructure -s Covenant.Api -c IdentityContext -o Migrations/Identity`.
 - **`Npgsql.EnableLegacyTimestampBehavior` stays after `builder.Build()`** in `Program.cs`. `dotnet ef` and the build-time OpenAPI tool only run `Program` up to the host build, so moving it earlier flips the design-time column type of every `DateTime` (`timestamp with` ↔ `without time zone`) and generates bogus migrations. The flip side: the runtime model never matches the snapshot exactly, so every Npgsql context ignores `RelationalEventId.PendingModelChangesWarning` (EF Core 9+ turns it into an exception inside `Migrate()`). Keep that `ConfigureWarnings` when registering a context.
 - **Error codes for the password grant are a contract**: private constants at the top of `Controllers/Identity/AuthorizationController.cs` (`invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out`) — SigookApp and Sigook.Web switch on them. Same for the userinfo `role` shape (string for one role, array for several).
+- **Account-activation links point to Sigook.Web** (`{WebClientUrl}/confirm-email|create-password?token=&id=`, built in `AccountNotificationService`). The API serves no HTML: don't add Razor pages back; the old `GET /Account/*` links only redirect.
 - **Access tokens are unencrypted JWTs** (`DisableAccessTokenEncryption`): SigookApp decodes them. Keep it that way.
 - **Certificates outside Development** are loaded lazily from Key Vault when OpenIddict builds its options (`Identity:SigningCertificateName` / `EncryptionCertificateName`), not at host build, so `dotnet build` (OpenAPI generation) and `dotnet ef` never touch Key Vault certificates.
-- **Default auth scheme is the OpenIddict validation (bearer) scheme.** The Identity application cookie backs only the Razor pages and `/connect/authorize`; never make it the default or API 401s turn into login redirects.
+- **Default auth scheme is the OpenIddict validation (bearer) scheme.** The Identity application cookie backs only the Microsoft 365 sign-in and `/connect/authorize` (`LoginPath = /External/Challenge`); never make it the default or API 401s turn into login redirects.
 - **`sub` vs `NameIdentifier`**: read the caller id through `PrincipalExtensions.GetSubject()`/`TryGetUserId()`; OpenIddict identities carry `sub` and the test authentication handlers carry `ClaimTypes.NameIdentifier`.
 - **Two Microsoft 365 app registrations.** `Identity:Microsoft365ClientId/ClientSecret` (Key Vault `{env}-api--Identity--Microsoft365Client*`) is the login + Graph `accountEnabled` registration (redirect URIs `{IssuerUri}/signin-oidc`, `User.Read.All`); `Microsoft365Configuration:ClientId/ClientSecret` only sends email through Graph. Don't merge them.
 - **Sigook.Functions client**: seeded from `Identity:FunctionsClientId` / `FunctionsClientSecret` (Key Vault `{env}-api--Identity--FunctionsClient*`) on every startup; the Functions side reads the same values as `ScheduleTasks:ClientId/ClientSecret` under `{env}-func`.
-- The identity database still contains the IdentityServer4 tables (`Clients`, `PersistedGrants`, …). `AddOpenIddict` copied the public clients and scopes from them; they are dropped in a later migration once the old `sigook-accounts` App Service is gone.
+- The IdentityServer4 tables (`Clients`, `PersistedGrants`, the old `DataProtectionKeys`, …) are gone: `AddOpenIddict` copied the public clients and scopes from them and `DropIdentityServer4Tables` removed them together with their `__EFMigrationsHistory` rows. Data protection keys live in the API database (`MyKeysContext` on `DefaultConnection`).
 
 ## Commands
 
@@ -111,7 +111,7 @@ Tests:           Covenant.Tests/, Covenant.Integration.Tests/ (Docker), Sigook.F
 # Build everything
 dotnet build Covenant.Api.slnx
 
-# Run the API (also serves /connect/*, /Account/*, /scalar)
+# Run the API (also serves /connect/*, /Account/*, /Password/*, /scalar)
 dotnet run --project Covenant.Api/Covenant.Api.csproj
 
 # Run unit tests

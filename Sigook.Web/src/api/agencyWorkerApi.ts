@@ -11,7 +11,7 @@ import type {
   AddNewHolidayPayload,
   AgencyWorkerRequestHistoryItem,
 } from '@/types/agency';
-import type { WorkerProfile } from '@/types/worker';
+import type { WorkerProfileDetail } from '@/types/worker';
 
 // Workers list (paginated)
 export function getAgencyWorkers(filter: AgencyWorkerFilter): Promise<PaginatedList<AgencyWorkerListItem>> {
@@ -24,8 +24,8 @@ export function getAgencyWorkersDropdown(filter: { searchTerm: string }): Promis
 }
 
 // Single worker
-export function getAgencyWorker(id: string): Promise<WorkerProfile> {
-  return api.get<WorkerProfile>(`/api/agency/workers/${id}`);
+export function getAgencyWorker(id: string): Promise<WorkerProfileDetail> {
+  return api.get<WorkerProfileDetail>(`/api/agency/workers/${id}`);
 }
 
 // Toggle approved-to-work flag

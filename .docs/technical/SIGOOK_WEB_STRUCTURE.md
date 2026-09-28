@@ -114,7 +114,7 @@ Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold
 
 | File | Prefixes | Notes |
 |------|----------|-------|
-| index.ts | `/login`, `/forgot-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group → unauthenticated users go to `/login?returnUrl=`), scroll behavior, canonical link, page titles. `/login` and `/forgot-password` use `meta.layout: "auth"` (rendered without chrome by `App.vue`, styles in `assets/scss/auth.scss`) |
+| index.ts | `/login`, `/forgot-password`, `/confirm-email`, `/create-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group → unauthenticated users go to `/login?returnUrl=`), scroll behavior, canonical link, page titles. `/login`, `/forgot-password`, `/confirm-email` and `/create-password` use `meta.layout: "auth"` (rendered without chrome by `App.vue`, styles in `assets/scss/auth.scss`) |
 | routesAgency.ts | `/recruiting/*`, `/sales/*`, `/accounting/*`, `/agency-profile` | `/agency-*` paths redirect here |
 | routesCompany.ts | `/company-requests`, `/company-invoices`, `/company-profile`, `/company-user-profile` | |
 | routesWorker.ts | `/register-worker`, `/worker-requests`, `/punch-card`, `/timesheet`, `/worker-history`, `/worker-profile`, `/worker-apply` | |
@@ -145,7 +145,7 @@ Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboar
 |------|---------|
 | Requests.vue / Request.vue / AgencyCreateRequest.vue | Request list, detail (workers, applicants, runners, notes), create/edit/duplicate |
 | WeeklyBoard.vue | Recruiting weekly board (admin + recruiter views) |
-| Workers.vue / DetailWorker.vue | Worker roster and detail (flags, holidays, history, notes) |
+| Workers.vue / DetailWorker.vue | Worker roster and detail: header with status chips, Profile tab in three columns (section index · cards from `components/agency_worker/` · Needs attention, notes, DNU flag; one column on touch), plus Settings, PayStubs, Timesheet and Requests tabs |
 | Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail. The detail's Interactions and Deals tabs render only when the route is the sales view **and** the user has a sales-access role (`useModuleBase().isSalesView` + `useSalesAccess().hasSalesAccess`) |
 | Candidates.vue | Candidate pool; convert to worker, bulk import |
 | Agencies.vue / CreateAgency.vue / DetailAgency.vue | Sub-agencies (sales) |
@@ -212,6 +212,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
 | agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4, TimesheetsReport |
 | agency_company/ | CompanyDetailTab, CompanyInteractions + CompanyDeals (sales tabs — sales view + sales-access role: table with filters, Add, edit/delete row actions), InteractionForm/Modal + DealForm/Modal (create/edit, client preselected via `initialClient`; also used by the sales dashboard), CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
+| agency_worker/ | Agency view of a worker profile (`pages/agency/DetailWorker.vue`, no `Agency` prefix — the folder names the module). ProfileCard (title + actions slot) and the read-only cards PersonalCard, ContactCard, DocumentsCard (table with expiry status), PreferencesCard, SkillsCard, ExperienceCard, CommentsCard; each opens the existing `worker/*Form.vue` modals to edit and emits `updateProfile`/`loading` so the page's full-page `b-loading` is reused. ProfileIndex (sticky section index + completeness) and NeedsAttention (missing/expiring documents), both fed by `composables/useWorkerProfileStatus.ts`. Shared card styles live in `assets/scss/agency-worker-profile.scss` (not in `master.scss`), imported scoped by each card |
 | agency_request/ | AgencyRequestDetail, AgencyRequestSkills, timesheet detail/modal, AgencyShiftDetail, Applicants, ManageApplicantsModal, ContactListModal, DatepickerModal, EditTextarea, JobBoardsModal, MassivePunchCard, punch-card container, ReportTo, RequestedBy, RequestNotes(+Table), Runners, TableRequests, WorkerStatusFilter |
 | calendar/ | CalendarPunchCard |
 | candidate/ | CreateCandidate, DetailAddress, DetailCandidate, DocumentsForm, ModalCandidateRequests, ModalDocuments |
@@ -223,7 +224,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
 | sales_dashboard/ | Sales dashboard only (no `Sales` prefix — the folder names the module). Shells & lists: DashboardCard (icon chip, linked title, action button, body slot), DashboardList (scroll + empty state), DashboardListRow, InteractionList, ClientList, DealList. Charts: BarChart (d3-scale SVG, `useElementSize`, per-point color, labels wrap then rotate when the band is narrow), MeterList, RangeTabs (`SalesPeriod` `v-model`). ClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info) + ClientModal (create), ClientInteractionsModal (a client's interaction history + "Log interaction"). Modals use the standard `custom-content-class="card"` layout with no own styles |
 | weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
-| worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
+| worker/ | Profile section Detail/Form pairs used by the worker's own portal (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, location preferences) plus WorkEmailForm; the agency detail page reuses only the Forms (see `agency_worker/`), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
 
 ---
 
@@ -352,7 +353,7 @@ assets/
 
 ### Authentication
 
-1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`.
+1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`. Account-activation emails land on `/confirm-email?token=&id=` (confirms on mount) or `/create-password?token=&id=` (password form); `/login?error=invalid_user` shows a rejected Microsoft 365 sign-in.
 2. On 401, `apiService` retries once after `silentSignin`; on failure sends the browser to `/login?returnUrl=`.
 3. Logout (`securityStore.signOut`) revokes the refresh token, clears the local user and routes to `/` — it never hits IdentityServer's end-session page.
 4. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
