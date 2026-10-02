@@ -2,7 +2,7 @@ import { api } from '@/security/apiService';
 import { ClockType } from '@/constants/enums';
 import type { PaginatedList } from '@/types/common';
 import type {
-  WorkerProfile,
+  WorkerProfileDetail,
   WorkerRequestFilter,
   WorkerRequestApplyModel,
   WorkerCommentFilter,
@@ -39,10 +39,6 @@ export function requestApplyByEmail(numberId: number, email: string): Promise<vo
   return api.post<void>('/api/WorkerRequest/Apply', { numberId, email });
 }
 
-export function workerRequestDecline(id: string): Promise<void> {
-  return api.del(`/api/WorkerRequest/Decline/${id}`);
-}
-
 // TimeSheet
 export function workerRegisterTime(requestId: string, latitude: number, longitude: number): Promise<void> {
   return api.post(`/api/WorkerRequest/${requestId}/TimeSheet`, { latitude, longitude });
@@ -71,8 +67,8 @@ export function getMyComments(filter: WorkerCommentFilter): Promise<WorkerCommen
 }
 
 // Profile
-export function getMyProfile(): Promise<WorkerProfile> {
-  return api.get<WorkerProfile>('/api/WorkerProfile/me');
+export function getMyProfile(): Promise<WorkerProfileDetail> {
+  return api.get<WorkerProfileDetail>('/api/WorkerProfile/me');
 }
 
 export function registerWorker(payload: FormData, requestId?: number): Promise<string> {

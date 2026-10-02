@@ -1,7 +1,7 @@
 <template>
   <profile-card title="Experience">
     <template #actions>
-      <button type="button" class="profile-link" @click="open(null)"><b-icon icon="plus" size="is-small" /> Add</button>
+      <b-button type="is-ghost" size="is-small" class="profile-link" icon-left="plus" @click="open(null)">Add</b-button>
     </template>
 
     <ul v-if="props.worker.jobExperiences.length" class="experience-list">
@@ -16,12 +16,9 @@
           <span v-if="item.duties" class="experience-duties">{{ item.duties }}</span>
         </div>
         <div class="experience-actions">
-          <button type="button" class="profile-icon-button" aria-label="Edit experience" @click="open(item)">
-            <b-icon icon="pencil" size="is-small" />
-          </button>
-          <button type="button" class="profile-icon-button is-danger" aria-label="Delete experience" @click="confirmDelete(item)">
-            <b-icon icon="delete-outline" size="is-small" />
-          </button>
+          <b-button type="is-ghost" size="is-small" class="profile-icon-button" icon-left="pencil" aria-label="Edit experience" @click="open(item)" />
+          <b-button type="is-ghost" size="is-small" class="profile-icon-button is-destructive" icon-left="delete-outline"
+            aria-label="Delete experience" @click="confirmDelete(item)" />
         </div>
       </li>
     </ul>
@@ -79,7 +76,7 @@ function confirmDelete(item: WorkerProfileJobExperienceDetail) {
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/scss/agency-worker-profile';
+@import '../../assets/scss/worker-profile';
 
 .experience-list {
   display: flex;

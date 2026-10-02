@@ -1,13 +1,9 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">Add</b-button>
-    </b-field>
-    <b-table sticky-header height="var(--grid-height)" :data="users" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" pagination-rounded :per-page="pageSize"
-      v-model:current-page="pageIndex">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
+    <SigookGrid :data="users" :refresh="getUsers">
+      <template #actions>
+        <b-button icon-left="plus" @click="showModal = true">Add</b-button>
       </template>
       <b-table-column field="email" label="Email" v-slot="props">
         {{ props.row.email }}
@@ -28,7 +24,7 @@
         <b-button type="is-danger" outlined rounded icon-right="delete"
           @click="deleteUser(props.row.id)"></b-button>
       </b-table-column>
-    </b-table>
+    </SigookGrid>
 
     <!-- Create user modal-->
     <b-modal custom-content-class="card" v-model="showModal" @close="showModal = false" width="500px">
@@ -42,13 +38,12 @@ import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getCompanyUsers, deleteCompanyProfileUser } from "@/api/agencyCompanyApi";
 import CreateUser from "@/components/CompanyCreateUserModal.vue";
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const props = defineProps<{ company: any }>();
 
 const isLoading = ref(false);
 const showModal = ref(false);
-const pageIndex = ref(1);
-const pageSize = 30;
 const users = ref<any[]>([]);
 
 async function getUsers() {

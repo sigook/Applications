@@ -118,3 +118,47 @@ function onDeleteDocument(id: any, index: number) {
     });
 }
 </script>
+
+<style lang="scss" scoped>
+.profile-licenses {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.container-license {
+  position: relative;
+  box-shadow: 1px 1px 3px #e0e0e0;
+  border: 1px solid #e0e0e0;
+  padding: 2px 10px 10px 70px;
+  width: calc(50% - 15px);
+  margin-right: 15px;
+  margin-bottom: 5px;
+  margin-top: 15px;
+  min-width: 380px;
+
+  p {
+    margin: 0;
+  }
+
+  &:before {
+    content: '';
+    width: 60px;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #ff9932 url("/assets/images/document-white.png") no-repeat 50%;
+    background-size: 60%;
+  }
+
+  h4 {
+    word-break: break-all;
+  }
+
+  @media (max-width: 767px) {
+    min-width: auto;
+    width: 100%;
+    margin-right: 0;
+  }
+}
+</style>

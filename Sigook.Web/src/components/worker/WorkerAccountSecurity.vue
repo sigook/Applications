@@ -1,63 +1,69 @@
 <template>
-  <div class="worker-account-security">
+  <div class="worker-account">
     <b-loading v-model="isLoading"></b-loading>
 
-    <!-- Change Email Section -->
-    <section>
-      <h3 class="section-title">Change Email</h3>
-      <div class="columns is-multiline">
-        <div class="column is-6">
-          <b-field label="Email" :type="formErrors.userEmail ? 'is-danger' : ''"
-            :message="formErrors.userEmail || ''">
-            <b-input v-model="userEmail" name="email" />
-          </b-field>
+    <profile-card class="worker-card" title="Login email">
+      <template #actions>
+        <b-button type="is-ghost" size="is-small" class="profile-link" @click="openEmailModal">Change</b-button>
+      </template>
+      <dl class="profile-fields">
+        <div class="profile-field">
+          <dt class="profile-field-label">Email you sign in with</dt>
+          <dd>{{ currentEmail || '—' }}</dd>
         </div>
-        <div class="column is-6">
-          <b-field label="Confirm Email" :type="formErrors.confirmNewEmail ? 'is-danger' : ''"
-            :message="formErrors.confirmNewEmail || ''">
-            <b-input v-model="confirmNewEmail" name="confirmNewEmail" />
-          </b-field>
-        </div>
-        <div class="column is-6">
-          <b-button type="is-primary" @click="onChangeEmail">Save</b-button>
-        </div>
-      </div>
-    </section>
+      </dl>
+    </profile-card>
 
-    <!-- Notifications Section -->
-    <section v-if="notifications">
-      <h3 class="section-title">Notifications</h3>
-      <div v-for="item in notifications" :key="'notification' + item.id">
-        <h4 class="notification-title">{{ item.title }}</h4>
-        <div class="columns is-multiline">
-          <div class="column is-8">
+    <profile-card v-if="notifications" class="worker-card" title="Notifications">
+      <ul class="account-notifications">
+        <li v-for="item in notifications" :key="'notification' + item.id" class="account-notification">
+          <div class="account-notification-text">
+            <strong>{{ item.title }}</strong>
             <span>{{ item.description }}</span>
           </div>
-          <div class="column is-4">
-            <b-switch v-model="item.emailNotification" @update:modelValue="saveNotification(item)">
-              {{ item.emailNotification ? 'Yes' : 'No' }}
-            </b-switch>
-          </div>
-        </div>
-      </div>
-    </section>
+          <b-switch v-model="item.emailNotification" @update:modelValue="saveNotification(item)">
+            {{ item.emailNotification ? 'Yes' : 'No' }}
+          </b-switch>
+        </li>
+      </ul>
+    </profile-card>
 
-    <!-- Account Deactivation Section -->
-    <section class="account-deactivation">
-      <h3 class="section-title">Deactivate Account</h3>
-      <p class="deactivation-description">
+    <profile-card class="worker-card" title="Deactivate account">
+      <p class="account-text">
         Deactivating your account will prevent you from accessing the platform.
         Your data will be retained as required by law, but you will no longer be able to sign in or apply to jobs.
       </p>
-      <ul class="deactivation-consequences">
+      <ul class="account-consequences">
         <li>You will be signed out immediately</li>
         <li>You will no longer be able to sign in to your account</li>
         <li>You will not be able to apply to new job requests</li>
       </ul>
-      <b-button type="is-danger" outlined @click="confirmDeactivation">
-        Deactivate My Account
-      </b-button>
-    </section>
+      <div>
+        <b-button type="is-danger" outlined @click="confirmDeactivation">Deactivate my account</b-button>
+      </div>
+    </profile-card>
+
+    <b-modal custom-content-class="card" v-model="isEmailModalOpen" width="500px">
+      <div class="p-4">
+        <h2 class="has-text-centered fz1 mb-4">Change login email</h2>
+        <div class="columns is-multiline">
+          <div class="column is-12">
+            <b-field label="New email" :type="formErrors.userEmail ? 'is-danger' : ''" :message="formErrors.userEmail || ''">
+              <b-input v-model="userEmail" type="email" name="email" />
+            </b-field>
+          </div>
+          <div class="column is-12">
+            <b-field label="Confirm email" :type="formErrors.confirmNewEmail ? 'is-danger' : ''"
+              :message="formErrors.confirmNewEmail || ''">
+              <b-input v-model="confirmNewEmail" type="email" name="confirmNewEmail" @paste.prevent />
+            </b-field>
+          </div>
+          <div class="column is-12">
+            <b-button type="is-primary" @click="onChangeEmail">Save</b-button>
+          </div>
+        </div>
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -66,10 +72,12 @@ import { ref } from 'vue';
 import * as yup from 'yup';
 import { useSecurityStore } from '@/stores/security';
 import { useStickyForm } from '@/composables/useStickyForm';
-import { showAlertError, showAlertSuccess } from "@/utils/toast";
+import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { getDialog } from '@/utils/buefyProgrammatic';
 import { changeEmail, getEmail, deactivateAccount } from '@/api/accountApi';
 import { getUserNotifications, updateUserNotification } from '@/api/userNotificationApi';
+import type { UserNotificationItem } from '@/types/common';
+import ProfileCard from '@/components/worker_profile/ProfileCard.vue';
 
 const schema = yup.object({
   userEmail: yup.string().required('Email is required').email('Invalid email'),
@@ -90,18 +98,27 @@ const formErrors = form.errors;
 const securityStore = useSecurityStore();
 
 const isLoading = ref(true);
-const notifications = ref<any>(null);
+const isEmailModalOpen = ref(false);
+const currentEmail = ref('');
+const notifications = ref<UserNotificationItem[] | null>(null);
+
+function openEmailModal() {
+  form.hydrate({ userEmail: currentEmail.value, confirmNewEmail: '' });
+  isEmailModalOpen.value = true;
+}
 
 function onChangeEmail() {
   form.markInteracted();
-  form.handleSubmit((values: any) => {
+  form.handleSubmit((values) => {
     isLoading.value = true;
     changeEmail({ newEmail: values.userEmail, confirmNewEmail: values.confirmNewEmail })
       .then(() => {
+        currentEmail.value = values.userEmail;
+        isEmailModalOpen.value = false;
         isLoading.value = false;
-        showAlertSuccess("Updated");
+        showAlertSuccess('Updated');
       })
-      .catch(error => {
+      .catch((error) => {
         isLoading.value = false;
         showAlertError(error);
       });
@@ -115,7 +132,7 @@ function onDeactivateAccount() {
   deactivateAccount()
     .then(() => {
       isLoading.value = false;
-      showAlertSuccess("Your account has been deactivated. You will be signed out shortly.");
+      showAlertSuccess('Your account has been deactivated. You will be signed out shortly.');
       setTimeout(() => {
         securityStore.signOut().then(() => window.location.assign('/'));
       }, 2000);
@@ -142,68 +159,98 @@ function confirmDeactivation() {
 
 function loadNotifications() {
   getUserNotifications()
-    .then(response => {
+    .then((response) => {
       notifications.value = response;
     })
-    .catch(error => {
+    .catch((error) => {
       showAlertError(error);
     });
 }
 
-function saveNotification(item: any) {
+function saveNotification(item: UserNotificationItem) {
   isLoading.value = true;
   updateUserNotification(item)
     .then(() => {
       isLoading.value = false;
     })
-    .catch(error => {
+    .catch((error) => {
       showAlertError(error);
       isLoading.value = false;
     });
 }
 
 getEmail()
-  .then(response => {
-    form.hydrate({
-      userEmail: response.email || '',
-      confirmNewEmail: '',
-    });
+  .then((response) => {
+    currentEmail.value = response.email || '';
     isLoading.value = false;
   })
-  .catch(error => {
+  .catch((error) => {
     showAlertError(error);
     isLoading.value = false;
   });
 loadNotifications();
 </script>
 
-<style lang="scss">
-.worker-account-security {
-  .account-deactivation {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #ddd;
+<style lang="scss" scoped>
+@import '../../assets/scss/worker-profile-layout';
+@import '../../assets/scss/worker-profile';
+
+.worker-account {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 820px;
+}
+
+.account-notifications {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-notification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 0;
+  border-top: 1px solid $gray-border;
+
+  &:first-child {
+    border-top: 0;
+    padding-top: 0;
   }
+}
 
-  .deactivation-description {
-    color: #666;
-    margin-bottom: 15px;
+.account-notification-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+  color: $navy;
+
+  span {
+    font-size: 0.85rem;
+    color: $grey-font;
   }
+}
 
-  .deactivation-consequences {
-    margin-bottom: 20px;
-    padding-left: 20px;
+.account-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: $navy;
+}
 
-    li {
-      color: #666;
-      margin-bottom: 8px;
-    }
-  }
+.account-consequences {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+  font-size: 0.9rem;
+  color: $grey-font;
 
-  .notification-title {
-    font-weight: 600;
-    font-size: 15px;
-    margin: 15px 0 5px;
+  li {
+    margin-bottom: 6px;
   }
 }
 </style>

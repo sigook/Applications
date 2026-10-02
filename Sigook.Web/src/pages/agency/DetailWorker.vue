@@ -3,36 +3,22 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <Breadcrumbs :crumbs="crumbs" back-to="/recruiting/workers" />
-    <section class="worker-card worker-header">
-      <image-detail class="worker-header-photo" :data="worker" @updateProfile="() => loadWorker()" />
-      <div class="worker-header-main">
-        <h2 class="worker-header-name">
-          {{ lowercase(worker.firstName) }}
-          {{ lowercase(worker.middleName) }}
-          {{ lowercase(worker.lastName) }}
-          {{ lowercase(worker.secondLastName) }}
-          <span class="worker-header-number" :class="workerColor(worker.approvedToWork, worker.isSubcontractor)">
-            #{{ worker.numberId }}
-          </span>
-        </h2>
+    <worker-profile-header class="worker-card worker-profile-header" :worker="worker"
+      :number-class="workerColor(worker.approvedToWork, worker.isSubcontractor)" @updateProfile="loadWorker">
+      <template #chips>
         <div class="worker-chips">
           <span v-if="worker.approvedToWork" class="worker-chip is-success">Approved to work</span>
           <span v-else class="worker-chip is-danger">Not approved</span>
           <span v-if="worker.isSubcontractor" class="worker-chip is-info">Subcontractor</span>
           <span v-if="worker.isContractor" class="worker-chip">Contractor</span>
           <span v-if="worker.dnu" class="worker-chip is-danger">DNU</span>
-          <button v-if="attentionItems.length" type="button" class="worker-chip is-warning"
+          <b-button v-if="attentionItems.length" size="is-small" rounded class="worker-chip-button"
             @click="scrollToWorkerSection(attentionItems[0].sectionId)">
             {{ attentionItems.length }} {{ attentionItems.length === 1 ? 'item needs' : 'items need' }} attention
-          </button>
+          </b-button>
         </div>
-        <div class="worker-header-contact">
-          <span v-if="worker.mobileNumber"><b-icon icon="cellphone" size="is-small" />{{ worker.mobileNumber }}</span>
-          <a v-if="worker.email" :href="`mailto:${worker.email}`"><b-icon icon="email-outline" size="is-small" />{{ worker.email }}</a>
-          <span v-if="worker.location?.city"><b-icon icon="map-marker-outline" size="is-small" />{{ headerCity }}</span>
-        </div>
-      </div>
-      <div class="worker-header-actions">
+      </template>
+      <template #actions>
         <b-button icon-left="comment-outline" @click="openCommentDialog">Add comment</b-button>
         <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
           <template #trigger>
@@ -45,8 +31,8 @@
             Reject to work
           </b-dropdown-item>
         </b-dropdown>
-      </div>
-    </section>
+      </template>
+    </worker-profile-header>
     <b-tabs v-model="currentTab" @update:modelValue="changeTab">
       <b-tab-item label="Profile" value="profile">
         <div v-if="visitedTabs.includes('profile')" class="worker-profile-layout">
@@ -106,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onBeforeUnmount } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
@@ -116,24 +102,23 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import type { PageBreadcrumb } from '@/types/common';
 import { workerColor } from '@/utils/workerStatus';
 import { getAgencyWorker, getAgencyWorkerComments, updateAgencyWorkerProfileDNU, updateApprovedToWork } from '@/api/agencyWorkerApi';
-import { lowercase } from '@/utils/filters';
-import imageDetail from '@/components/worker/WorkImageDetail.vue';
 import workerSettings from '@/components/worker/WorkerSettings.vue';
 import wageHistory from '@/components/worker/WorkWageHistory.vue';
 import requestHistory from '@/components/agency/AgencyWorkerRequestHistory.vue';
 import timeSheetHistory from '@/components/worker/TimeSheetHistory.vue';
 import notes from '@/components/worker/Notes.vue';
-import ProfileIndex from '@/components/agency_worker/ProfileIndex.vue';
-import NeedsAttention from '@/components/agency_worker/NeedsAttention.vue';
-import PersonalCard from '@/components/agency_worker/PersonalCard.vue';
-import ContactCard from '@/components/agency_worker/ContactCard.vue';
-import DocumentsCard from '@/components/agency_worker/DocumentsCard.vue';
-import PreferencesCard from '@/components/agency_worker/PreferencesCard.vue';
-import SkillsCard from '@/components/agency_worker/SkillsCard.vue';
-import ExperienceCard from '@/components/agency_worker/ExperienceCard.vue';
-import CommentsCard from '@/components/agency_worker/CommentsCard.vue';
-import { scrollToWorkerSection, useWorkerProfileStatus, workerSectionAnchor } from '@/composables/useWorkerProfileStatus';
-import type { WorkerCommentList, WorkerProfileDetail, WorkerProfileSectionId } from '@/types/worker';
+import WorkerProfileHeader from '@/components/worker_profile/WorkerProfileHeader.vue';
+import ProfileIndex from '@/components/worker_profile/ProfileIndex.vue';
+import NeedsAttention from '@/components/worker_profile/NeedsAttention.vue';
+import PersonalCard from '@/components/worker_profile/PersonalCard.vue';
+import ContactCard from '@/components/worker_profile/ContactCard.vue';
+import DocumentsCard from '@/components/worker_profile/DocumentsCard.vue';
+import PreferencesCard from '@/components/worker_profile/PreferencesCard.vue';
+import SkillsCard from '@/components/worker_profile/SkillsCard.vue';
+import ExperienceCard from '@/components/worker_profile/ExperienceCard.vue';
+import CommentsCard from '@/components/worker_profile/CommentsCard.vue';
+import { scrollToWorkerSection, useActiveWorkerSection, useWorkerProfileStatus, workerSectionAnchor } from '@/composables/useWorkerProfileStatus';
+import type { WorkerCommentList, WorkerProfileDetail } from '@/types/worker';
 
 const route = useRoute();
 const router = useRouter();
@@ -149,18 +134,9 @@ const visitedTabs = ref<string[]>(['profile']);
 const worker = ref<WorkerProfileDetail | null>(null);
 const commentsData = ref<WorkerCommentList | null>(null);
 const commentsCard = ref<InstanceType<typeof CommentsCard> | null>(null);
-const activeSectionId = ref<WorkerProfileSectionId | null>('personal');
-let sectionObserver: IntersectionObserver | null = null;
 
 const { attentionItems, sections, completeness, missingLabels } = useWorkerProfileStatus(worker);
-
-const headerCity = computed(() => {
-  const city = worker.value?.location?.city;
-  if (!city) {
-    return '';
-  }
-  return city.province?.code ? `${city.value}, ${city.province.code}` : city.value;
-});
+const { activeSectionId, selectSection, observeSections } = useActiveWorkerSection(sections);
 
 const hasDnuPermission = computed(() => {
   if (!worker.value?.dnu) {
@@ -170,37 +146,6 @@ const hasDnuPermission = computed(() => {
   }
   return true;
 });
-
-function selectSection(id: WorkerProfileSectionId) {
-  activeSectionId.value = id;
-  scrollToWorkerSection(id);
-}
-
-function observeSections() {
-  if (sectionObserver || typeof IntersectionObserver === 'undefined') {
-    return;
-  }
-  sectionObserver = new IntersectionObserver(
-    (entries) => {
-      const visible = entries.find((e) => e.isIntersecting);
-      if (visible) {
-        const id = sections.value.find((s) => workerSectionAnchor(s.id) === visible.target.id)?.id;
-        if (id) {
-          activeSectionId.value = id;
-        }
-      }
-    },
-    { rootMargin: '-80px 0px -70% 0px' },
-  );
-  sections.value.forEach((s) => {
-    const el = document.getElementById(workerSectionAnchor(s.id));
-    if (el) {
-      sectionObserver?.observe(el);
-    }
-  });
-}
-
-onBeforeUnmount(() => sectionObserver?.disconnect());
 
 loadWorker();
 if (route.query && route.query.tab) {
@@ -308,190 +253,43 @@ function onUpdateApprovedToWork(w: WorkerProfileDetail) {
 </script>
 
 <style lang="scss" scoped>
-@import "../../assets/scss/variables";
-@import "../../assets/scss/breakpoints";
+@import "../../assets/scss/worker-profile-layout";
 
-.worker-card {
-  background: $white;
-  border: 1px solid $gray-border;
-  border-radius: 12px;
-  padding: 20px 24px;
+.contain-worker {
+  padding: 20px;
+
+  @media (max-width: 970px) {
+    padding: 0 50px;
+  }
+
+  @media (max-width: 767px) {
+    padding: 15px;
+  }
+}
+
+:where(.contain-worker) :deep(h2) {
   margin: 0;
 }
 
-.worker-profile-index.worker-card {
-  padding: 12px;
+:where(.contain-worker) :deep(h3) {
+  margin: 15px 0;
+  font-size: 1.15em;
 }
 
-.worker-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+:where(.contain-worker) :deep(section) {
+  margin-bottom: 25px;
 
-  h3 {
-    margin: 0;
-    font-weight: 700;
+  @media (max-width: 767px) {
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 }
 
-.worker-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-
-  &.worker-card {
-    margin-bottom: 16px;
-  }
-
-  @include mobile {
-    flex-wrap: wrap;
-  }
+:where(.contain-worker) :deep(.line-gray) {
+  margin-bottom: 10px;
 }
 
-.worker-header-photo {
-  flex-shrink: 0;
-}
-
-.worker-header-main {
-  flex-grow: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.worker-header-name {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.worker-header-number {
-  margin-left: 6px;
-  font-size: 1rem;
-  font-weight: 400;
-  color: $grey-font;
-}
-
-.worker-header-contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 24px;
-  font-size: 0.9rem;
-  color: $grey-font;
-
-  span,
-  a {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  a {
-    color: $blue;
-  }
-}
-
-.worker-header-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-
-  @include mobile {
-    width: 100%;
-  }
-}
-
-.worker-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.worker-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border: 0;
-  border-radius: 999px;
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: $gray-bg;
-  color: $grey-font;
-
-  &.is-success {
-    background: rgba($green, 0.18);
-    color: $green-text;
-  }
-
-  &.is-danger {
-    background: rgba($danger, 0.1);
-    color: $danger-hover;
-  }
-
-  &.is-warning {
-    background: rgba($accent, 0.16);
-    color: $accent-text;
-  }
-
-  &.is-info {
-    background: rgba($blue, 0.1);
-    color: $blue-dark;
-  }
-}
-
-button.worker-chip {
-  cursor: pointer;
-}
-
-.worker-profile-layout {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 300px;
-  gap: 24px;
-  align-items: start;
-
-  @include compact-desktop {
-    grid-template-columns: 190px minmax(0, 1fr) 260px;
-    gap: 16px;
-  }
-
-  @include touch {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.worker-profile-layout-index {
-  position: sticky;
-  top: 68px;
-
-  @include touch {
-    display: none;
-  }
-}
-
-.worker-profile-layout-content,
-.worker-profile-layout-rail {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.worker-section {
-  scroll-margin-top: 68px;
-}
-
-.icon-hash {
-  font-weight: 200;
-  margin: 0 0 5px;
-
-  &:before {
-    content: "#";
-    font-size: 16px;
-    padding: 0 15px 0 8px;
-    font-weight: 400;
-  }
+.worker-profile-header {
+  margin-bottom: 16px;
 }
 </style>

@@ -92,3 +92,38 @@ if (props.data != null) {
   profileImage.value = Object.assign({}, props.data.profileImage);
 }
 </script>
+
+<style lang="scss" scoped>
+.worker-profile-image {
+  text-align: center;
+
+  img {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+  }
+
+  .btn-icon-edit {
+    margin-right: -10px;
+  }
+
+  @media (max-width: 767px) {
+    position: relative;
+  }
+}
+
+.worker-profile-modal {
+  .fz1 {
+    margin-bottom: 20px;
+    display: inline-block;
+    position: relative;
+    top: -5px;
+  }
+
+  :deep(.update-image label) {
+    z-index: 3;
+    color: white;
+  }
+}
+</style>

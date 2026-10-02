@@ -531,7 +531,6 @@ Company portal (client) view of their profile, requests and workers.
 ### Comments / Users / Contacts / Invoices
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `companyCommentWorker(id, comment)` | POST | `/api/company/workers/{id}/Comments` | `CommentsModel` | `void` | |
 | `getCompanyUser()` | GET | `/api/company/Users` | — | `CompanyUserModel[]` | |
 | `getCompanyUserDetail()` | GET | `/api/company/Users/detail` | — | `CompanyUserModel` | Current user |
 | `createCompanyUser(model)` | POST | `/api/company/Users` | `CreateCompanyUserModel` | `void` | |
@@ -754,7 +753,6 @@ Public landing site endpoints (no auth).
 | `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | |
 | `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply; the worker comes from the token, `email` in the body is ignored |
 | `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `WorkerRequestApplyModel` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
-| `workerRequestDecline(id)` | DELETE | `/api/WorkerRequest/Decline/{id}` | — | `void` | Decline offer |
 
 ### TimeSheet
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -771,7 +769,7 @@ Public landing site endpoints (no auth).
 ### Profile
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getMyProfile()` | GET | `/api/WorkerProfile/me` | — | `WorkerProfile` | |
+| `getMyProfile()` | GET | `/api/WorkerProfile/me` | — | `WorkerProfileDetail` | |
 | `registerWorker(payload, requestId?)` | POST | `/api/WorkerProfile?requestId=` | FormData (multipart) | `string` (profile id) | Registration; `requestId` (request number from `/register-worker/:requestId`) also adds the new worker as applicant |
 
 ### Request History

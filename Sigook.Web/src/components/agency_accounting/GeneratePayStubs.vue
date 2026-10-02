@@ -1,19 +1,15 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" v-model:checked-rows="selectedWorkers" checkable>
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
-      </template>
-      <template>
-        <b-table-column field="firstName" label="Worker" v-slot="props">
-          {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }} {{ props.row.secondLastName }}
-        </b-table-column>
-        <b-table-column field="businessName" label="Company" v-slot="props">
-          {{ props.row.businessName }}
-        </b-table-column>
-      </template>
-    </b-table>
+    <SigookGrid :data="rows" v-model:checked-rows="selectedWorkers" checkable :paginated="false"
+      :fit-viewport="false">
+      <b-table-column field="firstName" label="Worker" v-slot="props">
+        {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }} {{ props.row.secondLastName }}
+      </b-table-column>
+      <b-table-column field="businessName" label="Company" v-slot="props">
+        {{ props.row.businessName }}
+      </b-table-column>
+    </SigookGrid>
     <b-button type="is-primary" :disabled="selectedWorkers.length === 0" @click="submitGeneratePayStubs">Generate</b-button>
   </div>
 </template>
@@ -22,6 +18,7 @@ import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
 import { getWorkersReadyForPayStub, generatePayStubs } from "@/api/agencyPayStubApi";
 import type { WorkerReadyForPayStubModel } from '@/types/accounting';
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const emit = defineEmits<{(e: 'pay-stubs-generated'): void}>();
 

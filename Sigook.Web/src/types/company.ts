@@ -216,6 +216,7 @@ export interface CompanyRequestWorker {
   requestId: string;
   id: string;
   workerId: string;
+  workerProfileId: string;
   name: string;
   workerRequestStatus: number;
   status?: string;
@@ -224,6 +225,7 @@ export interface CompanyRequestWorker {
   totalHoursApproved: number;
   totalHoursWorker: number;
   startWorking: string | null;
+  rejectedAt: string | null;
 }
 
 // TimeSheet models

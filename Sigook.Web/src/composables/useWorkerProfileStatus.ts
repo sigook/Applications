@@ -1,4 +1,4 @@
-import { computed, type Ref } from 'vue';
+import { computed, onBeforeUnmount, ref, type Ref } from 'vue';
 import { dateMonth } from '@/utils/filters';
 import type {
   WorkerExpiryStatus,
@@ -54,6 +54,44 @@ export function workerSectionAnchor(id: WorkerProfileSectionId): string {
 
 export function scrollToWorkerSection(id: WorkerProfileSectionId) {
   document.getElementById(workerSectionAnchor(id))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+export function useActiveWorkerSection(sections: Ref<WorkerProfileSection[]>) {
+  const activeSectionId = ref<WorkerProfileSectionId | null>('personal');
+  let observer: IntersectionObserver | null = null;
+
+  function selectSection(id: WorkerProfileSectionId) {
+    activeSectionId.value = id;
+    scrollToWorkerSection(id);
+  }
+
+  function observeSections() {
+    if (observer || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+    observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.find((e) => e.isIntersecting);
+        if (visible) {
+          const id = sections.value.find((s) => workerSectionAnchor(s.id) === visible.target.id)?.id;
+          if (id) {
+            activeSectionId.value = id;
+          }
+        }
+      },
+      { rootMargin: '-80px 0px -70% 0px' },
+    );
+    sections.value.forEach((s) => {
+      const el = document.getElementById(workerSectionAnchor(s.id));
+      if (el) {
+        observer?.observe(el);
+      }
+    });
+  }
+
+  onBeforeUnmount(() => observer?.disconnect());
+
+  return { activeSectionId, selectSection, observeSections };
 }
 
 export function useWorkerProfileStatus(worker: Ref<WorkerProfileDetail | null>) {

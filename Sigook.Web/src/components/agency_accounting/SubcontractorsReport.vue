@@ -1,75 +1,53 @@
 <template>
   <div>
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" :loading="isLoading" paginated pagination-size="is-small" backend-pagination
-      backend-sorting pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
-      </template>
-      <template>
-        <b-table-column field="weekEnding" label="Week Ending" v-slot="props">
-          {{ date(props.row.weekEnding) }}
-        </b-table-column>
-        <b-table-column field="numberOfWorkers" label="Workers" v-slot="props">
-          {{ props.row.numberOfWorkers }}
-        </b-table-column>
-        <b-table-column field="totalNet" label="Total" v-slot="props">
-          {{ currency(props.row.totalNet) }}
-        </b-table-column>
-        <b-table-column field="actions" v-slot="props">
-          <b-field>
-            <b-tooltip label="Download Report" type="is-dark" position="is-top" append-to-body>
-              <b-button type="is-success" outlined rounded icon-right="file-excel" class="mr-2"
-                :loading="props.row.reportDownloading" @click="downloadSubcontractor(props.row)">
-              </b-button>
-            </b-tooltip>
-            <b-tooltip label="Delete Report" type="is-dark" position="is-top" append-to-body>
-              <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeleteSubcontractor(props.row)">
-              </b-button>
-            </b-tooltip>
-          </b-field>
-        </b-table-column>
-      </template>
-    </b-table>
+    <b-loading v-model="isLoading"></b-loading>
+    <SigookGrid ref="grid" :fetch="loadSubcontractors" v-model:params="serverParams"
+      @update:loading="(value) => isLoading = value">
+      <b-table-column field="weekEnding" label="Week Ending" v-slot="props">
+        {{ date(props.row.weekEnding) }}
+      </b-table-column>
+      <b-table-column field="numberOfWorkers" label="Workers" v-slot="props">
+        {{ props.row.numberOfWorkers }}
+      </b-table-column>
+      <b-table-column field="totalNet" label="Total" v-slot="props">
+        {{ currency(props.row.totalNet) }}
+      </b-table-column>
+      <b-table-column field="actions" v-slot="props">
+        <b-field>
+          <b-tooltip label="Download Report" type="is-dark" position="is-top" append-to-body>
+            <b-button type="is-success" outlined rounded icon-right="file-excel" class="mr-2"
+              :loading="props.row.reportDownloading" @click="downloadSubcontractor(props.row)">
+            </b-button>
+          </b-tooltip>
+          <b-tooltip label="Delete Report" type="is-dark" position="is-top" append-to-body>
+            <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeleteSubcontractor(props.row)">
+            </b-button>
+          </b-tooltip>
+        </b-field>
+      </b-table-column>
+    </SigookGrid>
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import dayjs from "dayjs";
 import { downloadFile } from "@/utils/downloadFile";
 import { date, currency } from '@/utils/filters';
 import { getDialog } from '@/utils/buefyProgrammatic';
 import { getPayrollSubcontractors, downloadSubcontractorReport, deleteSubcontractorReport } from "@/api/agencyPayStubApi";
-import type { PayrollSubContractorRow } from '@/types/accounting';
+import type { PayrollSubContractorRow, SubcontractorPayrollFilter } from '@/types/accounting';
+import type { GridHandle, PaginatedList } from '@/types/common';
+import SigookGrid from '@/components/SigookGrid.vue';
+
+const grid = useTemplateRef<GridHandle>('grid');
 
 const isLoading = ref(false);
-const totalItems = ref(0);
-const rows = ref<PayrollSubContractorRow[]>([]);
-const serverParams = ref({
-  sortBy: 3,
-  isDescending: true,
-  pageIndex: 1,
-  pageSize: 30
-});
+const serverParams = ref<SubcontractorPayrollFilter>({});
 
-function onPageChange(page: number) {
-  serverParams.value.pageIndex = page;
-  loadSubcontractors();
-}
-
-function loadSubcontractors() {
-  isLoading.value = true;
-  getPayrollSubcontractors(serverParams.value)
-    .then((response) => {
-      rows.value = response.items.map((item) => ({ ...item, reportDownloading: false }));
-      totalItems.value = response.totalItems;
-      isLoading.value = false;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+function loadSubcontractors(params: SubcontractorPayrollFilter): Promise<PaginatedList<PayrollSubContractorRow>> {
+  return getPayrollSubcontractors(params)
+    .then((response) => ({ ...response, items: response.items.map((item) => ({ ...item, reportDownloading: false })) }));
 }
 
 function downloadSubcontractor(subcontractor: PayrollSubContractorRow) {
@@ -104,7 +82,7 @@ function onDeleteSubcontractor(subcontractor: PayrollSubContractorRow) {
       deleteSubcontractorReport(weekEnding)
         .then(() => {
           showAlertSuccess(`Subcontractor report ${weekEnding} deleted successfully`);
-          loadSubcontractors();
+          grid.value?.reload();
         })
         .catch(error => {
           isLoading.value = false;
@@ -113,6 +91,4 @@ function onDeleteSubcontractor(subcontractor: PayrollSubContractorRow) {
     },
   });
 }
-
-loadSubcontractors();
 </script>

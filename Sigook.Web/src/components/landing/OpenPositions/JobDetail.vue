@@ -1,7 +1,10 @@
 <template>
   <article class="job-detail">
     <header class="job-detail__head">
-      <h3 class="job-detail__title">{{ job.title }}</h3>
+      <h3 class="job-detail__title">
+        {{ job.title }}
+        <span class="job-detail__number">#{{ job.numberId }}</span>
+      </h3>
 
       <div class="job-detail__meta">
         <span class="job-detail__meta-item job-detail__meta-item--location">
@@ -158,6 +161,12 @@ const formattedPosted = computed(() => {
   color: #fff;
   margin: 0;
   text-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.job-detail__number {
+  color: var(--c-brand-cyan);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .job-detail__meta {

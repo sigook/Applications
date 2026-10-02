@@ -35,50 +35,47 @@
     </div>
     <div v-if="reportGenerated" class="columns is-multiline">
       <div class="column is-12">
-        <Export :url="'/api/agency/accounting/reports/hours-worked/file'" :params="serverParams"
-          :fileName="'Hours Worked Report'" @onDataLoading="(value) => isLoading = value">
-        </Export>
-        <b-table sticky-header height="var(--grid-height)" :data="report.rows" :mobile-cards="false" :loading="isLoadingReport" paginated pagination-size="is-small" :per-page="pageSize"
-          v-model:current-page="pageIndex" pagination-rounded>
-          <template v-slot:empty>
-            <p class="container has-text-centered">No records available</p>
+        <SigookGrid :data="report.rows">
+          <template #dropdown-actions>
+            <b-dropdown-item aria-role="listitem" @click="onExport">
+              <b-icon icon="file-excel"></b-icon>
+              <span>Export</span>
+            </b-dropdown-item>
           </template>
-          <template>
-            <b-table-column field="workerName" label="Worker Name" v-slot="props">
-              {{ props.row.workerName }}
-            </b-table-column>
-            <b-table-column field="jobPosition" label="Job Position" v-slot="props">
-              {{ props.row.jobPosition }}
-            </b-table-column>
-            <b-table-column field="billRate" label="Bill Rate" v-slot="props">
-              {{ currency(props.row.billRate) }}
-            </b-table-column>
-            <b-table-column field="regularHoursWorked" label="Regular Hours" v-slot="props">
-              {{ props.row.regularHoursWorked }}
-            </b-table-column>
-            <b-table-column field="totalPayRegularRate" label="Total Pay Regular Rate" v-slot="props">
-              {{ currency(props.row.totalPayRegularRate) }}
-            </b-table-column>
-            <b-table-column field="overtimeHoursWorked" label="Overtime Hours" v-slot="props">
-              {{ props.row.overtimeHoursWorked }}
-            </b-table-column>
-            <b-table-column field="totalPayOvertimeRate" label="Total Pay Overtime Rate" v-slot="props">
-              {{ currency(props.row.totalPayOvertimeRate) }}
-            </b-table-column>
-            <b-table-column field="holidayHoursWorked" label="Holiday Hours" v-slot="props">
-              {{ props.row.holidayHoursWorked }}
-            </b-table-column>
-            <b-table-column field="totalPayHolidayRate" label="Total Pay Holiday Rate" v-slot="props">
-              {{ currency(props.row.totalPayHolidayRate) }}
-            </b-table-column>
-            <b-table-column field="totalHoursWorked" label="Total Hours" v-slot="props">
-              {{ props.row.totalHoursWorked }}
-            </b-table-column>
-            <b-table-column field="totalPayRate" label="Total Pay Rate" v-slot="props">
-              {{ currency(props.row.totalPayRate) }}
-            </b-table-column>
-          </template>
-          <template v-slot:footer>
+          <b-table-column field="workerName" label="Worker Name" v-slot="props">
+            {{ props.row.workerName }}
+          </b-table-column>
+          <b-table-column field="jobPosition" label="Job Position" v-slot="props">
+            {{ props.row.jobPosition }}
+          </b-table-column>
+          <b-table-column field="billRate" label="Bill Rate" v-slot="props">
+            {{ currency(props.row.billRate) }}
+          </b-table-column>
+          <b-table-column field="regularHoursWorked" label="Regular Hours" v-slot="props">
+            {{ props.row.regularHoursWorked }}
+          </b-table-column>
+          <b-table-column field="totalPayRegularRate" label="Total Pay Regular Rate" v-slot="props">
+            {{ currency(props.row.totalPayRegularRate) }}
+          </b-table-column>
+          <b-table-column field="overtimeHoursWorked" label="Overtime Hours" v-slot="props">
+            {{ props.row.overtimeHoursWorked }}
+          </b-table-column>
+          <b-table-column field="totalPayOvertimeRate" label="Total Pay Overtime Rate" v-slot="props">
+            {{ currency(props.row.totalPayOvertimeRate) }}
+          </b-table-column>
+          <b-table-column field="holidayHoursWorked" label="Holiday Hours" v-slot="props">
+            {{ props.row.holidayHoursWorked }}
+          </b-table-column>
+          <b-table-column field="totalPayHolidayRate" label="Total Pay Holiday Rate" v-slot="props">
+            {{ currency(props.row.totalPayHolidayRate) }}
+          </b-table-column>
+          <b-table-column field="totalHoursWorked" label="Total Hours" v-slot="props">
+            {{ props.row.totalHoursWorked }}
+          </b-table-column>
+          <b-table-column field="totalPayRate" label="Total Pay Rate" v-slot="props">
+            {{ currency(props.row.totalPayRate) }}
+          </b-table-column>
+          <template #footer>
             <template v-if="report.rows.length > 0">
               <th></th>
               <th></th>
@@ -93,7 +90,7 @@
               <th>{{ currency(report.totalPay) }}</th>
             </template>
           </template>
-        </b-table>
+        </SigookGrid>
       </div>
     </div>
   </div>
@@ -105,11 +102,12 @@ import { showAlertError } from "@/utils/toast";
 import dayjs from 'dayjs';
 import { currency } from '@/utils/filters';
 import { getAgencyCompanyProfileWithRequests } from "@/api/agencyCompanyApi";
-import { getJobPositionsHoursWorked, getHoursWorkedReport } from "@/api/agencyReportApi";
+import { downloadFile } from '@/utils/downloadFile';
+import { getJobPositionsHoursWorked, getHoursWorkedReport, downloadAgencyReport } from "@/api/agencyReportApi";
 import { useStickyForm } from '@/composables/useStickyForm';
 import type { AgencyCompanyJobPosition, AgencyReportFilter, HoursWorkedReportView } from '@/types/agency';
 import type { CompanyProfileListItem } from '@/types/company';
-import Export from "@/components/Export.vue";
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const schema = yup.object({
   dates: yup
@@ -133,8 +131,6 @@ const companies = ref<CompanyProfileListItem[]>([]);
 const companySelected = ref('');
 const jobPositions = ref<AgencyCompanyJobPosition[]>([]);
 const jobPositionSelected = ref('');
-const pageIndex = ref(1);
-const pageSize = ref(30);
 const serverParams = ref<AgencyReportFilter>({});
 const reportGenerated = ref(false);
 const report = ref<HoursWorkedReportView>({ rows: [] });
@@ -185,18 +181,28 @@ async function getReport() {
   const { valid } = await form.validate();
   if (!valid) return;
   isLoadingReport.value = true;
+  isLoading.value = true;
   getHoursWorkedReport(serverParams.value)
     .then((response) => {
-      isLoadingReport.value = false;
       report.value = {
         ...response,
         rows: response.detail
       };
       reportGenerated.value = true;
     }).catch(error => {
-      isLoadingReport.value = false;
       showAlertError(error);
+    }).finally(() => {
+      isLoadingReport.value = false;
+      isLoading.value = false;
     });
+}
+
+function onExport() {
+  isLoading.value = true;
+  downloadAgencyReport('/api/agency/accounting/reports/hours-worked/file', serverParams.value)
+    .then((file) => downloadFile(file, `Hours Worked Report_${new Date().toLocaleDateString()}`))
+    .catch((error) => showAlertError(error))
+    .finally(() => isLoading.value = false);
 }
 
 const filteredCompanies = computed(() =>

@@ -112,7 +112,7 @@ function readFiltersFromRoute(): JobSearchFilter {
 const filtered = computed(() => {
   const q = query.value.trim().toLowerCase()
   if (!q) return jobs.value
-  return jobs.value.filter((j) => j.title.toLowerCase().includes(q))
+  return jobs.value.filter((j) => j.title.toLowerCase().includes(q) || j.numberId.includes(q))
 })
 
 const showList = computed(() => !loading.value && !error.value && filtered.value.length > 0)

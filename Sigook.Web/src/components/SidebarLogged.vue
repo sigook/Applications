@@ -249,7 +249,7 @@ async function getCompanyUserInfo() {
 async function getWorkerInfo() {
   const data = await getMyProfile();
   currentUser.value.fullName = `${data.firstName} ${data.lastName}`;
-  currentUser.value.profileImage = data.workerProfileImage;
+  currentUser.value.profileImage = data.profileImage?.pathFile ?? null;
   profileUrl.value = '/worker-profile';
 }
 

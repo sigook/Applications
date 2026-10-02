@@ -3,7 +3,7 @@
     <template #actions>
       <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
         <template #trigger>
-          <button type="button" class="profile-link">Edit <b-icon icon="menu-down" size="is-small" /></button>
+          <b-button type="is-ghost" size="is-small" class="profile-link" icon-right="menu-down">Edit</b-button>
         </template>
         <b-dropdown-item v-for="field in fields" :key="field.form" aria-role="listitem" @click="open(field.form)">
           {{ field.label }}
@@ -78,5 +78,5 @@ function onSaved() {
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/scss/agency-worker-profile';
+@import '../../assets/scss/worker-profile';
 </style>

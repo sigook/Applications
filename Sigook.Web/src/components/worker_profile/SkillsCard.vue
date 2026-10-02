@@ -1,7 +1,7 @@
 <template>
   <profile-card title="Skills">
     <template #actions>
-      <button type="button" class="profile-link" @click="isModalOpen = true">Edit</button>
+      <b-button type="is-ghost" size="is-small" class="profile-link" @click="isModalOpen = true">Edit</b-button>
     </template>
 
     <div v-if="props.worker.skills.length" class="profile-tags">
@@ -35,7 +35,7 @@ function onSaved() {
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/scss/agency-worker-profile';
+@import '../../assets/scss/worker-profile';
 
 .profile-empty {
   margin: 0;

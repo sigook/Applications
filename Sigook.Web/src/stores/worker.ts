@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
-import type { WorkerProfile } from '@/types/worker';
+import type { WorkerProfileDetail } from '@/types/worker';
 
 interface WorkerStoreState {
-  workerProfile: Partial<WorkerProfile>;
+  workerProfile: Partial<WorkerProfileDetail>;
 }
 
 export const useWorkerStore = defineStore('worker', {
@@ -10,7 +10,7 @@ export const useWorkerStore = defineStore('worker', {
     workerProfile: {},
   }),
   actions: {
-    setWorkerProfile(data: Partial<WorkerProfile>) {
+    setWorkerProfile(data: Partial<WorkerProfileDetail>) {
       this.workerProfile = data;
     },
   },

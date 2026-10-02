@@ -4,22 +4,16 @@
     <b-message v-if="!canEdit" type="is-warning" size="is-small" has-icon>
       This order does not use runners. The list is read-only.
     </b-message>
-    <b-field v-if="canEdit" grouped position="is-right">
-      <b-button type="is-primary" icon-left="plus" @click="showCreate = true">Add Runner</b-button>
-    </b-field>
 
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated
-      pagination-size="is-small" backend-pagination backend-sorting pagination-rounded :total="totalItems"
-      :per-page="serverParams.pageSize" v-model:current-page="serverParams.pageIndex" default-sort="createdAt"
-      @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
-      <template #empty>
-        <p class="container has-text-centered">No runners yet</p>
+    <SigookGrid ref="grid" :fetch="loadRunners" v-model:params="serverParams" :sort-map="sortMap"
+      empty-text="No runners yet" @update:loading="(value) => isLoading = value" @cellclick="onCellClick">
+      <template v-if="canEdit" #actions>
+        <b-button icon-left="plus" @click="showCreate = true">Add Runner</b-button>
       </template>
 
       <b-table-column field="name" label="Name" sortable searchable>
         <template #searchable>
-          <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-            @keypress="onInputEntered" />
+          <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small" />
         </template>
         <template v-slot="props">
           <span class="is-block">
@@ -31,7 +25,7 @@
 
       <b-table-column field="type" label="Type" sortable searchable>
         <template #searchable>
-          <b-select v-model="serverParams.type" size="is-small" expanded @update:modelValue="loadRunners">
+          <b-select v-model="serverParams.type" size="is-small" expanded @update:modelValue="onTypeChange">
             <option :value="null">All</option>
             <option v-for="t in runnerTypes" :key="t" :value="t">{{ typeLabel(t) }}</option>
           </b-select>
@@ -67,19 +61,19 @@
         <runner-actions-dropdown :status="props.row.status" :can-edit="canEdit"
           @open="action => open(toTarget(props.row), action)" @delete="confirmDelete(toTarget(props.row))" />
       </b-table-column>
-    </b-table>
+    </SigookGrid>
 
     <b-modal has-modal-card v-model="showCreate" width="640px">
       <create-runner :request-id="requestId" :is-saving="isCreating" @create="onCreate" @close="showCreate = false" />
     </b-modal>
 
     <runner-action-modals :target="target" v-model:status-open="showStatus" v-model:interview-open="showInterview"
-      v-model:history-open="showHistory" @updated="loadRunners" />
+      v-model:history-open="showHistory" @updated="reloadRunners" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
 import { dateMonth } from '@/utils/filters';
@@ -97,16 +91,25 @@ import {
   runnerStatusTagType,
 } from '@/types/runner';
 import type { AgencyRunnerFilter, CreateRunnerModel, RunnerListItem, RunnerType } from '@/types/runner';
-import type { CatalogItem } from '@/types/common';
+import type { CatalogItem, GridHandle, TableColumnRef } from '@/types/common';
 import type { AgencyRequestDetail } from '@/types/agency';
 import CreateRunner from '@/components/runner/CreateRunner.vue';
 import RunnerActionsDropdown from '@/components/runner/RunnerActionsDropdown.vue';
 import RunnerActionModals from '@/components/runner/RunnerActionModals.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const props = defineProps<{ request?: AgencyRequestDetail | null }>();
 
 const route = useRoute();
 const requestId = route.params.id as string;
+const grid = useTemplateRef<GridHandle>('grid');
+
+const sortMap = {
+  name: RunnerSortBy.Name,
+  status: RunnerSortBy.Status,
+  type: RunnerSortBy.Type,
+  createdAt: RunnerSortBy.CreatedAt,
+};
 
 const canEdit = computed(() => !!props.request?.usesRunners);
 
@@ -114,21 +117,17 @@ const runnerTypes = RUNNER_TYPES;
 const statusOptions: CatalogItem<RunnerStatus>[] = RUNNER_STATUSES.map(s => ({ id: s, value: RUNNER_STATUS_LABELS[s] }));
 
 const isLoading = ref(false);
-const rows = ref<RunnerListItem[]>([]);
-const totalItems = ref(0);
 const showCreate = ref(false);
 const isCreating = ref(false);
 const statusesSelected = ref<CatalogItem<RunnerStatus>[]>([]);
 
-const serverParams = reactive<AgencyRunnerFilter>({
+const serverParams = ref<AgencyRunnerFilter>({
   requestId,
-  pageIndex: 1,
-  pageSize: 30,
   isDescending: true,
   sortBy: RunnerSortBy.CreatedAt,
 });
 
-const { target, showStatus, showInterview, showHistory, open, confirmDelete } = useRunnerActions(loadRunners);
+const { target, showStatus, showInterview, showHistory, open, confirmDelete } = useRunnerActions(reloadRunners);
 
 const statusLabel = runnerStatusLabel;
 
@@ -138,39 +137,16 @@ function typeLabel(type: RunnerType): string {
 
 const statusType = runnerStatusTagType;
 
-function onPageChange(page: number) {
-  serverParams.pageIndex = page;
-  loadRunners();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'name':
-      serverParams.sortBy = RunnerSortBy.Name;
-      break;
-    case 'status':
-      serverParams.sortBy = RunnerSortBy.Status;
-      break;
-    case 'type':
-      serverParams.sortBy = RunnerSortBy.Type;
-      break;
-    default:
-      serverParams.sortBy = RunnerSortBy.CreatedAt;
-  }
-  serverParams.isDescending = order !== 'asc';
-  loadRunners();
-}
-
 function onStatusChange() {
-  serverParams.statuses = statusesSelected.value.length ? statusesSelected.value.map(s => s.id) : undefined;
-  loadRunners();
+  serverParams.value.statuses = statusesSelected.value.length ? statusesSelected.value.map(s => s.id) : undefined;
+  grid.value?.search();
 }
 
-function onInputEntered(event: KeyboardEvent) {
-  if (event.key === 'Enter') loadRunners();
+function onTypeChange() {
+  grid.value?.search();
 }
 
-function onCellClick(row: RunnerListItem, column: { field: string }) {
+function onCellClick(row: RunnerListItem, column: TableColumnRef) {
   if (column.field !== 'actions') open(toTarget(row), 'history');
 }
 
@@ -178,17 +154,12 @@ function toTarget(row: RunnerListItem): RunnerActionTarget {
   return { requestId, runnerId: row.id, name: row.name, status: row.status };
 }
 
-function loadRunners() {
-  isLoading.value = true;
-  getAgencyRunners(requestId, serverParams)
-    .then(response => {
-      rows.value = response.items;
-      totalItems.value = response.totalItems;
-    })
-    .catch(err => showAlertError(err))
-    .finally(() => {
-      isLoading.value = false;
-    });
+function loadRunners(params: AgencyRunnerFilter) {
+  return getAgencyRunners(requestId, params);
+}
+
+function reloadRunners() {
+  grid.value?.reload();
 }
 
 function onCreate(model: CreateRunnerModel) {
@@ -196,13 +167,11 @@ function onCreate(model: CreateRunnerModel) {
   createAgencyRunner(requestId, model)
     .then(() => {
       showCreate.value = false;
-      loadRunners();
+      reloadRunners();
     })
     .catch(err => showAlertError(err))
     .finally(() => {
       isCreating.value = false;
     });
 }
-
-loadRunners();
 </script>

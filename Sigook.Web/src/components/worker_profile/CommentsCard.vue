@@ -1,7 +1,7 @@
 <template>
-  <profile-card title="Comments & rating">
-    <template #actions>
-      <button type="button" class="profile-link" @click="isModalOpen = true"><b-icon icon="plus" size="is-small" /> Add comment</button>
+  <profile-card :title="props.title">
+    <template v-if="!props.readonly" #actions>
+      <b-button type="is-ghost" size="is-small" class="profile-link" icon-left="plus" @click="isModalOpen = true">Add comment</b-button>
     </template>
 
     <ul v-if="props.comments.items.length" class="comment-list">
@@ -19,7 +19,7 @@
       :total="props.comments.totalItems" :per-page="props.pageSize" size="is-small" rounded
       @change="(page: number) => emit('changePage', page)" />
 
-    <b-modal custom-content-class="card" v-model="isModalOpen" width="500px">
+    <b-modal v-if="!props.readonly" custom-content-class="card" v-model="isModalOpen" width="500px">
       <dialog-comment @createComment="create" />
     </b-modal>
   </profile-card>
@@ -34,12 +34,14 @@ import type { WorkerCommentList } from '@/types/worker';
 import ProfileCard from './ProfileCard.vue';
 import DialogComment from '@/components/DialogWorkerComment.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   workerProfileId: string;
   comments: WorkerCommentList;
   pageIndex: number;
   pageSize: number;
-}>();
+  readonly?: boolean;
+  title?: string;
+}>(), { readonly: false, title: 'Comments & rating' });
 const emit = defineEmits<{
   (e: 'commentCreated'): void;
   (e: 'changePage', page: number): void;
@@ -71,7 +73,7 @@ defineExpose({ open });
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/scss/agency-worker-profile';
+@import '../../assets/scss/worker-profile';
 
 .comment-list {
   display: flex;

@@ -20,7 +20,7 @@
 
       <form class="op-hero__search" @submit.prevent="onSearch">
         <div class="op-hero__field">
-          <label class="op-hero__label" for="op-job-title">Job title</label>
+          <label class="op-hero__label" for="op-job-title">Job Title / Request #</label>
           <input
             id="op-job-title"
             v-model="form.title"

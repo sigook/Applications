@@ -1,43 +1,33 @@
 @import './variables';
 @import './breakpoints';
 
-.profile-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 8px;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 0.875rem;
+.button.profile-link {
+  padding-inline: 8px;
   font-weight: 600;
   color: $blue;
-  cursor: pointer;
 
-  &:hover {
+  &:hover,
+  &:focus {
     color: $blue-dark;
     text-decoration: underline;
   }
 }
 
-.profile-icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.button.profile-icon-button {
   width: 32px;
   height: 32px;
-  border: 0;
-  border-radius: 6px;
-  background: none;
+  padding: 0;
   color: $grey-font;
-  cursor: pointer;
 
-  &:hover {
+  &:hover,
+  &:focus {
     background: $gray-bg;
     color: $navy;
+    text-decoration: none;
   }
 
-  &.is-danger:hover {
+  &.is-destructive:hover,
+  &.is-destructive:focus {
     color: $danger-hover;
   }
 }

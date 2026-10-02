@@ -1,43 +1,36 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="showModal = true">
-        {{ 'Create' }}
-      </b-button>
-    </b-field>
-    <b-table sticky-header height="var(--grid-height)" :data="data" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" pagination-rounded :per-page="10">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
+    <SigookGrid :data="data" :refresh="loadContactPersons">
+      <template #actions>
+        <b-button icon-left="plus" @click="showModal = true">Create</b-button>
       </template>
-      <template>
-        <b-table-column field="fullName" label="Full Name" v-slot="props">
-          {{ props.row.title }} {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }}
-        </b-table-column>
-        <b-table-column field="position" label="Position" v-slot="props">
-          {{ props.row.position }}
-        </b-table-column>
-        <b-table-column field="mobileNumber" label="Mobile Number" v-slot="props">
-          {{ props.row.mobileNumber || 'None' }}
-        </b-table-column>
-        <b-table-column field="officeNumber" label="Office Number" v-slot="props">
-          <span v-if="props.row.officeNumber">
-            {{ props.row.officeNumber }}
-            <span v-if="props.row.officeNumberExt">Ext. {{ props.row.officeNumberExt }}</span>
-          </span>
-          <span v-else>None</span>
-        </b-table-column>
-        <b-table-column field="email" label="Email" v-slot="props">
-          {{ props.row.email }}
-        </b-table-column>
-        <b-table-column field="actions" label="Actions" v-slot="props">
-          <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
-            @click="openEditModal(props.row)"></b-button>
-          <b-button type="is-danger" outlined rounded icon-right="delete"
-            @click="onDeleteContactPerson(props.row.id)"></b-button>
-        </b-table-column>
-      </template>
-    </b-table>
+      <b-table-column field="fullName" label="Full Name" v-slot="props">
+        {{ props.row.title }} {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }}
+      </b-table-column>
+      <b-table-column field="position" label="Position" v-slot="props">
+        {{ props.row.position }}
+      </b-table-column>
+      <b-table-column field="mobileNumber" label="Mobile Number" v-slot="props">
+        {{ props.row.mobileNumber || 'None' }}
+      </b-table-column>
+      <b-table-column field="officeNumber" label="Office Number" v-slot="props">
+        <span v-if="props.row.officeNumber">
+          {{ props.row.officeNumber }}
+          <span v-if="props.row.officeNumberExt">Ext. {{ props.row.officeNumberExt }}</span>
+        </span>
+        <span v-else>None</span>
+      </b-table-column>
+      <b-table-column field="email" label="Email" v-slot="props">
+        {{ props.row.email }}
+      </b-table-column>
+      <b-table-column field="actions" label="Actions" v-slot="props">
+        <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
+          @click="openEditModal(props.row)"></b-button>
+        <b-button type="is-danger" outlined rounded icon-right="delete"
+          @click="onDeleteContactPerson(props.row.id)"></b-button>
+      </b-table-column>
+    </SigookGrid>
 
     <b-modal custom-content-class="card" v-model="showModal" @close="showModal = false" width="500px">
       <contact-form :current-contact="currentContact" :profile-id="profileId"
@@ -51,6 +44,7 @@ import { useRoute } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getAgencyCompanyContactPerson, deleteAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 import ContactForm from "./ContactPersonForm.vue";
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const route = useRoute();
 

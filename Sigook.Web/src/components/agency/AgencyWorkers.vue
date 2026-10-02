@@ -2,148 +2,137 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <div>
-      <b-field grouped position="is-right">
-        <b-button type="is-primary" icon-left="plus" @click="modalManageWorkers = true">
-          {{ "Manage Workers" }}
-        </b-button>
-        <b-button type="is-ghost" icon-right="file-excel"
-          @click="downloadWorkersReportDocument">Export</b-button>
-      </b-field>
-      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable default-sort="name"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
-        @cellclick="onCellClick">
-        <template v-slot:empty>
-          <p class="container has-text-centered">No records available</p>
+      <SigookGrid ref="grid" :fetch="loadRequestWorkers" v-model:params="serverParams" :sort-map="sortMap" focusable
+        @update:loading="(value) => isLoading = value" @cellclick="onCellClick">
+        <template #actions>
+          <b-button icon-left="plus" @click="modalManageWorkers = true">Manage Workers</b-button>
         </template>
-        <template>
-          <b-table-column field="profileImage" width="50" v-slot="props">
-            <img v-if="props.row.profileImage" :src="props.row.profileImage" alt="profile image"
-              class="img-30 img-rounded" />
-            <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
-          </b-table-column>
-          <b-table-column field="numberId" label="ID" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">
-              <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
-            </template>
-          </b-table-column>
-          <b-table-column field="externalId" label="External ID" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">{{ props.row.externalId }}</template>
-          </b-table-column>
-          <b-table-column field="name" label="Name" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">
-              {{ props.row.name }}
-            </template>
-          </b-table-column>
-          <b-table-column field="mobileNumber" label="Phone" searchable cell-class="is-nowrap">
-            <template v-slot:searchable>
-              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
-            </template>
-            <template v-slot="props">{{ props.row.mobileNumber }}</template>
-          </b-table-column>
-          <b-table-column field="socialInsurance" label="SIN/SSN" searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.socialInsurance" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">
-              <div v-if="props.row.socialInsurance">
-                {{ props.row.socialInsurance }}
-                <i class="fz-2 block">{{ dateMonth(props.row.dueDate) }}</i>
-              </div>
-              <span v-else class="op3">SIN/SNN</span>
-            </template>
-          </b-table-column>
-          <b-table-column field="startWorking" label="Start Working" sortable searchable>
-            <template v-slot:searchable>
-              <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-                :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-                @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
-                @update:modelValue="onStartWorkingSelected" append-to-body>
-              </b-datepicker>
-            </template>
-            <template v-slot="props">
-              <b-button type="is-ghost" icon-right="pencil" @click="onShowModalStartWorking(props.row)">
-                {{ dateMonth(props.row.startWorking) }}
-              </b-button>
-            </template>
-          </b-table-column>
-          <b-table-column field="createdBy" label="Created By" sortable searchable>
-            <template v-slot:searchable>
-              <b-field>
-                <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.createdBy"
-                  @keypress="onInputEntered"></b-input>
-                <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
-                  :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
-                  v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                  @update:modelValue="onCreatedAtSelected" append-to-body></b-datepicker>
-              </b-field>
-            </template>
-            <template v-slot="props">
-              {{ emailName(props.row.createdBy) }}
-              <i class="fz-2 block">{{ dateMonth(props.row.createdAt) }}</i>
-            </template>
-          </b-table-column>
-          <b-table-column field="rejectedBy" label="Rejected By" sortable searchable>
-            <template v-slot:searchable>
-              <b-field>
-                <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.rejectedBy"
-                  @keypress="onInputEntered"></b-input>
-                <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
-                  :icon-right="rejectedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
-                  v-model="rejectedAtDatesSelected" icon-right-clickable @icon-right-click="onRejectedAtCleared"
-                  @update:modelValue="onRejectedAtSelected" append-to-body></b-datepicker>
-              </b-field>
-            </template>
-            <template v-slot="props">
-              <div v-if="props.row.rejectedBy">
-                {{ emailName(props.row.rejectedBy) }}
-                <i class="fz-2 block">{{ dateMonth(props.row.rejectedAt) }}</i>
-              </div>
-              <span v-else class="op3">Rejected by</span>
-            </template>
-          </b-table-column>
-          <b-table-column field="notesCount" label="Notes" v-slot="props">
-            <NotesPopover :can-create="false" :user-id="props.row.id" :request-id="serverParams.requestId"
-              :notes-count="props.row.notesCount" :on-get="getNotes" :on-create="createNote"
-              :on-update="updateNote" :on-delete="deleteNote"
-              @update:count="(size) => props.row.notesCount = size">
-            </NotesPopover>
-          </b-table-column>
-          <b-table-column field="status" label="Status" sortable searchable>
-            <template v-slot:searchable>
-              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
-              </b-taginput>
-            </template>
-            <template v-slot="props">
-              <span class="is-uppercase has-text-weight-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
-              <i class="fz-1 block" v-html="props.row.rejectComments"></i>
-            </template>
-          </b-table-column>
-          <b-table-column field="actions" v-slot="props">
+        <template #dropdown-actions>
+          <b-dropdown-item aria-role="listitem" @click="downloadWorkersReportDocument">
+            <b-icon icon="file-excel"></b-icon>
+            <span>Export</span>
+          </b-dropdown-item>
+        </template>
+        <b-table-column field="profileImage" width="50" v-slot="props">
+          <img v-if="props.row.profileImage" :src="props.row.profileImage" alt="profile image"
+            class="img-30 img-rounded" />
+          <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
+        </b-table-column>
+        <b-table-column field="numberId" label="ID" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
+          </template>
+        </b-table-column>
+        <b-table-column field="externalId" label="External ID" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.externalId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">{{ props.row.externalId }}</template>
+        </b-table-column>
+        <b-table-column field="name" label="Name" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.name }}
+          </template>
+        </b-table-column>
+        <b-table-column field="mobileNumber" label="Phone" searchable cell-class="is-nowrap">
+          <template v-slot:searchable>
+            <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+              @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
+          </template>
+          <template v-slot="props">{{ props.row.mobileNumber }}</template>
+        </b-table-column>
+        <b-table-column field="socialInsurance" label="SIN/SSN" searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.socialInsurance" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            <div v-if="props.row.socialInsurance">
+              {{ props.row.socialInsurance }}
+              <i class="fz-2 block">{{ dateMonth(props.row.dueDate) }}</i>
+            </div>
+            <span v-else class="op3">SIN/SNN</span>
+          </template>
+        </b-table-column>
+        <b-table-column field="startWorking" label="Start Working" sortable searchable>
+          <template v-slot:searchable>
+            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+              :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
+              @update:modelValue="onStartWorkingSelected" append-to-body>
+            </b-datepicker>
+          </template>
+          <template v-slot="props">
+            <b-button type="is-ghost" icon-right="pencil" @click="onShowModalStartWorking(props.row)">
+              {{ dateMonth(props.row.startWorking) }}
+            </b-button>
+          </template>
+        </b-table-column>
+        <b-table-column field="createdBy" label="Created By" sortable searchable>
+          <template v-slot:searchable>
             <b-field>
-              <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-danger" outlined rounded icon-right="close"
-                  v-if="props.row.status === 'Booked'" @click="confirmDelete(props.row)"></b-button>
-              </b-tooltip>
+              <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.createdBy"></b-input>
+              <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
+                :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
+                v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
+                @update:modelValue="onCreatedAtSelected" append-to-body></b-datepicker>
             </b-field>
-          </b-table-column>
-        </template>
-      </b-table>
+          </template>
+          <template v-slot="props">
+            {{ emailName(props.row.createdBy) }}
+            <i class="fz-2 block">{{ dateMonth(props.row.createdAt) }}</i>
+          </template>
+        </b-table-column>
+        <b-table-column field="rejectedBy" label="Rejected By" sortable searchable>
+          <template v-slot:searchable>
+            <b-field>
+              <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.rejectedBy"></b-input>
+              <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
+                :icon-right="rejectedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
+                v-model="rejectedAtDatesSelected" icon-right-clickable @icon-right-click="onRejectedAtCleared"
+                @update:modelValue="onRejectedAtSelected" append-to-body></b-datepicker>
+            </b-field>
+          </template>
+          <template v-slot="props">
+            <div v-if="props.row.rejectedBy">
+              {{ emailName(props.row.rejectedBy) }}
+              <i class="fz-2 block">{{ dateMonth(props.row.rejectedAt) }}</i>
+            </div>
+            <span v-else class="op3">Rejected by</span>
+          </template>
+        </b-table-column>
+        <b-table-column field="notesCount" label="Notes" v-slot="props">
+          <NotesPopover :can-create="false" :user-id="props.row.id" :request-id="serverParams.requestId"
+            :notes-count="props.row.notesCount" :on-get="getNotes" :on-create="createNote"
+            :on-update="updateNote" :on-delete="deleteNote"
+            @update:count="(size) => props.row.notesCount = size">
+          </NotesPopover>
+        </b-table-column>
+        <b-table-column field="status" label="Status" sortable searchable>
+          <template v-slot:searchable>
+            <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
+              field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
+            </b-taginput>
+          </template>
+          <template v-slot="props">
+            <span class="is-uppercase has-text-weight-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
+            <i class="fz-1 block" v-html="props.row.rejectComments"></i>
+          </template>
+        </b-table-column>
+        <b-table-column field="actions" v-slot="props">
+          <b-field>
+            <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-danger" outlined rounded icon-right="close"
+                v-if="props.row.status === 'Booked'" @click="confirmDelete(props.row)"></b-button>
+            </b-tooltip>
+          </b-field>
+        </b-table-column>
+      </SigookGrid>
     </div>
 
     <!-- custom modal Manage Workers-->
@@ -164,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from "@/utils/toast";
 import { downloadFile } from "@/utils/downloadFile";
@@ -191,11 +180,12 @@ import type {
   RequestNotesUpdatePayload,
   RequestNotesDeletePayload,
 } from '@/types/agency';
-import type { CatalogItem, TableColumnRef } from '@/types/common';
+import type { CatalogItem, GridHandle, PaginatedList, TableColumnRef } from '@/types/common';
 import WorkersList from "./AgencyWorkersList.vue";
 import NotesPopover from "../../components/notes/NotesPopover.vue";
 import EditTextarea from "../../components/agency_request/EditTextarea.vue";
 import DatepickerModal from "@/components/agency_request/DatepickerModal.vue";
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const props = defineProps<{
   id?: string;
@@ -206,10 +196,19 @@ const emit = defineEmits<{ (e: 'refreshRequest'): void }>();
 
 const route = useRoute();
 const router = useRouter();
+const grid = useTemplateRef<GridHandle>('grid');
+
+const sortMap = {
+  numberId: 0,
+  name: 1,
+  status: 2,
+  startWorking: 3,
+  createdBy: 4,
+  rejectedBy: 5,
+  externalId: 6,
+};
 
 const isLoading = ref(true);
-const totalItems = ref(0);
-const rows = ref<AgencyRequestWorker[]>([]);
 const statuses = ref<CatalogItem<number>[]>([
   { id: 2, value: 'Rejected' },
   { id: 3, value: 'Booked' },
@@ -228,11 +227,9 @@ const createNote = ({ requestId, userId, model }: RequestNotesCreatePayload) => 
 const updateNote = ({ requestId, userId, id, model }: RequestNotesUpdatePayload) => updateAgencyRequestWorkerNote(requestId, userId, id, model);
 const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => deleteAgencyRequestWorkerNote(requestId, userId, id);
 
-const serverParams = reactive<AgencyRequestWorkerFilter>({
+const serverParams = ref<AgencyRequestWorkerFilter>({
   sortBy: 2,
   requestId: (props.id || route.params.id) as string,
-  pageIndex: 1,
-  pageSize: 30,
   isDescending: true,
 });
 
@@ -249,54 +246,15 @@ function onCellClick(row: AgencyRequestWorker, column: TableColumnRef) {
   }
 }
 
-function onPageChange(params: number) {
-  serverParams.pageIndex = params;
-  loadRequestWorkers();
-}
-
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'numberId':
-      serverParams.sortBy = 0;
-      break;
-    case 'name':
-      serverParams.sortBy = 1;
-      break;
-    case 'status':
-      serverParams.sortBy = 2;
-      break;
-    case 'startWorking':
-      serverParams.sortBy = 3;
-      break;
-    case 'createdBy':
-      serverParams.sortBy = 4;
-      break;
-    case 'rejectedBy':
-      serverParams.sortBy = 5;
-      break;
-    case 'externalId':
-      serverParams.sortBy = 6;
-      break;
-  }
-  serverParams.isDescending = order !== 'asc';
-  loadRequestWorkers();
-}
-
-function onInputEntered(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    loadRequestWorkers();
-  }
-}
-
 function onStatusSelected() {
-  serverParams.statuses = statusesSelected.value.map(ss => ss.id);
-  loadRequestWorkers();
+  serverParams.value.statuses = statusesSelected.value.map(ss => ss.id);
+  grid.value?.search();
 }
 
 function onStartWorkingSelected() {
-  serverParams.startWorkingFrom = startWorkingDatesSelected.value[0]?.toISOString() ?? null;
-  serverParams.startWorkingTo = startWorkingDatesSelected.value[1]?.toISOString() ?? null;
-  loadRequestWorkers();
+  serverParams.value.startWorkingFrom = startWorkingDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.startWorkingTo = startWorkingDatesSelected.value[1]?.toISOString() ?? null;
+  grid.value?.search();
 }
 
 function onStartWorkingCleared() {
@@ -305,9 +263,9 @@ function onStartWorkingCleared() {
 }
 
 function onCreatedAtSelected() {
-  serverParams.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
-  serverParams.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
-  loadRequestWorkers();
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
+  grid.value?.search();
 }
 
 function onCreatedAtCleared() {
@@ -316,9 +274,9 @@ function onCreatedAtCleared() {
 }
 
 function onRejectedAtSelected() {
-  serverParams.rejectedAtFrom = rejectedAtDatesSelected.value[0]?.toISOString() ?? null;
-  serverParams.rejectedAtTo = rejectedAtDatesSelected.value[1]?.toISOString() ?? null;
-  loadRequestWorkers();
+  serverParams.value.rejectedAtFrom = rejectedAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.rejectedAtTo = rejectedAtDatesSelected.value[1]?.toISOString() ?? null;
+  grid.value?.search();
 }
 
 function onRejectedAtCleared() {
@@ -326,22 +284,16 @@ function onRejectedAtCleared() {
   onRejectedAtSelected();
 }
 
-function loadRequestWorkers() {
-  isLoading.value = true;
-  getAgencyRequestsWorkers(serverParams)
-    .then((response) => {
-      rows.value = response.items.map(i => ({
+function loadRequestWorkers(params: AgencyRequestWorkerFilter): Promise<PaginatedList<AgencyRequestWorker>> {
+  return getAgencyRequestsWorkers(params)
+    .then((response) => ({
+      ...response,
+      items: response.items.map(i => ({
         ...i,
         status: WorkerRequestStatusLabels[i.workerRequestStatus],
         actions: null,
-      }));
-      totalItems.value = response.totalItems;
-      isLoading.value = false;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+      })),
+    }));
 }
 
 function confirmDelete(worker: AgencyRequestWorker) {
@@ -352,9 +304,9 @@ function confirmDelete(worker: AgencyRequestWorker) {
 function rejectWorker(comments: string) {
   modalRejectWorker.value = false;
   isLoading.value = true;
-  rejectAgencyRequestWorker(serverParams.requestId, currentWorker.value.workerProfileId, { comments }).then(() => {
+  rejectAgencyRequestWorker(serverParams.value.requestId, currentWorker.value.workerProfileId, { comments }).then(() => {
     isLoading.value = false;
-    loadRequestWorkers();
+    grid.value?.reload();
     emit('refreshRequest');
   }).catch((error) => {
     isLoading.value = false;
@@ -370,9 +322,9 @@ function onShowModalStartWorking(worker: AgencyRequestWorker) {
 function onUpdateRequestWorkerStartDate(date: Date) {
   modalStartWorking.value = false;
   isLoading.value = true;
-  updateAgencyRequestWorkerStartDate(serverParams.requestId, currentWorker.value?.id ?? '', { startWorking: date.toISOString() }).then(() => {
+  updateAgencyRequestWorkerStartDate(serverParams.value.requestId, currentWorker.value?.id ?? '', { startWorking: date.toISOString() }).then(() => {
     isLoading.value = false;
-    loadRequestWorkers();
+    grid.value?.reload();
   }).catch((error) => {
     isLoading.value = false;
     showAlertError(error.data);
@@ -381,10 +333,10 @@ function onUpdateRequestWorkerStartDate(date: Date) {
 
 function downloadWorkersReportDocument() {
   isLoading.value = true;
-  getWorkersReportDocument(serverParams.requestId)
+  getWorkersReportDocument(serverParams.value.requestId)
     .then((response) => {
       isLoading.value = false;
-      downloadFile(response, `WorkersReport_${serverParams.requestId}`);
+      downloadFile(response, `WorkersReport_${serverParams.value.requestId}`);
     })
     .catch((err) => {
       isLoading.value = false;
@@ -394,10 +346,7 @@ function downloadWorkersReportDocument() {
 
 function onWorkerBooked() {
   modalManageWorkers.value = false;
-  loadRequestWorkers();
-  // Emit event to refresh request status (Open/Filled state may have changed)
+  grid.value?.reload();
   emit('refreshRequest');
 }
-
-loadRequestWorkers();
 </script>

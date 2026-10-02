@@ -113,10 +113,9 @@
           </div>
         </template>
 
-        <b-table :data="group.applicants" narrowed hoverable :mobile-cards="false" detailed detail-key="id"
-          detail-transition="fade" v-model:opened-detailed="openedApplicants" checkable
-          :checked-rows="checkedRows(group.requestId)"
-          @update:checkedRows="(rows: AgencyApplicant[]) => onCheck(group.requestId, rows)" @cellclick="onCellClick">
+        <SigookGrid :data="group.applicants" :paginated="false" :fit-viewport="false" detailed detail-key="id"
+          v-model:opened-detailed="openedApplicants" checkable :checked-rows="checkedRows(group.requestId)"
+          @update:checked-rows="(rows: AgencyApplicant[]) => onCheck(group.requestId, rows)" @cellclick="onCellClick">
           <b-table-column field="name" label="Applicant" v-slot="props">
             <span class="is-block">
               {{ props.row.name }}
@@ -184,7 +183,7 @@
               :name="props.row.name" :status="props.row.status" :worker-profile-id="props.row.workerProfileId"
               @loaded="(value) => onComplianceLoaded(props.row, value)" @status-changed="loadApplicants" />
           </template>
-        </b-table>
+        </SigookGrid>
       </b-collapse>
     </div>
 
@@ -250,6 +249,7 @@ import { useAgencyStore } from '@/stores/agency';
 import { useModuleBase } from '@/composables/useModuleBase';
 import PageHeader from '@/components/PageHeader.vue';
 import Export from '@/components/Export.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 import ManageApplicantsModal from '@/components/agency_request/ManageApplicantsModal.vue';
 import ApplicantComplianceDetail from '@/components/agency_request/ApplicantComplianceDetail.vue';
 import EditTextarea from '@/components/agency_request/EditTextarea.vue';

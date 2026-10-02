@@ -1,12 +1,8 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-      pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable
-      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
-      </template>
+    <SigookGrid :fetch="getWorkerProfileTimeSheetHistory" v-model:params="serverParams" focusable
+      @update:loading="(value) => isLoading = value">
       <b-table-column field="businessName" label="Company" v-slot="tableProps">
         {{ tableProps.row.businessName }}
       </b-table-column>
@@ -49,53 +45,31 @@
           <b-button type="is-info" outlined rounded label="Accumulated" />
         </b-tooltip>
       </b-table-column>
-    </b-table>
+    </SigookGrid>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import { showAlertError } from '@/utils/toast';
 import { dateMonth, hour } from '@/utils/filters';
-import { getWorkerProfileTimeSheetHistory as apiGetWorkerProfileTimeSheetHistory, getWorkerProfileTimeSheetHistoryAccumulated } from '@/api/workerApi';
+import { getWorkerProfileTimeSheetHistory, getWorkerProfileTimeSheetHistoryAccumulated } from '@/api/workerApi';
+import type { TimeSheetHistoryFilter } from '@/types/worker';
+import type { GridParams } from '@/types/common';
+import SigookGrid from '@/components/SigookGrid.vue';
 
-const props = defineProps<{ workerId?: any }>();
+const props = defineProps<{ workerId: string }>();
 
 const isLoading = ref(false);
-const totalItems = ref(0);
-const rows = ref<any[]>([]);
-const serverParams = reactive({
+const serverParams = ref<TimeSheetHistoryFilter & GridParams>({
   profileId: props.workerId,
   sortBy: 3,
   isDescending: true,
-  pageIndex: 1,
-  pageSize: 30,
 });
 const rowDetail = ref<any>({});
 
-function onPageChange(params: number) {
-  serverParams.pageIndex = params;
-  fetchTimeSheetHistory();
-}
-
-function fetchTimeSheetHistory() {
-  isLoading.value = true;
-  apiGetWorkerProfileTimeSheetHistory(serverParams)
-    .then(response => {
-      isLoading.value = false;
-      rows.value = response.items.map((c: any) => ({ ...c, actions: null }));
-      totalItems.value = response.totalItems;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
-}
-
-function getAccumulated(row: any) {
+function getAccumulated(row: { rowNumber: number }) {
   getWorkerProfileTimeSheetHistoryAccumulated(props.workerId, row.rowNumber)
     .then((response) => (rowDetail.value = response))
     .catch((error) => showAlertError(error));
 }
-
-fetchTimeSheetHistory();
 </script>

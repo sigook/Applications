@@ -1,9 +1,18 @@
 <template>
   <div>
-    <Export :url="exportUrl" :params="serverParams" :fileName="'Requests'"
-      @onDataLoading="(value) => emit('onDataLoading', value)">
-      <template v-slot:actions>
-        <b-checkbox v-if="tableConfig.showMyRequestsCheckbox" v-model="serverParams.onlyMine">My Requests</b-checkbox>
+    <div v-if="jobBoardsSummary.length" class="job-boards-summary">
+      <span class="job-boards-summary__label">Posted in:</span>
+      <b-tag v-for="s in jobBoardsSummary" :key="s.sourceId" rounded type="is-info is-light">
+        {{ s.value }} ({{ s.count }})
+      </b-tag>
+    </div>
+    <SigookGrid ref="grid" :fetch="loadRequests" v-model:params="serverParams" :sort-map="sortMap"
+      :export="{ url: exportUrl, fileName: 'Requests' }" focusable :checkable="tableConfig.enableCheckable"
+      v-model:checked-rows="checkedRows" @update:loading="(value) => emit('onDataLoading', value)"
+      @loaded="(total) => emit('update:totalItems', total)" @cellclick="onCellClick">
+      <template #actions>
+        <b-checkbox v-if="tableConfig.showMyRequestsCheckbox" v-model="serverParams.onlyMine"
+          @update:modelValue="onOnlyMineChange">My Requests</b-checkbox>
         <b-dropdown v-if="tableConfig.showQuickActions"
           :key="quickActionsKey"
           aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false" append-to-body>
@@ -31,196 +40,173 @@
           </b-dropdown-item>
         </b-dropdown>
       </template>
-    </Export>
-    <div v-if="jobBoardsSummary.length" class="job-boards-summary">
-      <span class="job-boards-summary__label">Posted in:</span>
-      <b-tag v-for="s in jobBoardsSummary" :key="s.sourceId" rounded type="is-info is-light">
-        {{ s.value }} ({{ s.count }})
-      </b-tag>
-    </div>
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated backend-pagination backend-sorting
-      :checkable="tableConfig.enableCheckable" pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" pagination-size="is-small"
-      focuseable :default-sort="defaultSort" v-model:current-page="serverParams.pageIndex" v-model:checked-rows="checkedRows"
-      @page-change="onPageChange" @sort="onSortChange" @cellclick="onCellClick">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
-      </template>
-      <template>
-        <b-table-column field="numberId" label="ID" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            <div class="request-id-cell">
-              <div v-if="props.row.isAsap || props.row.workerSalary" class="request-flags">
-                <span v-if="props.row.isAsap" class="request-flag request-flag--asap">Asap</span>
-                <span v-if="props.row.workerSalary" class="request-flag request-flag--dh">DH</span>
-              </div>
-              <router-link :to="{ path: requestDetailBase + '/' + props.row.id }">
-                <p>{{ props.row.numberId }}</p>
-              </router-link>
-              <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
+      <b-table-column field="numberId" label="ID" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          <div class="request-id-cell">
+            <div v-if="props.row.isAsap || props.row.workerSalary" class="request-flags">
+              <span v-if="props.row.isAsap" class="request-flag request-flag--asap">Asap</span>
+              <span v-if="props.row.workerSalary" class="request-flag request-flag--dh">DH</span>
             </div>
-          </template>
-        </b-table-column>
-        <b-table-column field="companyFullName" label="Client" :visible="!companyProfileId" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            <router-link :to="{ path: companyDetailBase + '/' + props.row.companyProfileId }">
-              {{ props.row.companyFullName }}
+            <router-link :to="{ path: requestDetailBase + '/' + props.row.id }">
+              <p>{{ props.row.numberId }}</p>
             </router-link>
-          </template>
-        </b-table-column>
-        <b-table-column field="location" label="Location" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.location" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            {{ props.row.location }}
-            <span v-if="props.row.entrance"> - {{ props.row.entrance }}</span>
-          </template>
-        </b-table-column>
-        <b-table-column field="jobTitle" label="Position" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.jobTitle" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            {{ props.row.jobTitle }}
-            <i class="fz-2 block mb-0" v-if="props.row.billingTitle">{{ props.row.billingTitle }}</i>
-          </template>
-        </b-table-column>
-        <b-table-column field="createdAt" label="Created" sortable searchable>
-          <template v-slot:searchable>
-            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-              :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-              @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-              @update:modelValue="onCreatedAtSelected" append-to-body>
-            </b-datepicker>
-          </template>
-          <template v-slot="props">
-            {{ dateMonth(props.row.createdAt) }}
-            <AgencyShift class="fz-2 is-block" :requestId="props.row.id" :displayShift="props.row.displayShift"
-              :fetchShift="getAgencyRequestShift" />
-          </template>
-        </b-table-column>
-        <b-table-column field="displayRecruiters" label="Recruiter" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.displayRecruiters" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            <div v-if="props.row.displayRecruiters" class="is-capitalized is-inline-block valign-middle">
-              {{ breakWord(props.row.displayRecruiters) }}
-            </div>
-            <span v-else class="op3">—</span>
-          </template>
-        </b-table-column>
-        <b-table-column field="salesRepresentative" label="Sales Rep" :visible="tableConfig.showSalesRepColumn" sortable
-          searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.salesRepresentative" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            {{ props.row.salesRepresentative || '' }}
-          </template>
-        </b-table-column>
-        <b-table-column field="workerRate" label="Rate / Salary" sortable searchable>
-          <template v-slot:searchable>
-            <b-field>
-              <b-input placeholder="From" icon="magnify" size="is-small" v-model="serverParams.rateFrom"
-                @keypress="onInputEntered"></b-input>
-              <b-input placeholder="To" icon="magnify" size="is-small" v-model="serverParams.rateTo"
-                @keypress="onInputEntered"></b-input>
-            </b-field>
-          </template>
-          <template v-slot="props">
-            {{ currency(props.row.workerRate || props.row.workerSalary) }}
-          </template>
-        </b-table-column>
-        <b-table-column field="workersQuantityWorking" sortable>
-          <template v-slot:header>
-            <p class="has-text-weight-semibold">Workers</p>
-            <p class="has-text-weight-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
-          </template>
-          <template v-slot="props">
-            {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
-          </template>
-        </b-table-column>
-        <b-table-column field="notesCount" label="Notes" :visible="tableConfig.showNotesColumn" v-slot="props">
-          <div @click="onNote(props.row, true)">
-            <b-tag icon="note-text" rounded>
-              <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
+            <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
+          </div>
+        </template>
+      </b-table-column>
+      <b-table-column field="companyFullName" label="Client" :visible="!companyProfileId" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          <router-link :to="{ path: companyDetailBase + '/' + props.row.companyProfileId }">
+            {{ props.row.companyFullName }}
+          </router-link>
+          <i class="fz-2 block mb-0" v-if="props.row.displayReportTo">{{ props.row.displayReportTo }}</i>
+        </template>
+      </b-table-column>
+      <b-table-column field="location" label="Location" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.location" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          {{ props.row.location }}
+          <span v-if="props.row.entrance"> - {{ props.row.entrance }}</span>
+        </template>
+      </b-table-column>
+      <b-table-column field="jobTitle" label="Position" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.jobTitle" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          {{ props.row.jobTitle }}
+          <i class="fz-2 block mb-0" v-if="props.row.billingTitle">{{ props.row.billingTitle }}</i>
+        </template>
+      </b-table-column>
+      <b-table-column field="createdAt" label="Created" sortable searchable>
+        <template v-slot:searchable>
+          <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+            :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+            @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
+            @update:modelValue="onCreatedAtSelected" append-to-body>
+          </b-datepicker>
+        </template>
+        <template v-slot="props">
+          {{ dateMonth(props.row.createdAt) }}
+          <AgencyShift class="fz-2 is-block" :requestId="props.row.id" :displayShift="props.row.displayShift"
+            :fetchShift="getAgencyRequestShift" />
+        </template>
+      </b-table-column>
+      <b-table-column field="displayRecruiters" label="Recruiter" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.displayRecruiters" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          <div v-if="props.row.displayRecruiters" class="is-capitalized is-inline-block valign-middle">
+            {{ breakWord(props.row.displayRecruiters) }}
+          </div>
+          <span v-else class="op3">—</span>
+        </template>
+      </b-table-column>
+      <b-table-column field="salesRepresentative" label="Sales Rep" :visible="tableConfig.showSalesRepColumn" sortable
+        searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.salesRepresentative" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          {{ props.row.salesRepresentative || '' }}
+        </template>
+      </b-table-column>
+      <b-table-column field="workerRate" label="Rate / Salary" sortable searchable>
+        <template v-slot:searchable>
+          <b-field>
+            <b-input placeholder="From" icon="magnify" size="is-small" v-model="serverParams.rateFrom"></b-input>
+            <b-input placeholder="To" icon="magnify" size="is-small" v-model="serverParams.rateTo"></b-input>
+          </b-field>
+        </template>
+        <template v-slot="props">
+          {{ currency(props.row.workerRate || props.row.workerSalary) }}
+        </template>
+      </b-table-column>
+      <b-table-column field="workersQuantityWorking" sortable>
+        <template v-slot:header>
+          <p class="has-text-weight-semibold">Workers</p>
+          <p class="has-text-weight-semibold">({{ totalQuantityWorking }} / {{ totalQuantity }})</p>
+        </template>
+        <template v-slot="props">
+          {{ props.row.workersQuantityWorking }} / {{ props.row.workersQuantity }}
+        </template>
+      </b-table-column>
+      <b-table-column field="notesCount" label="Notes" :visible="tableConfig.showNotesColumn" v-slot="props">
+        <div @click="onNote(props.row, true)">
+          <b-tag icon="note-text" rounded>
+            <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
+          </b-tag>
+        </div>
+        <div v-if="props.row.showNotes" class="notes-tooltip">
+          <ModalNotes :can-create="false" :user-id="props.row.id" :on-get="getNotes"
+            :on-create="createNote" :on-update="updateNote"
+            :on-delete="deleteNote" @onUpdateNote="(val) => onUpdateNote(props.row, val.size)"
+            @close="onNote(props.row, false)">
+          </ModalNotes>
+        </div>
+      </b-table-column>
+      <b-table-column field="jobBoards" label="Job Boards" searchable>
+        <template v-slot:searchable>
+          <b-taginput size="is-small" v-model="jobBoardsSelected" autocomplete :data="availableJobBoards"
+            open-on-focus field="value" icon="bullhorn" placeholder="Select Job Boards"
+            @update:modelValue="onJobBoardsChange" append-to-body>
+          </b-taginput>
+        </template>
+        <template v-slot="props">
+          <div class="job-boards-cell">
+            <b-tag v-for="jb in props.row.jobBoards" :key="jb.sourceId" rounded type="is-info is-light">
+              {{ jb.value }}
             </b-tag>
+            <b-tooltip v-if="!props.row.jobBoards || props.row.jobBoards.length === 0"
+              label="Add job boards" type="is-dark" append-to-body>
+              <b-icon icon="plus-circle-outline" size="is-small" class="job-boards-cell__add"></b-icon>
+            </b-tooltip>
           </div>
-          <div v-if="props.row.showNotes" class="notes-tooltip">
-            <ModalNotes :can-create="false" :user-id="props.row.id" :on-get="getNotes"
-              :on-create="createNote" :on-update="updateNote"
-              :on-delete="deleteNote" @onUpdateNote="(val) => onUpdateNote(props.row, val.size)"
-              @close="onNote(props.row, false)">
-            </ModalNotes>
+        </template>
+      </b-table-column>
+      <b-table-column field="status" label="Status" searchable>
+        <template v-slot:searchable>
+          <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
+            field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusChange" append-to-body>
+          </b-taginput>
+        </template>
+        <template v-slot="props">
+          <div class="has-text-centered">
+            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
+              <div class="status-dot-container">
+                <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
+                  class="request-check" />
+                <div class="dot-status" :class="getStatusClass(props.row)"></div>
+              </div>
+            </b-tooltip>
           </div>
-        </b-table-column>
-        <b-table-column field="jobBoards" label="Job Boards" searchable>
-          <template v-slot:searchable>
-            <b-taginput size="is-small" v-model="jobBoardsSelected" autocomplete :data="availableJobBoards"
-              open-on-focus field="value" icon="bullhorn" placeholder="Select Job Boards"
-              @update:modelValue="onJobBoardsChange" append-to-body>
-            </b-taginput>
+        </template>
+      </b-table-column>
+      <b-table-column field="actions" v-slot="props">
+        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+          <template #trigger>
+            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
           </template>
-          <template v-slot="props">
-            <div class="job-boards-cell">
-              <b-tag v-for="jb in props.row.jobBoards" :key="jb.sourceId" rounded type="is-info is-light">
-                {{ jb.value }}
-              </b-tag>
-              <b-tooltip v-if="!props.row.jobBoards || props.row.jobBoards.length === 0"
-                label="Add job boards" type="is-dark" append-to-body>
-                <b-icon icon="plus-circle-outline" size="is-small" class="job-boards-cell__add"></b-icon>
-              </b-tooltip>
-            </div>
-          </template>
-        </b-table-column>
-        <b-table-column field="status" label="Status" searchable>
-          <template v-slot:searchable>
-            <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-              field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusChange" append-to-body>
-            </b-taginput>
-          </template>
-          <template v-slot="props">
-            <div class="has-text-centered">
-              <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
-                <div class="status-dot-container">
-                  <img v-if="props.row.requestStatus === RequestStatus.Filled" src="../../assets/images/check_white.png" alt="check"
-                    class="request-check" />
-                  <div class="dot-status" :class="getStatusClass(props.row)"></div>
-                </div>
-              </b-tooltip>
-            </div>
-          </template>
-        </b-table-column>
-        <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
-            <b-dropdown-item v-if="props.row.requestStatus !== RequestStatus.Cancelled" aria-role="listitem"
-              @click="router.push({ path: requestDetailBase + '/update/' + props.row.companyProfileId + '/' + props.row.id })">
-              Edit Request
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem"
-              @click="router.push({ path: requestDetailBase + '/duplicate/' + props.row.companyProfileId + '/' + props.row.id })">
-              Duplicate Request
-            </b-dropdown-item>
-          </b-dropdown>
-        </b-table-column>
-      </template>
-    </b-table>
+          <b-dropdown-item v-if="props.row.requestStatus !== RequestStatus.Cancelled" aria-role="listitem"
+            @click="router.push({ path: requestDetailBase + '/update/' + props.row.companyProfileId + '/' + props.row.id })">
+            Edit Request
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem"
+            @click="router.push({ path: requestDetailBase + '/duplicate/' + props.row.companyProfileId + '/' + props.row.id })">
+            Duplicate Request
+          </b-dropdown-item>
+        </b-dropdown>
+      </b-table-column>
+    </SigookGrid>
 
     <!-- bulk cancel -->
     <b-modal custom-content-class="card" v-model="showBulkCancelModal" @close="showBulkCancelModal = false" width="500px">
@@ -247,7 +233,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { appGlobals } from '@/varaibles';
@@ -259,8 +245,8 @@ import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/a
 import { getSalesRequests } from "@/api/salesApi";
 import { useModuleBase } from '@/composables/useModuleBase';
 import { getSourcesForRequests } from "@/api/catalogApi";
-import type { RequestJobBoardSummary, AgencyRequestListItem } from '@/types/agency';
-import type { Source } from '@/types/common';
+import type { RequestJobBoardSummary, AgencyRequestFilter, AgencyRequestListItem } from '@/types/agency';
+import type { CatalogItem, GridHandle, PaginatedList, Source, TableColumnRef } from '@/types/common';
 import {
   getAgencyRequestNotes,
   createAgencyRequestNote,
@@ -275,8 +261,7 @@ import BulkRecruiterModal from '../../components/agency_request/BulkRecruiterMod
 import AgencyShift from '../../components/agency_request/AgencyShiftDetail.vue';
 import { getAgencyRequestShift } from '@/api/agencyRequestApi';
 import CancelList from '@/components/company/CompanyCancelList.vue';
-import { useGridSort } from '@/composables/useGridSort';
-import Export from '@/components/Export.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const props = defineProps<{ totalItems?: number; companyProfileId?: any; agencyId?: any; config?: any }>();
 const emit = defineEmits<{
@@ -287,10 +272,22 @@ const emit = defineEmits<{
 const router = useRouter();
 const agencyStore = useAgencyStore();
 const { isAdmin } = useAdmin();
+const grid = useTemplateRef<GridHandle>('grid');
 
 const { isSalesView, requestBase: requestDetailBase, companyBase: companyDetailBase } = useModuleBase();
 const exportUrl = computed(() =>
   isSalesView.value ? '/api/agency/sales/requests/File' : '/api/agency/recruiting/requests/File');
+
+const sortMap = {
+  numberId: 0,
+  companyFullName: 1,
+  jobTitle: 2,
+  createdAt: 3,
+  displayRecruiters: 4,
+  workerRate: 5,
+  workersQuantityWorking: 6,
+  salesRepresentative: 7,
+};
 
 const defaultConfig = {
   showMyRequestsCheckbox: true,
@@ -311,50 +308,29 @@ const getNotes = ({ userId, pagination }: NotesFetchPayload) => getAgencyRequest
 const createNote = ({ userId, model }: NotesCreatePayload) => createAgencyRequestNote(userId, model);
 const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model);
 const deleteNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id);
-const statuses = [
+const statuses: CatalogItem<number>[] = [
   { id: 1, value: appGlobals.$statusDisplayOpen },
   { id: 3, value: appGlobals.$statusDisplayFilled },
   { id: 4, value: appGlobals.$statusDisplayCancelled }
 ];
-const statusesSelected = ref<any[]>([]);
-const createdAtDatesSelected = ref<any[]>([]);
-const rows = ref<any[]>([]);
-const checkedRows = ref<any[]>([]);
-const serverParams = reactive<any>({
+const statusesSelected = ref<CatalogItem<number>[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const rows = ref<(AgencyRequestListItem & { showNotes: boolean })[]>([]);
+const checkedRows = ref<AgencyRequestListItem[]>([]);
+const serverParams = ref<AgencyRequestFilter>({
   onlyMine: false,
   sortBy: 0,
-  isDescending: true,
-  pageIndex: 1,
-  pageSize: 30
+  isDescending: true
 });
-const quickActions = reactive<any>({ isAsap: false });
-
-const { defaultSort, onSortChange } = useGridSort(serverParams, {
-  numberId: 0,
-  companyFullName: 1,
-  jobTitle: 2,
-  createdAt: 3,
-  displayRecruiters: 4,
-  workerRate: 5,
-  workersQuantityWorking: 6,
-  salesRepresentative: 7,
-}, () => loadRequests());
+const quickActions = reactive({ isAsap: false });
 
 const tableConfig = computed(() => ({ ...defaultConfig, ...props.config }));
-const totalQuantityWorking = computed(() => {
-  if (rows.value.length > 0) {
-    return rows.value.map((r) => r.workersQuantityWorking).reduce((a, b) => a + b);
-  }
-  return 0;
-});
-const totalQuantity = computed(() => {
-  if (rows.value.length > 0) {
-    return rows.value.map((r) => r.workersQuantity).reduce((a, b) => a + b);
-  }
-  return 0;
-});
+const totalQuantityWorking = computed(() =>
+  rows.value.reduce((total, r) => total + r.workersQuantityWorking, 0));
+const totalQuantity = computed(() =>
+  rows.value.reduce((total, r) => total + r.workersQuantity, 0));
 
-function onCellClick(row: any, column: any, rowIndex: number) {
+function onCellClick(row: AgencyRequestListItem, column: TableColumnRef) {
   switch (column.field) {
     case 'workersQuantityWorking':
       router.push({
@@ -377,29 +353,28 @@ function onCellClick(row: any, column: any, rowIndex: number) {
   }
 }
 
-function onPageChange(params: any) {
-  serverParams.pageIndex = params;
-  loadRequests();
-}
-
 function onStatusChange() {
-  serverParams.statuses = statusesSelected.value.map((ss) => ss.id);
-  loadRequests();
+  serverParams.value.statuses = statusesSelected.value.map((ss) => ss.id);
+  grid.value?.search();
 }
 
 function onJobBoardsChange() {
-  serverParams.jobBoardIds = jobBoardsSelected.value.map((jb) => jb.id);
-  loadRequests();
+  serverParams.value.jobBoardIds = jobBoardsSelected.value.map((jb) => jb.id);
+  grid.value?.search();
+}
+
+function onOnlyMineChange() {
+  grid.value?.search();
 }
 
 function onJobBoardsSaved() {
-  loadRequests();
+  reloadRequests();
 }
 
 function onCreatedAtSelected() {
-  serverParams.createdAtFrom = createdAtDatesSelected.value[0];
-  serverParams.createdAtTo = createdAtDatesSelected.value[1];
-  loadRequests();
+  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
+  grid.value?.search();
 }
 
 function onCreatedAtCleared() {
@@ -407,23 +382,15 @@ function onCreatedAtCleared() {
   onCreatedAtSelected();
 }
 
-function onInputEntered(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    loadRequests();
-  }
+function onNote(row: AgencyRequestListItem & { showNotes: boolean }, status: boolean) {
+  row.showNotes = status;
 }
 
-function onNote(row: any, status: boolean) {
-  const index = rows.value.findIndex((r) => r.id === row.id);
-  rows.value[index].showNotes = status;
+function onUpdateNote(row: AgencyRequestListItem, size: number) {
+  row.notesCount = size;
 }
 
-function onUpdateNote(row: any, size: number) {
-  const index = rows.value.findIndex((r) => r.id === row.id);
-  rows.value[index].notesCount = size;
-}
-
-function getStatusClass(row: any) {
+function getStatusClass(row: AgencyRequestListItem) {
   if (row.requestStatus === RequestStatus.Open &&
     row.workersQuantityWorking > 0 &&
     row.workersQuantityWorking < row.workersQuantity) {
@@ -432,21 +399,21 @@ function getStatusClass(row: any) {
   return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
 }
 
-function loadRequests() {
-  checkedRows.value = [];
-  emit('onDataLoading', true);
+function loadRequests(params: AgencyRequestFilter): Promise<PaginatedList<AgencyRequestListItem & { showNotes: boolean }>> {
   if (!props.companyProfileId && !props.agencyId) {
-    agencyStore.updateAgencyRequestFilter(serverParams);
+    agencyStore.updateAgencyRequestFilter(params);
   }
   const fetchRequests = isSalesView.value ? getSalesRequests : getAgencyRequests;
-  fetchRequests(serverParams)
-    .then((requestsResponse) => {
-      rows.value = requestsResponse.items.map((i: any) => ({ ...i, actions: null, showNotes: false, notesCount: i.notesCount || 0 }));
-      jobBoardsSummary.value = requestsResponse.jobBoardsSummary || [];
-      emit('update:totalItems', requestsResponse.totalItems);
-      emit('onDataLoading', false);
-    })
-    .catch(() => emit('onDataLoading', false));
+  return fetchRequests(params)
+    .then((response) => {
+      rows.value = response.items.map((i) => ({ ...i, showNotes: false, notesCount: i.notesCount || 0 }));
+      jobBoardsSummary.value = response.jobBoardsSummary || [];
+      return { ...response, items: rows.value };
+    });
+}
+
+function reloadRequests() {
+  grid.value?.reload();
 }
 
 function bulkUpdateIsAsap() {
@@ -458,7 +425,7 @@ function bulkUpdateIsAsap() {
   };
   updateIsAsapRequests(payload)
     .then(() => {
-      loadRequests();
+      reloadRequests();
     }).catch((error) => {
       showAlertError(error);
       emit('onDataLoading', false);
@@ -484,7 +451,7 @@ function onBulkRecruitersConfirmed(recruiterIds: string[]) {
     .then(() => {
       showBulkRecruitersModal.value = false;
       showAlertSuccess(recruiterIds.length === 0 ? 'Recruiters unassigned' : 'Recruiters assigned');
-      loadRequests();
+      reloadRequests();
     })
     .catch((error) => {
       showBulkRecruitersModal.value = false;
@@ -504,7 +471,7 @@ function onBulkCancelConfirmed({ reasonId, otherMessage }: { reasonId: string; o
     .then((result) => {
       showBulkCancelModal.value = false;
       showAlertSuccess(`Cancelled ${result.cancelled} order(s), skipped ${result.skipped}`);
-      loadRequests();
+      reloadRequests();
     })
     .catch((error) => {
       showBulkCancelModal.value = false;
@@ -513,43 +480,40 @@ function onBulkCancelConfirmed({ reasonId, otherMessage }: { reasonId: string; o
     });
 }
 
-watch(() => serverParams.onlyMine, () => {
-  loadRequests();
-});
-
-watch(checkedRows, (rows) => {
-  quickActions.isAsap = rows.length > 0 && rows.every((r: any) => r.isAsap);
+watch(checkedRows, (selected) => {
+  quickActions.isAsap = selected.length > 0 && selected.every((r) => r.isAsap);
 });
 
 if (!props.companyProfileId && !props.agencyId) {
   if (agencyStore.agencyRequestFilter) {
-    Object.assign(serverParams, agencyStore.agencyRequestFilter);
-    if (serverParams.statuses) {
-      statusesSelected.value = statuses.filter((s) => serverParams.statuses.some((sps: any) => sps == s.id));
+    serverParams.value = { ...agencyStore.agencyRequestFilter };
+    const selectedStatuses = serverParams.value.statuses;
+    if (selectedStatuses) {
+      statusesSelected.value = statuses.filter((s) => selectedStatuses.some((sps) => sps == s.id));
     }
-    if (serverParams.createdAtFrom && serverParams.createdAtTo) {
-      createdAtDatesSelected.value[0] = serverParams.createdAtFrom;
-      createdAtDatesSelected.value[1] = serverParams.createdAtTo;
+    if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+      createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+      createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
     }
   } else {
-    serverParams.onlyMine = !isAdmin.value;
+    serverParams.value.onlyMine = !isAdmin.value;
   }
 } else {
-  serverParams.onlyMine = false;
+  serverParams.value.onlyMine = false;
   if (props.companyProfileId) {
-    serverParams.companyProfileId = props.companyProfileId;
+    serverParams.value.companyProfileId = props.companyProfileId;
   }
   if (props.agencyId) {
-    serverParams.agencyId = props.agencyId;
+    serverParams.value.agencyId = props.agencyId;
   }
 }
 getSourcesForRequests().then((sources) => {
   availableJobBoards.value = sources;
-  if (serverParams.jobBoardIds && serverParams.jobBoardIds.length) {
-    jobBoardsSelected.value = sources.filter((s) => serverParams.jobBoardIds.includes(s.id));
+  const selectedJobBoards = serverParams.value.jobBoardIds;
+  if (selectedJobBoards && selectedJobBoards.length) {
+    jobBoardsSelected.value = sources.filter((s) => selectedJobBoards.includes(s.id));
   }
 });
-loadRequests();
 </script>
 
 <style scoped lang="scss">

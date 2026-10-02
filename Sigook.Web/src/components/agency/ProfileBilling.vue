@@ -1,30 +1,25 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="addLocation">Add</b-button>
-    </b-field>
-    <b-table sticky-header height="var(--grid-height)" :data="locations" narrowed hoverable paginated pagination-size="is-small" pagination-rounded>
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
+    <SigookGrid :data="locations" :refresh="getLocations">
+      <template #actions>
+        <b-button icon-left="plus" @click="addLocation">Add</b-button>
       </template>
-      <template>
-        <b-table-column field="formattedAddress" label="Address" v-slot="props">
-          {{ props.row.formattedAddress }}
-        </b-table-column>
-        <b-table-column field="isBilling" label="Company Use As Billing Address" v-slot="props">
-          {{ props.row.isBilling ? 'Yes' : 'No' }}
-        </b-table-column>
-        <b-table-column field="actions" v-slot="props">
-          <b-field>
-            <b-button outlined rounded type="is-primary" @click="editLocation(props.row)" class="mr-2"
-              icon-left="pencil" />
-            <b-button outlined rounded type="is-danger" @click="deleteLocation(props.row, props.index)"
-              class="mr-2" icon-left="delete" />
-          </b-field>
-        </b-table-column>
-      </template>
-    </b-table>
+      <b-table-column field="formattedAddress" label="Address" v-slot="props">
+        {{ props.row.formattedAddress }}
+      </b-table-column>
+      <b-table-column field="isBilling" label="Company Use As Billing Address" v-slot="props">
+        {{ props.row.isBilling ? 'Yes' : 'No' }}
+      </b-table-column>
+      <b-table-column field="actions" v-slot="props">
+        <b-field>
+          <b-button outlined rounded type="is-primary" @click="editLocation(props.row)" class="mr-2"
+            icon-left="pencil" />
+          <b-button outlined rounded type="is-danger" @click="deleteLocation(props.row)"
+            class="mr-2" icon-left="delete" />
+        </b-field>
+      </b-table-column>
+    </SigookGrid>
 
     <b-modal custom-content-class="card" v-model="showModal" width="500px">
       <address-component ref="addressComponent" v-model:model="locationBeingUpdate" @isLoading="(value) => isLoading = value" />
@@ -50,6 +45,7 @@ import {
   deleteAgencyLocation
 } from "@/api/agencyApi";
 import AddressComponent from "@/components/Address.vue";
+import SigookGrid from '@/components/SigookGrid.vue';
 
 defineProps<{ agencyData?: any }>();
 
@@ -105,7 +101,7 @@ function getLocations() {
   });
 }
 
-function deleteLocation(location: any, index: number) {
+function deleteLocation(location: any) {
   showAlertConfirm("Are you sure you want to delete this location?", '', "Yes")
     .then(r => {
       if (!r) return;
@@ -113,7 +109,7 @@ function deleteLocation(location: any, index: number) {
       deleteAgencyLocation(location.id)
         .then(() => {
           isLoading.value = false;
-          locations.value.splice(index, 1);
+          locations.value = locations.value.filter(l => l.id !== location.id);
         }).catch(e => {
           isLoading.value = false;
           showAlertError(e.data);

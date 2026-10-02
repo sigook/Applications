@@ -1,15 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="openCreate">Add</b-button>
-    </b-field>
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false"
-      paginated pagination-size="is-small" backend-pagination backend-sorting pagination-rounded
-      :total="totalItems" :per-page="serverParams.pageSize" :default-sort="['date', 'desc']"
-      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
+    <SigookGrid ref="grid" :fetch="loadInteractions" v-model:params="serverParams" :sort-map="sortMap"
+      @update:loading="(value) => isLoading = value">
+      <template #actions>
+        <b-button icon-left="plus" @click="openCreate">Add</b-button>
       </template>
       <b-table-column field="description" label="Description" v-slot="props">
         {{ props.row.description }}
@@ -72,20 +67,18 @@
         <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2" @click="openEdit(props.row)"></b-button>
         <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDelete(props.row)"></b-button>
       </b-table-column>
-    </b-table>
+    </SigookGrid>
 
-    <interaction-modal v-model="isModalOpen" :interaction="editing" :client="company" @saved="load" />
+    <interaction-modal v-model="isModalOpen" :interaction="editing" :client="company" @saved="reload" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { deleteCompanyInteraction, getCompanyInteractions } from '@/api/agencyCompanyApi';
 import {
   CompanyInteractionSortBy,
-  InteractionPurpose,
   InteractionStatus,
-  InteractionType,
   INTERACTION_TYPES,
   INTERACTION_PURPOSES,
   INTERACTION_STATUSES,
@@ -93,13 +86,14 @@ import {
   INTERACTION_PURPOSE_LABELS,
   INTERACTION_STATUS_LABELS,
 } from '@/types/company';
-import type { CompanyInteraction } from '@/types/company';
+import type { CompanyInteraction, CompanyInteractionFilter } from '@/types/company';
 import type { SalesClientReference } from '@/types/sales';
-import type { CatalogItem } from '@/types/common';
+import type { CatalogItem, GridHandle, PaginatedList } from '@/types/common';
 import { useSalesOwners } from '@/composables/useSalesOwners';
 import { date } from '@/utils/filters';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import InteractionModal from './InteractionModal.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const props = defineProps<{ company: SalesClientReference }>();
 
@@ -109,50 +103,39 @@ const statusOptions: CatalogItem<InteractionStatus>[] = INTERACTION_STATUSES.map
 }));
 
 const isLoading = ref(true);
-const totalItems = ref(0);
-const rows = ref<CompanyInteraction[]>([]);
 const isModalOpen = ref(false);
 const editing = ref<CompanyInteraction | null>(null);
 const statusesSelected = ref<CatalogItem<InteractionStatus>[]>([]);
 const createdAtDatesSelected = ref<Date[]>([]);
 const { isAdmin, owners, loadOwners } = useSalesOwners();
-const serverParams = ref({
+const grid = useTemplateRef<GridHandle>('grid');
+const sortMap = {
+  date: CompanyInteractionSortBy.CreatedAt,
+  status: CompanyInteractionSortBy.Status,
+};
+const serverParams = ref<CompanyInteractionFilter>({
   sortBy: CompanyInteractionSortBy.CreatedAt,
   isDescending: true,
-  pageIndex: 1,
-  pageSize: 30,
-  ownerId: null as string | null,
-  interactionType: null as InteractionType | null,
-  interactionPurpose: null as InteractionPurpose | null,
-  statuses: undefined as InteractionStatus[] | undefined,
-  createdAtFrom: null as string | null,
-  createdAtTo: null as string | null,
+  ownerId: null,
+  interactionType: null,
+  interactionPurpose: null,
+  statuses: undefined,
+  createdAtFrom: null,
+  createdAtTo: null,
 });
 
-load();
 loadOwners();
 
-function load(): void {
-  isLoading.value = true;
-  getCompanyInteractions(props.company.id, serverParams.value)
-    .then((result) => {
-      rows.value = result.items;
-      totalItems.value = result.totalItems;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-    });
+function loadInteractions(params: CompanyInteractionFilter): Promise<PaginatedList<CompanyInteraction>> {
+  return getCompanyInteractions(props.company.id, params);
 }
 
 function applyFilter(): void {
-  serverParams.value.pageIndex = 1;
-  load();
+  grid.value?.search();
 }
 
-function onPageChange(page: number): void {
-  serverParams.value.pageIndex = page;
-  load();
+function reload(): void {
+  grid.value?.reload();
 }
 
 function onStatusChange(): void {
@@ -173,12 +156,6 @@ function onCreatedAtCleared(): void {
   onCreatedAtSelected();
 }
 
-function onSortChange(field: string, order: string): void {
-  serverParams.value.sortBy = field === 'status' ? CompanyInteractionSortBy.Status : CompanyInteractionSortBy.CreatedAt;
-  serverParams.value.isDescending = order !== 'asc';
-  load();
-}
-
 function openCreate(): void {
   editing.value = null;
   isModalOpen.value = true;
@@ -196,7 +173,7 @@ async function onDelete(interaction: CompanyInteraction): Promise<void> {
   try {
     await deleteCompanyInteraction(props.company.id, interaction.id);
     showAlertSuccess('Interaction deleted');
-    load();
+    reload();
   } catch (error) {
     isLoading.value = false;
     await showAlertError(error);

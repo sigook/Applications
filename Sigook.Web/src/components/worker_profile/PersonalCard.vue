@@ -3,10 +3,10 @@
     <template #actions>
       <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
         <template #trigger>
-          <button type="button" class="profile-link">Edit <b-icon icon="menu-down" size="is-small" /></button>
+          <b-button type="is-ghost" size="is-small" class="profile-link" icon-right="menu-down">Edit</b-button>
         </template>
         <b-dropdown-item aria-role="listitem" @click="open('basic')">Basic information</b-dropdown-item>
-        <b-dropdown-item aria-role="listitem" @click="open('email')">Login email</b-dropdown-item>
+        <b-dropdown-item v-if="props.showLoginEmail" aria-role="listitem" @click="open('email')">Login email</b-dropdown-item>
         <b-dropdown-item aria-role="listitem" @click="open('sin')">SIN/SSN</b-dropdown-item>
       </b-dropdown>
     </template>
@@ -28,7 +28,7 @@
         <dt class="profile-field-label">Own vehicle</dt>
         <dd>{{ props.worker.hasVehicle ? 'Yes' : 'No' }}</dd>
       </div>
-      <div class="profile-field">
+      <div v-if="props.showLoginEmail" class="profile-field">
         <dt class="profile-field-label">Login email</dt>
         <dd>{{ props.worker.email }}</dd>
       </div>
@@ -36,10 +36,8 @@
         <dt class="profile-field-label">SIN/SSN</dt>
         <dd v-if="props.worker.socialInsurance" class="profile-sin">
           {{ showSin ? props.worker.socialInsurance : sin(props.worker.socialInsurance) }}
-          <button type="button" class="profile-icon-button" :aria-label="showSin ? 'Hide SIN/SSN' : 'Show SIN/SSN'"
-            @click="showSin = !showSin">
-            <b-icon :icon="showSin ? 'eye-off' : 'eye'" size="is-small" />
-          </button>
+          <b-button type="is-ghost" size="is-small" class="profile-icon-button" :icon-left="showSin ? 'eye-off' : 'eye'"
+            :aria-label="showSin ? 'Hide SIN/SSN' : 'Show SIN/SSN'" @click="showSin = !showSin" />
         </dd>
         <dd v-else class="profile-empty">—</dd>
       </div>
@@ -82,7 +80,7 @@ import SinForm from '@/components/worker/WorkSinForm.vue';
 
 type PersonalForm = 'basic' | 'email' | 'sin';
 
-const props = defineProps<{ worker: WorkerProfileDetail }>();
+const props = withDefaults(defineProps<{ worker: WorkerProfileDetail; showLoginEmail?: boolean }>(), { showLoginEmail: true });
 const emit = defineEmits<{ (e: 'updateProfile'): void }>();
 
 const showSin = ref(false);
@@ -109,7 +107,7 @@ function onSaved() {
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/scss/agency-worker-profile';
+@import '../../assets/scss/worker-profile';
 
 .profile-sin {
   display: flex;
@@ -117,7 +115,7 @@ function onSaved() {
   gap: 4px;
 }
 
-.profile-sin .profile-icon-button {
+.profile-sin .button.profile-icon-button {
   width: 28px;
   height: 28px;
 }

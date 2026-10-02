@@ -3,14 +3,15 @@
     <b-loading v-model="isLoading"></b-loading>
     <PageHeader title="PayStubs" :crumbs="accountingCrumbs" />
     <div>
-      <export :url="'/api/agency/accounting/PayStubs/file'" :params="serverParams" :fileName="'PayStubs'"
-        @onDataLoading="(value) => isLoading = value">
-        <template v-slot:actions>
+      <SigookGrid ref="grid" :fetch="loadPayStubs" v-model:params="serverParams" :sort-map="sortMap"
+        :export="{ url: '/api/agency/accounting/PayStubs/file', fileName: 'PayStubs' }" focusable
+        checkable v-model:checked-rows="checkedRows" @update:loading="(value) => isLoading = value">
+        <template #actions>
           <b-button tag="router-link" to="/accounting/paystubs/create" icon-left="plus">
             Create
           </b-button>
         </template>
-        <template v-slot:dropdown-actions>
+        <template #dropdown-actions>
           <b-dropdown-item aria-role="listitem" @click="showGeneratePayStubsModal = true">
             <b-icon icon="table-plus"></b-icon>
             <span>Generate</span>
@@ -24,83 +25,67 @@
             <span>Send Email</span>
           </b-dropdown-item>
         </template>
-      </export>
-      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
-        checkable checkbox-position="left" v-model:checked-rows="checkedRows"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
-        <template v-slot:empty>
-          <p class="container has-text-centered">No records available</p>
-        </template>
-        <template>
-          <b-table-column field="payStubNumber" label="PayStub Number" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.payStubNumber" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered">
-              </b-input>
-            </template>
-            <template v-slot="props">
-              {{ props.row.payStubNumber }}
-            </template>
-          </b-table-column>
-          <b-table-column field="createdAt" label="Created At" sortable searchable>
-            <template v-slot:searchable>
-              <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-                :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-                @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @update:modelValue="onCreatedAtSelected" append-to-body>
-              </b-datepicker>
-            </template>
-            <template v-slot="props">
-              {{ dateMonth(props.row.createdAt) }}
-            </template>
-          </b-table-column>
-          <b-table-column field="workerFullName" label="Worker" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.workerFullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered">
-              </b-input>
-            </template>
-            <template v-slot="props">
-              {{ props.row.workerFullName }}
-            </template>
-          </b-table-column>
-          <b-table-column field="numberId" label="Number ID" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered">
-              </b-input>
-            </template>
-            <template v-slot="props">
-              {{ props.row.numberId }}
-            </template>
-          </b-table-column>
-          <b-table-column field="totalPaid" label="Total Paid">
-            <template v-slot="props">
-              {{ currency(props.row.totalPaid) }}
-            </template>
-          </b-table-column>
-          <b-table-column field="actions" v-slot="props">
-            <b-field>
-              <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
-                  @click="onDownloadPayStubPdf(props.row)">
-                </b-button>
-              </b-tooltip>
-              <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
-                  class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
-                  @click="onSendPayStubEmail(props.row)">
-                </b-button>
-              </b-tooltip>
-              <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeletePayStub(props.row)">
-                </b-button>
-              </b-tooltip>
-            </b-field>
-          </b-table-column>
-        </template>
-      </b-table>
+        <b-table-column field="payStubNumber" label="PayStub Number" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.payStubNumber" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.payStubNumber }}
+          </template>
+        </b-table-column>
+        <b-table-column field="createdAt" label="Created At" sortable searchable>
+          <template v-slot:searchable>
+            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+              :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
+              @update:modelValue="onCreatedAtSelected" append-to-body>
+            </b-datepicker>
+          </template>
+          <template v-slot="props">
+            {{ dateMonth(props.row.createdAt) }}
+          </template>
+        </b-table-column>
+        <b-table-column field="workerFullName" label="Worker" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.workerFullName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.workerFullName }}
+          </template>
+        </b-table-column>
+        <b-table-column field="numberId" label="Number ID" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.numberId }}
+          </template>
+        </b-table-column>
+        <b-table-column field="totalPaid" label="Total Paid">
+          <template v-slot="props">
+            {{ currency(props.row.totalPaid) }}
+          </template>
+        </b-table-column>
+        <b-table-column field="actions" v-slot="props">
+          <b-field>
+            <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
+                @click="onDownloadPayStubPdf(props.row)">
+              </b-button>
+            </b-tooltip>
+            <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
+                class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
+                @click="onSendPayStubEmail(props.row)">
+              </b-button>
+            </b-tooltip>
+            <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeletePayStub(props.row)">
+              </b-button>
+            </b-tooltip>
+          </b-field>
+        </b-table-column>
+      </SigookGrid>
     </div>
 
     <b-modal custom-content-class="card" v-model="showGeneratePayStubsModal" width="800px">
@@ -114,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { downloadPDF } from '@/utils/downloadFile';
@@ -127,63 +112,45 @@ import {
   sendPayStubEmailBulk,
   deleteAgencyPayStub,
 } from '@/api/agencyPayStubApi';
-import { useGridSort } from '@/composables/useGridSort';
-import Export from '@/components/Export.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 import GeneratePayStubs from '@/components/agency_accounting/GeneratePayStubs.vue';
 import SkipPayrollNumber from '@/components/agency_accounting/SkipPayrollNumber.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import { accountingCrumbs } from '@/constants/breadcrumbs';
 import type { AgencyPayStubFilter, AgencyPayStubRow } from '@/types/accounting';
+import type { GridHandle, PaginatedList } from '@/types/common';
 
 const agencyStore = useAgencyStore();
+const grid = useTemplateRef<GridHandle>('grid');
 
-const isLoading = ref(true);
-const totalItems = ref(0);
-const rows = ref<AgencyPayStubRow[]>([]);
-const checkedRows = ref<AgencyPayStubRow[]>([]);
-const createdAtDatesSelected = ref<Date[]>([]);
-const serverParams = ref<AgencyPayStubFilter>({
-  sortBy: 0,
-  pageIndex: 1,
-  pageSize: 30,
-  isDescending: true,
-});
-
-const { defaultSort, onSortChange } = useGridSort(serverParams, {
+const sortMap = {
   payStubNumber: 0,
   createdAt: 1,
   workerFullName: 2,
   numberId: 3,
   totalPaid: 4,
-}, () => loadPayStubs());
+};
+
+const isLoading = ref(true);
+const checkedRows = ref<AgencyPayStubRow[]>([]);
+const createdAtDatesSelected = ref<Date[]>([]);
+const serverParams = ref<AgencyPayStubFilter>(agencyStore.agencyPayStubFilter ?? {
+  sortBy: 0,
+  isDescending: true,
+});
 
 const showGeneratePayStubsModal = ref(false);
 const showSkipPayrollNumberModal = ref(false);
 
-if (agencyStore.agencyPayStubFilter) {
-  serverParams.value = agencyStore.agencyPayStubFilter;
-  if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
-    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
-  }
-}
-loadPayStubs();
-
-function onPageChange(params: number) {
-  serverParams.value.pageIndex = params;
-  loadPayStubs();
-}
-
-function onInputEntered(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    loadPayStubs();
-  }
+if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+  createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+  createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
 }
 
 function onCreatedAtSelected() {
   serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
   serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
-  loadPayStubs();
+  grid.value?.search();
 }
 
 function onCreatedAtCleared() {
@@ -191,20 +158,10 @@ function onCreatedAtCleared() {
   onCreatedAtSelected();
 }
 
-function loadPayStubs() {
-  isLoading.value = true;
-  agencyStore.updateAgencyPayStubFilter(serverParams.value);
-  getAgencyPayStubs(serverParams.value)
-    .then((response) => {
-      rows.value = response.items.map((i) => ({ ...i, emailSending: false }));
-      checkedRows.value = [];
-      totalItems.value = response.totalItems;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+function loadPayStubs(params: AgencyPayStubFilter): Promise<PaginatedList<AgencyPayStubRow>> {
+  agencyStore.updateAgencyPayStubFilter(params);
+  return getAgencyPayStubs(params)
+    .then((response) => ({ ...response, items: response.items.map((i) => ({ ...i, emailSending: false })) }));
 }
 
 function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
@@ -276,7 +233,7 @@ function onDeletePayStub(payStub: AgencyPayStubRow) {
       deleteAgencyPayStub(payStub.id)
         .then(() => {
           isLoading.value = false;
-          loadPayStubs();
+          grid.value?.reload();
         })
         .catch((error) => {
           isLoading.value = false;
@@ -288,6 +245,6 @@ function onDeletePayStub(payStub: AgencyPayStubRow) {
 
 function onPayStubsGenerated() {
   showGeneratePayStubsModal.value = false;
-  loadPayStubs();
+  grid.value?.reload();
 }
 </script>

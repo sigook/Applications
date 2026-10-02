@@ -1,23 +1,24 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <template v-if="isTouch">
-      <div class="mobile-list-toolbar">
-        <b-field>
-          <b-input v-model="serverParams.name" placeholder="Search name..." icon="magnify" expanded
-            @keypress="onInputEntered"></b-input>
-        </b-field>
-        <div class="filter-trigger">
-          <b-button icon-left="filter-variant" @click="showFilters = true" />
-          <span v-if="activeFilterCount > 0" class="filter-count-badge">{{ activeFilterCount }}</span>
-        </div>
-      </div>
-      <div class="rcard-list">
-        <div v-for="row in rows" :key="row.workerProfileId" class="rcard">
+    <SigookGrid ref="grid" :fetch="loadWorkers" v-model:params="serverParams" :sort-map="sortMap"
+      @update:loading="(value) => isLoading = value">
+      <template #actions>
+        <template v-if="isTouch">
+          <b-input v-model="serverParams.name" placeholder="Search name..." icon="magnify"
+            @keyup.enter="onSearch"></b-input>
+          <div class="filter-trigger">
+            <b-button icon-left="filter-variant" @click="showFilters = true" />
+            <span v-if="activeFilterCount > 0" class="filter-count-badge">{{ activeFilterCount }}</span>
+          </div>
+        </template>
+      </template>
+      <template #mobile-card="{ row }">
+        <div class="rcard">
           <div class="rcard__head">
             <div class="rcard-worker">
               <img v-if="row.profileImage" :src="row.profileImage" alt="profile image" class="img-30 img-rounded" />
-              <default-image v-else :name="row.fullName" class="img-30"></default-image>
+              <default-image v-else :name="row.name" class="img-30"></default-image>
               <div>
                 <p class="rcard__title">{{ row.name }}</p>
                 <p class="rcard__sub" :class="row.isSubcontractor ? 'Blue' : ''">#{{ row.numberId }}</p>
@@ -36,92 +37,78 @@
             </div>
           </div>
         </div>
-        <p v-if="rows.length === 0" class="has-text-centered">No records available</p>
-      </div>
-      <b-pagination v-model="serverParams.pageIndex" :total="totalItems" :per-page="serverParams.pageSize"
-        size="is-small" rounded class="mt-4" @change="onPageChange" />
-      <MobileFiltersPanel v-model="showFilters" :active-count="activeFilterCount" @apply="getWorkers"
-        @clear="clearFilters">
-        <b-field label="ID">
-          <b-input v-model="serverParams.numberId"></b-input>
-        </b-field>
-        <b-field label="Name">
-          <b-input v-model="serverParams.name"></b-input>
-        </b-field>
-        <b-field label="Start Working">
-          <b-datepicker :mobile-native="false" placeholder="Select range..."
+      </template>
+      <b-table-column field="profileImage" width="50" v-slot="props">
+        <img v-if="props.row.profileImage" :src="props.row.profileImage" alt="profile image"
+          class="img-30 img-rounded" />
+        <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
+      </b-table-column>
+      <b-table-column field="numberId" label="ID" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
+        </template>
+      </b-table-column>
+      <b-table-column field="name" label="Name" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="props">
+          {{ props.row.name }}
+        </template>
+      </b-table-column>
+      <b-table-column field="startWorking" label="Start Working" sortable searchable>
+        <template v-slot:searchable>
+          <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
             :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
             @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
             @update:modelValue="onStartWorkingSelected" append-to-body>
           </b-datepicker>
-        </b-field>
-        <b-field label="Status">
-          <b-taginput v-model="statusesSelected" autocomplete :data="statuses" open-on-focus field="value" icon="label"
-            placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
+        </template>
+        <template v-slot="props">
+          {{ dateMonth(props.row.startWorking) }}
+        </template>
+      </b-table-column>
+      <b-table-column field="status" label="Status" sortable searchable>
+        <template v-slot:searchable>
+          <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
+            field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
           </b-taginput>
-        </b-field>
-      </MobileFiltersPanel>
-    </template>
-    <b-table v-else sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-      pagination-rounded :total="totalItems" :per-page="serverParams.pageSize"
-      v-model:current-page="serverParams.pageIndex" default-sort="name" @page-change="onPageChange" @sort="onSortChange">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
-      </template>
-      <template>
-        <b-table-column field="profileImage" width="50" v-slot="props">
-          <img v-if="props.row.profileImage" :src="props.row.profileImage" alt="profile image"
-            class="img-30 img-rounded" />
-          <default-image v-else :name="props.row.fullName" class="img-30"></default-image>
-        </b-table-column>
-        <b-table-column field="numberId" label="ID" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            <span :class="props.row.isSubcontractor ? 'Blue' : ''">{{ props.row.numberId }}</span>
-          </template>
-        </b-table-column>
-        <b-table-column field="name" label="Name" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"
-              @keypress="onInputEntered"></b-input>
-          </template>
-          <template v-slot="props">
-            {{ props.row.name }}
-          </template>
-        </b-table-column>
-        <b-table-column field="startWorking" label="Start Working" sortable searchable>
-          <template v-slot:searchable>
-            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-              :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-              @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
-              @update:modelValue="onStartWorkingSelected" append-to-body>
-            </b-datepicker>
-          </template>
-          <template v-slot="props">
-            {{ dateMonth(props.row.startWorking) }}
-          </template>
-        </b-table-column>
-        <b-table-column field="status" label="Status" sortable searchable>
-          <template v-slot:searchable>
-            <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statuses" open-on-focus
-              field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
-            </b-taginput>
-          </template>
-          <template v-slot="props">
-            <span class="is-uppercase has-text-weight-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
-          </template>
-        </b-table-column>
-        <b-table-column field="actions" v-slot="props">
-          <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body>
-            <b-button size="is-small" type="is-danger" outlined rounded icon-right="close"
-              v-if="props.row.status === 'Booked'" @click="confirmDelete(props.row)"></b-button>
-          </b-tooltip>
-        </b-table-column>
-      </template>
-    </b-table>
+        </template>
+        <template v-slot="props">
+          <span class="is-uppercase has-text-weight-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
+        </template>
+      </b-table-column>
+      <b-table-column field="actions" v-slot="props">
+        <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body>
+          <b-button size="is-small" type="is-danger" outlined rounded icon-right="close"
+            v-if="props.row.status === 'Booked'" @click="confirmDelete(props.row)"></b-button>
+        </b-tooltip>
+      </b-table-column>
+    </SigookGrid>
+    <MobileFiltersPanel v-if="isTouch" v-model="showFilters" :active-count="activeFilterCount" @apply="onSearch"
+      @clear="clearFilters">
+      <b-field label="ID">
+        <b-input v-model="serverParams.numberId"></b-input>
+      </b-field>
+      <b-field label="Name">
+        <b-input v-model="serverParams.name"></b-input>
+      </b-field>
+      <b-field label="Start Working">
+        <b-datepicker :mobile-native="false" placeholder="Select range..."
+          :icon-right="startWorkingDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+          @icon-right-click="onStartWorkingCleared" range v-model="startWorkingDatesSelected"
+          @update:modelValue="onStartWorkingSelected" append-to-body>
+        </b-datepicker>
+      </b-field>
+      <b-field label="Status">
+        <b-taginput v-model="statusesSelected" autocomplete :data="statuses" open-on-focus field="value" icon="label"
+          placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
+        </b-taginput>
+      </b-field>
+    </MobileFiltersPanel>
 
     <!-- Reject worker Message -->
     <transition name="modal">
@@ -142,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, computed, useTemplateRef } from 'vue';
 import { useRoute } from 'vue-router';
 import EditTextarea from "../../components/agency_request/EditTextarea.vue";
 import { showAlertError } from "@/utils/toast";
@@ -150,69 +137,64 @@ import { dateMonth } from '@/utils/filters';
 import { getRequestWorkers, rejectCompanyRequestWorker } from '@/api/companyApi';
 import { WorkerRequestStatusLabels } from '@/constants/enums';
 import MobileFiltersPanel from '@/components/responsive/MobileFiltersPanel.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 import { useBreakpoint } from '@/composables/useBreakpoint';
+import type { CompanyRequestWorkerFilter } from '@/types/company';
+import type { GridHandle } from '@/types/common';
 
 const route = useRoute();
 const { isTouch } = useBreakpoint();
+const grid = useTemplateRef<GridHandle>('grid');
+
+const sortMap = {
+  numberId: 0,
+  name: 1,
+  status: 2,
+  startWorking: 3,
+};
 
 const showFilters = ref(false);
 const isLoading = ref(false);
-const totalItems = ref(0);
-const rows = ref<any[]>([]);
 const statuses = ref([
   { id: 2, value: 'Rejected' },
   { id: 3, value: 'Booked' },
 ]);
-const statusesSelected = ref<any[]>([]);
-const startWorkingDatesSelected = ref<any[]>([]);
+const statusesSelected = ref<{ id: number; value: string }[]>([]);
+const startWorkingDatesSelected = ref<Date[]>([]);
 const modalRejectWorker = ref(false);
 const currentWorker = ref<any>(null);
-const serverParams = reactive<any>({
+const serverParams = ref<CompanyRequestWorkerFilter>({
   sortBy: 1,
-  requestId: route.params.id,
+  requestId: String(route.params.id),
   pageIndex: 1,
   pageSize: 30,
 });
 
-function onPageChange(params: number) {
-  serverParams.pageIndex = params;
-  getWorkers();
+function loadWorkers(params: CompanyRequestWorkerFilter) {
+  return getRequestWorkers(params)
+    .then((response) => ({
+      ...response,
+      items: response.items.map((i) => ({
+        ...i,
+        status: WorkerRequestStatusLabels[i.workerRequestStatus],
+        actions: null,
+      })),
+    }));
 }
 
-function onSortChange(field: string, order: string) {
-  switch (field) {
-    case 'numberId':
-      serverParams.sortBy = 0;
-      break;
-    case 'name':
-      serverParams.sortBy = 1;
-      break;
-    case 'status':
-      serverParams.sortBy = 2;
-      break;
-    case 'startWorking':
-      serverParams.sortBy = 3;
-      break;
-  }
-  serverParams.isDescending = order !== 'asc';
-  getWorkers();
-}
-
-function onInputEntered(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    getWorkers();
-  }
+function onSearch() {
+  grid.value?.search();
 }
 
 function onStatusSelected() {
-  serverParams.statuses = statusesSelected.value.map((ss: any) => ss.id);
-  getWorkers();
+  serverParams.value.statuses = statusesSelected.value.map((ss) => ss.id);
+  onSearch();
 }
 
 function onStartWorkingSelected() {
-  serverParams.startWorkingFrom = startWorkingDatesSelected.value[0];
-  serverParams.startWorkingTo = startWorkingDatesSelected.value[1];
-  getWorkers();
+  serverParams.value.startWorkingFrom = startWorkingDatesSelected.value[0];
+  serverParams.value.startWorkingTo = startWorkingDatesSelected.value[1];
+  onSearch();
 }
 
 function onStartWorkingCleared() {
@@ -221,38 +203,20 @@ function onStartWorkingCleared() {
 }
 
 const activeFilterCount = computed(() =>
-  [serverParams.numberId, serverParams.name].filter((v: unknown) => !!v).length +
+  [serverParams.value.numberId, serverParams.value.name].filter((v: unknown) => !!v).length +
   (startWorkingDatesSelected.value.length > 0 ? 1 : 0) +
   (statusesSelected.value.length > 0 ? 1 : 0),
 );
 
 function clearFilters() {
-  serverParams.numberId = undefined;
-  serverParams.name = undefined;
-  serverParams.startWorkingFrom = undefined;
-  serverParams.startWorkingTo = undefined;
-  serverParams.statuses = [];
+  serverParams.value.numberId = undefined;
+  serverParams.value.name = undefined;
+  serverParams.value.startWorkingFrom = undefined;
+  serverParams.value.startWorkingTo = undefined;
+  serverParams.value.statuses = [];
   startWorkingDatesSelected.value = [];
   statusesSelected.value = [];
-  getWorkers();
-}
-
-function getWorkers() {
-  isLoading.value = true;
-  getRequestWorkers(serverParams)
-    .then((response: any) => {
-      rows.value = response.items.map((i: any) => ({
-        ...i,
-        status: WorkerRequestStatusLabels[i.workerRequestStatus],
-        actions: null,
-      }));
-      totalItems.value = response.totalItems;
-      isLoading.value = false;
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError((error as { data?: unknown }).data);
-    });
+  onSearch();
 }
 
 function confirmDelete(worker: any) {
@@ -263,15 +227,13 @@ function confirmDelete(worker: any) {
 function onRejectWorker(comments: string) {
   modalRejectWorker.value = false;
   isLoading.value = true;
-  rejectCompanyRequestWorker(serverParams.requestId, currentWorker.value.workerProfileId, { comments })
+  rejectCompanyRequestWorker(serverParams.value.requestId, currentWorker.value.workerProfileId, { comments })
     .then(() => {
       isLoading.value = false;
-      getWorkers();
+      grid.value?.reload();
     }).catch((error: unknown) => {
       isLoading.value = false;
       showAlertError((error as { data?: unknown }).data);
     });
 }
-
-getWorkers();
 </script>

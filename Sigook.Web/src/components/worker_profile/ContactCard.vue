@@ -3,7 +3,7 @@
     <template #actions>
       <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
         <template #trigger>
-          <button type="button" class="profile-link">Edit <b-icon icon="menu-down" size="is-small" /></button>
+          <b-button type="is-ghost" size="is-small" class="profile-link" icon-right="menu-down">Edit</b-button>
         </template>
         <b-dropdown-item aria-role="listitem" @click="open('contact')">Contact information</b-dropdown-item>
         <b-dropdown-item aria-role="listitem" @click="open('emergency')">Emergency information</b-dropdown-item>
@@ -101,7 +101,7 @@ function onSaved() {
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/scss/agency-worker-profile';
+@import '../../assets/scss/worker-profile';
 
 .contact-fields {
   display: flex;

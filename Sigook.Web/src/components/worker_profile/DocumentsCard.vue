@@ -3,7 +3,7 @@
     <template #actions>
       <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
         <template #trigger>
-          <button type="button" class="profile-link"><b-icon icon="plus" size="is-small" /> Add <b-icon icon="menu-down" size="is-small" /></button>
+          <b-button type="is-ghost" size="is-small" class="profile-link" icon-left="plus" icon-right="menu-down">Add</b-button>
         </template>
         <b-dropdown-item aria-role="listitem" @click="open('identification')">Identification</b-dropdown-item>
         <b-dropdown-item aria-role="listitem" @click="open('resume')">Resume</b-dropdown-item>
@@ -36,15 +36,12 @@
             <td :class="{ 'profile-empty': !row.expires }">{{ row.expires ? dateMonth(row.expires) : '—' }}</td>
             <td><span class="profile-status" :class="`is-${row.status.tone}`">{{ row.status.label }}</span></td>
             <td class="documents-actions">
-              <button v-if="!row.file" type="button" class="profile-link" @click="open(formForKind(row.kind))">Upload</button>
-              <button v-else-if="row.kind === 'identification' || row.kind === 'resume' || row.kind === 'policeCheck'"
-                type="button" class="profile-icon-button" aria-label="Replace document" @click="open(formForKind(row.kind))">
-                <b-icon icon="pencil" size="is-small" />
-              </button>
-              <button v-if="row.deletableId" type="button" class="profile-icon-button is-danger" aria-label="Delete document"
-                @click="confirmDelete(row)">
-                <b-icon icon="delete-outline" size="is-small" />
-              </button>
+              <b-button v-if="!row.file" type="is-ghost" size="is-small" class="profile-link" @click="open(formForKind(row.kind))">Upload</b-button>
+              <b-button v-else-if="row.kind === 'identification' || row.kind === 'resume' || row.kind === 'policeCheck'"
+                type="is-ghost" size="is-small" class="profile-icon-button" icon-left="pencil" aria-label="Replace document"
+                @click="open(formForKind(row.kind))" />
+              <b-button v-if="row.deletableId" type="is-ghost" size="is-small" class="profile-icon-button is-destructive"
+                icon-left="delete-outline" aria-label="Delete document" @click="confirmDelete(row)" />
             </td>
           </tr>
         </tbody>
@@ -210,7 +207,7 @@ function confirmDelete(row: WorkerDocumentRow) {
 </script>
 
 <style lang="scss" scoped>
-@import '../../assets/scss/agency-worker-profile';
+@import '../../assets/scss/worker-profile';
 
 .documents-scroll {
   overflow-x: auto;
