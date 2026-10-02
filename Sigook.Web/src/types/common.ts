@@ -19,6 +19,23 @@ export interface PaginatedList<T> {
   totalItems: number;
 }
 
+export interface GridParams {
+  pageIndex?: number;
+  pageSize?: number;
+  sortBy?: number;
+  isDescending?: boolean;
+}
+
+export interface GridHandle {
+  reload: (patch?: GridParams) => void;
+  search: () => void;
+}
+
+export interface GridExport {
+  url: string;
+  fileName: string;
+}
+
 export interface PaginationFilter {
   page: number;
   pageSize: number;
@@ -58,10 +75,6 @@ export interface City {
   value: string;
   code?: string;
   province?: Province | null;
-}
-
-export interface FileReference {
-  pathFile: string;
 }
 
 // Matches backend CovenantFileModel (Covenant.Common.Models.CovenantFileModel).
@@ -145,23 +158,6 @@ export enum EmploymentType {
   PartTime = 'PartTime',
   Contractor = 'Contractor',
   Temporary = 'Temporary',
-}
-
-export enum DayOfWeek {
-  Monday = 'Monday',
-  Tuesday = 'Tuesday',
-  Wednesday = 'Wednesday',
-  Thursday = 'Thursday',
-  Friday = 'Friday',
-  Saturday = 'Saturday',
-  Sunday = 'Sunday',
-}
-
-export enum LanguageProficiency {
-  Basic = 'Basic',
-  Intermediate = 'Intermediate',
-  Advanced = 'Advanced',
-  Native = 'Native',
 }
 
 export interface UnsubscribeRequest {

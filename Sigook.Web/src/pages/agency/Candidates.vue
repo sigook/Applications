@@ -3,189 +3,175 @@
     <b-loading v-model="isLoading"></b-loading>
     <PageHeader title="Candidates" :count="totalItems" :crumbs="moduleCrumbs" />
     <div>
-      <export :url="'/api/agency/candidates/File'" :params="serverParams" :fileName="'Candidates'"
-        @onDataLoading="(value) => isLoading = value">
-        <template v-slot:actions>
-          <b-button @click="showCreateCandidate = true" icon-left="plus">{{ 'Create' }}</b-button>
+      <SigookGrid ref="grid" :fetch="loadCandidates" v-model:params="serverParams" :sort-map="sortMap"
+        :export="{ url: '/api/agency/candidates/File', fileName: 'Candidates' }"
+        @update:loading="(value) => isLoading = value" @loaded="(total) => totalItems = total" @cellclick="onCellClick">
+        <template #actions>
+          <b-button icon-left="plus" @click="showCreateCandidate = true">Create</b-button>
         </template>
-        <template v-slot:dropdown-actions>
+        <template #dropdown-actions>
           <b-dropdown-item aria-role="listitem" @click="addFile = true">
             <b-icon icon="file-plus"></b-icon>
             <span>Bulk Data</span>
           </b-dropdown-item>
         </template>
-      </export>
-      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" :default-sort="defaultSort"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange"
-        @cellclick="onCellClick">
-        <template v-slot:empty>
-          <p class="container has-text-centered">No records available</p>
-        </template>
-        <template>
-          <b-table-column field="name" label="Name" sortable searchable>
-            <template v-slot:searchable>
-              <b-field grouped>
-                <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small" expanded
-                  @keypress="onInputEntered"></b-input>
-                <b-checkbox v-model="serverParams.resumeOnly" @update:modelValue="onInputEntered" size="is-small">
-                  <b-icon icon="file-download" size="is-small"></b-icon>
-                </b-checkbox>
-              </b-field>
-            </template>
-            <template v-slot="props">
-              <span class="is-block">
-                {{ props.row.name }}
-                <b-icon v-if="props.row.hasVehicle" icon="car-back" size="is-small"></b-icon>
-                <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
-                <b-icon v-if="props.row.hasDocuments" icon="file-download" size="is-small"
-                  class="cursor-poiner"></b-icon>
-              </span>
-              <i class="fz-2 ellipsis-150 is-lowercase">
-                <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
-              </i>
-            </template>
-          </b-table-column>
-          <b-table-column field="phoneNumbers" label="Phone" searchable>
-            <template v-slot:searchable>
-              <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
-            </template>
-            <template v-slot="props">
-              <b-taginput size="is-small" v-model="props.row.phoneNumbers" :before-adding="formatPhone" placeholder="Add Phone"
-                field="phoneNumber" allow-new @add="addCandidatePhoneNumberHandler(props.row.id, $event)"
-                @remove="deleteCandidateNumber(props.row.id, $event)">
-              </b-taginput>
-            </template>
-          </b-table-column>
-          <b-table-column field="address" label="Address" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.address" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">
-              <p class="is-capitalized">{{ props.row.address }}</p>
-              <i class="fz-2 is-block pl-1">
-                {{ props.row.postalCode }}
-              </i>
-            </template>
-          </b-table-column>
-          <b-table-column field="skills" label="Skills" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">
-              <skills-form :existingSkills="props.row.skills"
-                @onPressAdd="(item) => addCandidateSkills(props.row.id, item)"
-                @onDelete="(item) => onDeleteCandidateSkill(props.row.id, item)" />
-            </template>
-          </b-table-column>
-          <b-table-column field="requests" label="Request ID" searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">
-              <div v-if="props.row.requests && props.row.requests.length > 0">
-                <b-taglist>
-                  <b-tag v-for="request in props.row.requests" :key="request.id" rounded
-                    @click="goToApplicants(request)">
-                    {{ request.value }}
-                  </b-tag>
-                </b-taglist>
-              </div>
-              <b-button size="is-small" type="primary" icon-right="plus" rounded
-                @click="showCandidateRequests(props.row.id)">
-              </b-button>
-            </template>
-          </b-table-column>
-          <b-table-column field="source" label="Source" sortable searchable>
-            <template v-slot:searchable>
-              <b-taginput size="is-small" v-model="sourcesSelected" autocomplete :data="sourceList" open-on-focus
-                field="value" icon="label" placeholder="Select Source" @update:modelValue="onSourceSelected"
-                append-to-body>
-              </b-taginput>
-            </template>
-            <template v-slot="props">
-              <span class="is-block">{{ props.row.source }}</span>
-            </template>
-          </b-table-column>
-          <b-table-column field="createdAt" label="Created At" sortable searchable>
-            <template v-slot:searchable>
-              <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-                :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-                @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @update:modelValue="onCreatedAtSelected" append-to-body>
-              </b-datepicker>
-            </template>
-            <template v-slot="props">
-              <span class="is-block">{{ dateMonth(props.row.createdAt) }}</span>
-            </template>
-          </b-table-column>
-          <b-table-column field="recruiter" label="Recruiter" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.recruiter" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered"></b-input>
-            </template>
-            <template v-slot="props">
-              <div class="is-capitalized is-inline-block valign-middle pr-0" v-if="props.row.recruiter">
-                {{ emailName(props.row.recruiter) }}
-              </div>
-              <div v-else class="op3 is-inline-block valign-middle pr-0">
-                Recruiter
-              </div>
-              <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block valign-middle"
-                @click="updateCandidateRecruiter(props.row.id)" style="position: relative; top: 2px"></button>
-            </template>
-          </b-table-column>
-          <b-table-column field="notesCount" label="Notes" v-slot="props">
-            <div @click="onNote(props.row, true)">
-              <b-tag icon="note-text" rounded>
-                <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
-              </b-tag>
+        <b-table-column field="name" label="Name" sortable searchable>
+          <template v-slot:searchable>
+            <b-field grouped>
+              <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small" expanded></b-input>
+              <b-checkbox v-model="serverParams.resumeOnly" @update:modelValue="onResumeOnlyChanged" size="is-small">
+                <b-icon icon="file-download" size="is-small"></b-icon>
+              </b-checkbox>
+            </b-field>
+          </template>
+          <template v-slot="props">
+            <span class="is-block">
+              {{ props.row.name }}
+              <b-icon v-if="props.row.hasVehicle" icon="car-back" size="is-small"></b-icon>
+              <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
+              <b-icon v-if="props.row.hasDocuments" icon="file-download" size="is-small"
+                class="cursor-poiner"></b-icon>
+            </span>
+            <i class="fz-2 ellipsis-150 is-lowercase">
+              <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
+            </i>
+          </template>
+        </b-table-column>
+        <b-table-column field="phoneNumbers" label="Phone" searchable>
+          <template v-slot:searchable>
+            <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
+              @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
+          </template>
+          <template v-slot="props">
+            <b-taginput size="is-small" v-model="props.row.phoneNumbers" :before-adding="formatPhone" placeholder="Add Phone"
+              field="phoneNumber" allow-new @add="addCandidatePhoneNumberHandler(props.row.id, $event)"
+              @remove="deleteCandidateNumber(props.row.id, $event)">
+            </b-taginput>
+          </template>
+        </b-table-column>
+        <b-table-column field="address" label="Address" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.address" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            <p class="is-capitalized">{{ props.row.address }}</p>
+            <i class="fz-2 is-block pl-1">
+              {{ props.row.postalCode }}
+            </i>
+          </template>
+        </b-table-column>
+        <b-table-column field="skills" label="Skills" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.skills" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            <skills-form :existingSkills="props.row.skills"
+              @onPressAdd="(item) => addCandidateSkills(props.row.id, item)"
+              @onDelete="(item) => onDeleteCandidateSkill(props.row.id, item)" />
+          </template>
+        </b-table-column>
+        <b-table-column field="requests" label="Request ID" searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            <div v-if="props.row.requests && props.row.requests.length > 0">
+              <b-taglist>
+                <b-tag v-for="request in props.row.requests" :key="request.id" rounded
+                  @click="goToApplicants(request)">
+                  {{ request.value }}
+                </b-tag>
+              </b-taglist>
             </div>
-            <div v-if="props.row.showNotes" class="notes-tooltip">
-              <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCandidateNotesFn"
-                :on-create="addCandidateNoteFn" :on-delete="deleteCandidateNoteFn"
-                @onUpdateNote="(val) => onUpdateNote(props.row, val.size)" @close="onNote(props.row, false)">
-              </modal-notes>
+            <b-button size="is-small" type="primary" icon-right="plus" rounded
+              @click="showCandidateRequests(props.row.id)">
+            </b-button>
+          </template>
+        </b-table-column>
+        <b-table-column field="source" label="Source" sortable searchable>
+          <template v-slot:searchable>
+            <b-taginput size="is-small" v-model="sourcesSelected" autocomplete :data="sourceList" open-on-focus
+              field="value" icon="label" placeholder="Select Source" @update:modelValue="onSourceSelected"
+              append-to-body>
+            </b-taginput>
+          </template>
+          <template v-slot="props">
+            <span class="is-block">{{ props.row.source }}</span>
+          </template>
+        </b-table-column>
+        <b-table-column field="createdAt" label="Created At" sortable searchable>
+          <template v-slot:searchable>
+            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+              :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
+              @update:modelValue="onCreatedAtSelected" append-to-body>
+            </b-datepicker>
+          </template>
+          <template v-slot="props">
+            <span class="is-block">{{ dateMonth(props.row.createdAt) }}</span>
+          </template>
+        </b-table-column>
+        <b-table-column field="recruiter" label="Recruiter" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.recruiter" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            <div class="is-capitalized is-inline-block valign-middle pr-0" v-if="props.row.recruiter">
+              {{ emailName(props.row.recruiter) }}
             </div>
-          </b-table-column>
-          <b-table-column field="residencyStatus" label="Status" sortable searchable>
-            <template v-slot:searchable>
-              <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="residencyListValue" open-on-focus
-                field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
-              </b-taginput>
+            <div v-else class="op3 is-inline-block valign-middle pr-0">
+              Recruiter
+            </div>
+            <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block valign-middle"
+              @click="updateCandidateRecruiter(props.row.id)" style="position: relative; top: 2px"></button>
+          </template>
+        </b-table-column>
+        <b-table-column field="notesCount" label="Notes" v-slot="props">
+          <div @click="onNote(props.row, true)">
+            <b-tag icon="note-text" rounded>
+              <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
+            </b-tag>
+          </div>
+          <div v-if="props.row.showNotes" class="notes-tooltip">
+            <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCandidateNotesFn"
+              :on-create="addCandidateNoteFn" :on-delete="deleteCandidateNoteFn"
+              @onUpdateNote="(val) => onUpdateNote(props.row, val.size)" @close="onNote(props.row, false)">
+            </modal-notes>
+          </div>
+        </b-table-column>
+        <b-table-column field="residencyStatus" label="Status" sortable searchable>
+          <template v-slot:searchable>
+            <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="residencyListValue" open-on-focus
+              field="value" icon="label" placeholder="Select Status" @update:modelValue="onStatusSelected" append-to-body>
+            </b-taginput>
+          </template>
+          <template v-slot="props">
+            <b-tag v-if="props.row.residencyStatus" size="is-medium" rounded>
+              {{ props.row.residencyStatus }}
+            </b-tag>
+          </template>
+        </b-table-column>
+        <b-table-column field="actions" v-slot="props">
+          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+            <template #trigger>
+              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
             </template>
-            <template v-slot="props">
-              <b-tag v-if="props.row.residencyStatus" size="is-medium" rounded>
-                {{ props.row.residencyStatus }}
-              </b-tag>
-            </template>
-          </b-table-column>
-          <b-table-column field="actions" v-slot="props">
-            <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-              <template #trigger>
-                <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-              </template>
-              <b-dropdown-item aria-role="listitem" @click="showCandidateDetail(props.row.id)">
-                Edit
-              </b-dropdown-item>
-              <b-dropdown-item aria-role="listitem" @click="showDocumentsCandidate(props.row.id)">
-                Documents
-              </b-dropdown-item>
-              <b-dropdown-item aria-role="listitem" :disabled="!props.row.email || props.row.dnu"
-                @click="convertToWorker(props.row.id)">
-                Convert to Worker
-              </b-dropdown-item>
-              <b-dropdown-item aria-role="listitem" @click="onDeleteCandidate(props.row.id)">
-                Delete
-              </b-dropdown-item>
-            </b-dropdown>
-          </b-table-column>
-        </template>
-      </b-table>
+            <b-dropdown-item aria-role="listitem" @click="showCandidateDetail(props.row.id)">
+              Edit
+            </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem" @click="showDocumentsCandidate(props.row.id)">
+              Documents
+            </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem" :disabled="!props.row.email || props.row.dnu"
+              @click="convertToWorker(props.row.id)">
+              Convert to Worker
+            </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem" @click="onDeleteCandidate(props.row.id)">
+              Delete
+            </b-dropdown-item>
+          </b-dropdown>
+        </b-table-column>
+      </SigookGrid>
     </div>
 
     <b-modal custom-content-class="card" v-model="showDocuments" @close="showDocuments = false" width="500px"
@@ -213,7 +199,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertConfirm, showAlertError } from '@/utils/toast';
@@ -225,7 +211,7 @@ import type {
   CandidateSkillModel,
   CandidateRow,
 } from '@/types/candidate';
-import type { TableColumnRef } from '@/types/common';
+import type { GridHandle, PaginatedList, Source, TableColumnRef } from '@/types/common';
 import {
   getAgencyCandidates,
   addCandidatePhoneNumber,
@@ -238,10 +224,9 @@ import {
   bulkAgencyCandidates,
 } from '@/api/agencyCandidateApi';
 import { getSources } from '@/api/catalogApi';
-import type { Source } from '@/types/common';
 import { dateMonth, emailName } from '@/utils/filters';
-import { useGridSort } from '@/composables/useGridSort';
 import { useModuleBase } from '@/composables/useModuleBase';
+import SigookGrid from '@/components/SigookGrid.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import {
   getCandidateNotes,
@@ -256,13 +241,23 @@ import ModalNotes from '@/components/notes/ModalNotes.vue';
 import SkillsForm from '@/components/FormSkillAdd.vue';
 import CandidateRequest from '@/components/candidate/ModalCandidateRequests.vue';
 import BulkData from '@/components/agency/BulkData.vue';
-import Export from '@/components/Export.vue';
 
 const router = useRouter();
 const agencyStore = useAgencyStore();
 const { moduleCrumbs } = useModuleBase();
+const grid = useTemplateRef<GridHandle>('grid');
 
-const isLoading = ref(false);
+const sortMap = {
+  name: 0,
+  address: 1,
+  skills: 2,
+  createdAt: 3,
+  recruiter: 4,
+  residencyStatus: 5,
+  source: 6,
+};
+
+const isLoading = ref(true);
 const totalItems = ref(0);
 const createdAtDatesSelected = ref<Date[]>([]);
 const statusesSelected = ref<string[]>([]);
@@ -272,23 +267,10 @@ const showDetailCandidate = ref(false);
 const detailId = ref<string | null>(null);
 const showDocuments = ref(false);
 const showRequestModal = ref(false);
-const rows = ref<CandidateRow[]>([]);
-const serverParams = ref<AgencyCandidateFilter>({
+const serverParams = ref<AgencyCandidateFilter>(agencyStore.agencyCandidateFilter ?? {
   sortBy: 0,
   isDescending: false,
-  pageIndex: 1,
-  pageSize: 30,
 });
-
-const { defaultSort, onSortChange } = useGridSort(serverParams, {
-  name: 0,
-  address: 1,
-  skills: 2,
-  createdAt: 3,
-  recruiter: 4,
-  residencyStatus: 5,
-  source: 6,
-}, () => loadCandidates());
 
 const residencyListValue = residencyList;
 const sourceList = ref<Source[]>([]);
@@ -309,17 +291,22 @@ const getCandidateNotesFn = ({ userId, pagination }: NotesFetchPayload) => getCa
 const addCandidateNoteFn = ({ userId, model }: NotesCreatePayload) => createCandidateNote(userId, model);
 const deleteCandidateNoteFn = ({ userId, id }: NotesDeletePayload) => deleteCandidateNote(userId, id);
 
-if (agencyStore.agencyCandidateFilter) {
-  serverParams.value = agencyStore.agencyCandidateFilter;
-  if (serverParams.value.statuses) {
-    statusesSelected.value = residencyList.filter((s) => serverParams.value.statuses?.includes(s));
-  }
-  if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
-    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
-  }
+if (serverParams.value.statuses) {
+  statusesSelected.value = residencyList.filter((s) => serverParams.value.statuses?.includes(s));
 }
-loadCandidates();
+if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+  createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+  createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
+}
+
+function loadCandidates(params: AgencyCandidateFilter): Promise<PaginatedList<CandidateRow>> {
+  agencyStore.updateAgencyCandidateFilter(params);
+  return getAgencyCandidates(params)
+    .then((response) => ({
+      ...response,
+      items: response.items.map((c) => ({ ...c, showNotes: false, notesCount: c.notesCount || 0 })),
+    }));
+}
 
 function onCellClick(row: CandidateRow, column: TableColumnRef) {
   if (column.field === 'name' && row.hasDocuments) {
@@ -327,15 +314,10 @@ function onCellClick(row: CandidateRow, column: TableColumnRef) {
   }
 }
 
-function onPageChange(params: number) {
-  serverParams.value.pageIndex = params;
-  loadCandidates();
-}
-
 function onCreatedAtSelected() {
   serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
   serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
-  loadCandidates();
+  grid.value?.search();
 }
 
 function onCreatedAtCleared() {
@@ -345,35 +327,16 @@ function onCreatedAtCleared() {
 
 function onSourceSelected() {
   serverParams.value.sources = sourcesSelected.value.map((s) => s.value);
-  loadCandidates();
+  grid.value?.search();
 }
 
 function onStatusSelected() {
   serverParams.value.statuses = statusesSelected.value;
-  loadCandidates();
+  grid.value?.search();
 }
 
-function onInputEntered(event: KeyboardEvent | boolean) {
-  if (typeof event === 'boolean') {
-    loadCandidates();
-  } else if (event.key === 'Enter') {
-    loadCandidates();
-  }
-}
-
-function loadCandidates() {
-  isLoading.value = true;
-  agencyStore.updateAgencyCandidateFilter(serverParams.value);
-  getAgencyCandidates(serverParams.value)
-    .then((candidates) => {
-      rows.value = candidates.items.map((c) => ({ ...c, showNotes: false, notesCount: c.notesCount || 0 }));
-      totalItems.value = candidates.totalItems;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+function onResumeOnlyChanged() {
+  grid.value?.search();
 }
 
 function showCandidateDetail(id: string) {
@@ -382,13 +345,11 @@ function showCandidateDetail(id: string) {
 }
 
 function onNote(row: CandidateRow, status: boolean) {
-  const index = rows.value.findIndex((r) => r.id === row.id);
-  rows.value[index].showNotes = status;
+  row.showNotes = status;
 }
 
 function onUpdateNote(row: CandidateRow, size: number) {
-  const index = rows.value.findIndex((r) => r.id === row.id);
-  rows.value[index].notesCount = size;
+  row.notesCount = size;
 }
 
 function showDocumentsCandidate(id: string) {
@@ -403,14 +364,14 @@ function showCandidateRequests(id: string) {
 
 function onSelectRequest() {
   showRequestModal.value = false;
-  loadCandidates();
+  grid.value?.reload();
 }
 
 function addCandidatePhoneNumberHandler(candidateId: string, phone: string) {
   isLoading.value = true;
   addCandidatePhoneNumber(candidateId, { phoneNumber: phone })
     .then(() => {
-      loadCandidates();
+      grid.value?.reload();
     })
     .catch((error) => {
       isLoading.value = false;
@@ -423,7 +384,7 @@ function deleteCandidateNumber(candidateId: string, number: CandidatePhoneNumber
   deleteCandidatePhoneNumber(candidateId, number.id ?? '')
     .then(() => {
       isLoading.value = false;
-      loadCandidates();
+      grid.value?.reload();
     })
     .catch((error) => {
       isLoading.value = false;
@@ -436,7 +397,7 @@ function addCandidateSkills(id: string, model: CandidateSkillModel) {
   addCandidateSkill(id, model)
     .then(() => {
       isLoading.value = false;
-      loadCandidates();
+      grid.value?.reload();
     })
     .catch((error) => {
       isLoading.value = false;
@@ -449,7 +410,7 @@ function onDeleteCandidateSkill(candidateId: string, skill: CandidateSkillModel)
   deleteCandidateSkill(candidateId, skill.id ?? '')
     .then(() => {
       isLoading.value = false;
-      loadCandidates();
+      grid.value?.reload();
     })
     .catch((error) => {
       isLoading.value = false;
@@ -465,7 +426,7 @@ function onDeleteCandidate(candidateId: string) {
         deleteAgencyCandidate(candidateId)
           .then(() => {
             isLoading.value = false;
-            loadCandidates();
+            grid.value?.reload();
           })
           .catch((error) => {
             isLoading.value = false;
@@ -486,7 +447,7 @@ function updateCandidateRecruiter(candidateId: string) {
         updateAgencyCandidateRecruiter(candidateId)
           .then(() => {
             isLoading.value = false;
-            loadCandidates();
+            grid.value?.reload();
           })
           .catch((error) => {
             isLoading.value = false;
@@ -504,7 +465,7 @@ function convertToWorker(candidateId: string) {
   convertCandidateToWorker(candidateId)
     .then(() => {
       isLoading.value = false;
-      loadCandidates();
+      grid.value?.reload();
     })
     .catch((error) => {
       isLoading.value = false;
@@ -521,11 +482,11 @@ function goToApplicants(item: { id: string }) {
 
 function onCandidateCreated() {
   showCreateCandidate.value = false;
-  loadCandidates();
+  grid.value?.reload();
 }
 
 function updateCandidate() {
   showDetailCandidate.value = false;
-  loadCandidates();
+  grid.value?.reload();
 }
 </script>

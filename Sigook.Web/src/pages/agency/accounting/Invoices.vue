@@ -5,88 +5,74 @@
       <b-tag size="is-medium"><b>{{ currency(total) }}</b></b-tag>
     </PageHeader>
     <div>
-      <export :url="'/api/agency/accounting/Invoices/file'" :params="serverParams" :fileName="'Invoices'"
-        @onDataLoading="(value) => isLoading = value">
-        <template v-slot:actions>
+      <SigookGrid ref="grid" :fetch="loadInvoices" v-model:params="serverParams" :sort-map="sortMap"
+        :export="{ url: '/api/agency/accounting/Invoices/file', fileName: 'Invoices' }" focusable
+        @update:loading="(value) => isLoading = value" @loaded="(count) => totalItems = count">
+        <template #actions>
           <b-button tag="router-link" to="/accounting/invoices/create" icon-left="plus">
             Create
           </b-button>
         </template>
-      </export>
-      <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small" backend-pagination backend-sorting
-        pagination-rounded :total="totalItems" :per-page="serverParams.pageSize" focuseable :default-sort="defaultSort"
-        v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
-        <template v-slot:empty>
-          <p class="container has-text-centered">No records available</p>
-        </template>
-        <template>
-          <b-table-column field="invoiceNumber" label="Invoice Number" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.invoiceNumber" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered">
-              </b-input>
-            </template>
-            <template v-slot="props">
-              {{ props.row.invoiceNumber }}
-            </template>
-          </b-table-column>
-          <b-table-column field="createdAt" label="Created At (From - To)" sortable searchable>
-            <template v-slot:searchable>
-              <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-                :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-                @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-                @update:modelValue="onCreatedAtSelected" append-to-body>
-              </b-datepicker>
-            </template>
-            <template v-slot="props">
-              {{ dateMonth(props.row.createdAt) }}
-            </template>
-          </b-table-column>
-          <b-table-column field="companyFullName" label="Company" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered">
-              </b-input>
-            </template>
-            <template v-slot="props">
-              {{ props.row.companyFullName }}
-            </template>
-          </b-table-column>
-          <b-table-column field="salesRepresentative" label="Sales Rep" sortable searchable>
-            <template v-slot:searchable>
-              <b-input v-model="serverParams.salesRepresentative" placeholder="Search..." icon="magnify" size="is-small"
-                @keypress="onInputEntered">
-              </b-input>
-            </template>
-            <template v-slot="props">
-              {{ props.row.salesRepresentative }}
-            </template>
-          </b-table-column>
-          <b-table-column field="totalNet" label="Total">
-            <template v-slot="props">
-              {{ currency(props.row.totalNet) }}
-            </template>
-          </b-table-column>
-          <b-table-column field="actions" v-slot="props">
-            <b-field>
-              <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
-                  @click="onDownloadInvoicePdf(props.row)">
-                </b-button>
-              </b-tooltip>
-              <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
-                  @click="openSendEmailModal(props.row)">
-                </b-button>
-              </b-tooltip>
-              <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
-                <b-button type="is-danger" outlined rounded icon-right="delete" @click="openDeleteModal(props.row)">
-                </b-button>
-              </b-tooltip>
-            </b-field>
-          </b-table-column>
-        </template>
-      </b-table>
+        <b-table-column field="invoiceNumber" label="Invoice Number" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.invoiceNumber" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.invoiceNumber }}
+          </template>
+        </b-table-column>
+        <b-table-column field="createdAt" label="Created At (From - To)" sortable searchable>
+          <template v-slot:searchable>
+            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+              :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
+              @update:modelValue="onCreatedAtSelected" append-to-body>
+            </b-datepicker>
+          </template>
+          <template v-slot="props">
+            {{ dateMonth(props.row.createdAt) }}
+          </template>
+        </b-table-column>
+        <b-table-column field="companyFullName" label="Company" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.companyFullName }}
+          </template>
+        </b-table-column>
+        <b-table-column field="salesRepresentative" label="Sales Rep" sortable searchable>
+          <template v-slot:searchable>
+            <b-input v-model="serverParams.salesRepresentative" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+          </template>
+          <template v-slot="props">
+            {{ props.row.salesRepresentative }}
+          </template>
+        </b-table-column>
+        <b-table-column field="totalNet" label="Total">
+          <template v-slot="props">
+            {{ currency(props.row.totalNet) }}
+          </template>
+        </b-table-column>
+        <b-table-column field="actions" v-slot="props">
+          <b-field>
+            <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
+                @click="onDownloadInvoicePdf(props.row)">
+              </b-button>
+            </b-tooltip>
+            <b-tooltip label="Send Email" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-info" outlined rounded icon-right="email" class="mr-2"
+                @click="openSendEmailModal(props.row)">
+              </b-button>
+            </b-tooltip>
+            <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-danger" outlined rounded icon-right="delete" @click="openDeleteModal(props.row)">
+              </b-button>
+            </b-tooltip>
+          </b-field>
+        </b-table-column>
+      </SigookGrid>
     </div>
 
     <b-modal custom-content-class="card" v-model="showDeleteModal" width="800px">
@@ -100,69 +86,52 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/stores/agency';
 import { showAlertError } from '@/utils/toast';
 import { downloadPDF } from '@/utils/downloadFile';
 import { getAgencyInvoices, downloadInvoicePdf } from '@/api/agencyInvoiceApi';
 import { currency, dateMonth } from '@/utils/filters';
-import { useGridSort } from '@/composables/useGridSort';
-import Export from '@/components/Export.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 import DeleteInvoice from '@/components/agency_accounting/DeleteInvoice.vue';
 import SendInvoiceEmail from '@/components/agency_accounting/SendInvoiceEmail.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import { accountingCrumbs } from '@/constants/breadcrumbs';
 import type { AgencyInvoiceFilter, AgencyInvoiceListItem } from '@/types/accounting';
+import type { GridHandle, PaginatedList } from '@/types/common';
 
 const agencyStore = useAgencyStore();
+const grid = useTemplateRef<GridHandle>('grid');
 
-const isLoading = ref(true);
-const totalItems = ref(0);
-const total = ref(0);
-const rows = ref<AgencyInvoiceListItem[]>([]);
-const createdAtDatesSelected = ref<Date[]>([]);
-const serverParams = ref<AgencyInvoiceFilter>({
-  sortBy: 0,
-  pageIndex: 1,
-  pageSize: 30,
-  isDescending: true,
-});
-
-const { defaultSort, onSortChange } = useGridSort(serverParams, {
+const sortMap = {
   invoiceNumber: 0,
   createdAt: 1,
   companyFullName: 2,
   salesRepresentative: 3,
-}, () => loadInvoices());
+};
+
+const isLoading = ref(true);
+const totalItems = ref(0);
+const total = ref(0);
+const createdAtDatesSelected = ref<Date[]>([]);
+const serverParams = ref<AgencyInvoiceFilter>(agencyStore.agencyInvoiceFilter ?? {
+  sortBy: 0,
+  isDescending: true,
+});
 
 const showDeleteModal = ref(false);
 const currentInvoice = ref<AgencyInvoiceListItem | null>(null);
 const showSendEmailModal = ref(false);
 
-if (agencyStore.agencyInvoiceFilter) {
-  serverParams.value = agencyStore.agencyInvoiceFilter;
-  if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-    createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
-    createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
-  }
-}
-loadInvoices();
-
-function onPageChange(params: number) {
-  serverParams.value.pageIndex = params;
-  loadInvoices();
-}
-
-function onInputEntered(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    loadInvoices();
-  }
+if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
+  createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
+  createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
 }
 
 function onCreatedAtSelected() {
   serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
   serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
-  loadInvoices();
+  grid.value?.search();
 }
 
 function onCreatedAtCleared() {
@@ -170,19 +139,12 @@ function onCreatedAtCleared() {
   onCreatedAtSelected();
 }
 
-function loadInvoices() {
-  isLoading.value = true;
-  agencyStore.updateAgencyInvoiceFilter(serverParams.value);
-  getAgencyInvoices(serverParams.value)
+function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<AgencyInvoiceListItem>> {
+  agencyStore.updateAgencyInvoiceFilter(params);
+  return getAgencyInvoices(params)
     .then((response) => {
-      rows.value = response.detail.items;
-      totalItems.value = response.detail.totalItems;
       total.value = response.total;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error.data);
+      return response.detail;
     });
 }
 
@@ -206,7 +168,7 @@ function openSendEmailModal(invoice: AgencyInvoiceListItem) {
 
 function onSendInvoiceEmail() {
   showSendEmailModal.value = false;
-  loadInvoices();
+  grid.value?.reload();
 }
 
 function openDeleteModal(invoice: AgencyInvoiceListItem) {
@@ -216,6 +178,6 @@ function openDeleteModal(invoice: AgencyInvoiceListItem) {
 
 function onDeleteInvoice() {
   showDeleteModal.value = false;
-  loadInvoices();
+  grid.value?.reload();
 }
 </script>

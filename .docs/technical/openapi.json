@@ -27370,6 +27370,9 @@
           "displayRecruiters": {
             "$ref": "#/components/schemas/System.String"
           },
+          "displayReportTo": {
+            "$ref": "#/components/schemas/System.String"
+          },
           "displayShift": {
             "$ref": "#/components/schemas/System.String"
           },

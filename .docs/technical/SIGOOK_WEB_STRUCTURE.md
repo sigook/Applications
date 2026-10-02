@@ -114,7 +114,7 @@ Created in `src/stores/index.ts` with `pinia-plugin-persistedstate`. Stores hold
 
 | File | Prefixes | Notes |
 |------|----------|-------|
-| index.ts | `/login`, `/forgot-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group → unauthenticated users go to `/login?returnUrl=`), scroll behavior, canonical link, page titles. `/login` and `/forgot-password` use `meta.layout: "auth"` (rendered without chrome by `App.vue`, styles in `assets/scss/auth.scss`) |
+| index.ts | `/login`, `/forgot-password`, `/confirm-email`, `/create-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences`, 404 catch-all | Auth guard (requiresAuth + `meta.role` group → unauthenticated users go to `/login?returnUrl=`), scroll behavior, canonical link, page titles. `/login`, `/forgot-password`, `/confirm-email` and `/create-password` use `meta.layout: "auth"` (rendered without chrome by `App.vue`, styles in `assets/scss/auth.scss`) |
 | routesAgency.ts | `/recruiting/*`, `/sales/*`, `/accounting/*`, `/agency-profile` | `/agency-*` paths redirect here |
 | routesCompany.ts | `/company-requests`, `/company-invoices`, `/company-profile`, `/company-user-profile` | |
 | routesWorker.ts | `/register-worker`, `/worker-requests`, `/punch-card`, `/timesheet`, `/worker-history`, `/worker-profile`, `/worker-apply` | |
@@ -145,7 +145,7 @@ Sales sidebar (`src/security/menu.ts:91-95`): **Dashboard** (icon `view-dashboar
 |------|---------|
 | Requests.vue / Request.vue / AgencyCreateRequest.vue | Request list, detail (workers, applicants, runners, notes), create/edit/duplicate |
 | WeeklyBoard.vue | Recruiting weekly board (admin + recruiter views) |
-| Workers.vue / DetailWorker.vue | Worker roster and detail (flags, holidays, history, notes) |
+| Workers.vue / DetailWorker.vue | Worker roster and detail: header with status chips, Profile tab in three columns (section index · cards from `components/worker_profile/` · Needs attention, notes, DNU flag; one column on touch), plus Settings, PayStubs, Timesheet and Requests tabs |
 | Companies.vue / CreateCompany.vue / DetailCompany.vue | Client companies list, create/edit, detail. The detail's Interactions and Deals tabs render only when the route is the sales view **and** the user has a sales-access role (`useModuleBase().isSalesView` + `useSalesAccess().hasSalesAccess`) |
 | Candidates.vue | Candidate pool; convert to worker, bulk import |
 | Agencies.vue / CreateAgency.vue / DetailAgency.vue | Sub-agencies (sales) |
@@ -177,7 +177,7 @@ Requests.vue, Request.vue, CreateRequest.vue, CompanyReports.vue (invoices), Com
 
 ### Worker (`src/pages/worker/`)
 
-Register.vue, Requests.vue, Request.vue, RequestApplied.vue, PunchCard.vue, TimeSheet.vue, History.vue, WorkerProfile.vue, WorkerApply.vue
+Register.vue, Requests.vue, Request.vue, RequestApplied.vue, PunchCard.vue, TimeSheet.vue, History.vue, WorkerProfile.vue (the worker's own profile: same header, three-column layout and cards as DetailWorker from `components/worker_profile/`, right rail = approval status + Needs attention and moved above the cards on touch, read-only comments; tabs Profile and Account), WorkerApply.vue
 
 ### Landing (`src/pages/landing/` — subfolder per section)
 
@@ -208,10 +208,11 @@ Domain folders + shared root-level components. Components take function refs (e.
 
 | Folder | Contents |
 |--------|----------|
-| (root) | Address, Breadcrumbs, CollapseSection, Comments, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export, FormSkillAdd, PageHeader (sticky 52px title bar: crumbs › title · count + actions slot; on touch the heading teleports into the mobile topbar), Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SearchSelect (generic remote autocomplete, used by the interaction/deal client pickers), SidebarLogged (sidebar + mobile topbar; user avatar with notifications dot and user menu at the footer), UserNotification |
+| (root) | Address, Breadcrumbs, CollapseSection, CompanyCreateUserModal, CropImage, DataEntryTerms, DefaultImage, DialogWorkerComment, EmailCard, Export (standalone Excel export dropdown, only Applicants page), FormSkillAdd, PageHeader (sticky 52px title bar: crumbs › title · count + actions slot; on touch the heading teleports into the mobile topbar), Paginator, PhoneInput, PreviewImage, ProvinceSettingsModal, SigookGrid (standard table wrapper, see Patterns), SearchSelect (generic remote autocomplete, used by the interaction/deal client pickers), SidebarLogged (sidebar + mobile topbar; user avatar with notifications dot and user menu at the footer), UserNotification |
 | agency/ | Personnel modal/list, AgencyRequests, AgencyWorkers(+List), worker request history, BulkData, ContainerRequest, DialogContactWorker, ModalTimesheet, PayrollSubcontractor, agency profile sections (ProfileAccountInformation/Billing/Business/Contact) |
 | agency_accounting/ | CRAPayroll, DeleteInvoice, GeneratePayStubs, HoursWorkedReport, PaymentReport, PreviewInvoice, SendInvoiceEmail, SkipPayrollNumber, SubcontractorsReport, T4, TimesheetsReport |
 | agency_company/ | CompanyDetailTab, CompanyInteractions + CompanyDeals (sales tabs — sales view + sales-access role: table with filters, Add, edit/delete row actions), InteractionForm/Modal + DealForm/Modal (create/edit, client preselected via `initialClient`; also used by the sales dashboard), CompanyNotes, CompanyRequests, CompanySettings, CompanyUpdateLogo, CompanyWorkers, contact info/person forms + lists, Documents(+Form), EditVaccinationRequired, JobPositionForm/List, LocationDetail/Form, RequestJobPositionForm, RolesShiftDetail, UserList |
+| worker_profile/ | Worker profile shared by the agency view (`pages/agency/DetailWorker.vue`) and the worker's own portal (`pages/worker/WorkerProfile.vue`); both load `WorkerProfileDetail`. WorkerProfileHeader (photo, name, number, contact; `#chips` and `#actions` slots), ProfileCard (title + actions slot) and the read-only cards PersonalCard (`showLoginEmail` off in the worker portal, where the email changes from Account), ContactCard, DocumentsCard (table with expiry status), PreferencesCard, SkillsCard, ExperienceCard, CommentsCard (`readonly` + `title` for the worker portal); each opens the existing `worker/*Form.vue` modals to edit and emits `updateProfile`/`loading` so the page's full-page `b-loading` is reused. ProfileIndex (sticky section index + completeness), NeedsAttention (missing/expiring documents) and ApprovalStatusCard (worker portal), fed by `composables/useWorkerProfileStatus.ts` (`useActiveWorkerSection` tracks the section in view). Card styles live in `assets/scss/worker-profile.scss` and the page grid, card frame and chips in `assets/scss/worker-profile-layout.scss`; neither is in `master.scss`, both are imported scoped |
 | agency_request/ | AgencyRequestDetail, AgencyRequestSkills, timesheet detail/modal, AgencyShiftDetail, Applicants, ManageApplicantsModal, ContactListModal, DatepickerModal, EditTextarea, JobBoardsModal, MassivePunchCard, punch-card container, ReportTo, RequestedBy, RequestNotes(+Table), Runners, TableRequests, WorkerStatusFilter |
 | calendar/ | CalendarPunchCard |
 | candidate/ | CreateCandidate, DetailAddress, DetailCandidate, DocumentsForm, ModalCandidateRequests, ModalDocuments |
@@ -223,7 +224,7 @@ Domain folders + shared root-level components. Components take function refs (e.
 | runner/ | CreateRunner, RunnerActionsDropdown + RunnerActionModals (shared runner menu, used by the Runners tab and the weekly board), RunnerHistoryModal, RunnerInterviewModal, RunnerStatusModal |
 | sales_dashboard/ | Sales dashboard only (no `Sales` prefix — the folder names the module). Shells & lists: DashboardCard (icon chip, linked title, action button, body slot), DashboardList (scroll + empty state), DashboardListRow, InteractionList, ClientList, DealList. Charts: BarChart (d3-scale SVG, `useElementSize`, per-point color, labels wrap then rotate when the band is narrow), MeterList, RangeTabs (`SalesPeriod` `v-model`). ClientForm (full client creation: logo, industry with add-new, status, sales rep, contact info) + ClientModal (create), ClientInteractionsModal (a client's interaction history + "Log interaction"). Modals use the standard `custom-content-class="card"` layout with no own styles |
 | weekly_board/ | AdminWeeklyBoard, RecruiterWeeklyBoard, AssignRecruiterModal (adding runners reuses `runner/CreateRunner.vue`) |
-| worker/ | Profile section Detail/Form pairs (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, image, email, location preferences), Notes, ProfileComments, ProfileExperience, ProfilePersonal, ProfilePreferences, RequestDetail, TimeSheetHistory, WorkerAccountSecurity, WorkerSettings, WorkWageHistory |
+| worker/ | Profile section Forms opened by the `worker_profile/` cards (basic info, contact, emergency, availability, days, times, languages, licenses, lifts, skills, SIN, resume, certificates, documents, other docs, experience, location preferences) plus WorkEmailForm (agency only), WorkImageDetail (profile photo), Notes, RequestDetail, TimeSheetHistory, WorkerAccountSecurity (worker Account tab: login email, notifications, deactivate), WorkerSettings, WorkWageHistory |
 
 ---
 
@@ -289,7 +290,6 @@ Default-exported object exposing `getMenu(userRoles, agency): MenuGroup[]` (no n
 | useDropdownReveal.ts | Scrolls open dropdowns/datepickers into view inside modal scroll containers |
 | useElementSize.ts | ResizeObserver-based element size (responsive SVG charts) |
 | useFocusTrap.ts | Focus trap for modal accessibility |
-| useGridSort.ts | Sortable-column state for paginated grids (sales interactions/deals tables) |
 | useJobs.ts | Public job search state (landing) |
 | useModuleBase.ts | Resolves `/sales` vs `/recruiting` path prefix for shared pages |
 | useNotifications.ts | Loads notification bell payload; maps typed lists → `AppNotification[]` grouped by type |
@@ -329,7 +329,7 @@ assets/
 │   ├── default/         # Placeholders (error.svg, loading.svg for vue-lazyload)
 │   └── landing/         # Landing imagery
 └── scss/                # Global partials: base, buefy-overrides, calendar, candidiates,
-    │                    # company, container-request, detail-worker, fonts, master, notes,
+    │                    # company, container-request, fonts, master, notes,
     │                    # profile, requests, tables, time-sheet, tokens, variables, weekly-board
     └── worker/          # Worker portal styles
 ```
@@ -352,7 +352,7 @@ assets/
 
 ### Authentication
 
-1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`.
+1. Login happens in the SPA at `/login` (`pages/auth/Login.vue`): email + password go straight to IdentityServer's token endpoint (password grant); "Sign in with Microsoft 365" redirects and completes at `/callback`. `/silent-refresh` renews tokens in a hidden iframe as fallback to the refresh-token grant. `/forgot-password` is a two-step page (email → 6-digit code + new password) against `/Password/forgot` and `/Password/reset`. Account-activation emails land on `/confirm-email?token=&id=` (confirms on mount) or `/create-password?token=&id=` (password form); `/login?error=invalid_user` shows a rejected Microsoft 365 sign-in.
 2. On 401, `apiService` retries once after `silentSignin`; on failure sends the browser to `/login?returnUrl=`.
 3. Logout (`securityStore.signOut`) revokes the refresh token, clears the local user and routes to `/` — it never hits IdentityServer's end-session page.
 4. Role-based routing via `meta.role` groups; component-level checks via security store / `useRecruitingAccess` / `useAdmin`.
@@ -360,6 +360,12 @@ assets/
 ### Patterns
 
 - **No API data caching in Pinia** — components fetch directly via `src/api` functions; stores keep list filters so pagination/search survive route changes.
+- **Grids (`components/SigookGrid.vue`):** every table is a `SigookGrid`; no page uses `b-table` directly. The grid fixes presentation (narrowed, hoverable, no mobile cards, sticky header at `--grid-height` unless `:fit-viewport="false"`), pagination (small/rounded, rows-per-page select 30/60/90, default 30, size change → page 1) and the empty state ("No records available", `empty-text` to override). Pages only declare `b-table-column`s and their `#searchable` filters.
+  - Server mode: `:fetch="(params) => Promise<PaginatedList<T>>"` + `v-model:params` (full filter; the grid writes `pageIndex`/`pageSize`/`sortBy`/`isDescending`) + `:sort-map` (column field → backend sort enum). Loads on mount; Enter in a column filter searches from page 1; errors toast via `showAlertError`; checked rows clear on reload. Pages persist filters to Pinia inside their fetch wrapper.
+  - Client mode: `:data` (+ optional `:refresh`).
+  - Toolbar (cyan `$primary` bar, hidden when empty): icon-only Refresh on the left; `#actions` and the Actions dropdown (`:export="{ url, fileName }"` → Excel via `downloadAgencyReport` with the grid params, plus `#dropdown-actions`) on the right. Toolbar buttons use the default (white) style, never ghost.
+  - `#mobile-card` replaces the table on touch with a card list + `b-pagination`; `#detail`, `#footer`, `#empty` pass through; any other `b-table` prop/event is forwarded via `$attrs`.
+  - Exposes `reload(patch?)` / `search()` (`GridHandle` in `types/common.ts`) for non-text filters and post-action refreshes.
 - **Forms:** VeeValidate 4 + Yup schemas; toasts via `src/utils/toast.ts`.
 - **Reusable components take function props** (API functions passed in) instead of dispatch strings.
 - **Styling:** Bootstrap 5 CSS + `buefy` 3.x (Bulma 1.x) + global SCSS partials in `src/assets/scss/`. `index.html` pins `data-theme="light"` to block Bulma 1's automatic dark mode.

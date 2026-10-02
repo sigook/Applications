@@ -109,8 +109,7 @@ authentication.AddIdentityCookies();
 authentication.AddMicrosoftAuthentication365(builder.Configuration);
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
+    options.LoginPath = "/External/Challenge";
     options.AccessDeniedPath = "/Home/InvalidUser";
 });
 builder.Services.Configure<ForwardedHeadersOptions>(options =>

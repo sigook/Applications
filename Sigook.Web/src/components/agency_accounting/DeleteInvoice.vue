@@ -15,13 +15,12 @@
       </p>
     </b-message>
     <div class="paystubs-table" v-if="rows.length > 0">
-      <b-table :data="rows" v-model:checked-rows="selectedPayStubs" checkable>
-        <template>
-          <b-table-column field="payStubNumber" label="Pay Stub Number" v-slot="props">
-            {{ props.row.payStubNumber }}
-          </b-table-column>
-        </template>
-      </b-table>
+      <SigookGrid :data="rows" v-model:checked-rows="selectedPayStubs" checkable :paginated="false"
+        :fit-viewport="false">
+        <b-table-column field="payStubNumber" label="Pay Stub Number" v-slot="props">
+          {{ props.row.payStubNumber }}
+        </b-table-column>
+      </SigookGrid>
     </div>
     <b-button @click="submitDeleteInvoice" type="is-danger">Delete</b-button>
   </div>
@@ -40,6 +39,7 @@ import {
   getPayStubsByInvoice,
   deleteAgencyInvoice
 } from "@/api/agencyInvoiceApi";
+import SigookGrid from '@/components/SigookGrid.vue';
 import type { AgencyInvoiceListItem, PayStubDeleteWarningItem } from '@/types/accounting';
 
 const props = defineProps<{ invoice: AgencyInvoiceListItem }>();

@@ -489,6 +489,7 @@ export interface AgencyRequestListItem {
   workerRate?: number | null;
   workerSalary?: number | null;
   displayRecruiters?: string;
+  displayReportTo?: string;
   displayShift?: string;
   salesRepresentative?: string;
   notesCount: number;

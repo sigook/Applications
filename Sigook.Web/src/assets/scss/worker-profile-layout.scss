@@ -1,0 +1,121 @@
+@import './variables';
+@import './breakpoints';
+
+.worker-card {
+  background: $white;
+  border: 1px solid $gray-border;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 0;
+
+  @include mobile {
+    padding: 16px;
+  }
+}
+
+.worker-profile-index.worker-card {
+  padding: 12px;
+}
+
+.worker-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+
+  h3 {
+    margin: 0;
+    font-weight: 700;
+  }
+}
+
+.worker-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.worker-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: $gray-bg;
+  color: $grey-font;
+
+  &.is-success {
+    background: rgba($green, 0.18);
+    color: $green-text;
+  }
+
+  &.is-danger {
+    background: rgba($danger, 0.1);
+    color: $danger-hover;
+  }
+
+  &.is-warning {
+    background: rgba($accent, 0.16);
+    color: $accent-text;
+  }
+
+  &.is-info {
+    background: rgba($blue, 0.1);
+    color: $blue-dark;
+  }
+}
+
+.button.worker-chip-button {
+  height: auto;
+  padding: 2px 10px;
+  border: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba($accent, 0.16);
+  color: $accent-text;
+
+  &:hover,
+  &:focus {
+    background: rgba($accent, 0.26);
+    color: $accent-text;
+  }
+}
+
+.worker-profile-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+
+  @include compact-desktop {
+    grid-template-columns: 190px minmax(0, 1fr) 260px;
+    gap: 16px;
+  }
+
+  @include touch {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.worker-profile-layout-index {
+  position: sticky;
+  top: 68px;
+
+  @include touch {
+    display: none;
+  }
+}
+
+.worker-profile-layout-content,
+.worker-profile-layout-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.worker-section {
+  scroll-margin-top: 68px;
+}

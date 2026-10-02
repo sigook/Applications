@@ -1,225 +1,155 @@
 <template>
-  <div class="profile profile-worker">
+  <div class="worker-profile-page">
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="profile-content">
-      <!-- Profile Top -->
-      <div class="profile-top" v-if="workerProfile">
-        <div>
-          <ImageDetail :data="workerProfile" @updateProfile="() => updateProfile()" />
-        </div>
-        <div>
-          <h1 class="is-capitalized">
-            {{ lowercase(workerProfile.firstName) }}
-            {{ lowercase(workerProfile.middleName) }}
-            {{ lowercase(workerProfile.lastName) }}
-          </h1>
-          <p v-if="workerProfile.numberId">
-            <b-icon icon="card-account-details-outline" size="is-small" />
-            {{ workerProfile.numberId }}
-          </p>
-          <p v-if="workerProfile.mobileNumber">
-            <b-icon icon="phone" size="is-small" />
-            {{ workerProfile.mobileNumber }}
-          </p>
-        </div>
-      </div>
+    <template v-if="worker">
+      <worker-profile-header class="worker-card worker-profile-header" :worker="worker" @updateProfile="loadProfile">
+        <template #chips>
+          <div class="worker-chips">
+            <span v-if="worker.approvedToWork" class="worker-chip is-success">Approved to work</span>
+            <span v-else class="worker-chip is-warning">Pending approval</span>
+            <b-button v-if="attentionItems.length" size="is-small" rounded class="worker-chip-button"
+              @click="selectSection(attentionItems[0].sectionId)">
+              {{ attentionItems.length }} {{ attentionItems.length === 1 ? 'item needs' : 'items need' }} attention
+            </b-button>
+          </div>
+        </template>
+      </worker-profile-header>
 
-      <!-- Buefy Tabs -->
-      <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="workerProfile">
-        <b-tab-item value="PersonalDetails">
-          <template #header>
-            <span>Personal Details</span>
-            <b-icon v-if="hasPersonalDetailsMissing" icon="alert-circle" size="is-small" type="is-danger" class="ml-1" />
-          </template>
-          <PersonalDetails v-if="visitedTabs.includes('PersonalDetails')" :worker="workerProfile" @updateProfile="updateProfile()" />
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab">
+        <b-tab-item label="Profile" value="profile">
+          <div class="worker-profile-layout">
+            <profile-index class="worker-profile-layout-index" :sections="sections" :completeness="completeness"
+              :missing-labels="missingLabels" :active-id="activeSectionId" @select="selectSection" />
+
+            <div class="worker-profile-layout-content">
+              <personal-card :id="workerSectionAnchor('personal')" class="worker-card worker-section" :worker="worker"
+                :show-login-email="false" @updateProfile="loadProfile" />
+              <contact-card :id="workerSectionAnchor('contact')" class="worker-card worker-section" :worker="worker"
+                @updateProfile="loadProfile" />
+              <documents-card :id="workerSectionAnchor('documents')" class="worker-card worker-section" :worker="worker"
+                @updateProfile="loadProfile" @loading="(value) => (isLoading = value)" />
+              <preferences-card :id="workerSectionAnchor('preferences')" class="worker-card worker-section"
+                :worker="worker" @updateProfile="loadProfile" />
+              <skills-card :id="workerSectionAnchor('skills')" class="worker-card worker-section" :worker="worker"
+                @updateProfile="loadProfile" />
+              <experience-card :id="workerSectionAnchor('experience')" class="worker-card worker-section"
+                :worker="worker" @updateProfile="loadProfile" @loading="(value) => (isLoading = value)" />
+              <comments-card v-if="commentsData" :id="workerSectionAnchor('comments')" class="worker-card worker-section"
+                :worker-profile-id="worker.id" :comments="commentsData" :page-index="commentPageIndex"
+                :page-size="commentSize" readonly title="Comments from your agency" @changePage="changePageComments" />
+            </div>
+
+            <aside class="worker-profile-layout-rail">
+              <approval-status-card class="worker-card" :approved="worker.approvedToWork" />
+              <needs-attention :items="attentionItems" @select="selectSection" />
+            </aside>
+          </div>
         </b-tab-item>
 
-        <b-tab-item label="Work Experience" value="WorkExperience">
-          <WorkExperience v-if="visitedTabs.includes('WorkExperience')" :worker="workerProfile" @updateProfile="updateProfile()" />
-        </b-tab-item>
-
-        <b-tab-item label="Preferences" value="Preferences">
-          <Preferences v-if="visitedTabs.includes('Preferences')" :worker="workerProfile" @updateProfile="updateProfile()" />
-        </b-tab-item>
-
-        <b-tab-item label="Comments" value="Comments">
-          <Comments v-if="visitedTabs.includes('Comments')" :worker="workerProfile" />
-        </b-tab-item>
-
-        <b-tab-item label="Account" value="AccountSecurity">
-          <WorkerAccountSecurity v-if="visitedTabs.includes('AccountSecurity')" />
+        <b-tab-item label="Account" value="account">
+          <worker-account-security v-if="visitedTabs.includes('account')" />
         </b-tab-item>
       </b-tabs>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { nextTick, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useWorkerStore } from '@/stores/worker';
 import { showAlertError } from '@/utils/toast';
-import { getMyProfile } from '@/api/workerApi';
-import { lowercase } from '@/utils/filters';
-import PersonalDetails from '../../components/worker/ProfilePersonal.vue';
-import Preferences from '../../components/worker/ProfilePreferences.vue';
-import WorkExperience from '../../components/worker/ProfileExperience.vue';
-import Comments from '../../components/worker/ProfileComments.vue';
-import WorkerAccountSecurity from '../../components/worker/WorkerAccountSecurity.vue';
-import ImageDetail from '../../components/worker/WorkImageDetail.vue';
+import { getMyComments, getMyProfile } from '@/api/workerApi';
+import { useActiveWorkerSection, useWorkerProfileStatus, workerSectionAnchor } from '@/composables/useWorkerProfileStatus';
+import type { WorkerCommentList, WorkerProfileDetail } from '@/types/worker';
+import WorkerProfileHeader from '@/components/worker_profile/WorkerProfileHeader.vue';
+import ProfileIndex from '@/components/worker_profile/ProfileIndex.vue';
+import NeedsAttention from '@/components/worker_profile/NeedsAttention.vue';
+import ApprovalStatusCard from '@/components/worker_profile/ApprovalStatusCard.vue';
+import PersonalCard from '@/components/worker_profile/PersonalCard.vue';
+import ContactCard from '@/components/worker_profile/ContactCard.vue';
+import DocumentsCard from '@/components/worker_profile/DocumentsCard.vue';
+import PreferencesCard from '@/components/worker_profile/PreferencesCard.vue';
+import SkillsCard from '@/components/worker_profile/SkillsCard.vue';
+import ExperienceCard from '@/components/worker_profile/ExperienceCard.vue';
+import CommentsCard from '@/components/worker_profile/CommentsCard.vue';
+import WorkerAccountSecurity from '@/components/worker/WorkerAccountSecurity.vue';
+
+type WorkerProfileTab = 'profile' | 'account';
 
 const route = useRoute();
 const router = useRouter();
 const workerStore = useWorkerStore();
 
-const currentTab = ref<string>('PersonalDetails');
-const visitedTabs = ref<string[]>(['PersonalDetails']);
-const isLoading = ref(false);
+const isLoading = ref(true);
+const commentSize = 10;
+const commentPageIndex = ref(1);
+const worker = ref<WorkerProfileDetail | null>(null);
+const commentsData = ref<WorkerCommentList | null>(null);
+const currentTab = ref<WorkerProfileTab>(route.query.tab === 'account' ? 'account' : 'profile');
+const visitedTabs = ref<WorkerProfileTab[]>([currentTab.value]);
 
-const workerProfile = computed<any>(() => workerStore.workerProfile);
+const { attentionItems, sections, completeness, missingLabels } = useWorkerProfileStatus(worker);
+const { activeSectionId, selectSection, observeSections } = useActiveWorkerSection(sections);
 
-const hasPersonalDetailsMissing = computed(() => {
-  if (!workerProfile.value) return false;
-  return !workerProfile.value.socialInsurance
-    || !workerProfile.value.socialInsuranceFile
-    || !workerProfile.value.identificationType1File
-    || !workerProfile.value.identificationType2File
-    || !workerProfile.value.resume;
-});
-
-function changeTab(tab: string) {
+function changeTab(tab: WorkerProfileTab) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
-    path: '/worker-profile',
-    query: { tab: tab },
-  });
+  router.push({ path: '/worker-profile', query: { tab } });
 }
 
-function getProfile() {
+function loadComments() {
+  getMyComments({ size: commentSize, pageIndex: commentPageIndex.value })
+    .then((data) => {
+      commentsData.value = data;
+    })
+    .catch((error) => showAlertError(error));
+}
+
+function changePageComments(page: number) {
+  commentPageIndex.value = page;
+  loadComments();
+}
+
+function loadProfile() {
   isLoading.value = true;
   getMyProfile()
-    .then((data: any) => {
+    .then((data) => {
+      worker.value = data;
       workerStore.setWorkerProfile(data);
       isLoading.value = false;
+      nextTick(observeSections);
     })
-    .catch((error: unknown) => {
+    .catch((error) => {
       isLoading.value = false;
       showAlertError(error);
     });
 }
 
-function updateProfile() {
-  isLoading.value = true;
-  getMyProfile()
-    .then((data: any) => {
-      workerStore.setWorkerProfile(data);
-      isLoading.value = false;
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
-}
-
-if (route.query && route.query.tab) {
-  const tab = route.query.tab as string;
-  currentTab.value = tab;
-  if (!visitedTabs.value.includes(tab)) {
-    visitedTabs.value.push(tab);
-  }
-}
-getProfile();
+loadProfile();
+loadComments();
 </script>
 
-<style lang="scss">
-.profile-worker section.focus {
-  transition: 1s;
-  background-color: #ffefdd;
-}
+<style lang="scss" scoped>
+@import '../../assets/scss/worker-profile-layout';
 
-.profile-worker {
-  display: block;
+.worker-profile-page {
+  padding: 20px;
 
-  .profile-content {
-    width: 100%;
-    border-left: none;
-    padding: 15px 20px;
-  }
-
-  .profile-top {
-    .worker-profile-image {
-      max-width: 158px;
-
-      img {
-        max-width: 100%;
-        border-radius: 5px;
-      }
-    }
-  }
-
-  .profile-information .section-title {
-    margin-bottom: 0;
-    color: inherit;
-  }
-
-  section:not(.worker-comments) {
-    padding: 10px 16px;
-    border: 1px solid #ddd;
-    margin: 16px 0;
-    border-radius: 5px;
-    box-shadow: 1px 1px 5px #e9e9e9;
-    transition: 1s;
-  }
-
-  .worker-documents>div:nth-of-type(1) {
-    margin-top: 15px;
-  }
-
-
-  section.missing {
-    box-shadow: 1px 2px 4px #ffabab;
-    border-color: #ad0715;
-
-    .section-title,
-    .detail-worker-profile .width-30,
-    h3 {
-      color: #cf1a2b;
-
-      &:before {
-        content: "";
-        width: 16px;
-        height: 16px;
-        display: inline-block;
-        vertical-align: middle;
-        margin-right: 10px;
-        background-image: url("../../assets/images/danger.png");
-        background-size: contain;
-        position: relative;
-        top: -1px;
-      }
-    }
+  @include mobile {
+    padding: 16px;
   }
 }
 
-.contain-profile .profile-selected {
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid #eee;
-  padding: 0 0 15px;
-  margin-bottom: 15px;
+.worker-profile-header {
+  margin-bottom: 16px;
 }
 
-@media (max-width: 767px) {
-  .profile-worker .button-right {
-    position: relative;
-    display: flex;
-
-    button {
-      margin: 0;
-    }
+.worker-profile-layout-rail {
+  @include touch {
+    order: -1;
   }
 }
 </style>

@@ -34,31 +34,26 @@
             <span class="collapse-card__title">Interviews</span>
             <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small" />
           </template>
-          <div v-if="canAddInterview(detail.status)" class="has-text-right mb-2">
-            <b-button type="is-primary" size="is-small" icon-left="plus" @click="showAddInterview = true">
-              Add interview
-            </b-button>
-          </div>
-          <b-table :data="detail.interviews" narrowed hoverable :mobile-cards="false">
-          <template #empty>
-            <p class="has-text-centered op3">No interviews yet</p>
-          </template>
-          <b-table-column field="scheduledDate" label="Scheduled" v-slot="props">
-            {{ dateMonth(props.row.scheduledDate) }}
-            <b-tag size="is-small" :type="props.row.status === InterviewStatus.Rescheduled ? 'is-warning' : 'is-info'" class="ml-1">
-              {{ interviewStatusLabel(props.row.status) }}
-            </b-tag>
-          </b-table-column>
-          <b-table-column field="type" label="Type" v-slot="props">{{ interviewTypeLabel(props.row.type) }}</b-table-column>
-          <b-table-column field="interviewer" label="Interviewer" v-slot="props">{{ props.row.interviewer }}</b-table-column>
-          <b-table-column field="notes" label="Notes" v-slot="props">{{ props.row.notes }}</b-table-column>
-          <b-table-column field="actions" v-slot="props">
-            <b-button v-if="canAddInterview(detail.status)" size="is-small" icon-left="calendar-edit"
-              @click="openReschedule(props.row.id)">
-              Reschedule
-            </b-button>
-          </b-table-column>
-        </b-table>
+          <SigookGrid :data="detail.interviews" :paginated="false" :fit-viewport="false" empty-text="No interviews yet">
+            <template v-if="canAddInterview(detail.status)" #actions>
+              <b-button icon-left="plus" @click="showAddInterview = true">Add interview</b-button>
+            </template>
+            <b-table-column field="scheduledDate" label="Scheduled" v-slot="props">
+              {{ dateMonth(props.row.scheduledDate) }}
+              <b-tag size="is-small" :type="props.row.status === InterviewStatus.Rescheduled ? 'is-warning' : 'is-info'" class="ml-1">
+                {{ interviewStatusLabel(props.row.status) }}
+              </b-tag>
+            </b-table-column>
+            <b-table-column field="type" label="Type" v-slot="props">{{ interviewTypeLabel(props.row.type) }}</b-table-column>
+            <b-table-column field="interviewer" label="Interviewer" v-slot="props">{{ props.row.interviewer }}</b-table-column>
+            <b-table-column field="notes" label="Notes" v-slot="props">{{ props.row.notes }}</b-table-column>
+            <b-table-column field="actions" v-slot="props">
+              <b-button v-if="canAddInterview(detail.status)" size="is-small" icon-left="calendar-edit"
+                @click="openReschedule(props.row.id)">
+                Reschedule
+              </b-button>
+            </b-table-column>
+          </SigookGrid>
         </b-collapse>
       </template>
     </section>
@@ -90,6 +85,7 @@ import {
 } from '@/types/runner';
 import type { RunnerDetail } from '@/types/runner';
 import RunnerInterviewModal from '@/components/runner/RunnerInterviewModal.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const props = defineProps<{ requestId: string; runnerId: string }>();
 const emit = defineEmits<{ (e: 'updated'): void; (e: 'close'): void }>();

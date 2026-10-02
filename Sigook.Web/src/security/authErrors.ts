@@ -7,6 +7,8 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   code_expired: "The code has expired. Request a new one.",
   too_many_attempts: "Too many attempts. Request a new code.",
   password_policy: "The new password was rejected.",
+  invalid_token: "This link is invalid or has expired.",
+  invalid_user: "Your Microsoft 365 account is not allowed to sign in.",
 };
 
 export const DEFAULT_AUTH_ERROR = "Something went wrong. Please try again.";

@@ -24,6 +24,7 @@ namespace Covenant.Common.Models.Request
         public decimal? WorkerRate { get; set; }
         public decimal? WorkerSalary { get; set; }
         public string DisplayRecruiters { get; set; }
+        public string DisplayReportTo { get; set; }
         public string DisplayShift { get; set; }
         public string SalesRepresentative { get; set; }
         public int NotesCount { get; set; }

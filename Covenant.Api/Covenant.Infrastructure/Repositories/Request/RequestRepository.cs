@@ -58,6 +58,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             requests = requests.Where(r => context.RequestRecruiters
                 .Any(rr => rr.RequestId == r.Id && rr.Recruiter.Name.ToLower().Contains(recruiterTerm)));
         }
+        if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
+        {
+            var clientTerm = filter.CompanyFullName.ToLower();
+            requests = requests.Where(r => r.CompanyProfile.FullName.ToLower().Contains(clientTerm)
+                || context.RequestReportTos.Any(rt => rt.RequestId == r.Id
+                    && (rt.ContactPerson.FirstName + " " + rt.ContactPerson.LastName).ToLower().Contains(clientTerm)));
+        }
         var query = from r in requests
                     select new AgencyRequestListModel
                     {
@@ -81,6 +88,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         DisplayRecruiters = string.Join("|", context.RequestRecruiters
                             .Where(rr => rr.RequestId == r.Id)
                             .Select(rr => rr.Recruiter.Name).Distinct()),
+                        DisplayReportTo = string.Join(", ", context.RequestReportTos
+                            .Where(rt => rt.RequestId == r.Id)
+                            .Select(rt => rt.ContactPerson.FirstName + " " + rt.ContactPerson.LastName)),
                         WorkersQuantity = r.WorkersQuantity,
                         SalesRepresentative = r.RequestComission != null ? r.RequestComission.AgencyPersonnel.Name : null,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
@@ -160,11 +170,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             predicate = predicate.And(p => p.HasPermissionToSeeInternalRequests == false);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
-        {
-            var criteria = filter.CompanyFullName.ToLower();
-            predicate = predicate.And(r => r.CompanyFullName.ToLower().Contains(criteria));
-        }
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
             var locationCriteria = filter.Location.ToLower();
@@ -175,7 +180,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 r.PostalCode.ToLower().Contains(locationCriteria));
         }
         if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-            predicate = predicate.And(r => r.JobTitle.ToLower().Contains(filter.JobTitle.ToLower()));
+        {
+            var jobTitle = filter.JobTitle.ToLower();
+            predicate = predicate.And(r => r.JobTitle.ToLower().Contains(jobTitle)
+                || (r.BillingTitle != null && r.BillingTitle.ToLower().Contains(jobTitle)));
+        }
         if (!string.IsNullOrWhiteSpace(filter.SalesRepresentative))
             predicate = predicate.And(r => r.SalesRepresentative.ToLower().Contains(filter.SalesRepresentative.ToLower()));
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
@@ -194,6 +203,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             predicate = predicate.And(r =>
             r.NumberId.ToString().Contains(filter.Filter) ||
             r.JobTitle.ToLower().Contains(filter.Filter) ||
+            (r.BillingTitle != null && r.BillingTitle.ToLower().Contains(filter.Filter)) ||
             r.CompanyFullName.ToLower().Contains(filter.Filter));
         return predicate;
     }
@@ -356,6 +366,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var requests = context.Requests.Where(r => r.CompanyProfile.CompanyId == companyId);
         if (filter.CompanyUserId.HasValue)
             requests = requests.Where(r => r.RequestCompanyUser.Any(rcu => rcu.CompanyUserId == filter.CompanyUserId));
+        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
+        {
+            var jobTitle = filter.JobTitle.ToLower();
+            requests = requests.Where(r => r.JobTitle.ToLower().Contains(jobTitle)
+                || (r.BillingTitle != null && r.BillingTitle.ToLower().Contains(jobTitle)));
+        }
         var query = from request in requests
                     select new RequestListModel
                     {
@@ -387,8 +403,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         Expression<Func<RequestListModel, bool>> predicate = r => statusToVisualize.Contains(r.RequestStatus);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-            predicate = predicate.And(r => r.JobTitle.ToLower().Contains(filter.JobTitle.ToLower()));
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
             var location = filter.Location.ToLower();
@@ -1212,7 +1226,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         if (!string.IsNullOrWhiteSpace(filter.JobTitle))
         {
             var jobTitle = filter.JobTitle.ToLower();
-            applicants = applicants.Where(ra => ra.Request.JobTitle.ToLower().Contains(jobTitle));
+            applicants = applicants.Where(ra => ra.Request.JobTitle.ToLower().Contains(jobTitle)
+                || (ra.Request.BillingTitle != null && ra.Request.BillingTitle.ToLower().Contains(jobTitle)));
         }
         if (!string.IsNullOrWhiteSpace(filter.Recruiter))
         {

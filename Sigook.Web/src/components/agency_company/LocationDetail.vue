@@ -5,8 +5,7 @@
       <b-button type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
     </div>
     <div class="location-table-wrap">
-    <b-table :data="data" narrowed hoverable paginated pagination-size="is-small" :per-page="pageSize" v-model:current-page="pageIndex"
-      pagination-rounded @cellclick="onCellClick">
+    <SigookGrid :data="data" :fit-viewport="false" @cellclick="onCellClick">
       <b-table-column field="id" v-slot="props" searchable :custom-search="onSearchLocation">
         <span>
           {{ props.row.address }}
@@ -36,7 +35,7 @@
           </b-dropdown-item>
         </b-dropdown>
       </b-table-column>
-    </b-table>
+    </SigookGrid>
     </div>
 
     <b-modal custom-content-class="card" v-model="showModal" width="800px">
@@ -70,12 +69,11 @@ import { getLocationTax, upsertLocationTax } from "@/api/locationApi";
 import { getDialog } from "@/utils/buefyProgrammatic";
 import { useAdmin } from "@/composables/useAdmin";
 import LocationForm from "./LocationForm.vue";
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const route = useRoute();
 const { isAdmin } = useAdmin();
 
-const pageIndex = ref(1);
-const pageSize = 8;
 const profileId = route.params.id as string;
 const data = ref<any[]>([]);
 const showModal = ref(false);

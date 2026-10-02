@@ -1,37 +1,31 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="openAddContactModal">Add</b-button>
-    </b-field>
-    <b-table sticky-header height="var(--grid-height)" :data="localAgencyData.contactInformation" narrowed hoverable :mobile-cards="false" paginated pagination-size="is-small"
-      pagination-rounded>
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
+    <SigookGrid :data="localAgencyData.contactInformation">
+      <template #actions>
+        <b-button icon-left="plus" @click="openAddContactModal">Add</b-button>
       </template>
-      <template>
-        <b-table-column field="firstName" label="Full Name" v-slot="props">
-          {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }}
-        </b-table-column>
-        <b-table-column field="position" label="Position" v-slot="props">
-          {{ props.row.position }}
-        </b-table-column>
-        <b-table-column field="officeNumber" label="Phone Number" v-slot="props">
-          <p>{{ props.row.mobileNumber }}</p>
-          <p>
-            <span>{{ props.row.officeNumber }}</span>
-            <span v-if="props.row.officeNumberExt">Ext. {{ props.row.officeNumberExt }}</span>
-          </p>
-        </b-table-column>
-        <b-table-column field="email" label="Email" v-slot="props">
-          <p>{{ props.row.email }}</p>
-        </b-table-column>
-        <b-table-column field="actions" v-slot="props">
-          <b-button type="is-danger" outlined rounded icon-right="delete"
-            @click="removeContact(props.index)" />
-        </b-table-column>
-      </template>
-    </b-table>
+      <b-table-column field="firstName" label="Full Name" v-slot="props">
+        {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }}
+      </b-table-column>
+      <b-table-column field="position" label="Position" v-slot="props">
+        {{ props.row.position }}
+      </b-table-column>
+      <b-table-column field="officeNumber" label="Phone Number" v-slot="props">
+        <p>{{ props.row.mobileNumber }}</p>
+        <p>
+          <span>{{ props.row.officeNumber }}</span>
+          <span v-if="props.row.officeNumberExt">Ext. {{ props.row.officeNumberExt }}</span>
+        </p>
+      </b-table-column>
+      <b-table-column field="email" label="Email" v-slot="props">
+        <p>{{ props.row.email }}</p>
+      </b-table-column>
+      <b-table-column field="actions" v-slot="props">
+        <b-button type="is-danger" outlined rounded icon-right="delete"
+          @click="removeContact(props.row)" />
+      </b-table-column>
+    </SigookGrid>
     <b-modal custom-content-class="card" v-model="showModal">
       <div class="p-3">
         <div class="columns is-multiline">
@@ -103,6 +97,7 @@ import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertSuccess } from "@/utils/toast";
 import { updateAgency } from "@/api/agencyApi";
 import phoneInput from "@/components/PhoneInput.vue";
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const numericExt = yup
   .string()
@@ -192,7 +187,9 @@ async function validateForm() {
   })();
 }
 
-function removeContact(index: number) {
+function removeContact(contact: any) {
+  const index = localAgencyData.value.contactInformation.indexOf(contact);
+  if (index === -1) return;
   isLoading.value = true;
   localAgencyData.value.contactInformation.splice(index, 1);
   emit('update:agencyData', localAgencyData.value);

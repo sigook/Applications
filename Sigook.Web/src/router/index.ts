@@ -13,6 +13,8 @@ import { useSecurityStore } from "@/stores/security";
 
 const Login = () => import("@/pages/auth/Login.vue");
 const ForgotPassword = () => import("@/pages/auth/ForgotPassword.vue");
+const ConfirmEmail = () => import("@/pages/auth/ConfirmEmail.vue");
+const CreatePassword = () => import("@/pages/auth/CreatePassword.vue");
 
 const routes: RouteRecordRaw[] = [
   {
@@ -32,6 +34,22 @@ const routes: RouteRecordRaw[] = [
     path: "/forgot-password",
     name: "forgot-password",
     component: ForgotPassword,
+    meta: {
+      layout: "auth",
+    },
+  },
+  {
+    path: "/confirm-email",
+    name: "confirm-email",
+    component: ConfirmEmail,
+    meta: {
+      layout: "auth",
+    },
+  },
+  {
+    path: "/create-password",
+    name: "create-password",
+    component: CreatePassword,
     meta: {
       layout: "auth",
     },

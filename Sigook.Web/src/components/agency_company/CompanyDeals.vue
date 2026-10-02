@@ -1,15 +1,10 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <b-field grouped position="is-right">
-      <b-button type="is-ghost" icon-right="plus-circle" @click="openCreate">Add</b-button>
-    </b-field>
-    <b-table sticky-header height="var(--grid-height)" :data="rows" narrowed hoverable :mobile-cards="false"
-      paginated pagination-size="is-small" backend-pagination backend-sorting pagination-rounded
-      :total="totalItems" :per-page="serverParams.pageSize" :default-sort="['date', 'desc']"
-      v-model:current-page="serverParams.pageIndex" @page-change="onPageChange" @sort="onSortChange">
-      <template v-slot:empty>
-        <p class="container has-text-centered">No records available</p>
+    <SigookGrid ref="grid" :fetch="loadDeals" v-model:params="serverParams" :sort-map="sortMap"
+      @update:loading="(value) => isLoading = value">
+      <template #actions>
+        <b-button icon-left="plus" @click="openCreate">Add</b-button>
       </template>
       <b-table-column field="title" label="Title" v-slot="props">
         {{ props.row.title }}
@@ -63,31 +58,31 @@
         <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2" @click="openEdit(props.row)"></b-button>
         <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDelete(props.row)"></b-button>
       </b-table-column>
-    </b-table>
+    </SigookGrid>
 
-    <deal-modal v-model="isModalOpen" :deal="editing" :client="company" @saved="load" />
+    <deal-modal v-model="isModalOpen" :deal="editing" :client="company" @saved="reload" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { deleteDeal, getDeals } from '@/api/agencyCompanyApi';
 import {
   DealSortBy,
   DealStatus,
-  DealType,
   DEAL_TYPES,
   DEAL_STATUSES,
   DEAL_TYPE_LABELS,
   DEAL_STATUS_LABELS,
 } from '@/types/company';
-import type { Deal } from '@/types/company';
+import type { Deal, DealFilter } from '@/types/company';
 import type { SalesClientReference } from '@/types/sales';
-import type { CatalogItem } from '@/types/common';
+import type { CatalogItem, GridHandle, PaginatedList } from '@/types/common';
 import { useSalesOwners } from '@/composables/useSalesOwners';
 import { currency, date } from '@/utils/filters';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/utils/toast';
 import DealModal from './DealModal.vue';
+import SigookGrid from '@/components/SigookGrid.vue';
 
 const props = defineProps<{ company: SalesClientReference }>();
 
@@ -97,49 +92,39 @@ const statusOptions: CatalogItem<DealStatus>[] = DEAL_STATUSES.map((s) => ({
 }));
 
 const isLoading = ref(true);
-const totalItems = ref(0);
-const rows = ref<Deal[]>([]);
 const isModalOpen = ref(false);
 const editing = ref<Deal | null>(null);
 const statusesSelected = ref<CatalogItem<DealStatus>[]>([]);
 const dateSelected = ref<Date[]>([]);
 const { isAdmin, owners, loadOwners } = useSalesOwners();
-const serverParams = ref({
+const grid = useTemplateRef<GridHandle>('grid');
+const sortMap = {
+  date: DealSortBy.Date,
+  value: DealSortBy.Value,
+  status: DealSortBy.Status,
+};
+const serverParams = ref<DealFilter>({
   sortBy: DealSortBy.Date,
   isDescending: true,
-  pageIndex: 1,
-  pageSize: 30,
-  ownerId: null as string | null,
-  type: null as DealType | null,
-  statuses: undefined as DealStatus[] | undefined,
-  dateFrom: null as string | null,
-  dateTo: null as string | null,
+  ownerId: null,
+  type: null,
+  statuses: undefined,
+  dateFrom: null,
+  dateTo: null,
 });
 
-load();
 loadOwners();
 
-function load(): void {
-  isLoading.value = true;
-  getDeals(props.company.id, serverParams.value)
-    .then((result) => {
-      rows.value = result.items;
-      totalItems.value = result.totalItems;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-    });
+function loadDeals(params: DealFilter): Promise<PaginatedList<Deal>> {
+  return getDeals(props.company.id, params);
 }
 
 function applyFilter(): void {
-  serverParams.value.pageIndex = 1;
-  load();
+  grid.value?.search();
 }
 
-function onPageChange(page: number): void {
-  serverParams.value.pageIndex = page;
-  load();
+function reload(): void {
+  grid.value?.reload();
 }
 
 function onStatusChange(): void {
@@ -160,22 +145,6 @@ function onDateCleared(): void {
   onDateSelected();
 }
 
-function onSortChange(field: string, order: string): void {
-  switch (field) {
-    case 'value':
-      serverParams.value.sortBy = DealSortBy.Value;
-      break;
-    case 'status':
-      serverParams.value.sortBy = DealSortBy.Status;
-      break;
-    default:
-      serverParams.value.sortBy = DealSortBy.Date;
-      break;
-  }
-  serverParams.value.isDescending = order !== 'asc';
-  load();
-}
-
 function openCreate(): void {
   editing.value = null;
   isModalOpen.value = true;
@@ -193,7 +162,7 @@ async function onDelete(deal: Deal): Promise<void> {
   try {
     await deleteDeal(props.company.id, deal.id);
     showAlertSuccess('Deal deleted');
-    load();
+    reload();
   } catch (error) {
     isLoading.value = false;
     await showAlertError(error);

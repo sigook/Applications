@@ -531,7 +531,6 @@ Company portal (client) view of their profile, requests and workers.
 ### Comments / Users / Contacts / Invoices
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `companyCommentWorker(id, comment)` | POST | `/api/company/workers/{id}/Comments` | `CommentsModel` | `void` | |
 | `getCompanyUser()` | GET | `/api/company/Users` | — | `CompanyUserModel[]` | |
 | `getCompanyUserDetail()` | GET | `/api/company/Users/detail` | — | `CompanyUserModel` | Current user |
 | `createCompanyUser(model)` | POST | `/api/company/Users` | `CreateCompanyUserModel` | `void` | |
@@ -754,7 +753,6 @@ Public landing site endpoints (no auth).
 | `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | |
 | `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply; the worker comes from the token, `email` in the body is ignored |
 | `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `WorkerRequestApplyModel` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
-| `workerRequestDecline(id)` | DELETE | `/api/WorkerRequest/Decline/{id}` | — | `void` | Decline offer |
 
 ### TimeSheet
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -771,7 +769,7 @@ Public landing site endpoints (no auth).
 ### Profile
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getMyProfile()` | GET | `/api/WorkerProfile/me` | — | `WorkerProfile` | |
+| `getMyProfile()` | GET | `/api/WorkerProfile/me` | — | `WorkerProfileDetail` | |
 | `registerWorker(payload, requestId?)` | POST | `/api/WorkerProfile?requestId=` | FormData (multipart) | `string` (profile id) | Registration; `requestId` (request number from `/register-worker/:requestId`) also adds the new worker as applicant |
 
 ### Request History
@@ -873,6 +871,8 @@ The only API file that targets `VUE_APP_SECURITY_SERVER` instead of `VUE_APP_URL
 | `fetchUserInfo(tokenType, accessToken)` | GET | `/connect/userinfo` | Bearer header | `UserInfoResponse` | `role` is string or string[] |
 | `requestPasswordResetCode(email)` | POST | `/Password/forgot` | `{ email }` | `void` | 202 even when nothing is sent (60-s cooldown, 3 codes/hour and 6/day per user server-side); 429 past 10 requests per IP in 10 min |
 | `resetPasswordWithCode(payload)` | POST | `/Password/reset` | `ResetPasswordWithCodePayload` | `void` | 400 → `PasswordResetErrorResponse` with `error` ∈ `invalid_code`, `code_expired`, `too_many_attempts`, `password_policy` (+ `messages`); 429 past 10 requests per IP in 10 min (shared with `/Password/forgot`) |
-| `resendConfirmationLink(email)` | POST | `/Account/ResendConfirmationLink?userName=` | query param | `void` | Called from the `email_not_confirmed` login error |
+| `resendConfirmationLink(email)` | POST | `/Account/ResendConfirmationLink?userName=` | query param | `void` | Called from the `email_not_confirmed` login error; always 200 |
+| `confirmEmail(payload)` | POST | `/Account/ConfirmEmail` | `ConfirmEmailPayload` | `void` | `/confirm-email` page; 400 → `PasswordResetErrorResponse` with `error = invalid_token`; already-confirmed users get 200 |
+| `createPassword(payload)` | POST | `/Account/CreatePassword` | `CreatePasswordPayload` | `void` | `/create-password` page; also confirms the email. 400 → `error` ∈ `invalid_token`, `password_policy` (+ `messages`) |
 
-**Types:** `TokenResponse`, `TokenErrorResponse`, `UserInfoResponse`, `ResetPasswordWithCodePayload`, `PasswordResetErrorResponse` (`src/types/security`)
+**Types:** `TokenResponse`, `TokenErrorResponse`, `UserInfoResponse`, `ResetPasswordWithCodePayload`, `ConfirmEmailPayload`, `CreatePasswordPayload`, `PasswordResetErrorResponse` (`src/types/security`)

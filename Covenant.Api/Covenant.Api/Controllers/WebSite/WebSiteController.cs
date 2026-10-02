@@ -77,7 +77,8 @@ public class WebSiteController(
         }
         if (!string.IsNullOrEmpty(model.JobTitle))
         {
-            value = value.Where(r => r.Title.Contains(model.JobTitle, StringComparison.OrdinalIgnoreCase));
+            value = value.Where(r => r.Title.Contains(model.JobTitle, StringComparison.OrdinalIgnoreCase)
+                || r.NumberId.Contains(model.JobTitle));
         }
         if (!string.IsNullOrEmpty(model.Location))
         {

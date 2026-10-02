@@ -4,7 +4,6 @@ using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Repositories.Identity;
 using Covenant.Core.BL.Services.Identity;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -14,6 +13,8 @@ namespace Covenant.Tests.Identity;
 public class PasswordResetServiceTest
 {
     private const string Email = "worker@sigook.com";
+    private const string Token = "token";
+    private const string Password = "Secret123";
 
     private readonly CovenantUser _user = new() { Id = Guid.NewGuid(), Email = Email };
     private readonly Mock<UserManager<CovenantUser>> _userManager = new(Mock.Of<IUserStore<CovenantUser>>(), null, null, null, null, null, null, null, null);
@@ -30,7 +31,6 @@ public class PasswordResetServiceTest
             _repository.Object,
             new PasswordHasher<CovenantUser>(),
             _notifications.Object,
-            new MemoryCache(new MemoryCacheOptions()),
             NullLogger<PasswordResetService>.Instance);
     }
 
@@ -71,22 +71,38 @@ public class PasswordResetServiceTest
     }
 
     [Fact]
-    public async Task Sends_Links_Only_Up_To_The_Hourly_Limit()
+    public async Task Creates_The_Password_And_Confirms_The_Email()
     {
-        for (var i = 0; i < PasswordResetService.MaxLinksPerHour + 2; i++)
-        {
-            await _sut.RequestLink(Email);
-        }
+        _userManager.Setup(um => um.FindByIdAsync(_user.Id.ToString())).ReturnsAsync(_user);
+        _userManager.Setup(um => um.ResetPasswordAsync(_user, Token, Password)).ReturnsAsync(IdentityResult.Success);
+        _userManager.Setup(um => um.UpdateAsync(_user)).ReturnsAsync(IdentityResult.Success);
 
-        _notifications.Verify(n => n.SendPasswordResetLink(_user), Times.Exactly(PasswordResetService.MaxLinksPerHour));
+        var result = await _sut.CreatePassword(_user.Id, Token, Password);
+
+        Assert.True(result.Succeeded);
+        Assert.True(_user.EmailConfirmed);
     }
 
     [Fact]
-    public async Task Does_Not_Send_A_Link_For_An_Unknown_Email()
+    public async Task Rejects_An_Invalid_Token_When_Creating_The_Password()
     {
-        await _sut.RequestLink("unknown@sigook.com");
+        _userManager.Setup(um => um.FindByIdAsync(_user.Id.ToString())).ReturnsAsync(_user);
+        _userManager.Setup(um => um.ResetPasswordAsync(_user, Token, Password))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityErrorDescriber().InvalidToken()));
 
-        _notifications.Verify(n => n.SendPasswordResetLink(It.IsAny<CovenantUser>()), Times.Never);
+        var result = await _sut.CreatePassword(_user.Id, Token, Password);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(PasswordResetService.InvalidToken, result.Error);
+        Assert.False(_user.EmailConfirmed);
+    }
+
+    [Fact]
+    public async Task Rejects_An_Unknown_User_When_Creating_The_Password()
+    {
+        var result = await _sut.CreatePassword(Guid.NewGuid(), Token, Password);
+
+        Assert.Equal(PasswordResetService.InvalidToken, result.Error);
     }
 
     private void GivenCodesInTheLastHour(int count) =>

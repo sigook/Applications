@@ -48,7 +48,6 @@ Useful URLs in Development and Staging:
 |---|---|
 | `/scalar` | API reference (Scalar) over the OpenAPI document at `/openapi/v1.json` |
 | `/.well-known/openid-configuration` | OpenID Connect discovery |
-| `/Account/Login` | Razor login page |
 | `/health`, `/healthz`, `/ready`, `/live` | Health checks |
 
 The OpenAPI document is also written to `.docs/technical/openapi.json` on every local build.

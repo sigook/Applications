@@ -21,7 +21,7 @@
             <form @submit.prevent="handleSearch" class="search-form">
 
               <div class="form-group">
-                <label for="jobTitle">Job Title</label>
+                <label for="jobTitle">Job Title / Request #</label>
                 <input
                   type="text"
                   id="jobTitle"
