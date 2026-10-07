@@ -1,9 +1,10 @@
 <template>
-    <div ref="root" class="is-inline-block relative align-text-top" @mouseleave="showDetail = false">
+    <div ref="root" class="shift-trigger is-inline-block align-text-top" @mouseleave="showDetail = false">
         <span>{{ displayShift }}</span>
-        <button v-if="displayShift" @click.stop="getRequestShift" class="border-0" :class="{ 'up': showDetail }">
-            <img src="../../assets/images/arrow-down.svg" alt="button" type="button" width="10px" class="ml-2">
-        </button>
+        <b-button v-if="displayShift" type="is-ghost" size="is-small" class="shift-toggle"
+            :icon-left="showDetail ? 'chevron-up' : 'chevron-down'"
+            :aria-label="showDetail ? 'Hide shift detail' : 'Show shift detail'" :aria-expanded="showDetail"
+            @click.stop="getRequestShift" />
         <shift-detail v-if="showDetail" :shift="shift" v-model:is-loading="isLoading" />
     </div>
 </template>
@@ -59,3 +60,27 @@ function getRequestShift() {
     }
 }
 </script>
+
+<style lang="scss" scoped>
+@import '../../assets/scss/variables';
+
+.shift-trigger {
+    position: relative;
+}
+
+.button.shift-toggle {
+    width: 24px;
+    height: 24px;
+    margin-left: 4px;
+    padding: 0;
+    vertical-align: middle;
+    color: $grey-font;
+
+    &:hover,
+    &:focus {
+        background: $gray-bg;
+        color: $navy;
+        text-decoration: none;
+    }
+}
+</style>

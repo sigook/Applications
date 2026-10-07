@@ -12,22 +12,12 @@
     </div>
     <span v-show="fileError" class="help is-danger no-margin">{{ fileError }}</span>
 
-    <!-- custom modal -->
-    <transition name="modal">
-      <div v-if="modalValidation" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container small-container">
-              <button @click="modalValidation = false" class="cross-icon" type="button">{{ 'Close' }}</button>
-              <crop-image :image="cropImage" @onCrop="response => showImage(response)"
-                @closeModal="() => modalValidation = false"></crop-image>
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal -->
-
+    <Teleport to="body">
+      <b-modal custom-content-class="card" v-model="modalValidation" width="450px" :destroy-on-hide="true">
+        <crop-image :image="cropImage" @onCrop="response => showImage(response)"
+          @closeModal="() => modalValidation = false"></crop-image>
+      </b-modal>
+    </Teleport>
   </div>
 </template>
 

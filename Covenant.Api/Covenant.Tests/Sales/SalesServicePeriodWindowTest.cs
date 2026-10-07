@@ -17,7 +17,7 @@ public class SalesServicePeriodWindowTest
 {
     private readonly Mock<ICompanyRepository> _companyRepository = new();
     private readonly Mock<ICurrentUserService> _currentUserService = new();
-    private readonly Mock<ITimeService> _timeService = new();
+    private readonly Mock<TimeProvider> _timeProvider = new();
     private readonly ISalesService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
 
@@ -50,16 +50,22 @@ public class SalesServicePeriodWindowTest
             new UpdateCompanyInteractionModelValidator(),
             new CreateDealModelValidator(),
             new UpdateDealModelValidator(),
-            _timeService.Object,
+            _timeProvider.Object,
             new GetDealsByStatusFilterValidator());
     }
 
     private static DateTimeOffset Utc(string instant) =>
         DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
 
+    private void SetNow(DateTimeOffset now)
+    {
+        _timeProvider.Setup(t => t.GetUtcNow()).Returns(now.ToUniversalTime());
+        _timeProvider.Setup(t => t.LocalTimeZone).Returns(TimeZoneInfo.CreateCustomTimeZone("Test", now.Offset, "Test", "Test"));
+    }
+
     private async Task<SalesPeriodRangeModel> Window(SalesPeriod period, DateTimeOffset now)
     {
-        _timeService.Setup(t => t.GetCurrentDateTimeOffset()).Returns(now);
+        SetNow(now);
         var result = await _sut.GetDealsByStatus(new GetDealsByStatusFilter { Period = period });
         Assert.True(result);
         return result.Value.Period;
@@ -234,11 +240,11 @@ public class SalesServicePeriodWindowTest
     [Fact]
     public async Task DashboardSummaryReadsTheClockOnceSoBothWindowsShareTheInstant()
     {
-        _timeService.Setup(t => t.GetCurrentDateTimeOffset()).Returns(Utc("2026-12-31T23:59:59Z"));
+        SetNow(Utc("2026-12-31T23:59:59Z"));
 
         var summary = await _sut.GetDashboardSummary(new GetSalesDashboardSummaryFilter());
 
-        _timeService.Verify(t => t.GetCurrentDateTimeOffset(), Times.Once);
+        _timeProvider.Verify(t => t.GetUtcNow(), Times.Once);
         Assert.Equal("Q4 2026", summary.Quarter.Label);
         Assert.Equal(new DateTime(2026, 12, 27), summary.Week.From);
     }

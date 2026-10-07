@@ -71,6 +71,7 @@ Tests:           Covenant.Tests/, Covenant.Integration.Tests/ (Docker), Sigook.F
 - **Every model/DTO lives in `Covenant.Common/Models/{Domain}/`** — request bodies, responses, filters, view models. No `Models/` folders inside `Covenant.Api`, even for a DTO used by a single endpoint. Keep ASP.NET types (`IFormFile`) out of them: bind files as a separate controller parameter (see `InvoicesController.SendInvoiceEmail`).
 - **Validators live in `Covenant.Api/Validators/{Domain}/`**, one per file, named `{Model}Validator`. Never inline them next to the model.
 - All services/repos registered as `AddScoped<>` in `ApiServicesConfiguration.cs`
+- **Clock = .NET `TimeProvider`** (singleton `TimeProvider.System`); never `DateTime.Now` in services. Server "now" is `GetLocalNow().DateTime`; zone-aware "now" from coordinates or an IANA id comes from `TimeProviderExtensions.GetLocalNow(...)` in `Covenant.Common/Utils/Extensions`. Tests use `FakeTimeProvider` (`Microsoft.Extensions.TimeProvider.Testing`)
 - Repository pattern with interfaces in `Covenant.Common`, implementations in `Covenant.Infrastructure`
 - Services in `Covenant.Core.BL` depend only on repository interfaces (identity services also use ASP.NET Identity's `UserManager`/`RoleManager`)
 - EF Core configurations in `Covenant.Infrastructure/Configurations/`; one `IEntityTypeConfiguration` per entity and file

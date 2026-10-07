@@ -1,6 +1,5 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities.Request;
-using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Request;
 using Microsoft.AspNetCore.Authorization;
@@ -32,13 +31,6 @@ public class RequestedByController(IRequestRepository repository) : ControllerBa
         await repository.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { requestId, contactPersonId }, new { });
     }
-
-    /// <summary>Gets a paginated list of requested-by contact persons for the specified request.</summary>
-    /// <param name="requestId">Identifier of the request.</param>
-    /// <param name="pagination">Pagination parameters.</param>
-    [HttpGet]
-    [ProducesResponseType(typeof(PaginatedList<RequestContactPersonModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Get(Guid requestId, Pagination pagination) => Ok(await repository.GetRequestedByList(requestId, pagination));
 
     /// <summary>Gets the detail of a requested-by contact person for the specified request.</summary>
     /// <param name="requestId">Identifier of the request.</param>

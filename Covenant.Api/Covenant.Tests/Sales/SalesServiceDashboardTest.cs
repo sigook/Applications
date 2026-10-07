@@ -8,6 +8,7 @@ using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -17,7 +18,7 @@ public class SalesServiceDashboardTest
 {
     private readonly Mock<ICompanyRepository> _companyRepository = new();
     private readonly Mock<ICurrentUserService> _currentUserService = new();
-    private readonly Mock<ITimeService> _timeService = new();
+    private readonly FakeTimeProvider _timeProvider = new();
     private readonly ISalesService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
     private readonly Guid _userId = Guid.NewGuid();
@@ -33,7 +34,7 @@ public class SalesServiceDashboardTest
     {
         _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
         _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
-        _timeService.Setup(t => t.GetCurrentDateTimeOffset()).Returns(Now);
+        _timeProvider.SetUtcNow(Now);
         _sut = new SalesService(
             Mock.Of<IRequestService>(),
             Mock.Of<IRequestRepository>(),
@@ -45,7 +46,7 @@ public class SalesServiceDashboardTest
             new UpdateCompanyInteractionModelValidator(),
             new CreateDealModelValidator(),
             new UpdateDealModelValidator(),
-            _timeService.Object,
+            _timeProvider,
             new GetDealsByStatusFilterValidator());
     }
 

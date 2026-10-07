@@ -1,113 +1,110 @@
 <template>
-  <div class="profile">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
 
-    <div class="profile-content">
-      <div class="profile-top">
-        <UploadImage v-if="companyProfile && companyProfile.logo"
-          @imageSelected="(profileImg) => (companyProfile.logo.fileName = profileImg)"
-          :edited-image="companyProfile.logo" :class="{ disabled: isDisabled }" :required="false">
-        </UploadImage>
-        <div v-if="companyProfile">
-          <h1 class="is-capitalized fz2">
-            {{ lowercase(companyProfile.fullName) }}
-          </h1>
-        </div>
-      </div>
-
-      <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="companyProfile">
-        <b-tab-item :label="'Business Information'" value="BusinessInformation">
-          <BusinessInformation v-if="visitedTabs.includes('BusinessInformation')" v-model:company-data="companyProfile" />
+    <detail-header v-if="companyProfile" :title="lowercase(companyProfile.fullName)" :number-id="companyProfile.numberId"
+      :meta="industry" :logo="companyProfile.logo?.pathFile" :kpis="kpis">
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab">
+        <b-tab-item label="Profile" value="Profile">
+          <company-profile-tab v-if="visitedTabs.includes('Profile')" v-model:company="companyProfile"
+            :locations-version="locationsVersion" :contacts-version="contactsVersion"
+            @contactsLoaded="contactsCount = $event" @locationsLoaded="locationsCount = $event" @showTab="changeTab" />
         </b-tab-item>
-
-        <b-tab-item :label="'Contact Information'" value="ContactInformation">
-          <ContactInformation v-if="visitedTabs.includes('ContactInformation')" :company-data="companyProfile" />
+        <b-tab-item label="Locations" value="Locations">
+          <template #header>
+            Locations<span v-if="locationsCount !== undefined" class="detail-tab-count">{{ locationsCount }}</span>
+          </template>
+          <profile-location v-if="visitedTabs.includes('Locations')" @loaded="onLocationsLoaded" />
         </b-tab-item>
-
-        <b-tab-item :label="'Location Information'" value="LocationInformation">
-          <LocationInformation v-if="visitedTabs.includes('LocationInformation')" :company-data="companyProfile" />
+        <b-tab-item label="Contacts" value="Contacts">
+          <template #header>
+            Contacts<span v-if="contactsCount !== undefined" class="detail-tab-count">{{ contactsCount }}</span>
+          </template>
+          <profile-contact v-if="visitedTabs.includes('Contacts')" @loaded="onContactsLoaded" />
         </b-tab-item>
-
-        <b-tab-item :label="'Users'" value="CompanyUsers">
-          <CompanyUsers v-if="visitedTabs.includes('CompanyUsers')" :company-data="companyProfile" />
+        <b-tab-item label="Users" value="CompanyUsers">
+          <company-users v-if="visitedTabs.includes('CompanyUsers')" :company-data="companyProfile" />
         </b-tab-item>
-
-        <b-tab-item :label="'Account Security'" value="AccountSecurity">
-          <AccountSecurity v-if="visitedTabs.includes('AccountSecurity')" :company-data="companyProfile" />
+        <b-tab-item label="Account security" value="AccountSecurity">
+          <account-security v-if="visitedTabs.includes('AccountSecurity')" :company-data="companyProfile" />
         </b-tab-item>
-
-        <b-tab-item :label="'Notifications'" value="UserNotification">
-          <UserNotification v-if="visitedTabs.includes('UserNotification')" />
+        <b-tab-item label="Notifications" value="UserNotification">
+          <user-notification v-if="visitedTabs.includes('UserNotification')" />
         </b-tab-item>
       </b-tabs>
-    </div>
+    </detail-header>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
 import { getCompanyProfile } from '@/api/companyApi';
 import { lowercase } from '@/utils/filters';
-import BusinessInformation from '../../components/company/ProfileBusiness.vue';
-import ContactInformation from '../../components/company/ProfileContact.vue';
-import LocationInformation from '../../components/company/ProfileLocation.vue';
-import UploadImage from '../../components/PreviewImage.vue';
-import AccountSecurity from '../../components/agency/ProfileAccountInformation.vue';
-import UserNotification from '../../components/UserNotification.vue';
-import CompanyUsers from '../../components/company/CompanyUsers.vue';
+import { useCompanyDetail } from '@/composables/useCompanyDetail';
+import type { CompanyProfileDetail } from '@/types/company';
+import type { DetailKpi } from '@/types/detailPage';
+import DetailHeader from '@/components/detail_page/DetailHeader.vue';
+import CompanyProfileTab from '@/components/company/CompanyProfileTab.vue';
+import ProfileLocation from '@/components/company/ProfileLocation.vue';
+import ProfileContact from '@/components/company/ProfileContact.vue';
+import AccountSecurity from '@/components/agency/ProfileAccountInformation.vue';
+import UserNotification from '@/components/UserNotification.vue';
+import CompanyUsers from '@/components/company/CompanyUsers.vue';
+
+const tabs = ['Profile', 'Locations', 'Contacts', 'CompanyUsers', 'AccountSecurity', 'UserNotification'];
 
 const route = useRoute();
 const router = useRouter();
 
 const isLoading = ref(false);
-const companyProfile = ref<any>(null);
-const currentTab = ref<string>('BusinessInformation');
-const visitedTabs = ref<string[]>(['BusinessInformation']);
-const isDisabled = ref(true);
+const companyProfile = ref<CompanyProfileDetail | null>(null);
+const contactsCount = ref<number>();
+const locationsCount = ref<number>();
+const locationsVersion = ref(0);
+const contactsVersion = ref(0);
+const { industry, createdAt } = useCompanyDetail(companyProfile);
+
+const initialTab = typeof route.query.tab === 'string' && tabs.includes(route.query.tab) ? route.query.tab : 'Profile';
+const currentTab = ref<string>(initialTab);
+const visitedTabs = ref<string[]>(['Profile', initialTab]);
+
+const kpis = computed<DetailKpi[]>(() => [
+  ...(locationsCount.value !== undefined ? [{ key: 'locations', label: 'Locations', value: String(locationsCount.value) }] : []),
+  ...(contactsCount.value !== undefined ? [{ key: 'contacts', label: 'Contacts', value: String(contactsCount.value) }] : []),
+  ...(createdAt.value ? [{ key: 'created', label: 'Member since', value: createdAt.value }] : []),
+]);
+
+function onLocationsLoaded(count: number) {
+  locationsCount.value = count;
+  locationsVersion.value += 1;
+}
+
+function onContactsLoaded(count: number) {
+  contactsCount.value = count;
+  contactsVersion.value += 1;
+}
 
 function changeTab(tab: string) {
+  currentTab.value = tab;
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
-    path: '/company-profile',
-    query: { tab: tab },
-  });
+  router.push({ path: '/company-profile', query: { tab } });
 }
 
 function onGetProfile() {
   isLoading.value = true;
   getCompanyProfile()
-    .then((data: any) => {
+    .then((data) => {
       companyProfile.value = data;
-      isLoading.value = false;
     })
-    .catch((error: unknown) => {
-      showAlertError((error as { data?: unknown }).data);
+    .catch((error: unknown) => showAlertError((error as { data?: unknown }).data))
+    .finally(() => {
       isLoading.value = false;
     });
 }
 
-if (route.query && route.query.tab) {
-  const tab = route.query.tab as string;
-  currentTab.value = tab;
-  if (!visitedTabs.value.includes(tab)) {
-    visitedTabs.value.push(tab);
-  }
-}
 onGetProfile();
 </script>
-
-<style lang="scss" scoped>
-.profile {
-  display: block;
-
-  .profile-content {
-    width: 100%;
-    border-left: none;
-    padding: 15px 20px;
-  }
-}
-</style>

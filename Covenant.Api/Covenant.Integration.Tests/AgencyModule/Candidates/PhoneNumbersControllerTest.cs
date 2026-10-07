@@ -79,7 +79,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                     .AddTestAuth(o => o.AddAgencyPersonnelRole());
                 services.AddTestDatabase();
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

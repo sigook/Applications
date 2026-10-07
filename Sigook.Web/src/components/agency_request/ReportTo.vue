@@ -6,84 +6,41 @@
       <b-button v-if="canEdit" type="is-primary" size="is-small" outlined rounded @click="showModal = true">Add</b-button>
     </div>
     <div>
-      <ul v-if="data" class="p-1">
-        <li v-for="(item) in data.items" :key="item.id"
+      <ul class="p-1">
+        <li v-for="(item) in contacts" :key="item.id"
           class="content-flex-between is-align-items-center mb-0 hover-actions fz-14">
           <span class="is-inline-block valign-middle">{{ item.firstName }} {{ item.lastName }}</span>
-          <button v-if="canEdit" class="btn-icon-sm btn-icon-reject valign-middle actions"
-            @click="removeReportTo(item)">DELETE</button>
+          <b-button v-if="canEdit" type="is-ghost" size="is-small" icon-left="close"
+            class="contact-remove actions" :aria-label="`Remove ${item.firstName} ${item.lastName}`"
+            @click="removeReportTo(item)" />
         </li>
       </ul>
     </div>
-    <!-- Select custom modal -->
-    <transition name="modal">
-      <div v-if="showModal" class="vue-modal min-width-0">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container small-container modal-light modal-overflow h-auto border-radius">
-              <button @click="showModal = false" type="button" class="cross-icon">close</button>
-              <contact-list :requestId="requestId" :companyProfileId="companyProfileId" :activeUsers="data.items"
-                @removeContact="(item) => removeReportTo(item)"
-                @selectContact="(item) => addReportTo(item)" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end Select custom modal -->
+    <b-modal custom-content-class="card" v-model="showModal" width="600px">
+      <contact-list :companyProfileId="companyProfileId" :activeUsers="contacts"
+        @removeContact="removeReportTo" @selectContact="addReportTo" />
+    </b-modal>
   </div>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
 import { showAlertError } from "@/utils/toast";
-import {
-  getAgencyRequestReportTo,
-  postAgencyRequestReportTo,
-  deleteAgencyRequestReportTo
-} from "@/api/agencyRequestApi";
+import { postAgencyRequestReportTo, deleteAgencyRequestReportTo } from "@/api/agencyRequestApi";
 import ContactList from './ContactListModal.vue';
+import type { AgencyCompanyContactPerson, AgencyRequestPersonItem } from "@/types/agency";
 
-const props = defineProps<{ requestId: any; companyProfileId: any; canEdit?: boolean }>();
+const props = defineProps<{ requestId: string; companyProfileId: string; canEdit?: boolean }>();
+const contacts = defineModel<AgencyRequestPersonItem[]>({ required: true });
 
 const showModal = ref(false);
 const isLoading = ref(false);
-const data = ref<any>(null);
 
-function loadReportTo() {
-  getAgencyRequestReportTo(props.requestId)
-    .then(response => {
-      data.value = response;
-    })
-    .catch(error => {
-      showAlertError(error);
-    });
-}
-
-function updateContactList(item: any) {
-  data.value.items.push(item);
-  showModal.value = false;
-}
-
-function addReportTo(item: any) {
+function addReportTo(item: AgencyCompanyContactPerson) {
   isLoading.value = true;
-  postAgencyRequestReportTo(props.requestId, item.id)
+  postAgencyRequestReportTo(props.requestId, item.id!)
     .then(() => {
       isLoading.value = false;
-      updateContactList(item);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
-}
-
-function removeReportTo(item: any) {
-  const index = data.value.items.findIndex((x: any) => x.id === item.id);
-  isLoading.value = true;
-  deleteAgencyRequestReportTo(props.requestId, item.id)
-    .then(() => {
-      isLoading.value = false;
-      data.value.items.splice(index, 1);
+      contacts.value = [...contacts.value, { ...item, id: item.id! }];
       showModal.value = false;
     })
     .catch(error => {
@@ -92,5 +49,35 @@ function removeReportTo(item: any) {
     });
 }
 
-loadReportTo();
+function removeReportTo(item: { id?: string }) {
+  isLoading.value = true;
+  deleteAgencyRequestReportTo(props.requestId, item.id!)
+    .then(() => {
+      isLoading.value = false;
+      contacts.value = contacts.value.filter(x => x.id !== item.id);
+      showModal.value = false;
+    })
+    .catch(error => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
 </script>
+
+<style lang="scss" scoped>
+@import '../../assets/scss/variables';
+
+.button.contact-remove {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: $grey-font;
+
+  &:hover,
+  &:focus {
+    background: $gray-bg;
+    color: $danger-hover;
+    text-decoration: none;
+  }
+}
+</style>

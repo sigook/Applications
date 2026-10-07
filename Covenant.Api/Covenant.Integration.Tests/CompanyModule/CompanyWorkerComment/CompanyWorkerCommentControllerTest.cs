@@ -60,7 +60,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyWorkerComment
                 });
                 services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<CompanyIdFilter>();
             }
 

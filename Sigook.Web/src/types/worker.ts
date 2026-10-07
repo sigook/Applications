@@ -298,6 +298,17 @@ export interface WorkerRequestDetail extends WorkerRequestListItem {
   workerRate?: number | null;
   workerSalary?: number | null;
   displayShift?: string;
+  skills?: string[];
+  jobPosition?: string;
+  holidayIsPaid?: boolean;
+  breakIsPaid?: boolean;
+  durationBreak?: string;
+  incentive?: number | null;
+  incentiveDescription?: string;
+  requestStatus?: string;
+  jobLocation?: LocationDetailModel | null;
+  isApplicant?: boolean;
+  punchCardOptionEnabled?: boolean;
 }
 
 // Matches API TimeSheetListModel.

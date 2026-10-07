@@ -148,7 +148,6 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                     .AddTestAuth(o => o.AddAgencyPersonnelRole());
                 services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

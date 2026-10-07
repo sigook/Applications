@@ -155,6 +155,65 @@ export interface AgencyPersonnelListItem {
   role: string;
 }
 
+// Mirrors backend AttendanceStatus
+export enum AttendanceStatus {
+  NotStarted = 0,
+  ClockedIn = 1,
+  ClockedOut = 2,
+}
+
+// GET /api/agency/attendance/today, POST /api/agency/attendance, GET /api/agency/attendance/today/users
+export interface UserAttendanceToday {
+  userId: string;
+  status: AttendanceStatus;
+  clockIn: string | null;
+  clockOut: string | null;
+  workedHours: number | null;
+}
+
+export interface UserAttendanceHours {
+  workedHours: number;
+  lunchHours: number;
+  regularHours: number;
+  overtimeHours: number;
+}
+
+export interface UserAttendanceListItem extends UserAttendanceHours {
+  id: string;
+  userId: string;
+  name: string;
+  date: string;
+  clockIn: string;
+  clockOut: string | null;
+  lunchMinutes: number;
+  isWeekend: boolean;
+  isMissingClockOut: boolean;
+  isEdited: boolean;
+  editedBy: string | null;
+  editedAt: string | null;
+  editReason: string | null;
+}
+
+// GET /api/agency/attendance/report
+export interface UserAttendanceReport {
+  items: UserAttendanceListItem[];
+  totals: UserAttendanceHours;
+}
+
+export interface UserAttendanceReportFilter {
+  userId?: string;
+  from: string;
+  to: string;
+}
+
+// PUT /api/agency/attendance/{id}
+export interface UpdateUserAttendanceModel {
+  clockIn: string;
+  clockOut: string | null;
+  lunchMinutes: number;
+  reason: string;
+}
+
 // Item returned by GET /api/agency/personnel/Agencies. Mirrors backend PersonnelAgencyModel.
 export interface PersonnelAgencyItem {
   id: string;
@@ -350,7 +409,7 @@ export interface AgencyCompanyContactPerson {
   mobileNumber?: string;
   officeNumber?: string;
   officeNumberExt?: number | null;
-  email: string;
+  email?: string | null;
 }
 
 // Company profile location.
@@ -521,7 +580,7 @@ export interface AgencyRequestDetail {
   jobPosition?: string;
   holidayIsPaid: boolean;
   breakIsPaid: boolean;
-  status: string;
+  status: RequestStatus;
   cancellationDetail?: string;
   createdAt: string;
   createdBy?: string;
@@ -546,6 +605,12 @@ export interface AgencyRequestDetail {
   salesRepresentativeId?: string | null;
   companyUserIds?: string[];
   complianceItems?: RequestComplianceItem[];
+  skills: AgencyRequestSkillModel[];
+  requestedBy: AgencyRequestPersonItem[];
+  reportTo: AgencyRequestPersonItem[];
+  applicantsCount: number;
+  runnersCount: number;
+  workersCount: number;
 }
 
 // Compliance requirement configured on a request. Mirrors backend RequestComplianceItemModel.

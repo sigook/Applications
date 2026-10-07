@@ -10,9 +10,10 @@
       :export="{ url: exportUrl, fileName: 'Requests' }" focusable :checkable="tableConfig.enableCheckable"
       v-model:checked-rows="checkedRows" @update:loading="(value) => emit('onDataLoading', value)"
       @loaded="(total) => emit('update:totalItems', total)" @cellclick="onCellClick">
+      <template v-if="tableConfig.showAssignedToMe" #filters>
+        <b-switch v-model="serverParams.onlyMine" @update:modelValue="onOnlyMineChange">Assigned to me</b-switch>
+      </template>
       <template #actions>
-        <b-checkbox v-if="tableConfig.showMyRequestsCheckbox" v-model="serverParams.onlyMine"
-          @update:modelValue="onOnlyMineChange">My Requests</b-checkbox>
         <b-dropdown v-if="tableConfig.showQuickActions"
           :key="quickActionsKey"
           aria-role="menu" position="is-bottom-left" :triggers="['click']" :close-on-click="false" append-to-body>
@@ -290,7 +291,7 @@ const sortMap = {
 };
 
 const defaultConfig = {
-  showMyRequestsCheckbox: true,
+  showAssignedToMe: true,
   showQuickActions: true,
   enableCheckable: true,
   showSalesRepColumn: true,

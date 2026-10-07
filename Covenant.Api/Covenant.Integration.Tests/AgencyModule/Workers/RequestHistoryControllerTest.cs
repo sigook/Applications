@@ -41,7 +41,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
             {
                 services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddDefaultTestConfiguration();
                 services.AddTestAuthenticationBuilder()
                     .AddTestAuth(o =>

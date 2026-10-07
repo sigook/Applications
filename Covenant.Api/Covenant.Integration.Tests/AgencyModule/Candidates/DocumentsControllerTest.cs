@@ -83,7 +83,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Candidates
                     });
                 services.AddTestDatabase();
                 services.AddSingleton<ICandidateRepository, CandidateRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

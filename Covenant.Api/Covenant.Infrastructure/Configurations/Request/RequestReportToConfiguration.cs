@@ -10,6 +10,9 @@ namespace Covenant.Infrastructure.Configurations.Request
         {
             builder.ToTable("RequestReportTos");
             builder.HasKey(k => new { k.RequestId, RequestedById = k.ContactPersonId });
+            builder.HasOne(x => x.Request)
+                .WithMany(r => r.ReportTo)
+                .HasForeignKey(x => x.RequestId);
         }
     }
 } 

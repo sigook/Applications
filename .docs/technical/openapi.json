@@ -10426,77 +10426,6 @@
         }
       }
     },
-    "/api/agency/requests/{requestId}/ReportTo": {
-      "get": {
-        "tags": [
-          "ReportTo"
-        ],
-        "summary": "Gets a paginated list of report-to contact persons for the specified request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/agency/requests/{requestId}/RequestedBy/{contactPersonId}": {
       "post": {
         "tags": [
@@ -10680,77 +10609,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/agency/requests/{requestId}/RequestedBy": {
-      "get": {
-        "tags": [
-          "RequestedBy"
-        ],
-        "summary": "Gets a paginated list of requested-by contact persons for the specified request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -12468,54 +12326,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Skills"
-        ],
-        "summary": "Gets the skills of the specified request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.SkillModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.SkillModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.SkillModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -15799,6 +15609,427 @@
         }
       }
     },
+    "/api/agency/attendance/today": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Gets the clock-in/clock-out state of the current user for today, in the user's own time zone.",
+        "parameters": [
+          {
+            "name": "timeZone",
+            "in": "query",
+            "description": "IANA time zone of the user's device (e.g. America/Bogota).",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceTodayModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceTodayModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceTodayModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/attendance": {
+      "post": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Clocks the current user in, or out when today's attendance is still open, at the user's local time. Only one attendance per day is allowed.",
+        "parameters": [
+          {
+            "name": "timeZone",
+            "in": "query",
+            "description": "IANA time zone of the user's device (e.g. America/Bogota).",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceTodayModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceTodayModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceTodayModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/attendance/today/users": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Gets today's attendance of every user of the current agency who has clocked in.",
+        "parameters": [
+          {
+            "name": "timeZone",
+            "in": "query",
+            "description": "IANA time zone of the caller's device, used to resolve \"today\".",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Agency.UserAttendanceTodayModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Agency.UserAttendanceTodayModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Agency.UserAttendanceTodayModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/attendance/report": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Gets the attendance report of the current agency's users with worked, lunch, regular and overtime hours per day.",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "From",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.DateTime"
+            }
+          },
+          {
+            "name": "To",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.DateTime"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceReportModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceReportModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceReportModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/attendance/report/file": {
+      "get": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Downloads the attendance report as an Excel file.",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "From",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.DateTime"
+            }
+          },
+          {
+            "name": "To",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.DateTime"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/attendance/{id}": {
+      "put": {
+        "tags": [
+          "Attendance"
+        ],
+        "summary": "Corrects the clock-in and clock-out of an attendance of a user of the current agency.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the attendance.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "New clock-in and clock-out times and the reason of the change.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UpdateUserAttendanceModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UpdateUserAttendanceModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UpdateUserAttendanceModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/personnel": {
       "get": {
         "tags": [
@@ -16174,7 +16405,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileDetailModel"
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Company.AgencyCompanyProfileDetailModel"
                 }
               }
             }
@@ -24125,6 +24356,9 @@
       "Covenant.Common.Enums.AgencyType": {
         "type": "integer"
       },
+      "Covenant.Common.Enums.AttendanceStatus": {
+        "type": "integer"
+      },
       "Covenant.Common.Enums.ClockType": {
         "type": "integer"
       },
@@ -25159,6 +25393,169 @@
           }
         }
       },
+      "Covenant.Common.Models.Agency.UpdateUserAttendanceModel": {
+        "type": "object",
+        "properties": {
+          "clockIn": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "clockOut": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "lunchMinutes": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
+      "Covenant.Common.Models.Agency.UserAttendanceHoursModel": {
+        "type": "object",
+        "properties": {
+          "workedHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "lunchHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "regularHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "overtimeHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          }
+        }
+      },
+      "Covenant.Common.Models.Agency.UserAttendanceListModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "userId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "name": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "date": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "clockIn": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "clockOut": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "lunchMinutes": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "workedHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "lunchHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "regularHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "overtimeHours": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "isWeekend": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "isMissingClockOut": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "isEdited": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "editedBy": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "editedAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "editReason": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
+      "Covenant.Common.Models.Agency.UserAttendanceReportModel": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Agency.UserAttendanceListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceHoursModel"
+          }
+        }
+      },
+      "Covenant.Common.Models.Agency.UserAttendanceTodayModel": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.AttendanceStatus"
+          },
+          "clockIn": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "clockOut": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "workedHours": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Decimal, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          }
+        }
+      },
       "Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]": {
         "type": "object",
         "properties": {
@@ -25341,6 +25738,124 @@
         "properties": {
           "comments": {
             "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
+      "Covenant.Common.Models.Company.AgencyCompanyProfileDetailModel": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileSummaryModel"
+          },
+          "id": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "numberId": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "companyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "fullName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "phoneExt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "fax": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "faxExt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "email": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "website": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "about": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "internalInfo": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "companyStatus": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.CompanyStatus"
+          },
+          "password": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "active": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "paidHolidays": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "requiredPaymentMethod": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "vaccinationRequired": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "vaccinationRequiredComments": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "requiresPermissionToSeeRequests": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "logo": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.CovenantFileModel"
+          },
+          "industry": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Company.CompanyProfileIndustryDetailModel"
+          },
+          "salesRepresentativeId": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "overtimeStartsAfter": {
+            "$ref": "#/components/schemas/System.Double"
           }
         }
       },
@@ -25878,6 +26393,38 @@
           },
           "paidHolidays": {
             "$ref": "#/components/schemas/System.Boolean"
+          }
+        }
+      },
+      "Covenant.Common.Models.Company.CompanyProfileSummaryModel": {
+        "type": "object",
+        "properties": {
+          "openRequestsCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "asapRequestsCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "workersWorkingCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "rolesCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "contactsCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "usersCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "locationsCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "documentsCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "salesRepresentativeName": {
+            "$ref": "#/components/schemas/System.String"
           }
         }
       },
@@ -26755,23 +27302,6 @@
           }
         }
       },
-      "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-          },
-          "pageIndex": {
-            "$ref": "#/components/schemas/System.Int32"
-          },
-          "totalPages": {
-            "$ref": "#/components/schemas/System.Int32"
-          },
-          "totalItems": {
-            "$ref": "#/components/schemas/System.Int32"
-          }
-        }
-      },
       "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "object",
         "properties": {
@@ -27290,6 +27820,24 @@
           },
           "complianceItems": {
             "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Request.RequestComplianceItemModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "skills": {
+            "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.SkillModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "requestedBy": {
+            "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "reportTo": {
+            "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "applicantsCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "runnersCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "workersCount": {
+            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },
@@ -29951,6 +30499,15 @@
           "requirements": {
             "$ref": "#/components/schemas/System.String"
           },
+          "responsibilities": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "displayShift": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "skills": {
+            "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+          },
           "workersQuantity": {
             "$ref": "#/components/schemas/System.Int32"
           },
@@ -30448,6 +31005,12 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestComplianceItemModel"
         }
       },
+      "System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestContactPersonModel"
+        }
+      },
       "System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Request.RequestSourceDetailModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
@@ -30646,6 +31209,18 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Agency.AgencyModel"
         }
       },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Agency.UserAttendanceListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceListModel"
+        }
+      },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Agency.UserAttendanceTodayModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Agency.UserAttendanceTodayModel"
+        }
+      },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
@@ -30806,12 +31381,6 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestApplicantDetailModel"
-        }
-      },
-      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.RequestContactPersonModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestContactPersonModel"
         }
       },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.RequestListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
@@ -31193,6 +31762,9 @@
     },
     {
       "name": "Agencies"
+    },
+    {
+      "name": "Attendance"
     },
     {
       "name": "Personnel"

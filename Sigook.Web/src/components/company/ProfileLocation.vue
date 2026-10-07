@@ -3,34 +3,34 @@
     <b-loading v-model="isLoading"></b-loading>
     <SigookGrid :data="locations" :refresh="getLocations">
       <template #actions>
-        <b-button icon-left="plus" @click="addLocation">Add</b-button>
+        <b-button icon-left="plus" @click="addLocation">Add location</b-button>
       </template>
       <b-table-column field="formattedAddress" label="Address" v-slot="props" searchable
-        :custom-search="onSearchLocation">
-        {{ props.row.formattedAddress }}
+        :custom-search="matchesLocation">
+        {{ props.row.formattedAddress || formatLocation(props.row) }}
       </b-table-column>
       <b-table-column field="isBilling" label="Company Use As Billing Address" v-slot="props">
         {{ props.row.isBilling ? 'Yes' : 'No' }}
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-field>
-          <b-button outlined rounded type="is-primary" @click="editLocation(props.row)" class="mr-2"
-            icon-left="pencil" />
-          <b-button outlined rounded type="is-danger" @click="deleteLocation(props.row.id)"
-            class="mr-2" icon-left="delete" />
-        </b-field>
+        <b-button type="is-ghost" icon-left="pencil" aria-label="Edit location" @click="editLocation(props.row)" />
+        <b-button type="is-ghost" icon-left="delete-outline" aria-label="Delete location"
+          @click="deleteLocation(props.row.id)" />
       </b-table-column>
     </SigookGrid>
     <b-modal custom-content-class="card" v-model="showModal" width="500px">
-      <AddressComponent ref="addressComponent" v-model:model="locationBeingUpdate"
-        :enableProvinceSettings="true"
-        @isLoading="(value: boolean) => isLoading = value" />
-      <div class="columns is-multiline">
-        <div class="column is-12">
-          <b-checkbox v-model="locationBeingUpdate.isBilling">{{ 'Use as billing address ?' }}</b-checkbox>
-        </div>
-        <div class="column is-12">
-          <b-button type="is-primary" @click="saveChanges">SAVE</b-button>
+      <div class="p-4">
+        <h2 class="has-text-centered fz1 mb-4">{{ locationBeingUpdate.id ? 'Edit location' : 'New location' }}</h2>
+        <AddressComponent ref="addressComponent" v-model:model="locationBeingUpdate"
+          :enableProvinceSettings="true"
+          @isLoading="(value: boolean) => isLoading = value" />
+        <div class="columns is-multiline">
+          <div class="column is-12">
+            <b-checkbox v-model="locationBeingUpdate.isBilling">{{ 'Use as billing address ?' }}</b-checkbox>
+          </div>
+          <div class="column is-12">
+            <b-button type="is-primary" @click="saveChanges">SAVE</b-button>
+          </div>
         </div>
       </div>
     </b-modal>
@@ -42,6 +42,8 @@ import { ref } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/utils/toast";
 import AddressComponent from "@/components/Address.vue";
 import SigookGrid from '@/components/SigookGrid.vue';
+import { formatLocation, matchesLocation } from '@/utils/requestDetail';
+import type { CompanyProfileLocationDetail } from '@/types/company';
 import {
   getProfileLocations,
   createProfileLocation,
@@ -49,9 +51,9 @@ import {
   deleteProfileLocation
 } from "@/api/companyApi";
 
-defineProps<{ companyData?: any }>();
+const emit = defineEmits<{ (e: 'loaded', count: number): void }>();
 
-const locations = ref<any[]>([]);
+const locations = ref<CompanyProfileLocationDetail[]>([]);
 const isLoading = ref(false);
 const showModal = ref(false);
 const locationBeingUpdate = ref<any>({});
@@ -73,7 +75,7 @@ function closeModal() {
 }
 
 function deleteLocation(id: any) {
-  showAlertConfirm("Are you sure you want to delete this location?", '', "Yes").then(r => {
+  showAlertConfirm('Are you sure', 'You want to delete this location', 'Yes').then(r => {
     if (!r) return;
     isLoading.value = true;
     deleteProfileLocation(id)
@@ -127,20 +129,14 @@ function createLocation(location: any) {
 function getLocations() {
   isLoading.value = true;
   getProfileLocations()
-    .then((r: any) => {
-      locations.value = r;
+    .then((response) => {
+      locations.value = response;
+      emit('loaded', response.length);
+    })
+    .catch((error: unknown) => showAlertError((error as { data?: unknown }).data))
+    .finally(() => {
       isLoading.value = false;
     });
-}
-
-function onSearchLocation(row: any, searchTerm: string) {
-  const lowerSearchTerm = searchTerm.toLowerCase();
-  return (
-    row.address.toLowerCase().includes(lowerSearchTerm) ||
-    row.city.value.toLowerCase().includes(lowerSearchTerm) ||
-    row.city.province.code.toLowerCase().includes(lowerSearchTerm) ||
-    row.postalCode.toLowerCase().includes(lowerSearchTerm)
-  );
 }
 
 getLocations();

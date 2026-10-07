@@ -3,9 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
     <SigookGrid :data="contactPeople" :refresh="getContactPersons">
       <template #actions>
-        <b-button icon-left="plus" @click="openAddContactModal">Add</b-button>
+        <b-button icon-left="plus" @click="openAddContactModal">Add contact</b-button>
       </template>
-      <b-table-column field="firstName" label="Full Name" v-slot="props">
+      <b-table-column field="firstName" label="Full Name" v-slot="props" searchable :custom-search="matchesContact">
         {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }}
       </b-table-column>
       <b-table-column field="position" label="Position" v-slot="props">
@@ -22,7 +22,7 @@
         <p>{{ props.row.email }}</p>
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-button type="is-danger" outlined rounded icon-right="delete"
+        <b-button type="is-ghost" icon-left="delete-outline" aria-label="Delete contact"
           @click="removeLine(props.row.id)" />
       </b-table-column>
     </SigookGrid>
@@ -100,8 +100,9 @@ import SigookGrid from '@/components/SigookGrid.vue';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { getContactPeople, deleteContactPerson, saveContactPerson } from '@/api/companyApi';
+import type { CompanyContactPersonModel } from '@/types/company';
 
-defineProps<{ companyData?: any; isDisabled?: boolean }>();
+const emit = defineEmits<{ (e: 'loaded', count: number): void }>();
 
 const numericExt = yup
   .string()
@@ -144,11 +145,17 @@ const {
 } = form.fields;
 const formErrors = form.errors;
 
+function matchesContact(contact: CompanyContactPersonModel, searchTerm: string) {
+  const term = searchTerm.toLowerCase();
+  return [contact.firstName, contact.middleName, contact.lastName, contact.position, contact.email]
+    .some((value) => value?.toLowerCase().includes(term));
+}
+
 const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
 
 const isLoading = ref(false);
 const showModal = ref(false);
-const contactPeople = ref<any[]>([]);
+const contactPeople = ref<CompanyContactPersonModel[]>([]);
 const mobileComponent = ref<any>(null);
 const officeComponent = ref<any>(null);
 
@@ -159,6 +166,7 @@ function openAddContactModal() {
 
 async function getContactPersons() {
   contactPeople.value = await getContactPeople();
+  emit('loaded', contactPeople.value.length);
 }
 
 async function removeLine(id: any) {

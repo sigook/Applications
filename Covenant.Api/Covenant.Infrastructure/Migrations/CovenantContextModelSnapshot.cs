@@ -17,7 +17,7 @@ namespace Covenant.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.11")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1094,6 +1094,46 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("WsibGroupId");
 
                     b.ToTable("AgencyWsibGroups", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Agency.UserAttendance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ClockIn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("ClockOut")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("EditReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("EditedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("LunchMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("UserAttendances", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Availability", b =>
@@ -3885,6 +3925,17 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WsibGroup");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Agency.UserAttendance", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
@@ -4451,7 +4502,7 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany()
+                        .WithMany("ReportTo")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4470,7 +4521,7 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany()
+                        .WithMany("RequestedBy")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4483,7 +4534,7 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSkill", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany()
+                        .WithMany("Skills")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5094,9 +5145,15 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Navigation("Recruiters");
 
+                    b.Navigation("ReportTo");
+
                     b.Navigation("RequestComission");
 
                     b.Navigation("RequestCompanyUser");
+
+                    b.Navigation("RequestedBy");
+
+                    b.Navigation("Skills");
 
                     b.Navigation("Sources");
 

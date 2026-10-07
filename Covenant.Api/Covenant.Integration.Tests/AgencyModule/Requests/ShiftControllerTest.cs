@@ -112,7 +112,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                     .AddTestAuth(o => o.AddAgencyPersonnelRole());
                 services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IShiftRepository, ShiftRepository>();
                 services.AddSingleton<AgencyIdFilter>();
             }

@@ -10,9 +10,9 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using System.Net.Http.Json;
 using Xunit;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
@@ -47,9 +47,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 });
                 services.AddTestDatabase();
                 services.AddSingleton<AgencyIdFilter>();
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(s => s.GetCurrentDateTime()).Returns(new DateTime(2019, 01, 01));
-                services.AddSingleton(timeService.Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(new DateTime(2019, 01, 01), TimeSpan.Zero)));
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

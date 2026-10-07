@@ -46,22 +46,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
         }
 
         [Fact]
-        public async Task Get()
-        {
-            CompanyProfileContactPerson entity = Startup.FakeContactPerson;
-            var requestUri = $"{RequestUri()}";
-            HttpResponseMessage response = await _client.GetAsync(requestUri);
-            response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadFromJsonAsync<PaginatedList<RequestContactPersonModel>>();
-            var model = list.Items.Single(c => c.Id == entity.Id);
-            Assert.Equal(entity.Id, model.Id);
-            Assert.Equal(entity.Title, model.Title);
-            Assert.Equal(entity.FirstName, model.FirstName);
-            Assert.Equal(entity.MiddleName, model.MiddleName);
-            Assert.Equal(entity.LastName, model.LastName);
-        }
-
-        [Fact]
         public async Task GetById()
         {
             CompanyProfileContactPerson entity = Startup.FakeContactPerson;
@@ -105,7 +89,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                     });
                 services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

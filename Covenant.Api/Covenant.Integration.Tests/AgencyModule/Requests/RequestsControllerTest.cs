@@ -112,6 +112,20 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.Equal(model.DurationTerm, Data.FakeRequest.DurationTerm);
         Assert.Equal(model.DisplayShift, Data.FakeRequest.Shift.DisplayShift);
         Assert.Equal(model.VaccinationRequired, Data.FakeCompany.VaccinationRequired);
+        var skill = Assert.Single(model.Skills);
+        Assert.Equal(Data.FakeSkill.Id, skill.Id);
+        Assert.Equal(Data.FakeSkill.Skill, skill.Skill);
+        AssertContactPerson(Assert.Single(model.RequestedBy), Data.FakeContactPerson);
+        AssertContactPerson(Assert.Single(model.ReportTo), Data.FakeContactPerson);
+    }
+
+    private static void AssertContactPerson(RequestContactPersonModel model, CompanyProfileContactPerson entity)
+    {
+        Assert.Equal(entity.Id, model.Id);
+        Assert.Equal(entity.Title, model.Title);
+        Assert.Equal(entity.FirstName, model.FirstName);
+        Assert.Equal(entity.MiddleName, model.MiddleName);
+        Assert.Equal(entity.LastName, model.LastName);
     }
 
     [Fact]
@@ -368,7 +382,6 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                 });
             services.AddHttpClient();
             services.AddTestDatabase();
-            services.AddSingleton<ITimeService, TimeService>();
             services.AddSingleton<IRequestRepository, RequestRepository>();
             services.AddSingleton<IRequestService, RequestService>();
             services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
@@ -400,6 +413,10 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                 Data.FakeIsAsapRequest, Data.FakeRequestUpdateLocation, Data.FakeRequestToOpen,
                 Data.FakeRequestToSendInvitation, Data.FakeRequestWithRecentInvitation,
                 Data.FakeWorker, Data.FakeWorkerProfile, Data.FakeCompanyProfileJobPositionRate);
+            Data.FakeCompany.ContactPeople.Add(Data.FakeContactPerson);
+            context.RequestSkills.Add(Data.FakeSkill);
+            context.RequestRequestedBys.Add(new RequestRequestedBy(Data.FakeRequest.Id, Data.FakeContactPerson.Id));
+            context.RequestReportTos.Add(new RequestReportTo(Data.FakeRequest.Id, Data.FakeContactPerson.Id));
             context.SaveChanges();
         }
     }
@@ -439,7 +456,10 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         };
         public static readonly CompanyProfileJobPositionRate FakeCompanyProfileJobPositionRate = CompanyProfileJobPositionRate.Create(FakeCompany.Id, "Forklift", 20, 15).Value;
 
+        public static readonly CompanyProfileContactPerson FakeContactPerson = new(FakeCompany.Id) { Title = "Sr.", FirstName = "Jhon", MiddleName = "Arvy", LastName = "Mun" };
+
         public static readonly Request FakeRequest;
+        public static readonly RequestSkill FakeSkill;
         public static readonly Request FakeUpdateRequest;
         public static readonly Request FakeRequestIncreaseQuantity;
         public static readonly Request FakeRequestReduceQuantity;
@@ -472,6 +492,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             var newShift = new Shift();
             newShift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));
             FakeRequest.UpdateShift(newShift);
+            FakeSkill = RequestSkill.Create(FakeRequest.Id, "Forklift license").Value;
 
             FakeUpdateRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
             FakeIsAsapRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);

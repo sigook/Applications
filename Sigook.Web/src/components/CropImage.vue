@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <h2 class="bg-dark">{{ "Move and scale"}}</h2>
+    <div class="p-4">
+        <h2 class="has-text-centered fz1 mb-4">Move and scale</h2>
         <vue-cropper
                 ref='cropper'
                 :guides="true"
@@ -66,7 +66,7 @@ function closeModal() {
 <style lang="scss">
 
     .options {
-        padding:15px 15px 10px;
+        padding-top: 1rem;
         display: flex;
         justify-content: space-between;
         .rotate {

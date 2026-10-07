@@ -26,7 +26,7 @@ public class CanadaInvoiceService(
     ICompanyRepository companyRepository,
     ILocationRepository locationRepository,
     ICatalogRepository catalogRepository,
-    ITimeService timeService,
+    TimeProvider timeProvider,
     Rates rates,
     ISubcontractorRepository subcontractorRepository,
     TimeLimits timeLimits,
@@ -41,7 +41,7 @@ public class CanadaInvoiceService(
     IPayStubsContainer payStubsContainer,
     ITeamsService teamsService,
     IOptions<TeamsWebhookConfiguration> teamsOptions,
-    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService, currentUserService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
+    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeProvider, rates, subcontractorRepository, timeLimits, calculatorService, currentUserService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
 {
     protected override Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
         => invoiceRepository.GetInvoicesForAgency(agencyIds, filter);
@@ -195,7 +195,7 @@ public class CanadaInvoiceService(
             Hst = hst,
             TotalNet = totalNet,
             Email = model.Email,
-            CreatedAt = model.InvoiceDate ?? timeService.GetCurrentDateTime()
+            CreatedAt = model.InvoiceDate ?? timeProvider.GetLocalNow().DateTime
         };
         if (model.DirectHiring)
         {

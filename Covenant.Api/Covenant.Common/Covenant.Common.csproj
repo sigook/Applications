@@ -3,6 +3,7 @@
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" />
 		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="GeoTimeZone" />
 		<PackageReference Include="libphonenumber-csharp" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
 	</ItemGroup>

@@ -44,18 +44,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
         }
 
         [Fact]
-        public async Task Get()
-        {
-            HttpResponseMessage response = await _client.GetAsync(RequestUri());
-            response.EnsureSuccessStatusCode();
-            var list = await response.Content.ReadFromJsonAsync<IEnumerable<SkillModel>>();
-            RequestSkill entity = Startup.FakeSkill;
-            SkillModel model = list.Single(c => c.Id == entity.Id);
-            Assert.Equal(model.Id, entity.Id);
-            Assert.Equal(model.Skill, entity.Skill);
-        }
-
-        [Fact]
         public async Task Delete()
         {
             Guid id = Startup.FakeDeleteSkill.Id;
@@ -74,7 +62,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                     .AddTestAuth(o => o.AddAgencyPersonnelRole());
                 services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

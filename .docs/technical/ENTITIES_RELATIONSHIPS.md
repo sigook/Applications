@@ -15,6 +15,7 @@ erDiagram
     User ||--o| CompanyProfile : "CompanyProfile.CompanyId"
     User ||--o| WorkerProfile : "WorkerProfile.WorkerId"
     User ||--o{ AgencyPersonnel : "AgencyPersonnel.UserId"
+    User ||--o{ UserAttendance : "UserAttendance.UserId"
     Agency ||--o{ CompanyProfile : "AgencyId"
     Agency ||--o{ WorkerProfile : "AgencyId"
     Agency ||--o{ Candidate : "AgencyId"
@@ -128,6 +129,15 @@ Staff member of an agency: `Id`, `AgencyId`, `UserId` → User, `Name`, `IsPrima
 (recruiting/sales/admin). Referenced by `CompanyProfile.SalesRepresentativeId` (sales portfolio)
 and `RequestRecruiter.RecruiterId` (weekly board). Unique index `(AgencyId, UserId)`.
 
+### UserAttendance (`UserAttendance.cs`)
+
+Daily clock-in/clock-out of an agency staff user: `Id`, `UserId` → User, `Date`, `ClockIn`,
+`ClockOut?`, `LunchMinutes` (60 Mon–Fri / 0 Sat–Sun at clock-in, admin-editable), plus the admin correction trail `EditedBy`, `EditedAt`, `EditReason`. Keyed by the
+**user**, not by `AgencyPersonnel`: a user in several agencies has one attendance per day. An
+agency sees the attendances of the users that are its personnel. Times are the user's own local
+wall-clock time (time zone of their device when punching), stored as `timestamp without time zone` so Npgsql's legacy mode returns them untouched
+(a `timestamptz` column would come back shifted to the server's time zone). Unique index `(UserId, Date)`. Rules in `.docs/business/WORKFLOWS.md` §7.
+
 ---
 
 ## Company domain — `Entities/Company/`
@@ -162,7 +172,7 @@ invoice/pay-stub time.
 | Entity | Purpose / key fields |
 |---|---|
 | `CompanyProfileLocation` | Company↔Location + `IsBilling` |
-| `CompanyProfileContactPerson` | contact: name parts, `Position`, `MobileNumber`, `OfficeNumber(+Ext)`, `Email` |
+| `CompanyProfileContactPerson` | contact: name parts, `Position`, `MobileNumber`, `OfficeNumber(+Ext)`, `Email` (optional) |
 | `CompanyProfileDocument` | Company↔CovenantFile + `DocumentType` (`Enums/CompanyProfileDocumentType.cs`), audit |
 | `CompanyProfileIndustry` | `IndustryId` (catalog) or free-text `OtherIndustry` |
 | `CompanyProfileInvoiceNotes` | `HtmlNotes` printed on invoices |
@@ -478,6 +488,7 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | CompanyProfile | `CompanyId` |
 | WorkerProfile | `WorkerId` |
 | AgencyPersonnel | `(AgencyId, UserId)` |
+| UserAttendance | `(UserId, Date)` |
 | CompanyUser | `(CompanyProfileId, UserId)` |
 | WorkerRequest | `(RequestId, WorkerProfileId)` |
 | RequestRecruiter | `(RequestId, RecruiterId, WorkDate)` |

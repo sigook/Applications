@@ -101,17 +101,17 @@ public class WorkersController(
     }
 
     /// <summary>Toggles the contractor flag of a worker profile.</summary>
-    /// <param name="service">Time service providing the current date.</param>
+    /// <param name="timeProvider">Time provider supplying the current date.</param>
     /// <param name="id">Identifier of the worker profile.</param>
     [HttpPut("{id:guid}/IsContractor")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> IsContractor([FromServices] ITimeService service, Guid id)
+    public async Task<IActionResult> IsContractor([FromServices] TimeProvider timeProvider, Guid id)
     {
         Guid agencyId = User.GetAgencyId();
         var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
         if (entity is null) return BadRequest();
-        var result = entity.UpdateContractor(service.GetCurrentDateTime());
+        var result = entity.UpdateContractor(timeProvider.GetLocalNow().DateTime);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         await workerRepository.UpdateProfile(entity);
         await workerRepository.SaveChangesAsync();
@@ -119,17 +119,17 @@ public class WorkersController(
     }
 
     /// <summary>Toggles the subcontractor flag of a worker profile.</summary>
-    /// <param name="service">Time service providing the current date.</param>
+    /// <param name="timeProvider">Time provider supplying the current date.</param>
     /// <param name="id">Identifier of the worker profile.</param>
     [HttpPut("{id:guid}/IsSubcontractor")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> IsSubcontractor([FromServices] ITimeService service, Guid id)
+    public async Task<IActionResult> IsSubcontractor([FromServices] TimeProvider timeProvider, Guid id)
     {
         Guid agencyId = User.GetAgencyId();
         var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
         if (entity is null) return BadRequest();
-        var result = entity.UpdateSubcontractor(service.GetCurrentDateTime());
+        var result = entity.UpdateSubcontractor(timeProvider.GetLocalNow().DateTime);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         await workerRepository.UpdateProfile(entity);
         await workerRepository.SaveChangesAsync();
@@ -157,16 +157,16 @@ public class WorkersController(
     }
 
     /// <summary>Marks a worker profile as approved to work.</summary>
-    /// <param name="timeService">Time service providing the current date.</param>
+    /// <param name="timeProvider">Time provider supplying the current date.</param>
     /// <param name="id">Identifier of the worker profile.</param>
     [HttpPut("{id}/ApprovedToWork")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UpdateApprovedToWork([FromServices] ITimeService timeService, Guid id)
+    public async Task<IActionResult> UpdateApprovedToWork([FromServices] TimeProvider timeProvider, Guid id)
     {
         var entity = await workerRepository.GetProfile(p => p.Id == id);
         if (entity is null || entity.AgencyId != User.GetAgencyId()) return BadRequest();
-        Result result = entity.UpdateApprovedToWork(timeService.GetCurrentDateTime());
+        Result result = entity.UpdateApprovedToWork(timeProvider.GetLocalNow().DateTime);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         await workerRepository.UpdateProfile(entity);
         await workerRepository.SaveChangesAsync();

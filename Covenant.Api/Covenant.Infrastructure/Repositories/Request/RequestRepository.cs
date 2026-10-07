@@ -329,6 +329,26 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                             IsMandatory = ci.IsMandatory,
                             DocumentTarget = ci.DocumentTarget
                         }),
+                        Skills = r.Skills.Select(s => new SkillModel { Id = s.Id, Skill = s.Skill }),
+                        RequestedBy = r.RequestedBy.Select(rb => new RequestContactPersonModel
+                        {
+                            Id = rb.ContactPerson.Id,
+                            Title = rb.ContactPerson.Title,
+                            FirstName = rb.ContactPerson.FirstName,
+                            MiddleName = rb.ContactPerson.MiddleName,
+                            LastName = rb.ContactPerson.LastName
+                        }),
+                        ReportTo = r.ReportTo.Select(rt => new RequestContactPersonModel
+                        {
+                            Id = rt.ContactPerson.Id,
+                            Title = rt.ContactPerson.Title,
+                            FirstName = rt.ContactPerson.FirstName,
+                            MiddleName = rt.ContactPerson.MiddleName,
+                            LastName = rt.ContactPerson.LastName
+                        }),
+                        ApplicantsCount = context.RequestApplicants.Count(ra => ra.RequestId == r.Id),
+                        RunnersCount = context.Runners.Count(ru => ru.RequestId == r.Id),
+                        WorkersCount = context.WorkerRequests.Count(wr => wr.RequestId == r.Id),
                         JobLocation = new LocationDetailModel
                         {
                             Id = r.JobLocation.Id,
@@ -358,7 +378,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                             }
                         },
                     };
-        return await query.SingleOrDefaultAsync();
+        return await query.AsSplitQuery().SingleOrDefaultAsync();
     }
 
     public async Task<PaginatedList<RequestListModel>> GetRequestsForCompany(Guid companyId, GetRequestForCompanyFilter filter)
@@ -747,6 +767,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                     AgencyLogo = r.CompanyProfile.Agency.Logo == null ? null : filesConfiguration.FilesPath + r.CompanyProfile.Agency.Logo.FileName,
                     Description = r.Description,
                     Requirements = r.Requirements,
+                    Responsibilities = r.Responsibilities,
+                    DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
+                    Skills = context.RequestSkills.Where(rs => rs.RequestId == r.Id).Select(rs => rs.Skill),
                     WorkersQuantity = r.WorkersQuantity,
                     WorkerRate = r.WorkerRate,
                     WorkerSalary = r.WorkerSalary,

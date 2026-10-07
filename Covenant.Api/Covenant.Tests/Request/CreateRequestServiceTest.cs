@@ -22,6 +22,7 @@ using Covenant.Tests.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MediatR;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -68,12 +69,12 @@ namespace Covenant.Tests.Accounting
             });
             currentUserService = new Mock<ICurrentUserService>();
             currentUserService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
-            var timeService = new Mock<ITimeService>();
+            var timeProvider = new FakeTimeProvider(new DateTimeOffset(_now, TimeSpan.Zero));
             _sut = new RequestService(
                 _companyRepository.Object,
                 Mock.Of<IAgencyRepository>(),
                 locationRepository.Object,
-                timeService.Object,
+                timeProvider,
                 _requestRepository.Object,
                 Mock.Of<INotificationDataRepository>(),
                 Mock.Of<IPushNotifications>(),
@@ -87,7 +88,6 @@ namespace Covenant.Tests.Accounting
                 new RequestUpdateRequirementsModelValidator(),
                 new RequestAdapter(),
                 Mock.Of<IMediator>());
-            timeService.Setup(s => s.GetCurrentDateTime()).Returns(_now);
             _model = new RequestCreateModel
             {
                 JobTitle = "Waiter",

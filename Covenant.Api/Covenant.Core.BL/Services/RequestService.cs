@@ -34,7 +34,7 @@ public class RequestService : IRequestService
     private readonly ICompanyRepository companyRepository;
     private readonly IAgencyRepository agencyRepository;
     private readonly ILocationRepository locationRepository;
-    private readonly ITimeService timeService;
+    private readonly TimeProvider timeProvider;
     private readonly IRequestRepository requestRepository;
     private readonly INotificationDataRepository notificationDataRepository;
     private readonly IPushNotifications pushNotifications;
@@ -53,7 +53,7 @@ public class RequestService : IRequestService
         ICompanyRepository companyRepository,
         IAgencyRepository agencyRepository,
         ILocationRepository locationRepository,
-        ITimeService timeService,
+        TimeProvider timeProvider,
         IRequestRepository requestRepository,
         INotificationDataRepository notificationDataRepository,
         IPushNotifications pushNotifications,
@@ -75,7 +75,7 @@ public class RequestService : IRequestService
         this.companyRepository = companyRepository;
         this.agencyRepository = agencyRepository;
         this.locationRepository = locationRepository;
-        this.timeService = timeService;
+        this.timeProvider = timeProvider;
         this.requestRepository = requestRepository;
         this.notificationDataRepository = notificationDataRepository;
         this.pushNotifications = pushNotifications;
@@ -182,7 +182,7 @@ public class RequestService : IRequestService
     {
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
-        var now = timeService.GetCurrentDateTime();
+        var now = timeProvider.GetLocalNow().DateTime;
         Result result = request.Open(now);
         if (!result) return result;
 
@@ -370,7 +370,7 @@ public class RequestService : IRequestService
 
     private async Task<Result> ApplyCancellation(Request request, Guid cancellationReasonId, string otherCancellationReason)
     {
-        var rCancel = request.Cancel(timeService.GetCurrentDateTime());
+        var rCancel = request.Cancel(timeProvider.GetLocalNow().DateTime);
         if (!rCancel) return rCancel;
         var cancelBy = currentUserService.GetNickname();
         var entity = new RequestCancellationDetail
@@ -379,7 +379,7 @@ public class RequestService : IRequestService
             ReasonCancellationRequestId = cancellationReasonId == default ? null : cancellationReasonId,
             OtherReasonCancellationRequest = otherCancellationReason,
             CancelBy = cancelBy,
-            CancelAt = timeService.GetCurrentDateTime()
+            CancelAt = timeProvider.GetLocalNow().DateTime
         };
         var noteBuilder = new StringBuilder();
         noteBuilder.Append("Request canceled");
@@ -478,7 +478,7 @@ public class RequestService : IRequestService
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null || !request.CanBeUpdated) return Result.Fail(ApiResources.RequestNotAvailable);
 
-        var now = timeService.GetCurrentDateTime();
+        var now = timeProvider.GetLocalNow().DateTime;
         var canBeSent = request.CanInvitationBeSendIt(now);
         if (!canBeSent) return canBeSent;
 
@@ -491,7 +491,7 @@ public class RequestService : IRequestService
     {
         if (model?.Ids is null || !model.Ids.Any()) return Result.Ok();
         var recruiterIds = model.RecruiterIds?.Distinct().ToList() ?? [];
-        await requestRepository.BulkReplaceRecruiters(model.Ids.Distinct(), recruiterIds, timeService.GetCurrentDateTime());
+        await requestRepository.BulkReplaceRecruiters(model.Ids.Distinct(), recruiterIds, timeProvider.GetLocalNow().DateTime);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }

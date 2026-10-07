@@ -1,34 +1,21 @@
 <template>
-  <div class="worker-detail-job">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
 
-    <section class="wrapper-request-top" v-if="request">
-      <div>
-        <img v-if="request.agencyLogo" :src="request.agencyLogo" />
-        <h2 class="is-capitalized fz1 has-text-weight-bold">
-          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
-          {{ request.jobTitle }}
-        </h2>
-      </div>
-
-      <div>
-        <div v-if="request.status && request.status !== 'None'" class="capitailized has-text-weight-bold is-inline-block"
-          :class="request.status">
-          {{ request.status }}
-        </div>
-      </div>
-    </section>
-
-    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="request">
-      <b-tab-item label="Summary Request" value="Summary Request">
-        <div v-if="visitedTabs.includes('Summary Request')" class="columns is-multiline">
-          <section class="column is-9 section-left">
-            <RequestDetail :request="request" />
-          </section>
-          <aside class="column is-3 section-right">
-            <Location :jobLocation="request.jobLocation" />
-          </aside>
-        </div>
+    <RequestHeader v-if="request" :number-id="request.numberId ?? 0" :title="request.jobTitle ?? ''"
+      :subtitle="request.jobPosition" :org-name="request.agencyFullName" :logo="request.agencyLogo"
+      :status-label="statusLabel" :status-variant="statusVariant" :is-asap="request.isAsap" :chips="chips"
+      :workers-total="request.workersQuantity" :kpis="kpis">
+    <b-tabs v-model="currentTab" @update:modelValue="changeTab">
+      <b-tab-item label="Detail" value="Summary Request">
+        <RequestDetailTab v-if="visitedTabs.includes('Summary Request')" :fields="fields"
+          :description="request.description" :responsibilities="request.responsibilities"
+          :requirements="request.requirements" :incentive="request.incentive"
+          :incentive-description="request.incentiveDescription" :skills="request.skills">
+          <template #rail>
+            <RequestLocationCard :location="request.jobLocation" />
+          </template>
+        </RequestDetailTab>
       </b-tab-item>
       <b-tab-item v-if="request.punchCardOptionEnabled" label="Punch Card" value="Punch Card">
         <PunchCard v-if="visitedTabs.includes('Punch Card') && timesheet" :requestId="request.id" :timesheet="timesheet"
@@ -38,6 +25,7 @@
         <TimeSheet v-if="visitedTabs.includes('Time Sheet')" :data="timesheet" />
       </b-tab-item>
     </b-tabs>
+    </RequestHeader>
   </div>
 </template>
 
@@ -45,15 +33,19 @@
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { getWorkerRequest, workerGetTimeSheet } from '@/api/workerApi';
-import RequestDetail from '../../components/worker/RequestDetail.vue';
-import Location from '../../components/request/RequestLocation.vue';
+import { useWorkerRequestSummary } from '@/composables/useWorkerRequestSummary';
+import type { WorkerRequestDetail } from '@/types/worker';
+import RequestHeader from '@/components/request_detail/RequestHeader.vue';
+import RequestDetailTab from '@/components/request_detail/RequestDetailTab.vue';
+import RequestLocationCard from '@/components/request_detail/RequestLocationCard.vue';
 import PunchCard from './PunchCard.vue';
 import TimeSheet from './TimeSheet.vue';
 
 const route = useRoute();
 
 const isLoading = ref(true);
-const request = ref<any>({});
+const request = ref<WorkerRequestDetail | null>(null);
+const { statusLabel, statusVariant, kpis, fields, chips } = useWorkerRequestSummary(request);
 const currentTab = ref<string>('Summary Request');
 const visitedTabs = ref<string[]>(['Summary Request']);
 const timesheet = ref<any>({});
@@ -65,6 +57,7 @@ function changeTab(tab: string) {
 }
 
 function getTimeSheet() {
+  if (!request.value) return;
   workerGetTimeSheet(request.value.id)
     .then((response: any) => {
       isLoading.value = false;
@@ -77,7 +70,7 @@ function getTimeSheet() {
 
 function getWorkerRequestFn() {
   getWorkerRequest(route.params.id as string)
-    .then((response: any) => {
+    .then((response) => {
       isLoading.value = false;
       request.value = response;
       getTimeSheet();

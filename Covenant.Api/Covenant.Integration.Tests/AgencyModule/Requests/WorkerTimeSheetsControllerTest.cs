@@ -21,9 +21,9 @@ using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Xunit;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AgencyModule.Requests
 {
@@ -134,9 +134,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                 services.AddSingleton<IUserAccountService, UserAccountService>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);
                 services.AddSingleton(Rates.DefaultRates);
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(s => s.GetCurrentDateTime()).Returns(new DateTime(2019, 01, 01));
-                services.AddSingleton(timeService.Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(new DateTime(2019, 01, 01), TimeSpan.Zero)));
                 services.AddSingleton<AgencyIdFilter>();
             }
 

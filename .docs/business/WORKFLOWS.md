@@ -393,3 +393,36 @@ Completing an item can attach a document that lands in the worker-profile sectio
 **SIN/SSN-typed identifications** (identification type with `IdentificationTypeCode.SinSsn`): completing an Identification item with that type validates the number as a SIN (9-15 chars, not another profile's SIN, not different from the profile's existing SIN) and **also fills the worker's `SocialInsurance` + SIN document from the same upload** (one blob, no double attachment), then **auto-completes** any pending checklist item with target *Social insurance* for that applicant. The same auto-fill applies at worker registration (web and app) when a SIN/SSN-typed identification is provided — SIN is never captured directly at registration. SIN duplicate validation runs in every flow that sets it: registration, the worker documents/SIN forms, and both compliance branches.
 
 Note: `BookWorker` deletes the applicant row; its completions go with it by cascade.
+
+---
+
+## 7. Staff Attendance Flow (agency users)
+
+Agency staff (superadmin, admin, recruiting, sales) clock themselves in and out, independently of the
+worker punch card. Data lives in `UserAttendance`, one row per **user** per day (not per agency).
+
+### Step 1: Clock in / clock out
+- The button sits next to the user's name at the bottom of the sidebar (`AttendanceClockButton.vue`):
+  play (not started) → stop with elapsed time (clocked in) → check (day closed).
+- `POST api/agency/attendance` toggles: no row today → clock in; open row → clock out; closed row → error.
+  One clock-in and one clock-out per calendar day.
+- "Now" and "today" are the user's own local time: the browser sends its IANA time zone
+  (`?timeZone=America/Bogota`) and the API resolves it with `TimeProvider.GetLocalNow(timeZoneId)` (`TimeProviderExtensions` in Common).
+  An unknown time zone is rejected. The agency's location plays no part.
+- A day left open stays as "missing clock-out" (0 hours) until an admin fixes it.
+
+### Step 2: Hours breakdown
+- Each attendance stores its own lunch (`LunchMinutes`): 60 when clocking in Mon–Fri, 0 on Sat/Sun.
+  Only an admin can change it, from the punch correction.
+- worked = clock-out − clock-in − lunch (capped at the elapsed time).
+- Mon–Fri: the first 8 worked hours are regular, the rest is overtime. Sat/Sun: every worked hour is overtime.
+- Computed on read in `AgencyService.CalculateAttendanceHours` (mirrored for previews in `Sigook.Web/src/utils/attendance.ts`).
+
+### Step 3: Report and corrections (admins)
+- Agency Profile → Users → "Attendance report": filter by user and date range (defaults to the current week, Mon–Sun; max one year),
+  totals (worked, regular, overtime), per-day grid (with the lunch deducted) and Excel export.
+- The Users grid shows each user's status today.
+- Admins edit a punch from the report row (`PUT api/agency/attendance/{id}`): clock-in, clock-out and lunch
+  (0–240 min, never longer than the shift), with a mandatory reason;
+  the row keeps who edited it and is tagged "Edited".
+

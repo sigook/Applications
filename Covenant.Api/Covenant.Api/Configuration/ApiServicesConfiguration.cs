@@ -83,7 +83,7 @@ public static class ApiServicesConfiguration
 
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
-        services.AddScoped<ITimeService, TimeService>();
+        services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAgencyService, AgencyService>();
         services.AddScoped<IWorkerService, WorkerService>();
         services.AddScoped<IRequestService, RequestService>();

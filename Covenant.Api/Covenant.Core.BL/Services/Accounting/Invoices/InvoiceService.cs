@@ -33,7 +33,7 @@ public abstract class InvoiceService(
     ICompanyRepository companyRepository,
     ILocationRepository locationRepository,
     ICatalogRepository catalogRepository,
-    ITimeService timeService,
+    TimeProvider timeProvider,
     Rates rates,
     ISubcontractorRepository subcontractorRepository,
     TimeLimits timeLimits,
@@ -58,7 +58,7 @@ public abstract class InvoiceService(
     protected readonly ICompanyRepository companyRepository = companyRepository;
     protected readonly ILocationRepository locationRepository = locationRepository;
     protected readonly ICatalogRepository catalogRepository = catalogRepository;
-    protected readonly ITimeService timeService = timeService;
+    protected readonly TimeProvider timeProvider = timeProvider;
     protected readonly Rates rates = rates;
     protected readonly ISubcontractorRepository subcontractorRepository = subcontractorRepository;
     protected readonly TimeLimits timeLimits = timeLimits;

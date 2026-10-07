@@ -303,4 +303,43 @@ public class AgencyRepository : IAgencyRepository
 
         return query;
     }
+
+    public Task<UserAttendance> GetUserAttendance(Guid userId, DateTime date) =>
+        _context.UserAttendances.FirstOrDefaultAsync(a => a.UserId == userId && a.Date == date.Date);
+
+    public Task<UserAttendance> GetUserAttendanceForAgency(Guid id, Guid agencyId) =>
+        UserAttendancesOf(agencyId).FirstOrDefaultAsync(a => a.Id == id);
+
+    public Task<List<UserAttendance>> GetUserAttendancesForAgency(Guid agencyId, DateTime date) =>
+        UserAttendancesOf(agencyId).Where(a => a.Date == date.Date).ToListAsync();
+
+    public Task<List<UserAttendanceListModel>> GetUserAttendanceReport(Guid agencyId, GetUserAttendanceReportFilter filter)
+    {
+        var query = UserAttendancesOf(agencyId).Where(a => a.Date >= filter.From.Date && a.Date <= filter.To.Date);
+        if (filter.UserId.HasValue) query = query.Where(a => a.UserId == filter.UserId.Value);
+        return query
+            .Select(a => new UserAttendanceListModel
+            {
+                Id = a.Id,
+                UserId = a.UserId,
+                Name = _context.AgencyPersonnel
+                    .Where(p => p.AgencyId == agencyId && p.UserId == a.UserId)
+                    .Select(p => p.Name)
+                    .FirstOrDefault(),
+                Date = a.Date,
+                ClockIn = a.ClockIn,
+                ClockOut = a.ClockOut,
+                LunchMinutes = a.LunchMinutes,
+                IsEdited = a.EditedAt != null,
+                EditedBy = a.EditedBy,
+                EditedAt = a.EditedAt,
+                EditReason = a.EditReason
+            })
+            .OrderBy(a => a.Name)
+            .ThenBy(a => a.Date)
+            .ToListAsync();
+    }
+
+    private IQueryable<UserAttendance> UserAttendancesOf(Guid agencyId) =>
+        _context.UserAttendances.Where(a => _context.AgencyPersonnel.Any(p => p.AgencyId == agencyId && p.UserId == a.UserId));
 }

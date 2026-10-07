@@ -33,4 +33,8 @@ public interface IAgencyRepository
     Task<Entities.Agency.Agency> GetAgencyMasterByCountry(Guid countryId);
     Task<PaginatedList<AgencyModel>> GetAgencies(Guid agencyId, GetAgenciesFilter filter);
     IQueryable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter);
+    Task<UserAttendance> GetUserAttendance(Guid userId, DateTime date);
+    Task<UserAttendance> GetUserAttendanceForAgency(Guid id, Guid agencyId);
+    Task<List<UserAttendance>> GetUserAttendancesForAgency(Guid agencyId, DateTime date);
+    Task<List<UserAttendanceListModel>> GetUserAttendanceReport(Guid agencyId, GetUserAttendanceReportFilter filter);
 }

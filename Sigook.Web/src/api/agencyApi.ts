@@ -9,6 +9,10 @@ import type {
   AgencyPersonnelListItem,
   CreateAgencyModel,
   PersonnelAgencyItem,
+  UpdateUserAttendanceModel,
+  UserAttendanceReport,
+  UserAttendanceReportFilter,
+  UserAttendanceToday,
 } from '@/types/agency';
 
 // Profile (current logged-in agency)
@@ -79,4 +83,33 @@ export function getPersonnelAgencies(): Promise<PersonnelAgencyItem[]> {
 
 export function switchPersonnelAgency(id: string): Promise<void> {
   return api.put(`/api/agency/personnel/Agencies/${id}`);
+}
+
+// Attendance (clock-in / clock-out of the agency users, in the time zone of the user's device)
+function deviceTimeZone(): { timeZone: string } {
+  return { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+}
+
+export function getAttendanceToday(): Promise<UserAttendanceToday> {
+  return api.get<UserAttendanceToday>('/api/agency/attendance/today', { params: deviceTimeZone() });
+}
+
+export function toggleAttendance(): Promise<UserAttendanceToday> {
+  return api.post<UserAttendanceToday>('/api/agency/attendance', null, { params: deviceTimeZone() });
+}
+
+export function getAttendancesTodayForUsers(): Promise<UserAttendanceToday[]> {
+  return api.get<UserAttendanceToday[]>('/api/agency/attendance/today/users', { params: deviceTimeZone() });
+}
+
+export function getAttendanceReport(filter: UserAttendanceReportFilter): Promise<UserAttendanceReport> {
+  return api.get<UserAttendanceReport>('/api/agency/attendance/report', { params: { ...filter } });
+}
+
+export function downloadAttendanceReport(filter: UserAttendanceReportFilter): Promise<Blob> {
+  return api.get<Blob>('/api/agency/attendance/report/file', { params: { ...filter }, responseType: 'blob' });
+}
+
+export function updateAttendance(id: string, model: UpdateUserAttendanceModel): Promise<void> {
+  return api.put(`/api/agency/attendance/${id}`, model);
 }

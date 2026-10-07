@@ -23,6 +23,7 @@ using Moq;
 using System.Net;
 using Xunit;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AgencyModule.Workers
 {
@@ -68,7 +69,7 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                             });
                         services.AddTestDatabase();
                         services.AddSingleton<IWorkerRepository, WorkerRepository>();
-                        services.AddSingleton(new Mock<ITimeService>().Object);
+                        services.AddSingleton<TimeProvider>(new FakeTimeProvider());
                         var userAccountService = new Mock<IUserAccountService>();
                         userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
                         services.AddSingleton(userAccountService.Object);

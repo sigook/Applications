@@ -1,6 +1,7 @@
 <template>
-  <div>
+  <div class="p-4">
     <b-loading v-model="isLoading"></b-loading>
+    <h2 class="has-text-centered fz1 mb-4">Business information</h2>
     <div class="columns is-multiline">
       <div class="column is-6">
         <b-field label="Company Full Name" :type="formErrors.fullName ? 'is-danger' : ''"
@@ -55,7 +56,10 @@ import { getIndustries } from "@/api/catalogApi";
 import { updateProfile } from "@/api/companyApi";
 
 const props = defineProps<{ companyData: any }>();
-const emit = defineEmits<{ (e: 'update:companyData', value: any): void }>();
+const emit = defineEmits<{
+  (e: 'update:companyData', value: any): void;
+  (e: 'saved'): void;
+}>();
 
 const numericExt = yup
   .string()
@@ -143,6 +147,7 @@ async function save() {
       .then(() => {
         isLoading.value = false;
         showAlertSuccess('Profile updated');
+        emit('saved');
       })
       .catch((error: unknown) => {
         isLoading.value = false;

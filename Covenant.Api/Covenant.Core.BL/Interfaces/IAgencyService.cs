@@ -34,4 +34,10 @@ public interface IAgencyService
     Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model, Guid? agencyId = null);
     Task<Result> UpdateAgencyPersonnel(Guid id, AgencyPersonnelModel model);
     Task<Result> CreateAgency(AgencyModel model);
+    Task<Result<UserAttendanceTodayModel>> GetUserAttendanceToday(string timeZone);
+    Task<Result<UserAttendanceTodayModel>> ToggleUserAttendance(string timeZone);
+    Task<Result<List<UserAttendanceTodayModel>>> GetUserAttendancesToday(string timeZone);
+    Task<Result<UserAttendanceReportModel>> GetUserAttendanceReport(GetUserAttendanceReportFilter filter);
+    Task<Result<ResultGenerateDocument<MemoryStream>>> GetUserAttendanceReportFile(GetUserAttendanceReportFilter filter);
+    Task<Result> UpdateUserAttendance(Guid id, UpdateUserAttendanceModel model);
 }

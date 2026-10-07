@@ -278,7 +278,7 @@ Services/         integrations: EmailService + SendGridService (SendGrid), Geoco
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
                   UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
-                  accountEnabled check), TimeService, CraPdfParser (PdfPig reader for the CRA
+                  accountEnabled check), CraPdfParser (PdfPig reader for the CRA
                   deduction tables), SigookBusClient / SigookBusAdministrationClient (Service Bus)
 Services/Storage/ Azure Blob containers, one class per container (see below)
 ```

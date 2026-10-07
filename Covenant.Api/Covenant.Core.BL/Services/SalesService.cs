@@ -27,7 +27,7 @@ public class SalesService(
     IValidator<UpdateCompanyInteractionModel> updateInteractionValidator,
     IValidator<CreateDealModel> createDealValidator,
     IValidator<UpdateDealModel> updateDealValidator,
-    ITimeService timeService,
+    TimeProvider timeProvider,
     IValidator<GetDealsByStatusFilter> dealsByStatusValidator) : ISalesService
 {
     private const int RecentClientsLimit = 10;
@@ -180,7 +180,7 @@ public class SalesService(
         var agencyId = currentUserService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
         var statuses = (filter.Statuses ?? []).Distinct().OrderBy(s => s).ToList();
-        var window = GetPeriodWindow(filter.Period, timeService.GetCurrentDateTimeOffset());
+        var window = GetPeriodWindow(filter.Period, timeProvider.GetLocalNow());
         var rows = await companyRepository.GetDealsByStatus(agencyId, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
         var items = FillStatuses(rows, statuses.Count > 0 ? statuses : Enum.GetValues<DealStatus>().ToList());
         return Result.Ok(new DealsByStatusModel
@@ -196,7 +196,7 @@ public class SalesService(
     {
         var agencyId = currentUserService.GetAgencyId();
         var ownerId = OwnerScope ?? filter.OwnerId;
-        var now = timeService.GetCurrentDateTimeOffset();
+        var now = timeProvider.GetLocalNow();
         var quarter = GetPeriodWindow(SalesPeriod.Quarter, now);
         var week = GetPeriodWindow(SalesPeriod.Week, now);
         var pipeline = await companyRepository.GetDealsByStatus(agencyId, ownerId, quarter.FromUtc, quarter.ToUtcExclusive, []);

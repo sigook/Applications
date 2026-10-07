@@ -217,7 +217,6 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                     .ReturnsAsync(Result.Ok());
 
                 services.AddSingleton(userAccountService.Object);
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();

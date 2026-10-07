@@ -14,6 +14,7 @@ using Moq;
 using System.Net.Http.Json;
 using System.Reflection;
 using Xunit;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AgencyModule
 {
@@ -56,7 +57,7 @@ namespace Covenant.Integration.Tests.AgencyModule
                     o.AddAgencyPersonnelRole(Guid.NewGuid());
                 });
                 services.AddTestDatabase();
-                services.AddSingleton(new Mock<ITimeService>().Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider());
                 services.AddSingleton<AgencyIdFilter>();
                 services.AddSingleton(new Mock<IDefaultLogoProvider>().Object);
             }

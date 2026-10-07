@@ -20,6 +20,7 @@ public interface ICompanyRepository
     Task<CompanyProfileIdsModel> GetCompanyProfileId(Expression<Func<CompanyProfile, bool>> condition);
     Task<CompanyProfile> GetCompanyProfile(Expression<Func<CompanyProfile, bool>> expression);
     Task<CompanyProfileDetailModel> GetCompanyProfileDetail(Expression<Func<CompanyProfile, bool>> expression);
+    Task<AgencyCompanyProfileDetailModel> GetAgencyCompanyProfileDetail(Guid companyProfileId);
     Task<PaginatedList<CompanyProfileListModel>> GetCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
     IQueryable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);
     Task<List<CompanyProfileWithDetailsModel>> GetCompaniesWithDetailsForAgency(Guid agencyId, GetCompanyForAgencyFilter filter);

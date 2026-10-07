@@ -8,10 +8,10 @@ using Covenant.Common.Models.Company.SalesDashboard;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Moq;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AgencyModule.Sales;
 
@@ -142,9 +142,7 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
             services.AddDefaultTestConfiguration();
             services.AddTestAuthenticationBuilder().AddTestAuth(o => o.AddName("sales@dashboard.com"));
             services.AddTestDatabase();
-            var timeService = new Mock<ITimeService>();
-            timeService.Setup(t => t.GetCurrentDateTimeOffset()).Returns(Data.Now);
-            services.AddSingleton(timeService.Object);
+            services.AddSingleton<TimeProvider>(new FakeTimeProvider(Data.Now));
         }
 
         public void Configure(IApplicationBuilder app, CovenantContext context)

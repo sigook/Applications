@@ -12,7 +12,7 @@ public class RequestSkillConfiguration : IEntityTypeConfiguration<RequestSkill>
         builder.HasKey(x => x.Id);
 
         builder.HasOne(x => x.Request)
-            .WithMany()
+            .WithMany(r => r.Skills)
             .HasForeignKey(x => x.RequestId)
             .OnDelete(DeleteBehavior.Cascade);
     }

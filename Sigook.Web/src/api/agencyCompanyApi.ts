@@ -17,6 +17,7 @@ import type {
 } from '@/types/agency';
 import type { CovenantFileModel } from '@/types/common';
 import type {
+  AgencyCompanyProfileDetail,
   CompanyProfileDetail,
   CompanyProfileDocumentModel,
   CompanyProfileListItem,
@@ -48,8 +49,8 @@ export function getAgencyCompanies(filter: AgencyCompanyFilter): Promise<Paginat
   return api.get<PaginatedList<AgencyCompanyListItem>>(recruitingCompanyProfilesUrl, { params: { ...filter } });
 }
 
-export function getAgencyCompany(companyId: string): Promise<CompanyProfileDetail> {
-  return api.get<CompanyProfileDetail>(`${companyProfilesUrl}/${companyId}`);
+export function getAgencyCompany(companyId: string): Promise<AgencyCompanyProfileDetail> {
+  return api.get<AgencyCompanyProfileDetail>(`${companyProfilesUrl}/${companyId}`);
 }
 
 export function updateAgencyCompany(companyId: string, company: Partial<CompanyProfileDetail>): Promise<void> {

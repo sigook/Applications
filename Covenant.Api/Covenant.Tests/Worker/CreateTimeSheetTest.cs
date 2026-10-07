@@ -12,6 +12,7 @@ using MediatR;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -22,7 +23,7 @@ namespace Covenant.Tests.Worker
         private const string createdBy = "payroll@covenantgroupl.com";
 
         private readonly Mock<ICurrentUserService> currentUserService;
-        private readonly Mock<ITimeService> _timeService;
+        private readonly FakeTimeProvider _timeProvider = new();
         private readonly Mock<ITimesheetRepository> _timeSheetRepository;
         private readonly WorkerRequest _workerRequest = WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
         private readonly ITimesheetService _sut;
@@ -45,13 +46,12 @@ namespace Covenant.Tests.Worker
             var request = new Covenant.Common.Entities.Request.Request(companyProfile, jobPositionRate);
             request.UpdateJobLocation(location, false);
             _workerRequest.Request = request;
-            _timeService = new Mock<ITimeService>();
             var catalogRepository = new Mock<ICatalogRepository>();
             _timeSheetRepository = new Mock<ITimesheetRepository>();
             var workerRequestRepository = new Mock<IWorkerRequestRepository>();
             currentUserService = new Mock<ICurrentUserService>();
             _sut = new TimesheetService(
-                _timeService.Object,
+                _timeProvider,
                 workerRequestRepository.Object,
                 _timeSheetRepository.Object,
                 Mock.Of<IRequestRepository>(),
@@ -69,7 +69,7 @@ namespace Covenant.Tests.Worker
         {
             var now = new DateTime(2021, 01, 01);
             TimeSheet timeSheet = null;
-            _timeService.Setup(r => r.GetCurrentDateTime()).Returns(now);
+            _timeProvider.SetUtcNow(new DateTimeOffset(now, TimeSpan.Zero));
             _timeSheetRepository.Setup(r => r.Create(It.IsAny<TimeSheet>()))
                 .Callback<TimeSheet>(t => timeSheet = t).Returns(Task.CompletedTask);
             var model = new TimeSheetModel
@@ -95,7 +95,7 @@ namespace Covenant.Tests.Worker
         public async Task CreateWhenWorkerIsRejected()
         {
             var now = new DateTime(2019, 01, 01);
-            _timeService.Setup(r => r.GetCurrentDateTime()).Returns(now);
+            _timeProvider.SetUtcNow(new DateTimeOffset(now, TimeSpan.Zero));
             _workerRequest.Reject("No longer required", now);
             var model = new TimeSheetModel
             {
@@ -112,7 +112,7 @@ namespace Covenant.Tests.Worker
         public async Task CreateWhenWorkerIsRejected_IfWorkerWasRejectedOneMonthAgoCreateFails()
         {
             var now = new DateTime(2019, 01, 01);
-            _timeService.Setup(r => r.GetCurrentDateTime()).Returns(now);
+            _timeProvider.SetUtcNow(new DateTimeOffset(now, TimeSpan.Zero));
             _workerRequest.Reject("No longer required", now.AddMonths(-1).AddDays(-1));
             var model = new TimeSheetModel();
             Result<Guid> result = await _sut.CreateTimesheet(_workerRequest.WorkerProfileId, _workerRequest.RequestId, model);

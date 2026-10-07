@@ -13,10 +13,10 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using System.Net;
 using Xunit;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
 {
@@ -117,9 +117,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                         o.AddWorkerRole();
                     });
                 services.AddTestDatabase();
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(s => s.GetCurrentDateTime()).Returns(Data.Now);
-                services.AddSingleton(timeService.Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(Data.Now, TimeSpan.Zero)));
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

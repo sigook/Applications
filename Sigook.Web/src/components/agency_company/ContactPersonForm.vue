@@ -1,5 +1,5 @@
 <template>
-  <div class="p-3">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
 
     <div class="columns is-multiline">
@@ -61,17 +61,18 @@
       </div>
 
       <div class="column is-6">
-        <b-field :label="'Email *'" :type="formErrors.email ? 'is-danger' : ''"
+        <b-field :label="'Email'" :type="formErrors.email ? 'is-danger' : ''"
           :message="formErrors.email || ''">
           <b-input type="email" v-model="email" name="email" />
         </b-field>
       </div>
+    </div>
 
-      <div class="column is-12">
-        <b-button type="is-primary" @click="validateForm">
-          {{ props.currentContact ? 'Save' : 'Create' }}
-        </b-button>
-      </div>
+    <div class="mt-4">
+      <b-button @click="emit('cancel')">Cancel</b-button>
+      <b-button type="is-primary" class="ml-2" @click="validateForm">
+        {{ props.currentContact ? 'Save' : 'Create' }}
+      </b-button>
     </div>
   </div>
 </template>
@@ -83,6 +84,7 @@ import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/utils/toast";
 import { createAgencyCompanyContactPerson, updateAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 import PhoneInput from "../PhoneInput.vue";
+import type { AgencyCompanyContactPerson } from "@/types/agency";
 
 const numericExt = yup
   .string()
@@ -97,11 +99,14 @@ const schema = yup.object({
   lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
   position: yup.string().required('Position is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
   officeNumberExt: numericExt,
-  email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
+  email: yup.string().nullable().transform((v) => (v === '' ? null : v)).email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
 });
 
 const props = defineProps<{ currentContact?: any; profileId: any }>();
-const emit = defineEmits<{ (e: 'updateContent'): void }>();
+const emit = defineEmits<{
+  (e: 'updateContent', contact: AgencyCompanyContactPerson): void;
+  (e: 'cancel'): void;
+}>();
 
 const form = useStickyForm<{
   title: string;
@@ -145,7 +150,7 @@ function validateForm() {
       lastName: values.lastName,
       position: values.position,
       officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
-      email: values.email,
+      email: values.email || null,
     };
     if (payload.id) {
       updateContactPerson(payload, payload.id);
@@ -160,10 +165,10 @@ function validateForm() {
 function createContactPerson(payload: any) {
   isLoading.value = true;
   createAgencyCompanyContactPerson(props.profileId, payload)
-    .then(() => {
+    .then(({ id }) => {
       isLoading.value = false;
       showAlertSuccess('Created');
-      emit('updateContent');
+      emit('updateContent', { ...payload, id });
     })
     .catch((error: unknown) => {
       isLoading.value = false;
@@ -177,7 +182,7 @@ function updateContactPerson(payload: any, id: any) {
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Updated');
-      emit('updateContent');
+      emit('updateContent', payload);
     })
     .catch((error: unknown) => {
       isLoading.value = false;

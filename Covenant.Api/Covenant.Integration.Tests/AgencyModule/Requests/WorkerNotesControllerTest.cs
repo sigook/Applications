@@ -123,7 +123,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                     });
                 services.AddTestDatabase();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

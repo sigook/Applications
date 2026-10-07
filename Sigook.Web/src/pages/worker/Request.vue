@@ -1,72 +1,34 @@
 <template>
-  <div class="wrapper-request">
+  <div>
     <b-loading v-model="isLoading"></b-loading>
 
-    <section class="wrapper-request-top" v-if="request">
-      <div>
-        <img v-if="request.agencyLogo" :src="request.agencyLogo" />
-        <h2 class="is-capitalized fz1 has-text-weight-bold">
-          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
-          {{ request.jobTitle }}
-        </h2>
-      </div>
+    <RequestHeader v-if="request" :number-id="request.numberId ?? 0" :title="request.jobTitle ?? ''"
+      :subtitle="request.jobPosition" :org-name="request.agencyFullName" :logo="request.agencyLogo"
+      :status-label="statusLabel" :status-variant="statusVariant" :is-asap="request.isAsap" :chips="chips"
+      :workers-total="request.workersQuantity" :kpis="kpis">
+      <template v-if="!currentUser?.approvedToWork" #alert>You are not approved to work</template>
+      <template v-if="currentUser?.approvedToWork && canApply" #actions>
+        <b-button type="is-primary" @click="modalMessage = true">Apply</b-button>
+      </template>
 
-      <div>
-        <div v-if="request.status && request.status !== 'None'"
-          class="option-request-top capitailized has-text-weight-bold is-inline-block" :class="request.status">
-          {{ request.status }}
-        </div>
-        <div v-else class="option-request-top capitailized has-text-weight-bold is-inline-block" :class="request.requestStatus">
-          {{ request.requestStatus }}
-        </div>
-        <div v-if="currentUser.approvedToWork" class="is-inline-block">
-          <b-button v-if="canApply" type="is-primary" rounded @click="modalMessage = true">
-            Apply
-          </b-button>
-        </div>
-      </div>
-    </section>
+      <b-tabs model-value="Detail">
+        <b-tab-item label="Detail" value="Detail">
+          <RequestDetailTab :fields="fields" :description="request.description"
+            :responsibilities="request.responsibilities" :requirements="request.requirements"
+            :incentive="request.incentive" :incentive-description="request.incentiveDescription"
+            :skills="request.skills">
+            <template #rail>
+              <RequestLocationCard :location="request.jobLocation" />
+            </template>
+          </RequestDetailTab>
+        </b-tab-item>
+      </b-tabs>
+    </RequestHeader>
 
-    <ul class="tabs-basic">
-      <li class="active">Detail</li>
-    </ul>
-
-    <div class="columns is-multiline">
-      <section class="column is-9 section-left">
-        <RequestDetail v-if="request" :request="request"></RequestDetail>
-        <div v-if="currentUser.approvedToWork" class="mt-5">
-          <div v-if="canApply">
-            <b-button type="is-primary" rounded @click="modalMessage = true">
-              Apply
-            </b-button>
-          </div>
-        </div>
-        <div class="alert-warning has-text-centered" v-else>
-          You are not approved to work
-        </div>
-      </section>
-      <aside class="column is-3 section-right">
-        <Location :jobLocation="request.jobLocation" />
-      </aside>
-    </div>
-
-    <!-- custom modal TextArea-->
-    <transition name="modal">
-      <div v-if="modalMessage" class="vue-modal header-fixed">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container small-container modal-light overflow-initial border-radius">
-              <button @click="modalMessage = false" type="button" class="cross-icon">
-                close
-              </button>
-              <EditTextarea :title="'Additional Comments'" subtitle="Comments" :min-length="0" class="sm-edit-textarea"
-                @updateContent="(data) => applyToRequest(data)" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- end custom modal TextArea-->
+    <b-modal custom-content-class="card" v-model="modalMessage" width="500px" :destroy-on-hide="true">
+      <EditTextarea title="Additional Comments" :min-length="0" class="sm-edit-textarea"
+        @updateContent="(data) => applyToRequest(data)" />
+    </b-modal>
   </div>
 </template>
 
@@ -77,21 +39,26 @@ import { useWorkerStore } from '@/stores/worker';
 import { showAlertError } from '@/utils/toast';
 import { getWorkerRequest, getWorkerRequestHistoryDetail, workerRequestApplySelf } from '@/api/workerApi';
 import { appGlobals } from '@/varaibles';
-import RequestDetail from '../../components/worker/RequestDetail.vue';
-import Location from '../../components/request/RequestLocation.vue';
+import { useWorkerRequestSummary } from '@/composables/useWorkerRequestSummary';
+import type { WorkerRequestDetail } from '@/types/worker';
 import EditTextarea from '../../components/agency_request/EditTextarea.vue';
+import RequestHeader from '@/components/request_detail/RequestHeader.vue';
+import RequestDetailTab from '@/components/request_detail/RequestDetailTab.vue';
+import RequestLocationCard from '@/components/request_detail/RequestLocationCard.vue';
 
 const route = useRoute();
 const router = useRouter();
 const workerStore = useWorkerStore();
 
 const isLoading = ref(true);
-const request = ref<any>({});
+const request = ref<WorkerRequestDetail | null>(null);
 const modalMessage = ref(false);
 
-const currentUser = computed<any>(() => workerStore.workerProfile);
+const currentUser = computed(() => workerStore.workerProfile);
+const { statusLabel, statusVariant, kpis, fields, chips } = useWorkerRequestSummary(request);
 
 const canApply = computed(() => {
+  if (!request.value) return false;
   let available = false;
   switch (request.value.requestStatus) {
     case appGlobals.$statusOpen:
@@ -120,7 +87,7 @@ const canApply = computed(() => {
 
 function getWorkerHistoryRequest() {
   getWorkerRequestHistoryDetail(route.params.id as string)
-    .then((response: any) => {
+    .then((response) => {
       isLoading.value = false;
       request.value = response;
     })
@@ -131,7 +98,7 @@ function getWorkerHistoryRequest() {
 
 function getWorkerRequestFn() {
   getWorkerRequest(route.params.id as string)
-    .then((response: any) => {
+    .then((response) => {
       isLoading.value = false;
       request.value = response;
     })
@@ -141,12 +108,14 @@ function getWorkerRequestFn() {
 }
 
 function applyToRequest(comment: string) {
+  if (!request.value) return;
+  const id = request.value.id;
   isLoading.value = true;
   const model = { comments: comment };
-  workerRequestApplySelf(request.value.id, model)
+  workerRequestApplySelf(id, model)
     .then(() => {
       isLoading.value = false;
-      router.push({ path: '/worker-requests/applied/' + request.value.id });
+      router.push({ path: '/worker-requests/applied/' + id });
     })
     .catch((error: unknown) => {
       isLoading.value = false;

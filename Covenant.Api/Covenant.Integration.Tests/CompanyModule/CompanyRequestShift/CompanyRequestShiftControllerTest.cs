@@ -39,7 +39,6 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestShift
                 services.AddTestAuthenticationBuilder().AddTestAuth(o => o.AddCompanyRole());
                 services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<CompanyIdFilter>();
             }
 

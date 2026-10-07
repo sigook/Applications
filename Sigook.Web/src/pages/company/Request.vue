@@ -3,49 +3,53 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <Breadcrumbs :crumbs="crumbs" back-to="/company-requests" />
-    <section class="wrapper-request-top" v-if="request">
-      <div>
-        <router-link :to="'/recruiting/companies/' + request.companyProfileId">
-          <img v-if="request.companyLogo" :src="request.companyLogo" />
-        </router-link>
-        <h2 class="is-capitalized fz1 has-text-weight-bold">
-          <span class="has-text-weight-normal fz-0">{{ request.numberId }}</span>
-          {{ request.jobTitle }}
-        </h2>
-      </div>
-      <div>
-        <div v-if="request.status"
-          class="option-request-top capitailized has-text-weight-bold is-inline-block" :class="RequestStatusLabels[request.status]">
-          {{ RequestStatusLabels[request.status] }}
-        </div>
-        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body class="is-inline-block" v-if="canEdit">
+    <RequestHeader v-if="request" :number-id="request.numberId" :title="request.jobTitle"
+      :subtitle="request.jobPositionRate?.value" :status-label="statusLabel" :status-variant="statusVariant"
+      :is-asap="request.isAsap" :is-direct-hiring="isDirectHiringComputed" :chips="chips"
+      :workers-working="request.workersQuantityWorking" :workers-total="request.workersQuantity" :kpis="kpis">
+      <template v-if="canEdit" #actions>
+        <b-button type="is-primary" @click="alertRequestAnotherWorker">Request another worker</b-button>
+        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
           <template #trigger>
-            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
+            <b-button icon-right="dots-vertical" aria-label="More actions" />
           </template>
-          <b-dropdown-item aria-role="listitem" @click="alertRequestAnotherWorker">
-            Request another worker
-          </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" @click="editContentModal = true">
-            Edit Requirements
+            Edit requirements
           </b-dropdown-item>
           <b-dropdown-item aria-role="listitem" v-if="canCancel" @click="modalValidation = true">
-            Cancel Request
+            Cancel request
           </b-dropdown-item>
         </b-dropdown>
-      </div>
-    </section>
+      </template>
 
-    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="request">
-      <b-tab-item label="Detail" value="Detail">
-        <Detail v-if="visitedTabs.includes('Detail')" :request="request" class="p-2 p-sm-0" />
-      </b-tab-item>
-      <b-tab-item label="Workers" value="Workers">
-        <Workers v-if="visitedTabs.includes('Workers')" :request="request" class="p-2 p-sm-0" />
-      </b-tab-item>
-      <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiringComputed">
-        <PunchCard v-if="visitedTabs.includes('PunchCard')" :request="request" class="p-2 p-sm-0" />
-      </b-tab-item>
-    </b-tabs>
+      <template v-if="request.displayShift" #kpi-shift>
+        <AgencyShift :request-id="request.id" :display-shift="request.displayShift" :fetch-shift="getRequestShift" />
+      </template>
+
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab">
+        <b-tab-item label="Detail" value="Detail">
+          <RequestDetailTab v-if="visitedTabs.includes('Detail')" :fields="fields" :description="request.description"
+            :responsibilities="request.responsibilities" :requirements="request.requirements"
+            :incentive="request.incentive" :incentive-description="request.incentiveDescription">
+            <template v-if="canEdit" #requirements-actions>
+              <b-button type="is-ghost" size="is-small" class="request-link" @click="editContentModal = true">
+                Edit
+              </b-button>
+            </template>
+            <template #rail>
+              <RequestStaffingCard :items="staffing" />
+              <RequestLocationCard :location="request.jobLocation" />
+            </template>
+          </RequestDetailTab>
+        </b-tab-item>
+        <b-tab-item label="Workers" value="Workers">
+          <Workers v-if="visitedTabs.includes('Workers')" :request="request" />
+        </b-tab-item>
+        <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiringComputed">
+          <PunchCard v-if="visitedTabs.includes('PunchCard')" :request="request" />
+        </b-tab-item>
+      </b-tabs>
+    </RequestHeader>
 
     <b-modal custom-content-class="card" v-model="modalValidation" width="500px">
       <CancelList @sendReason="(reason) => onCancelRequest(reason)"></CancelList>
@@ -83,20 +87,29 @@ import * as yup from 'yup';
 import { useStickyForm } from '@/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/utils/toast';
 import { isDirectHiring } from '@/utils/directHiring';
-import { RequestStatus, RequestStatusLabels } from '@/constants/enums';
+import { DurationTerm, DurationTermLabels, RequestStatus } from '@/constants/enums';
 import {
   getRequest,
+  getRequestShift,
   cancelRequest as cancelRequestApi,
   editRequest,
   requestAnotherWorker as requestAnotherWorkerApi,
 } from '@/api/companyApi';
+import { datesKpi, formatBreak, rateKpi, shiftKpi, staffingItems } from '@/utils/requestDetail';
+import { useRequestStatus } from '@/composables/useRequestStatus';
 import CancelList from '../../components/company/CompanyCancelList.vue';
 import RequestAnotherWorker from '../../components/company/DialogRequestWorker.vue';
-import Detail from '../../components/company_request/CompanyRequestDetail.vue';
 import Workers from '../../components/company_request/CompanyRequestWorkers.vue';
 import PunchCard from '../../components/company_request/CompanyRequestPunchCard.vue';
+import AgencyShift from '@/components/agency_request/AgencyShiftDetail.vue';
+import RequestHeader from '@/components/request_detail/RequestHeader.vue';
+import RequestDetailTab from '@/components/request_detail/RequestDetailTab.vue';
+import RequestStaffingCard from '@/components/request_detail/RequestStaffingCard.vue';
+import RequestLocationCard from '@/components/request_detail/RequestLocationCard.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import type { PageBreadcrumb } from '@/types/common';
+import type { CompanyRequestDetail } from '@/types/company';
+import type { RequestFact, RequestKpi } from '@/types/requestDetail';
 
 const route = useRoute();
 const router = useRouter();
@@ -116,7 +129,7 @@ const form = useStickyForm({
 const { requirements } = form.fields;
 const requirementsError = computed(() => form.errors.value.requirements || '');
 
-const request = ref<any>({});
+const request = ref<CompanyRequestDetail | null>(null);
 const isLoading = ref(true);
 const modalValidation = ref(false);
 const modalValidationRequestAnotherWorker = ref(false);
@@ -125,16 +138,48 @@ const visitedTabs = ref<string[]>(['Detail']);
 const editContentModal = ref(false);
 
 const isDirectHiringComputed = computed(() => isDirectHiring(request.value));
-const canEdit = computed(() =>
-  request.value.status === RequestStatus.Open ||
-  request.value.status === RequestStatus.Filled
-);
-const canCancel = computed(() =>
-  request.value.status === RequestStatus.Open &&
-  (!request.value.workersQuantityWorking || request.value.workersQuantityWorking === 0)
-);
+const { canEdit, canCancel, statusLabel, statusVariant } = useRequestStatus(request);
 
-function onCancelRequest(reason: any) {
+const termLabel = computed(() =>
+  request.value ? DurationTermLabels[request.value.durationTerm as DurationTerm] ?? '' : '');
+
+const chips = computed(() => (termLabel.value ? [termLabel.value] : []));
+
+const kpis = computed<RequestKpi[]>(() => {
+  const r = request.value;
+  if (!r) return [];
+  const showFinish = r.durationTerm !== DurationTerm.LongTerm ||
+    r.status === RequestStatus.Filled || r.status === RequestStatus.Cancelled;
+  return [
+    rateKpi(r.agencyRate, r.workerSalary, r.incentive),
+    datesKpi(r.startAt, r.finishAt, showFinish),
+    shiftKpi(r.displayShift, r.durationBreak, r.breakIsPaid),
+  ];
+});
+
+const fields = computed<RequestFact[]>(() => {
+  const r = request.value;
+  if (!r) return [];
+  return [
+    { label: 'Role (position)', value: r.jobPositionRate?.value || r.jobTitle },
+    { label: 'Term', value: termLabel.value || '—' },
+    { label: 'Break', value: formatBreak(r.durationBreak, r.breakIsPaid) },
+    { label: 'Holiday', value: r.holidayIsPaid ? 'Paid' : 'Not paid' },
+  ];
+});
+
+const staffing = computed(() => {
+  const r = request.value;
+  if (!r) return [];
+  return staffingItems({
+    startAt: r.startAt,
+    openSpots: r.workersQuantity - r.workersQuantityWorking,
+    isOpen: r.status === RequestStatus.Open,
+  });
+});
+
+function onCancelRequest(reason: { reasonId: string; otherMessage: string }) {
+  if (!request.value) return;
   modalValidation.value = false;
   isLoading.value = true;
   cancelRequestApi(request.value.id, reason.reasonId, reason.otherMessage)
@@ -151,7 +196,7 @@ function onCancelRequest(reason: any) {
 
 function getData() {
   getRequest(route.params.id as string)
-    .then((response: any) => {
+    .then((response) => {
       isLoading.value = false;
       request.value = response;
     })
@@ -187,7 +232,7 @@ function onUpdateRequirements() {
       .then(() => {
         isLoading.value = false;
         showAlertSuccess('Updated');
-        request.value.requirements = values.requirements;
+        if (request.value) request.value.requirements = values.requirements;
         editContentModal.value = false;
       })
       .catch((error: unknown) => {
@@ -217,6 +262,23 @@ if (route.query && route.query.tab) {
 }
 
 watch(editContentModal, (val) => {
-  if (val) form.hydrate({ requirements: request.value.requirements || '' });
+  if (val) form.hydrate({ requirements: request.value?.requirements || '' });
 });
 </script>
+
+<style lang="scss" scoped>
+@import '../../assets/scss/variables';
+
+.button.request-link {
+  height: auto;
+  padding: 0 4px;
+  font-weight: 600;
+  color: $blue;
+
+  &:hover,
+  &:focus {
+    color: $blue-dark;
+    text-decoration: underline;
+  }
+}
+</style>

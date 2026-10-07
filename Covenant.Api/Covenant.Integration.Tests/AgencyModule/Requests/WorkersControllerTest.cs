@@ -11,9 +11,9 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Xunit;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AgencyModule.Requests;
 
@@ -129,9 +129,7 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Seeded
                     o.AddName("recruiter@mail.com");
                 });
             services.AddTestDatabase();
-            var timeService = new Mock<ITimeService>();
-            timeService.Setup(c => c.GetCurrentDateTime()).Returns(Data.FakeNow);
-            services.AddSingleton(timeService.Object);
+            services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(Data.FakeNow, TimeSpan.Zero)));
             services.AddSingleton<AgencyIdFilter>();
         }
 

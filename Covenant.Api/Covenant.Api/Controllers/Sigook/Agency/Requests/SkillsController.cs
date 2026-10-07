@@ -33,12 +33,6 @@ public class SkillsController(IRequestRepository repository) : Controller
         return Ok(model);
     }
 
-    /// <summary>Gets the skills of the specified request.</summary>
-    /// <param name="requestId">Identifier of the request.</param>
-    [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<SkillModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult> Get(Guid requestId) => Ok(await repository.GetSkills(requestId));
-
     /// <summary>Removes a skill from the specified request.</summary>
     /// <param name="requestId">Identifier of the request.</param>
     /// <param name="id">Identifier of the skill to remove.</param>

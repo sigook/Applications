@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
 {
@@ -81,8 +82,12 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
             Guid id = Startup.FakeCompanyProfile.Id;
             HttpResponseMessage response = await _client.GetAsync(RequestUri(id));
             response.EnsureSuccessStatusCode();
-            var model = await response.Content.ReadFromJsonAsync<CompanyProfileDetailModel>();
+            var model = await response.Content.ReadFromJsonAsync<AgencyCompanyProfileDetailModel>();
             Assert.NotNull(model);
+            Assert.NotNull(model.Summary);
+            Assert.Equal(0, model.Summary.OpenRequestsCount);
+            Assert.Equal(0, model.Summary.WorkersWorkingCount);
+            Assert.Null(model.Summary.SalesRepresentativeName);
             var context = _factory.Services.GetRequiredService<CovenantContext>();
             CompanyProfile entity = await context.CompanyProfiles.SingleAsync(c => c.Id == id);
             Assert.Equal(entity.Id, model.Id);
@@ -143,9 +148,7 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                 services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
                 services.AddSingleton<IAgencyService, AgencyService>();
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(c => c.GetCurrentDateTime()).Returns(FakeNow);
-                services.AddSingleton(timeService.Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(FakeNow, TimeSpan.Zero)));
                 var userAccountService = new Mock<IUserAccountService>();
                 userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
                 services.AddSingleton(userAccountService.Object);

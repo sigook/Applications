@@ -32,9 +32,12 @@
       </b-table-column>
     </SigookGrid>
 
-    <b-modal custom-content-class="card" v-model="showModal" @close="showModal = false" width="500px">
-      <contact-form :current-contact="currentContact" :profile-id="profileId"
-        @updateContent="onUpdateModal"></contact-form>
+    <b-modal custom-content-class="card" v-model="showModal" @close="closeModal" width="500px">
+      <div class="p-4">
+        <h2 class="has-text-centered fz1 mb-4">{{ currentContact ? 'Edit contact' : 'New contact' }}</h2>
+        <contact-form :current-contact="currentContact" :profile-id="profileId"
+          @updateContent="onUpdateModal" @cancel="closeModal"></contact-form>
+      </div>
     </b-modal>
   </div>
 </template>
@@ -45,6 +48,8 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/utils/toas
 import { getAgencyCompanyContactPerson, deleteAgencyCompanyContactPerson } from "@/api/agencyCompanyApi";
 import ContactForm from "./ContactPersonForm.vue";
 import SigookGrid from '@/components/SigookGrid.vue';
+
+const emit = defineEmits<{ (e: 'changed', count: number): void }>();
 
 const route = useRoute();
 
@@ -60,6 +65,7 @@ async function loadContactPersons() {
     .then(response => {
       isLoading.value = false;
       data.value = response;
+      emit('changed', response.length);
     })
     .catch(error => {
       isLoading.value = false;

@@ -349,16 +349,40 @@ public class CompanyRepository : ICompanyRepository
         return query;
     }
 
-    public async Task<CompanyProfileDetailModel> GetCompanyProfileDetail(Expression<Func<CompanyProfile, bool>> expression)
+    public Task<CompanyProfileDetailModel> GetCompanyProfileDetail(Expression<Func<CompanyProfile, bool>> expression) =>
+        SelectCompanyProfileDetail<CompanyProfileDetailModel>(expression).FirstOrDefaultAsync();
+
+    public async Task<AgencyCompanyProfileDetailModel> GetAgencyCompanyProfileDetail(Guid companyProfileId)
     {
-        var query = _context.CompanyProfiles
-            .Include(cp => cp.Locations)
-            .Include(cp => cp.ContactPeople)
-            .Include(cp => cp.JobPositionRates)
-            .Include(cp => cp.Industry).ThenInclude(i => i.Industry)
-            .Include(cp => cp.Logo)
+        var model = await SelectCompanyProfileDetail<AgencyCompanyProfileDetailModel>(cp => cp.Id == companyProfileId)
+            .FirstOrDefaultAsync();
+        if (model is null) return null;
+        model.Summary = await _context.CompanyProfiles
+            .Where(cp => cp.Id == companyProfileId)
+            .Select(cp => new CompanyProfileSummaryModel
+            {
+                OpenRequestsCount = _context.Requests.Count(r => r.CompanyProfileId == cp.Id && r.Status == RequestStatus.Open),
+                AsapRequestsCount = _context.Requests.Count(r => r.CompanyProfileId == cp.Id && r.Status == RequestStatus.Open && r.IsAsap),
+                WorkersWorkingCount = _context.Requests.Where(r => r.CompanyProfileId == cp.Id && r.Status != RequestStatus.Cancelled)
+                    .Sum(r => r.WorkersQuantityWorking),
+                RolesCount = cp.JobPositionRates.Count(j => !j.IsDeleted),
+                ContactsCount = cp.ContactPeople.Count,
+                UsersCount = _context.CompanyUsers.Count(cu => cu.CompanyProfileId == cp.Id),
+                LocationsCount = cp.Locations.Count,
+                DocumentsCount = cp.Documents.Count,
+                SalesRepresentativeName = cp.SalesRepresentative == null
+                    ? null
+                    : cp.SalesRepresentative.Name ?? cp.SalesRepresentative.User.Email
+            })
+            .SingleAsync();
+        return model;
+    }
+
+    private IQueryable<T> SelectCompanyProfileDetail<T>(Expression<Func<CompanyProfile, bool>> expression)
+        where T : CompanyProfileDetailModel, new() =>
+        _context.CompanyProfiles
             .Where(expression)
-            .Select(cp => new CompanyProfileDetailModel
+            .Select(cp => new T
             {
                 Id = cp.Id,
                 NumberId = cp.NumberId,
@@ -398,8 +422,6 @@ public class CompanyRepository : ICompanyRepository
                 SalesRepresentativeId = cp.SalesRepresentativeId,
                 OvertimeStartsAfter = cp.OvertimeStartsAfter.TotalHours
             });
-        return await query.FirstOrDefaultAsync();
-    }
 
     public Task SaveChangesAsync() => _context.SaveChangesAsync();
 

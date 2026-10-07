@@ -8,6 +8,7 @@ import type {
   CompanyProfileJobPositionRate,
   CompanyRequestFilter,
   CompanyRequestListItem,
+  CompanyRequestDetail,
   CompanyRequestWorkerFilter,
   CompanyRequestWorker,
   TimeSheetListItem,
@@ -70,8 +71,8 @@ export function getRequests(filter: CompanyRequestFilter): Promise<PaginatedList
   return api.get<PaginatedList<CompanyRequestListItem>>('/api/company/requests', { params: { ...filter } });
 }
 
-export function getRequest(id: string): Promise<CompanyRequestListItem> {
-  return api.get<CompanyRequestListItem>(`/api/company/requests/${id}`);
+export function getRequest(id: string): Promise<CompanyRequestDetail> {
+  return api.get<CompanyRequestDetail>(`/api/company/requests/${id}`);
 }
 
 export function createRequest(request: CreateAgencyRequestModel): Promise<{ id: string }> {

@@ -12,6 +12,7 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Request;
 using Covenant.Common.Resources;
+using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Documents.Services;
 using MediatR;
@@ -21,7 +22,7 @@ using Microsoft.Extensions.Configuration;
 namespace Covenant.Core.BL.Services;
 
 public class TimesheetService(
-    ITimeService timeService,
+    TimeProvider timeProvider,
     IWorkerRequestRepository workerRequestRepository,
     ITimesheetRepository timeSheetRepository,
     IRequestRepository requestRepository,
@@ -31,7 +32,7 @@ public class TimesheetService(
     IMediator mediator,
     TelemetryClient telemetryClient) : ITimesheetService
 {
-    private readonly ITimeService timeService = timeService;
+    private readonly TimeProvider timeProvider = timeProvider;
     private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
     private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
     private readonly IRequestRepository requestRepository = requestRepository;
@@ -43,7 +44,7 @@ public class TimesheetService(
 
     public async Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerProfileId, TimeSpan clockIn)
     {
-        DateTime now = timeService.GetCurrentDateTime();
+        DateTime now = timeProvider.GetLocalNow().DateTime;
         var clockInDate = new DateTime(now.Year, now.Month, now.Day, clockIn.Hours, clockIn.Minutes, default);
         if (clockInDate > now)
             return Result.Fail<RegisterTimeSheetResultModel>($"Clock in must be less than {now:t}");
@@ -64,7 +65,7 @@ public class TimesheetService(
     public async Task<Result<Guid>> CreateTimesheet(Guid workerProfileId, Guid requestId, TimeSheetModel timeSheetModel)
     {
         var createdBy = currentUserService.GetNickname();
-        var now = timeService.GetCurrentDateTime();
+        var now = timeProvider.GetLocalNow().DateTime;
         var workerRequest = await workerRequestRepository.GetWorkerRequestByWorkerProfileId(workerProfileId, requestId);
         if (workerRequest is null)
         {
@@ -137,7 +138,7 @@ public class TimesheetService(
 
     public async Task<Result<RegisterTimeSheetResultModel>> Register(Guid requestId, WorkerLocationModel workerLocationModel)
     {
-        var now = timeService.GetCurrentDateTimeOffset();
+        var now = timeProvider.GetLocalNow();
         var workerId = currentUserService.GetUserId();
         var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, now.DateTime);
         Result<RegisterTimeSheetResultModel> result;
@@ -147,7 +148,7 @@ public class TimesheetService(
             {
                 if (info != null && info.Latitude.HasValue && info.Longitude.HasValue)
                 {
-                    now = timeService.GetCurrentLocalDateTime(info.Latitude.Value, info.Longitude.Value);
+                    now = timeProvider.GetLocalNow(info.Latitude.Value, info.Longitude.Value);
                     var distanceBetween = DistanceInMeters(
                         info.Latitude.Value, info.Longitude.Value,
                         workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
@@ -271,10 +272,10 @@ public class TimesheetService(
             return Result.Ok(ClockType.None);
         }
         var workerId = currentUserService.GetUserId();
-        var workerNow = timeService.GetCurrentLocalDateTime(latitude, longitude).DateTime;
+        var workerNow = timeProvider.GetLocalNow(latitude, longitude).DateTime;
         var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, workerNow);
         var now = info is not null && info.Latitude.HasValue && info.Longitude.HasValue
-            ? timeService.GetCurrentLocalDateTime(info.Latitude.Value, info.Longitude.Value).DateTime
+            ? timeProvider.GetLocalNow(info.Latitude.Value, info.Longitude.Value).DateTime
             : workerNow;
         var timeSheet = await timeSheetRepository.GetLatestTimesheet(workerId, requestId, date.Value);
         if (date.Value.Date != now.Date && timeSheet == null)

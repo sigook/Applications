@@ -1,25 +1,14 @@
 <template>
-  <div>
-    <b-loading v-model="isLoading"></b-loading>
-    <div class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light small-container update-logo-modal">
-              <span class="fz1 has-text-weight-bold ">Logo</span>
-              <button @click="cancelUpdate" type="button" class="cross-icon">{{ 'Close' }}</button>
-
-              <upload-image v-if="newLogo" @imageSelected="profileImg => newLogo = { fileName: profileImg }"
-                :edited-image="props.logo" :required="false" @onUpload="() => subscribe('file')"
-                @finishUpload="() => unsubscribe()" class="mx-auto my-2">
-              </upload-image>
-              <div class="has-text-centered">
-                <b-button type="is-danger" rounded class="mt-3 mr-2" @click="cancelUpdate">Cancel</b-button>
-                <b-button type="is-primary" rounded class="mt-3" @click="updateLogo()">Save</b-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="p-4">
+    <h2 class="has-text-centered fz1 mb-4">Logo</h2>
+    <upload-image v-if="newLogo" @imageSelected="profileImg => newLogo = { fileName: profileImg }"
+      :edited-image="props.logo" :required="false" @onUpload="() => subscribe('file')"
+      @finishUpload="() => unsubscribe()" class="mx-auto my-2">
+    </upload-image>
+    <div class="mt-4">
+      <b-button @click="cancelUpdate">Cancel</b-button>
+      <b-button type="is-primary" class="ml-2" @click="updateLogo()">Save</b-button>
+    </div>
   </div>
 </template>
 
@@ -37,7 +26,6 @@ const emit = defineEmits<{
 const { subscribe, unsubscribe } = usePubSub();
 
 const newLogo = ref<any>({});
-const isLoading = ref(false);
 
 function updateLogo() {
   if (!newLogo.value || props.logo.fileName === newLogo.value.fileName) {
@@ -55,21 +43,3 @@ if (props.logo != null) {
   newLogo.value = Object.assign({}, props.logo);
 }
 </script>
-<style lang="scss">
-.update-logo-modal {
-
-  .fz1 {
-    margin-bottom: 20px;
-    display: inline-block;
-    position: relative;
-    top: -5px;
-
-  }
-
-  .update-image label {
-    z-index: 3;
-    color: white;
-
-  }
-}
-</style>

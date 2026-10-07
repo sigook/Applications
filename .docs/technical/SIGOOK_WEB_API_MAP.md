@@ -47,8 +47,14 @@ Agency profile, personnel and agency switching.
 | `deleteAgencyLocation(id)` | DELETE | `/api/Agency/Location/{id}` | — | `void` | |
 | `getPersonnelAgencies()` | GET | `/api/agency/personnel/Agencies` | — | `PersonnelAgencyItem[]` | Agencies user has access to |
 | `switchPersonnelAgency(id)` | PUT | `/api/agency/personnel/Agencies/{id}` | — | `void` | Switch active agency context |
+| `getAttendanceToday()` | GET | `/api/agency/attendance/today` | `timeZone` (params, device IANA zone) | `UserAttendanceToday` | Current user's clock state today (sidebar button) |
+| `toggleAttendance()` | POST | `/api/agency/attendance` | `timeZone` (params, device IANA zone) | `UserAttendanceToday` | Clock in, or out when today is open |
+| `getAttendancesTodayForUsers()` | GET | `/api/agency/attendance/today/users` | `timeZone` (params, device IANA zone) | `UserAttendanceToday[]` | "Today" column of the Users grid. Policy `Admin` |
+| `getAttendanceReport(filter)` | GET | `/api/agency/attendance/report` | `UserAttendanceReportFilter` (params) | `UserAttendanceReport` | Per-day hours + totals. Policy `Admin` |
+| `downloadAttendanceReport(filter)` | GET | `/api/agency/attendance/report/file` | `UserAttendanceReportFilter` (params) | `Blob` | Excel. Policy `Admin` |
+| `updateAttendance(id, model)` | PUT | `/api/agency/attendance/{id}` | `UpdateUserAttendanceModel` | `void` | Admin punch correction |
 
-**Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `PersonnelAgencyItem` (`src/types/agency`)
+**Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `PersonnelAgencyItem`, `AttendanceStatus`, `UserAttendance*`, `UpdateUserAttendanceModel` (`src/types/agency`)
 
 **Pinia:** `useAgencyStore` holds `agency` + `agencyListFilter`; `personnelAgencies` for agency switching.
 
@@ -91,7 +97,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 |----------|------------|----------|--------------|---------------|-------|
 | `createAgencyCompany(company)` | POST | `/api/agency/companyprofiles` | `Partial<CompanyProfileDetail>` | `{ id: string }` | |
 | `getAgencyCompanies(filter)` | GET | `/api/agency/recruiting/companyprofiles` | `AgencyCompanyFilter` (params) | `PaginatedList<AgencyCompanyListItem>` | Recruiting-scoped list |
-| `getAgencyCompany(id)` | GET | `/api/agency/companyprofiles/{id}` | — | `CompanyProfileDetail` | |
+| `getAgencyCompany(id)` | GET | `/api/agency/companyprofiles/{id}` | — | `AgencyCompanyProfileDetail` | `summary` = header counters (open/ASAP requests, workers assigned, roles, contacts, users, locations, documents, sales owner name) |
 | `updateAgencyCompany(id, company)` | PUT | `/api/agency/companyprofiles/{id}` | `Partial<CompanyProfileDetail>` | `void` | |
 | `updateCompanyVaccinationRequired(id, model)` | PUT | `/api/agency/companyprofiles/{id}/VaccinationRequired` | `VaccinationRequiredModel` | `void` | |
 | `updateAgencyCompanyEmail(id, model)` | PUT | `/api/agency/companyprofiles/{id}/Email` | `{ newEmail: string }` | `void` | |
@@ -190,7 +196,7 @@ Backend: `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{I
 |----------|------------|----------|--------------|---------------|-------|
 | `updateIsAsapRequests(model)` | PUT | `/api/agency/requests/is-asap` | `UpdateIsAsapRequestsPayload` | `void` | Mark requests as ASAP |
 
-**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (`src/types/agency`); `CompanyProfileDetail`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (`src/types/company`)
+**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (`src/types/agency`); `CompanyProfileDetail`, `AgencyCompanyProfileDetail`, `CompanyProfileSummary`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (`src/types/company`)
 
 **Pinia:** `agencyCompanyProfileFilter` in `useAgencyStore`.
 
@@ -313,7 +319,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `duplicateAgencyRequest(sourceRequestId, model)` | POST | `/api/agency/requests/{sourceRequestId}/Duplicate` | `CreateAgencyRequestModel` | `AgencyRequestDetail` | Creates a new request from the edited form; the backend copies the shift (unless the payload carries one), skills, requested-by / report-to contacts and job boards from the source request |
 | `getAgencyRequests(filter)` | GET | `/api/agency/recruiting/requests` | `AgencyRequestFilter` (params) | `AgencyRequestsPagedResponse` | Recruiting-scoped list |
 | `getAllAgencyRequests(filter)` | GET | `/api/agency/recruiting/requests/all` | `AgencyRequestFilter` (params) | `AgencyRequestListItem[]` | Unpaged |
-| `getAgencyRequest(id)` | GET | `/api/agency/requests/{id}` | — | `AgencyRequestDetail` | |
+| `getAgencyRequest(id)` | GET | `/api/agency/requests/{id}` | — | `AgencyRequestDetail` | Carries `applicantsCount`, `runnersCount` and `workersCount` (all `WorkerRequests`, booked and rejected) for the tab counters, plus `skills`, `requestedBy` and `reportTo` so the detail page loads them in the same call |
 | `updateAgencyRequest(id, model)` | PUT | `/api/agency/requests/{id}` | `CreateAgencyRequestModel` | `AgencyRequestDetail` | |
 | `cancelAgencyRequest(id, payload)` | PUT | `/api/agency/requests/{id}/Cancel` | `CancelRequestPayload` | `void` | Cancel + reason |
 | `bulkCancelRequests(payload)` | PUT | `/api/agency/requests/bulk-cancel` | `BulkCancelRequestsPayload` | `BulkCancelRequestsResult` | Cancel many at once |
@@ -348,13 +354,13 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 | `changeAgencyApplicantsStatus(model)` | PUT | `/api/agency/recruiting/applicants/Status` | `ChangeApplicantsStatusModel` | `ChangeApplicantsStatusResult` | Bulk change across requests: applies what it can and returns `skipped[]` with the reason for each one it left untouched |
 
 ### Request Contact People (RequestedBy / ReportTo)
+The lists come inside `getAgencyRequest`; these endpoints only add and remove.
+
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyRequestRequestedBy(id)` | GET | `/api/agency/requests/{id}/RequestedBy` | — | `PaginatedList<AgencyRequestPersonItem>` | Who requested (company side) |
-| `postAgencyRequestRequestedBy(id, personId)` | POST | `/api/agency/requests/{id}/RequestedBy/{personId}` | — | `void` | |
+| `postAgencyRequestRequestedBy(id, personId)` | POST | `/api/agency/requests/{id}/RequestedBy/{personId}` | — | `void` | Who requested (company side) |
 | `deleteAgencyRequestRequestedBy(id, personId)` | DELETE | `/api/agency/requests/{id}/RequestedBy/{personId}` | — | `void` | |
-| `getAgencyRequestReportTo(id)` | GET | `/api/agency/requests/{id}/ReportTo` | — | `PaginatedList<AgencyRequestPersonItem>` | Worker's supervisor |
-| `postAgencyRequestReportTo(id, personId)` | POST | `/api/agency/requests/{id}/ReportTo/{personId}` | — | `void` | |
+| `postAgencyRequestReportTo(id, personId)` | POST | `/api/agency/requests/{id}/ReportTo/{personId}` | — | `void` | Worker's supervisor |
 | `deleteAgencyRequestReportTo(id, personId)` | DELETE | `/api/agency/requests/{id}/ReportTo/{personId}` | — | `void` | |
 
 > Recruiter assignment lives in the **Recruiting → Weekly Board** feature (per work day). See §20.
@@ -362,7 +368,6 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/requests`, lists v
 ### Skills
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyRequestSkill(id)` | GET | `/api/agency/requests/{id}/Skills` | — | `{ id, skill }[]` | |
 | `postAgencyRequestSkill(id, model)` | POST | `/api/agency/requests/{id}/Skills` | `AgencyRequestSkillModel` | `{ id: string }` | |
 | `deleteAgencyRequestSkill(id, skillId)` | DELETE | `/api/agency/requests/{id}/Skills/{skillId}` | — | `void` | |
 
@@ -750,7 +755,7 @@ Public landing site endpoints (no auth).
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getJobs(filter)` | GET | `/api/WorkerRequest` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | Available jobs |
-| `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | |
+| `getWorkerRequest(id)` | GET | `/api/WorkerRequest/{id}` | — | `WorkerRequestDetail` | Includes `responsibilities`, `displayShift` and `skills` (names) |
 | `workerRequestApplySelf(requestId, model)` | POST | `/api/WorkerRequest/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply; the worker comes from the token, `email` in the body is ignored |
 | `requestApplyByEmail(numberId, email)` | POST | `/api/WorkerRequest/Apply` | `WorkerRequestApplyModel` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
 

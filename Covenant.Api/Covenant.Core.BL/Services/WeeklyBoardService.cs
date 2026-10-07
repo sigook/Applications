@@ -16,7 +16,7 @@ public class WeeklyBoardService(
     IRunnerService runnerService,
     IAgencyRepository agencyRepository,
     ICurrentUserService currentUserService,
-    ITimeService timeService) : IWeeklyBoardService
+    TimeProvider timeProvider) : IWeeklyBoardService
 {
     public async Task<WeeklyBoardModel> GetWeeklyBoard(WeeklyBoardFilter filter)
     {
@@ -79,7 +79,7 @@ public class WeeklyBoardService(
         var personnel = await agencyRepository.GetPersonnels(recruiterIds);
         if (personnel.Count != recruiterIds.Count) return Result.Fail("Recruiter not found");
 
-        var now = timeService.GetCurrentDateTime();
+        var now = timeProvider.GetLocalNow().DateTime;
         foreach (var recruiter in personnel)
             foreach (var workDate in model.WorkDates.Select(d => d.Date).Distinct())
             {
@@ -98,7 +98,7 @@ public class WeeklyBoardService(
         var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
         if (request is null) return Result.Fail("Order not found");
 
-        Result result = request.RemoveRecruiter(recruiterId, timeService.GetCurrentDateTime(), workDate);
+        Result result = request.RemoveRecruiter(recruiterId, timeProvider.GetLocalNow().DateTime, workDate);
         if (!result) return result;
 
         await requestRepository.Update(request);
@@ -118,7 +118,7 @@ public class WeeklyBoardService(
             if (personnel.Count == 0 || personnel[0].AgencyId != agencyId) return Result.Fail("Recruiter not found");
         }
 
-        Result result = request.MoveRecruiterAssignment(model.FromRecruiterId, model.FromWorkDate, model.ToRecruiterId, model.ToWorkDate, timeService.GetCurrentDateTime());
+        Result result = request.MoveRecruiterAssignment(model.FromRecruiterId, model.FromWorkDate, model.ToRecruiterId, model.ToWorkDate, timeProvider.GetLocalNow().DateTime);
         if (!result) return result;
 
         await requestRepository.Update(request);

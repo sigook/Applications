@@ -122,7 +122,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Requests
                     });
                 services.AddTestDatabase();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

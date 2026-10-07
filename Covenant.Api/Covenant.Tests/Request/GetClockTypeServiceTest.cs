@@ -10,6 +10,7 @@ using MediatR;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -21,11 +22,13 @@ public class GetClockTypeServiceTest
     private const double TorontoLongitude = -79.3832;
     private const double VancouverLatitude = 49.2827;
     private const double VancouverLongitude = -123.1207;
+    private static readonly TimeSpan EasternDaylight = TimeSpan.FromHours(-4);
+    private static readonly TimeSpan PacificDaylight = TimeSpan.FromHours(-7);
 
     private readonly Guid _workerId = Guid.NewGuid();
     private readonly Guid _requestId = Guid.NewGuid();
     private readonly Guid _workerRequestId = Guid.NewGuid();
-    private readonly Mock<ITimeService> _timeService = new();
+    private readonly FakeTimeProvider _timeProvider = new();
     private readonly Mock<IWorkerRequestRepository> _workerRequestRepository = new();
     private readonly Mock<ITimesheetRepository> _timeSheetRepository = new();
     private readonly Mock<ICurrentUserService> _currentUserService = new();
@@ -35,7 +38,7 @@ public class GetClockTypeServiceTest
     {
         _currentUserService.Setup(i => i.GetUserId()).Returns(_workerId);
         _sut = new TimesheetService(
-            _timeService.Object,
+            _timeProvider,
             _workerRequestRepository.Object,
             _timeSheetRepository.Object,
             Mock.Of<IRequestRepository>(),
@@ -50,7 +53,7 @@ public class GetClockTypeServiceTest
     public async Task EveningInEasternTime_WithoutTimesheet_ReturnsClockIn()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
-        SetLocalTime(TorontoLatitude, TorontoLongitude, localNow);
+        SetNow(localNow, EasternDaylight);
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(null);
 
@@ -63,7 +66,7 @@ public class GetClockTypeServiceTest
     public async Task EveningInPacificTime_WithoutTimesheet_ReturnsClockIn()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
-        SetLocalTime(VancouverLatitude, VancouverLongitude, localNow);
+        SetNow(localNow, PacificDaylight);
         SetJobLocation(VancouverLatitude, VancouverLongitude);
         SetLatestTimesheet(null);
 
@@ -76,22 +79,20 @@ public class GetClockTypeServiceTest
     public async Task JobTimeZoneWins_WhenWorkerIsInAnotherTimeZone()
     {
         var workerNow = new DateTime(2026, 08, 17, 22, 00, 00);
-        SetLocalTime(VancouverLatitude, VancouverLongitude, workerNow);
-        SetLocalTime(TorontoLatitude, TorontoLongitude, new DateTime(2026, 08, 18, 01, 00, 00));
+        SetNow(workerNow, PacificDaylight);
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(null);
 
         var result = await _sut.GetClockType(_requestId, VancouverLatitude, VancouverLongitude, workerNow);
 
         Assert.Equal(ClockType.None, result.Value);
-        _timeService.Verify(t => t.GetCurrentLocalDateTime(TorontoLatitude, TorontoLongitude), Times.Once);
     }
 
     [Fact]
     public async Task WithoutJobLocation_FallsBackToWorkerCoordinates()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
-        SetLocalTime(TorontoLatitude, TorontoLongitude, localNow);
+        SetNow(localNow, EasternDaylight);
         SetJobLocation(null, null);
         SetLatestTimesheet(null);
 
@@ -104,7 +105,7 @@ public class GetClockTypeServiceTest
     public async Task PreviousDayWithoutTimesheet_ReturnsNone()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
-        SetLocalTime(TorontoLatitude, TorontoLongitude, localNow);
+        SetNow(localNow, EasternDaylight);
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(null);
 
@@ -117,7 +118,7 @@ public class GetClockTypeServiceTest
     public async Task ClockInAndClockOutRegistered_ReturnsNone()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
-        SetLocalTime(TorontoLatitude, TorontoLongitude, localNow);
+        SetNow(localNow, EasternDaylight);
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         var timeSheet = TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddHours(-8)).Value;
         timeSheet.AddClockOut(localNow.AddHours(-1));
@@ -132,7 +133,7 @@ public class GetClockTypeServiceTest
     public async Task OnlyClockIn_WithinMaximumHours_ReturnsClockOut()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
-        SetLocalTime(TorontoLatitude, TorontoLongitude, localNow);
+        SetNow(localNow, EasternDaylight);
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         SetLatestTimesheet(TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddHours(-8)).Value);
 
@@ -145,7 +146,7 @@ public class GetClockTypeServiceTest
     public async Task OnlyClockIn_BeyondMaximumHours_ReturnsNone()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
-        SetLocalTime(TorontoLatitude, TorontoLongitude, localNow);
+        SetNow(localNow, EasternDaylight);
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         var beyondLimit = TimeLimits.DefaultTimeLimits.MaximumHoursDay + 1;
         SetLatestTimesheet(TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddHours(-beyondLimit)).Value);
@@ -164,8 +165,8 @@ public class GetClockTypeServiceTest
         _timeSheetRepository.Verify(r => r.GetLatestTimesheet(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime>()), Times.Never);
     }
 
-    private void SetLocalTime(double latitude, double longitude, DateTime localNow) =>
-        _timeService.Setup(t => t.GetCurrentLocalDateTime(latitude, longitude)).Returns(new DateTimeOffset(localNow, TimeSpan.Zero));
+    private void SetNow(DateTime localNow, TimeSpan offset) =>
+        _timeProvider.SetUtcNow(new DateTimeOffset(localNow, offset));
 
     private void SetJobLocation(double? latitude, double? longitude) =>
         _workerRequestRepository.Setup(r => r.GetWorkerRequestInfo(_workerId, _requestId, It.IsAny<DateTime>()))

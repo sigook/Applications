@@ -19,6 +19,7 @@ using Moq;
 using System.Globalization;
 using System.Net.Mime;
 using Xunit;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
 {
@@ -141,9 +142,7 @@ namespace Covenant.Integration.Tests.AccountingModule.InvoiceDocument
                     o.AddAdminRole(FakeAgency.Id);
                 });
                 services.AddTestDatabase();
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(s => s.GetCurrentDateTime()).Returns(FakeNow);
-                services.AddSingleton(timeService.Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(FakeNow, TimeSpan.Zero)));
                 var payStubContainer = new Mock<IInvoicesContainer>();
                 services.AddSingleton(payStubContainer.Object);
                 services.AddSingleton(Mock.Of<IPayStubsContainer>());

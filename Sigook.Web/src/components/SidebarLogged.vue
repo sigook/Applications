@@ -122,6 +122,7 @@
             Log Out
           </b-dropdown-item>
         </b-dropdown>
+        <AttendanceClockButton v-if="isAgency" />
       </div>
     </aside>
   </div>
@@ -141,6 +142,7 @@ import { getMyProfile } from '@/api/workerApi';
 import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/api/agencyApi';
 import { getCompanyProfile } from '@/api/companyApi';
 import { useNotifications } from '@/composables/useNotifications';
+import AttendanceClockButton from '@/components/agency/AttendanceClockButton.vue';
 
 interface MenuLink {
   to: string;

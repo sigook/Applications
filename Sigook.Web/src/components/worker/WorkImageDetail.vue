@@ -5,33 +5,20 @@
       <img v-if="props.data.profileImage" :src="props.data.profileImage.pathFile">
       <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="showEditModal = true">Edit</button>
     </div>
-    <!-- custom modal -->
-    <transition name="modal">
-      <div v-if="showEditModal" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light small-container worker-profile-modal">
-              <span class="fz1 has-text-weight-bold ">Profile Photo</span>
-              <button @click="showEditModal = false" type="button" class="cross-icon">
-                {{ 'Close' }}
-              </button>
-              <upload-image v-if="profileImage"
-                @imageSelected="(profileImg: File) => profileImageFile = profileImg"
-                :edited-image="props.data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
-                @finishUpload="() => pubSub.unsubscribe()" class="mx-auto my-2">
-              </upload-image>
-              <div class="has-text-centered">
-                <b-button type="is-danger" rounded class="mt-3 mr-2" @click="showEditModal = false">Cancel</b-button>
-                <b-button type="is-primary" rounded class="mt-3" @click="createWorkerImageHandler()">Save</b-button>
-              </div>
-            </div>
-          </div>
+    <b-modal custom-content-class="card" v-model="showEditModal" width="400px" :destroy-on-hide="true">
+      <div class="p-4">
+        <h2 class="has-text-centered fz1 mb-4">Profile Photo</h2>
+        <upload-image v-if="profileImage"
+          @imageSelected="(profileImg: File) => profileImageFile = profileImg"
+          :edited-image="props.data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
+          @finishUpload="() => pubSub.unsubscribe()" class="mx-auto my-2">
+        </upload-image>
+        <div class="mt-4">
+          <b-button @click="showEditModal = false">Cancel</b-button>
+          <b-button type="is-primary" class="ml-2" @click="createWorkerImageHandler()">Save</b-button>
         </div>
       </div>
-    </transition>
-    <!-- end custom modal -->
-
-
+    </b-modal>
   </div>
 </template>
 <script setup lang="ts">
@@ -110,20 +97,6 @@ if (props.data != null) {
 
   @media (max-width: 767px) {
     position: relative;
-  }
-}
-
-.worker-profile-modal {
-  .fz1 {
-    margin-bottom: 20px;
-    display: inline-block;
-    position: relative;
-    top: -5px;
-  }
-
-  :deep(.update-image label) {
-    z-index: 3;
-    color: white;
   }
 }
 </style>

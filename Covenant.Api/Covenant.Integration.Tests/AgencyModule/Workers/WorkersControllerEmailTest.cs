@@ -70,7 +70,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Workers
                 services.AddTestDatabase();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IUserAccountService, UserAccountService>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

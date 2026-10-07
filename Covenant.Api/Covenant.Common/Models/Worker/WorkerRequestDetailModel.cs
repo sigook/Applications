@@ -11,6 +11,9 @@ namespace Covenant.Common.Models.Worker
         public string AgencyLogo { get; set; }
         public string Description { get; set; }
         public string Requirements { get; set; }
+        public string Responsibilities { get; set; }
+        public string DisplayShift { get; set; }
+        public IEnumerable<string> Skills { get; set; }
         public int WorkersQuantity { get; set; }
         public string JobPosition { get; set; }
         public bool HolidayIsPaid { get; set; }

@@ -24,9 +24,9 @@ using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Xunit;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
 {
@@ -177,9 +177,7 @@ namespace Covenant.Integration.Tests.CompanyModule.CompanyRequestWorkerTimeSheet
                 services.AddSingleton<ITimesheetRepository, TimesheetRepository>();
                 services.AddSingleton<ITimesheetService, TimesheetService>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(t => t.GetCurrentDateTime()).Returns(Data.FakeNow);
-                services.AddSingleton(timeService.Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(Data.FakeNow, TimeSpan.Zero)));
                 services.AddSingleton<ICatalogRepository, CatalogRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);

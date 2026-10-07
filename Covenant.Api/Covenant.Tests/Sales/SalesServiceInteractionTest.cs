@@ -9,6 +9,7 @@ using Covenant.Common.Repositories.Company;
 using Covenant.Common.Repositories.Request;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -39,7 +40,7 @@ namespace Covenant.Tests.Sales
                 new UpdateCompanyInteractionModelValidator(),
                 new CreateDealModelValidator(),
                 new UpdateDealModelValidator(),
-                Mock.Of<ITimeService>(),
+                new FakeTimeProvider(),
                 new GetDealsByStatusFilterValidator());
         }
 

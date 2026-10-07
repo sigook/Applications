@@ -18,6 +18,7 @@ using Covenant.Core.BL.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MediatR;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -38,7 +39,7 @@ namespace Covenant.Tests.Request
                 Mock.Of<ICompanyRepository>(),
                 Mock.Of<IAgencyRepository>(),
                 Mock.Of<ILocationRepository>(),
-                Mock.Of<ITimeService>(),
+                new FakeTimeProvider(),
                 requestRepository.Object,
                 Mock.Of<INotificationDataRepository>(),
                 Mock.Of<IPushNotifications>(),

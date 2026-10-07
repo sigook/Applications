@@ -19,6 +19,7 @@ using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -29,7 +30,6 @@ namespace Covenant.Tests.Request
     {
         private readonly WorkerProfile _worker;
         private readonly Mock<IWorkerRepository> _workerRepository;
-        private readonly Mock<ITimeService> _timeService;
         private readonly DateTime _fakeNow = new DateTime(2019, 01, 01);
         private readonly Covenant.Common.Entities.Request.Request request;
         private readonly Mock<IWorkerRequestRepository> _workerRequestRepository;
@@ -47,7 +47,6 @@ namespace Covenant.Tests.Request
             request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), _fakeNow, default, workersQuantity: 1).Value;
             _workerRepository = new Mock<IWorkerRepository>();
             _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(_worker);
-            _timeService = new Mock<ITimeService>();
             _workerRequestRepository = new Mock<IWorkerRequestRepository>();
             requestRepository = new Mock<IRequestRepository>();
             requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
@@ -62,7 +61,7 @@ namespace Covenant.Tests.Request
                 _workerRequestRepository.Object,
                 Mock.Of<INotificationDataRepository>(),
                 Mock.Of<ICatalogRepository>(),
-                Mock.Of<ITimeService>(),
+                new FakeTimeProvider(),
                 Mock.Of<IUserAccountService>(),
                 Mock.Of<ICurrentUserService>(),
                 Mock.Of<IDocumentService>(),

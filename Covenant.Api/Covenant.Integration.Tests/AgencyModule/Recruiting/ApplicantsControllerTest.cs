@@ -175,7 +175,6 @@ public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactor
                 });
             services.AddTestDatabase();
             services.AddSingleton<IRequestRepository, RequestRepository>();
-            services.AddSingleton<ITimeService, TimeService>();
             services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
             services.AddSingleton<AgencyIdFilter>();
         }

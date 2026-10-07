@@ -287,7 +287,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
                         o.AddSub(Data.CurrentUserId);
                     });
                 services.AddTestDatabase();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
                 services.AddSingleton<IUserAccountService, UserAccountService>();
             }

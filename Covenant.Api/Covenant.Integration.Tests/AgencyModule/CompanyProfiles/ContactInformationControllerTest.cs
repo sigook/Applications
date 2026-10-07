@@ -65,7 +65,6 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                     });
                 services.AddTestDatabase();
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

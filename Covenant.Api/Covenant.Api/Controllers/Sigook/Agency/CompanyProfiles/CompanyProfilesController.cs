@@ -34,11 +34,11 @@ public class CompanyProfilesController(
     /// <summary>Gets the detail of a company profile by its identifier.</summary>
     /// <param name="id">Identifier of the company profile.</param>
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(CompanyProfileDetailModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AgencyCompanyProfileDetailModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var model = await companyRepository.GetCompanyProfileDetail(cp => cp.Id == id);
+        var model = await companyRepository.GetAgencyCompanyProfileDetail(id);
         if (model is null) return NotFound();
         return Ok(model);
     }

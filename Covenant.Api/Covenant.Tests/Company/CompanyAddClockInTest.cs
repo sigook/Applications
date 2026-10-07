@@ -10,6 +10,7 @@ using MediatR;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -40,15 +41,14 @@ namespace Covenant.Tests.Company
             var request = new Covenant.Common.Entities.Request.Request(companyProfile, jobPositionRate);
             request.UpdateJobLocation(location, false);
             _workerRequest.Request = request;
-            var timService = new Mock<ITimeService>();
-            timService.Setup(t => t.GetCurrentDateTime()).Returns(_fakeNow);
+            var timeProvider = new FakeTimeProvider(new DateTimeOffset(_fakeNow, TimeSpan.Zero));
             var workerRequestRepository = new Mock<IWorkerRequestRepository>();
             workerRequestRepository.Setup(w => w.GetWorkerRequestByWorkerProfileId(_workerRequest.WorkerProfileId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
 
             _timeSheetRepository = new Mock<ITimesheetRepository>();
             var catalogRepository = new Mock<ICatalogRepository>();
             _sut = new TimesheetService(
-                timService.Object,
+                timeProvider,
                 workerRequestRepository.Object,
                 _timeSheetRepository.Object,
                 Mock.Of<IRequestRepository>(),

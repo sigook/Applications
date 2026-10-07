@@ -2,6 +2,7 @@
   <div class="sigook-grid" @keyup.enter="onFilterEnter">
     <div v-if="showToolbar" class="sigook-grid-toolbar">
       <b-button v-if="canRefresh" icon-left="refresh" title="Refresh" aria-label="Refresh" @click="reload()" />
+      <slot name="filters"></slot>
       <div class="sigook-grid-actions">
         <slot name="actions"></slot>
         <b-dropdown v-if="hasDropdown" aria-role="list" position="is-bottom-left" append-to-body>
@@ -124,7 +125,7 @@ const pageSize = ref(params.value?.pageSize ?? DEFAULT_PAGE_SIZE);
 const isServer = computed(() => !!props.fetch);
 const canRefresh = computed(() => isServer.value || !!props.refresh);
 const hasDropdown = computed(() => !!props.export || !!slots['dropdown-actions']);
-const showToolbar = computed(() => canRefresh.value || hasDropdown.value || !!slots.actions);
+const showToolbar = computed(() => canRefresh.value || hasDropdown.value || !!slots.actions || !!slots.filters);
 const showMobileCards = computed(() => isTouch.value && !!slots['mobile-card']);
 const tableData = computed<T[]>(() => (isServer.value ? rows.value : props.data ?? []));
 const totalRows = computed(() => (isServer.value ? serverTotal.value : tableData.value.length));

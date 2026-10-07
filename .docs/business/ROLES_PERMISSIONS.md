@@ -128,6 +128,10 @@ service. The request shift is the reference case: `GET api/agency/requests/{requ
 (policy `Agency`) and `GET api/company/requests/{requestId}/Shift` (policy `Company`) both delegate to
 `IRequestService.GetRequestShift`.
 
+Staff attendance (`api/agency/attendance`): every agency staff role clocks itself in/out
+(policy `Agency`); the per-user "today" list, the report, its Excel export and punch corrections
+are policy `Admin`.
+
 On the frontend, route guards live in `Sigook.Web/src/router/routesAgency.ts` and the
 `useAdmin` / `useRecruitingAccess` / `useSuperAdmin` composables — UI mirrors, not defenses.
 

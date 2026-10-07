@@ -31,14 +31,12 @@
           v-model="startAtSelected" :icon-right="startAtSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
           append-to-body @icon-right-click="onStartAtCleared" @update:modelValue="onStartAtSelected"></b-datepicker>
       </b-field>
-      <b-field>
-        <b-checkbox size="is-small" v-model="serverParams.onlyMine" @update:modelValue="loadApplicants">
-          Only my requests
-        </b-checkbox>
-      </b-field>
     </b-field>
 
     <div class="applicants-toolbar">
+      <b-switch v-model="serverParams.onlyMine" class="applicants-toolbar-filter" @update:modelValue="loadApplicants">
+        Assigned to me
+      </b-switch>
       <template v-if="groups.length">
         <b-button size="is-small" icon-left="chevron-double-down" @click="expandAll">Expand all requests</b-button>
         <b-button size="is-small" icon-left="chevron-double-up" @click="collapseAll">Collapse all</b-button>

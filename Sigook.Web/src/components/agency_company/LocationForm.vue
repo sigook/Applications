@@ -1,7 +1,7 @@
 <template>
-  <div class="p-3">
+  <div class="p-4">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="has-text-centered main-title">{{ "Location" }}</h2>
+    <h2 class="has-text-centered fz1 mb-4">{{ props.currentLocation ? 'Edit location' : 'New location' }}</h2>
 
     <div class="columns is-multiline">
       <div class="column is-12">

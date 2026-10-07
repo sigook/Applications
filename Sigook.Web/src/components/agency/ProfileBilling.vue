@@ -102,7 +102,7 @@ function getLocations() {
 }
 
 function deleteLocation(location: any) {
-  showAlertConfirm("Are you sure you want to delete this location?", '', "Yes")
+  showAlertConfirm('Are you sure', 'You want to delete this location', 'Yes')
     .then(r => {
       if (!r) return;
       isLoading.value = true;

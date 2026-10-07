@@ -64,7 +64,6 @@ namespace Covenant.Integration.Tests.AgencyModule.Personnel
                         o.AddAgencyPersonnelRole();
                     });
                 services.AddTestDatabase();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

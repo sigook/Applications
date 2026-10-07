@@ -25,7 +25,7 @@ public class UsaInvoiceService(
     ICompanyRepository companyRepository,
     ILocationRepository locationRepository,
     ICatalogRepository catalogRepository,
-    ITimeService timeService,
+    TimeProvider timeProvider,
     Rates rates,
     ISubcontractorRepository subcontractorRepository,
     TimeLimits timeLimits,
@@ -39,7 +39,7 @@ public class UsaInvoiceService(
     IPayStubsContainer payStubsContainer,
     ITeamsService teamsService,
     IOptions<TeamsWebhookConfiguration> teamsOptions,
-    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeService, rates, subcontractorRepository, timeLimits, calculatorService, currentUserService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
+    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeProvider, rates, subcontractorRepository, timeLimits, calculatorService, currentUserService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
 {
     protected override Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
         => invoiceRepository.GetInvoicesUSAForAgency(agencyIds, filter);
@@ -128,7 +128,7 @@ public class UsaInvoiceService(
         var nextNumber = await invoiceRepository.GetNextInvoiceUSANumber();
 
         // 6. Compute totals
-        var invoiceDate = model.InvoiceDate ?? timeService.GetCurrentDateTime();
+        var invoiceDate = model.InvoiceDate ?? timeProvider.GetLocalNow().DateTime;
         var subTotal = allItems.Sum(s => s.Total) - discounts.Sum(s => s.Total);
 
         // 7. Compute tax

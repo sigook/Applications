@@ -1,87 +1,82 @@
 <template>
-  <div class="company-wrapper">
+  <div class="company-detail-page">
     <b-loading v-model="isLoading"></b-loading>
-
     <Breadcrumbs :crumbs="crumbs" :back-to="companyBase" />
-    <section class="company-top" v-if="company">
-      <div class="hover-actions">
-        <img v-if="company.logo" :src="company.logo.pathFile" alt="logo" />
-        <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="showUpdateLogo = true">
-          Edit
-        </button>
-        <h2 class="is-capitalized fz1 has-text-weight-bold">
-          <span class="has-text-weight-normal fz-1" v-if="company.numberId">{{ company.numberId }} |
-          </span>
-          {{ lowercase(company.fullName) }}
-        </h2>
-      </div>
 
-      <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-        <template #trigger>
-          <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-        </template>
-        <b-dropdown-item v-if="isClient" aria-role="listitem"
+    <detail-header v-if="company" :title="lowercase(company.fullName)" :number-id="company.numberId" :meta="industry"
+      :logo="company.logo?.pathFile" logo-editable :status-label="statusLabel" :status-variant="statusVariant"
+      :chips="chips" :kpis="kpis" @editLogo="showUpdateLogo = true">
+      <template #actions>
+        <b-button @click="router.push({ path: `${companyBase}/update/${company.id}` })">Edit company</b-button>
+        <b-button v-if="isClient" type="is-primary"
           @click="router.push({ path: `${requestBase}/create/${company.id}` })">
-          Create Request
-        </b-dropdown-item>
-        <b-dropdown-item aria-role="listitem"
-          @click="router.push({ path: `${companyBase}/update/${company.id}` })">
-          Edit Company
-        </b-dropdown-item>
-      </b-dropdown>
-    </section>
+          Create request
+        </b-button>
+      </template>
 
-    <b-tabs v-model="currentTab" @update:modelValue="changeTab" v-if="company">
-      <b-tab-item label="Detail" value="Detail">
-        <detail v-if="visitedTabs.includes('Detail')" v-model:company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Settings" value="Settings" v-if="isAdmin">
-        <settings v-if="visitedTabs.includes('Settings')" v-model:company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Users" value="Users">
-        <users v-if="visitedTabs.includes('Users')" :company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Contacts" value="ContactPerson">
-        <contact-person v-if="visitedTabs.includes('ContactPerson')" :company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Roles" value="JobPosition" v-if="!requiresPayrollPermission">
-        <job-position v-if="visitedTabs.includes('JobPosition')" :company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Workers" value="Workers">
-        <workers v-if="visitedTabs.includes('Workers')" :company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Requests" value="Requests" v-if="!requiresPayrollPermission">
-        <requests v-if="visitedTabs.includes('Requests')" :company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Interactions" value="Interactions" v-if="showSalesTabs">
-        <company-interactions v-if="visitedTabs.includes('Interactions')" :company="company" class="p-2" />
-      </b-tab-item>
-      <b-tab-item label="Deals" value="Deals" v-if="showSalesTabs">
-        <company-deals v-if="visitedTabs.includes('Deals')" :company="company" class="p-2" />
-      </b-tab-item>
-    </b-tabs>
+      <b-tabs v-model="currentTab" @update:modelValue="changeTab">
+        <b-tab-item label="Detail" value="Detail">
+          <company-detail-tab v-if="visitedTabs.includes('Detail')" v-model:company="company" @showTab="changeTab" />
+        </b-tab-item>
+        <b-tab-item v-if="!requiresPayrollPermission" label="Roles" value="JobPosition">
+          <template #header>Roles<span class="detail-tab-count">{{ summary?.rolesCount ?? 0 }}</span></template>
+          <job-position v-if="visitedTabs.includes('JobPosition')" :company="company" />
+        </b-tab-item>
+        <b-tab-item v-if="!requiresPayrollPermission" label="Requests" value="Requests">
+          <template #header>Requests<span class="detail-tab-count">{{ summary?.openRequestsCount ?? 0 }}</span></template>
+          <requests v-if="visitedTabs.includes('Requests')" :company="company" />
+        </b-tab-item>
+        <b-tab-item label="Workers" value="Workers">
+          <template #header>Workers<span class="detail-tab-count">{{ summary?.workersWorkingCount ?? 0 }}</span></template>
+          <workers v-if="visitedTabs.includes('Workers')" :company="company" />
+        </b-tab-item>
+        <b-tab-item label="Locations" value="Locations">
+          <template #header>Locations<span class="detail-tab-count">{{ summary?.locationsCount ?? 0 }}</span></template>
+          <company-locations-grid v-if="visitedTabs.includes('Locations')" :profile-id="company.id"
+            @changed="onLocationsChanged" />
+        </b-tab-item>
+        <b-tab-item label="Contacts" value="ContactPerson">
+          <template #header>Contacts<span class="detail-tab-count">{{ summary?.contactsCount ?? 0 }}</span></template>
+          <contact-person v-if="visitedTabs.includes('ContactPerson')" :company="company"
+            @changed="onContactsChanged" />
+        </b-tab-item>
+        <b-tab-item label="Users" value="Users">
+          <template #header>Users<span class="detail-tab-count">{{ summary?.usersCount ?? 0 }}</span></template>
+          <users v-if="visitedTabs.includes('Users')" :company="company" />
+        </b-tab-item>
+        <b-tab-item v-if="showSalesTabs" label="Interactions" value="Interactions">
+          <company-interactions v-if="visitedTabs.includes('Interactions')" :company="company" />
+        </b-tab-item>
+        <b-tab-item v-if="showSalesTabs" label="Deals" value="Deals">
+          <company-deals v-if="visitedTabs.includes('Deals')" :company="company" />
+        </b-tab-item>
+      </b-tabs>
+    </detail-header>
 
-    <!-- update logo -->
-    <company-update-logo v-if="showUpdateLogo" :logo="company.logo" v-on:save="updateLogo"
-      v-on:cancel="showUpdateLogo = false" />
-    <!-- update logo -->
+    <b-modal v-if="company" custom-content-class="card" v-model="showUpdateLogo" width="400px" :destroy-on-hide="true">
+      <company-update-logo :logo="company.logo" @save="updateLogo" @cancel="showUpdateLogo = false" />
+    </b-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from '@/utils/toast';
 import { useAdmin } from '@/composables/useAdmin';
 import { useSalesAccess } from '@/composables/useSalesAccess';
 import { useModuleBase } from '@/composables/useModuleBase';
+import { useCompanyDetail } from '@/composables/useCompanyDetail';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import type { PageBreadcrumb } from '@/types/common';
+import type { AgencyCompanyProfileDetail } from '@/types/company';
+import type { DetailChip, DetailKpi } from '@/types/detailPage';
 import { getAgencyCompany, updateAgencyCompanyProfileLogo } from '@/api/agencyCompanyApi';
 import { lowercase } from '@/utils/filters';
 import { CompanyStatus } from '@/constants/enums';
-import Detail from '@/components/agency_company/CompanyDetailTab.vue';
-import Settings from '@/components/agency_company/CompanySettings.vue';
+import DetailHeader from '@/components/detail_page/DetailHeader.vue';
+import CompanyDetailTab from '@/components/company_detail/CompanyDetailTab.vue';
+import CompanyLocationsGrid from '@/components/company_detail/CompanyLocationsGrid.vue';
 import Users from '@/components/agency_company/UserList.vue';
 import ContactPerson from '@/components/agency_company/ContactPersonList.vue';
 import JobPosition from '@/components/agency_company/JobPositionList.vue';
@@ -99,72 +94,102 @@ const { isAdmin } = useAdmin();
 const { hasSalesAccess } = useSalesAccess();
 const showSalesTabs = computed(() => isSalesView.value && hasSalesAccess.value);
 
-const currentTab = ref<string>('Detail');
-const visitedTabs = ref<string[]>(['Detail']);
-const company = ref<any>(null);
+const company = ref<AgencyCompanyProfileDetail | null>(null);
 const isLoading = ref(true);
 const showUpdateLogo = ref(false);
+const { statusLabel, statusVariant, industry, vaccinationChip, createdAt } = useCompanyDetail(company);
 
-const requiresPayrollPermission = computed(() => {
-  if (company.value && company.value.requiresPermissionToSeeRequests) {
-    return !isAdmin.value;
-  }
-  return false;
+const initialTab = typeof route.query.tab === 'string' && route.query.tab !== 'Settings' ? route.query.tab : 'Detail';
+const currentTab = ref<string>(initialTab);
+const visitedTabs = ref<string[]>(['Detail', initialTab]);
+
+const summary = computed(() => company.value?.summary);
+
+const requiresPayrollPermission = computed(() => !!company.value?.requiresPermissionToSeeRequests && !isAdmin.value);
+
+const isClient = computed(() => (company.value?.companyStatus as unknown as CompanyStatus) === CompanyStatus.Client);
+
+const chips = computed<DetailChip[]>(() => [
+  ...vaccinationChip.value,
+  ...(company.value?.requiresPermissionToSeeRequests ? [{ label: 'Needs permission to see requests' }] : []),
+]);
+
+const kpis = computed<DetailKpi[]>(() => {
+  const current = company.value;
+  const counts = current?.summary;
+  if (!current || !counts) return [];
+  return [
+    ...(requiresPayrollPermission.value ? [] : [{
+      key: 'requests',
+      label: 'Open requests',
+      value: String(counts.openRequestsCount),
+      hint: counts.asapRequestsCount ? `· ${counts.asapRequestsCount} ASAP` : undefined,
+    }]),
+    { key: 'workers', label: 'Workers', value: String(counts.workersWorkingCount), hint: 'assigned' },
+    ...(requiresPayrollPermission.value ? [] : [{ key: 'roles', label: 'Roles', value: String(counts.rolesCount) }]),
+    {
+      key: 'overtime',
+      label: 'Overtime after',
+      value: `${current.overtimeStartsAfter} h`,
+      hint: current.paidHolidays ? '· paid holidays' : undefined,
+    },
+    ...(counts.salesRepresentativeName
+      ? [{ key: 'sales', label: 'Sales owner', value: counts.salesRepresentativeName }]
+      : []),
+    { key: 'created', label: 'Created', value: createdAt.value },
+  ];
 });
 
-const isClient = computed(() => company.value && company.value.companyStatus === CompanyStatus.Client);
-
-loadCompany();
-if (route.query && route.query.tab) {
-  currentTab.value = route.query.tab as string;
-  if (!visitedTabs.value.includes(route.query.tab as string)) {
-    visitedTabs.value.push(route.query.tab as string);
-  }
-}
-
 function changeTab(tab: string) {
+  currentTab.value = tab;
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
-    path: `${companyBase.value}/${route.params.id}`,
-    query: { tab: tab },
-  });
+  router.push({ path: `${companyBase.value}/${route.params.id}`, query: { tab } });
+}
+
+function onContactsChanged(count: number) {
+  if (company.value?.summary) company.value.summary.contactsCount = count;
+}
+
+function onLocationsChanged(count: number) {
+  if (company.value?.summary) company.value.summary.locationsCount = count;
 }
 
 function loadCompany() {
   getAgencyCompany(route.params.id as string)
-    .then((response: any) => {
+    .then((response) => {
       company.value = response;
-      isLoading.value = false;
     })
-    .catch((error) => {
-      showAlertError(error);
+    .catch(showAlertError)
+    .finally(() => {
       isLoading.value = false;
     });
 }
 
-function updateLogo(newLogo: any) {
+function updateLogo(newLogo: { fileName: string }) {
+  const current = company.value;
+  if (!current) return;
   showUpdateLogo.value = false;
   isLoading.value = true;
-  updateAgencyCompanyProfileLogo(company.value.id, newLogo)
+  updateAgencyCompanyProfileLogo(current.id, newLogo)
     .then(() => {
-      isLoading.value = false;
-      company.value.logo.pathFile = company.value.logo.pathFile.replace(
-        company.value.logo.fileName,
-        newLogo.fileName,
-      );
-      company.value.logo.fileName = newLogo.fileName;
+      if (current.logo) {
+        current.logo.pathFile = current.logo.pathFile?.replace(current.logo.fileName ?? '', newLogo.fileName);
+        current.logo.fileName = newLogo.fileName;
+      }
     })
-    .catch((error) => {
+    .catch(showAlertError)
+    .finally(() => {
       isLoading.value = false;
-      showAlertError(error);
     });
 }
+
+loadCompany();
 </script>
 
 <style>
-.logged-content:has(.company-wrapper) {
+.logged-content:has(.company-detail-page) {
   overflow-y: auto !important;
 }
 </style>

@@ -21,6 +21,7 @@ using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 using System.Net.Http.Json;
@@ -119,10 +120,9 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
                 services.AddSingleton<ITimesheetService, TimesheetService>();
                 services.AddSingleton(TimeLimits.DefaultTimeLimits);
                 services.AddSingleton(Rates.DefaultRates);
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(s => s.GetCurrentDateTime()).Returns(() => Data.Now);
-                timeService.Setup(s => s.GetCurrentDateTimeOffset()).Returns(() => new DateTimeOffset(Data.Now));
-                services.AddSingleton(timeService.Object);
+                var timeProvider = new FakeTimeProvider(new DateTimeOffset(Data.Now));
+                timeProvider.SetLocalTimeZone(TimeZoneInfo.Local);
+                services.AddSingleton<TimeProvider>(timeProvider);
                 services.AddSingleton<IUserAccountService, UserAccountService>();
             }
 

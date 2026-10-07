@@ -30,6 +30,8 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces;
+using Covenant.Documents.Services;
+using MediatR;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -38,6 +40,7 @@ namespace Covenant.Core.BL.Services;
 
 public class AgencyService : IAgencyService
 {
+    private const string UnknownTimeZone = "The time zone of your device could not be recognized.";
     private readonly IAgencyRepository agencyRepository;
     private readonly ICompanyRepository companyRepository;
     private readonly IUserRepository userRepository;
@@ -47,7 +50,7 @@ public class AgencyService : IAgencyService
     private readonly IWorkerRequestRepository workerRequestRepository;
     private readonly INotificationDataRepository notificationDataRepository;
     private readonly ICatalogRepository catalogRepository;
-    private readonly ITimeService timeService;
+    private readonly TimeProvider timeProvider;
     private readonly IUserAccountService userAccountService;
     private readonly ICurrentUserService currentUserService;
     private readonly IDocumentService documentService;
@@ -68,7 +71,7 @@ public class AgencyService : IAgencyService
         IWorkerRequestRepository workerRequestRepository,
         INotificationDataRepository notificationDataRepository,
         ICatalogRepository catalogRepository,
-        ITimeService timeService,
+        TimeProvider timeProvider,
         IUserAccountService userAccountService,
         ICurrentUserService currentUserService,
         IDocumentService documentService,
@@ -79,7 +82,7 @@ public class AgencyService : IAgencyService
         IServiceProvider serviceProvider,
         IValidator<AgencyPersonnelModel> agencyPersonnelValidator)
     {
-        this.timeService = timeService;
+        this.timeProvider = timeProvider;
         this.agencyRepository = agencyRepository;
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
@@ -221,7 +224,7 @@ public class AgencyService : IAgencyService
 
     public async Task<Result<Guid>> CreateCompanyContactPerson(Guid profileId, CompanyProfileContactPersonModel model)
     {
-        var rEmail = CvnEmail.Create(model.Email);
+        var rEmail = CvnEmail.CreateOptional(model.Email);
         if (!rEmail) return Result.Fail<Guid>(rEmail.Errors);
         var entity = new CompanyProfileContactPerson(profileId)
         {
@@ -242,7 +245,7 @@ public class AgencyService : IAgencyService
 
     public async Task<Result> UpdateCompanyContactPerson(Guid id, CompanyProfileContactPersonModel model)
     {
-        var rEmail = CvnEmail.Create(model.Email);
+        var rEmail = CvnEmail.CreateOptional(model.Email);
         if (!rEmail) return Result.Fail<CompanyProfileContactPerson>(rEmail.Errors);
         var entity = await companyRepository.GetContactPerson(id);
         if (entity == null)
@@ -294,7 +297,7 @@ public class AgencyService : IAgencyService
 
     public async Task NotifySinsExpired()
     {
-        var now = timeService.GetCurrentDateTime();
+        var now = timeProvider.GetLocalNow().DateTime;
         var workers = await workerRepository.GetWorkersSinExpired(now.AddDays(7));
         var workersByAgency = workers.GroupBy(w => w.AgencyEmail);
         foreach (var worker in workersByAgency)
@@ -317,7 +320,7 @@ public class AgencyService : IAgencyService
 
     public async Task NotifyLicensesExpired()
     {
-        var now = timeService.GetCurrentDateTime();
+        var now = timeProvider.GetLocalNow().DateTime;
         var workers = await workerRepository.GetWorkerLicensesExpired(now.AddDays(7));
         var workersByAgency = workers.GroupBy(w => w.AgencyEmail);
         foreach (var worker in workersByAgency)
@@ -356,7 +359,7 @@ public class AgencyService : IAgencyService
         var workerProfile = await GetWorkerProfile(workerProfileId, requestId);
         if (!workerProfile) return Result.Fail<Guid>(workerProfile.Errors);
         var createdBy = currentUserService.GetNickname();
-        var result = request.AddWorker(workerProfileId, model.StartWorking ?? timeService.GetCurrentDateTime().Date, createdBy);
+        var result = request.AddWorker(workerProfileId, model.StartWorking ?? timeProvider.GetLocalNow().DateTime.Date, createdBy);
         if (!result) return result;
         await requestRepository.Update(request);
         var applicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == workerProfileId);
@@ -397,7 +400,7 @@ public class AgencyService : IAgencyService
         if (!isShiftAvailableToBook) return Result.Fail<WorkerProfile>(isShiftAvailableToBook.Errors);
         var workerProfile = await workerRepository.GetProfile(wp => wp.Id == workerProfileId);
         if (workerProfile is null) return Result.Fail<WorkerProfile>(ApiResources.WorkerNotFound);
-        var canBeBook = workerProfile.CanBeBook(timeService.GetCurrentDateTime());
+        var canBeBook = workerProfile.CanBeBook(timeProvider.GetLocalNow().DateTime);
         return !canBeBook ? Result.Fail<WorkerProfile>(canBeBook.Errors) : Result.Ok(workerProfile);
     }
 
@@ -752,5 +755,131 @@ public class AgencyService : IAgencyService
             return Result.Fail(user.Errors);
         }
         return agencyValidation.ToResultFailure();
+    }
+
+    public async Task<Result<UserAttendanceTodayModel>> GetUserAttendanceToday(string timeZone)
+    {
+        if (timeProvider.GetLocalNow(timeZone) is not { } localNow) return Result.Fail<UserAttendanceTodayModel>(UnknownTimeZone);
+        Guid userId = currentUserService.GetUserId();
+        return Result.Ok(ToTodayModel(userId, await agencyRepository.GetUserAttendance(userId, localNow.Date)));
+    }
+
+    public async Task<Result<UserAttendanceTodayModel>> ToggleUserAttendance(string timeZone)
+    {
+        if (timeProvider.GetLocalNow(timeZone) is not { } localNow) return Result.Fail<UserAttendanceTodayModel>(UnknownTimeZone);
+        DateTime now = localNow.DateTime;
+        Guid userId = currentUserService.GetUserId();
+        UserAttendance attendance = await agencyRepository.GetUserAttendance(userId, now.Date);
+        if (attendance is null)
+        {
+            attendance = UserAttendance.Start(userId, now);
+            await agencyRepository.Create(attendance);
+        }
+        else if (attendance.IsOpen)
+        {
+            attendance.Stop(now);
+        }
+        else
+        {
+            return Result.Fail<UserAttendanceTodayModel>("You have already clocked out today.");
+        }
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok(ToTodayModel(userId, attendance));
+    }
+
+    public async Task<Result<List<UserAttendanceTodayModel>>> GetUserAttendancesToday(string timeZone)
+    {
+        if (timeProvider.GetLocalNow(timeZone) is not { } localNow) return Result.Fail<List<UserAttendanceTodayModel>>(UnknownTimeZone);
+        var attendances = await agencyRepository.GetUserAttendancesForAgency(currentUserService.GetAgencyId(), localNow.Date);
+        return Result.Ok(attendances.Select(a => ToTodayModel(a.UserId, a)).ToList());
+    }
+
+    public async Task<Result<UserAttendanceReportModel>> GetUserAttendanceReport(GetUserAttendanceReportFilter filter)
+    {
+        var validation = await serviceProvider.GetRequiredService<IValidator<GetUserAttendanceReportFilter>>().ValidateAsync(filter);
+        if (!validation.IsValid) return validation.ToResultFailure<UserAttendanceReportModel>();
+
+        var items = await agencyRepository.GetUserAttendanceReport(currentUserService.GetAgencyId(), filter);
+        foreach (var item in items)
+        {
+            var hours = CalculateAttendanceHours(item.Date, item.ClockIn, item.ClockOut, item.LunchMinutes);
+            item.WorkedHours = hours.WorkedHours;
+            item.LunchHours = hours.LunchHours;
+            item.RegularHours = hours.RegularHours;
+            item.OvertimeHours = hours.OvertimeHours;
+            item.IsWeekend = IsWeekend(item.Date);
+            item.IsMissingClockOut = !item.ClockOut.HasValue;
+        }
+        return Result.Ok(new UserAttendanceReportModel
+        {
+            Items = items,
+            Totals = new UserAttendanceHoursModel
+            {
+                WorkedHours = items.Sum(i => i.WorkedHours),
+                LunchHours = items.Sum(i => i.LunchHours),
+                RegularHours = items.Sum(i => i.RegularHours),
+                OvertimeHours = items.Sum(i => i.OvertimeHours)
+            }
+        });
+    }
+
+    public async Task<Result<ResultGenerateDocument<MemoryStream>>> GetUserAttendanceReportFile(GetUserAttendanceReportFilter filter)
+    {
+        var report = await GetUserAttendanceReport(filter);
+        if (!report) return Result.Fail<ResultGenerateDocument<MemoryStream>>(report.Errors);
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        return Result.Ok(await mediator.Send(new GenerateUserAttendanceReport(report.Value)));
+    }
+
+    public async Task<Result> UpdateUserAttendance(Guid id, UpdateUserAttendanceModel model)
+    {
+        var validation = await serviceProvider.GetRequiredService<IValidator<UpdateUserAttendanceModel>>().ValidateAsync(model);
+        if (!validation.IsValid) return validation.ToResultFailure();
+
+        Guid agencyId = currentUserService.GetAgencyId();
+        UserAttendance attendance = await agencyRepository.GetUserAttendanceForAgency(id, agencyId);
+        if (attendance is null) return Result.Fail("Attendance not found.");
+        if (model.ClockIn.Date != attendance.Date) return Result.Fail("Clock in must be on the same day as the attendance.");
+
+        attendance.Edit(model.ClockIn, model.ClockOut, model.LunchMinutes, model.Reason, currentUserService.GetNickname(), timeProvider.GetLocalNow().DateTime);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    private static UserAttendanceTodayModel ToTodayModel(Guid userId, UserAttendance attendance) => new()
+    {
+        UserId = userId,
+        Status = attendance switch
+        {
+            null => AttendanceStatus.NotStarted,
+            { IsOpen: true } => AttendanceStatus.ClockedIn,
+            _ => AttendanceStatus.ClockedOut
+        },
+        ClockIn = attendance?.ClockIn,
+        ClockOut = attendance?.ClockOut,
+        WorkedHours = attendance is { IsOpen: false }
+            ? CalculateAttendanceHours(attendance.Date, attendance.ClockIn, attendance.ClockOut, attendance.LunchMinutes).WorkedHours
+            : null
+    };
+
+    private static bool IsWeekend(DateTime date) => date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+
+    private static UserAttendanceHoursModel CalculateAttendanceHours(DateTime date, DateTime clockIn, DateTime? clockOut, int lunchMinutes)
+    {
+        const decimal regularHoursPerDay = 8m;
+
+        if (!clockOut.HasValue || clockOut.Value <= clockIn) return new UserAttendanceHoursModel();
+
+        decimal elapsed = Math.Round((decimal)(clockOut.Value - clockIn).TotalMinutes / 60m, 2);
+        decimal lunch = Math.Min(Math.Round(lunchMinutes / 60m, 2), elapsed);
+        decimal worked = elapsed - lunch;
+        decimal regular = IsWeekend(date) ? 0m : Math.Min(regularHoursPerDay, worked);
+        return new UserAttendanceHoursModel
+        {
+            WorkedHours = worked,
+            LunchHours = lunch,
+            RegularHours = regular,
+            OvertimeHours = worked - regular
+        };
     }
 }

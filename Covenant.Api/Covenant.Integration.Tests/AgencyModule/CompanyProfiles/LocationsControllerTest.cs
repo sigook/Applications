@@ -141,7 +141,6 @@ public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory
                 .AddTestAuth(o => o.AddAgencyPersonnelRole());
             services.AddTestDatabase();
             services.AddSingleton<ICompanyRepository, CompanyRepository>();
-            services.AddSingleton<ITimeService, TimeService>();
             services.AddSingleton<AgencyIdFilter>();
         }
 

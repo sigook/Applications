@@ -63,7 +63,6 @@ namespace Covenant.Integration.Tests.AgencyModule.CompanyProfiles
                 userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>())).ReturnsAsync(Result.Ok(new User("email@test.com", Guid.NewGuid())));
                 services.AddSingleton(userAccountService.Object);
                 services.AddSingleton<ICompanyRepository, CompanyRepository>();
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<AgencyIdFilter>();
             }
 

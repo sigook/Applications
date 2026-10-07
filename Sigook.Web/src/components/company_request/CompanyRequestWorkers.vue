@@ -110,21 +110,10 @@
       </b-field>
     </MobileFiltersPanel>
 
-    <!-- Reject worker Message -->
-    <transition name="modal">
-      <div v-if="modalRejectWorker" class="vue-modal">
-        <div class="modal-mask">
-          <div class="modal-wrapper">
-            <div class="modal-container modal-light small-container border-radius">
-              <button @click="modalRejectWorker = false" class="cross-icon">{{ 'Close' }}</button>
-              <EditTextarea title="Reject Worker" :subtitle="'Please indicate the reason.'" :min-length="10"
-                class="sm-edit-textarea" @updateContent="(data: string) => onRejectWorker(data)" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- Reject worker Message -->
+    <b-modal custom-content-class="card" v-model="modalRejectWorker" width="500px" :destroy-on-hide="true">
+      <EditTextarea title="Reject Worker" :min-length="10" class="sm-edit-textarea"
+        @updateContent="(data: string) => onRejectWorker(data)" />
+    </b-modal>
   </div>
 </template>
 

@@ -25,7 +25,6 @@ import type {
   CreateRequestApplicantModel,
   UpdateApplicantCommentsPayload,
   AgencyRequestSkillModel,
-  AgencyRequestPersonItem,
   RequestJobBoard,
   SetRequestJobBoardItem,
   AgencyRequestsPagedResponse,
@@ -195,20 +194,12 @@ export function uncompleteApplicantComplianceItem(requestId: string, id: string,
 // Requested by / Report to (contact persons attached to a request)
 // ---------------------------------------------------------------------------
 
-export function getAgencyRequestRequestedBy(requestId: string): Promise<PaginatedList<AgencyRequestPersonItem>> {
-  return api.get<PaginatedList<AgencyRequestPersonItem>>(`${requestsUrl}/${requestId}/RequestedBy`);
-}
-
 export function postAgencyRequestRequestedBy(requestId: string, contactPersonId: string): Promise<void> {
   return api.post(`${requestsUrl}/${requestId}/RequestedBy/${contactPersonId}`);
 }
 
 export function deleteAgencyRequestRequestedBy(requestId: string, contactPersonId: string): Promise<void> {
   return api.del(`${requestsUrl}/${requestId}/RequestedBy/${contactPersonId}`);
-}
-
-export function getAgencyRequestReportTo(requestId: string): Promise<PaginatedList<AgencyRequestPersonItem>> {
-  return api.get<PaginatedList<AgencyRequestPersonItem>>(`${requestsUrl}/${requestId}/ReportTo`);
 }
 
 export function postAgencyRequestReportTo(requestId: string, contactPersonId: string): Promise<void> {
@@ -222,10 +213,6 @@ export function deleteAgencyRequestReportTo(requestId: string, contactPersonId: 
 // ---------------------------------------------------------------------------
 // Skills
 // ---------------------------------------------------------------------------
-
-export function getAgencyRequestSkill(requestId: string): Promise<{ id: string; skill: string }[]> {
-  return api.get<{ id: string; skill: string }[]>(`${requestsUrl}/${requestId}/Skills`);
-}
 
 export function postAgencyRequestSkill(requestId: string, model: AgencyRequestSkillModel): Promise<{ id: string }> {
   return api.post<{ id: string }>(`${requestsUrl}/${requestId}/Skills`, model);

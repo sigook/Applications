@@ -1,4 +1,4 @@
-import type { CovenantFileModel, LocationDetailModel } from './common';
+import type { CatalogItem, CovenantFileModel, LocationDetailModel } from './common';
 import { RequestStatus } from '@/constants/enums';
 
 export enum CompanyStatus {
@@ -112,6 +112,24 @@ export interface CompanyProfileDetail {
   overtimeStartsAfter: number;
 }
 
+// Matches CompanyProfileSummaryModel
+export interface CompanyProfileSummary {
+  openRequestsCount: number;
+  asapRequestsCount: number;
+  workersWorkingCount: number;
+  rolesCount: number;
+  contactsCount: number;
+  usersCount: number;
+  locationsCount: number;
+  documentsCount: number;
+  salesRepresentativeName: string | null;
+}
+
+// Matches AgencyCompanyProfileDetailModel
+export interface AgencyCompanyProfileDetail extends CompanyProfileDetail {
+  summary: CompanyProfileSummary;
+}
+
 // Matches CompanyProfileDocumentModel (extends CovenantFileModel)
 // Used by POST /api/AgencyCompanyProfile/{profileId}/Document and list responses
 export interface CompanyProfileDocumentModel {
@@ -155,11 +173,12 @@ export interface CompanyProfileSettingsUpdate {
 
 export interface CompanyProfileIndustryDetail {
   id: string;
-  industry: string;
+  industry: CatalogItem | null;
+  otherIndustry: string | null;
 }
 
 // Company Profile Location (matches CompanyProfileLocationDetailModel)
-export interface CompanyProfileLocationDetail {
+export interface CompanyProfileLocationDetail extends LocationDetailModel {
   id?: string;
   address: string;
   postalCode: string;
@@ -195,6 +214,34 @@ export interface CompanyRequestListItem {
   isAsap: boolean;
   isDirectHiring: boolean;
   createdAt: string;
+}
+
+export interface CompanyRequestDetail {
+  id: string;
+  numberId: number;
+  jobTitle: string;
+  workersQuantity: number;
+  workersQuantityWorking: number;
+  description?: string;
+  requirements?: string;
+  responsibilities?: string;
+  durationBreak: string;
+  breakIsPaid: boolean;
+  holidayIsPaid: boolean;
+  incentive?: number | null;
+  incentiveDescription?: string;
+  isAsap: boolean;
+  jobIsOnBranchOffice: boolean;
+  jobLocation?: LocationDetailModel | null;
+  jobPositionRate?: { id: string; value: string } | null;
+  agencyRate?: number | null;
+  status: RequestStatus;
+  durationTerm: number;
+  displayShift?: string;
+  createdAt: string;
+  startAt?: string | null;
+  finishAt?: string | null;
+  workerSalary?: number | null;
 }
 
 // Company Request Worker models
@@ -329,6 +376,15 @@ export interface CreateCompanyUserModel {
 }
 
 // Company Contact Person (matches CompanyProfileContactPersonModel)
+export interface CompanyContactSummary {
+  firstName: string;
+  middleName?: string | null;
+  lastName: string;
+  position?: string | null;
+  mobileNumber?: string | null;
+  email?: string | null;
+}
+
 export interface CompanyContactPersonModel {
   id?: string;
   companyProfileId?: string;

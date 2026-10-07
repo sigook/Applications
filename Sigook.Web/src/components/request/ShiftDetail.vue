@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-loading v-model="localIsLoading"></b-loading>
+        <b-loading v-model="localIsLoading" :is-full-page="false"></b-loading>
         <ul class="table-shift-detail" v-if="shift">
             <li v-if="shift.sunday">
                 Sun {{ hourminutes(shift.sundayStart) }} to {{ hourminutes(shift.sundayFinish) }}
@@ -48,9 +48,10 @@ watch(() => props.isLoading, (newVal) => {
     position: absolute;
     left: -5px;
     top: 12px;
-    z-index: 1;
-    width: 100%;
+    z-index: 30;
+    width: max-content;
     min-width: 200px;
+    font-weight: 400;
 
     li {
         padding: 5px;

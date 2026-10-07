@@ -22,7 +22,6 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
-using Moq;
 
 namespace Covenant.Integration.Tests.AgencyModule.Requests;
 
@@ -333,7 +332,6 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
                     o.AddName(FakeRecruiterUser.Email);
                 });
             services.AddTestDatabase();
-            services.AddSingleton<ITimeService, TimeService>();
             services.AddSingleton<IUserAccountService, UserAccountService>();
             services.AddSingleton<IRequestRepository, RequestRepository>();
             services.AddSingleton<IRunnerRepository, RunnerRepository>();
