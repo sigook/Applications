@@ -622,6 +622,7 @@ stages:
         # Secret variables are never exposed as environment variables implicitly
         APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
         MATCH_PASSWORD: $(MATCH_PASSWORD)
+        APP_INSIGHTS_CONNECTION_STRING: $(APP_INSIGHTS_CONNECTION_STRING)
         # Lets match push/pull the signing repo in Azure Repos without a PAT
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
         FASTLANE_SKIP_UPDATE_CHECK: "true"

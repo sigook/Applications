@@ -31,7 +31,7 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
   }) async {
     try {
       final response = await apiClient.dio.get(
-        '/WorkerRequest',
+        '/worker/requests',
         queryParameters: {
           'sortBy': sortBy,
           'isDescending': isDescending,
@@ -86,7 +86,7 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
   @override
   Future<JobDetailsModel> getJobDetails(String jobId) async {
     try {
-      final response = await apiClient.dio.get('/WorkerRequest/$jobId');
+      final response = await apiClient.dio.get('/worker/requests/$jobId');
 
       if (response.statusCode == 200) {
         final map = Map<String, dynamic>.from(
@@ -129,7 +129,7 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
   Future<void> applyToJob(String jobId) async {
     try {
       final response = await apiClient.post(
-        '/WorkerRequest/$jobId/Apply',
+        '/worker/requests/$jobId/Apply',
         data: {'comments': ''},
       );
 

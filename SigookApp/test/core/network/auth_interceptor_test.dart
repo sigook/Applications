@@ -88,7 +88,7 @@ void main() {
     Object? data,
   }) {
     final options = RequestOptions(
-      path: '/WorkerRequest',
+      path: '/worker/requests',
       headers: {'Authorization': ?authorization},
       extra: Map<String, dynamic>.from(extra),
       data: data,

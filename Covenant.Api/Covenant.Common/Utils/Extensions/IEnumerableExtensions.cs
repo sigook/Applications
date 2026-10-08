@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Models;
+using Covenant.Common.Models;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Utils.Extensions;

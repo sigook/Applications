@@ -1,4 +1,6 @@
 ﻿using Covenant.Common.Entities.Company;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
 
 namespace Covenant.Common.Entities.Accounting.Invoice;
 
@@ -28,9 +30,22 @@ public class Invoice
     public InvoiceAdditionalDetail AdditionalDetail { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? WeekEnding { get; set; }
+    public InvoiceStatus Status { get; set; } = InvoiceStatus.Pending;
+    public DateTime? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public User UpdatedByUser { get; set; }
 
     public decimal TotalOvertime => InvoiceTotals.Sum(c => c.Overtime);
     public decimal TotalRegular => InvoiceTotals.Sum(c => c.Regular);
+
+    public Result ChangeStatus(InvoiceStatus next, Guid changedBy, DateTime now)
+    {
+        if (Status == next) return Result.Fail($"Invoice is already {next}");
+        Status = next;
+        UpdatedAt = now;
+        UpdatedBy = changedBy;
+        return Result.Ok();
+    }
 
     public void AddInvoiceTotals(IEnumerable<InvoiceTotal> invoiceTotals)
     {

@@ -1,5 +1,5 @@
-﻿using PhoneNumbers;
 using System.Text.RegularExpressions;
+using PhoneNumbers;
 
 namespace Covenant.Common.Utils;
 

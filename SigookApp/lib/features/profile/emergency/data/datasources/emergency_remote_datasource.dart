@@ -13,7 +13,7 @@ class EmergencyRemoteDataSource extends ProfileBaseDatasource {
     WorkerProfileModel profile,
   ) =>
       execute(() => apiClient.dio.post(
-            '/WorkerProfile/$workerId/EmergencyInformation',
+            '/worker/profile/$workerId/EmergencyInformation',
             data: {
               'haveAnyHealthProblem': profile.haveAnyHealthProblem,
               if (profile.healthProblem != null)

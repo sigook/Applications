@@ -1,5 +1,5 @@
-﻿using System.Globalization;
 using System.Text;
+using System.Globalization;
 
 namespace Covenant.Common.Utils.Extensions;
 

@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities.Agency;
+using Covenant.Common.Entities.Agency;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Models.Location;

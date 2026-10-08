@@ -1,9 +1,8 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Location;
-using Covenant.Company.Models;
 using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Mappers

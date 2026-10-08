@@ -26,7 +26,7 @@ class ResumeRemoteDataSource extends ProfileBaseDatasource {
           await MultipartFile.fromFile(filePath, filename: fileName),
         ));
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/Resume',
+          '/worker/profile/$workerId/Resume',
           data: formData,
         );
       });
@@ -39,7 +39,7 @@ class ResumeRemoteDataSource extends ProfileBaseDatasource {
           jsonEncode({'fileName': '', 'description': ''}),
         ));
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/Resume',
+          '/worker/profile/$workerId/Resume',
           data: formData,
         );
       });

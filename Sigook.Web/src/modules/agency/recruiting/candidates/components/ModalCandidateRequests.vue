@@ -1,0 +1,73 @@
+<template>
+  <div class="p-3">
+    <b-loading v-model="isLoading"></b-loading>
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <b-field label="RequestID, Position">
+          <b-autocomplete :data="rows" placeholder="RequestID, Position" :loading="isLoadingList"
+            :custom-formatter="(option: AgencyRequestListItem) => `${option.numberId} | ${option.jobTitle} | ${option.companyFullName}`"
+            @typing="onInputEntered" @select="(option: AgencyRequestListItem | null) => optionSelected = option" append-to-body>
+            <template v-slot="props">
+              <small>
+                {{ props.option.numberId }} |
+                {{ props.option.jobTitle }} |
+                {{ props.option.companyFullName }}
+              </small>
+            </template>
+          </b-autocomplete>
+        </b-field>
+      </div>
+      <div class="column is-12 mt-5">
+        <b-button type="is-primary" @click="saveRequestApplicant">Save</b-button>
+      </div>
+    </div>
+  </div>
+</template>
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import { showAlertError } from "@/shared/utils/toast";
+import { getAllAgencyRequests, postAgencyRequestApplicant } from "@/modules/agency/recruiting/requests/api";
+import type { AgencyRequestFilter, AgencyRequestListItem } from '@/modules/agency/recruiting/requests/types';
+
+const props = defineProps<{ candidateId: number | string }>();
+const emit = defineEmits<{ (e: 'onSelectRequest'): void }>();
+
+const isLoading = ref(false);
+const isLoadingList = ref(false);
+const rows = ref<AgencyRequestListItem[]>([]);
+const serverParams = reactive<AgencyRequestFilter>({
+  statuses: [0, 1, 4],
+});
+const optionSelected = ref<AgencyRequestListItem | null>(null);
+
+function onInputEntered(value: string) {
+  serverParams.filter = value;
+  loadRequests();
+}
+
+function loadRequests() {
+  isLoadingList.value = true;
+  getAllAgencyRequests(serverParams)
+    .then((response) => {
+      isLoadingList.value = false;
+      rows.value = response;
+    })
+    .catch(error => {
+      isLoadingList.value = false;
+      showAlertError(error);
+    });
+}
+
+function saveRequestApplicant() {
+  isLoading.value = true;
+  postAgencyRequestApplicant(optionSelected.value.id, { candidateId: String(props.candidateId) })
+    .then(() => {
+      isLoading.value = false;
+      emit('onSelectRequest');
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+</script>

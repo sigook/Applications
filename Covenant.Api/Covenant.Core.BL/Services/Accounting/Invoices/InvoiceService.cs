@@ -1,5 +1,6 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
+using Covenant.Common.Enums;
 using Covenant.Common.Entities.Accounting.Subcontractor;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -9,16 +10,18 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Pdf;
 using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Repositories.Accounting.Invoices;
+using Covenant.Common.Repositories.Accounting.Subcontractors;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
-using Covenant.Common.Repositories.Accounting;
-using Covenant.Common.Repositories.Agency;
-using Covenant.Common.Repositories.Company;
-using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Core.BL.Interfaces.Accounting.Invoices;
+using Covenant.Core.BL.Interfaces.Accounting;
 using Covenant.Documents.Services;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
@@ -47,7 +50,8 @@ public abstract class InvoiceService(
     IPayStubsContainer payStubsContainer,
     ITeamsService teamsService,
     IOptions<TeamsWebhookConfiguration> teamsOptions,
-    IInvoiceDocumentAdapter invoiceDocumentAdapter) : IInvoiceService
+    IInvoiceDocumentAdapter invoiceDocumentAdapter,
+    IValidator<ChangeInvoiceStatusModel> changeStatusValidator) : IInvoiceService
 {
     private const string InvoiceHtmlTemplate = "/Views/Billing/Invoice/Invoice.cshtml";
     private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
@@ -74,6 +78,7 @@ public abstract class InvoiceService(
     private readonly ITeamsService teamsService = teamsService;
     private readonly TeamsWebhookConfiguration teamsConfiguration = teamsOptions.Value;
     private readonly IInvoiceDocumentAdapter invoiceDocumentAdapter = invoiceDocumentAdapter;
+    private readonly IValidator<ChangeInvoiceStatusModel> changeStatusValidator = changeStatusValidator;
 
     public abstract Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
     public abstract Task<Result<Guid>> CreateAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
@@ -81,6 +86,7 @@ public abstract class InvoiceService(
     protected abstract Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
     protected abstract Task<InvoiceSummaryModel> FetchInvoiceSummary(Guid invoiceId);
     protected abstract Task<(Guid InvoiceId, string InvoiceNumber, IReadOnlyList<string> PayStubsDeleted)> DeleteInvoiceData(Guid invoiceId, DeleteInvoiceModel model);
+    protected abstract Task<Result> ChangeStatusData(IEnumerable<Guid> agencyIds, Guid invoiceId, InvoiceStatus status, Guid changedBy, DateTime now);
 
     #region Invoice Orchestration
 
@@ -107,6 +113,19 @@ public abstract class InvoiceService(
     {
         var agencyIds = currentUserService.GetAgencyIds();
         return await CreateAsync(agencyIds, model);
+    }
+
+    public async Task<Result> ChangeInvoiceStatus(Guid invoiceId, ChangeInvoiceStatusModel model)
+    {
+        var validationResult = await changeStatusValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure();
+        var agencyIds = currentUserService.GetAgencyIds();
+        var changedBy = currentUserService.GetUserId();
+        var now = timeProvider.GetLocalNow().DateTime;
+        var result = await ChangeStatusData(agencyIds, invoiceId, model.Status, changedBy, now);
+        if (!result) return result;
+        await invoiceRepository.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId)

@@ -1,4 +1,4 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Api.Utils;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Enums;
@@ -6,14 +6,15 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Request;
+using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers;
 
+[Obsolete("Kept for the SigookApp build still in the stores; replaced by Controllers/Worker (api/worker/...). Delete once the new app is published.")]
 [Route(RouteName)]
 [ApiController]
 [Produces("application/json")]

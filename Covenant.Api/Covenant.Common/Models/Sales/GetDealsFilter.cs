@@ -1,0 +1,21 @@
+using Covenant.Common.Enums;
+using Covenant.Common.Models.Company;
+
+namespace Covenant.Common.Models.Sales;
+
+public enum GetDealsSortBy : byte
+{
+    Date,
+    Value,
+    Status
+}
+
+public class GetDealsFilter : Pagination
+{
+    public Guid? OwnerId { get; set; }
+    public DealType? Type { get; set; }
+    public List<DealStatus> Statuses { get; set; }
+    public DateTime? DateFrom { get; set; }
+    public DateTime? DateTo { get; set; }
+    public GetDealsSortBy SortBy { get; set; }
+}

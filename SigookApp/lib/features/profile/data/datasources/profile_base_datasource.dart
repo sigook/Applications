@@ -28,7 +28,7 @@ abstract class ProfileBaseDatasource {
   /// Use [profile.id] wherever a workerId is needed for section endpoints.
   Future<WorkerProfileModel> getWorkerProfile() =>
       execute(() async {
-        final response = await apiClient.dio.get('/WorkerProfile/me');
+        final response = await apiClient.dio.get('/worker/profile/me');
         return WorkerProfileModel.fromJson(
           response.data as Map<String, dynamic>,
         );

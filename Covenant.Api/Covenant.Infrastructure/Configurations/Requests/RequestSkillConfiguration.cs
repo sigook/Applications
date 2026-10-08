@@ -1,0 +1,19 @@
+using Covenant.Common.Entities.Request;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+
+namespace Covenant.Infrastructure.Configurations.Requests;
+
+public class RequestSkillConfiguration : IEntityTypeConfiguration<RequestSkill>
+{
+    public void Configure(EntityTypeBuilder<RequestSkill> builder)
+    {
+        builder.ToTable("RequestSkills");
+        builder.HasKey(x => x.Id);
+
+        builder.HasOne(x => x.Request)
+            .WithMany(r => r.Skills)
+            .HasForeignKey(x => x.RequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

@@ -8,7 +8,7 @@ Roles live in the identity database (`Rol` / `UserRole` tables managed by ASP.NE
 |-------|-----------------|
 | Backend | `Covenant.Common/Constants/CovenantConstants.cs` → `Role` |
 | Policies | `Covenant.Api/Authorization/PolicyConfiguration.cs` |
-| Frontend | `Sigook.Web/src/security/roles.ts` |
+| Frontend | `Sigook.Web/src/app/security/roles.ts` |
 
 ## The 7 roles
 
@@ -47,19 +47,19 @@ created it — so they should be able to do the same things a recruiter can do w
 
 Concretely:
 
-- **Lists are scoped.** `GET api/agency/sales/requests` and `GET api/agency/sales/companyprofiles`
+- **Lists are scoped.** `GET api/agency/sales/requests` and `GET api/agency/sales/clients`
   filter by the caller's `AgencyPersonnelId` (`RequestComission.AgencyPersonnelId` for orders,
   `CompanyProfile.SalesRepresentativeId` for clients). Admin and superadmin hit the same endpoints
   **unscoped** — the scoping is per-caller, not per-endpoint.
 - **The unscoped lists are closed to sales.** `GET api/agency/recruiting/requests` and
-  `GET api/agency/recruiting/companyprofiles` (plus `/all` and `/File` on requests, and `/File` and
-  `/FileWithDetails` on companyprofiles — there is no companyprofiles `/all`) require Policy
+  `GET api/agency/recruiting/clients` (plus `/all` and `/File` on requests, and `/File` and
+  `/FileWithDetails` on clients — there is no clients `/all`) require Policy
   `Recruiting`. Otherwise a sales user would just call those and see everything.
-  **One deliberate exception:** `GET api/agency/companyprofiles/companies-list` (Policy `Agency`) is a
+  **One deliberate exception:** `GET api/agency/recruiting/clients/companies-list` (Policy `Agency`) is a
   name-only typeahead, uncapped, that is **not** sales-scoped — it feeds the client pickers of
   the sales dashboard's deal and interaction modals, so a sales user can log activity against any
   company of the agency, not only their own. Accepted on purpose; the scoped lists it sits beside
-  (`api/agency/sales/companyprofiles`) still drive every actual client listing.
+  (`api/agency/sales/clients`) still drive every actual client listing.
 - **Details are not scoped.** Policy `Agency` = `AgencyStaff`, so sales reaches the same detail,
   edit, workers, timesheets and applicants endpoints a recruiter reaches. A sales user who
   knows the id of another rep's order can open and edit it. **This is accepted on purpose** — the
@@ -68,15 +68,15 @@ Concretely:
 ### Exception: deals & interactions are owner-scoped end-to-end
 
 The sales module's deals and company interactions live under the client
-(`api/agency/companyprofiles/{profileId}/Deals`, `api/agency/companyprofiles/{profileId}/Interactions`)
+(`api/agency/sales/clients/{profileId}/deals`, `api/agency/sales/clients/{profileId}/interactions`)
 and do **not** follow the list-is-the-boundary rule: a sales user lists, updates and deletes only the
 records they own, and `OwnerId` is overwritten server-side on create. Update and delete also require
 the record to belong to the client in the route. The dashboard endpoints
 (`api/agency/sales/dashboard/deals-by-status`, `summary`, `recent-clients`, `recent-interactions`,
 `recent-deals`) count or list only those same owned rows. Admin and superadmin hit every one of these
 endpoints unscoped. Controllers (Policy `Sales` — sales, admin, superadmin):
-`Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{InteractionsController,DealsController}.cs`
-and `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/DashboardController.cs`. In Sigook.Web the
+`Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs`
+and `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/DashboardController.cs`. In Sigook.Web the
 client's Interactions / Deals tabs render only on the sales route (`/sales/companies/:id`) **and** for a
 sales-access role (`useSalesAccess`), so recruiting never sees them. Business meaning of deals and
 interactions: `SALES_MODULE.md`; entities: `.docs/technical/ENTITIES_RELATIONSHIPS.md`.
@@ -90,7 +90,7 @@ Any other role leaves the field blank for manual assignment, and can reassign it
 
 This rule lives in `RequestService.CreateRequest` and `AgencyService.CreateCompany` — **not** in a
 sales-only controller. It has to, because sales calls the ordinary create endpoints: a rule enforced
-only in a separate controller would be bypassed by posting to `api/agency/requests` directly.
+only in a separate controller would be bypassed by posting to `api/agency/recruiting/requests` directly.
 
 Updating does **not** re-force the assignment: a sales rep editing an order keeps whatever
 representative it already had.
@@ -104,7 +104,7 @@ representative it already had.
 | Runners | `Recruiting` | Recruiting pipeline (`RunnersController.cs:17`) |
 | Invoices, pay stubs, reports | `Admin` | Financial data |
 | Create / edit / delete agency users | `Admin` | User management |
-| Bulk recruiter assignment | `Admin` | `PUT api/agency/requests/bulk-recruiters` |
+| Bulk recruiter assignment | `Admin` | `PUT api/agency/recruiting/requests/bulk-recruiters` |
 
 > `PayStubsController`, `InvoicesController` and `ReportsController` enforce
 > `[Authorize(Policy = PolicyConfiguration.Admin)]`. `DeductionsController` keeps a bare
@@ -122,22 +122,22 @@ Besides `Agency`, `Recruiting`, `Sales` and `Admin` (`PolicyConfiguration.cs`):
 - `Worker` — `worker` only.
 
 Every policy requires a role: there is no authenticated-only policy and no cross-actor policy. An
-endpoint two actors need is exposed once per actor (`Controllers/Sigook/Agency/`, `Controllers/Sigook/Company/`,
-`WorkerModule/`), each under its own policy, and the shared logic lives in a `Covenant.Core.BL`
-service. The request shift is the reference case: `GET api/agency/requests/{requestId}/Shift`
-(policy `Agency`) and `GET api/company/requests/{requestId}/Shift` (policy `Company`) both delegate to
+endpoint two actors need is exposed once per actor (`Controllers/Agency/`, `Controllers/Company/`,
+`Controllers/Worker/`), each under its own policy, and the shared logic lives in a `Covenant.Core.BL`
+service. The request shift is the reference case: `GET api/agency/recruiting/requests/{requestId}/shift`
+(policy `Agency`) and `GET api/company/requests/{requestId}/shift` (policy `Company`) both delegate to
 `IRequestService.GetRequestShift`.
 
-Staff attendance (`api/agency/attendance`): every agency staff role clocks itself in/out
+Staff attendance (`api/agency/profile/attendance`): every agency staff role clocks itself in/out
 (policy `Agency`); the per-user "today" list, the report, its Excel export and punch corrections
 are policy `Admin`.
 
-On the frontend, route guards live in `Sigook.Web/src/router/routesAgency.ts` and the
+On the frontend, route guards live in `Sigook.Web/src/modules/agency/routes.ts` and the
 `useAdmin` / `useRecruitingAccess` / `useSuperAdmin` composables — UI mirrors, not defenses.
 
 ## Company deletion (superadmin only)
 
-`DELETE api/agency/companyprofiles/{id}` and its companion `GET .../{id}/deletion-check` are the
+`DELETE api/agency/recruiting/clients/{id}` and its companion `GET .../{id}/deletion-check` are the
 only endpoints under Policy `SuperAdmin`. Deletion is **blocked** while the company still has
 Requests, Invoices, USA invoices, Deals, Interactions or Worker comments; `deletion-check` returns
 that list so the UI can explain the refusal before anything is touched. Invoices are on a cascade FK,
@@ -150,7 +150,7 @@ Service: `ICompanyService.DeleteCompanyProfile`.
 
 ## User creation
 
-Only `admin` and `superadmin` create agency users (`POST api/agency/personnel`, Policy `Admin`).
+Only `admin` and `superadmin` create agency users (`POST api/agency/profile/personnel`, Policy `Admin`).
 
 The role is chosen at creation time and **validated server-side** against what the caller is allowed
 to assign:
@@ -160,7 +160,7 @@ to assign:
 | `admin` | admin, recruiting, sales |
 | `superadmin` | superadmin, admin, recruiting, sales |
 
-`GET api/agency/personnel/Roles` returns that set for the current caller, and the `POST` rejects
+`GET api/agency/profile/personnel/Roles` returns that set for the current caller, and the `POST` rejects
 anything outside it. Hiding a role from the dropdown is not a defense — the check is the defense.
 
 If the email already belongs to an existing user (adding them to a second agency), the submitted role
@@ -172,7 +172,7 @@ company user, `AgencyService` rejects it with `EmailAlreadyTaken` (`AgencyServic
 
 ## User editing
 
-`PUT api/agency/personnel/{id}` (Policy `Admin`) changes an agency user's **name, email and role**.
+`PUT api/agency/profile/personnel/{id}` (Policy `Admin`) changes an agency user's **name, email and role**.
 It is the same `AgencyPersonnelModel` the `POST` takes, validated by `AgencyPersonnelModelValidator`.
 
 - The role must be inside the caller's assignable set — same check as creation.
@@ -194,6 +194,6 @@ It is the same `AgencyPersonnelModel` the `POST` takes, validated by `AgencyPers
   user with `EmailAlreadyTaken`. `EmailConfirmed` is untouched, so the user keeps their password and
   signs in with the new address.
 
-The role is not stored in the Covenant.Api database: `GET api/agency/personnel` fills it through
+The role is not stored in the Covenant.Api database: `GET api/agency/profile/personnel` fills it through
 `IUserAdministrationService.GetUsersRoles`, which reads the identity database directly. If that read
 fails, the list is still returned with a null role instead of failing the request.

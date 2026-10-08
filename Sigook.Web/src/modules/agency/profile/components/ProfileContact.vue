@@ -1,0 +1,206 @@
+<template>
+  <div>
+    <b-loading v-model="isLoading"></b-loading>
+    <SigookGrid :data="localAgencyData.contactInformation">
+      <template #actions>
+        <b-button icon-left="plus" @click="openAddContactModal">Add</b-button>
+      </template>
+      <b-table-column field="firstName" label="Full Name" v-slot="props">
+        {{ props.row.firstName }} {{ props.row.middleName }} {{ props.row.lastName }}
+      </b-table-column>
+      <b-table-column field="position" label="Position" v-slot="props">
+        {{ props.row.position }}
+      </b-table-column>
+      <b-table-column field="officeNumber" label="Phone Number" v-slot="props">
+        <p>{{ props.row.mobileNumber }}</p>
+        <p>
+          <span>{{ props.row.officeNumber }}</span>
+          <span v-if="props.row.officeNumberExt">Ext. {{ props.row.officeNumberExt }}</span>
+        </p>
+      </b-table-column>
+      <b-table-column field="email" label="Email" v-slot="props">
+        <p>{{ props.row.email }}</p>
+      </b-table-column>
+      <b-table-column field="actions" v-slot="props">
+        <b-button type="is-danger" outlined rounded icon-right="delete"
+          @click="removeContact(props.row)" />
+      </b-table-column>
+    </SigookGrid>
+    <b-modal custom-content-class="card" v-model="showModal">
+      <div class="p-3">
+        <div class="columns is-multiline">
+          <div class="column is-6">
+            <b-field label="Title" :type="formErrors.title ? 'is-danger' : ''"
+              :message="formErrors.title || ''">
+              <b-select v-model="title" name="title" expanded>
+                <option :value="item" v-for="(item, idx) in titleOptions" :key="idx">{{ item }}</option>
+              </b-select>
+            </b-field>
+          </div>
+          <div class="column is-6">
+            <b-field label="First Name" :type="formErrors.firstName ? 'is-danger' : ''"
+              :message="formErrors.firstName || ''">
+              <b-input v-model="firstName" name="first name" />
+            </b-field>
+          </div>
+          <div class="column is-6">
+            <b-field label="Middle Name" :type="formErrors.middleName ? 'is-danger' : ''"
+              :message="formErrors.middleName || ''">
+              <b-input v-model="middleName" name="middle name" />
+            </b-field>
+          </div>
+          <div class="column is-6">
+            <b-field label="Last Name" :type="formErrors.lastName ? 'is-danger' : ''"
+              :message="formErrors.lastName || ''">
+              <b-input v-model="lastName" name="last name" />
+            </b-field>
+          </div>
+          <div class="column is-6">
+            <b-field label="Email" :type="formErrors.email ? 'is-danger' : ''"
+              :message="formErrors.email || ''">
+              <b-input v-model="email" name="email" />
+            </b-field>
+          </div>
+          <div class="column is-6">
+            <b-field label="Position" :type="formErrors.position ? 'is-danger' : ''"
+              :message="formErrors.position || ''">
+              <b-input v-model="position" name="position" />
+            </b-field>
+          </div>
+          <div class="column is-4">
+            <phone-input ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
+              model="Mobile Number" @formattedPhone="(phone) => mobileNumber = phone" />
+          </div>
+          <div class="column is-4">
+            <phone-input ref="officeComponent" :required="false" :defaultValue="officeNumber"
+              model="Office Number" @formattedPhone="(phone) => officeNumber = phone" />
+          </div>
+          <div class="column is-4">
+            <b-field label="Ext" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
+              :message="formErrors.officeNumberExt || ''">
+              <b-input v-model="officeNumberExt" name="officeNumberExt" />
+            </b-field>
+          </div>
+          <div class="column is-12">
+            <b-button type="is-primary" @click="validateForm">SAVE</b-button>
+          </div>
+        </div>
+      </div>
+    </b-modal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+import * as yup from 'yup';
+import { useStickyForm } from '@/shared/composables/useStickyForm';
+import { showAlertSuccess } from "@/shared/utils/toast";
+import { updateAgency } from '@/modules/agency/sales/agencies/api';
+import phoneInput from "@/shared/ui/PhoneInput.vue";
+import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import type { AgencyContactInformation, AgencyDetail } from '@/modules/agency/profile/types';
+
+const numericExt = yup
+  .string()
+  .nullable()
+  .transform((v) => (v === '' ? null : v))
+  .matches(/^\d{1,8}$/, { message: 'Must be 1-8 digits', excludeEmptyString: true });
+
+const schema = yup.object({
+  title: yup.string().required('Title is required'),
+  firstName: yup.string().required('First name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  middleName: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(1, 'Min 1 character').max(20, 'Max 20 characters'),
+  lastName: yup.string().required('Last name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
+  email: yup.string().required('Email is required').email('Invalid email'),
+  position: yup.string().required('Position is required').min(3, 'Min 3 characters').max(30, 'Max 30 characters'),
+  mobileNumber: yup.string().nullable(),
+  officeNumber: yup.string().nullable(),
+  officeNumberExt: numericExt,
+});
+
+const props = defineProps<{ agencyData: AgencyDetail }>();
+const emit = defineEmits<{ (e: 'update:agencyData', data: AgencyDetail): void }>();
+
+const form = useStickyForm({
+  schema,
+  initialValues: {
+    title: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    email: '',
+    position: '',
+    mobileNumber: '',
+    officeNumber: '',
+    officeNumberExt: '',
+  },
+});
+const {
+  title, firstName, middleName, lastName, email, position,
+  mobileNumber, officeNumber, officeNumberExt,
+} = form.fields;
+const formErrors = form.errors;
+
+const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
+
+const isLoading = ref(false);
+const showModal = ref(false);
+const localAgencyData = ref<AgencyDetail>(JSON.parse(JSON.stringify(props.agencyData)));
+const mobileComponent = ref<InstanceType<typeof phoneInput> | null>(null);
+const officeComponent = ref<InstanceType<typeof phoneInput> | null>(null);
+
+watch(
+  () => props.agencyData,
+  (newVal) => {
+    localAgencyData.value = JSON.parse(JSON.stringify(newVal));
+  },
+  { deep: true }
+);
+
+function openAddContactModal() {
+  form.resetAll();
+  showModal.value = true;
+}
+
+async function validateForm() {
+  form.markInteracted();
+  const mobileValid = await mobileComponent.value.validatePhone();
+  const officeValid = await officeComponent.value.validatePhone();
+  form.handleSubmit((values) => {
+    if (!mobileValid || !officeValid) return;
+    isLoading.value = true;
+    const contact = {
+      ...values,
+      officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
+    };
+    localAgencyData.value.contactInformation.push(contact);
+    emit('update:agencyData', localAgencyData.value);
+    updateAgency(localAgencyData.value)
+      .then(() => {
+        isLoading.value = false;
+        showModal.value = false;
+        form.resetAll();
+        showAlertSuccess('Updated');
+      })
+      .catch(() => {
+        isLoading.value = false;
+      });
+  })();
+}
+
+function removeContact(contact: AgencyContactInformation) {
+  const index = localAgencyData.value.contactInformation.indexOf(contact);
+  if (index === -1) return;
+  isLoading.value = true;
+  localAgencyData.value.contactInformation.splice(index, 1);
+  emit('update:agencyData', localAgencyData.value);
+  updateAgency(localAgencyData.value)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess("Updated");
+    })
+    .catch(() => {
+      isLoading.value = false;
+    });
+}
+</script>

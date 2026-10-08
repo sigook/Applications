@@ -22,7 +22,7 @@ class CommentsRemoteDataSourceImpl implements CommentsRemoteDataSource {
   }) async {
     try {
       final response = await apiClient.dio.get(
-        '/WorkerProfile/me/Comments',
+        '/worker/comments',
         queryParameters: {'PageSize': pageSize, 'PageIndex': pageIndex},
       );
 

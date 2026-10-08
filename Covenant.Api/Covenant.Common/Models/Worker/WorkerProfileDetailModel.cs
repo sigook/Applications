@@ -1,6 +1,6 @@
-﻿using Covenant.Common.Enums;
+using Covenant.Common.Enums;
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Security;
 
 namespace Covenant.Common.Models.Worker
 {

@@ -1,3 +1,4 @@
+#pragma warning disable CS0618
 using Covenant.Api.WorkerModule.WorkerRequestTimeSheet.Controllers;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
@@ -9,22 +10,22 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Models.Worker;
+using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
-using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Core.BL.Interfaces;
-using Covenant.Core.BL.Services;
+using Covenant.Core.BL.Interfaces.Requests;
+using Covenant.Core.BL.Services.Requests;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Repositories.Requests;
 using Covenant.Infrastructure.Repositories;
-using Covenant.Infrastructure.Repositories.Request;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
-using Xunit;
 using System.Net.Http.Json;
+using Xunit;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequestTimeSheet
 {

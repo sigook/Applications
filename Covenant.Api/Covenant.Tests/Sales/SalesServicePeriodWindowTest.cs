@@ -1,14 +1,16 @@
-using System.Globalization;
-using Covenant.Api.Validators.Company;
+using Covenant.Api.Validators.Sales;
+using Covenant.Common.Models.Sales.Dashboard;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Company.SalesDashboard;
-using Covenant.Common.Repositories.Company;
-using Covenant.Common.Repositories.Request;
-using Covenant.Core.BL.Interfaces;
-using Covenant.Core.BL.Services;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Core.BL.Interfaces.Requests;
+using Covenant.Core.BL.Interfaces.Sales;
+using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Services.Sales;
 using Moq;
+using System.Globalization;
 using Xunit;
 
 namespace Covenant.Tests.Sales;

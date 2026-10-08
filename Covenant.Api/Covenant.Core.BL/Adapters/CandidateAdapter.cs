@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
@@ -10,8 +10,8 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Worker;
+using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories;
-using Covenant.Common.Repositories.Agency;
 
 namespace Covenant.Core.BL.Adapters;
 

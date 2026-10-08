@@ -17,8 +17,8 @@ Worker registers from the Flutter app → Agency reviews → Agency approves →
 ### Step 1: Worker submits registration
 
 ```
-POST api/WorkerProfile              (multipart/form-data, [AllowAnonymous])
-→ WorkerProfileController.Post      (WorkerModule/WorkerProfile/Controllers/WorkerProfileController.cs)
+POST api/worker/profile              (multipart/form-data, [AllowAnonymous])
+→ ProfileController.Post      (Controllers/Worker/Profile/ProfileController.cs)
 → WorkerService.CreateWorker(requestId?)
 ```
 
@@ -29,28 +29,28 @@ POST api/WorkerProfile              (multipart/form-data, [AllowAnonymous])
 The agency can also register a worker on the worker's behalf:
 
 ```
-POST api/agency/workers        (multipart/form-data)
+POST api/agency/recruiting/workers        (multipart/form-data)
 → WorkersController.CreateWorkerProfile → WorkerService.CreateWorker
 ```
 
 ### Step 2: Agency reviews and approves
 
 ```
-GET api/agency/workers                     → WorkersController.Get (paginated list, GetWorkerProfileFilter)
-GET api/agency/workers/{id}                → WorkersController.GetById
-PUT api/agency/workers/{id}/ApprovedToWork → WorkersController.UpdateApprovedToWork
+GET api/agency/recruiting/workers                     → WorkersController.Get (paginated list, GetWorkerProfileFilter)
+GET api/agency/recruiting/workers/{id}                → WorkersController.GetById
+PUT api/agency/recruiting/workers/{id}/ApprovedToWork → WorkersController.UpdateApprovedToWork
 ```
 
 Approval calls the domain method `WorkerProfile.UpdateApprovedToWork(now)`, which enforces that required documents are complete. Related toggles on the same controller:
 
 ```
-PUT api/agency/workers/{id}/Dnu             (Do Not Use — WorkerProfile.UpdateDnu)
-PUT api/agency/workers/{id}/IsContractor
-PUT api/agency/workers/{id}/IsSubcontractor (short-circuits ApprovedToWork)
-PUT api/agency/workers/{id}/ExternalId
-PUT api/agency/workers/{id}/WcCode
-PUT api/agency/workers/{id}/tax-category
-PUT api/agency/workers/{id}/tax-rate
+PUT api/agency/recruiting/workers/{id}/Dnu             (Do Not Use — WorkerProfile.UpdateDnu)
+PUT api/agency/recruiting/workers/{id}/IsContractor
+PUT api/agency/recruiting/workers/{id}/IsSubcontractor (short-circuits ApprovedToWork)
+PUT api/agency/recruiting/workers/{id}/ExternalId
+PUT api/agency/recruiting/workers/{id}/WcCode
+PUT api/agency/recruiting/workers/{id}/tax-category
+PUT api/agency/recruiting/workers/{id}/tax-rate
 ```
 
 ### Step 3: Worker uses the app
@@ -58,8 +58,8 @@ PUT api/agency/workers/{id}/tax-rate
 Once approved, the worker sees their profile(s) and available jobs:
 
 ```
-GET api/WorkerProfile/{profileId}   → WorkerProfileController.GetById
-GET api/WorkerProfile/me            → WorkerProfileController.GetMyProfile
+GET api/worker/profile/{profileId}   → ProfileController.GetById
+GET api/worker/profile/me            → ProfileController.GetMyProfile
 ```
 
 ---
@@ -71,14 +71,14 @@ GET api/WorkerProfile/me            → WorkerProfileController.GetMyProfile
 By the agency:
 
 ```
-POST api/agency/requests            → RequestsController.Post (Controllers/Sigook/Agency/Requests/RequestsController.cs)
+POST api/agency/recruiting/requests            → RequestsController.Post (Controllers/Agency/Recruiting/Requests/RequestsController.cs)
 → RequestService.CreateRequest(RequestCreateModel)
 ```
 
 By the company:
 
 ```
-POST api/company/requests             → RequestsController.Post (Controllers/Sigook/Company/Requests/RequestsController.cs)
+POST api/company/requests             → RequestsController.Post (Controllers/Company/Requests/RequestsController.cs)
 → RequestService (company-side create)
 ```
 
@@ -92,12 +92,12 @@ Key facts about the `Request` entity (`Covenant.Common/Entities/Request/Request.
 Request management endpoints on the same controller:
 
 ```
-PUT api/agency/requests/{id}                              → RequestService.UpdateRequest
-PUT api/agency/requests/{id}/Cancel                       → RequestService.CancelRequest   (only Open + zero workers)
-PUT api/agency/requests/{id}/Open                         → RequestService.OpenRequest     (reopen)
-PUT api/agency/requests/{id}/IncreaseWorkersQuantityByOne → AgencyService.IncreaseWorkersQuantityByOne
-PUT api/agency/requests/{id}/ReduceWorkersQuantityByOne   → RequestService.ReduceWorkerQuantityByOne
-POST api/agency/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers AND candidates)
+PUT api/agency/recruiting/requests/{id}                              → RequestService.UpdateRequest
+PUT api/agency/recruiting/requests/{id}/Cancel                       → RequestService.CancelRequest   (only Open + zero workers)
+PUT api/agency/recruiting/requests/{id}/Open                         → RequestService.OpenRequest     (reopen)
+PUT api/agency/recruiting/requests/{id}/IncreaseWorkersQuantityByOne → AgencyService.IncreaseWorkersQuantityByOne
+PUT api/agency/recruiting/requests/{id}/ReduceWorkersQuantityByOne   → RequestService.ReduceWorkerQuantityByOne
+POST api/agency/recruiting/requests/{id}/SendInvitation              → RequestService.SendInvitation  (queues a Service Bus job inviting matching workers AND candidates)
 ```
 
 Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET api/agency/sales/requests` (sales rep sees only their own companies' orders).
@@ -105,27 +105,27 @@ Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET
 ### Step 2A: Worker browses and applies (reactive)
 
 ```
-GET  api/WorkerRequest                      → WorkerRequestController.Get (WorkerModule/WorkerRequest/Controllers/WorkerRequestController.cs)
+GET  api/worker/requests                      → RequestsController.Get (Controllers/Worker/Requests/RequestsController.cs)
                                               → IRequestRepository.GetRequestsForWorker
-GET  api/WorkerRequest/{id}                 → WorkerRequestController.GetById
-POST api/WorkerRequest/{requestId}/Apply    → WorkerRequestController.Apply → WorkerService.Apply(model, requestId)
+GET  api/worker/requests/{id}                 → RequestsController.GetById
+POST api/worker/requests/{requestId}/Apply    → RequestsController.Apply → WorkerService.Apply(model, requestId)
 ```
 
-There is no `/Available` suffix — the plain `GET api/WorkerRequest` already returns only requests the authenticated worker can apply to.
+There is no `/Available` suffix — the plain `GET api/worker/requests` already returns only requests the authenticated worker can apply to.
 
 Both apply routes share one service method, `WorkerService.Apply(WorkerRequestApplyModel model, Guid? requestId = null)`, and one payload, `WorkerRequestApplyModel { NumberId?, Email, Comments }`. The route decides how the applicant is resolved: with `requestId` the worker comes from the token and any `Email` in the body is ignored; without it the worker is looked up by `Email` within the request's agency. Once resolved, `Apply` branches into `ApplyAsWorker` or `ApplyAsCandidate`, each of which owns its duplicate guard, its `RequestApplicant` factory and its notification. Sending the recruiter email is `IRequestApplicantNotificationService` (`NEW_APPLICANT` SendGrid template, one overload per applicant kind); it only notifies — the row is always created by the caller beforehand.
 
-Invitation emails (workers and candidates) carry a unified anonymous link `/worker-apply?n={requestNumberId}&e={email}` handled by `POST api/WorkerRequest/Apply` (`[AllowAnonymous]`) → `WorkerRequestController.ApplyFromInvitation`: the request is resolved by its public `NumberId`, the email is matched (case/whitespace-insensitive) against workers of the request's agency first, then candidates. Candidates are invited and allowed to apply **only if their free-text address contains the request's city** (accent/case-insensitive containment; a request without a city accepts no candidates), are excluded when DNU, and become `RequestApplicant` rows (`Pending`, created by "Sigook"). The invitation consumer (`InvitationConsumer`) sends one batch to workers of the request's province plus city-matched candidates of the agency, deduplicated by email. Both audiences get the same SendGrid template and the same unsubscribe link shape, built from the single `UnsubscribeUrl` setting: `/email-preferences?email={email}`. `POST api/EmailPreferences/Unsubscribe` receives the email address and an optional `TypeId` (the `NotificationType` id; when absent it defaults to `NewRequestNotifyWorker`, the only type these emails opt out of), and resolves the audience itself: if the email matches a `User` the opt-out is a `UserNotificationType` row for that type with every channel off, otherwise it falls back to the candidate with that email and stores `Candidate.EmailUnsubscribed`, which excludes them from later invitation batches.
+Invitation emails (workers and candidates) carry a unified anonymous link `/worker-apply?n={requestNumberId}&e={email}` handled by `POST api/worker/requests/Apply` (`[AllowAnonymous]`) → `RequestsController.ApplyFromInvitation`: the request is resolved by its public `NumberId`, the email is matched (case/whitespace-insensitive) against workers of the request's agency first, then candidates. Candidates are invited and allowed to apply **only if their free-text address contains the request's city** (accent/case-insensitive containment; a request without a city accepts no candidates), are excluded when DNU, and become `RequestApplicant` rows (`Pending`, created by "Sigook"). The invitation consumer (`InvitationConsumer`) sends one batch to workers of the request's province plus city-matched candidates of the agency, deduplicated by email. Both audiences get the same SendGrid template and the same unsubscribe link shape, built from the single `UnsubscribeUrl` setting: `/email-preferences?email={email}`. `POST api/emailpreferences/Unsubscribe` receives the email address and an optional `TypeId` (the `NotificationType` id; when absent it defaults to `NewRequestNotifyWorker`, the only type these emails opt out of), and resolves the audience itself: if the email matches a `User` the opt-out is a `UserNotificationType` row for that type with every channel off, otherwise it falls back to the candidate with that email and stores `Candidate.EmailUnsubscribed`, which excludes them from later invitation batches.
 
 ### Step 2B: Agency tracks applicants
 
 Applicants (workers or candidates who applied / were sourced) are managed per request:
 
 ```
-GET    api/agency/requests/{requestId}/Applicants          → ApplicantsController.Get
-POST   api/agency/requests/{requestId}/Applicants          → ApplicantsController.Post   (candidate or worker; duplicate-guarded)
-GET    api/agency/requests/{requestId}/Applicants/Search   → IRequestRepository.SearchApplicants
-DELETE api/agency/requests/{requestId}/Applicants/{id}
+GET    api/agency/recruiting/requests/{requestId}/applicants          → ApplicantsController.Get
+POST   api/agency/recruiting/requests/{requestId}/applicants          → ApplicantsController.Post   (candidate or worker; duplicate-guarded)
+GET    api/agency/recruiting/requests/{requestId}/applicants/Search   → IRequestRepository.SearchApplicants
+DELETE api/agency/recruiting/requests/{requestId}/applicants/{id}
 ```
 
 ---
@@ -135,8 +135,8 @@ DELETE api/agency/requests/{requestId}/Applicants/{id}
 ### Booking
 
 ```
-POST api/agency/requests/{requestId}/Workers/{workerProfileId}/Book
-→ WorkersController.Post (Controllers/Sigook/Agency/Requests/WorkersController.cs)
+POST api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Book
+→ WorkersController.Post (Controllers/Agency/Recruiting/Requests/WorkersController.cs)
 → AgencyService.BookWorker(requestId, workerProfileId, AgencyBookWorkerModel)
 ```
 
@@ -147,13 +147,13 @@ POST api/agency/requests/{requestId}/Workers/{workerProfileId}/Book
 ### Managing booked workers
 
 ```
-GET api/agency/requests/{requestId}/Workers                        → workers assigned to the request
-GET api/agency/requests/{requestId}/Workers/{id}                   → single worker request
-PUT api/agency/requests/{requestId}/Workers/{id}                   → WorkerRequest.UpdateStartWorking (change start date)
-PUT api/agency/requests/{requestId}/Workers/{workerProfileId}/Reject → RequestService.RejectWorker (may reopen a Filled request)
+GET api/agency/recruiting/requests/{requestId}/workers                        → workers assigned to the request
+GET api/agency/recruiting/requests/{requestId}/workers/{id}                   → single worker request
+PUT api/agency/recruiting/requests/{requestId}/workers/{id}                   → WorkerRequest.UpdateStartWorking (change start date)
+PUT api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Reject → RequestService.RejectWorker (may reopen a Filled request)
 ```
 
-The company sees its assigned workers via `api/company/requests/{requestId}/Workers` (`Controllers/Sigook/Company/Requests/WorkersController.cs`).
+The company sees its assigned workers via `api/company/requests/{requestId}/workers` (`Controllers/Company/Requests/WorkersController.cs`).
 
 ---
 
@@ -164,36 +164,36 @@ The company sees its assigned workers via `api/company/requests/{requestId}/Work
 A single punch endpoint; the service decides whether the punch is a clock-in or a clock-out:
 
 ```
-POST api/WorkerRequest/{requestId}/TimeSheet
-→ WorkerRequestTimeSheetController.Post (WorkerModule/WorkerRequestTimeSheet/Controllers/WorkerRequestTimeSheetController.cs)
+POST api/worker/requests/{requestId}/timesheet
+→ TimeSheetsController.Post (Controllers/Worker/TimeSheets/TimeSheetsController.cs)
 → TimesheetService.Register(requestId, WorkerLocationModel)     (payload = GPS location of the punch)
 
-GET api/WorkerRequest/{requestId}/TimeSheet/clock-type/{latitude}/{longitude}
+GET api/worker/requests/{requestId}/timesheet/clock-type/{latitude}/{longitude}
 → TimesheetService.GetClockType     (next expected punch: clock-in or clock-out)
   The day boundary is evaluated in the job site's time zone (Request.JobLocation), falling back
   to the caller's coordinates when the job has no location. Never in server time.
 
-GET api/WorkerRequest/{requestId}/TimeSheet
+GET api/worker/requests/{requestId}/timesheet
 → ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list)
 ```
 
 ### Step 2: Agency reviews and edits the punch card
 
 ```
-GET    api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets
-→ WorkerTimeSheetsController.Get (Controllers/Sigook/Agency/Requests/WorkerTimeSheetsController.cs)
+GET    api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets
+→ WorkerTimeSheetsController.Get (Controllers/Agency/Recruiting/Requests/WorkerTimeSheetsController.cs)
 
-POST   api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets        → TimesheetService.CreateTimesheet   (manual entry, e.g. attendance "0")
-PUT    api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}   → TimesheetService.UpdateTimesheet
-DELETE api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}   → TimesheetService.RemoveTimeSheet
-GET    api/agency/requests/{requestId}/Workers/{workerId}/TimeSheets/{id}/Usages  → where the timesheet is used (pay stub/invoice)
+POST   api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets        → TimesheetService.CreateTimesheet   (manual entry, e.g. attendance "0")
+PUT    api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/{id}   → TimesheetService.UpdateTimesheet
+DELETE api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/{id}   → TimesheetService.RemoveTimeSheet
+GET    api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/{id}/Usages  → where the timesheet is used (pay stub/invoice)
 ```
 
-A request-wide view exists at `GET api/agency/requests/{requestId}/TimeSheets` (`TimeSheetsController.cs`).
+A request-wide view exists at `GET api/agency/recruiting/requests/{requestId}/timesheets` (`TimeSheetsController.cs`).
 
 ### Step 3: Hours breakdown
 
-Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is never computed anywhere; do not add night-shift logic.
+Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is never computed anywhere; do not add night-shift logic.
 
 ---
 
@@ -204,40 +204,40 @@ Both run from the agency accounting screens. Calculation detail is NOT duplicate
 ### 5.1 Pay stub generation
 
 ```
-GET  api/agency/accounting/PayStubs/WorkersReadyForPayStub
-→ PayStubsController (Controllers/Sigook/Agency/Accounting/PayStubsController.cs)
+GET  api/agency/accounting/paystubs/WorkersReadyForPayStub
+→ PayStubsController (Controllers/Agency/Accounting/PayStubsController.cs)
 → ITimesheetRepository.GetWorkersReadyForPayStub   (workers with unpaid approved timesheets)
 
-POST api/agency/accounting/PayStubs/generate        (body: worker profile ids)
+POST api/agency/accounting/paystubs/generate        (body: worker profile ids)
 → PayStubsController.GeneratePayStubs → PayStubService.Generate(agencyIds, workerIds)
 ```
 
 `PayStubService.Generate` iterates workers and calls `GeneratePayStubForWorker`, which aggregates the worker's pending timesheets and computes deductions via `TimesheetCalculatorService.CalculateDeductions(totalEarnings, numberOfWeeks, year, workerProfileId)`.
 
-Deductions are **database table lookups** (CPP, Federal and Provincial tax ranges via `DeductionsRepository`, by earnings and year); EI is the only computed value (`totalEarnings × rates.EmploymentInsurance`). There are no calculator classes. Subcontractor tax-category overrides zero out deductions. Deduction tables are maintained through `api/Accounting/Deduction` (`DeductionsController`): both the CPP and the income tax tables are imported from the CRA PDFs dropped in the `cra-tables` blob container (blob trigger → `POST .../Cpp/Blob`, `POST .../Tax/Blob`), and one income tax PDF carries the federal and the provincial tables. See [PAYROLL_RULES](PAYROLL_RULES.md#tax-table-maintenance).
+Deductions are **database table lookups** (CPP, Federal and Provincial tax ranges via `DeductionsRepository`, by earnings and year); EI is the only computed value (`totalEarnings × rates.EmploymentInsurance`). There are no calculator classes. Subcontractor tax-category overrides zero out deductions. Deduction tables are maintained through `api/jobs/deductions` (`DeductionsController`): both the CPP and the income tax tables are imported from the CRA PDFs dropped in the `cra-tables` blob container (blob trigger → `POST .../Cpp/Blob`, `POST .../Tax/Blob`), and one income tax PDF carries the federal and the provincial tables. See [PAYROLL_RULES](PAYROLL_RULES.md#tax-table-maintenance).
 
 Delivery and management:
 
 ```
-GET    api/agency/accounting/PayStubs                    → PayStubService.GetPayStubs (filtered list)
-GET    api/agency/accounting/PayStubs/file               → filtered list as file export
-GET    api/agency/accounting/PayStubs/{payStubId}/pdf    → PayStubService.GetPayStubPdf
-POST   api/agency/accounting/PayStubs/{payStubId}/email  → PayStubService.SendPayStubEmail
-POST   api/agency/accounting/PayStubs/email/bulk         → queues BulkPayStubEmailJob on Azure Service Bus (ISigookBusClient)
-DELETE api/agency/accounting/PayStubs/{id}               → PayStubService.DeletePayStub
-POST   api/agency/accounting/PayStubs                    → PayStubService.CreateManualPayStub (obsolete)
+GET    api/agency/accounting/paystubs                    → PayStubService.GetPayStubs (filtered list)
+GET    api/agency/accounting/paystubs/file               → filtered list as file export
+GET    api/agency/accounting/paystubs/{payStubId}/pdf    → PayStubService.GetPayStubPdf
+POST   api/agency/accounting/paystubs/{payStubId}/email  → PayStubService.SendPayStubEmail
+POST   api/agency/accounting/paystubs/email/bulk         → queues BulkPayStubEmailJob on Azure Service Bus (ISigookBusClient)
+DELETE api/agency/accounting/paystubs/{id}               → PayStubService.DeletePayStub
+POST   api/agency/accounting/paystubs                    → PayStubService.CreateManualPayStub (obsolete)
 ```
 
 The controller also exposes skip-payroll-number endpoints, and accounting reports live under
-`api/agency/accounting/Reports/*` (`ReportsController`: t4, cra-payroll, payments, subcontractors,
+`api/agency/accounting/reports/*` (`ReportsController`: t4, cra-payroll, payments, subcontractors,
 hours-worked, timesheets).
 
 ### 5.2 Invoicing
 
 ```
-POST api/agency/accounting/Invoices/Preview   → IInvoiceService.PreviewInvoice   (no persistence)
-POST api/agency/accounting/Invoices           → IInvoiceService.CreateInvoice
-→ InvoicesController (Controllers/Sigook/Agency/Accounting/InvoicesController.cs)
+POST api/agency/accounting/invoices/Preview   → IInvoiceService.PreviewInvoice   (no persistence)
+POST api/agency/accounting/invoices           → IInvoiceService.CreateInvoice
+→ InvoicesController (Controllers/Agency/Accounting/InvoicesController.cs)
 ```
 
 The controller resolves the service through `InvoiceServiceFactory` (`Covenant.Core.BL/Services/Accounting/Invoices/`), which picks `CanadaInvoiceService` or `UsaInvoiceService`.
@@ -252,11 +252,11 @@ Key facts (full rules in `BILLING_RULES.md`):
 Delivery and management:
 
 ```
-GET    api/agency/accounting/Invoices                       → IInvoiceService.GetInvoices (list with totals)
-GET    api/agency/accounting/Invoices/{invoiceId}/pdf       → IInvoiceService.GetInvoicePdf
-POST   api/agency/accounting/Invoices/{invoiceId}/email     → IInvoiceService.SendInvoiceEmail (multipart, optional attachments)
-GET    api/agency/accounting/Invoices/{invoiceId}/paystubs  → pay stubs linked to the invoice (delete warnings)
-DELETE api/agency/accounting/Invoices/{id}                  → IInvoiceService.DeleteInvoice (cascades selected pay stubs)
+GET    api/agency/accounting/invoices                       → IInvoiceService.GetInvoices (list with totals)
+GET    api/agency/accounting/invoices/{invoiceId}/pdf       → IInvoiceService.GetInvoicePdf
+POST   api/agency/accounting/invoices/{invoiceId}/email     → IInvoiceService.SendInvoiceEmail (multipart, optional attachments)
+GET    api/agency/accounting/invoices/{invoiceId}/paystubs  → pay stubs linked to the invoice (delete warnings)
+DELETE api/agency/accounting/invoices/{id}                  → IInvoiceService.DeleteInvoice (cascades selected pay stubs)
 ```
 
 ---
@@ -269,15 +269,15 @@ A **Runner** is a Worker actively submitted to a specific order (Request). Candi
 
 Orders **without** runners instead configure a **compliance checklist** — see [§6.1](#61-compliance-checklist-orders-without-runners).
 
-Controller: `Controllers/Sigook/Agency/Requests/RunnersController.cs` (`[Authorize(Policy = Recruiting)]`) → `RunnerService`. Domain rules live in the `Runner` entity.
+Controller: `Controllers/Agency/Recruiting/Requests/RunnersController.cs` (`[Authorize(Policy = Recruiting)]`) → `RunnerService`. Domain rules live in the `Runner` entity.
 
 ### Step 1: Recruiter adds a runner to the order
 
 The recruiter searches a Worker and picks **Type** = `Active` (applied on their own) or `Passive` (sourced by a recruiter) — `RunnerType` enum. The search uses a dedicated runner-prospect endpoint that returns **only workers** and excludes those already runners on this request:
 
 ```
-GET  api/agency/requests/{requestId}/Runners/Search?searchTerm=...   → IRequestRepository.SearchRunnerProspects
-POST api/agency/requests/{requestId}/Runners                         → RunnerService.CreateRunner
+GET  api/agency/recruiting/requests/{requestId}/runners/Search?searchTerm=...   → IRequestRepository.SearchRunnerProspects
+POST api/agency/recruiting/requests/{requestId}/runners                         → RunnerService.CreateRunner
      { "workerProfileId", "type": 1 }
 ```
 
@@ -286,8 +286,8 @@ The runner is created with `Status = SentToClient` and an initial status-history
 **Second entry point — the recruiting weekly board.** A recruiter can send a runner straight from their day card; the web reuses the same `CreateRunner.vue` modal:
 
 ```
-POST   api/agency/recruiting/WeeklyBoard/runner   → WeeklyBoardService.AddRunner → IRunnerService.CreateRunner
-DELETE api/agency/requests/{requestId}/Runners/{id} → RunnerService.DeleteRunner   (shared with the Runners tab)
+POST   api/agency/recruiting/weeklyboard/runner   → WeeklyBoardService.AddRunner → IRunnerService.CreateRunner
+DELETE api/agency/recruiting/requests/{requestId}/runners/{id} → RunnerService.DeleteRunner   (shared with the Runners tab)
 ```
 
 The board resolves the recruiter from the token, finds their `RequestRecruiter` assignment for that work day and stamps it on `Runner.RequestRecruiterId`, so the card can count and list its runners. Runners created from the order's Runners tab leave that FK null. Sending a runner also appends the request note `"{workerName} was sent"`.
@@ -297,7 +297,7 @@ Each runner on a board card exposes the **same actions as the Runners tab** (cha
 ### Step 2: Recruiter advances the status
 
 ```
-PUT api/agency/requests/{requestId}/Runners/{id}/Status              → RunnerService.ChangeStatus
+PUT api/agency/recruiting/requests/{requestId}/runners/{id}/Status              → RunnerService.ChangeStatus
     { "status": 2, "comments": "Client requested an interview" }
 ```
 
@@ -313,20 +313,20 @@ PUT api/agency/requests/{requestId}/Runners/{id}/Status              → RunnerS
 Only allowed while the runner is in `InterviewScheduled` or `InterviewRescheduled`:
 
 ```
-POST api/agency/requests/{requestId}/Runners/{id}/Interview          → RunnerService.AddInterview
+POST api/agency/recruiting/requests/{requestId}/runners/{id}/Interview          → RunnerService.AddInterview
      { "scheduledDate", "type": 1, "interviewer", "notes" }
 ```
 
 A runner can have multiple interviews over time. Rescheduling an interview updates its date and **auto-transitions** the runner to `InterviewRescheduled`:
 
 ```
-PUT api/agency/requests/{requestId}/Runners/{id}/Interview/{interviewId}/Reschedule   → RunnerService.RescheduleInterview
+PUT api/agency/recruiting/requests/{requestId}/runners/{id}/Interview/{interviewId}/Reschedule   → RunnerService.RescheduleInterview
     { "newDate" }
 ```
 
 ### Step 4: View history
 
-`GET api/agency/requests/{requestId}/Runners/{id}` returns the runner detail with the full status timeline (latest first) and the list of interviews. The "Add interview" and "Reschedule" actions are hidden/disabled outside the two interview-enabled states, and "Change status" is hidden once the runner is `Hired`.
+`GET api/agency/recruiting/requests/{requestId}/runners/{id}` returns the runner detail with the full status timeline (latest first) and the list of interviews. The "Add interview" and "Reschedule" actions are hidden/disabled outside the two interview-enabled states, and "Change status" is hidden once the runner is `Hired`.
 
 All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
 
@@ -340,7 +340,7 @@ When `Request.UsesRunners == false`, the order instead carries a **compliance ch
 
 The agency configures it from the **Configure** link next to the *Uses Runners* switch on the create/edit order page (`AgencyCreateRequest.vue` → `RequestComplianceModal.vue`). The link is hidden while the order uses runners; the items are kept, not deleted, if the switch is turned back on.
 
-**Default list**, pre-filled the first time the switch is turned off (`Sigook.Web/src/constants/compliance.ts`; frontend-only — the API persists exactly what it receives and never seeds):
+**Default list**, pre-filled the first time the switch is turned off (`Sigook.Web/src/modules/agency/recruiting/applicants/compliance.ts`; frontend-only — the API persists exactly what it receives and never seeds):
 
 | Requirement | Default | Document target |
 |---|---|---|
@@ -354,8 +354,8 @@ The agency configures it from the **Configure** link next to the *Uses Runners* 
 Storage is a child table `RequestComplianceItems` (`RequestComplianceItem` entity, cascade-deleted with the order), not a JSON column. There is no dedicated endpoint: the items ride inside `RequestCreateModel.ComplianceItems` on create and update, and come back on `AgencyRequestDetailModel.ComplianceItems`.
 
 ```
-POST api/agency/requests        → RequestService.CreateRequest  (creates the items)
-PUT  api/agency/requests/{id}   → RequestService.UpdateRequest  (reconciles the items)
+POST api/agency/recruiting/requests        → RequestService.CreateRequest  (creates the items)
+PUT  api/agency/recruiting/requests/{id}   → RequestService.UpdateRequest  (reconciles the items)
 ```
 
 On update the list is **reconciled by id, never wiped and recreated**: items sent with their `id` are updated in place, items sent without one are created, and items missing from the payload are deleted (together with any per-applicant completions referencing them). Item ids therefore stay stable across edits — per-applicant completions reference them. Validation (`RequestCreateModelValidator`): name required, max 200 chars, max 50 items, names unique case-insensitively, document target a valid enum value.
@@ -378,10 +378,10 @@ Initial status by origin:
 Everything runs through `RequestApplicantService` (the `ApplicantsController` only delegates):
 
 ```
-PUT    api/agency/requests/{requestId}/Applicants/{id}/Status                    → change status (Start / Cancel / Reopen / Confirm)
-GET    api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems           → checklist + per-applicant completion state
-POST   api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems/{itemId}  → complete an item (multipart; optional document)
-DELETE api/agency/requests/{requestId}/Applicants/{id}/ComplianceItems/{itemId}  → uncheck an item (document stays on the profile)
+PUT    api/agency/recruiting/requests/{requestId}/applicants/{id}/Status                    → change status (Start / Cancel / Reopen / Confirm)
+GET    api/agency/recruiting/requests/{requestId}/applicants/{id}/ComplianceItems           → checklist + per-applicant completion state
+POST   api/agency/recruiting/requests/{requestId}/applicants/{id}/ComplianceItems/{itemId}  → complete an item (multipart; optional document)
+DELETE api/agency/recruiting/requests/{requestId}/applicants/{id}/ComplianceItems/{itemId}  → uncheck an item (document stays on the profile)
 ```
 
 In the portal an applicant row expands into its compliance detail row (`ApplicantComplianceDetail.vue`), which is the single hub: checks, uploads and the status buttons (Start / Cancel applicant / Reopen / Confirm) all live there. The same component serves the order's Applicants tab and the cross-order Applicants workspace, and both lists show a status tag column, a compliance progress column (completed / total) and a multi-status filter.
@@ -404,7 +404,7 @@ worker punch card. Data lives in `UserAttendance`, one row per **user** per day 
 ### Step 1: Clock in / clock out
 - The button sits next to the user's name at the bottom of the sidebar (`AttendanceClockButton.vue`):
   play (not started) → stop with elapsed time (clocked in) → check (day closed).
-- `POST api/agency/attendance` toggles: no row today → clock in; open row → clock out; closed row → error.
+- `POST api/agency/profile/attendance` toggles: no row today → clock in; open row → clock out; closed row → error.
   One clock-in and one clock-out per calendar day.
 - "Now" and "today" are the user's own local time: the browser sends its IANA time zone
   (`?timeZone=America/Bogota`) and the API resolves it with `TimeProvider.GetLocalNow(timeZoneId)` (`TimeProviderExtensions` in Common).
@@ -416,13 +416,13 @@ worker punch card. Data lives in `UserAttendance`, one row per **user** per day 
   Only an admin can change it, from the punch correction.
 - worked = clock-out − clock-in − lunch (capped at the elapsed time).
 - Mon–Fri: the first 8 worked hours are regular, the rest is overtime. Sat/Sun: every worked hour is overtime.
-- Computed on read in `AgencyService.CalculateAttendanceHours` (mirrored for previews in `Sigook.Web/src/utils/attendance.ts`).
+- Computed on read in `AgencyService.CalculateAttendanceHours` (mirrored for previews in `Sigook.Web/src/modules/agency/profile/attendance.ts`).
 
 ### Step 3: Report and corrections (admins)
 - Agency Profile → Users → "Attendance report": filter by user and date range (defaults to the current week, Mon–Sun; max one year),
   totals (worked, regular, overtime), per-day grid (with the lunch deducted) and Excel export.
 - The Users grid shows each user's status today.
-- Admins edit a punch from the report row (`PUT api/agency/attendance/{id}`): clock-in, clock-out and lunch
+- Admins edit a punch from the report row (`PUT api/agency/profile/attendance/{id}`): clock-in, clock-out and lunch
   (0–240 min, never longer than the shift), with a mandatory reason;
   the row keeps who edited it and is tagged "Edited".
 

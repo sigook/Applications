@@ -22,7 +22,7 @@
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
-| [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every `src/api/*.ts` file mapped to backend endpoints, types, and Pinia stores; live sales dashboard aggregates (§18) |
+| [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every feature `api.ts` mapped to backend endpoints, types, and Pinia stores; live sales dashboard aggregates (§18) |
 | [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature (incl. sales dashboard layout), Pinia stores, global plumbing |
 
 ---
@@ -48,12 +48,12 @@
 
 **Modify timesheets:**
 1. [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) — hours calculation rules
-2. Code: `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs`
+2. Code: `Covenant.Api/Covenant.Core.BL/Services/Requests/TimesheetService.cs`
 
 **Modify the sales module / dashboard:**
 1. [SALES_MODULE.md](./business/SALES_MODULE.md) — concepts, deal lifecycle, KPI definitions
 2. [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) (routes, `Dashboard.vue` layout, `sales_dashboard/` components) + [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) §14 (deals/interactions CRUD + modal wiring) and §18 (dashboard aggregate endpoints)
-3. Code: `Sigook.Web/src/pages/agency/Dashboard.vue` + `Sigook.Web/src/components/sales_dashboard/`; backend `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/Sales/`
+3. Code: `Sigook.Web/src/modules/agency/sales/dashboard/`; backend `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/`
 
 ---
 

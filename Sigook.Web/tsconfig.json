@@ -3,12 +3,9 @@
     "target": "esnext",
     "module": "esnext",
     "strict": false,
-    "jsx": "preserve",
-    "importHelpers": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "allowJs": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "types": [
@@ -23,17 +20,14 @@
     "lib": [
       "esnext",
       "dom",
-      "dom.iterable",
-      "scripthost"
+      "dom.iterable"
     ],
     "skipLibCheck": true,
     "noEmit": true
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "src/**/*.js"
+    "src/**/*.vue"
   ],
   "exclude": [
     "node_modules"

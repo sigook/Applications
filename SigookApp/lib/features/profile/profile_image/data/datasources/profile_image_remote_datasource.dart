@@ -26,7 +26,7 @@ class ProfileImageRemoteDataSource extends ProfileBaseDatasource {
           await MultipartFile.fromFile(filePath, filename: fileName),
         ));
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/ProfileImage',
+          '/worker/profile/$workerId/ProfileImage',
           data: formData,
         );
       });

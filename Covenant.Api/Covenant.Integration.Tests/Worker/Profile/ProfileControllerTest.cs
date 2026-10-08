@@ -1,0 +1,266 @@
+using Covenant.Api.Controllers.Worker.Profile;
+using Covenant.Common.Entities;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Identity;
+using Covenant.Common.Models;
+using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Worker;
+using Covenant.Common.Repositories.Candidates;
+using Covenant.Common.Repositories.Notifications;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories.Workers;
+using Covenant.Core.BL.Interfaces.Workers;
+using Covenant.Core.BL.Services.Workers;
+using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Repositories.Candidates;
+using Covenant.Infrastructure.Repositories.Notifications;
+using Covenant.Infrastructure.Repositories.Requests;
+using Covenant.Infrastructure.Repositories.Workers;
+using Covenant.Infrastructure.Services;
+using Covenant.Integration.Tests.Configuration;
+using Covenant.Integration.Tests.Utils;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using System.Net.Http.Json;
+using System.Net;
+using System.Text.Json;
+using Xunit;
+
+namespace Covenant.Integration.Tests.Worker.Profile;
+
+public class ProfileControllerTest : IClassFixture<CustomWebApplicationFactory<ProfileControllerTest.Startup>>
+{
+    private readonly CustomWebApplicationFactory<Startup> _factory;
+    private readonly HttpClient _client;
+
+    public ProfileControllerTest(CustomWebApplicationFactory<Startup> factory)
+    {
+        _factory = factory;
+        _client = factory.CreateClient();
+    }
+
+    private static string ProfileUrl(Guid profileId) => ProfileUpdateController.RouteName.Replace("{profileId}", profileId.ToString());
+
+    [Fact]
+    public async Task Post_Should_Create_And_Return_WorkerProfile()
+    {
+        // Arrange
+        var model = new WorkerProfileCreateModel
+        {
+            ProfileImage = new CovenantFileModel("profile.png", "profile"),
+            FirstName = "Bill",
+            MiddleName = "Henry",
+            LastName = "Gates",
+            SecondLastName = "Smith",
+            BirthDay = new DateTime(1990, 01, 01),
+            Gender = new BaseModel<Guid>(Startup.FakeGender.Id),
+            Location = new LocationModel
+            {
+                Address = "Medina Wash",
+                PostalCode = "A1A1A1",
+                City = new CityModel(Startup.FakeCity.Id, Startup.FakeCity.Value)
+            },
+            Email = $"fake_worker@mail.com",
+            MobileNumber = "647-909-7182",
+            Phone = "416-123-4567",
+            Lift = new BaseModel<Guid>(Startup.FakeLift.Id),
+            Availabilities = new[] { new BaseModel<Guid>(Startup.FakeAvailability.Id) },
+            AvailabilityTimes = new[] { new BaseModel<Guid>(Startup.FakeAvailabilityTime.Id) },
+            AvailabilityDays = new[] { new BaseModel<Guid>(Startup.FakeDay.Id) },
+            Languages = new[] { new BaseModel<Guid>(Startup.FakeLanguage.Id) },
+            Skills = new[] { new SkillModel { Skill = "Forklift" } },
+            ContactEmergencyName = "Melinda",
+            ContactEmergencyLastName = "Gates",
+            ContactEmergencyPhone = "647-908-7124",
+            JobExperiences = new[]
+            {
+                new WorkerProfileJobExperienceModel
+                {
+                    Company = "Microsoft",
+                    Duties = "Some duties",
+                    StartDate = new DateTime(2019, 01, 01),
+                    IsCurrentJobPosition = true
+                }
+            },
+            Password = "StrongPass1",
+            ConfirmPassword = "StrongPass1",
+            IdentificationNumber1 = "ABC123456",
+            IdentificationNumber2 = "XYZ987654",
+            IdentificationType1File = new CovenantFileModel("id1.png", "image/png"),
+            IdentificationType2File = new CovenantFileModel("id2.png", "image/png"),
+            HasVehicle = true
+        };
+
+        using (var content = new MultipartFormDataContent())
+        {
+            var json = JsonSerializer.Serialize(model);
+            content.Add(new StringContent(json), "data");
+
+            var response = await _client.PostAsync(ProfileController.RouteName, content);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var workerProfileId = await response.Content.ReadFromJsonAsync<Guid>();
+            var context = _factory.Services.GetRequiredService<CovenantContext>();
+            var detail = await context.WorkerProfiles.FindAsync(workerProfileId);
+            Assert.NotNull(detail);
+            Assert.Equal(model.FirstName, detail.FirstName);
+            Assert.Equal(model.LastName, detail.LastName);
+            Assert.Equal(model.Email, detail.Worker.Email);
+            Assert.Equal(model.Location?.Address, detail.Location?.Address);
+            Assert.Equal(model.Location?.City?.Id, detail.Location?.City?.Id);
+            Assert.Equal(model.MobileNumber, detail.MobileNumber);
+            Assert.Equal(model.Lift?.Id, detail.LiftId);
+        }
+    }
+
+    [Fact]
+    public async Task Resume_Can_Be_Added_To_A_Profile_Without_One_And_Then_Removed()
+    {
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        context.ChangeTracker.Clear();
+        var profile = FakeData.FakeWorkerProfile();
+        context.WorkerProfiles.Add(profile);
+        await context.SaveChangesAsync();
+
+        using (var content = new MultipartFormDataContent())
+        {
+            content.Add(new StringContent(JsonSerializer.Serialize(new { fileName = "resume.pdf", description = "" })), "data");
+            content.Add(new ByteArrayContent([1, 2, 3]), "resume.pdf", "resume.pdf");
+
+            var response = await _client.PostAsync($"{ProfileUrl(profile.Id)}/Resume", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        var saved = await context.WorkerProfiles.AsNoTracking().Include(p => p.Resume).SingleAsync(p => p.Id == profile.Id);
+        Assert.Equal("resume.pdf", saved.Resume?.FileName);
+
+        using (var content = new MultipartFormDataContent())
+        {
+            content.Add(new StringContent(JsonSerializer.Serialize(new { fileName = "", description = "" })), "data");
+
+            var response = await _client.PostAsync($"{ProfileUrl(profile.Id)}/Resume", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        var cleared = await context.WorkerProfiles.AsNoTracking().SingleAsync(p => p.Id == profile.Id);
+        Assert.Null(cleared.ResumeId);
+    }
+
+    [Fact]
+    public async Task New_License_Requires_Description_But_Existing_Ones_Without_It_Are_Accepted()
+    {
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        context.ChangeTracker.Clear();
+        var profile = FakeData.FakeWorkerProfile();
+        profile.PatchLicenses(new List<WorkerProfileLicenseModel>
+        {
+            new() { License = new CovenantFileModel("legacy.pdf", string.Empty) }
+        });
+        context.WorkerProfiles.Add(profile);
+        await context.SaveChangesAsync();
+
+        async Task<HttpResponseMessage> PostLicenses(string newDescription)
+        {
+            var licenses = new[]
+            {
+                new { license = new { fileName = "legacy.pdf", description = "" } },
+                new { license = new { fileName = "new.pdf", description = newDescription } }
+            };
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(JsonSerializer.Serialize(licenses)), "data");
+            content.Add(new ByteArrayContent([1, 2, 3]), "new.pdf", "new.pdf");
+            return await _client.PostAsync($"{ProfileUrl(profile.Id)}/Licenses", content);
+        }
+
+        var rejected = await PostLicenses("");
+        Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+
+        var accepted = await PostLicenses("Forklift");
+        Assert.Equal(HttpStatusCode.OK, accepted.StatusCode);
+
+        var saved = await context.WorkerProfiles.AsNoTracking()
+            .Include(p => p.Licenses).ThenInclude(l => l.License)
+            .SingleAsync(p => p.Id == profile.Id);
+        Assert.Contains(saved.Licenses, l => l.License.FileName == "new.pdf" && l.License.Description == "Forklift");
+    }
+
+    public class Startup
+    {
+        public static readonly Gender FakeGender = new("Male");
+        public static readonly City FakeCity = new() { Province = new Province { Country = FakeData.FakeCountry("CA") }, Value = "Toronto" };
+        public static readonly Availability FakeAvailability = new("Full Time");
+        public static readonly AvailabilityTime FakeAvailabilityTime = new("Morning");
+        public static readonly Day FakeDay = new("Monday");
+        public static readonly Lift FakeLift = new("18 lbs");
+        public static readonly Language FakeLanguage = new("English");
+        public static readonly User FakeWorker = new(CvnEmail.Create("fake_worker@mail.com").Value, Guid.NewGuid());
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddDefaultTestConfiguration();
+            services.AddTestAuthenticationBuilder().AddTestAuth(o =>
+            {
+                o.AddSub(FakeWorker.Id);
+                o.AddWorkerRole();
+            });
+            services.AddHttpClient();
+
+            services.AddTestDatabase();
+
+            var userAccountService = new Mock<IUserAccountService>();
+            userAccountService.Setup(c => c.CreateUser(It.IsAny<CreateUserModel>()))
+                .ReturnsAsync(Result.Ok(new User(FakeWorker.Email, FakeWorker.Id)));
+
+            var teamNotification = new Mock<ITeamsService>();
+            teamNotification.Setup(t => t.SendNotification(It.IsAny<string>(), It.IsAny<TeamsNotificationModel>()))
+                .ReturnsAsync(Result.Ok());
+
+            services.AddSingleton(userAccountService.Object);
+            services.AddSingleton<IWorkerRepository, WorkerRepository>();
+            services.AddSingleton<IRequestRepository, RequestRepository>();
+            services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();
+            services.AddSingleton<ICandidateRepository, CandidateRepository>();
+            services.AddSingleton<INotificationRepository, NotificationRepository>();
+            services.AddSingleton<IWorkerService, WorkerService>();
+            services.AddSingleton(teamNotification.Object);
+        }
+
+        public void Configure(IApplicationBuilder app, CovenantContext context)
+        {
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseResponseCaching();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}");
+            });
+
+            context.Genders.Add(FakeGender);
+            context.Cities.Add(FakeCity);
+            context.Availabilities.Add(FakeAvailability);
+            context.AvailabilityTimes.Add(FakeAvailabilityTime);
+            context.Days.Add(FakeDay);
+            context.Lifts.Add(FakeLift);
+            context.Languages.Add(FakeLanguage);
+
+            var agencyUser = new User(CvnEmail.Create("a@agency.com").Value, Guid.NewGuid());
+            var agency = new Covenant.Common.Entities.Agency.Agency("", "")
+            {
+                Id = agencyUser.Id,
+                AgencyType = AgencyType.Master,
+                User = agencyUser
+            };
+            agency.AddLocation(Location.Create(FakeCity.Id, "Street False 123", "A1A1A1").Value);
+            context.Agencies.Add(agency);
+
+            context.SaveChanges();
+        }
+    }
+}

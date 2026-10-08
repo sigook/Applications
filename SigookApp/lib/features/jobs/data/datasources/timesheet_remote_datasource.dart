@@ -41,7 +41,7 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
   ) async {
     try {
       final response = await apiClient.dio.get(
-        '/WorkerRequest/$requestId/TimeSheet/clock-type/$latitude/$longitude?date=${date.toIso8601String()}',
+        '/worker/requests/$requestId/TimeSheet/clock-type/$latitude/$longitude?date=${date.toIso8601String()}',
       );
       if (response.statusCode == 200) {
         return clockTypeFromInt(response.data);
@@ -76,7 +76,7 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
   }) async {
     try {
       final response = await apiClient.dio.post(
-        '/WorkerRequest/$jobId/TimeSheet',
+        '/worker/requests/$jobId/TimeSheet',
         data: {'latitude': latitude, 'longitude': longitude},
       );
       if (response.statusCode == 200) {
@@ -173,7 +173,7 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
     int pageSize = 5,
     bool isDescending = false,
   }) async {
-    final endpoint = '/WorkerRequest/$jobId/TimeSheet';
+    final endpoint = '/worker/requests/$jobId/TimeSheet';
     final queryParams = {
       'IsDescending': isDescending,
       'PageIndex': pageIndex,

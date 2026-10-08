@@ -1,0 +1,14 @@
+using Covenant.Common.Entities.Request;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+
+namespace Covenant.Infrastructure.Configurations.Requests;
+
+public class RequestNoteConfiguration : IEntityTypeConfiguration<RequestNote>
+{
+    public void Configure(EntityTypeBuilder<RequestNote> builder)
+    {
+        builder.ToTable("RequestNotes");
+        builder.HasKey(k => new { k.RequestId, k.NoteId });
+    }
+}

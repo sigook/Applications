@@ -1,5 +1,7 @@
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 
 namespace Covenant.Common.Entities.Accounting.Invoice;
@@ -31,6 +33,19 @@ public class InvoiceUSA
     public IEnumerable<InvoiceUSADiscount> Discounts { get; set; } = new List<InvoiceUSADiscount>();
     public IEnumerable<InvoiceUSATimeSheetTotal> TimeSheetTotals { get; set; } = new List<InvoiceUSATimeSheetTotal>();
     public InvoiceAdditionalDetail AdditionalDetail { get; set; }
+    public InvoiceStatus Status { get; set; } = InvoiceStatus.Pending;
+    public DateTime? UpdatedAt { get; set; }
+    public Guid? UpdatedBy { get; set; }
+    public User UpdatedByUser { get; set; }
+
+    public Result ChangeStatus(InvoiceStatus next, Guid changedBy, DateTime now)
+    {
+        if (Status == next) return Result.Fail($"Invoice is already {next}");
+        Status = next;
+        UpdatedAt = now;
+        UpdatedBy = changedBy;
+        return Result.Ok();
+    }
 
     public void AddTimesheetTotals(IEnumerable<ITimeSheetTotal> totals)
     {

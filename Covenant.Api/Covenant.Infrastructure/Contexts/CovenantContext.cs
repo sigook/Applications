@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities.Sales;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Entities.Accounting.Subcontractor;

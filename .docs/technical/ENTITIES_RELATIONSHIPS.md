@@ -180,16 +180,16 @@ invoice/pay-stub time.
 | `CompanyProfileNote` | Company↔CovenantNote (shared note entity with soft delete) |
 | `CompanyUser` | additional company-side login: `CompanyProfileId` → CompanyProfile (owner), `UserId` → User (member), `Name`, `Lastname`, `Position`, `MobileNumber`. Unique `(CompanyProfileId, UserId)`. Gotcha: `Id == UserId` (the ctor sets `Id = user.Id`), so a user can hold only one CompanyUser row globally |
 
-### Sales entities (`Deal.cs`, `CompanyInteraction.cs`)
+### Sales entities (`Entities/Sales/Deal.cs`, `Entities/Sales/CompanyInteraction.cs`)
 
-Both hang off `CompanyProfile` and carry the owning sales user; added by migration `20260811133554_AddDealsAndInteractions`. Enums in `Covenant.Common/Enums/`, serialized as ints (see the enum mirror gotcha in SIGOOK_WEB_API_MAP.md §14). Business meaning: `.docs/business/SALES_MODULE.md`.
+Both live in the `Sales` domain (entities, models under `Models/Sales/`, `SalesService`, `Configurations/Sales/`) and hang off `CompanyProfile` and carry the owning sales user; added by migration `20260811133554_AddDealsAndInteractions`. Enums in `Covenant.Common/Enums/`, serialized as ints (see the enum mirror gotcha in SIGOOK_WEB_API_MAP.md §14). Business meaning: `.docs/business/SALES_MODULE.md`.
 
 | Entity | Key fields |
 |---|---|
 | `Deal` | `Title`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; exposed as `OwnerId` in `DealListModel` / `GetDealsFilter`), `Date` (business date), `Value` (decimal), `Type` (`DealType`: Temporal 0, Permanent 1, TempToPerm 2), `Status` (`DealStatus`: ToSend 0, Sent 1, Rejected 2, Accepted 3), `DocumentId?` → CovenantFile, `CreatedAt` / `UpdatedAt`. `Update()` never touches `CompanyProfileId` or `UserId` |
 | `CompanyInteraction` | `Description`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; `OwnerId` in list/filter models), `InteractionPurpose` (Intro 0 … Closing 4), `InteractionType` (Call 0, Mail 1, Sms 2, LinkedIn 3), `InteractionStatus` (NotStarted 0 default, InProgress 1, Completed 2), `CreatedAt` / `UpdatedAt`. Same immutable `CompanyProfileId` / `UserId` on update |
 
-Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `SalesService`, behind `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{InteractionsController,DealsController}.cs` (routes `api/agency/companyprofiles/{profileId}/…`; the client comes from the route) — rule in `.docs/business/ROLES_PERMISSIONS.md`.
+Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `SalesService`, behind `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs` (routes `api/agency/sales/clients/{profileId}/deals|interactions`; the client comes from the route) — rule in `.docs/business/ROLES_PERMISSIONS.md`.
 
 ---
 
@@ -304,14 +304,14 @@ rejected worker reuses the same row (`Book()` clears rejection fields). Unique
 
 Someone who applied/was submitted to a request: `RequestId` + **either** `WorkerProfileId`
 **or** `CandidateId` (mutually exclusive — factories `CreateWithWorker` / `CreateWithCandidate`),
-`CreatedBy`, `Comments`. Managed by `Controllers/Sigook/Agency/Requests/ApplicantsController.cs`;
+`CreatedBy`, `Comments`. Managed by `Controllers/Agency/Recruiting/Requests/ApplicantsController.cs`;
 `RequestApplicantConsumer` reacts to new-applicant bus messages.
 
 ### RequestSource (`RequestSource.cs`)
 
 M:N Request↔`Source` (job board posting), composite PK `(RequestId, SourceId)`. Only sources
 with `Source.IsAvailableForRequests = true` are selectable as job boards
-(`GET api/Catalog/source/requests`).
+(`GET api/catalog/source/requests`).
 
 ### RequestRecruiter (weekly board)
 
@@ -319,7 +319,7 @@ with `Source.IsAvailableForRequests = true` are selectable as job boards
 `WorkDate` (day cell on the recruiting weekly board). Max 10 recruiters per request per day;
 unique `(RequestId, RecruiterId, WorkDate)`. Managed through `Request.AddRecruiter` /
 `RemoveRecruiter` / `MoveRecruiterAssignment` and `WeeklyBoardService` /
-`Controllers/Sigook/Agency/Recruiting/WeeklyBoardController.cs`.
+`Controllers/Agency/Recruiting/WeeklyBoard/WeeklyBoardController.cs`.
 
 The people a recruiter sends under an assignment are **Runners** (`RequestRecruiter.Runners`,
 FK `Runner.RequestRecruiterId`, `ON DELETE SET NULL`).
@@ -348,8 +348,8 @@ Entity-enforced constraints:
   added/rescheduled only in `InterviewScheduled`/`InterviewRescheduled`; rescheduling
   auto-transitions to `InterviewRescheduled`.
 
-API: `Controllers/Sigook/Agency/Requests/RunnersController.cs`
-(`api/agency/requests/{requestId}/Runners`). Business narrative: WORKFLOWS.md §6.
+API: `Controllers/Agency/Recruiting/Requests/RunnersController.cs`
+(`api/agency/recruiting/requests/{requestId}/runners`). Business narrative: WORKFLOWS.md §6.
 
 ---
 
@@ -497,5 +497,5 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | InvoiceUSA | `InvoiceNumber`; `InvoiceNumberId` |
 | UserNotificationType (table `UserNotificationTypes`) | `(UserId, NotificationTypeId)` |
 
-Non-unique example: `Runner.RequestId` (`Configurations/Request/Runners/RunnerConfiguration.cs`).
+Non-unique example: `Runner.RequestId` (`Configurations/Requests/Runners/RunnerConfiguration.cs`).
 For anything else, check the entity's configuration class before assuming an index exists.

@@ -1,0 +1,118 @@
+import { RouteRecordRaw } from 'vue-router';
+
+const Home               = () => import('@/modules/landing/pages/Home/Home.vue');
+const AboutUs            = () => import('@/modules/landing/pages/About/AboutUs.vue');
+const Industries         = () => import('@/modules/landing/pages/Industries/Industries.vue');
+const Talents            = () => import('@/modules/landing/pages/Talents/Talents.vue');
+const Employers          = () => import('@/modules/landing/pages/Employers/Employers.vue');
+const OpenPositions      = () => import('@/modules/landing/pages/OpenPositions/OpenPositions.vue');
+const Apply              = () => import('@/modules/landing/pages/Apply/Apply.vue');
+const Partner            = () => import('@/modules/landing/pages/Partner/Partner.vue');
+const SpecialProjects    = () => import('@/modules/landing/pages/SpecialProjects/SpecialProjects.vue');
+const PrivacyPolicy      = () => import('@/modules/landing/pages/Legal/PrivacyPolicy.vue');
+const TermsAndConditions = () => import('@/modules/landing/pages/Legal/TermsAndConditions.vue');
+const Disclaimer         = () => import('@/modules/landing/pages/Legal/Disclaimer.vue');
+const ComingSoon         = () => import('@/modules/landing/pages/ComingSoon.vue');
+
+const cs = (path: string, name: string, title: string): RouteRecordRaw => ({
+    path,
+    name,
+    component: ComingSoon,
+    meta: { layout: 'landing', requiresAuth: false, title },
+});
+
+const routesLanding: RouteRecordRaw[] = [
+    {
+        path: '/',
+        name: 'home',
+        component: Home,
+        meta: { layout: 'landing', requiresAuth: false },
+    },
+    {
+        path: '/open-positions',
+        name: 'open-positions',
+        component: OpenPositions,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Open Positions', description: 'Browse current job openings in skilled trades, industrial, and professional roles. Search by title and location, and apply online with Sigook.' },
+    },
+    {
+        path: '/industries',
+        name: 'industries',
+        component: Industries,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Industries', description: 'Explore the industries Sigook staffs — manufacturing, construction, logistics, engineering, technology and more — with sector-specialized recruiters.' },
+    },
+    {
+        path: '/about',
+        name: 'about',
+        component: AboutUs,
+        meta: { layout: 'landing', requiresAuth: false, title: 'About Us', description: 'Learn about Sigook, a workforce and staffing partner connecting skilled talent with employers through dependable, partnership-driven service.' },
+    },
+    {
+        path: '/employers',
+        name: 'employers',
+        component: Employers,
+        meta: { layout: 'landing', requiresAuth: false, title: 'For Employers', description: 'Hire vetted professionals faster. Sigook delivers tailored staffing solutions for specialized and high-volume roles, from search to onboarding.' },
+    },
+    {
+        path: '/talents',
+        name: 'talents',
+        component: Talents,
+        meta: { layout: 'landing', requiresAuth: false, title: 'For Talents', description: 'Find your next role with Sigook. We match skilled professionals with top employers and support you from application through placement.' },
+    },
+    {
+        path: '/special-projects',
+        name: 'special-projects',
+        component: SpecialProjects,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Special Projects', description: 'Sigook Special Projects — workforce development, specialized training, and innovative programs that strengthen local economies.' },
+    },
+    {
+        path: '/partner',
+        name: 'partner',
+        component: Partner,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Become a Partner', description: 'Become a Sigook partner. Independent recruiters and business developers plug into our compliance, payroll, and client base while keeping their brand.' },
+    },
+    {
+        path: '/apply',
+        name: 'apply',
+        component: Apply,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Apply' },
+    },
+    {
+        path: '/privacy-policy',
+        name: 'privacy-policy',
+        component: PrivacyPolicy,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Privacy Policy' },
+    },
+    {
+        path: '/terms-and-conditions',
+        name: 'terms-and-conditions',
+        component: TermsAndConditions,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Terms and Conditions' },
+    },
+    {
+        path: '/disclaimer',
+        name: 'disclaimer',
+        component: Disclaimer,
+        meta: { layout: 'landing', requiresAuth: false, title: 'Disclaimer' },
+    },
+    cs('/certified',  'certified',  'Licensed & Certified'),
+    cs('/payroll',    'payroll',    'Payroll Solutions'),
+    cs('/sign-up',    'sign-up',    'Sign Up'),
+    cs('/sign-in',    'sign-in',    'Sign In'),
+
+    { path: '/home', redirect: '/' },
+    { path: '/jobSeekers', redirect: '/open-positions' },
+    { path: '/jobSeekers/:position', redirect: '/open-positions' },
+    { path: '/business', redirect: '/employers' },
+    { path: '/business/:position', redirect: '/employers' },
+    { path: '/direct-hiring', redirect: '/employers' },
+    { path: '/about-us', redirect: '/about' },
+    { path: '/contact', redirect: '/' },
+    { path: '/atas', redirect: '/' },
+    { path: '/news/:slug', redirect: '/' },
+    { path: '/news', redirect: '/' },
+    { path: '/v2/home', redirect: '/' },
+    { path: '/v2/terms', redirect: '/terms-and-conditions' },
+    { path: '/v2/:rest(.*)', redirect: (to) => `/${to.params.rest}` },
+];
+
+export default routesLanding;

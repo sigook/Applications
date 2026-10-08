@@ -1,5 +1,6 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
@@ -7,13 +8,16 @@ using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Repositories.Accounting.Invoices;
+using Covenant.Common.Repositories.Accounting.PayStubs;
+using Covenant.Common.Repositories.Accounting.Subcontractors;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
-using Covenant.Common.Repositories.Accounting;
-using Covenant.Common.Repositories.Agency;
-using Covenant.Common.Repositories.Company;
-using Covenant.Common.Repositories.Request;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Core.BL.Interfaces.Accounting;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Options;
 
@@ -41,8 +45,16 @@ public class CanadaInvoiceService(
     IPayStubsContainer payStubsContainer,
     ITeamsService teamsService,
     IOptions<TeamsWebhookConfiguration> teamsOptions,
-    IInvoiceDocumentAdapter invoiceDocumentAdapter) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeProvider, rates, subcontractorRepository, timeLimits, calculatorService, currentUserService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter)
+    IInvoiceDocumentAdapter invoiceDocumentAdapter,
+    IValidator<ChangeInvoiceStatusModel> changeStatusValidator) : InvoiceService(timeSheetRepository, invoiceRepository, agencyRepository, companyRepository, locationRepository, catalogRepository, timeProvider, rates, subcontractorRepository, timeLimits, calculatorService, currentUserService, invoicesContainer, renderer, pdfGenerator, emailService, mediator, payStubsContainer, teamsService, teamsOptions, invoiceDocumentAdapter, changeStatusValidator)
 {
+    protected override async Task<Result> ChangeStatusData(IEnumerable<Guid> agencyIds, Guid invoiceId, InvoiceStatus status, Guid changedBy, DateTime now)
+    {
+        var invoice = await invoiceRepository.GetInvoiceForAgency(agencyIds, invoiceId);
+        if (invoice is null) return Result.Fail("Invoice not found");
+        return invoice.ChangeStatus(status, changedBy, now);
+    }
+
     protected override Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
         => invoiceRepository.GetInvoicesForAgency(agencyIds, filter);
 

@@ -1,0 +1,592 @@
+using Covenant.Common.Configuration;
+using Covenant.Common.Entities;
+using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Notification;
+using Covenant.Common.Entities.Request;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Models.Request.Company;
+using Covenant.Common.Models;
+using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Request;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Repositories.Notifications;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories;
+using Covenant.Common.Resources;
+using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Requests;
+using Covenant.Documents.Services;
+using Covenant.Infrastructure.Services;
+using FluentValidation;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Text;
+
+namespace Covenant.Core.BL.Services.Requests;
+
+public class RequestService : IRequestService
+{
+    private readonly ICompanyRepository companyRepository;
+    private readonly IAgencyRepository agencyRepository;
+    private readonly ILocationRepository locationRepository;
+    private readonly TimeProvider timeProvider;
+    private readonly IRequestRepository requestRepository;
+    private readonly INotificationDataRepository notificationDataRepository;
+    private readonly IPushNotifications pushNotifications;
+    private readonly ICurrentUserService currentUserService;
+    private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
+    private readonly IEmailService emailService;
+    private readonly ISigookBusClient busClient;
+    private readonly ServiceBusConfiguration serviceBusConfiguration;
+    private readonly ILogger<RequestService> logger;
+    private readonly IValidator<RequestCreateModel> requestCreateValidator;
+    private readonly IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator;
+    private readonly IRequestAdapter requestAdapter;
+    private readonly IMediator mediator;
+
+    public RequestService(
+        ICompanyRepository companyRepository,
+        IAgencyRepository agencyRepository,
+        ILocationRepository locationRepository,
+        TimeProvider timeProvider,
+        IRequestRepository requestRepository,
+        INotificationDataRepository notificationDataRepository,
+        IPushNotifications pushNotifications,
+        ICurrentUserService currentUserService,
+        IRazorViewToStringRenderer razorViewToStringRenderer,
+        IEmailService emailService,
+        ISigookBusClient busClient,
+        IOptions<ServiceBusConfiguration> serviceBusOptions,
+        ILogger<RequestService> logger,
+        IValidator<RequestCreateModel> requestCreateValidator,
+        IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator,
+        IRequestAdapter requestAdapter,
+        IMediator mediator)
+    {
+        this.requestAdapter = requestAdapter;
+        this.mediator = mediator;
+        this.requestCreateValidator = requestCreateValidator;
+        this.requestUpdateRequirementsValidator = requestUpdateRequirementsValidator;
+        this.companyRepository = companyRepository;
+        this.agencyRepository = agencyRepository;
+        this.locationRepository = locationRepository;
+        this.timeProvider = timeProvider;
+        this.requestRepository = requestRepository;
+        this.notificationDataRepository = notificationDataRepository;
+        this.pushNotifications = pushNotifications;
+        this.currentUserService = currentUserService;
+        this.razorViewToStringRenderer = razorViewToStringRenderer;
+        this.emailService = emailService;
+        this.busClient = busClient;
+        serviceBusConfiguration = serviceBusOptions.Value;
+        this.logger = logger;
+    }
+
+    public async Task<Result<Guid>> CreateRequest(RequestCreateModel model)
+    {
+        if (model.AgencyId == Guid.Empty)
+            model.AgencyId = currentUserService.GetAgencyId();
+        if (currentUserService.IsSales())
+            model.SalesRepresentativeId = currentUserService.GetAgencyPersonnelId();
+        var rRequest = await MapRequest(model);
+        if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
+        var request = rRequest.Value;
+        await requestRepository.Create([request]);
+        if (model.SalesRepresentativeId.HasValue)
+        {
+            var requestComission = new RequestComission
+            {
+                AgencyPersonnelId = model.SalesRepresentativeId.Value,
+                RequestId = request.Id,
+            };
+            await requestRepository.Create([requestComission]);
+        }
+        if (model.CompanyUserIds != null && model.CompanyUserIds.Any())
+        {
+            foreach (var companyUserId in model.CompanyUserIds)
+            {
+                var requestCompanyUser = new RequestCompanyUser
+                {
+                    CompanyUserId = companyUserId,
+                    RequestId = request.Id
+                };
+                await requestRepository.Create([requestCompanyUser]);
+            }
+        }
+        var complianceItems = requestAdapter.MapToComplianceItems(request.Id, model.ComplianceItems);
+        if (!complianceItems) return Result.Fail<Guid>(complianceItems.Errors);
+        await requestRepository.Create(complianceItems.Value);
+        await requestRepository.SaveChangesAsync();
+        var location = await locationRepository.GetLocationById(model.LocationId.Value);
+        var currency = location.IsUSA ? "USD" : "CAD";
+        var salary = request.WorkerRate.HasValue ? $"{request.WorkerRate}/h" : $"{request.WorkerSalary} anually";
+        var notificationModel = NotificationModel.NewRequestNotification("Job Alert", $"{request.JobTitle} {currency} ${salary}", request.Id);
+        await pushNotifications.SendNotification(notificationModel);
+        return Result.Ok(request.Id);
+    }
+
+    public async Task<Result<Guid>> DuplicateRequest(Guid sourceRequestId, RequestCreateModel model)
+    {
+        var source = await requestRepository.GetRequest(r => r.Id == sourceRequestId);
+        if (source is null) return Result.Fail<Guid>(ApiResources.RequestNotAvailable);
+        model.Shift ??= await requestRepository.GetRequestShift(sourceRequestId);
+        var rRequest = await CreateRequest(model);
+        if (!rRequest) return rRequest;
+        var requestId = rRequest.Value;
+        foreach (var skill in await requestRepository.GetSkills(sourceRequestId))
+        {
+            var rSkill = RequestSkill.Create(requestId, skill.Skill);
+            if (!rSkill) return Result.Fail<Guid>(rSkill.Errors);
+            await requestRepository.Create<RequestSkill>([rSkill.Value]);
+        }
+        var requestedBy = await requestRepository.GetRequestedByList(sourceRequestId, Pagination.Default);
+        await requestRepository.Create(requestedBy.Items.Select(p => new RequestRequestedBy(requestId, p.Id)).ToList());
+        var reportTo = await requestRepository.GetReportToList(sourceRequestId, Pagination.Default);
+        await requestRepository.Create(reportTo.Items.Select(p => new RequestReportTo(requestId, p.Id)).ToList());
+        var sources = await requestRepository.GetRequestSources(sourceRequestId);
+        await requestRepository.ReplaceRequestSources(requestId, sources.Select(s => new CreateRequestSourceModel { SourceId = s.SourceId }));
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok(requestId);
+    }
+
+    public async Task<Result<Guid>> CompanyCreateRequest(RequestCreateModel model)
+    {
+        var companyId = currentUserService.GetCompanyId();
+        var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == companyId);
+        if (model.AnotherLocation?.City != null)
+        {
+            var location = Location.Create(model.AnotherLocation.City.Id, model.AnotherLocation.Address, model.AnotherLocation.PostalCode, model.AnotherLocation.Entrance, model.AnotherLocation.MainIntersection);
+            if (!location) return Result.Fail<Guid>(location.Errors);
+            var entity = new CompanyProfileLocation(companyProfile.Id, location.Value);
+            await companyRepository.Create(entity);
+            model.LocationId = location.Value.Id;
+        }
+        model.AgencyId = companyProfile.AgencyId;
+        model.CompanyProfileId = companyProfile.Id;
+        var requestId = await CreateRequest(model);
+        var data = await notificationDataRepository.GetAgencyData(requestId.Value, NotificationType.NewRequest.Id);
+        if (data != null && data.EmailNotification)
+        {
+            var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnNewRequest/AgencyTemplate.cshtml", data);
+            await emailService.SendEmail(new EmailParams(data.AgencyEmail, $"New Request {data.JobTitle}", message));
+        }
+        return requestId;
+    }
+
+    public async Task<Result> OpenRequest(Guid requestId, string finalizedBy)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        var now = timeProvider.GetLocalNow().DateTime;
+        Result result = request.Open(now);
+        if (!result) return result;
+
+        var note = CovenantNote.Create("Request open", CovenantNote.RedColor, finalizedBy).Value;
+        await requestRepository.Create([new RequestNote(requestId, note)]);
+        var requestFinalizationDetail = await requestRepository.GetRequestFinalizationDetail(requestId);
+        if (requestFinalizationDetail != null)
+        {
+            requestRepository.Delete([requestFinalizationDetail]);
+        }
+        var requestCancellationDetail = await requestRepository.GetRequestCancellationDetail(requestId);
+        if (requestCancellationDetail != null)
+        {
+            requestRepository.Delete([requestCancellationDetail]);
+        }
+        await requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateRequest(Guid requestId, RequestCreateModel model)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null)
+        {
+            return Result.Fail("Request not found");
+        }
+        var validationResult = await requestCreateValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure();
+        if (model.WorkerSalary.HasValue)
+        {
+            request.WorkerSalary = model.WorkerSalary.Value;
+            request.AgencyRate = null;
+            request.WorkerRate = null;
+            request.JobPositionRateId = null;
+        }
+        else
+        {
+            request.WorkerSalary = null;
+            var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
+            request.AgencyRate = positionRate.Rate;
+            request.WorkerRate = positionRate.WorkerRate;
+            request.JobPositionRateId = positionRate.Id;
+        }
+        request.UpdateJobTitle(model.JobTitle);
+        request.UpdateBillingTitle(model.BillingTitle);
+        request.UpdateJobCosting(model.JobCosting);
+        var location = await locationRepository.GetLocationById(model.LocationId.Value);
+        request.UpdateJobLocation(location, false);
+        request.UpdateDescription(model.Description);
+        request.UpdateRequirements(model.Requirements);
+        request.InternalRequirements = model.InternalRequirements;
+        request.Responsibilities = model.Responsibilities;
+        request.UpdateIncentive(model.Incentive, model.IncentiveDescription);
+        request.UpdateDurationBreak(model.DurationBreak);
+        request.BreakIsPaid = model.BreakIsPaid;
+        request.WorkersQuantity = model.WorkersQuantity;
+        request.UpdatePunchCardVisibilityStatusInApp(model.PunchCardOptionEnabled);
+        request.UpdateIsAsap(model.IsAsap);
+        request.UpdateUsesRunners(model.UsesRunners);
+        request.DurationTerm = model.DurationTerm;
+        request.EmploymentType = model.EmploymentType;
+        request.StartAt = model.StartAt;
+        request.FinishAt = model.FinishAt;
+        if (model.SalesRepresentativeId.HasValue)
+        {
+            var requestComission = await requestRepository.GetRequestComission(request.Id);
+            if (requestComission == null)
+            {
+                requestComission = new RequestComission
+                {
+                    RequestId = request.Id,
+                    AgencyPersonnelId = model.SalesRepresentativeId.Value
+                };
+                await requestRepository.Create([requestComission]);
+            }
+            else if (requestComission.AgencyPersonnelId != model.SalesRepresentativeId.Value)
+            {
+                requestComission.AgencyPersonnelId = model.SalesRepresentativeId.Value;
+            }
+        }
+        var requestCompanyUsers = await requestRepository.GetRequestCompanyUsers(request.Id);
+        foreach (var user in requestCompanyUsers)
+        {
+            requestRepository.Delete([user]);
+        }
+        if (model.CompanyUserIds != null && model.CompanyUserIds.Any())
+        {
+            foreach (var companyUserId in model.CompanyUserIds)
+            {
+                var requestCompanyUser = new RequestCompanyUser
+                {
+                    CompanyUserId = companyUserId,
+                    RequestId = request.Id
+                };
+                await requestRepository.Create([requestCompanyUser]);
+            }
+        }
+        var existingComplianceItems = await requestRepository.GetComplianceItems(request.Id);
+        var complianceItems = model.ComplianceItems ?? [];
+        var keptComplianceItemIds = complianceItems.Where(c => c.Id.HasValue).Select(c => c.Id.Value).ToList();
+        var removedComplianceItemIds = existingComplianceItems.Where(c => !keptComplianceItemIds.Contains(c.Id)).Select(c => c.Id).ToList();
+        if (removedComplianceItemIds.Count > 0)
+            requestRepository.Delete(await requestRepository.GetApplicantComplianceCompletions(removedComplianceItemIds));
+        requestRepository.Delete(existingComplianceItems.Where(c => !keptComplianceItemIds.Contains(c.Id)));
+        foreach (var existingComplianceItem in existingComplianceItems.Where(c => keptComplianceItemIds.Contains(c.Id)))
+        {
+            var complianceItem = complianceItems.First(c => c.Id == existingComplianceItem.Id);
+            var complianceItemResult = existingComplianceItem.Update(complianceItem.Name, complianceItem.IsMandatory, complianceItem.DocumentTarget);
+            if (!complianceItemResult) return complianceItemResult;
+        }
+        var existingComplianceItemIds = existingComplianceItems.Select(c => c.Id).ToList();
+        var newComplianceItems = requestAdapter.MapToComplianceItems(
+            request.Id,
+            complianceItems.Where(c => !c.Id.HasValue || !existingComplianceItemIds.Contains(c.Id.Value)));
+        if (!newComplianceItems) return Result.Fail(newComplianceItems.Errors);
+        await requestRepository.Create(newComplianceItems.Value);
+        await requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateRequirements(Guid id, RequestUpdateRequirementsModel model)
+    {
+        var validationResult = await requestUpdateRequirementsValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure();
+        var request = await requestRepository.GetRequest(r => r.Id == id);
+        var update = request.UpdateRequirements(model.Requirements);
+        if (!update) return update;
+        await requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateIsAsap(Guid id)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == id);
+        var update = request.UpdateIsAsap();
+        if (!update) return update;
+        await requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> CancelRequest(Guid requestId, RequestCancellationDetailModel reason)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        var rCancel = await ApplyCancellation(request, reason.CancellationReasonId, reason.OtherCancellationReason);
+        if (!rCancel) return rCancel;
+        await requestRepository.SaveChangesAsync();
+        await SendCancellationNotification(requestId);
+        return Result.Ok();
+    }
+
+    public async Task<Result<BulkRequestCancellationResult>> BulkCancelRequests(BulkRequestCancellation model)
+    {
+        if (model?.Ids == null || !model.Ids.Any())
+        {
+            return Result.Ok(new BulkRequestCancellationResult { Cancelled = 0, Skipped = 0 });
+        }
+        var requests = await requestRepository.GetRequests(model.Ids);
+        var notificationsToSend = new List<Guid>();
+        var cancelled = 0;
+        var skipped = 0;
+        foreach (var request in requests)
+        {
+            var rCancel = await ApplyCancellation(request, model.CancellationReasonId, model.OtherCancellationReason);
+            if (!rCancel)
+            {
+                skipped++;
+                continue;
+            }
+            notificationsToSend.Add(request.Id);
+            cancelled++;
+        }
+        skipped += model.Ids.Count() - requests.Count();
+        await requestRepository.SaveChangesAsync();
+        foreach (var requestId in notificationsToSend)
+        {
+            await SendCancellationNotification(requestId);
+        }
+        return Result.Ok(new BulkRequestCancellationResult { Cancelled = cancelled, Skipped = skipped });
+    }
+
+    private async Task<Result> ApplyCancellation(Request request, Guid cancellationReasonId, string otherCancellationReason)
+    {
+        var rCancel = request.Cancel(timeProvider.GetLocalNow().DateTime);
+        if (!rCancel) return rCancel;
+        var cancelBy = currentUserService.GetNickname();
+        var entity = new RequestCancellationDetail
+        {
+            RequestId = request.Id,
+            ReasonCancellationRequestId = cancellationReasonId == default ? null : cancellationReasonId,
+            OtherReasonCancellationRequest = otherCancellationReason,
+            CancelBy = cancelBy,
+            CancelAt = timeProvider.GetLocalNow().DateTime
+        };
+        var noteBuilder = new StringBuilder();
+        noteBuilder.Append("Request canceled");
+        if (!string.IsNullOrEmpty(entity.OtherReasonCancellationRequest))
+        {
+            noteBuilder.Append($" - {entity.OtherReasonCancellationRequest}");
+        }
+        var noteValue = noteBuilder.ToString();
+        var note = new RequestNote(request.Id, CovenantNote.Create(noteValue, CovenantNote.RedColor, entity.CancelBy).Value);
+        var existing = await requestRepository.GetRequestCancellationDetail(request.Id);
+        if (existing != null)
+        {
+            requestRepository.Delete([existing]);
+        }
+        await requestRepository.Create([note]);
+        await requestRepository.Create([entity]);
+        await requestRepository.Update(request);
+        return Result.Ok();
+    }
+
+    private async Task SendCancellationNotification(Guid requestId)
+    {
+        var data = await notificationDataRepository.GetAgencyData(requestId, NotificationType.RequestHasBeenCanceledNotifyAgency.Id);
+        if (data != null && data.EmailNotification)
+        {
+            var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnRequestCancel/AgencyTemplate.cshtml", data);
+            await emailService.SendEmail(new EmailParams(data.AgencyEmail, $"Request {data.JobTitle} was canceled", message));
+        }
+    }
+
+    public async Task<Result> ReduceWorkerQuantityByOne(Guid requestId)
+    {
+        Request request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        Result result = request.DecreaseWorkersQuantityByOne();
+        if (!result) return result;
+        await requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    private async Task<Result<Request>> MapRequest(RequestCreateModel model)
+    {
+        if (model.AgencyId == Guid.Empty)
+            return Result.Fail<Request>(ValidationMessages.RequiredMsg(ApiResources.Agency));
+        if (!model.WorkerSalary.HasValue && !model.JobPositionRateId.HasValue)
+            return Result.Fail<Request>(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
+        var validationResult = await requestCreateValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure<Request>();
+        var rRequest = Request.AgencyCreateRequest(
+            model.CompanyProfileId,
+            model.LocationId.Value,
+            model.StartAt,
+            model.JobPositionRateId,
+            finishAt: model.FinishAt,
+            jobIsOnBranchOffice: model.JobIsOnBranchOffice,
+            workersQuantity: model.WorkersQuantity,
+            breakIsPaid: model.BreakIsPaid,
+            durationTerm: model.DurationTerm,
+            employmentType: model.EmploymentType,
+            isPunchCardOptionEnabled: model.PunchCardOptionEnabled);
+        if (!rRequest) return Result.Fail<Request>(rRequest.Errors);
+        var entity = rRequest.Value;
+        entity.WorkerSalary = model.WorkerSalary;
+        entity.InternalRequirements = model.InternalRequirements;
+        entity.Responsibilities = model.Responsibilities;
+        if (entity.JobPositionRateId.HasValue)
+        {
+            var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
+            if (positionRate is null) return Result.Fail<Request>(ApiResources.InvalidJobPosition);
+            entity.AgencyRate = positionRate.Rate;
+            entity.WorkerRate = positionRate.WorkerRate;
+        }
+        entity.UpdateJobTitle(model.JobTitle);
+        entity.UpdateBillingTitle(model.BillingTitle);
+        entity.UpdateJobCosting(model.JobCosting);
+        entity.UpdateRequirements(model.Requirements);
+        entity.UpdateDescription(model.Description);
+        entity.UpdateDurationBreak(model.DurationBreak);
+        entity.UpdateIncentive(model.Incentive, model.IncentiveDescription);
+        if (model.Shift != null)
+        {
+            var rShift = entity.UpdateShift(model.Shift.ToShift());
+            if (!rShift) return Result.Fail<Request>(rShift.Errors);
+        }
+        var rIsAsap = entity.UpdateIsAsap(model.IsAsap);
+        if (!rIsAsap) return Result.Fail<Request>(rIsAsap.Errors);
+        var rUsesRunners = entity.UpdateUsesRunners(model.UsesRunners);
+        if (!rUsesRunners) return Result.Fail<Request>(rUsesRunners.Errors);
+        entity.CreatedBy = currentUserService.GetNickname();
+        return Result.Ok(entity);
+    }
+
+    public async Task<Result> SendInvitation(Guid requestId)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null || !request.CanBeUpdated) return Result.Fail(ApiResources.RequestNotAvailable);
+
+        var now = timeProvider.GetLocalNow().DateTime;
+        var canBeSent = request.CanInvitationBeSendIt(now);
+        if (!canBeSent) return canBeSent;
+
+        var job = new SendInvitationJob(requestId, currentUserService.GetNickname());
+        await busClient.SendMessageAsync(job, serviceBusConfiguration.InvitationQueue);
+        return Result.Ok();
+    }
+
+    public async Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model)
+    {
+        if (model?.Ids is null || !model.Ids.Any()) return Result.Ok();
+        var recruiterIds = model.RecruiterIds?.Distinct().ToList() ?? [];
+        await requestRepository.BulkReplaceRecruiters(model.Ids.Distinct(), recruiterIds, timeProvider.GetLocalNow().DateTime);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateIsAsapRequests(RequestsQuickUpdate requestsQuickUpdate)
+    {
+        var requests = await requestRepository.GetRequests(requestsQuickUpdate.Ids);
+        foreach (var request in requests)
+        {
+            request.IsAsap = requestsQuickUpdate.IsAsap;
+        }
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> RejectWorker(Guid requestId, Guid workerProfileId, CommentsModel model)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        var rejectedBy = currentUserService.GetNickname();
+        var result = request.RejectWorker(workerProfileId, model.Comments, rejectedBy);
+        if (!result) return result;
+        await requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        var data = await notificationDataRepository.GetWorkerData(requestId, workerProfileId, NotificationType.WorkerHasBeenRejected.Id);
+        if (data != null && data.EmailNotification)
+        {
+            var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnWorkerReject/WorkerTemplate.cshtml", data.JobTitle);
+            await emailService.SendEmail(new EmailParams(data.WorkerEmail, $"You have been rejected in request {data.JobTitle}", message));
+        }
+        return Result.Ok();
+    }
+
+    public async Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail<IEnumerable<RequestSourceDetailModel>>(ApiResources.RequestNotAvailable);
+        var sources = await requestRepository.GetRequestSources(requestId);
+        return Result.Ok(sources.Select(s => new RequestSourceDetailModel
+        {
+            SourceId = s.SourceId,
+            Value = s.Source?.Value,
+            PublishedAt = s.PublishedAt,
+            ExternalUrl = s.ExternalUrl
+        }));
+    }
+
+    public async Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
+    {
+        var paged = await requestRepository.GetRequestsForAgency(agencyId, filter);
+        var summary = await requestRepository.GetRequestSourcesSummaryForAgency(agencyId, filter);
+        return new AgencyRequestsPagedResponse
+        {
+            PageIndex = paged.PageIndex,
+            TotalPages = paged.TotalPages,
+            TotalItems = paged.TotalItems,
+            Items = paged.Items,
+            JobBoardsSummary = summary
+        };
+    }
+
+    public Task<ShiftModel> GetRequestShift(Guid requestId) => requestRepository.GetRequestShift(requestId);
+
+    public async Task<RequestLookupModel> GetLookup(Guid companyProfileId, Guid? requestId)
+    {
+        var model = new RequestLookupModel();
+        if (requestId.HasValue)
+        {
+            model.Request = await requestRepository.GetRequestDetailForAgency(requestId.Value);
+            if (model.Request is null) return null;
+            companyProfileId = model.Request.CompanyProfileId;
+        }
+        model.JobPositions = await companyRepository.GetJobPositions(companyProfileId, new GetJobPositionsFilter());
+        model.Locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfileId == companyProfileId);
+        model.Personnel = await agencyRepository.GetAllPersonnel(currentUserService.GetAgencyId());
+        model.CompanyUsers = await companyRepository.GetAllCompanyUsers(companyProfileId);
+        return model;
+    }
+
+    public async Task<ResultGenerateDocument<MemoryStream>> GetWorkersReportFile(Guid requestId)
+    {
+        var workers = await requestRepository.GetWorkersRequestByRequestId(requestId, new GetWorkersRequestFilter());
+        return await mediator.Send(new GenerateWorkersReport(workers.Items));
+    }
+
+    public async Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        var distinct = (sources ?? []).GroupBy(s => s.SourceId).Select(g => g.First()).ToList();
+        await requestRepository.ReplaceRequestSources(requestId, distinct);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+}

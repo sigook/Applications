@@ -1,6 +1,6 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Pdf;
+using Covenant.Common.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
