@@ -1,5 +1,5 @@
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs;
 using Covenant.Common.Configuration;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Storage;

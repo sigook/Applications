@@ -1,8 +1,8 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Configurations;
 

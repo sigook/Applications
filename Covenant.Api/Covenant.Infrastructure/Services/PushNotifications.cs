@@ -1,8 +1,8 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Notification;
-using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
+using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

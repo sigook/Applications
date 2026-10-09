@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Functionals;
+using Covenant.Common.Functionals;
 using System.Text.RegularExpressions;
 
 namespace Covenant.Common.Entities

@@ -1,0 +1,16 @@
+namespace Covenant.Common.Models.Accounting.Invoice;
+
+public class CreateInvoiceModel
+{
+    public Guid CompanyProfileId { get; set; }
+    public DateTime? InvoiceDate { get; set; }
+    public string Email { get; set; }
+    public IEnumerable<Guid> RequestIds { get; set; } = [];
+    public decimal? TaxPercentage { get; set; }
+    public DateTime? From { get; set; }
+    public DateTime? To { get; set; }
+    public IEnumerable<CreateInvoiceItemModel> Discounts { get; set; } = [];
+    public IEnumerable<CreateInvoiceItemModel> AdditionalItems { get; set; } = [];
+    public bool DirectHiring { get; set; }
+    public string ClientSiteAddress { get; set; }
+}

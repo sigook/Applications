@@ -1,5 +1,5 @@
 # ============================================
-# Sigook.Web - Vue.js 2 Application
+# Sigook.Web - Vue 3 Application
 # ============================================
 # Project-specific rules
 # Generic rules (.NET, IDEs, node_modules) are in the root .gitignore
@@ -8,6 +8,9 @@
 wwwroot/
 out/
 dist/
+
+# pnpm is the package manager; never commit an npm lockfile
+package-lock.json
 
 # Environment Variables - allowing .local files to be versioned for developer reference
 # Each developer can modify their local .env files as needed

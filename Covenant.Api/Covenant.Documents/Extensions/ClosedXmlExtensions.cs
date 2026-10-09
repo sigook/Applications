@@ -1,5 +1,5 @@
-﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using ClosedXML.Excel;
 
 namespace Covenant.Documents.Extensions;
 

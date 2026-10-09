@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Constants;
+using Covenant.Common.Constants;
 using System.Security.Claims;
 using System.Security.Principal;
 

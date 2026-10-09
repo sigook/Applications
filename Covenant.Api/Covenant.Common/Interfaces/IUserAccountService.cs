@@ -1,7 +1,7 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Security;
 
 namespace Covenant.Common.Interfaces;
 

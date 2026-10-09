@@ -17,7 +17,7 @@ namespace Covenant.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.11")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -153,11 +153,24 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<decimal>("OverTimeRate")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Pending");
+
                     b.Property<decimal>("SubTotal")
                         .HasColumnType("numeric");
 
                     b.Property<decimal>("TotalNet")
                         .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("VacationsRate")
                         .HasColumnType("numeric");
@@ -168,6 +181,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyProfileId");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("Invoices", (string)null);
                 });
@@ -393,6 +408,13 @@ namespace Covenant.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Pending");
+
                     b.Property<decimal>("SubTotal")
                         .HasColumnType("numeric");
 
@@ -401,6 +423,12 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<decimal>("TotalNet")
                         .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("WeekEnding")
                         .HasColumnType("timestamp with time zone");
@@ -414,6 +442,8 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.HasIndex("InvoiceNumberId")
                         .IsUnique();
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("InvoicesUSA", (string)null);
                 });
@@ -1096,6 +1126,46 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("AgencyWsibGroups", (string)null);
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Agency.UserAttendance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ClockIn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("ClockOut")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("EditReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("EditedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("EditedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("LunchMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("UserAttendances", (string)null);
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Availability", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1274,45 +1344,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasIndex("ProvinceId");
 
                     b.ToTable("Cities", (string)null);
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyInteraction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("InteractionPurpose")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InteractionStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("InteractionType")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyProfileId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CompanyInteractions", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
@@ -1679,53 +1710,6 @@ namespace Covenant.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("CompanyUsers", (string)null);
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Company.Deal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DocumentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Value")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyProfileId");
-
-                    b.HasIndex("DocumentId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Deals", (string)null);
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Country", b =>
@@ -2900,6 +2884,92 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerRequestNotes", (string)null);
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Sales.CompanyInteraction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<int>("InteractionPurpose")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InteractionStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InteractionType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyProfileId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CompanyInteractions", (string)null);
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Sales.Deal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Value")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyProfileId");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Deals", (string)null);
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Shift", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3546,7 +3616,14 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Covenant.Common.Entities.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("CompanyProfile");
+
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
@@ -3632,7 +3709,14 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Covenant.Common.Entities.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("CompanyProfile");
+
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSADiscount", b =>
@@ -3885,6 +3969,17 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WsibGroup");
                 });
 
+            modelBuilder.Entity("Covenant.Common.Entities.Agency.UserAttendance", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
@@ -3978,25 +4073,6 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Province");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyInteraction", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
-                        .WithMany()
-                        .HasForeignKey("CompanyProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CompanyProfile");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
@@ -4169,32 +4245,6 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("CompanyProfile");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Covenant.Common.Entities.Company.Deal", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
-                        .WithMany()
-                        .HasForeignKey("CompanyProfileId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.CovenantFile", "Document")
-                        .WithMany()
-                        .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Covenant.Common.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CompanyProfile");
-
-                    b.Navigation("Document");
 
                     b.Navigation("User");
                 });
@@ -4451,7 +4501,7 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany()
+                        .WithMany("ReportTo")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4470,7 +4520,7 @@ namespace Covenant.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany()
+                        .WithMany("RequestedBy")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4483,7 +4533,7 @@ namespace Covenant.Infrastructure.Migrations
             modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSkill", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
-                        .WithMany()
+                        .WithMany("Skills")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4665,6 +4715,51 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Note");
 
                     b.Navigation("WorkerRequest");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Sales.CompanyInteraction", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                        .WithMany()
+                        .HasForeignKey("CompanyProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CompanyProfile");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Covenant.Common.Entities.Sales.Deal", b =>
+                {
+                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                        .WithMany()
+                        .HasForeignKey("CompanyProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Covenant.Common.Entities.CovenantFile", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Covenant.Common.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CompanyProfile");
+
+                    b.Navigation("Document");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerComment", b =>
@@ -5094,9 +5189,15 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Navigation("Recruiters");
 
+                    b.Navigation("ReportTo");
+
                     b.Navigation("RequestComission");
 
                     b.Navigation("RequestCompanyUser");
+
+                    b.Navigation("RequestedBy");
+
+                    b.Navigation("Skills");
 
                     b.Navigation("Sources");
 

@@ -93,7 +93,7 @@ class DocumentsRemoteDataSource extends ProfileBaseDatasource {
         await attachFile(newFilePaths?['resumeFile'], resumeFileName);
 
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/Documents',
+          '/worker/profile/$workerId/Documents',
           data: formData,
         );
       });

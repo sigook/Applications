@@ -1,5 +1,5 @@
-﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Net.Http.Headers;
 
 namespace Covenant.Common.Utils.Extensions;
 

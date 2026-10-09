@@ -1,8 +1,8 @@
 using Covenant.Common.Constants;
-using Covenant.Common.Repositories.Company;
+using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Covenant.Api.Authorization

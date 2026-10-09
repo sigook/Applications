@@ -93,7 +93,7 @@ export default [
           varsIgnorePattern: '^(_|[A-Z])'
         }
       ],
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-var-requires': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -134,19 +134,11 @@ export default [
           // Buefy (globally registered via buefy)
           '^[Bb]-.*',
           '^[Bb][A-Z].*',
-          // VeeValidate (auto-imported / globally registered)
-          '^[Ff]ield$',
-          '^[Ff]orm$',
-          '^[Ee]rror[Mm]essage$',
-          // Vue Quill editor
-          '^[Qq]uill[Ee]ditor$',
           // Globally registered in src/main.ts
+          '^[Qq]uill[Ee]ditor$',
           'default-image',
           'defaultImage',
-          'DefaultImage',
-          // Third-party globals
-          'vue-recaptcha',
-          'VueRecaptcha'
+          'DefaultImage'
         ]
       }]
     }
@@ -156,6 +148,31 @@ export default [
     files: ['**/*.js'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off'
+    }
+  },
+
+  ...['agency', 'company', 'worker', 'landing'].map((module) => ({
+    files: [`src/modules/${module}/**/*.{ts,vue}`],
+    ignores: [`src/modules/${module}/routes.ts`],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['agency', 'company', 'worker', 'landing'].filter((other) => other !== module).map((other) => `@/modules/${other}/*`),
+          message: 'A module must not import another module. Move the shared piece to src/shared or pass it as a prop; only routes.ts may mount another module\'s page.'
+        }]
+      }]
+    }
+  })),
+
+  {
+    files: ['src/shared/**/*.{ts,vue}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['@/modules/*'],
+          message: 'src/shared must not depend on a module. Receive the function or component as a prop.'
+        }]
+      }]
     }
   }
 ]

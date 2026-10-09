@@ -1,7 +1,8 @@
-﻿using Azure.Messaging.ServiceBus;
+using Covenant.Common.Interfaces;
 using Microsoft.Extensions.Logging;
 using System.Net.Mime;
 using System.Text.Json;
+using Azure.Messaging.ServiceBus;
 
 namespace Covenant.Infrastructure.Services
 {

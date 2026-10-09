@@ -1,10 +1,10 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces.Accounting;
 using Covenant.Common.Models.Accounting.Deductions;
-using UglyToad.PdfPig;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using UglyToad.PdfPig.Content;
+using UglyToad.PdfPig;
 
 namespace Covenant.Infrastructure.Services;
 

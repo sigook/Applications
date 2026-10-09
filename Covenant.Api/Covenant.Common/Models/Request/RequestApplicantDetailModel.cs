@@ -1,4 +1,5 @@
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Request.Agency;
 
 namespace Covenant.Common.Models.Request
 {

@@ -5,9 +5,9 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request;
-using Covenant.Common.Repositories.Candidate;
-using Covenant.Common.Repositories.Request;
-using Covenant.Common.Repositories.Worker;
+using Covenant.Common.Repositories.Candidates;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Services;
@@ -73,14 +73,14 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         var requestRepository = serviceProvider.GetRequiredService<IRequestRepository>();
         var workerRepository = serviceProvider.GetRequiredService<IWorkerRepository>();
         var candidateRepository = serviceProvider.GetRequiredService<ICandidateRepository>();
-        var timeService = serviceProvider.GetRequiredService<ITimeService>();
+        var timeProvider = serviceProvider.GetRequiredService<TimeProvider>();
         var sendGridService = serviceProvider.GetRequiredService<ISendGridService>();
         var sendGridConfiguration = serviceProvider.GetRequiredService<IOptions<SendGridConfiguration>>().Value;
 
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null || !request.CanBeUpdated) return Result.Fail<InvitationSentResult>(ApiResources.RequestNotAvailable);
 
-        var now = timeService.GetCurrentDateTime();
+        var now = timeProvider.GetLocalNow().DateTime;
         var canBeSent = request.CanInvitationBeSendIt(now);
         if (!canBeSent) return Result.Fail<InvitationSentResult>(canBeSent.Errors);
 

@@ -211,7 +211,7 @@ class LicenseRemoteDataSourceImpl implements LicenseRemoteDataSource {
       ));
 
       final response = await apiClient.dio.post(
-        '/WorkerProfile/$workerId/Licenses',
+        '/worker/profile/$workerId/Licenses',
         data: formData,
       );
 

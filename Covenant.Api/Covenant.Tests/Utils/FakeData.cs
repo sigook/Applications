@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using System.Text;
 

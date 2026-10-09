@@ -1,4 +1,5 @@
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Notification;
 
 namespace Covenant.Common.Entities.Notification
 {

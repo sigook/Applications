@@ -1,6 +1,6 @@
-using System;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System;
 
 namespace Covenant.Integration.Tests.Utils
 {

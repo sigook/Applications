@@ -1,4 +1,3 @@
-﻿using Azure.Messaging.ServiceBus;
 using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
@@ -7,19 +6,20 @@ using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Models.Website;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
-using Covenant.Common.Models.WebSite;
-using Covenant.Common.Repositories.Agency;
-using Covenant.Common.Repositories.Candidate;
-using Covenant.Common.Repositories.Request;
-using Covenant.Common.Repositories.Worker;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Repositories.Candidates;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories.Workers;
+using Covenant.Core.BL.Interfaces.Candidates;
 using Covenant.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Text;
+using Azure.Messaging.ServiceBus;
 
 namespace Covenant.Core.BL.Consumers;
 

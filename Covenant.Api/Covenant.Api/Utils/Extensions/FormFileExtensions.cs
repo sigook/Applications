@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Notification;
 using Covenant.Common.Models;
 using Microsoft.AspNetCore.StaticFiles;
 

@@ -27,7 +27,10 @@ namespace Covenant.Common.Entities
             }
         }
 
-        public static implicit operator string(CvnEmail email) => email.Email;
+        public static Result<CvnEmail> CreateOptional(string email) =>
+            string.IsNullOrWhiteSpace(email) ? Result.Ok<CvnEmail>(null) : Create(email);
+
+        public static implicit operator string(CvnEmail email) => email?.Email;
 
         public static implicit operator CvnEmail(string email) => new(email);
 

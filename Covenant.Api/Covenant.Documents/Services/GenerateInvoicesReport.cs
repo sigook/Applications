@@ -1,9 +1,9 @@
-﻿using ClosedXML.Excel;
 using Covenant.Documents.Extensions;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Utils.Extensions;
 using MediatR;
+using ClosedXML.Excel;
 
 namespace Covenant.Documents.Services;
 
@@ -21,7 +21,8 @@ public class GenerateInvoicesReport : IRequest<ResultGenerateDocument<byte[]>>
         "N° Invoice",
         "Created At",
         "Company",
-        "Total"
+        "Total",
+        "Status"
     };
 }
 
@@ -51,5 +52,6 @@ public class GenerateInvoicesReportHandler : IRequestHandler<GenerateInvoicesRep
         sheet.Cell($"B{row}").SetValue(data.CreatedAt.ToString("yyyy-MM-dd"));
         sheet.Cell($"C{row}").SetValue(data.CompanyFullName);
         sheet.Cell($"D{row}").SetValue(data.TotalNet).SetMoneyType();
+        sheet.Cell($"E{row}").SetValue(data.Status.ToString());
     }
 }

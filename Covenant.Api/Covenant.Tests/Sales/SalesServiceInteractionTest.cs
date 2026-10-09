@@ -1,14 +1,19 @@
-﻿using Covenant.Api.Validators.Company;
+using Covenant.Api.Validators.Sales;
 using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Sales;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
-using Covenant.Common.Repositories.Company;
-using Covenant.Common.Repositories.Request;
-using Covenant.Core.BL.Interfaces;
-using Covenant.Core.BL.Services;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Core.BL.Interfaces.Requests;
+using Covenant.Core.BL.Interfaces.Sales;
+using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Services.Sales;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
@@ -39,7 +44,7 @@ namespace Covenant.Tests.Sales
                 new UpdateCompanyInteractionModelValidator(),
                 new CreateDealModelValidator(),
                 new UpdateDealModelValidator(),
-                Mock.Of<ITimeService>(),
+                new FakeTimeProvider(),
                 new GetDealsByStatusFilterValidator());
         }
 

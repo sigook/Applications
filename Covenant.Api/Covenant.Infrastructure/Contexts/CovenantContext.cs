@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities.Sales;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Accounting.PayStub;
 using Covenant.Common.Entities.Accounting.Subcontractor;
@@ -106,6 +107,7 @@ public class CovenantContext : DbContext
     public DbSet<CandidateDocument> CandidateDocuments { get; set; }
     public DbSet<CandidateNote> CandidateNotes { get; set; }
     public DbSet<AgencyPersonnel> AgencyPersonnel { get; set; }
+    public DbSet<UserAttendance> UserAttendances { get; set; }
     public DbSet<AgencyLocation> AgencyLocations { get; set; }
     public DbSet<WorkerProfileTaxCategory> WorkerProfileTaxCategories { get; set; }
     public DbSet<PayStubHistory> PayStubHistories { get; set; }

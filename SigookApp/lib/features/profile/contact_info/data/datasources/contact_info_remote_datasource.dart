@@ -13,7 +13,7 @@ class ContactInfoRemoteDataSource extends ProfileBaseDatasource {
     WorkerProfileModel profile,
   ) =>
       execute(() => apiClient.dio.post(
-            '/WorkerProfile/$workerId/ContactInformation',
+            '/worker/profile/$workerId/ContactInformation',
             data: profile.toJson(),
           ));
 }

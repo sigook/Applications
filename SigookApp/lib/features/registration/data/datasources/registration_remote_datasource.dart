@@ -154,7 +154,7 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     try {
       final response = await retryOptions.retry(
         () async {
-          return await apiClient.post('/WorkerProfile', data: data);
+          return await apiClient.post('/worker/profile', data: data);
         },
         retryIf: (e) {
           if (e is DioException) {

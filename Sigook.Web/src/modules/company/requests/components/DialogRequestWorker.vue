@@ -1,0 +1,43 @@
+<template>
+  <div class="p-3">
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <b-field label="Comment" :type="formErrors.comment ? 'is-danger' : ''"
+          :message="formErrors.comment || ''">
+          <b-input type="textarea" v-model="comment"></b-input>
+        </b-field>
+      </div>
+      <div class="column is-12">
+        <b-button type="is-primary" @click="send">{{ "Send" }}</b-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import * as yup from 'yup';
+import { useStickyForm } from '@/shared/composables/useStickyForm';
+import { showAlertError } from "@/shared/utils/toast";
+
+const emit = defineEmits<{ (e: 'sendAnotherWorker', comment: string): void }>();
+
+const schema = yup.object({
+  comment: yup.string().required('Comment is required'),
+});
+
+const form = useStickyForm<{ comment: string }>({
+  schema,
+  initialValues: { comment: '' },
+});
+const { comment } = form.fields;
+const formErrors = form.errors;
+
+function send() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    emit('sendAnotherWorker', values.comment);
+  }, () => {
+    showAlertError('Please make sure all required fields are filled out correctly');
+  })();
+}
+</script>

@@ -1,36 +1,25 @@
 import { createApp, defineAsyncComponent } from 'vue';
-import App from './App.vue';
-import router from './router';
-import pinia from './stores';
-import VueScrollTo from 'vue-scrollto';
-import { registerAppGlobals } from './varaibles';
+import App from '@/app/App.vue';
+import router from '@/app/router';
+import pinia from '@/app/stores';
 import Buefy from 'buefy';
 import { QuillEditor } from '@vueup/vue-quill';
-import VueLazyload from 'vue-lazyload';
-import errorImage from '@/assets/images/default/error.svg';
-import loadingImage from '@/assets/images/default/loading.svg';
 import { registerValidationRules } from '@/lang/validator';
-import { setupBuefyProgrammatic } from '@/utils/buefyProgrammatic';
-import mgr from '@/security/securityService';
-import { useSecurityStore } from '@/stores/security';
-import type { UserProfile } from '@/types/security';
+import { setupBuefyProgrammatic } from '@/shared/utils/buefyProgrammatic';
+import mgr from '@/app/security/securityService';
+import { useSecurityStore } from '@/app/stores/security';
+import type { UserProfile } from '@/shared/types/security';
 
 // import the styles
 import 'buefy/dist/css/buefy.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import '@/assets/scss/landing-form.scss';
 
-import statusDirective from './directives/status-directive';
-
 registerValidationRules();
 
 const app = createApp(App);
 
-registerAppGlobals(app);
-
-app.directive('status', statusDirective);
-
-app.component('defaultImage', defineAsyncComponent(() => import('./components/DefaultImage.vue')));
+app.component('defaultImage', defineAsyncComponent(() => import('@/shared/ui/DefaultImage.vue')));
 app.component('QuillEditor', QuillEditor);
 
 app.use(router);
@@ -54,12 +43,5 @@ mgr.events.addSilentRenewError(() => {
 
 app.use(Buefy);
 setupBuefyProgrammatic(app);
-app.use(VueScrollTo);
-app.use(VueLazyload, {
-  preLoad: 1.3,
-  error: errorImage,
-  loading: loadingImage,
-  attempt: 1,
-});
 
 app.mount('#app');

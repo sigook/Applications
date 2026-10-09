@@ -70,6 +70,9 @@ namespace Covenant.Common.Entities.Request
         public RequestComission RequestComission { get; set; }
         public IEnumerable<RequestCompanyUser> RequestCompanyUser { get; set; }
         public IEnumerable<RequestComplianceItem> ComplianceItems { get; set; }
+        public IEnumerable<RequestSkill> Skills { get; set; } = new List<RequestSkill>();
+        public IEnumerable<RequestRequestedBy> RequestedBy { get; set; } = new List<RequestRequestedBy>();
+        public IEnumerable<RequestReportTo> ReportTo { get; set; } = new List<RequestReportTo>();
         public IEnumerable<RequestNote> Notes { get; set; } = new List<RequestNote>();
         public ICollection<RequestSource> Sources { get; set; } = new List<RequestSource>();
         public IReadOnlyCollection<RequestRecruiter> Recruiters => _recruiters;

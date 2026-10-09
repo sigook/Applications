@@ -3,8 +3,9 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Accounting.Subcontractor;
-using Covenant.Common.Repositories.Accounting;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Common.Repositories.Accounting.PayStubs;
+using Covenant.Common.Repositories.Accounting.Subcontractors;
+using Covenant.Core.BL.Interfaces.Accounting;
 using Covenant.Documents.Services;
 using MediatR;
 

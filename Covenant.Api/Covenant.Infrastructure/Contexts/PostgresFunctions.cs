@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Utils.Extensions;
+using Covenant.Common.Utils.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Contexts;

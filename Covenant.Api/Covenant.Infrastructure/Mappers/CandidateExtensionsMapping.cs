@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities.Candidate;
+using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Models;
 using System.Linq.Expressions;
 

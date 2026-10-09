@@ -16,6 +16,8 @@ import '../../domain/usecases/get_clock_type.dart';
 import '../../domain/usecases/submit_timesheet.dart';
 import '../providers/timesheet_providers.dart';
 
+enum _PrecisionAction { cancel, continueAnyway, retry }
+
 class PunchCardTab extends ConsumerStatefulWidget {
   final String jobId;
 
@@ -26,6 +28,11 @@ class PunchCardTab extends ConsumerStatefulWidget {
 }
 
 class _PunchCardTabState extends ConsumerState<PunchCardTab> {
+  static const double _preciseAccuracyMeters = 20;
+  static const double _maxUsableAccuracyMeters = 50;
+  static const Duration _refreshFixAfter = Duration(seconds: 10);
+  static const Duration _maxSubmitFixAge = Duration(seconds: 60);
+
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   DateTime _currentTime = DateTime.now();
@@ -401,15 +408,28 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
 
       if (!mounted) return;
       final locationAccuracy = position.accuracy;
-      final isPrecise = locationAccuracy <= 20.0;
+      final isPrecise = locationAccuracy <= _preciseAccuracyMeters;
       if (!isPrecise) {
         setState(() {
           _isSubmitting = false;
         });
-        final shouldContinue = await _showLocationPrecisionWarning(
+        final isUsable = locationAccuracy <= _maxUsableAccuracyMeters;
+        if (!isUsable) {
+          _logLocationBlocked(
+            reason: 'accuracy_too_low',
+            accuracy: locationAccuracy,
+          );
+        }
+        final action = await _showLocationPrecisionWarning(
           accuracy: locationAccuracy,
+          allowContinue: isUsable,
+          allowRetry: !isUsable,
         );
-        if (shouldContinue != true) {
+        if (action == _PrecisionAction.retry) {
+          await _onClockTapped();
+          return;
+        }
+        if (action != _PrecisionAction.continueAnyway) {
           return;
         }
         setState(() {
@@ -430,17 +450,38 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       });
 
       var submitPosition = position;
-      if (DateTime.now().difference(submitPosition.timestamp) >
-          const Duration(seconds: 10)) {
+      if (_fixAge(submitPosition) > _refreshFixAfter) {
         final refreshed = await locationService.getFreshPosition();
         if (refreshed != null &&
-            (refreshed.accuracy <= 20.0 ||
-                refreshed.accuracy <= submitPosition.accuracy)) {
+            _isBetterForSubmit(refreshed, submitPosition)) {
           submitPosition = refreshed;
         }
       }
 
       if (!mounted) return;
+      if (_fixAge(submitPosition) > _maxSubmitFixAge ||
+          submitPosition.accuracy > _maxUsableAccuracyMeters) {
+        setState(() {
+          _isSubmitting = false;
+        });
+        _logLocationBlocked(
+          reason: _fixAge(submitPosition) > _maxSubmitFixAge
+              ? 'fix_expired'
+              : 'accuracy_too_low',
+          accuracy: submitPosition.accuracy,
+          fixAge: _fixAge(submitPosition),
+        );
+        _showErrorSnackBar(
+          'Could not get a current, accurate location. Please try again.',
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: _onClockTapped,
+          ),
+        );
+        return;
+      }
+
       final useCase = ref.read(submitTimesheetUseCaseProvider);
       final result = await useCase(
         SubmitTimesheetParams(
@@ -475,9 +516,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
               _clockType == ClockType.clockOut;
 
           if (isTooFarFromCheckpoint) {
-            final fixAgeMs = DateTime.now()
-                .difference(submitPosition.timestamp)
-                .inMilliseconds;
+            final fixAgeMs = _fixAge(submitPosition).inMilliseconds;
             // Track location error for monitoring
             ref
                 .read(analyticsServiceProvider)
@@ -509,9 +548,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
           }
         },
         (response) async {
-          final fixAgeMs = DateTime.now()
-              .difference(submitPosition.timestamp)
-              .inMilliseconds;
+          final fixAgeMs = _fixAge(submitPosition).inMilliseconds;
           ref
               .read(analyticsServiceProvider)
               .logEvent(
@@ -540,6 +577,32 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       });
       _showErrorSnackBar('An error occurred: $e');
     }
+  }
+
+  Duration _fixAge(Position position) =>
+      DateTime.now().difference(position.timestamp);
+
+  bool _isBetterForSubmit(Position candidate, Position current) =>
+      candidate.accuracy <= _preciseAccuracyMeters ||
+      candidate.accuracy <= current.accuracy ||
+      _fixAge(current) > _maxSubmitFixAge;
+
+  void _logLocationBlocked({
+    required String reason,
+    required double accuracy,
+    Duration? fixAge,
+  }) {
+    ref
+        .read(analyticsServiceProvider)
+        .logEvent(
+          name: 'clock_location_blocked',
+          parameters: {
+            'job_id': widget.jobId,
+            'reason': reason,
+            'location_accuracy_m': accuracy,
+            if (fixAge != null) 'fix_age_ms': fixAge.inMilliseconds,
+          },
+        );
   }
 
   void _showSuccessSnackBar(String workerName, bool finish) {
@@ -872,11 +935,13 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
-  Future<bool?> _showLocationPrecisionWarning({
+  Future<_PrecisionAction?> _showLocationPrecisionWarning({
     double? accuracy,
     bool allowContinue = true,
+    bool allowRetry = false,
   }) async {
-    return showDialog<bool>(
+    final isBlockedByAccuracy = accuracy != null && !allowContinue;
+    return showDialog<_PrecisionAction>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
@@ -892,6 +957,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             Text(
               accuracy == null
                   ? 'Precise Location Off'
+                  : isBlockedByAccuracy
+                  ? 'Location Too Imprecise'
                   : 'Location Not Precise',
             ),
           ],
@@ -903,6 +970,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             Text(
               accuracy == null
                   ? 'Precise Location is turned off for this app. Clock in/out requires your exact location.'
+                  : isBlockedByAccuracy
+                  ? 'Your location accuracy is too low for clock in/out. Wait a moment for a better GPS signal and try again.'
                   : 'Your location accuracy is not precise enough for clock in/out.',
               style: const TextStyle(fontSize: 16),
             ),
@@ -961,7 +1030,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             children: [
               ElevatedButton.icon(
                 onPressed: () async {
-                  Navigator.of(context).pop(false);
+                  Navigator.of(context).pop(_PrecisionAction.cancel);
                   await _openLocationSettings();
                 },
                 icon: const Icon(Icons.settings, size: 20),
@@ -979,10 +1048,35 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                   elevation: 2,
                 ),
               ),
+              if (allowRetry) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () =>
+                      Navigator.of(context).pop(_PrecisionAction.retry),
+                  icon: const Icon(Icons.refresh, size: 20),
+                  label: const Text(
+                    'Try Again',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryBlue,
+                    side: const BorderSide(
+                      color: AppTheme.primaryBlue,
+                      width: 2,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
               if (allowContinue) ...[
                 const SizedBox(height: 12),
                 OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
+                  onPressed: () => Navigator.of(
+                    context,
+                  ).pop(_PrecisionAction.continueAnyway),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.warningOrange,
                     side: const BorderSide(
@@ -1002,7 +1096,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
               ],
               const SizedBox(height: 8),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
+                onPressed: () =>
+                    Navigator.of(context).pop(_PrecisionAction.cancel),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.grey,
                   padding: const EdgeInsets.symmetric(vertical: 12),

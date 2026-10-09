@@ -1,0 +1,25 @@
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
+using Covenant.Common.Models;
+using Covenant.Common.Models.Accounting;
+using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Worker;
+
+namespace Covenant.Core.BL.Interfaces.Requests;
+
+public interface ITimesheetService
+{
+    Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerProfileId, TimeSpan clockIn);
+    Task<Result<Guid>> CreateTimesheet(Guid workerProfileId, Guid requestId, TimeSheetModel timeSheetModel);
+    Task<Result> UpdateTimesheet(Guid timeSheetId, TimeSheetModel timeSheetModel);
+    Task<Result<RegisterTimeSheetResultModel>> Register(Guid requestId, WorkerLocationModel workerLocationModel);
+    Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, DateTime startDate, DateTime endDate);
+    Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter);
+    Task<ResultGenerateDocument<MemoryStream>> GetHoursWorkedFile(HoursWorkedFilter filter);
+    Task<ResultGenerateDocument<MemoryStream>> GetTimesheetsReportFile(TimesheetsReportFilter filter);
+    Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude, DateTime? date);
+    Task<Result> RemoveTimeSheet(Guid id);
+    Task<ResultGenerateDocument<MemoryStream>> GetRequestTimesheetFile(Guid requestId);
+    Task<Result<ResultGenerateDocument<MemoryStream>>> GetCompanyRequestTimesheetFile(Guid requestId, Guid companyId);
+}

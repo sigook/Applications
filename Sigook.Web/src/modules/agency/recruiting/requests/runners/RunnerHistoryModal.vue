@@ -1,0 +1,249 @@
+<template>
+  <div class="modal-card" style="width: auto">
+    <header class="modal-card-head">
+      <div class="runner-head">
+        <div>
+          <p class="modal-card-title">{{ detail?.name || 'History' }}</p>
+          <i v-if="detail?.email" class="fz-2 is-lowercase">{{ detail.email }}</i>
+        </div>
+      </div>
+    </header>
+    <section class="modal-card-body" style="min-width: 620px; position: relative">
+      <b-loading v-model="isLoading" :is-full-page="false" />
+      <template v-if="detail">
+        <b-collapse v-model="historyOpen" class="collapse-card">
+          <template #trigger="{ open }">
+            <span class="collapse-card__title">History</span>
+            <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small" />
+          </template>
+          <ul v-if="detail.statusHistory.length" class="status-timeline">
+            <li v-for="h in detail.statusHistory" :key="h.id" class="status-timeline__item">
+              <span class="status-timeline__dot" :class="statusType(h.newStatus)" />
+              <div class="status-timeline__content">
+                <b-tag :type="statusType(h.newStatus)">{{ statusLabel(h.newStatus) }}</b-tag>
+                <span class="fz-2 ml-2 op7">{{ h.changedByEmail }} · {{ dateMonth(h.changedAt) }} {{ dateHHmm(h.changedAt) }}</span>
+                <p v-if="h.comments" class="fz-2 mt-1 op7">{{ h.comments }}</p>
+              </div>
+            </li>
+          </ul>
+          <p v-else class="op3">No history yet</p>
+        </b-collapse>
+
+        <b-collapse v-model="interviewsOpen" class="collapse-card">
+          <template #trigger="{ open }">
+            <span class="collapse-card__title">Interviews</span>
+            <b-icon :icon="open ? 'chevron-up' : 'chevron-down'" size="is-small" />
+          </template>
+          <SigookGrid :data="detail.interviews" :paginated="false" :fit-viewport="false" empty-text="No interviews yet">
+            <template v-if="canAddInterview(detail.status)" #actions>
+              <b-button icon-left="plus" @click="showAddInterview = true">Add interview</b-button>
+            </template>
+            <b-table-column field="scheduledDate" label="Scheduled" v-slot="props">
+              {{ dateMonth(props.row.scheduledDate) }}
+              <b-tag size="is-small" :type="props.row.status === InterviewStatus.Rescheduled ? 'is-warning' : 'is-info'" class="ml-1">
+                {{ interviewStatusLabel(props.row.status) }}
+              </b-tag>
+            </b-table-column>
+            <b-table-column field="type" label="Type" v-slot="props">{{ interviewTypeLabel(props.row.type) }}</b-table-column>
+            <b-table-column field="interviewer" label="Interviewer" v-slot="props">{{ props.row.interviewer }}</b-table-column>
+            <b-table-column field="notes" label="Notes" v-slot="props">{{ props.row.notes }}</b-table-column>
+            <b-table-column field="actions" v-slot="props">
+              <b-button v-if="canAddInterview(detail.status)" size="is-small" icon-left="calendar-edit"
+                @click="openReschedule(props.row.id)">
+                Reschedule
+              </b-button>
+            </b-table-column>
+          </SigookGrid>
+        </b-collapse>
+      </template>
+    </section>
+    <footer class="modal-card-foot">
+      <b-button @click="emit('close')">Close</b-button>
+    </footer>
+
+    <b-modal has-modal-card v-model="showAddInterview" width="540px">
+      <runner-interview-modal :request-id="requestId" :runner-id="runnerId"
+        @updated="onInterviewAdded" @close="showAddInterview = false" />
+    </b-modal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { getAgencyRunner, rescheduleRunnerInterview } from '@/modules/agency/recruiting/requests/runners/api';
+import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
+import { getDialog } from '@/shared/utils/buefyProgrammatic';
+import { dateMonth, dateHHmm } from '@/shared/format';
+import {
+  RUNNER_STATUS_LABELS,
+  INTERVIEW_TYPE_LABELS,
+  INTERVIEW_STATUS_LABELS,
+  RunnerStatus,
+  InterviewType,
+  InterviewStatus,
+  canAddInterview,
+} from '@/modules/agency/recruiting/requests/runners/types';
+import type { RunnerDetail } from '@/modules/agency/recruiting/requests/runners/types';
+import RunnerInterviewModal from '@/modules/agency/recruiting/requests/runners/RunnerInterviewModal.vue';
+import SigookGrid from '@/shared/ui/SigookGrid.vue';
+
+const props = defineProps<{ requestId: string; runnerId: string }>();
+const emit = defineEmits<{ (e: 'updated'): void; (e: 'close'): void }>();
+
+const detail = ref<RunnerDetail | null>(null);
+const isLoading = ref(false);
+
+const historyOpen = ref(true);
+const interviewsOpen = ref(false);
+
+const showAddInterview = ref(false);
+
+function statusLabel(status: RunnerStatus): string {
+  return RUNNER_STATUS_LABELS[status];
+}
+
+function interviewTypeLabel(type: InterviewType): string {
+  return INTERVIEW_TYPE_LABELS[type];
+}
+
+function interviewStatusLabel(status: InterviewStatus): string {
+  return INTERVIEW_STATUS_LABELS[status];
+}
+
+function statusType(status: RunnerStatus): string {
+  if (status === RunnerStatus.Hired) return 'is-success';
+  if (status === RunnerStatus.Rejected || status === RunnerStatus.NoShow || status === RunnerStatus.NoLongerAvailable) return 'is-danger';
+  if (status === RunnerStatus.WaitingForInterviewFeedback || status === RunnerStatus.WaitingForFinalDecision) return 'is-warning';
+  return 'is-info';
+}
+
+function load() {
+  isLoading.value = true;
+  getAgencyRunner(props.requestId, props.runnerId)
+    .then(res => {
+      detail.value = res;
+    })
+    .catch(err => showAlertError(err))
+    .finally(() => {
+      isLoading.value = false;
+    });
+}
+
+function onInterviewAdded() {
+  showAddInterview.value = false;
+  emit('updated');
+  load();
+}
+
+function openReschedule(interviewId: string) {
+  getDialog().prompt({
+    title: 'Reschedule interview',
+    message: 'New date and time',
+    inputAttrs: {
+      type: 'datetime-local',
+      required: true,
+    },
+    confirmText: 'Reschedule',
+    onConfirm: (value: string, dialog: { close: () => void }) => {
+      isLoading.value = true;
+      rescheduleRunnerInterview(props.requestId, props.runnerId, interviewId, {
+        newDate: new Date(value).toISOString(),
+      })
+        .then(() => {
+          dialog.close();
+          showAlertSuccess('Interview rescheduled');
+          emit('updated');
+          load();
+        })
+        .catch(err => {
+          isLoading.value = false;
+          showAlertError(err);
+        });
+    },
+  });
+}
+
+load();
+</script>
+
+<style scoped lang="scss">
+.collapse-card {
+  border: 1px solid #ededed;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: #fcfcfc;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  :deep(.collapse-trigger) {
+    padding: 12px 16px;
+  }
+
+  :deep(.collapse-content) {
+    padding: 14px 16px 16px;
+    border-top: 1px solid #ededed;
+  }
+}
+
+.runner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.status-timeline {
+  position: relative;
+  margin: 0;
+  padding-left: 22px;
+
+  &__item {
+    position: relative;
+    padding-bottom: 18px;
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+
+    // connector line running down to the next dot
+    &::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 6px;
+      bottom: -6px;
+      width: 2px;
+      background: #e6e6e6;
+    }
+
+    &:last-child::before {
+      display: none;
+    }
+  }
+
+  &__dot {
+    position: absolute;
+    left: -21px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #dbdbdb;
+
+    &.is-success { background: #48c78e; }
+    &.is-danger { background: #f14668; }
+    &.is-warning { background: #ffe08a; }
+    &.is-info { background: #3e8ed0; }
+  }
+}
+</style>

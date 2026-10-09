@@ -1,18 +1,20 @@
+#pragma warning disable CS0618
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Models.Worker;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
+
+using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
-
-using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest;
 

@@ -1,3 +1,4 @@
+#pragma warning disable CS0618
 using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
@@ -5,6 +6,7 @@ using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Models.Worker;
@@ -13,10 +15,10 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
-using Moq;
+using Microsoft.Extensions.Time.Testing;
+using System.Net.Http.Json;
 using System.Net;
 using Xunit;
-using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
 {
@@ -117,9 +119,7 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerRequest
                         o.AddWorkerRole();
                     });
                 services.AddTestDatabase();
-                var timeService = new Mock<ITimeService>();
-                timeService.Setup(s => s.GetCurrentDateTime()).Returns(Data.Now);
-                services.AddSingleton(timeService.Object);
+                services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(Data.Now, TimeSpan.Zero)));
             }
 
             public void Configure(IApplicationBuilder app, CovenantContext context)

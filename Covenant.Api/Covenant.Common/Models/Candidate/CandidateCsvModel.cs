@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Request;
 using CsvHelper.Configuration.Attributes;
 
 namespace Covenant.Common.Models.Candidate;

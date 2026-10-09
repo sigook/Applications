@@ -1,7 +1,7 @@
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Worker;
+using Covenant.Common.Repositories.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +10,7 @@ namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
 {
     [ApiController]
     [Authorize]
+    [Obsolete("Kept for the SigookApp build still in the stores; replaced by Controllers/Worker (api/worker/...). Delete once the new app is published.")]
     [Route("api/WorkerProfile/{profileId}/JobExperience")]
     public class WorkerProfileJobExperienceController : ControllerBase
     {

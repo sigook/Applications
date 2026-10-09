@@ -46,13 +46,13 @@ class LicensesRemoteDataSource extends ProfileBaseDatasource {
           await MultipartFile.fromFile(filePath, filename: fileName),
         ));
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/Licenses',
+          '/worker/profile/$workerId/Licenses',
           data: formData,
         );
       });
 
   Future<void> deleteLicense(String workerId, String licenseId) =>
       execute(() => apiClient.dio.delete(
-            '/WorkerProfile/$workerId/Licenses/$licenseId',
+            '/worker/profile/$workerId/Licenses/$licenseId',
           ));
 }

@@ -1,5 +1,5 @@
-using System.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Covenant.Infrastructure.Contexts;
 

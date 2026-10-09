@@ -1,3 +1,5 @@
+using Covenant.Common.Models.Notification;
+
 namespace Covenant.Common.Models.Accounting.Invoice;
 
 public class InvoiceEmailModel

@@ -1,4 +1,3 @@
-﻿using Asp.Versioning;
 using Azure.Core;
 using Azure.Identity;
 using Covenant.Api.Authorization;
@@ -16,12 +15,13 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using OpenIddict.Validation.AspNetCore;
 using Scalar.AspNetCore;
 using System.Globalization;
 using System.Reflection;
+using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 

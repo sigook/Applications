@@ -1,5 +1,5 @@
 using Covenant.Common.Entities.Identity;
-using Covenant.Common.Models.Security;
+using Covenant.Common.Models.Identity;
 
 namespace Covenant.Common.Repositories.Identity;
 

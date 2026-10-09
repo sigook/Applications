@@ -1,0 +1,17 @@
+using Covenant.Common.Entities.Request;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+
+namespace Covenant.Infrastructure.Configurations.Requests;
+
+public class RequestRequestedByConfiguration : IEntityTypeConfiguration<RequestRequestedBy>
+{
+    public void Configure(EntityTypeBuilder<RequestRequestedBy> builder)
+    {
+        builder.ToTable("RequestRequestedBys");
+        builder.HasKey(k => new { k.RequestId, RequestedById = k.ContactPersonId });
+        builder.HasOne(x => x.Request)
+            .WithMany(r => r.RequestedBy)
+            .HasForeignKey(x => x.RequestId);
+    }
+}
