@@ -26,7 +26,7 @@ class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
   }) async {
     try {
       final response = await apiClient.dio.get(
-        '/WorkerRequestHistory',
+        '/worker/history',
         queryParameters: {
           'sortBy': sortBy,
           'isDescending': isDescending,

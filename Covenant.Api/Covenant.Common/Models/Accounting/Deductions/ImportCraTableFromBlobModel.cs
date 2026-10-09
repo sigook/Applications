@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using Covenant.Common.Enums;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Accounting.Deductions;
 

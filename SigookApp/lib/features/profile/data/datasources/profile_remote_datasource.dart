@@ -30,7 +30,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<WorkerProfileModel> getWorkerProfile() =>
       _execute(() async {
-        final response = await apiClient.dio.get('/WorkerProfile/me');
+        final response = await apiClient.dio.get('/worker/profile/me');
         return WorkerProfileModel.fromJson(
           response.data as Map<String, dynamic>,
         );

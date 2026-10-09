@@ -1,15 +1,16 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Worker;
+using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.WorkerModule.WorkerProfile.Controllers
 {
+    [Obsolete("Kept for the SigookApp build still in the stores; replaced by Controllers/Worker (api/worker/...). Delete once the new app is published.")]
     [Route("api/WorkerProfile")]
     [Authorize(Policy = PolicyConfiguration.Worker)]
     [ApiController]

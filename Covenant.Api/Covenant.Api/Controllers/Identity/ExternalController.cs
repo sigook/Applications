@@ -1,5 +1,6 @@
 using Covenant.Api.Configuration;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Identity;
 using Covenant.Common.Entities;
 using Covenant.Common.Interfaces.Identity;
 using Microsoft.AspNetCore.Authentication;

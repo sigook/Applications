@@ -1,32 +1,33 @@
+#pragma warning disable CS0618
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Security;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Candidate;
-using Covenant.Common.Repositories.Notification;
-using Covenant.Common.Repositories.Request;
-using Covenant.Common.Repositories.Worker;
-using Covenant.Core.BL.Interfaces;
-using Covenant.Core.BL.Services;
+using Covenant.Common.Repositories.Candidates;
+using Covenant.Common.Repositories.Notifications;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories.Workers;
+using Covenant.Core.BL.Interfaces.Workers;
+using Covenant.Core.BL.Services.Workers;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Repositories.Candidate;
-using Covenant.Infrastructure.Repositories.Notification;
-using Covenant.Infrastructure.Repositories.Request;
-using Covenant.Infrastructure.Repositories.Worker;
+using Covenant.Infrastructure.Repositories.Candidates;
+using Covenant.Infrastructure.Repositories.Notifications;
+using Covenant.Infrastructure.Repositories.Requests;
+using Covenant.Infrastructure.Repositories.Workers;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Net.Http.Json;
 using System.Net;
 using System.Text.Json;
 using Xunit;
-using System.Net.Http.Json;
 
 namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
 {
@@ -217,7 +218,6 @@ namespace Covenant.Integration.Tests.WorkerModule.WorkerProfileTest
                     .ReturnsAsync(Result.Ok());
 
                 services.AddSingleton(userAccountService.Object);
-                services.AddSingleton<ITimeService, TimeService>();
                 services.AddSingleton<IWorkerRepository, WorkerRepository>();
                 services.AddSingleton<IRequestRepository, RequestRepository>();
                 services.AddSingleton<IWorkerRequestRepository, WorkerRequestRepository>();

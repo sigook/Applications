@@ -1,3 +1,4 @@
+#pragma warning disable CS0618
 using Covenant.Api.WorkerModule.WorkerComment.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Models;

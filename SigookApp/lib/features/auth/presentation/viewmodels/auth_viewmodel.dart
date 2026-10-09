@@ -43,7 +43,9 @@ class AuthViewModel extends _$AuthViewModel {
     ref.listen(sessionExpiredSignalProvider, (previous, next) {
       expireSession();
     });
-    debugPrint('🔑 [AUTH] AuthViewModel build() called, starting session restore');
+    debugPrint(
+      '🔑 [AUTH] AuthViewModel build() called, starting session restore',
+    );
     _sessionRestore = _restoreSession();
     return const AuthState(isRestoringSession: true);
   }
@@ -63,6 +65,7 @@ class AuthViewModel extends _$AuthViewModel {
 
     if (!cachedToken.isExpired(leeway: AuthToken.defaultExpiryLeeway)) {
       debugPrint('🔑 [AUTH] Cached token still valid');
+      _identifyUser(cachedToken);
       state = AuthState(token: cachedToken, isAuthenticated: true);
       return SessionRestoreResult.authenticated;
     }
@@ -91,11 +94,13 @@ class AuthViewModel extends _$AuthViewModel {
           return SessionRestoreResult.sessionExpired;
         }
         debugPrint('🔑 [AUTH] Refresh deferred: ${failure.message}');
+        _identifyUser(cachedToken);
         state = AuthState(token: cachedToken, isAuthenticated: true);
         return SessionRestoreResult.refreshDeferred;
       },
       (refreshedToken) async {
         debugPrint('🔑 [AUTH] Token refreshed');
+        _identifyUser(refreshedToken);
         state = AuthState(token: refreshedToken, isAuthenticated: true);
         return SessionRestoreResult.authenticated;
       },
@@ -104,7 +109,9 @@ class AuthViewModel extends _$AuthViewModel {
 
   Future<AuthToken?> _loadCachedToken() async {
     try {
-      final cached = await ref.read(authLocalDataSourceProvider).getCachedToken();
+      final cached = await ref
+          .read(authLocalDataSourceProvider)
+          .getCachedToken();
       return cached?.toEntity();
     } catch (e) {
       debugPrint('🔑 [AUTH] Failed to load cached token: $e');
@@ -119,14 +126,16 @@ class AuthViewModel extends _$AuthViewModel {
     await ref.read(authRepositoryProvider).clearSession();
     if (!ref.mounted) return;
     state = const AuthState(sessionExpired: true);
-    ref.read(analyticsServiceProvider).logEvent(
-      name: 'session_expired',
-      parameters: {
-        'reason': reason,
-        'code': ?code,
-        'timestamp': DateTime.now().toIso8601String(),
-      },
-    );
+    ref
+        .read(analyticsServiceProvider)
+        .logEvent(
+          name: 'session_expired',
+          parameters: {
+            'reason': reason,
+            'code': ?code,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        );
   }
 
   Future<void> expireSession() async {
@@ -161,13 +170,15 @@ class AuthViewModel extends _$AuthViewModel {
           error: failure.message,
           errorCode: failure is ServerFailure ? failure.code : null,
         );
-        ref.read(analyticsServiceProvider).logEvent(
-          name: 'sign_in_failed',
-          parameters: {
-            'error': failure.message,
-            'timestamp': DateTime.now().toIso8601String(),
-          },
-        );
+        ref
+            .read(analyticsServiceProvider)
+            .logEvent(
+              name: 'sign_in_failed',
+              parameters: {
+                'error': failure.message,
+                'timestamp': DateTime.now().toIso8601String(),
+              },
+            );
       },
       (token) async {
         debugPrint(
@@ -183,7 +194,9 @@ class AuthViewModel extends _$AuthViewModel {
 
           await roleResult.fold(
             (failure) async {
-              debugPrint('🔑 [AUTH] Failed to fetch user role: ${failure.message}');
+              debugPrint(
+                '🔑 [AUTH] Failed to fetch user role: ${failure.message}',
+              );
               // Allow login even if role check fails (graceful degradation)
               state = state.copyWith(
                 isLoading: false,
@@ -207,13 +220,15 @@ class AuthViewModel extends _$AuthViewModel {
                 debugPrint(
                   '🔑 [AUTH] User role is "$role" - access denied, logging out',
                 );
-                ref.read(analyticsServiceProvider).logEvent(
-                  name: 'sign_in_access_denied',
-                  parameters: {
-                    'role': role,
-                    'timestamp': DateTime.now().toIso8601String(),
-                  },
-                );
+                ref
+                    .read(analyticsServiceProvider)
+                    .logEvent(
+                      name: 'sign_in_access_denied',
+                      parameters: {
+                        'role': role,
+                        'timestamp': DateTime.now().toIso8601String(),
+                      },
+                    );
                 final logoutUseCase = ref.read(logoutProvider);
                 await logoutUseCase(NoParams());
 
@@ -277,20 +292,25 @@ class AuthViewModel extends _$AuthViewModel {
       (failure) =>
           state = state.copyWith(isLoading: false, error: failure.message),
       (_) {
-        ref.read(analyticsServiceProvider).logEvent(name: 'account_deactivated');
+        ref
+            .read(analyticsServiceProvider)
+            .logEvent(name: 'account_deactivated');
         state = const AuthState();
       },
     );
   }
 
   void _trackLogin(AuthToken token) {
+    _identifyUser(token);
+    ref.read(analyticsServiceProvider).logLogin(method: 'password');
+  }
+
+  void _identifyUser(AuthToken token) {
     final subject =
         token.userInfo?.sub ?? _subjectFromAccessToken(token.accessToken);
-    if (subject.isNotEmpty) {
-      ref.read(analyticsServiceProvider).setUserId(subject);
-      ref.read(crashReportingServiceProvider).setUserId(subject);
-    }
-    ref.read(analyticsServiceProvider).logLogin(method: 'password');
+    if (subject.isEmpty) return;
+    ref.read(analyticsServiceProvider).setUserId(subject);
+    ref.read(crashReportingServiceProvider).setUserId(subject);
   }
 
   String _subjectFromAccessToken(String? accessToken) {

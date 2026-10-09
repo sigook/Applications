@@ -170,61 +170,69 @@ Covenant.Api/                       # Covenant.Api.slnx, Directory.Build.props (
 
 ### Controllers (presentation layer)
 
-Two coexisting layouts:
+One layout under `Covenant.Api/Controllers/`, mirroring the Sigook.Web navigation:
+**portal → menu → feature**. The folder is the route: `Controllers/Agency/Recruiting/Requests/`
+serves `api/agency/recruiting/requests`, `Controllers/Company/Invoices/` serves
+`api/company/invoices`, `Controllers/Worker/History/` serves `api/worker/history`. Class-level
+prefixes are lowercase and without hyphens; action templates keep their own casing.
 
-**1. Route-first controllers** under `Covenant.Api/Controllers/`:
+| Path | Route prefix | Controllers |
+|---|---|---|
+| `Controllers/Identity/` | `/connect/*`, `/Account`, `/Password`, `/External`, `/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
+| `Controllers/Shared/` | `api/catalog`, `api/location`, `api/file`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint), `EmailPreferencesController`, `WebsiteController` (public marketing endpoints) |
+| `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed SigookApp builds call them), `UserNotificationController` |
+| `Controllers/Shared/Jobs/` | `api/jobs/scheduletasks`, `api/jobs/deductions` | machine-to-machine, called by Sigook.Functions: `ScheduleTasksController`, `DeductionsController` (CRA table import) |
+| `Controllers/Agency/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |
+| `Controllers/Agency/Profile/` | `api/agency/profile[/locations\|personnel\|personnel/agencies\|attendance]` | the caller's own agency: `AgencyProfileController`, `LocationsController`, `PersonnelController`, `PersonnelAgenciesController` (agencies the caller belongs to), `AttendanceController` (staff clock in/out) |
+| `Controllers/Agency/Recruiting/Requests/` | `api/agency/recruiting/requests[/{requestId}/…]` | `RequestsListController` (lists + Excel, Policy `Recruiting`), `RequestsController` (detail/CRUD), `ApplicantsController`, `RunnersController` (Policy `Recruiting`), `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController`, `WorkersReportController`, `NotesController`, `ShiftController`, `SkillsController`, `ReportToController`, `RequestedByController` |
+| `Controllers/Agency/Recruiting/Applicants/` | `api/agency/recruiting/applicants` | `ApplicantsController` (cross-request applicants board) |
+| `Controllers/Agency/Recruiting/WeeklyBoard/` | `api/agency/recruiting/weeklyboard` | `WeeklyBoardController` |
+| `Controllers/Agency/Recruiting/Candidates/` | `api/agency/recruiting/candidates[/{candidateId}/…]` | `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
+| `Controllers/Agency/Recruiting/Workers/` | `api/agency/recruiting/workers[/{workerProfileId}/…]` | `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController`, `TimeSheetHistoryController`, `WageHistoryController` |
+| `Controllers/Agency/Recruiting/Clients/` | `api/agency/recruiting/clients[/{profileId}/…]` | `ClientsListController` (lists + Excel, Policy `Recruiting`), `ClientsController` (CRUD, Policy `Agency`), `ContactInformationController`, `ContactPeopleController`, `DocumentsController`, `InvoiceNotesController`, `InvoiceRecipientsController`, `JobPositionsController`, `LocationsController`, `LogoController`, `NotesController`, `UsersController` |
+| `Controllers/Agency/Sales/` | `api/agency/sales/{dashboard\|clients\|requests\|agencies}` | sales-rep scoped (Policy `Sales`): `DashboardController`, `ClientsController`, `RequestsController`; `AgenciesController` (sub-agencies, Policy `Agency`) |
+| `Controllers/Agency/Sales/Clients/` | `api/agency/sales/clients/{profileId}/{deals\|interactions}` | owner-scoped `DealsController`, `InteractionsController` (Policy `Sales`) |
+| `Controllers/Agency/Accounting/` | `api/agency/accounting/{invoices\|paystubs\|reports\|locations}` | `InvoicesController`, `PayStubsController`, `ReportsController` (Policy `Admin`), `LocationTaxController` |
+| `Controllers/Company/Profile/` | `api/company/profile[/users\|contactpeople\|jobpositions\|locations]` | `CompanyController` (own profile), `UsersController`, `ContactPeopleController`, `JobPositionsController`, `LocationsController` |
+| `Controllers/Company/Requests/` | `api/company/requests[/{requestId}/…]` | `RequestsController`, `ShiftController`, `WorkersController`, `WorkerTimeSheetsController` |
+| `Controllers/Company/Invoices/` | `api/company/invoices` | `InvoicesController` |
+| `Controllers/Company/Workers/` | `api/company/workers/{workerProfileId}/comments` | `CommentsController` |
+| `Controllers/Worker/` | `api/worker/{profile\|requests\|history\|comments}`, `api/worker/requests/{requestId}/timesheet` | the worker's own endpoints (Policy `Worker`): `Profile/ProfileController` (+ `ProfileUpdateController`, `JobExperienceController`), `Requests/RequestsController`, `History/HistoryController`, `Comments/CommentsController`, `TimeSheets/TimeSheetsController` (clock in/out) |
 
-| Path | Controllers |
-|---|---|
-| `Controllers/Identity/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
-| `Controllers/Sigook/` | `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint) |
-| `Controllers/Sigook/Account/` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/Account/ChangeEmail`, `GET api/Account/GetEmail`, `PATCH /identity` to deactivate — routes kept because installed SigookApp builds call them), `UserNotificationController` (`api/UserNotification` preferences) |
-| `Controllers/Sigook/Agency/` | `AgencyController`, `AgencyLocationController`, `NotificationsController` |
-| `Controllers/Sigook/Agency/Accounting/` | `InvoicesController`, `PayStubsController`, `ReportsController`, `LocationTaxController`, `DeductionsController` |
-| `Controllers/Sigook/Agency/CompanyProfiles/` | company detail: profile, contacts, documents, invoice notes/recipients, job positions, locations, logo, notes, users — plus the sales-only, owner-scoped `InteractionsController` and `DealsController` (Policy `Sales`) |
-| `Controllers/Sigook/Agency/Requests/` | request detail: `RequestsController`, `ApplicantsController`, `RunnersController`, `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController` (per-worker notes on a request), notes, shift, skills, report-to, requested-by |
-| `Controllers/Sigook/Agency/Recruiting/` | recruiting-scoped lists: `RequestsController`, `CompanyProfilesController`, `WeeklyBoardController` |
-| `Controllers/Sigook/Agency/Sales/` | sales-scoped lists and the dashboard: `RequestsController`, `CompanyProfilesController`, `DashboardController` |
-| `Controllers/Sigook/Agency/Candidates/` | candidate domain: `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
-| `Controllers/Sigook/Agency/Workers/` | worker-profile management: `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController` |
-| `Controllers/Sigook/Agency/Personnel/` | `PersonnelController` (agency back-office users), `AgenciesController` (agencies the caller belongs to) |
-| `Controllers/Sigook/Company/` | `CompanyController` (own profile), `UsersController` |
-| `Controllers/Sigook/Company/Accounting/` | `InvoicesController` |
-| `Controllers/Sigook/Company/Profile/` | `ContactPeopleController`, `JobPositionsController`, `LocationsController` |
-| `Controllers/Sigook/Company/Requests/` | `RequestsController`, `ShiftController`, `WorkersController`, `WorkerTimeSheetsController` |
-| `Controllers/Sigook/Company/Workers/` | `CommentsController` |
-| `Controllers/WebSite/` | `WebSiteController` (public marketing endpoints) |
-| `Controllers/Jobs/` | `ScheduleTasksController` (called by Sigook.Functions timers) |
+**`Covenant.Api/WorkerModule/` is obsolete.** It holds the previous worker controllers
+(`api/WorkerProfile`, `api/WorkerRequest`, `api/WorkerRequestHistory`) untouched and marked
+`[Obsolete]`, because the SigookApp build in the stores still calls them. Delete the folder and
+`Covenant.Integration.Tests/WorkerModule/` once the app that uses `api/worker/*` is published.
+Never add code there.
 
-**2. Module folders** under `Covenant.Api/{Module}Module/{Resource}/Controllers/`:
-
-| Module | Contents |
-|---|---|
-| `WorkerModule/` | worker perspective: profile, requests, request history, timesheets (clock in/out) |
-
-Routing: some controllers declare `public const string RouteName = "api/..."` +
-`[Route(RouteName)]` (grep for `RouteName =` to find an endpoint); others use attribute
-literals like `[Route("api/agency/accounting/[controller]")]` or
-`[Route("api/agency/sales/[controller]")]`. There is no `{Module}{Resource}V{N}Controller`
-convention. Every API controller carries `[ApiController]`; the built-in OpenAPI generator only
-describes controllers that have it.
+Routing: every controller declares `public const string RouteName = "api/..."` +
+`[Route(RouteName)]` (grep for `RouteName =` to find an endpoint; integration tests reference the
+constant instead of literal URLs). Every API controller carries `[ApiController]`; the built-in
+OpenAPI generator only describes controllers that have it.
 
 ### Services (business logic) — `Covenant.Core.BL/Services/`
 
-Root: `AgencyService`, `CandidateService`, `CompanyService`, `LocationService`,
-`NotificationService`, `RequestService`, `RunnerService`, `SalesService`, `TimeSheetService`,
-`WeeklyBoardService`, `WorkerService`. Watch the file/type mismatch: the file
-`TimeSheetService.cs` holds the class `TimesheetService : ITimesheetService`, while the
-interface file is `ITimeSheetService.cs` — a real grep trap.
+Services are organized by **domain**, not by portal (one `RequestService` serves the agency,
+company and worker controllers). Folder names are **plural** so the namespace never shadows the
+entity (`Services.Requests` vs the `Request` entity); `Covenant.Core.BL/Interfaces/` mirrors the
+same tree.
 
-Everything billing/payroll lives under `Services/Accounting/`:
-
-- `AccountingService`, `PayStubService`, `DeductionImportService` (CRA PDF import).
-- `Services/Accounting/Invoices/` — `InvoiceService` (abstract base), `CanadaInvoiceService`,
-  `UsaInvoiceService`, `InvoiceServiceFactory` (resolves the country service from the agency
-  billing location).
-- `Services/Accounting/Shared/` — `TimesheetCalculatorService` (hours breakdown + payroll
-  deductions), shared by payroll and invoicing.
+| Folder | Services |
+|---|---|
+| `Services/Agencies/` | `AgencyService` |
+| `Services/Candidates/` | `CandidateService` |
+| `Services/Companies/` | `CompanyService` |
+| `Services/Locations/` | `LocationService` |
+| `Services/Notifications/` | `NotificationService` |
+| `Services/Requests/` | `RequestService`, `RequestApplicantService`, `RequestApplicantNotificationService`, `RunnerService`, `WeeklyBoardService`, `TimesheetService` |
+| `Services/Sales/` | `SalesService` (deals, interactions, dashboard) |
+| `Services/Workers/` | `WorkerService` |
+| `Services/Shared/` | `UploadedFilesService` |
+| `Services/Accounting/` | `AccountingService`, `TimesheetCalculatorService` (hours breakdown + payroll deductions, shared by payroll and invoicing) |
+| `Services/Accounting/Deductions/` | `DeductionImportService` (CRA PDF import) |
+| `Services/Accounting/Invoices/` | `InvoiceService` (abstract base), `CanadaInvoiceService`, `UsaInvoiceService`, `InvoiceServiceFactory` (resolves the country service from the agency billing location) |
+| `Services/Accounting/PayStubs/` | `PayStubService` |
+| `Services/Identity/` | see below |
 
 Identity lives under `Services/Identity/` (interfaces in `Covenant.Common/Interfaces/Identity/`):
 
@@ -244,8 +252,8 @@ Identity lives under `Services/Identity/` (interfaces in `Covenant.Common/Interf
 - `PasswordResetService` — code-based forgot password.
 
 Also in `Covenant.Core.BL/`: `Adapters/` (entity→model adapters for candidate, company, worker,
-interfaces in `Covenant.Common/Interfaces/Adapters/`), `Extensions/Accounting/` (Razor view-model
-extensions for the invoice and payroll templates) and `Consumers/` (Service Bus).
+interfaces in `Covenant.Common/Interfaces/Adapters/`), `Extensions/` (`FormCollectionExtensions`)
+and `Consumers/` (Service Bus).
 
 Services depend only on repository interfaces from `Covenant.Common/Repositories/` (plus ASP.NET
 Identity's `UserManager`/`RoleManager` for the identity services); controllers only delegate to
@@ -264,21 +272,25 @@ Contexts/         CovenantContext.cs (main DbContext), IdentityContext.cs (ASP.N
                   PasswordResetCode + OpenIddict stores), MyKeysContext (DataProtection keys),
                   PostgresFunctions.cs (EF DbFunction mappings backing
                   Scripts/Functions/get_week_start_sunday.sql)
-Repositories/     by domain: Accounting/, Agency/, Candidate/, Company/, Identity/, Notification/,
-                  Request/, Worker/ + root repositories (Catalog, Location, Shift, User);
-                  shared plumbing in BaseRepository.cs
+Repositories/     by domain, plural folders mirroring Covenant.Common/Repositories/:
+                  Accounting/{Deductions,Invoices,PayStubs,Subcontractors}/, Agencies/, Candidates/,
+                  Companies/, Identity/, Notifications/, Requests/, Workers/ + root repositories
+                  (Catalog, Location, Shift, User); shared plumbing in BaseRepository.cs
 Mappers/          entity→model projection extensions used inside repositories:
                   AgencyExtensionsMapping, CandidateExtensionsMapping, CompanyExtensionsMapping,
                   RequestExtensionsMapping, WorkerRequestExtensionsMapping
-Configurations/   EF Core IEntityTypeConfiguration classes, mirrored by domain. Configurations/Identity/
-                  belongs to IdentityContext only (both contexts filter by namespace)
+Configurations/   EF Core IEntityTypeConfiguration classes, same plural tree as Repositories/ plus
+                  Sales/ (Deal, CompanyInteraction) and Requests/Runners/; catalogs and Location in
+                  the root. Configurations/Identity/ belongs to IdentityContext only: both contexts
+                  pick configurations by the exact namespace
+                  Covenant.Infrastructure.Configurations.Identity, so never nest folders under it
 Migrations/       EF Core migrations for CovenantContext; Migrations/Identity/ for IdentityContext
 Scripts/          raw SQL (views, functions, stored procedures) run at startup
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
                   UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
-                  accountEnabled check), TimeService, CraPdfParser (PdfPig reader for the CRA
+                  accountEnabled check), CraPdfParser (PdfPig reader for the CRA
                   deduction tables), SigookBusClient / SigookBusAdministrationClient (Service Bus)
 Services/Storage/ Azure Blob containers, one class per container (see below)
 ```
@@ -296,7 +308,7 @@ Payroll deductions are **DB table lookups, not formulas**: `TimesheetCalculatorS
 `DeductionsRepository` range lookups by earnings/year. EI is the only computed deduction.
 Import flow: a CRA PDF is uploaded to the `cra-tables` blob container → the Azure Function
 `CraTableUploaded` (blob trigger, `Covenant.Api/Sigook.Functions/Functions/CraTables.cs`) calls the
-API's `DeductionsController` (`POST api/Accounting/Deduction/Cpp/Blob` / `Tax/Blob`, which takes a
+API's `DeductionsController` (`POST api/jobs/deductions/Cpp/Blob` / `Tax/Blob`, which takes a
 blob reference) → `DeductionImportService` (uses `CraPdfParser` + `CraTablesContainer`) →
 `DeductionsRepository.ImportCpp/ImportTax(year, payPeriod, rows, yearsKept)`, keeping the last
 2 years. Reads happen only through `TimesheetCalculatorService`; there is no endpoint to read
@@ -381,7 +393,7 @@ rather than constructing clients directly.
   `error_description` codes from `Covenant.Common/Constants/SignInErrors.cs`
   (`invalid_credentials`, `inactive_user`, `email_not_confirmed`, `locked_out`). Password grant
   issues no `id_token`; clients build the profile from `/connect/userinfo`.
-  Sigook.Web keeps `oidc-client-ts` (`src/security/`) for token storage/refresh and for the
+  Sigook.Web keeps `oidc-client-ts` (`src/app/security/`) for token storage/refresh and for the
   "Sign in with Microsoft 365" button (`signinRedirect` with `acr_values=idp:oidc`, which goes
   straight to the external provider via `Controllers/Identity/ExternalController.cs`).
 - **Microsoft 365 accounts are re-checked after login.** The external callback stores the Entra
@@ -432,8 +444,8 @@ rather than constructing clients directly.
 - **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency`, `Recruiting`,
   `Sales`, `Company`, `Worker`, `Admin`, `SuperAdmin`. Every policy requires a role — there is no
   authenticated-only policy, no `Accounting` policy, and no cross-actor policies. An endpoint
-  reachable by two actors is exposed once per actor (`Controllers/Sigook/Agency/`, `Controllers/Sigook/Company/`,
-  `WorkerModule/`), each under its own policy, with the shared behaviour in a `Covenant.Core.BL`
+  reachable by two actors is exposed once per actor (`Controllers/Agency/`, `Controllers/Company/`,
+  `Controllers/Worker/`), each under its own policy, with the shared behaviour in a `Covenant.Core.BL`
   service. The default authentication scheme is the OpenIddict validation (bearer) scheme; the
   Identity application cookie only backs the Microsoft 365 sign-in and the authorize endpoint.
 
@@ -451,8 +463,8 @@ Scoping rules:
 
 - **Agency staff** see only their agency's data (`AgencyId` filter in every agency repository).
 - **Sales users** additionally see only their own portfolio: the sales controllers
-  (`Controllers/Sigook/Agency/Sales/`) pass the personnel id down, and
-  `Covenant.Infrastructure/Repositories/Company/CompanyRepository.cs` filters
+  (`Controllers/Agency/Sales/`) pass the personnel id down, and
+  `Covenant.Infrastructure/Repositories/Companies/CompanyRepository.cs` filters
   `CompanyProfile.SalesRepresentativeId == salesPersonnelId` (requests are filtered by the
   companies assigned to that rep in `RequestRepository`).
 - **Company users** see only their company; **workers** see only their own profile/requests.

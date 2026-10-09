@@ -1,22 +1,23 @@
 using Asp.Versioning;
 using Covenant.Api.Authorization;
 using Covenant.Api.Configuration;
-using Covenant.Api.Validators.Candidate;
+using Covenant.Api.Validators.Candidates;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Models.Notification;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Location;
 using Covenant.Documents;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
-using Microsoft.EntityFrameworkCore;
 using FluentValidation;
-using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Moq;
 

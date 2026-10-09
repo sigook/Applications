@@ -1,6 +1,7 @@
-﻿using Covenant.Common.Models;
-using Microsoft.AspNetCore.Mvc;
+using Covenant.Common.Models.Website;
+using Covenant.Common.Models;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using System.Text.Json;
 using System.Text;

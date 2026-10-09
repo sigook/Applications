@@ -19,7 +19,7 @@ class JobExperienceRemoteDataSource extends ProfileBaseDatasource {
   }) =>
       execute(() async {
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/JobExperience',
+          '/worker/profile/$workerId/JobExperience',
           data: {
             'company': company,
             if (supervisor?.isNotEmpty ?? false) 'supervisor': supervisor,
@@ -43,7 +43,7 @@ class JobExperienceRemoteDataSource extends ProfileBaseDatasource {
   }) =>
       execute(() async {
         await apiClient.dio.put(
-          '/WorkerProfile/$workerId/JobExperience/$experienceId',
+          '/worker/profile/$workerId/JobExperience/$experienceId',
           data: {
             'company': company,
             if (supervisor?.isNotEmpty ?? false) 'supervisor': supervisor,
@@ -58,12 +58,12 @@ class JobExperienceRemoteDataSource extends ProfileBaseDatasource {
   Future<void> deleteJobExperience(String workerId, String experienceId) =>
       execute(() async {
         await apiClient.dio.delete(
-          '/WorkerProfile/$workerId/JobExperience/$experienceId',
+          '/worker/profile/$workerId/JobExperience/$experienceId',
         );
       });
 
   Future<List<JobExperience>> fetchJobExperiences() => execute(() async {
-        final response = await apiClient.dio.get('/WorkerProfile/me');
+        final response = await apiClient.dio.get('/worker/profile/me');
         final json = response.data as Map<String, dynamic>;
         final list = json['jobExperiences'] as List<dynamic>? ?? [];
         return list

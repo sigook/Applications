@@ -1,7 +1,7 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Contexts;

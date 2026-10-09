@@ -18,6 +18,10 @@ dotnet test Covenant.Api/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj   
 # Migrations (run from the repo root; the API is the startup project for both contexts)
 dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context CovenantContext
 dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context IdentityContext --output-dir Migrations/Identity
+
+# Gate after moving/renaming entities or EF configurations: must print "No changes have been made to the model since the last migration."
+dotnet ef migrations has-pending-model-changes --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context CovenantContext
+dotnet ef migrations has-pending-model-changes --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context IdentityContext
 ```
 
 Key: shared cloud PostgreSQL (no local DB setup), Azure Service Bus for messaging. The API listens on

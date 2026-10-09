@@ -121,13 +121,15 @@ html:root {
   }
 }
 
+$visible-sticky-grid: '.table-wrapper.has-sticky-header:not(.tab-item[tabindex="-1"] *)';
+
 @include fit-viewport-grid {
-  .logged-content:has(.table-wrapper.has-sticky-header) {
+  .logged-content:has(#{$visible-sticky-grid}) {
     overflow: hidden;
     display: flex;
     flex-direction: column;
 
-    *:has(.table-wrapper.has-sticky-header) {
+    *:has(#{$visible-sticky-grid}) {
       display: flex;
       flex-direction: column;
       flex: 1 1 auto;

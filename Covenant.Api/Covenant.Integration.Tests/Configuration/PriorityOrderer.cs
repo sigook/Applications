@@ -1,6 +1,6 @@
-﻿using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using Xunit;
 
 namespace Covenant.Integration.Tests.Configuration
 {

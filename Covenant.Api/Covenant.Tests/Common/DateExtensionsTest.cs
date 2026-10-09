@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Utils.Extensions;
+using Covenant.Common.Utils.Extensions;
 using Xunit;
 
 namespace Covenant.Tests.Common;

@@ -27,13 +27,13 @@ class OtherDocumentsRemoteDataSource extends ProfileBaseDatasource {
           await MultipartFile.fromFile(filePath, filename: fileName),
         ));
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/OtherDocument',
+          '/worker/profile/$workerId/OtherDocument',
           data: formData,
         );
       });
 
   Future<void> deleteOtherDocument(String workerId, String documentId) =>
       execute(() => apiClient.dio.delete(
-            '/WorkerProfile/$workerId/OtherDocument/$documentId',
+            '/worker/profile/$workerId/OtherDocument/$documentId',
           ));
 }

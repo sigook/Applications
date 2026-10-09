@@ -1,5 +1,5 @@
-﻿using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Security;
+using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Location;
 
 namespace Covenant.Common.Models.Worker
 {

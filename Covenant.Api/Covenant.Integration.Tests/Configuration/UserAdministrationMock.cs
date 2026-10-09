@@ -1,6 +1,6 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Security;
+using Covenant.Common.Models.Identity;
 using Moq;
 
 namespace Covenant.Integration.Tests.Configuration;

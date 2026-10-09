@@ -1,4 +1,3 @@
-using Covenant.Api;
 using Covenant.Integration.Tests.Configuration;
 using Microsoft.AspNetCore.Mvc.Testing;
 

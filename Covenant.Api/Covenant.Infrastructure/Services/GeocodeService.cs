@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Location;

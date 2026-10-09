@@ -1,5 +1,5 @@
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Security;
+using Covenant.Common.Models.Identity;
 
 namespace Covenant.Common.Interfaces.Identity;
 

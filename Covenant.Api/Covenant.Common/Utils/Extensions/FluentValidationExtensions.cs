@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Functionals;
+using Covenant.Common.Functionals;
 using FluentValidation.Results;
 
 namespace Covenant.Common.Utils.Extensions;

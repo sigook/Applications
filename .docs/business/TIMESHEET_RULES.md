@@ -4,8 +4,8 @@ How worked hours are captured (clock in/out, manual entry), approved, and broken
 
 **Source of truth:**
 - `Covenant.Api/Covenant.Common/Entities/Request/TimeSheet.cs` — entity + clock/approval invariants
-- `Covenant.Api/Covenant.Core.BL/Services/TimeSheetService.cs` (`TimesheetService` class) — clock in/out, CRUD, geofence
-- `Covenant.Api/Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs` — **all hours-breakdown calculation** (not TimesheetService)
+- `Covenant.Api/Covenant.Core.BL/Services/Requests/TimesheetService.cs` (`TimesheetService` class) — clock in/out, CRUD, geofence
+- `Covenant.Api/Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs` — **all hours-breakdown calculation** (not TimesheetService)
 - Consumers: `PayStubService.GeneratePayStubForWorker` (payroll) and the invoice services (billing) — see `PAYROLL_RULES.md` / `BILLING_RULES.md`
 
 ---
@@ -27,7 +27,7 @@ How worked hours are captured (clock in/out, manual entry), approved, and broken
 | `DeductionsOthers` + `DeductionsOthersDescription` | decimal (non-nullable) | Validated 0–1000 in `AddDeductionsOthers` |
 | `BonusOrOthers` + `BonusOrOthersDescription` | decimal (non-nullable) | Ignored when ≤ 0 |
 | `Reimbursements` + `ReimbursementsDescription` | decimal | Non-taxable; excluded from gross on the pay stub |
-| `Comment` | string | E.g. `"Created and approved by {user}"` |
+| `Comment` | string | The `Comments` sent by the agency/company form when present; otherwise the audit text `"Created and approved by {user}"` / `"Updated and approved by {user}"` |
 | `WorkerRequestId`, `TimeSheetTotal`, `TimeSheetTotalPayroll` | | Links to the worker booking and computed totals |
 
 `BreakIsPaid`, `DurationBreak`, `HolidayIsPaid`, `OvertimeStartsAfter`, `WorkerRate` are **not** on the entity — they are joined from the Request/CompanyProfile into the calculation models (`TimeSheetApprovedPayrollModel`, etc.). `OvertimeStartsAfter` defaults to `CompanyProfile.OvertimeStartsAfter` (44 h), overridable per `CompanyProfileJobPositionRate`, with `ProvinceSetting.OvertimeStartsAfter` in between (fallback chain `JobPositionRate → ProvinceSetting → CompanyProfile`).
@@ -36,15 +36,15 @@ How worked hours are captured (clock in/out, manual entry), approved, and broken
 
 ## Creation Paths
 
-All entry points are in `TimesheetService` (`Covenant.Core.BL/Services/TimeSheetService.cs`):
+All entry points are in `TimesheetService` (`Covenant.Core.BL/Services/Requests/TimesheetService.cs`):
 
 ### 1. `Register(requestId, workerLocationModel)` — worker mobile punch
 
-1. **GPS geofence** (TimeSheetService.cs:155-197), active only when the `ValidateLocation` configuration flag is true:
+1. **GPS geofence** (TimesheetService.cs:155-197), active only when the `ValidateLocation` configuration flag is true:
    - Worker coordinates missing → rejected ("Your location is invalid").
    - Request has no coordinates → rejected.
    - Distance worker↔job pin `>= 101` meters → rejected ("You are too far from check point").
-   - Every distance comparison emits a `TimesheetLocationDistanceCheck` telemetry event (`TimeSheetService.cs:165-179`) — it fires only when both worker and request coordinates are present; the two rejection branches above return without telemetry.
+   - Every distance comparison emits a `TimesheetLocationDistanceCheck` telemetry event (`TimesheetService.cs:165-179`) — it fires only when both worker and request coordinates are present; the two rejection branches above return without telemetry.
 2. **Clock-in vs clock-out decision**: `TimesheetRepository.GetTimeSheeFromTheLast14Hours` fetches the latest timesheet in a 14-hour window.
    - None found → clock in (creates timesheet via `TimeSheet.WorkerClockIn`, `IsHoliday` set from the `Holiday` catalog by date + country).
    - Found but already approved → rejected.
@@ -54,13 +54,13 @@ All entry points are in `TimesheetService` (`Covenant.Core.BL/Services/TimeSheet
 ### 2. `AddClockIn(requestId, workerId, clockIn)` — agency enters a clock-in time
 
 - Time must not be in the future.
-- Duplicate check is **in-memory**: `entity.TimeSheets.Any(a => a.Date == clockInDate.Date)` (TimeSheetService.cs:65-66). There is no DB unique constraint on Worker + Date.
+- Duplicate check is **in-memory**: `entity.TimeSheets.Any(a => a.Date == clockInDate.Date)` (TimesheetService.cs:65-66). There is no DB unique constraint on Worker + Date.
 
 ### 3. `CreateTimesheet(workerId, requestId, model)` — agency manual entry (pre-approved)
 
 - Uses `TimeSheet.CreateTimeSheet` (TimeSheet.cs:139-160): sets `TimeIn` = midnight, `TimeOut = TimeIn + hours`, and immediately sets `TimeInApproved`/`TimeOutApproved` to the same values.
 - Validations: `hours < 24` (TimeSheet.cs:141 — there is **no** minimum-hours rule) and `date` not older than 1 year.
-- Duplicate check is in-memory via `workerRequest.ContainsTimeSheet(timeSheet)` (TimeSheetService.cs:98).
+- Duplicate check is in-memory via `workerRequest.ContainsTimeSheet(timeSheet)` (TimesheetService.cs:98).
 - Rejected workers can still get timesheets until `WorkerRequest.LimitDateToAddTimeSheet`.
 - Also sets MissingHours/rates, DeductionsOthers, BonusOrOthers, Reimbursements.
 

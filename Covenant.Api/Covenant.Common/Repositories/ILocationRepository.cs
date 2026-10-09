@@ -1,4 +1,5 @@
 using Covenant.Common.Entities;
+using Covenant.Common.Models.Location;
 using Covenant.Common.Models;
 
 namespace Covenant.Common.Repositories

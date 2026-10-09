@@ -1,4 +1,4 @@
-﻿using Covenant.Integration.Tests.Configuration;
+using Covenant.Integration.Tests.Configuration;
 using Xunit;
 
 [assembly:TestCollectionOrderer(DisplayNameOrderer.FullName,DisplayNameOrderer.Assembly)]

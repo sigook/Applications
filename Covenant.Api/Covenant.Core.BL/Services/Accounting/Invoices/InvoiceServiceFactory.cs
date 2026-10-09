@@ -1,6 +1,6 @@
 using Covenant.Common.Interfaces;
-using Covenant.Common.Repositories.Agency;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Covenant.Core.BL.Services.Accounting.Invoices;

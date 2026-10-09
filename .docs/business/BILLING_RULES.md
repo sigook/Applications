@@ -10,12 +10,12 @@ How the platform bills Companies for staffing services: line-item generation fro
 | Canadian invoice creation, holiday pay, HST | `Covenant.Api/Covenant.Core.BL/Services/Accounting/Invoices/CanadaInvoiceService.cs` |
 | USA invoice creation, per-location tax | `Covenant.Api/Covenant.Core.BL/Services/Accounting/Invoices/UsaInvoiceService.cs` |
 | Country routing | `Covenant.Api/Covenant.Core.BL/Services/Accounting/Invoices/InvoiceServiceFactory.cs` |
-| Hours breakdown + amount math | `Covenant.Api/Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs` |
+| Hours breakdown + amount math | `Covenant.Api/Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs` |
 | Holiday-pay look-back query | `Covenant.Api/Covenant.Infrastructure/Repositories/Accounting/InvoiceRepository.cs` → `GetCompanyRegularCharges` |
 | Global rate multipliers | `Covenant.Api/Covenant.Common/Configuration/Rates.cs` |
 | Invoice entity | `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/Invoice.cs` |
 
-**Entry points:** `InvoicesController` (`api/agency/accounting/Invoices`) resolves the service through `InvoiceServiceFactory.Resolve()`, which returns `UsaInvoiceService` when the agency's billing location `IsUSA`, otherwise `CanadaInvoiceService`. `POST .../Invoices/Preview` → `PreviewAsync`; `POST .../Invoices` → `CreateAsync`. Both funnel into `CreateInvoiceInternal` in the country-specific service.
+**Entry points:** `InvoicesController` (`api/agency/accounting/invoices`) resolves the service through `InvoiceServiceFactory.Resolve()`, which returns `UsaInvoiceService` when the agency's billing location `IsUSA`, otherwise `CanadaInvoiceService`. `POST .../Invoices/Preview` → `PreviewAsync`; `POST .../Invoices` → `CreateAsync`. Both funnel into `CreateInvoiceInternal` in the country-specific service.
 
 ---
 
@@ -211,7 +211,7 @@ Created by `InvoiceService.CreateSubcontractorReportsAsync`, invoked from `Creat
 Two paths remove subcontractor reports:
 
 - **With the invoice** — `DeleteInvoiceAndReportsSubcontractor` (Canada only), see *Invoice Deletion* below.
-- **Standalone, by week** — `DELETE api/agency/accounting/Reports/subcontractors?weekEnding=` → `AccountingService.DeleteSubcontractorReport` → `ISubcontractorRepository.DeleteReportsByWeekEnding`. Deletes every `ReportSubcontractor` of that week belonging to the caller's agency (children cascade) **plus** their `TimeSheetTotalPayroll` rows. Removing those rows is what re-qualifies the timesheets: `GetTimeSheetForCreatingReportsSubcontractor` only picks timesheets with `TimeSheetTotalPayroll == null`, so the week is rebuilt on the next invoice creation for that company. The invoice itself is untouched. A week with no reports returns `400`.
+- **Standalone, by week** — `DELETE api/agency/accounting/reports/subcontractors?weekEnding=` → `AccountingService.DeleteSubcontractorReport` → `ISubcontractorRepository.DeleteReportsByWeekEnding`. Deletes every `ReportSubcontractor` of that week belonging to the caller's agency (children cascade) **plus** their `TimeSheetTotalPayroll` rows. Removing those rows is what re-qualifies the timesheets: `GetTimeSheetForCreatingReportsSubcontractor` only picks timesheets with `TimeSheetTotalPayroll == null`, so the week is rebuilt on the next invoice creation for that company. The invoice itself is untouched. A week with no reports returns `400`.
 
 ---
 
@@ -230,6 +230,19 @@ Two paths remove subcontractor reports:
 
 - Canada: `AI-{InvoiceNumber:D4}-{yy}` (`Invoice.PrefixInvoiceNumber = "AI"`), formatted in `InvoiceRepository` list/summary queries via the helper `Invoice.BuildInvoiceNumber` (`Invoice.cs:61`); `InvoiceNumber` is sequential via `IInvoiceRepository.GetNextInvoiceNumber()`.
 - USA: prefix `US` (`InvoiceUSA.PrefixInvoiceNumber`); the number is built and persisted at creation (`UsaInvoiceService.cs:145`) using `GetNextInvoiceUSANumber()` (`UsaInvoiceService.cs:126`), not `GetNextInvoiceNumber()`.
+
+---
+
+## Invoice Status
+
+Both `Invoice` and `InvoiceUSA` carry a payment status, `InvoiceStatus` (`Covenant.Common/Enums/InvoiceStatus.cs`): `Pending = 1` (default, column default `'Pending'`) and `Paid = 2`. Stored as a string (`EnumToStringConverter`, max 20).
+
+- **Who/when:** every change writes `UpdatedAt` and `UpdatedBy` (FK to `Users`, `UpdatedByUser` navigation) on the invoice row. There is no status history table.
+- **Rule:** `Invoice.ChangeStatus` / `InvoiceUSA.ChangeStatus` reject a change to the status the invoice already has (`"Invoice is already {status}"`). Any other transition is allowed, including `Paid → Pending`.
+- **Endpoint:** `PUT api/agency/accounting/invoices/{invoiceId}/status` with `ChangeInvoiceStatusModel { Status }` → `InvoiceService.ChangeInvoiceStatus`. The country-specific `ChangeStatusData` loads the invoice through `GetInvoiceForAgency` / `GetInvoiceUSAForAgency`, scoped to the caller's agencies, so an invoice of another agency answers "Invoice not found".
+- **Status does not affect billing:** it never touches totals, timesheet links (`TimeSheetTotal`), pay stubs or the PDF. Deleting an invoice ignores the status.
+- **List & export:** `InvoiceListModel` exposes `Status`, `UpdatedAt` and `UpdatedByName` (the `AgencyPersonnel.Name` of the user in the invoice's agency, falling back to the user email). `GetInvoicesFilter.Status` filters, `GetInvoicesFilterSortBy.Status` sorts, and the Excel export has a `Status` column.
+- The company portal list does not show the status.
 
 ---
 

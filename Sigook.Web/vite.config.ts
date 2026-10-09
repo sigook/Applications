@@ -39,7 +39,7 @@ export default defineConfig({
   css: {
     lightningcss: {
       errorRecovery: true,
-    } as any,
+    },
     preprocessorOptions: {
       scss: {
         api: 'modern-compiler',

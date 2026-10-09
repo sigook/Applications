@@ -1,3 +1,5 @@
+using Covenant.Common.Enums;
+
 namespace Covenant.Common.Models.Accounting.Invoice;
 
 public class InvoiceListModel
@@ -15,6 +17,9 @@ public class InvoiceListModel
     public DateTime? WeekEnding { get; set; }
     public Guid CompanyProfileId { get; set; }
     public string SalesRepresentative { get; set; }
+    public InvoiceStatus Status { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public string UpdatedByName { get; set; }
     public string InvoiceNumber
     {
         get =>

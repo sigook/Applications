@@ -1,13 +1,17 @@
-using Covenant.Api.Validators.Company;
+using Covenant.Api.Validators.Sales;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Sales.Dashboard;
+using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Company.SalesDashboard;
-using Covenant.Common.Repositories.Company;
-using Covenant.Common.Repositories.Request;
-using Covenant.Core.BL.Interfaces;
-using Covenant.Core.BL.Services;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Repositories.Requests;
+using Covenant.Core.BL.Interfaces.Requests;
+using Covenant.Core.BL.Interfaces.Sales;
+using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Services.Sales;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 
@@ -17,7 +21,7 @@ public class SalesServiceDashboardTest
 {
     private readonly Mock<ICompanyRepository> _companyRepository = new();
     private readonly Mock<ICurrentUserService> _currentUserService = new();
-    private readonly Mock<ITimeService> _timeService = new();
+    private readonly FakeTimeProvider _timeProvider = new();
     private readonly ISalesService _sut;
     private readonly Guid _agencyId = Guid.NewGuid();
     private readonly Guid _userId = Guid.NewGuid();
@@ -33,7 +37,7 @@ public class SalesServiceDashboardTest
     {
         _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
         _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
-        _timeService.Setup(t => t.GetCurrentDateTimeOffset()).Returns(Now);
+        _timeProvider.SetUtcNow(Now);
         _sut = new SalesService(
             Mock.Of<IRequestService>(),
             Mock.Of<IRequestRepository>(),
@@ -45,7 +49,7 @@ public class SalesServiceDashboardTest
             new UpdateCompanyInteractionModelValidator(),
             new CreateDealModelValidator(),
             new UpdateDealModelValidator(),
-            _timeService.Object,
+            _timeProvider,
             new GetDealsByStatusFilterValidator());
     }
 

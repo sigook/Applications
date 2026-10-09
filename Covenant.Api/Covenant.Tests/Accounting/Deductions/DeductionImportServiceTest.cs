@@ -1,16 +1,17 @@
-using System.Text;
-using Covenant.Api.Validators.Deduction;
+using Covenant.Api.Validators.Accounting.Deductions;
 using Covenant.Common.Entities.Accounting.Deductions;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Accounting;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting.Deductions;
-using Covenant.Common.Repositories.Accounting;
+using Covenant.Common.Repositories.Accounting.Deductions;
+using Covenant.Core.BL.Services.Accounting.Deductions;
 using Covenant.Core.BL.Services.Accounting;
 using Covenant.Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using System.Text;
 using Xunit;
 
 namespace Covenant.Tests.Accounting.Deductions;

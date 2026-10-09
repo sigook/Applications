@@ -3,9 +3,9 @@
 How pay stubs are generated and how earnings and deductions are actually computed.
 
 **Source of truth:**
-- `Covenant.Api/Covenant.Core.BL/Services/Accounting/PayStubService.cs` — pay stub generation (`Generate` → `GeneratePayStubForWorker`, `CreateManualPayStub`)
-- `Covenant.Api/Covenant.Core.BL/Services/Accounting/Shared/TimesheetCalculatorService.cs` — hours breakdown, amounts, deductions
-- `Covenant.Api/Covenant.Infrastructure/Repositories/Accounting/DeductionsRepository.cs` — CPP/tax lookup tables
+- `Covenant.Api/Covenant.Core.BL/Services/Accounting/PayStubs/PayStubService.cs` — pay stub generation (`Generate` → `GeneratePayStubForWorker`, `CreateManualPayStub`)
+- `Covenant.Api/Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs` — hours breakdown, amounts, deductions
+- `Covenant.Api/Covenant.Infrastructure/Repositories/Accounting/Deductions/DeductionsRepository.cs` — CPP/tax lookup tables
 - `Covenant.Api/Covenant.Common/Configuration/Rates.cs` + `Covenant.Api/appsettings.json` (`Rates` section) — multipliers
 - Hours/timesheet rules (breaks, holiday gate, overtime thresholds, statutory holiday catalog): see `TIMESHEET_RULES.md`
 
@@ -253,7 +253,7 @@ Both tables are loaded from the PDFs the CRA publishes (T4032), with no manual t
 
    **The name is the only source of the pay period and the year — nothing is read from the contents of the file.** Uploading the monthly PDF as `TAX WEEKLY 2026.pdf` stores the monthly brackets as the weekly table and every weekly pay stub of that year comes out wrong, with no error anywhere. Rename before uploading, not after.
 2. The `CraTableUploaded` blob trigger in `Sigook.Functions` reads the table, the pay period and the year from that name. A name that does not follow the convention is reported to Teams and never reaches the API.
-3. The function calls `POST api/Accounting/Deduction/Cpp/Blob` or `POST api/Accounting/Deduction/Tax/Blob` (`CraTables:CppApiUrl` / `CraTables:TaxApiUrl`) with the blob name, the pay period and the year, authenticated with the same client credentials as the scheduled tasks.
+3. The function calls `POST api/jobs/deductions/Cpp/Blob` or `POST api/jobs/deductions/Tax/Blob` (`CraTables:CppApiUrl` / `CraTables:TaxApiUrl`) with the blob name, the pay period and the year, authenticated with the same client credentials as the scheduled tasks.
 4. `DeductionImportService` downloads the blob and `CraPdfParser` (PdfPig) reads it. A table that fails validation is rejected and the stored one is left untouched:
    - **CPP** — the parser reads the four `From - To  CPP` blocks printed on every line; `ValidateCpp` demands brackets starting at `0.00`, contiguous (`From == previous To + 0.01`), never overlapping and never lowering the contribution.
    - **Income tax** — one file holds both tax types: the federal pages first, the provincial ones after, each page titled accordingly and laid out as a `CC 0` to `CC 10` header with the amounts right aligned under each claim code and nothing printed where no tax is withheld. The parser takes the tax type from the page title and the claim code from the horizontal position of each amount. `ValidateTax` demands both tables to be present, to start at `0.00`, to be contiguous (`From == previous To`, the upper bound is exclusive) and every claim code to grow with the earnings and never lose its amount once the withholding starts.
@@ -268,4 +268,4 @@ The 2026 weekly CPP table is 8,928 brackets, from `0.00 - 67.30` to `9344.62 - 9
 
 ## T4
 
-`PayStubService.GenerateT4(from, to)` only produces an **Excel summary** of pay stubs (ClosedXML workbook), exposed via `ReportsController` (Covenant.Api/Controllers/Sigook/Agency/Accounting/ReportsController.cs:81). A second CRA report exists: `PayStubService.GenerateCraPayroll` (PayStubService.cs:87-98) produces `CRA_Payroll_{year}.xlsx`, exposed at `GET .../cra-payroll` (ReportsController.cs:102). No CRA slip generation or T4A/contractor handling exists.
+`PayStubService.GenerateT4(from, to)` only produces an **Excel summary** of pay stubs (ClosedXML workbook), exposed via `ReportsController` (Covenant.Api/Controllers/Agency/Accounting/ReportsController.cs:81). A second CRA report exists: `PayStubService.GenerateCraPayroll` (PayStubService.cs:87-98) produces `CRA_Payroll_{year}.xlsx`, exposed at `GET .../cra-payroll` (ReportsController.cs:102). No CRA slip generation or T4A/contractor handling exists.

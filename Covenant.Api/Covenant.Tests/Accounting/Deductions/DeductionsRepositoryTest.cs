@@ -1,7 +1,7 @@
 using Covenant.Common.Entities.Accounting.Deductions;
 using Covenant.Common.Enums;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Repositories.Accounting;
+using Covenant.Infrastructure.Repositories.Accounting.Deductions;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

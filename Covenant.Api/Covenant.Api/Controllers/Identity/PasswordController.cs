@@ -1,11 +1,11 @@
 using Covenant.Api.Configuration;
 using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models.Identity;
-using FluentValidation;
 using FluentValidation.Results;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Covenant.Api.Controllers.Identity;

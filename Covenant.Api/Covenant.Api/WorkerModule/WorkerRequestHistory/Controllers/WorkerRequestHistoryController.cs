@@ -1,7 +1,8 @@
-﻿using Covenant.Api.Authorization;
+using Covenant.Api.Authorization;
+using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Models;
-using Covenant.Common.Repositories.Request;
 using Covenant.Common.Models.Worker;
+using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.WorkerModule.WorkerRequestHistory.Controllers
 {
+    [Obsolete("Kept for the SigookApp build still in the stores; replaced by Controllers/Worker (api/worker/...). Delete once the new app is published.")]
     [Route("api/[controller]")]
     [ApiController]
     [Produces("application/json")]

@@ -1,13 +1,14 @@
 using Covenant.Api.Configuration;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Identity;
 using Covenant.Common.Entities;
 using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Repositories.Identity;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;

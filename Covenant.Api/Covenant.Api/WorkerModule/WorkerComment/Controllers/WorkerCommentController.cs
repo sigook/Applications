@@ -1,7 +1,7 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
-using Covenant.Core.BL.Interfaces;
+using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +10,7 @@ namespace Covenant.Api.WorkerModule.WorkerComment.Controllers;
 
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Worker)]
+[Obsolete("Kept for the SigookApp build still in the stores; replaced by Controllers/Worker (api/worker/...). Delete once the new app is published.")]
 [Route(RouteName)]
 [Produces("application/json")]
 public class WorkerCommentController(IWorkerService workerService) : ControllerBase

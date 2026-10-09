@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Entities;
+using Covenant.Common.Entities.Sales;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;

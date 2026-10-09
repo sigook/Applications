@@ -1,0 +1,208 @@
+<template>
+  <div class="p-3">
+    <b-loading v-model="isLoading"></b-loading>
+    <div class="columns is-multiline">
+      <div class="column is-12">
+        <b-field>
+          <template #label>
+            {{ "File" }} <span class="has-text-danger">*</span>
+          </template>
+          <div v-if="licenseModal.license && licenseModal.license.fileName" class="selected-file-display">
+            <b-icon icon="certificate" size="is-small"></b-icon>
+            <span class="selected-file-name">{{ filename(licenseModal.license.fileName) }}</span>
+            <b-button type="is-danger" size="is-small" icon-left="delete" outlined @click="clearLicenseFile()"></b-button>
+          </div>
+          <b-field v-else class="file is-primary" :class="{ 'has-name': !!selectedLicenseFile }">
+            <b-upload v-model="selectedLicenseFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
+              @update:modelValue="handleLicenseFileSelected" class="file-label" rounded>
+              <span class="file-cta">
+                <b-icon class="file-icon" icon="upload"></b-icon>
+                <span class="file-label">{{ selectedLicenseFile ? selectedLicenseFile.name : 'Add file' }}</span>
+              </span>
+            </b-upload>
+          </b-field>
+        </b-field>
+      </div>
+      <div class="column is-8">
+        <b-field :type="formErrors.description ? 'is-danger' : ''"
+          :message="formErrors.description || ''">
+          <template #label>
+            {{ "Description" }} <span class="has-text-danger">*</span>
+          </template>
+          <b-input type="text" v-model="description" name="license description" />
+        </b-field>
+      </div>
+      <div class="column is-4">
+        <b-field label="Number">
+          <b-input type="text" v-model="number" />
+        </b-field>
+      </div>
+      <div class="column is-6">
+        <b-field label="Issued">
+          <b-datepicker v-model="issued" :focused-date="todayDate" :max-date="todayDate"
+            :mobile-native="false" append-to-body position="is-top-right" />
+        </b-field>
+      </div>
+      <div class="column is-12">
+        <b-field :label="'Expires'">
+          <b-switch v-model="doesExpire" :true-value="true" :false-value="false">
+            {{ doesExpire ? 'Yes' : 'No' }}
+          </b-switch>
+        </b-field>
+      </div>
+      <div class="column is-6" v-if="doesExpire">
+        <b-field :type="formErrors.expires ? 'is-danger' : ''"
+          :message="formErrors.expires || ''">
+          <template #label>
+            Expires <span class="has-text-danger">*</span>
+          </template>
+          <b-datepicker v-model="expires" :focused-date="todayDate" :min-date="todayDate"
+            :mobile-native="false" append-to-body position="is-top-right" name="licenseExpires" />
+        </b-field>
+      </div>
+      <div class="column is-12 mt-5">
+        <b-button type="is-primary" @click="validateAll()">
+          {{ "Save" }}
+        </b-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import * as yup from 'yup';
+import { useAppStore } from '@/app/stores/app';
+import { useStickyForm } from '@/shared/composables/useStickyForm';
+import { showAlertError } from "@/shared/utils/toast";
+import { filename } from '@/shared/format';
+import { generateFileName } from "@/shared/utils/fileNaming";
+import { createWorkerLicenses } from '@/shared/worker-profile/api';
+import type { WorkerProfileDetail, WorkerProfileLicenseDetail } from '@/shared/worker-profile/types';
+import type { CovenantFileModel } from '@/shared/types/common';
+
+interface LicenseForm {
+  description: string;
+  number: string;
+  issued: Date | null;
+  expires: Date | null;
+}
+
+const props = defineProps<{ data?: WorkerProfileDetail }>();
+const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+
+const doesExpire = ref(true);
+
+const schema = yup.object({
+  description: yup.string().required('Description is required').max(100, 'Max 100 characters'),
+  number: yup.string().nullable(),
+  issued: yup.mixed().nullable(),
+  expires: yup.mixed().nullable()
+    .test('required-if-expires', 'Expires is required', v => !doesExpire.value || !!v),
+});
+
+const form = useStickyForm<LicenseForm>({
+  schema,
+  initialValues: {
+    description: '',
+    number: '',
+    issued: null,
+    expires: null,
+  },
+});
+const { description, number, issued, expires } = form.fields;
+const formErrors = form.errors;
+
+const appStore = useAppStore();
+
+const todayDate = ref<Date | null>(null);
+const isLoading = ref(false);
+const selectedLicenseFile = ref<File | null>(null);
+const fileObjects = reactive<{ license: File | null }>({ license: null });
+const licenseModal = ref<{ license: CovenantFileModel }>({
+  license: { fileName: "", description: "" },
+});
+const licenses = ref<WorkerProfileLicenseDetail[]>([]);
+
+function handleLicenseFileSelected(file: File | null) {
+  if (!file) return;
+  if (file.size / 1024 > 15500) {
+    showAlertError('File exceeds 15MB limit');
+    selectedLicenseFile.value = null;
+    return;
+  }
+  fileObjects.license = file;
+  const generatedName = generateFileName('License', file.name);
+  licenseModal.value.license = { fileName: generatedName, description: '' };
+  selectedLicenseFile.value = null;
+}
+
+function clearLicenseFile() {
+  fileObjects.license = null;
+  licenseModal.value.license = { fileName: '', description: '' };
+}
+
+async function saveLicenses(values: LicenseForm) {
+  isLoading.value = true;
+  try {
+    const newLicense: WorkerProfileLicenseDetail = {
+      license: {
+        fileName: licenseModal.value.license.fileName,
+        description: values.description,
+      },
+      number: values.number,
+      issued: values.issued?.toISOString() ?? null,
+      expires: doesExpire.value ? values.expires?.toISOString() ?? null : null,
+    };
+    const allLicenses = [...licenses.value, newLicense];
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(allLicenses));
+    if (fileObjects.license) {
+      const fn = newLicense.license.fileName;
+      formData.append(fn, fileObjects.license, fn);
+    }
+    await createWorkerLicenses(props.data.id, formData);
+    emit('closeModal', true);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function validateAll() {
+  form.markInteracted();
+  form.handleSubmit((values) => {
+    saveLicenses(values);
+  }, () => {
+    showAlertError("Please make sure all required fields are filled out correctly");
+  })();
+}
+
+if (props.data != null) {
+  for (let i = 0; i < props.data.licenses.length; i++) {
+    licenses.value.push(props.data.licenses[i]);
+  }
+}
+appStore.getCurrentDate().then((response) => {
+  todayDate.value = response;
+});
+</script>
+
+<style scoped>
+.selected-file-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+.selected-file-name {
+  flex: 1;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

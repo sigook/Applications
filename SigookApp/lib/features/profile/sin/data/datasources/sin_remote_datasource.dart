@@ -42,7 +42,7 @@ class SinRemoteDataSource extends ProfileBaseDatasource {
         }
 
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/SinInformation',
+          '/worker/profile/$workerId/SinInformation',
           data: formData,
         );
       });

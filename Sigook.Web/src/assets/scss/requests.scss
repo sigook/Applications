@@ -192,14 +192,6 @@
   border-radius: 0.25rem;
 }
 
-.vue-modal .modal-container.modal-light.overflow-initial {
-  overflow: initial;
-
-  @media (max-width: 767px) {
-    overflow: auto;
-  }
-}
-
 .notes-tooltip {
   width: 300px;
   position: absolute;

@@ -33,13 +33,13 @@ class CertificatesRemoteDataSource extends ProfileBaseDatasource {
           await MultipartFile.fromFile(filePath, filename: fileName),
         ));
         await apiClient.dio.post(
-          '/WorkerProfile/$workerId/Certificates',
+          '/worker/profile/$workerId/Certificates',
           data: formData,
         );
       });
 
   Future<void> deleteCertificate(String workerId, String certificateId) =>
       execute(() => apiClient.dio.delete(
-            '/WorkerProfile/$workerId/Certificates/$certificateId',
+            '/worker/profile/$workerId/Certificates/$certificateId',
           ));
 }

@@ -9,7 +9,7 @@ class PreferencesRemoteDataSource extends ProfileBaseDatasource {
 
   Future<void> _post(String workerId, String path, Object data) =>
       execute(() => apiClient.dio.post(
-            '/WorkerProfile/$workerId/$path',
+            '/worker/profile/$workerId/$path',
             data: data,
           ));
 

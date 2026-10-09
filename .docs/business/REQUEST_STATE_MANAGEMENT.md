@@ -157,16 +157,16 @@ Relevant tests in `Covenant.Tests/Request/RequestTest.cs`:
 
 ## Key Endpoints
 
-Agency request controllers live in `Covenant.Api/Controllers/Sigook/Agency/Requests/` (shared detail/actions) with role-scoped lists under `Recruiting/` and `Sales/`.
+Agency request controllers live in `Covenant.Api/Controllers/Agency/Recruiting/Requests/` (shared detail/actions) with role-scoped lists under `Recruiting/` and `Sales/`.
 
 - `GET    /api/agency/recruiting/requests` — List requests (recruiting-scoped; sales users have their own scoped list)
-- `GET    /api/agency/requests/{id}` — Request detail (`Requests/RequestsController`)
-- `GET    /api/agency/requests/lookup?companyProfileId&requestId` — Everything the create/edit/duplicate form needs in one call (company job positions, locations, agency personnel, company users and, with `requestId`, the request detail)
-- `POST   /api/agency/requests/{id}/Duplicate` — Create a new `Open` request from an existing one of any status. The body is the edited form (`RequestCreateModel`); the shift, skills, requested-by / report-to contacts and job boards are copied from the source. Workers, applicants, runners, notes and recruiters are **not** copied
-- `POST   /api/agency/requests/{requestId}/Workers/{workerId}/Book` — Assign a worker (automatic transition; `Requests/WorkersController` → `AgencyService.BookWorker`)
-- `PUT    /api/agency/requests/{id}/Cancel` — Cancel (only valid when `Open` + no workers; also `PUT /bulk-cancel`)
-- `PUT    /api/agency/requests/{id:guid}/Open` — Reopen
-- `GET    /api/company/requests` — Same listing from the company's perspective (`Controllers/Sigook/Company/Requests/`)
+- `GET    /api/agency/recruiting/requests/{id}` — Request detail (`Requests/RequestsController`)
+- `GET    /api/agency/recruiting/requests/lookup?companyProfileId&requestId` — Everything the create/edit/duplicate form needs in one call (company job positions, locations, agency personnel, company users and, with `requestId`, the request detail)
+- `POST   /api/agency/recruiting/requests/{id}/Duplicate` — Create a new `Open` request from an existing one of any status. The body is the edited form (`RequestCreateModel`); the shift, skills, requested-by / report-to contacts and job boards are copied from the source. Workers, applicants, runners, notes and recruiters are **not** copied
+- `POST   /api/agency/recruiting/requests/{requestId}/workers/{workerId}/Book` — Assign a worker (automatic transition; `Requests/WorkersController` → `AgencyService.BookWorker`)
+- `PUT    /api/agency/recruiting/requests/{id}/Cancel` — Cancel (only valid when `Open` + no workers; also `PUT /bulk-cancel`)
+- `PUT    /api/agency/recruiting/requests/{id:guid}/Open` — Reopen
+- `GET    /api/company/requests` — Same listing from the company's perspective (`Controllers/Company/Requests/`)
 
 ---
 

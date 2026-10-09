@@ -1,15 +1,15 @@
-﻿using Azure.Messaging.ServiceBus;
 using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Candidate;
 using Covenant.Common.Models.Notification;
-using Covenant.Common.Repositories.Candidate;
-using Covenant.Common.Repositories.Request;
+using Covenant.Common.Repositories.Candidates;
+using Covenant.Common.Repositories.Requests;
 using Covenant.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Azure.Messaging.ServiceBus;
 
 namespace Covenant.Core.BL.Consumers;
 

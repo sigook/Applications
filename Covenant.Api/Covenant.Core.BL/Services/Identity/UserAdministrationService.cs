@@ -4,7 +4,7 @@ using Covenant.Common.Entities.Identity;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Security;
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Repositories.Identity;
 using Microsoft.AspNetCore.Identity;
 

@@ -18,7 +18,9 @@ import '../../../../helpers/riverpod_test_helpers.dart';
 
 // ── Mock use cases ───────────────────────────────────────────────────────────
 class MockSignIn extends Mock implements SignIn {}
+
 class MockLogout extends Mock implements Logout {}
+
 class MockResendConfirmationLink extends Mock
     implements ResendConfirmationLink {}
 
@@ -38,8 +40,10 @@ void main() {
   late MockCrashReportingService mockCrash;
 
   const tToken = AuthToken(accessToken: 'access-123', refreshToken: 'ref-456');
-  const tExpiredTokenModel =
-      AuthTokenModel(accessToken: 'access-123', refreshToken: 'ref-456');
+  const tExpiredTokenModel = AuthTokenModel(
+    accessToken: 'access-123',
+    refreshToken: 'ref-456',
+  );
   final tValidTokenModel = AuthTokenModel(
     accessToken: 'access-123',
     refreshToken: 'ref-456',
@@ -67,30 +71,38 @@ void main() {
 
     // Default: no cached token → session restore resolves unauthenticated
     when(() => mockLocal.getCachedToken()).thenAnswer((_) async => null);
-    when(() => mockAuthRepo.clearSession())
-        .thenAnswer((_) async => const Right(null));
+    when(
+      () => mockAuthRepo.clearSession(),
+    ).thenAnswer((_) async => const Right(null));
 
     // Default analytics stubs (fire-and-forget, always succeed)
     when(() => mockAnalytics.setUserId(any())).thenAnswer((_) async {});
-    when(() => mockAnalytics.logLogin(method: any(named: 'method')))
-        .thenAnswer((_) async {});
-    when(() => mockAnalytics.logEvent(
-          name: any(named: 'name'),
-          parameters: any(named: 'parameters'),
-        )).thenAnswer((_) async {});
+    when(
+      () => mockAnalytics.logLogin(method: any(named: 'method')),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockAnalytics.logEvent(
+        name: any(named: 'name'),
+        parameters: any(named: 'parameters'),
+      ),
+    ).thenAnswer((_) async {});
     when(() => mockCrash.setUserId(any())).thenAnswer((_) async {});
   });
 
   ProviderContainer buildTestContainer() {
-    return buildContainer(ProviderContainer(overrides: [
-      signInProvider.overrideWithValue(mockSignIn),
-      logoutProvider.overrideWithValue(mockLogout),
-      resendConfirmationLinkProvider.overrideWithValue(mockResend),
-      authRepositoryProvider.overrideWithValue(mockAuthRepo),
-      authLocalDataSourceProvider.overrideWithValue(mockLocal),
-      analyticsServiceProvider.overrideWithValue(mockAnalytics),
-      crashReportingServiceProvider.overrideWithValue(mockCrash),
-    ]));
+    return buildContainer(
+      ProviderContainer(
+        overrides: [
+          signInProvider.overrideWithValue(mockSignIn),
+          logoutProvider.overrideWithValue(mockLogout),
+          resendConfirmationLinkProvider.overrideWithValue(mockResend),
+          authRepositoryProvider.overrideWithValue(mockAuthRepo),
+          authLocalDataSourceProvider.overrideWithValue(mockLocal),
+          analyticsServiceProvider.overrideWithValue(mockAnalytics),
+          crashReportingServiceProvider.overrideWithValue(mockCrash),
+        ],
+      ),
+    );
   }
 
   Future<AuthViewModel> restoredNotifier(ProviderContainer container) async {
@@ -107,65 +119,80 @@ void main() {
   // ── session restore ────────────────────────────────────────────────────────
 
   group('session restore', () {
-    test('starts restoring and resolves unauthenticated without a cached token',
-        () async {
-      final container = buildTestContainer();
-      expect(container.read(authViewModelProvider).isRestoringSession, true);
+    test(
+      'starts restoring and resolves unauthenticated without a cached token',
+      () async {
+        final container = buildTestContainer();
+        expect(container.read(authViewModelProvider).isRestoringSession, true);
 
-      final result =
-          await container.read(authViewModelProvider.notifier).sessionRestore;
+        final result = await container
+            .read(authViewModelProvider.notifier)
+            .sessionRestore;
 
-      expect(result, SessionRestoreResult.unauthenticated);
-      final state = container.read(authViewModelProvider);
-      expect(state.isRestoringSession, false);
-      expect(state.isAuthenticated, false);
-      expect(state.token, isNull);
-      verifyNever(() => mockAuthRepo.refreshToken(any()));
-    });
+        expect(result, SessionRestoreResult.unauthenticated);
+        final state = container.read(authViewModelProvider);
+        expect(state.isRestoringSession, false);
+        expect(state.isAuthenticated, false);
+        expect(state.token, isNull);
+        verifyNever(() => mockAuthRepo.refreshToken(any()));
+      },
+    );
 
-    test('authenticates with a valid cached token without refreshing',
-        () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tValidTokenModel);
-      final container = buildTestContainer();
+    test(
+      'authenticates with a valid cached token without refreshing',
+      () async {
+        when(
+          () => mockLocal.getCachedToken(),
+        ).thenAnswer((_) async => tValidTokenModel);
+        final container = buildTestContainer();
 
-      final result =
-          await container.read(authViewModelProvider.notifier).sessionRestore;
+        final result = await container
+            .read(authViewModelProvider.notifier)
+            .sessionRestore;
 
-      expect(result, SessionRestoreResult.authenticated);
-      final state = container.read(authViewModelProvider);
-      expect(state.isAuthenticated, true);
-      expect(state.token, tValidTokenModel.toEntity());
-      verifyNever(() => mockAuthRepo.refreshToken(any()));
-    });
+        expect(result, SessionRestoreResult.authenticated);
+        final state = container.read(authViewModelProvider);
+        expect(state.isAuthenticated, true);
+        expect(state.token, tValidTokenModel.toEntity());
+        verifyNever(() => mockAuthRepo.refreshToken(any()));
+      },
+    );
 
-    test('refreshes an expired cached token and authenticates with the new one',
-        () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tExpiredTokenModel);
-      when(() => mockAuthRepo.refreshToken('ref-456'))
-          .thenAnswer((_) async => Right(tRefreshedToken));
-      final container = buildTestContainer();
+    test(
+      'refreshes an expired cached token and authenticates with the new one',
+      () async {
+        when(
+          () => mockLocal.getCachedToken(),
+        ).thenAnswer((_) async => tExpiredTokenModel);
+        when(
+          () => mockAuthRepo.refreshToken('ref-456'),
+        ).thenAnswer((_) async => Right(tRefreshedToken));
+        final container = buildTestContainer();
 
-      final result =
-          await container.read(authViewModelProvider.notifier).sessionRestore;
+        final result = await container
+            .read(authViewModelProvider.notifier)
+            .sessionRestore;
 
-      expect(result, SessionRestoreResult.authenticated);
-      final state = container.read(authViewModelProvider);
-      expect(state.isAuthenticated, true);
-      expect(state.token, tRefreshedToken);
-      verify(() => mockAuthRepo.refreshToken('ref-456')).called(1);
-    });
+        expect(result, SessionRestoreResult.authenticated);
+        final state = container.read(authViewModelProvider);
+        expect(state.isAuthenticated, true);
+        expect(state.token, tRefreshedToken);
+        verify(() => mockAuthRepo.refreshToken('ref-456')).called(1);
+      },
+    );
 
     test('clears the session when the refresh is rejected', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tExpiredTokenModel);
-      when(() => mockAuthRepo.refreshToken(any()))
-          .thenAnswer((_) async => const Left(tRejectedRefresh));
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tExpiredTokenModel);
+      when(
+        () => mockAuthRepo.refreshToken(any()),
+      ).thenAnswer((_) async => const Left(tRejectedRefresh));
       final container = buildTestContainer();
 
-      final result =
-          await container.read(authViewModelProvider.notifier).sessionRestore;
+      final result = await container
+          .read(authViewModelProvider.notifier)
+          .sessionRestore;
 
       expect(result, SessionRestoreResult.sessionExpired);
       final state = container.read(authViewModelProvider);
@@ -173,36 +200,45 @@ void main() {
       expect(state.token, isNull);
       expect(state.sessionExpired, true);
       verify(() => mockAuthRepo.clearSession()).called(1);
-      verify(() => mockAnalytics.logEvent(
-            name: 'session_expired',
-            parameters: any(named: 'parameters'),
-          )).called(1);
+      verify(
+        () => mockAnalytics.logEvent(
+          name: 'session_expired',
+          parameters: any(named: 'parameters'),
+        ),
+      ).called(1);
     });
 
-    test('clears the session when the expired token has no refresh token',
-        () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => const AuthTokenModel(accessToken: 'a'));
-      final container = buildTestContainer();
+    test(
+      'clears the session when the expired token has no refresh token',
+      () async {
+        when(
+          () => mockLocal.getCachedToken(),
+        ).thenAnswer((_) async => const AuthTokenModel(accessToken: 'a'));
+        final container = buildTestContainer();
 
-      final result =
-          await container.read(authViewModelProvider.notifier).sessionRestore;
+        final result = await container
+            .read(authViewModelProvider.notifier)
+            .sessionRestore;
 
-      expect(result, SessionRestoreResult.sessionExpired);
-      expect(container.read(authViewModelProvider).sessionExpired, true);
-      verify(() => mockAuthRepo.clearSession()).called(1);
-      verifyNever(() => mockAuthRepo.refreshToken(any()));
-    });
+        expect(result, SessionRestoreResult.sessionExpired);
+        expect(container.read(authViewModelProvider).sessionExpired, true);
+        verify(() => mockAuthRepo.clearSession()).called(1);
+        verifyNever(() => mockAuthRepo.refreshToken(any()));
+      },
+    );
 
     test('keeps the stale token when the refresh fails transiently', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tExpiredTokenModel);
-      when(() => mockAuthRepo.refreshToken(any()))
-          .thenAnswer((_) async => const Left(NetworkFailure()));
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tExpiredTokenModel);
+      when(
+        () => mockAuthRepo.refreshToken(any()),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
       final container = buildTestContainer();
 
-      final result =
-          await container.read(authViewModelProvider.notifier).sessionRestore;
+      final result = await container
+          .read(authViewModelProvider.notifier)
+          .sessionRestore;
 
       expect(result, SessionRestoreResult.refreshDeferred);
       final state = container.read(authViewModelProvider);
@@ -212,12 +248,81 @@ void main() {
       verifyNever(() => mockAuthRepo.clearSession());
     });
 
+    const tCachedJwt =
+        'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ3b3JrZXItc3ViLTEifQ.sig';
+    const tRefreshedJwt =
+        'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ3b3JrZXItc3ViLTIifQ.sig';
+
+    test(
+      'identifies the user in telemetry from a valid cached token',
+      () async {
+        when(() => mockLocal.getCachedToken()).thenAnswer(
+          (_) async => AuthTokenModel(
+            accessToken: tCachedJwt,
+            refreshToken: 'ref-456',
+            expirationDateTime: DateTime.now().add(const Duration(hours: 1)),
+          ),
+        );
+        final container = buildTestContainer();
+
+        await container.read(authViewModelProvider.notifier).sessionRestore;
+
+        verify(() => mockAnalytics.setUserId('worker-sub-1')).called(1);
+        verify(() => mockCrash.setUserId('worker-sub-1')).called(1);
+      },
+    );
+
+    test('identifies the user in telemetry from the refreshed token', () async {
+      when(() => mockLocal.getCachedToken()).thenAnswer(
+        (_) async => const AuthTokenModel(
+          accessToken: tCachedJwt,
+          refreshToken: 'ref-456',
+        ),
+      );
+      when(() => mockAuthRepo.refreshToken('ref-456')).thenAnswer(
+        (_) async => Right(
+          AuthToken(
+            accessToken: tRefreshedJwt,
+            refreshToken: 'ref-new',
+            expirationDateTime: DateTime.now().add(const Duration(hours: 1)),
+          ),
+        ),
+      );
+      final container = buildTestContainer();
+
+      await container.read(authViewModelProvider.notifier).sessionRestore;
+
+      verify(() => mockAnalytics.setUserId('worker-sub-2')).called(1);
+      verifyNever(() => mockAnalytics.setUserId('worker-sub-1'));
+    });
+
+    test(
+      'identifies the user in telemetry when the refresh is deferred',
+      () async {
+        when(() => mockLocal.getCachedToken()).thenAnswer(
+          (_) async => const AuthTokenModel(
+            accessToken: tCachedJwt,
+            refreshToken: 'ref-456',
+          ),
+        );
+        when(
+          () => mockAuthRepo.refreshToken(any()),
+        ).thenAnswer((_) async => const Left(NetworkFailure()));
+        final container = buildTestContainer();
+
+        await container.read(authViewModelProvider.notifier).sessionRestore;
+
+        verify(() => mockAnalytics.setUserId('worker-sub-1')).called(1);
+      },
+    );
+
     test('resolves unauthenticated when the storage read throws', () async {
       when(() => mockLocal.getCachedToken()).thenThrow(Exception('boom'));
       final container = buildTestContainer();
 
-      final result =
-          await container.read(authViewModelProvider.notifier).sessionRestore;
+      final result = await container
+          .read(authViewModelProvider.notifier)
+          .sessionRestore;
 
       expect(result, SessionRestoreResult.unauthenticated);
       expect(container.read(authViewModelProvider).isAuthenticated, false);
@@ -227,10 +332,10 @@ void main() {
   // ── expireSession ──────────────────────────────────────────────────────────
 
   group('expireSession', () {
-    test('clears the session when the signal fires during a session',
-        () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tValidTokenModel);
+    test('clears the session when the signal fires during a session', () async {
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tValidTokenModel);
       final container = buildTestContainer();
       await restoredNotifier(container);
       expect(container.read(authViewModelProvider).isAuthenticated, true);
@@ -246,8 +351,9 @@ void main() {
     });
 
     test('is idempotent when the signal fires again', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tValidTokenModel);
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tValidTokenModel);
       final container = buildTestContainer();
       await restoredNotifier(container);
 
@@ -271,8 +377,9 @@ void main() {
     });
 
     test('acknowledgeSessionExpired clears the one-shot flag', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tValidTokenModel);
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tValidTokenModel);
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
 
@@ -293,10 +400,12 @@ void main() {
     test('sets isAuthenticated=true for worker role', () async {
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
-      when(() => mockSignIn.call(any()))
-          .thenAnswer((_) async => const Right(tToken));
-      when(() => mockAuthRepo.getUserRole(any()))
-          .thenAnswer((_) async => const Right('worker'));
+      when(
+        () => mockSignIn.call(any()),
+      ).thenAnswer((_) async => const Right(tToken));
+      when(
+        () => mockAuthRepo.getUserRole(any()),
+      ).thenAnswer((_) async => const Right('worker'));
 
       await notifier.signIn(email: 'test@example.com', password: 'password123');
 
@@ -309,12 +418,15 @@ void main() {
     test('denies access and sets error for non-worker role', () async {
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
-      when(() => mockSignIn.call(any()))
-          .thenAnswer((_) async => const Right(tToken));
-      when(() => mockAuthRepo.getUserRole(any()))
-          .thenAnswer((_) async => const Right('admin'));
-      when(() => mockLogout.call(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockSignIn.call(any()),
+      ).thenAnswer((_) async => const Right(tToken));
+      when(
+        () => mockAuthRepo.getUserRole(any()),
+      ).thenAnswer((_) async => const Right('admin'));
+      when(
+        () => mockLogout.call(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       await notifier.signIn(email: 'test@example.com', password: 'password123');
 
@@ -327,10 +439,12 @@ void main() {
     test('allows login when role check fails (graceful degradation)', () async {
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
-      when(() => mockSignIn.call(any()))
-          .thenAnswer((_) async => const Right(tToken));
-      when(() => mockAuthRepo.getUserRole(any()))
-          .thenAnswer((_) async => const Left(ServerFailure(message: 'role error')));
+      when(
+        () => mockSignIn.call(any()),
+      ).thenAnswer((_) async => const Right(tToken));
+      when(() => mockAuthRepo.getUserRole(any())).thenAnswer(
+        (_) async => const Left(ServerFailure(message: 'role error')),
+      );
 
       await notifier.signIn(email: 'test@example.com', password: 'password123');
 
@@ -374,15 +488,18 @@ void main() {
     });
 
     test('clears a pending sessionExpired flag', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => const AuthTokenModel(accessToken: 'a'));
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => const AuthTokenModel(accessToken: 'a'));
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
       expect(container.read(authViewModelProvider).sessionExpired, true);
-      when(() => mockSignIn.call(any()))
-          .thenAnswer((_) async => const Right(tToken));
-      when(() => mockAuthRepo.getUserRole(any()))
-          .thenAnswer((_) async => const Right('worker'));
+      when(
+        () => mockSignIn.call(any()),
+      ).thenAnswer((_) async => const Right(tToken));
+      when(
+        () => mockAuthRepo.getUserRole(any()),
+      ).thenAnswer((_) async => const Right('worker'));
 
       await notifier.signIn(email: 'test@example.com', password: 'password123');
 
@@ -398,8 +515,9 @@ void main() {
     test('pulses justConfirmationSent on success', () async {
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
-      when(() => mockResend.call(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockResend.call(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       var pulsed = false;
       container.listen(authViewModelProvider, (previous, next) {
@@ -412,10 +530,7 @@ void main() {
       await notifier.resendConfirmationLink('test@example.com');
 
       expect(pulsed, true);
-      expect(
-        container.read(authViewModelProvider).justConfirmationSent,
-        false,
-      );
+      expect(container.read(authViewModelProvider).justConfirmationSent, false);
       verify(() => mockResend.call(any())).called(1);
     });
 
@@ -443,12 +558,14 @@ void main() {
 
   group('logout', () {
     test('clears auth state on success', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tValidTokenModel);
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tValidTokenModel);
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
-      when(() => mockLogout.call(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockLogout.call(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       await notifier.logout();
 
@@ -459,8 +576,9 @@ void main() {
     });
 
     test('clears auth state even on failure', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tValidTokenModel);
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tValidTokenModel);
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
       when(() => mockLogout.call(any())).thenAnswer(
@@ -480,10 +598,12 @@ void main() {
 
   group('deactivateAccount', () {
     test('resets state on success', () async {
-      when(() => mockLocal.getCachedToken())
-          .thenAnswer((_) async => tValidTokenModel);
-      when(() => mockAuthRepo.deactivateAccount(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockLocal.getCachedToken(),
+      ).thenAnswer((_) async => tValidTokenModel);
+      when(
+        () => mockAuthRepo.deactivateAccount(any()),
+      ).thenAnswer((_) async => const Right(null));
       final container = buildTestContainer();
       final notifier = await restoredNotifier(container);
       expect(container.read(authViewModelProvider).token, isNotNull);

@@ -7,47 +7,51 @@ nuget.org only through `nuget.config`).
 ## Code Navigation
 
 ```
-Controllers:     Covenant.Api/Controllers/Identity/                     (AuthorizationController = OpenIddict /connect/* passthrough; AccountController = POST /Account/ConfirmEmail|CreatePassword|ResendConfirmationLink + legacy email-link redirects; ExternalController = Microsoft 365 sign-in; PasswordController = /Password/forgot|reset; HomeController = / and /Home/InvalidUser, redirects to Sigook.Web)
-                 Covenant.Api/Controllers/Sigook/                       (root: Catalog, File, Location, EmailPreferences)
-                 Covenant.Api/Controllers/Sigook/Account/               (the caller's own account, bearer: UserAccount = api/Account/* + PATCH /identity; UserNotification)
-                 Covenant.Api/Controllers/Sigook/Agency/                (Agency, AgencyLocation)
-                 Covenant.Api/Controllers/Sigook/Agency/Accounting/     (Invoices, PayStubs, Reports, LocationTax, Deductions)
-                 Covenant.Api/Controllers/Sigook/Agency/Sales/          (Requests, CompanyProfiles, Dashboard — scoped to the sales rep)
-                 Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/ (company detail endpoints, incl. sales-only Interactions + Deals under {profileId})
-                 Covenant.Api/Controllers/Sigook/Agency/Candidates/     (Candidates, Notes, PhoneNumbers, Skills, Documents)
-                 Covenant.Api/Controllers/Sigook/Agency/Recruiting/     (Requests, CompanyProfiles, WeeklyBoard — scoped to recruiting)
-                 Covenant.Api/Controllers/Sigook/Agency/Requests/       (Requests, Applicants, Notes, Runners, Shift, Skills, Workers, TimeSheets, WorkersReport)
-                 Covenant.Api/Controllers/Sigook/Agency/Workers/        (Workers, Notes, Comments, Holidays, RequestHistory, WageHistory, TimeSheetHistory)
-                 Covenant.Api/Controllers/Sigook/Agency/Personnel/      (Personnel, Agencies)
-                 Covenant.Api/Controllers/Sigook/Company/               (Company, Users)
-                 Covenant.Api/Controllers/Sigook/Company/Accounting/    (Invoices)
-                 Covenant.Api/Controllers/Sigook/Company/Profile/       (ContactPeople, JobPositions, Locations)
-                 Covenant.Api/Controllers/Sigook/Company/Requests/      (Requests, Shift, Workers, WorkerTimeSheets)
-                 Covenant.Api/Controllers/Sigook/Company/Workers/       (Comments)
-                 Covenant.Api/Controllers/Jobs/                         (ScheduleTasks — called by Sigook.Functions timers)
-Module controllers: Covenant.Api/{Module}Module/                        (WorkerModule — the worker's own endpoints, Policy=Worker)
+Controllers:     Covenant.Api/Controllers/{Portal}/{Menu}/{Feature}/     folder = route: Controllers/Agency/Recruiting/Requests/ serves api/agency/recruiting/requests (lowercase class prefix, action templates keep their casing)
+                 Covenant.Api/Controllers/Identity/                     (AuthorizationController = OpenIddict /connect/* passthrough; AccountController = POST /Account/ConfirmEmail|CreatePassword|ResendConfirmationLink + legacy email-link redirects; ExternalController = Microsoft 365 sign-in; PasswordController = /Password/forgot|reset; HomeController = / and /Home/InvalidUser, redirects to Sigook.Web)
+                 Covenant.Api/Controllers/Shared/                       (any role / anonymous: Catalog, Location, File, EmailPreferences, Website → api/catalog, api/location, api/file, api/emailpreferences, api/website)
+                 Covenant.Api/Controllers/Shared/Account/               (the caller's own account, bearer: UserAccount = api/account/* + PATCH /identity; UserNotification = api/usernotification)
+                 Covenant.Api/Controllers/Shared/Jobs/                  (machine-to-machine, called by Sigook.Functions: ScheduleTasks = api/jobs/scheduletasks, Deductions = api/jobs/deductions)
+                 Covenant.Api/Controllers/Agency/                       (Notifications = api/agency/notifications, the sidebar bell)
+                 Covenant.Api/Controllers/Agency/Profile/               (own agency: AgencyProfile = api/agency/profile, Locations, Personnel, PersonnelAgencies, Attendance)
+                 Covenant.Api/Controllers/Agency/Recruiting/Requests/   (RequestsList = lists/Excel, Requests = detail/CRUD, Applicants, Runners, Workers, TimeSheets, WorkerTimeSheets, WorkerNotes, WorkersReport, Notes, Shift, Skills, ReportTo, RequestedBy → api/agency/recruiting/requests[/{requestId}/…])
+                 Covenant.Api/Controllers/Agency/Recruiting/Applicants/ (cross-request applicants board)
+                 Covenant.Api/Controllers/Agency/Recruiting/WeeklyBoard/
+                 Covenant.Api/Controllers/Agency/Recruiting/Candidates/ (Candidates, Notes, PhoneNumbers, Skills, Documents)
+                 Covenant.Api/Controllers/Agency/Recruiting/Workers/    (Workers, Notes, Comments, Holidays, RequestHistory, WageHistory, TimeSheetHistory)
+                 Covenant.Api/Controllers/Agency/Recruiting/Clients/    (ClientsList = lists/Excel, Clients = CRUD, ContactInformation, ContactPeople, Documents, InvoiceNotes, InvoiceRecipients, JobPositions, Locations, Logo, Notes, Users → api/agency/recruiting/clients[/{profileId}/…])
+                 Covenant.Api/Controllers/Agency/Sales/                 (sales-rep scoped: Dashboard, Clients, Requests; Agencies = sub-agencies → api/agency/sales/*)
+                 Covenant.Api/Controllers/Agency/Sales/Clients/         (owner-scoped Deals + Interactions under {profileId}, Policy=Sales)
+                 Covenant.Api/Controllers/Agency/Accounting/            (Invoices, PayStubs, Reports, LocationTax → api/agency/accounting/*)
+                 Covenant.Api/Controllers/Company/Profile/              (Company = api/company/profile, Users, ContactPeople, JobPositions, Locations)
+                 Covenant.Api/Controllers/Company/Requests/             (Requests, Shift, Workers, WorkerTimeSheets → api/company/requests[/{requestId}/…])
+                 Covenant.Api/Controllers/Company/Invoices/             (api/company/invoices)
+                 Covenant.Api/Controllers/Company/Workers/              (Comments)
+                 Covenant.Api/Controllers/Worker/                       (the worker's own endpoints, Policy=Worker: Profile/, Requests/, History/, Comments/, TimeSheets/ → api/worker/*)
+Obsolete:        Covenant.Api/WorkerModule/                              (previous worker controllers, [Obsolete], still served because the SigookApp build in the stores calls api/WorkerProfile|WorkerRequest|WorkerRequestHistory — delete with Covenant.Integration.Tests/WorkerModule/ once the app using api/worker/* is published; never add code here)
 Identity config: Covenant.Api/Configuration/OpenIddictConfiguration.cs  (server + local validation, certificates)
                  Covenant.Api/Configuration/Microsoft365OpenIdConnect.cs (scheme "oidc")
                  Covenant.Api/Configuration/OpenIddictSeeder.cs         (scopes, Functions client, dev clients)
 Razor views:     Covenant.Api/Views/Notifications/Identity/            (account emails) + Billing/, Notifications/, Website/ — email/PDF templates only, no pages
 Static assets:   Covenant.Api/wwwroot/assets/images/                    (images referenced by the email templates)
 OpenAPI:         Covenant.Api/Configuration/OpenApi/                    (document/operation transformers; UI = Scalar at /scalar)
-Services:        Covenant.Core.BL/Services/                             (RequestService, WorkerService, etc.)
-                 Covenant.Core.BL/Services/Identity/                    (UserAdministrationService, AccountNotificationService, UserSessionValidator, PasswordResetService)
-                 Covenant.Core.BL/Services/Accounting/                  (PayStubService)
-                 Covenant.Core.BL/Services/Accounting/Shared/           (TimesheetCalculatorService — hours breakdown + deductions)
-                 Covenant.Core.BL/Services/Accounting/Invoices/         (CanadaInvoiceService, UsaInvoiceService)
+Services:        Covenant.Core.BL/Services/{Domain}/                    by domain, PLURAL folders (Agencies/, Candidates/, Companies/, Locations/, Notifications/, Requests/, Sales/, Workers/, Shared/) so the namespace never shadows the entity; Covenant.Core.BL/Interfaces/ mirrors the tree
+                 Covenant.Core.BL/Services/Requests/                    (RequestService, RequestApplicantService, RequestApplicantNotificationService, RunnerService, WeeklyBoardService, TimesheetService)
+                 Covenant.Core.BL/Services/Identity/                    (UserAdministrationService, AccountNotificationService, UserSessionValidator, PasswordResetService — interfaces stay in Covenant.Common/Interfaces/Identity/ because Infrastructure implements/consumes them)
+                 Covenant.Core.BL/Services/Accounting/                  (AccountingService, TimesheetCalculatorService — hours breakdown + deductions)
+                 Covenant.Core.BL/Services/Accounting/{Deductions,Invoices,PayStubs}/ (DeductionImportService; InvoiceService + Canada/Usa + factory; PayStubService)
 Bus consumers:   Covenant.Core.BL/Consumers/                            (Invitation, NewCandidate, RequestApplicant, Teams, BulkPayStubEmail)
-Entities:        Covenant.Common/Entities/{Domain}/                     (Accounting/, Agency/, Company/, Identity/, Request/, Worker/, Candidate/)
-Models/DTOs:     Covenant.Common/Models/{Domain}/                       (mirrors Entities structure — ALL of them, no exceptions; Models/Identity = login view models)
-Repo interfaces: Covenant.Common/Repositories/{Domain}/                 (Identity/IIdentityRepository for InactiveUsers, reset codes, roles, token revocation)
-Repo impls:      Covenant.Infrastructure/Repositories/{Domain}/
+Entities:        Covenant.Common/Entities/{Domain}/                     singular (Accounting/{Deductions,Invoice,PayStub,Subcontractor}/, Agency/, Candidate/, Company/, Identity/, Request/{,Runners}/, Sales/ = Deal + CompanyInteraction, Worker/); catalogs and Location* in the root
+Models/DTOs:     Covenant.Common/Models/{Domain}/                       same singular domains as Entities + Location/, Notification/, Website/, Sales/{,Dashboard}/. Inside a domain, the root holds what is shared or belongs to the domain's own portal; DTOs consumed by ONE other portal go in Agency/, Company/ or Worker/ (Models/Worker/Agency/ = agency view of workers, Models/Request/{Agency,Company,Worker}/). Never Domain/Domain/
+Repo interfaces: Covenant.Common/Repositories/{Domain}/                 PLURAL (Agencies/, Candidates/, Companies/, Identity/, Notifications/, Requests/, Workers/, Accounting/{Deductions,Invoices,PayStubs,Subcontractors}/; Catalog/Location/Shift/User in the root)
+Repo impls:      Covenant.Infrastructure/Repositories/{Domain}/         same tree
 DbContexts:      Covenant.Infrastructure/Contexts/                      (CovenantContext = API DB; IdentityContext = identity DB + OpenIddict stores; MyKeysContext)
-EF configs:      Covenant.Infrastructure/Configurations/{Domain}/       (Configurations/Identity/ belong to IdentityContext only)
+EF configs:      Covenant.Infrastructure/Configurations/{Domain}/       same plural tree + Sales/ + Requests/Runners/ (Configurations/Identity/ belongs to IdentityContext only — exact namespace match, never nest folders under it)
+Validators:      Covenant.Api/Validators/{Domain}/                      PLURAL (Agencies/, Candidates/, Companies/, Identity/, Locations/, Requests/, Sales/, Website/, Workers/, Accounting/Deductions/)
 Migrations:      Covenant.Infrastructure/Migrations/                    (CovenantContext) and Migrations/Identity/ (IdentityContext)
 DI registration: Covenant.Api/Configuration/ApiServicesConfiguration.cs (AddRepositories/AddServices/…/AddCovenantIdentity)
 Functions:       Sigook.Functions/Functions/                            (ScheduleTasks timers, CraTables blob trigger) — references Covenant.Common only
-Tests:           Covenant.Tests/, Covenant.Integration.Tests/ (Docker), Sigook.Functions.Tests/
+Tests:           Covenant.Tests/{Domain}/ (plural, like Services), Covenant.Integration.Tests/{Portal}/{Menu}/{Feature}/ (mirrors Controllers/, Docker), Sigook.Functions.Tests/
 ```
 
 ## Naming Conventions
@@ -71,6 +75,7 @@ Tests:           Covenant.Tests/, Covenant.Integration.Tests/ (Docker), Sigook.F
 - **Every model/DTO lives in `Covenant.Common/Models/{Domain}/`** — request bodies, responses, filters, view models. No `Models/` folders inside `Covenant.Api`, even for a DTO used by a single endpoint. Keep ASP.NET types (`IFormFile`) out of them: bind files as a separate controller parameter (see `InvoicesController.SendInvoiceEmail`).
 - **Validators live in `Covenant.Api/Validators/{Domain}/`**, one per file, named `{Model}Validator`. Never inline them next to the model.
 - All services/repos registered as `AddScoped<>` in `ApiServicesConfiguration.cs`
+- **Clock = .NET `TimeProvider`** (singleton `TimeProvider.System`); never `DateTime.Now` in services. Server "now" is `GetLocalNow().DateTime`; zone-aware "now" from coordinates or an IANA id comes from `TimeProviderExtensions.GetLocalNow(...)` in `Covenant.Common/Utils/Extensions`. Tests use `FakeTimeProvider` (`Microsoft.Extensions.TimeProvider.Testing`)
 - Repository pattern with interfaces in `Covenant.Common`, implementations in `Covenant.Infrastructure`
 - Services in `Covenant.Core.BL` depend only on repository interfaces (identity services also use ASP.NET Identity's `UserManager`/`RoleManager`)
 - EF Core configurations in `Covenant.Infrastructure/Configurations/`; one `IEntityTypeConfiguration` per entity and file
@@ -81,7 +86,8 @@ Tests:           Covenant.Tests/, Covenant.Integration.Tests/ (Docker), Sigook.F
 
 - **`RequestStatus` enum has only 3 values:** `Open = 1`, `Filled = 3`, `Cancelled = 4` (value `2` intentionally skipped). `Status` is the single source of truth — there is no `IsOpen` flag. Transitions happen automatically inside `Request.AddWorker` / `RejectWorker` / `Cancel` / `Open`; never set `Status` directly.
 - **Cancellation rule:** `Request.Cancel()` only succeeds when `Status == Open` AND `WorkersQuantityWorking == 0`. To cancel a request with assignees, reject every worker first.
-- **Controller routes** use the pattern `public const string RouteName = "api/..."` + `[Route(RouteName)]`. To locate an endpoint, grep for `RouteName =`.
+- **Controller routes** use the pattern `public const string RouteName = "api/..."` + `[Route(RouteName)]` (no `[controller]` tokens). URL scheme: `api/agency/{recruiting|sales|accounting|profile}/{feature}`, `api/company/{feature}`, `api/worker/{feature}`, shared `api/{feature}`, jobs `api/jobs/{job}` — lowercase class prefix, action templates unchanged. To locate an endpoint, grep for `RouteName =`; integration tests reference the constant, never a literal URL.
+- **Moving entities or EF configurations must not create a migration**: run `dotnet ef migrations has-pending-model-changes` for both contexts (see DEVELOPMENT_COMMANDS.md) and expect "No changes".
 - **Deductions are DB table lookups, not formulas.** `TimesheetCalculatorService.CalculateDeductions` → `DeductionsRepository` range lookups by earnings/year over **two** tables: `CppDeductions` and `TaxDeductions`, both discriminated by a `PayPeriod` enum (`Weekly`/`BiWeekly`/`SemiMonthly`/`Monthly`), and `TaxDeductions` additionally by `TaxType` (`Federal`/`Provincial`). The old 12 per-period tables are gone. EI is the only computed one (`totalEarnings × rates.EmploymentInsurance`, no cap). There are no `CppCalculator`-style classes. Per-worker `WorkerProfileTaxCategory` overrides zero out deductions (subcontractors).
 - **Night shift is deprecated.** Never computed: `PayStubService` hardcodes `nightShift: 0`; invoices set `NightShiftRate = 0`. Don't add night-shift logic.
 - **Holiday asymmetry invoice vs pay stub:** invoices hardcode `holidayIsPaid: true` (worked holidays always billed at holiday rate); pay stubs honor the timesheet's `HolidayIsPaid` flag. Worked vs not-worked holidays are two separate flows in both.

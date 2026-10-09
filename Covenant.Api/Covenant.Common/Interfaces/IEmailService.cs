@@ -1,4 +1,5 @@
-﻿using Covenant.Common.Models;
+using Covenant.Common.Models.Notification;
+using Covenant.Common.Models;
 
 namespace Covenant.Common.Interfaces;
 

@@ -1,3 +1,4 @@
+using Covenant.Common.Entities.Identity;
 using Covenant.Common.Entities;
 
 namespace Covenant.Common.Interfaces.Identity;
