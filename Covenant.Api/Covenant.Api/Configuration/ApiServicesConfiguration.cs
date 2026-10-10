@@ -192,6 +192,7 @@ public static class ApiServicesConfiguration
         services.Configure<PushNotificationConfiguration>(configuration.GetSection(nameof(PushNotificationConfiguration)));
         services.Configure<SendGridConfiguration>(configuration.GetSection(nameof(SendGridConfiguration)));
         services.Configure<Microsoft365Configuration>(configuration.GetSection(nameof(Microsoft365Configuration)));
+        services.Configure<MobileAppConfiguration>(configuration.GetSection(nameof(MobileAppConfiguration)));
         services.Configure<RequestLocalizationOptions>(options =>
         {
             var supportedCultures = new[] { new CultureInfo(EnUsCulture), new CultureInfo(EsCulture) };

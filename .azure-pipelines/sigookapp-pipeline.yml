@@ -1,6 +1,6 @@
-name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
+name: Sigook.App-$(Date:yyyyMMdd)$(Rev:.r)
 
-# PIPELINE: SigookApp iOS + Android CI/CD
+# PIPELINE: Sigook.App iOS + Android CI/CD
 # ============================================
 # TRIGGER POLICY:
 # - Runs on direct pushes to dev branch (Staging)
@@ -16,13 +16,13 @@ name: SigookApp-$(Date:yyyyMMdd)$(Rev:.r)
 # - iOS build/deploy: Microsoft-hosted macOS ($(macosImage)); fastlane's
 #   upload goes through Apple's Transporter, which only exists on macOS
 #
-# iOS signing is handled by fastlane match (SigookApp/fastlane/Matchfile):
+# iOS signing is handled by fastlane match (Sigook.App/fastlane/Matchfile):
 # the certificate and profile live encrypted in the MATCH_GIT_URL repo and are
 # created by match itself on the first run (matchReadonly=false). No Apple
 # secure files are involved.
 # ============================================
 
-# Trigger on dev branch with SigookApp changes
+# Trigger on dev branch with Sigook.App changes
 # Production (main) deployments are triggered manually
 # batch: pushes that land while a run is in progress are grouped into a single
 # next run, so a burst of commits does not spend one iOS build (hosted macOS
@@ -34,9 +34,9 @@ trigger:
       - dev
   paths:
     include:
-      - SigookApp/**
+      - Sigook.App/**
     exclude:
-      - SigookApp/**/*.md
+      - Sigook.App/**/*.md
 
 # PR trigger - only validate PRs to dev (not to main)
 # PRs to main are trusted since dev is the quality gate
@@ -46,7 +46,7 @@ pr:
       - dev
   paths:
     include:
-      - SigookApp/**
+      - Sigook.App/**
 
 # Declared so the job access token may reach the match signing repo (never
 # checked out; match clones it itself with System.AccessToken).
@@ -65,7 +65,7 @@ parameters:
 
 variables:
 - name: workingDirectory
-  value: '$(System.DefaultWorkingDirectory)/SigookApp'
+  value: '$(System.DefaultWorkingDirectory)/Sigook.App'
 - name: isMain
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isDev
@@ -129,7 +129,7 @@ stages:
         targetType: 'inline'
         script: |
           echo "========================================"
-          echo "SigookApp Pipeline - Validate & Test"
+          echo "Sigook.App Pipeline - Validate & Test"
           echo "========================================"
           echo "Build Number: $(Build.BuildNumber)"
           echo "Source Branch: $(Build.SourceBranch)"

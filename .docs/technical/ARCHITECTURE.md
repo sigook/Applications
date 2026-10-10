@@ -8,7 +8,7 @@ Monorepo with six applications. Each has its own `CLAUDE.md` with app-specific c
 | `Covenant.Api/Sigook.Functions/` | Azure Functions v4 (.NET 10 isolated) | Scheduled background triggers (same solution as the API) |
 | `Sigook.Web/` | Vue 3 + Pinia + buefy 3 | Agency web portal (main platform) |
 | `Covenant.Web/` | Vue 3 + Vuetify | Public marketing website |
-| `SigookApp/` | Flutter | Worker mobile app |
+| `Sigook.App/` | Flutter | Worker mobile app |
 | `Sigook.CognitiveServices/` | .NET 8 | AI/speech services (Azure Cognitive) |
 
 ---
@@ -64,7 +64,7 @@ Hosting:    Azure Static Web Apps (staging: lively-island-020c8260f.7.azurestati
 Both web apps use **pnpm** as their package manager (`packageManager: pnpm@11.7.0`, via
 corepack). Covenant.Web builds to `dist/` (Sigook.Web builds to `wwwroot/`).
 
-### SigookApp (Flutter)
+### Sigook.App (Flutter)
 
 ```
 Framework:  Flutter (Dart ^3.9.2), Clean Architecture per feature (domain/data/presentation)
@@ -180,7 +180,7 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 |---|---|---|
 | `Controllers/Identity/` | `/connect/*`, `/Account`, `/Password`, `/External`, `/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
 | `Controllers/Shared/` | `api/catalog`, `api/location`, `api/file`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint), `EmailPreferencesController`, `WebsiteController` (public marketing endpoints) |
-| `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed SigookApp builds call them), `UserNotificationController` |
+| `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed Sigook.App builds call them), `UserNotificationController` |
 | `Controllers/Shared/Jobs/` | `api/jobs/scheduletasks`, `api/jobs/deductions` | machine-to-machine, called by Sigook.Functions: `ScheduleTasksController`, `DeductionsController` (CRA table import) |
 | `Controllers/Agency/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |
 | `Controllers/Agency/Profile/` | `api/agency/profile[/locations\|personnel\|personnel/agencies\|attendance]` | the caller's own agency: `AgencyProfileController`, `LocationsController`, `PersonnelController`, `PersonnelAgenciesController` (agencies the caller belongs to), `AttendanceController` (staff clock in/out) |
@@ -201,7 +201,7 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 
 **`Covenant.Api/WorkerModule/` is obsolete.** It holds the previous worker controllers
 (`api/WorkerProfile`, `api/WorkerRequest`, `api/WorkerRequestHistory`) untouched and marked
-`[Obsolete]`, because the SigookApp build in the stores still calls them. Delete the folder and
+`[Obsolete]`, because the Sigook.App build in the stores still calls them. Delete the folder and
 `Covenant.Integration.Tests/WorkerModule/` once the app that uses `api/worker/*` is published.
 Never add code there.
 
@@ -369,7 +369,7 @@ rather than constructing clients directly.
   `/connect/token`, `/connect/userinfo`, `/connect/endsession` and `/connect/revocation`
   (`Covenant.Api/Configuration/OpenIddictConfiguration.cs`, controller
   `Controllers/Identity/AuthorizationController.cs`). Enabled flows: authorization code + PKCE
-  (Sigook.Web browser login), password (Sigook.Web and SigookApp native login screens), refresh
+  (Sigook.Web browser login), password (Sigook.Web and Sigook.App native login screens), refresh
   token (non-rolling, 30 days; access tokens last 1 hour) and client credentials (Sigook.Functions).
   Access tokens are plain signed JWTs (encryption disabled) with `aud = api1`; the API validates
   them in-process (`AddValidation().UseLocalServer()`), so there is no discovery round-trip.
@@ -418,7 +418,7 @@ rather than constructing clients directly.
   sliding 10-minute window, answering `429` beyond it. The client IP comes from `X-Forwarded-For`
   (`ForwardedHeadersOptions` trusts any proxy because the App Service front end is the only way
   in). Both Sigook.Web (`/forgot-password`)
-  and SigookApp (`/forgot-password` route, 2-step screen) consume it; Web and App also offer a
+  and Sigook.App (`/forgot-password` route, 2-step screen) consume it; Web and App also offer a
   resend-confirmation action when login fails with `email_not_confirmed`
   (`POST /Account/ResendConfirmationLink`, always `200` so it does not reveal whether an email exists).
 - **Account-activation emails** link to Sigook.Web (`{WebClientUrl}/confirm-email` or

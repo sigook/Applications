@@ -337,6 +337,9 @@ public class PayStubRepository(Rates rates, CovenantContext context) : IPayStubR
             case GetPayStubsFilterSortBy.NumberId:
                 query = query.AddOrderBy(filter, p => p.NumberId);
                 break;
+            default:
+                query = query.OrderByDescending(p => p.PayStubNumberId);
+                break;
         }
         return query;
     }

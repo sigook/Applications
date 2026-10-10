@@ -21,10 +21,15 @@ class AzureAppInsightsClient {
   PackageInfo? _packageInfo;
   late final Dio _dio;
 
-  AzureAppInsightsClient({required String connectionString})
-      : _instrumentationKey = _parseKey(connectionString, 'InstrumentationKey'),
+  AzureAppInsightsClient({
+    required String connectionString,
+    String environment = '',
+  })  : _instrumentationKey = _parseKey(connectionString, 'InstrumentationKey'),
         _ingestionEndpoint = _parseEndpoint(connectionString),
         sessionId = const Uuid().v4() {
+    if (environment.isNotEmpty) {
+      _customProperties['environment'] = environment;
+    }
     _dio = Dio(BaseOptions(
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
@@ -65,7 +70,9 @@ class AzureAppInsightsClient {
         if (_userId != null && _userId!.isNotEmpty) 'ai.user.id': _userId,
         'ai.session.id': sessionId,
         'ai.application.ver': info.version,
-        'ai.device.os': Platform.operatingSystem,
+        'ai.device.osVersion': Platform.operatingSystem,
+        'ai.device.type': 'Phone',
+        'ai.cloud.role': 'sigook-app',
         'ai.cloud.roleInstance': 'sigook-mobile',
       },
       'data': {

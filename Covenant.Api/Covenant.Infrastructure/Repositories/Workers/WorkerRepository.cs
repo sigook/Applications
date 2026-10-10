@@ -437,30 +437,19 @@ public class WorkerRepository : IWorkerRepository
         return predicate;
     }
 
-    private IQueryable<WorkerProfileListModel> ApplySortWorkersProfile(IQueryable<WorkerProfileListModel> query, GetWorkerProfileFilter filter)
+    private static IQueryable<WorkerProfileListModel> ApplySortWorkersProfile(IQueryable<WorkerProfileListModel> query, GetWorkerProfileFilter filter)
     {
-        switch (filter.SortBy)
+        var ordered = filter.SortBy switch
         {
-            case GetWorkersProfileSortBy.Name:
-                query = query.AddOrderBy(filter, wp => wp.FullName);
-                break;
-            case GetWorkersProfileSortBy.NumberId:
-                query = query.AddOrderBy(filter, wp => wp.NumberId);
-                break;
-            case GetWorkersProfileSortBy.RequestId:
-                query = query.AddOrderBy(filter, wp => wp.Requests.Min(r => r.Value));
-                break;
-            case GetWorkersProfileSortBy.CreatedAt:
-                query = query.AddOrderBy(filter, wp => wp.CreatedAt);
-                break;
-            case GetWorkersProfileSortBy.Skills:
-                query = query.AddOrderBy(filter, wp => wp.Skills.Any() ? wp.Skills.FirstOrDefault() : null);
-                break;
-            case GetWorkersProfileSortBy.ExternalId:
-                query = query.AddOrderBy(filter, wp => wp.ExternalId);
-                break;
-        }
-        return query;
+            GetWorkersProfileSortBy.Name => query.AddOrderBy(filter, wp => wp.FullName),
+            GetWorkersProfileSortBy.NumberId => query.AddOrderBy(filter, wp => wp.NumberId),
+            GetWorkersProfileSortBy.RequestId => query.AddOrderBy(filter, wp => wp.Requests.Min(r => r.Value)),
+            GetWorkersProfileSortBy.CreatedAt => query.AddOrderBy(filter, wp => wp.CreatedAt),
+            GetWorkersProfileSortBy.Skills => query.AddOrderBy(filter, wp => wp.Skills.Any() ? wp.Skills.FirstOrDefault() : null),
+            GetWorkersProfileSortBy.ExternalId => query.AddOrderBy(filter, wp => wp.ExternalId),
+            _ => query.OrderByDescending(wp => wp.NumberId)
+        };
+        return ordered.ThenBy(wp => wp.Id);
     }
 
     public async Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression)

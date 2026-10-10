@@ -191,7 +191,7 @@ public class CompanyRepository : ICompanyRepository
         if (filter.SalesPersonnelId.HasValue)
             companies = companies.Where(cp => cp.SalesRepresentativeId == filter.SalesPersonnelId.Value);
         var query = from cp in companies
-                    from cpcp in _context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).Take(1).DefaultIfEmpty()
+                    from cpcp in _context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).OrderBy(cpcp => cpcp.Id).Take(1).DefaultIfEmpty()
                     orderby cp.FullName
                     select new CompanyProfileListModel
                     {
@@ -483,6 +483,7 @@ public class CompanyRepository : ICompanyRepository
 
     public Task<PaginatedList<CompanyProfileDocumentModel>> GetDocuments(Guid profileId, Pagination pagination) =>
         _context.CompanyProfileDocuments.Where(c => c.CompanyProfileId == profileId)
+            .OrderByDescending(c => c.CreatedAt)
             .Select(s => new CompanyProfileDocumentModel
             {
                 Id = s.DocumentId,

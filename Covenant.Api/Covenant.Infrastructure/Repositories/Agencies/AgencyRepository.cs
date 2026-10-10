@@ -299,6 +299,9 @@ public class AgencyRepository : IAgencyRepository
             case GetAgenciesSortBy.Email:
                 query = query.AddOrderBy(filter, a => a.Email);
                 break;
+            default:
+                query = query.OrderBy(a => a.FullName);
+                break;
         }
 
         return query;

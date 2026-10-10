@@ -5338,6 +5338,45 @@
         }
       }
     },
+    "/api/mobileapp/version": {
+      "get": {
+        "tags": [
+          "MobileApp"
+        ],
+        "summary": "Gets the minimum supported version of the worker mobile app and the store links to update it.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.MobileAppVersionModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.MobileAppVersionModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.MobileAppVersionModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/website/contact": {
       "post": {
         "tags": [
@@ -28991,6 +29030,20 @@
           }
         }
       },
+      "Covenant.Common.Models.MobileAppVersionModel": {
+        "type": "object",
+        "properties": {
+          "minimumVersion": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "androidStoreUrl": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "iosStoreUrl": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
       "Covenant.Common.Models.NoteModel": {
         "type": "object",
         "properties": {
@@ -33890,6 +33943,9 @@
     },
     {
       "name": "Location"
+    },
+    {
+      "name": "MobileApp"
     },
     {
       "name": "Website"

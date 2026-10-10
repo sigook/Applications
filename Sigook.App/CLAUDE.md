@@ -1,4 +1,4 @@
-# SigookApp — Flutter Mobile App
+# Sigook.App — Flutter Mobile App
 
 ## Code Navigation
 
@@ -22,6 +22,7 @@ lib/
     ├── jobs/                      Job listing, details, apply, timesheets
     ├── profile/                   Worker profile — split into sub-features (see below)
     ├── registration/              Multi-step worker registration form
+    ├── app_update/                Forced-update gate: GET /mobileapp/version, blocks the whole UI (MyApp builder) when the build is below MinimumVersion; re-checks on resume
     ├── about/                     Static info page
     ├── settings/                  Language settings
     ├── splash/                    Splash screen

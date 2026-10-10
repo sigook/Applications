@@ -15,6 +15,7 @@ part 'analytics_providers.g.dart';
 final azureAppInsightsClientProvider = Provider<AzureAppInsightsClient>((ref) {
   return AzureAppInsightsClient(
     connectionString: EnvironmentConfig.appInsightsConnectionString,
+    environment: EnvironmentConfig.environmentName,
   );
 });
 

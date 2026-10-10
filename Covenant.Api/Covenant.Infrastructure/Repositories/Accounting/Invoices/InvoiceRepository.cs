@@ -36,7 +36,7 @@ public class InvoiceRepository : IInvoiceRepository
                         CreatedAt = i.CreatedAt,
                         WeekEnding = i.WeekEnding,
                     };
-        return await query.ToPaginatedList(filter);
+        return await query.OrderByDescending(i => i.NumberId).ToPaginatedList(filter);
     }
 
     public async Task<PaginatedList<InvoiceListModel>> GetInvoicesForCompanyUSA(Guid companyId, GetCompanyInvoiceFilter filter)
@@ -51,7 +51,7 @@ public class InvoiceRepository : IInvoiceRepository
                         CreatedAt = i.CreatedAt,
                         WeekEnding = i.WeekEnding
                     };
-        return await query.ToPaginatedList(filter);
+        return await query.OrderByDescending(i => i.NumberId).ToPaginatedList(filter);
     }
 
     public async Task<InvoiceListModelWithTotals> GetInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
@@ -410,6 +410,9 @@ public class InvoiceRepository : IInvoiceRepository
                 break;
             case GetInvoicesFilterSortBy.Status:
                 query = query.AddOrderBy(filter, i => i.Status);
+                break;
+            default:
+                query = query.OrderByDescending(i => i.NumberId);
                 break;
         }
         return query;

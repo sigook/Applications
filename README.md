@@ -14,7 +14,7 @@ Monorepo for the Covenant/Sigook **staffing and recruitment platform** for the C
 |-------------|-------|-------------|
 | [`Covenant.Api/`](Covenant.Api/) | .NET 10 | Backend API (REST, EF Core, PostgreSQL) + OpenIddict authorization server, in one solution with the Azure Functions |
 | [`Covenant.Api/Sigook.Functions/`](Covenant.Api/Sigook.Functions/) | Azure Functions (.NET 10 isolated) | Background jobs (timers, blob triggers) |
-| [`SigookApp/`](SigookApp/) | Flutter | Worker mobile app (iOS/Android) |
+| [`Sigook.App/`](Sigook.App/) | Flutter | Worker mobile app (iOS/Android) |
 | [`Sigook.Web/`](Sigook.Web/) | Vue 3 + Vite | Agency web portal (main platform) |
 | [`Covenant.Web/`](Covenant.Web/) | Vue 3 + Vite | Marketing website (public-facing) |
 | [`Sigook.CognitiveServices/`](Sigook.CognitiveServices/) | .NET | AI/ML services (Azure Cognitive) |
@@ -40,7 +40,7 @@ Business rules and technical documentation live in [`.docs/`](.docs/README.md). 
 | .NET SDK | 10.0.401 (pinned in `Covenant.Api/global.json`) | `Covenant.Api` solution (API, identity, Azure Functions) |
 | Node.js | `^20.19.0 \|\| >=22.12.0` (engine-strict) | `Sigook.Web`, `Covenant.Web` |
 | pnpm | pinned via `packageManager` (`corepack enable`) | `Sigook.Web`, `Covenant.Web` |
-| Flutter SDK | stable | `SigookApp` |
+| Flutter SDK | stable | `Sigook.App` |
 | Azure Functions Core Tools | v4 | `Sigook.Functions` (local run) |
 
 No local database setup is required: development runs against a shared cloud PostgreSQL, and messaging uses Azure Service Bus (staging).
@@ -61,7 +61,7 @@ cd Sigook.Web && pnpm install && pnpm run dev
 cd Covenant.Web && pnpm install && pnpm run dev
 
 # Worker mobile app
-cd SigookApp && flutter pub get && flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
+cd Sigook.App && flutter pub get && flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 ```
 
 Full command reference (tests, migrations, builds per environment): [DEVELOPMENT_COMMANDS.md](.docs/technical/DEVELOPMENT_COMMANDS.md).
@@ -70,7 +70,7 @@ Full command reference (tests, migrations, builds per environment): [DEVELOPMENT
 
 ```bash
 dotnet test Covenant.Api/Covenant.Api.slnx   # .NET (integration tests need Docker)
-flutter test                # SigookApp
+flutter test                # Sigook.App
 pnpm run type-check && pnpm run lint   # Vue apps
 ```
 

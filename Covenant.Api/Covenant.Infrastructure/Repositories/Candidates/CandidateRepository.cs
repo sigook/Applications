@@ -129,33 +129,20 @@ public class CandidateRepository : ICandidateRepository
         return predicate;
     }
 
-    private IQueryable<CandidateListModel> ApplySortCandidates(IQueryable<CandidateListModel> query, GetCandidatesFilter filter)
+    private static IQueryable<CandidateListModel> ApplySortCandidates(IQueryable<CandidateListModel> query, GetCandidatesFilter filter)
     {
-        switch (filter.SortBy)
+        var ordered = filter.SortBy switch
         {
-            case GetCandidatesSortBy.Name:
-                query = query.AddOrderBy(filter, c => c.Name);
-                break;
-            case GetCandidatesSortBy.Address:
-                query = query.AddOrderBy(filter, c => c.Address);
-                break;
-            case GetCandidatesSortBy.Skills:
-                query = query.AddOrderBy(filter, c => c.Skills.Any() ? c.Skills.FirstOrDefault().Skill : null);
-                break;
-            case GetCandidatesSortBy.CreateAt:
-                query = query.AddOrderBy(filter, c => c.CreatedAt);
-                break;
-            case GetCandidatesSortBy.Recruiter:
-                query = query.AddOrderBy(filter, c => c.Recruiter);
-                break;
-            case GetCandidatesSortBy.Status:
-                query = query.AddOrderBy(filter, c => c.ResidencyStatus);
-                break;
-            case GetCandidatesSortBy.Source:
-                query = query.AddOrderBy(filter, c => c.Source);
-                break;
-        }
-        return query;
+            GetCandidatesSortBy.Name => query.AddOrderBy(filter, c => c.Name),
+            GetCandidatesSortBy.Address => query.AddOrderBy(filter, c => c.Address),
+            GetCandidatesSortBy.Skills => query.AddOrderBy(filter, c => c.Skills.Any() ? c.Skills.FirstOrDefault().Skill : null),
+            GetCandidatesSortBy.CreateAt => query.AddOrderBy(filter, c => c.CreatedAt),
+            GetCandidatesSortBy.Recruiter => query.AddOrderBy(filter, c => c.Recruiter),
+            GetCandidatesSortBy.Status => query.AddOrderBy(filter, c => c.ResidencyStatus),
+            GetCandidatesSortBy.Source => query.AddOrderBy(filter, c => c.Source),
+            _ => query.OrderByDescending(c => c.CreatedAt)
+        };
+        return ordered.ThenBy(c => c.Id);
     }
 
     public async Task<CandidateDetailModel> GetCandidateDetail(Guid id) =>
@@ -192,7 +179,7 @@ public class CandidateRepository : ICandidateRepository
                 FileName = s.Document.FileName,
                 Description = s.Document.Description,
                 PathFile = $"{filesConfiguration.FilesPath}{s.Document.FileName}"
-            }).ToPaginatedList(pagination);
+            }).OrderBy(d => d.FileName).ToPaginatedList(pagination);
 
     public async Task<NoteModel> GetNoteDetail(Guid candidateId, Guid id) =>
         await _context.CandidateNotes.AsNoTracking()

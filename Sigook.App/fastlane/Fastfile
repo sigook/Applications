@@ -1,4 +1,4 @@
-# Fastfile for SigookApp Flutter Build Automation
+# Fastfile for Sigook.App Flutter Build Automation
 #
 # IMPORTANT PATH HANDLING:
 # - Fastlane automatically changes directory to 'fastlane/' when executing

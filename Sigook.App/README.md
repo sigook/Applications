@@ -406,7 +406,7 @@ CacheException           →  CacheFailure
 
 #### 1. Create your `.vscode/launch.json`
 
-The `.vscode/` folder is gitignored, so you must create it manually. Copy the block below and save it as `.vscode/launch.json` at the root of `SigookApp/`:
+The `.vscode/` folder is gitignored, so you must create it manually. Copy the block below and save it as `.vscode/launch.json` at the root of `Sigook.App/`:
 
 ```json
 {

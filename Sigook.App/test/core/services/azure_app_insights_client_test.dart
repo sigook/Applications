@@ -95,6 +95,52 @@ void main() {
       expect(envelope['tags']['ai.session.id'], isNotEmpty);
     });
 
+    test('envelope tags carry the platform in ai.device.osVersion', () async {
+      final client =
+          AzureAppInsightsClient(connectionString: validConnectionString);
+      final envelope = await client.buildEnvelope(
+        baseType: 'EventData',
+        name: 'Microsoft.ApplicationInsights.Event',
+        baseData: {'name': 'test_event'},
+      );
+
+      expect(envelope['tags']['ai.device.osVersion'], isNotEmpty);
+      expect(envelope['tags']['ai.device.type'], 'Phone');
+      expect(envelope['tags']['ai.cloud.role'], 'sigook-app');
+      expect(envelope['tags'].containsKey('ai.device.os'), isFalse);
+    });
+
+    test('environment flows into baseData properties', () async {
+      final client = AzureAppInsightsClient(
+        connectionString: validConnectionString,
+        environment: 'Staging',
+      );
+
+      final envelope = await client.buildEnvelope(
+        baseType: 'EventData',
+        name: 'Microsoft.ApplicationInsights.Event',
+        baseData: {'name': 'test_event'},
+      );
+
+      expect(
+        envelope['data']['baseData']['properties']['environment'],
+        'Staging',
+      );
+    });
+
+    test('empty environment adds no property', () async {
+      final client =
+          AzureAppInsightsClient(connectionString: validConnectionString);
+
+      final envelope = await client.buildEnvelope(
+        baseType: 'EventData',
+        name: 'Microsoft.ApplicationInsights.Event',
+        baseData: {'name': 'test_event'},
+      );
+
+      expect(envelope['data']['baseData'].containsKey('properties'), isFalse);
+    });
+
     test('setUserId flows into envelope tags', () async {
       final client =
           AzureAppInsightsClient(connectionString: validConnectionString);

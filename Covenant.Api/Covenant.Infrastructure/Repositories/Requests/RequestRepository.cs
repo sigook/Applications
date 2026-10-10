@@ -240,6 +240,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             case GetRequestSortBy.SalesRepresentative:
                 query = query.AddOrderBy(filter, o => o.SalesRepresentative);
                 break;
+            default:
+                query = query.OrderByDescending(o => o.NumberId);
+                break;
         }
         return query;
     }
@@ -382,7 +385,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                             }
                         },
                     };
-        return await query.AsSplitQuery().SingleOrDefaultAsync();
+        return await query.SingleOrDefaultAsync();
     }
 
     public async Task<PaginatedList<RequestListModel>> GetRequestsForCompany(Guid companyId, GetRequestForCompanyFilter filter)
@@ -449,6 +452,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 break;
             case GetRequestSortBy.WorkersQuantity:
                 query = query.AddOrderBy(filter, r => r.WorkersQuantity);
+                break;
+            default:
+                query = query.OrderByDescending(r => r.NumberId);
                 break;
         }
         return query;
@@ -635,6 +641,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 break;
             case GetWorkersRequestSortBy.ExternalId:
                 query = query.AddOrderBy(filter, wr => wr.ExternalId);
+                break;
+            default:
+                query = query.OrderByDescending(wr => wr.CreatedAt).ThenBy(wr => wr.Name);
                 break;
         }
         return query;
@@ -951,7 +960,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 FirstName = s.ContactPerson.FirstName,
                 MiddleName = s.ContactPerson.MiddleName,
                 LastName = s.ContactPerson.LastName,
-            }).ToPaginatedList(pagination);
+            }).OrderBy(c => c.FirstName).ThenBy(c => c.LastName).ToPaginatedList(pagination);
 
     public Task<RequestRequestedBy> GetRequestedBy(Guid requestId, Guid contactPersonId) => context.RequestRequestedBys.SingleOrDefaultAsync(c => c.RequestId == requestId && c.ContactPersonId == contactPersonId);
 
@@ -966,7 +975,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 FirstName = s.ContactPerson.FirstName,
                 MiddleName = s.ContactPerson.MiddleName,
                 LastName = s.ContactPerson.LastName,
-            }).ToPaginatedList(pagination);
+            }).OrderBy(c => c.FirstName).ThenBy(c => c.LastName).ToPaginatedList(pagination);
 
     public Task<PaginatedList<NoteModel>> GetNotes(Guid requestId, Pagination pagination) =>
         context.RequestNotes.Where(w => w.RequestId == requestId && !w.Note.IsDeleted)
@@ -1328,6 +1337,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 break;
             case GetRequestApplicantSortBy.CreatedAt:
                 query = query.AddOrderBy(filter, ra => ra.CreatedAt);
+                break;
+            default:
+                query = query.OrderByDescending(ra => ra.CreatedAt);
                 break;
         }
         return query;

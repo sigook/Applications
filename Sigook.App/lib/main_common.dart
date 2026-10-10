@@ -13,6 +13,8 @@ import 'core/services/crash_reporting_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/feedback/environment_banner.dart';
 import 'core/constants/error_messages.dart';
+import 'features/app_update/presentation/pages/update_required_page.dart';
+import 'features/app_update/presentation/providers/app_update_providers.dart';
 import 'features/auth/presentation/viewmodels/auth_viewmodel.dart';
 import 'features/profile/presentation/providers/cached_worker_profile_provider.dart';
 
@@ -29,6 +31,7 @@ Future<void> mainCommon() async {
     final crashService = AzureCrashReportingService(
       AzureAppInsightsClient(
         connectionString: EnvironmentConfig.appInsightsConnectionString,
+        environment: EnvironmentConfig.environmentName,
       ),
     );
     setupCrashReporting(crashService);
@@ -108,14 +111,18 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
+  static const Duration _updateRecheckInterval = Duration(minutes: 1);
+
   late final GoRouter _router;
   late final RouterRefreshNotifier _routerRefresh;
   late final ProviderSubscription<(bool, bool)> _sessionSubscription;
+  DateTime? _lastUpdateRecheck;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _routerRefresh = RouterRefreshNotifier();
     _sessionSubscription = ref.listenManual(
       authViewModelProvider.select(
@@ -136,7 +143,18 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    final now = DateTime.now();
+    final last = _lastUpdateRecheck;
+    if (last != null && now.difference(last) < _updateRecheckInterval) return;
+    _lastUpdateRecheck = now;
+    ref.invalidate(appUpdateCheckProvider);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _sessionSubscription.close();
     _router.dispose();
     _routerRefresh.dispose();
@@ -145,6 +163,9 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final updateCheck = ref.watch(appUpdateCheckProvider).value;
+    final updateRequired = updateCheck != null && updateCheck.updateRequired;
+
     ref.listen<AuthState>(authViewModelProvider, (previous, next) {
       if (previous?.isAuthenticated != true && next.isAuthenticated) {
         // Pre-fetch profile as soon as the user is authenticated so it is
@@ -163,12 +184,14 @@ class _MyAppState extends ConsumerState<MyApp> {
       theme: AppTheme.lightTheme,
       builder: (context, child) {
         return EnvironmentBanner(
-          child: GestureDetector(
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            child: child!,
-          ),
+          child: updateRequired
+              ? UpdateRequiredPage(check: updateCheck)
+              : GestureDetector(
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  child: child!,
+                ),
         );
       },
     );

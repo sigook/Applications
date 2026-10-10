@@ -39,10 +39,10 @@ cd Covenant.Api/Sigook.Functions && func start   # Local run (requires Azure Fun
 
 Functions (three, in two files): `NotificationSinExpiration` and `WarnLicensesExpiration` (Timer triggers, `Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs`); `CraTableUploaded` (Blob trigger, `Covenant.Api/Sigook.Functions/Functions/CraTables.cs`). They call the API over HTTP with a client-credentials token issued by the API itself (`ScheduleTasks:AccountsUrl`).
 
-## SigookApp (Flutter) - Requires Flutter `3.47.4`, JDK 17, Android SDK 37
+## Sigook.App (Flutter) - Requires Flutter `3.47.4`, JDK 17, Android SDK 37
 
 ```bash
-cd SigookApp
+cd Sigook.App
 flutter pub get
 flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 flutter run --dart-define-from-file=.env.local -t lib/main_local.dart        # Needs Covenant.Api running locally (it also serves the OAuth endpoints)
@@ -51,7 +51,7 @@ flutter test
 flutter analyze
 ```
 
-Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. `.env.local`, `.env.staging` and `.env.production` are committed (public values only; `APP_INSIGHTS_CONNECTION_STRING` stays empty and CI injects it). `.env.local` reaches the local Api from the Android emulator over plain HTTP (`http://10.0.2.2:5000`), allowed only in debug builds. Running a release build locally (signing with the debug key) is described in `SigookApp/README.md` → *Release Build (Local)*.
+Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. `.env.local`, `.env.staging` and `.env.production` are committed (public values only; `APP_INSIGHTS_CONNECTION_STRING` stays empty and CI injects it). `.env.local` reaches the local Api from the Android emulator over plain HTTP (`http://10.0.2.2:5000`), allowed only in debug builds. Running a release build locally (signing with the debug key) is described in `Sigook.App/README.md` → *Release Build (Local)*.
 
 **Flavors are iOS-only.** `ios/Runner.xcodeproj` defines `staging` and `production` schemes, so `--flavor` works there. `android/app/build.gradle.kts` declares no `productFlavors`, so passing `--flavor` to an Android build fails.
 

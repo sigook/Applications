@@ -102,6 +102,7 @@ public class TimesheetRepository : ITimesheetRepository
     public async Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid workerProfileId, Pagination pagination)
     {
         var query = from th in _context.TimesheetHistories.Where(th => th.WorkerProfileId == workerProfileId)
+                    orderby th.RowNumber
                     select new TimeSheetHistoryModel
                     {
                         RowNumber = th.RowNumber,
