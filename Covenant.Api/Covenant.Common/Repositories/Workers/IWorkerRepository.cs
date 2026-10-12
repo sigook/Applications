@@ -28,8 +28,7 @@ public interface IWorkerRepository
     Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression);
     Task<bool> SocialInsuranceIsAlreadyTaken(string socialInsurance, Guid? excludeProfileId = null);
     Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId);
-    Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid workerProfileId, Pagination pagination);
-    Task<PayStubHistoryAccumulated> GetWageHistoryAccumulated(Guid workerProfileId, int rowNumber);
+    Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid agencyId, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter);
     Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination);
     Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId);
     Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date);

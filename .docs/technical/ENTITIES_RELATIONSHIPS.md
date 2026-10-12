@@ -34,7 +34,6 @@ erDiagram
     TimeSheet ||--o| TimeSheetTotalPayroll : "payroll totals"
     WorkerProfile ||--o{ PayStub : ""
     CompanyProfile ||--o{ Invoice : "Invoice.CompanyProfileId"
-    CompanyProfile ||--o{ InvoiceUSA : "CompanyProfileId"
     TimeSheetTotal ||--o{ InvoiceTotal : ""
 ```
 
@@ -78,8 +77,7 @@ Deliberate exceptions — leave them alone:
 | Table | Why |
 |---|---|
 | `AgencyPersonnel`, `AgencyContactInformation` | collective / uncountable |
-| `PayStubHistory`, `TimesheetHistory` | views, not tables |
-| `InvoicesUSA`, `CompanyProfileContactPeople` | natural plural, not the mechanical `InvoiceUSAs` / `...Persons` |
+| `CompanyProfileContactPeople` | natural plural, not the mechanical `...Persons` |
 | `RequestComissions` | misspelling baked into table, entity and config filename — the only config file not named `{Entity}Configuration.cs` |
 | `CompanyProfileInvoiceNotes` | entity class is already plural |
 
@@ -374,13 +372,13 @@ Two parallel 1:1 hour-breakdown rows per timesheet, same shape (`ITimeSheetTotal
 `TotalHours`, `RegularHours`, `OtherRegularHours`, `OvertimeHours`, `NightShiftHours`,
 `HolidayHours`, `AccumulateWeekHours` (weekly OT accumulator).
 
-- `TimeSheetTotal` — **billing** hours; consumed by `InvoiceTotal`/`InvoiceUSATimeSheetTotal`.
+- `TimeSheetTotal` — **billing** hours; consumed by `InvoiceTotal`.
 - `TimeSheetTotalPayroll` — **payroll** hours; consumed by `PayStubWageDetail`. Unique on
   `TimeSheetId`.
 
 Night shift is not computed: `NightShiftHours` exists but pay stubs and invoices always set it to 0.
 
-Also: `TimesheetHistory` (keyless read model for a worker's timesheet history view).
+The agency worker-profile Timesheet tab (`TimesheetRepository.GetTimeSheetHistory`) reads `TimeSheets` → `TimeSheetTotal` directly; the page is filtered/sorted/paginated in SQL and the running totals come from one extra query over the worker's whole history (ordered by `Date`, `Id`) summed in memory. There is no history view.
 
 ---
 
@@ -402,38 +400,37 @@ PDFs are cached in blob storage — regenerate after render changes.
 | `PayStubPublicHoliday` | not-worked stat holiday paid on the stub: `Holiday` date + `Amount` (created via `Create`, amount ≥ 0) |
 | `PayStubOtherDeduction` | extra deduction line: `Quantity`, `UnitPrice`, `Total`, `Description` |
 
-`PayStubHistory` (`PayStubHistory.cs`) is a **keyless entity mapped to the `PayStubHistory`
-view** (`Configurations/Accounting/PayStubHistoryConfiguration.cs`: `HasNoKey().ToView(...)`) —
-a read model for pay-stub listings, not a table.
+The agency worker-profile PayStubs tab (`WorkerRepository.GetWageHistory`) queries `PayStubs`
+directly; the per-row running totals (`Accumulated*` in `PayStubHistoryModel`) come from one extra
+query over the worker's stubs ordered by `NumberId` and summed in memory, so no history view or
+extra endpoint exists.
 
-### Invoice — Canada (`Accounting/Invoice/Invoice.cs`)
+### Invoice (`Accounting/Invoice/Invoice.cs`)
 
-Weekly invoice to a company. `CompanyProfileId` FK → CompanyProfile (navigation
-`CompanyProfile`; renamed in migration `20260730001645_ProfileForeignKeys`), `NumberId`,
-`InvoiceNumber` (long; displayed as `AI-{number:0000}-{yy}` via `BuildInvoiceNumber`), `Email`,
-`WeekEnding`, totals (`SubTotal`, `Hst`, `TotalNet`), snapshot rates (`NightShiftRate` — always
-written 0, `HolidayRate`, `OverTimeRate`, `VacationsRate`, `HstRate`, `BonusRate`). Note:
-`VacationsRate`/`BonusRate` are stored but never enter invoice totals — vacation pay is a
-pay-stub concept; HST is a single global config rate, not per-province.
+Weekly invoice to a company — one entity (table `Invoices`) for every agency, Canadian or US.
+`CompanyProfileId` FK → CompanyProfile (navigation `CompanyProfile`; the agency is
+`CompanyProfile.AgencyId` — the invoice has no `AgencyId` or `Country` column), `NumberId`
+(identity, sort key only), `InvoiceNumberId` (long, numeric part of the per-agency series),
+`InvoiceNumber` (string, the stored formatted number `AI-0333-19` / `US-1001-23`; non-unique
+index `IX_Invoices_InvoiceNumber`), `Email` (optional recipient override, falls back to
+`CompanyProfile.Company.Email`), `CreatedAt`, `WeekEnding` (null for direct hiring), totals
+(`SubTotal`, `Tax`, `TotalNet`), `Status` (`InvoiceStatus` Pending/Paid stored as string),
+`UpdatedAt`, `UpdatedBy` → User. There are no rate snapshot or bill-to/bill-from columns:
+multipliers come from global config at creation and company/agency address data is read live
+through `CompanyProfile` and `CompanyProfile.Agency` when the summary/PDF is built. Which
+country rules apply (`AI`/`US` prefix, HST vs per-location tax, unworked holiday charge) is
+decided by `IInvoiceCountryStrategyResolver` from the agency's billing location — see
+`.docs/business/BILLING_RULES.md`.
 
 | Child | Purpose |
 |---|---|
-| `InvoiceTotal` | per-timesheet billing line: FK `TimeSheetTotalId` → TimeSheetTotal, `AgencyRate`, amounts (`Regular`, `OtherRegular`, `Overtime`, `Holiday`, `Missing`, `MissingOvertime`, `NightShift`), `TotalGross`/`TotalNet`/`Total` |
-| `InvoiceHoliday` | not-worked stat holiday billed to the company: `Holiday` date, `Hours`, `Amount`, optional `WorkerProfileId` |
+| `InvoiceTotal` | per-timesheet billing line: FK `TimeSheetTotalId` → TimeSheetTotal (required), `Quantity`, `UnitPrice`, `Description`, `Total`, amount buckets (`Regular`, `Overtime`, `Holiday`, `Missing`, `MissingOvertime`), `TotalGross`/`TotalNet`. Rows with zero amounts and null `Description` exist only to keep the timesheet link |
+| `InvoiceHoliday` | not-worked stat holiday billed to the company (Canadian agencies only): `Holiday` date, `Hours`, `Amount`, optional `WorkerProfileId` |
 | `InvoiceDiscount` | discount line (`Quantity`, `UnitPrice`, `Amount`, `Description`) |
-| `InvoiceAdditionalItem` | extra billed item (`Quantity`, `UnitPrice`, computed `Total`) |
-| `InvoiceAdditionalDetail` | `ClientSiteAddress`; shared with USA invoices (`CanadaInvoiceId` XOR `UsaInvoiceId`) |
+| `InvoiceAdditionalItem` | manual billed item without timesheet (`Quantity`, `UnitPrice`, computed `Total`) |
+| `InvoiceAdditionalDetail` | 1:1, FK `InvoiceId`; `ClientSiteAddress` |
 
 `SkipPayrollNumber.cs` — payroll numbers to skip when generating sequences.
-
-### InvoiceUSA (`Accounting/Invoice/InvoiceUSA.cs`)
-
-US-company invoice (selected by `InvoiceServiceFactory` when the agency billing location is in
-the USA). `CompanyProfileId` FK (same shape as Canada's), `InvoiceNumber` (string,
-prefix `US`) + `InvoiceNumberId` (both unique-indexed), `SubTotal`, `Tax`, `TotalNet`,
-`HtmlNotes`, bill-to/bill-from address blocks. Children: `InvoiceUSAItem` (same amount breakdown
-as `InvoiceTotal`, optional `TimeSheetTotalId`), `InvoiceUSADiscount`, and
-`InvoiceUSATimeSheetTotal` (join InvoiceUSA↔TimeSheetTotal, since USA items may be free-form).
 
 ### Subcontractor reports (`Accounting/Subcontractor/`)
 
@@ -461,7 +458,7 @@ formulas**; EI is the only computed one. Non-unique lookup indexes: `CppDeductio
 
 | Entity | Purpose |
 |---|---|
-| `Location.cs` | address: `Address`, `CityId` → City, `PostalCode`, `Entrance`, `MainIntersection`, `Latitude`/`Longitude`, `LocationTax`; `IsUSA` is a null-conditional navigation chain (`City?.Province?.Country?.Code`) — a missing `Include` of City.Province.Country silently yields `false` → Canadian invoice for a US company |
+| `Location.cs` | address: `Address`, `CityId` → City, `PostalCode`, `Entrance`, `MainIntersection`, `Latitude`/`Longitude`, `LocationTax`; `IsUSA` is a null-conditional navigation chain (`City?.Province?.Country?.Code`) — a missing `Include` of City.Province.Country silently yields `false` → Canadian invoice rules for a US agency (`InvoiceCountryStrategyResolver` uses `AgencyRepository.GetBillingLocation`, which includes the chain) |
 | `City.cs` / `Province.cs` / `Country.cs` | geo catalogs; `Province.Code` = "ON"/"BC"/…, `Country.Code` = "CA"/"USA" (3 letters for USA — asymmetric; `Location.IsUSA` compares to "USA", so comparing to "US" never matches). Canonical values are the static factories `Country.Canada`/`Country.UnitedStates` — there is no `CovenantConstants.Country` class. `ProvinceSetting.cs` holds per-province config |
 | `Holiday.cs` | public holidays: `Date` (unique index), `Description`, `CountryCode` |
 | `CovenantFile.cs` | file metadata for blobs (referenced by all `*Document` join entities) |
@@ -494,7 +491,6 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | RequestRecruiter | `(RequestId, RecruiterId, WorkDate)` |
 | WorkerProfileHoliday | `(WorkerProfileId, HolidayId)` |
 | TimeSheetTotalPayroll | `TimeSheetId` |
-| InvoiceUSA | `InvoiceNumber`; `InvoiceNumberId` |
 | UserNotificationType (table `UserNotificationTypes`) | `(UserId, NotificationTypeId)` |
 
 Non-unique example: `Runner.RequestId` (`Configurations/Requests/Runners/RunnerConfiguration.cs`).

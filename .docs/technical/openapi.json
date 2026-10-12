@@ -8330,7 +8330,7 @@
         "tags": [
           "Invoices"
         ],
-        "summary": "Gets the summary of a specific invoice by its identifier.",
+        "summary": "Gets the summary of a specific invoice belonging to the current company.",
         "parameters": [
           {
             "name": "id",
@@ -8890,13 +8890,20 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "Gets the deal count and total value per status for a period. Sales users only see the deals they own.",
+        "summary": "Gets the deal count and total value per status for a date range (current month when omitted). Sales users only see the deals they own.",
         "parameters": [
           {
-            "name": "Period",
+            "name": "DateFrom",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
             }
           },
           {
@@ -10511,7 +10518,7 @@
         "tags": [
           "RequestHistory"
         ],
-        "summary": "Gets a paginated request history for the specified worker profile.",
+        "summary": "Gets the paginated request history for the specified worker profile.",
         "parameters": [
           {
             "name": "workerProfileId",
@@ -10520,6 +10527,69 @@
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "CompanyFullName",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "JobTitle",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Location",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Enums.RequestStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "WorkerRequestStatuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Enums.WorkerRequestStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "StartWorkingFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "StartWorkingTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -10550,7 +10620,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -10572,7 +10642,7 @@
         "tags": [
           "TimeSheetHistory"
         ],
-        "summary": "Gets the paginated timesheet history for a worker profile.",
+        "summary": "Gets the paginated timesheet history for a worker profile with running totals.",
         "parameters": [
           {
             "name": "workerProfileId",
@@ -10581,6 +10651,41 @@
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "CompanyName",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Request.TimeSheet.Agency.WorkerTimeSheetHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -10622,65 +10727,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.Agency.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/agency/recruiting/workers/{workerProfileId}/timesheethistory/{rowNumber}": {
-      "get": {
-        "tags": [
-          "TimeSheetHistory"
-        ],
-        "summary": "Gets the accumulated timesheet history for a worker profile up to a given row.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "rowNumber",
-            "in": "path",
-            "description": "Row number to accumulate up to.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated"
                 }
               }
             }
@@ -10702,7 +10748,7 @@
         "tags": [
           "WageHistory"
         ],
-        "summary": "Gets the paginated wage history for a worker profile.",
+        "summary": "Gets the paginated pay stub history for a worker profile with running totals.",
         "parameters": [
           {
             "name": "workerProfileId",
@@ -10711,6 +10757,34 @@
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "PayStubNumber",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "WeekEndingFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "WeekEndingTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Accounting.PayStub.WorkerPayStubHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -10752,65 +10826,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Accounting.PayStub.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/agency/recruiting/workers/{workerProfileId}/wagehistory/{rowNumber}": {
-      "get": {
-        "tags": [
-          "WageHistory"
-        ],
-        "summary": "Gets the accumulated wage history for a worker profile up to a given row.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "rowNumber",
-            "in": "path",
-            "description": "Row number to accumulate up to.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated"
                 }
               }
             }
@@ -26642,9 +26657,6 @@
       "Covenant.Common.Enums.RunnerType": {
         "type": "integer"
       },
-      "Covenant.Common.Enums.SalesPeriod": {
-        "type": "integer"
-      },
       "Covenant.Common.Enums.WorkerRequestStatus": {
         "type": "integer"
       },
@@ -26878,6 +26890,9 @@
           "invoiceNumberId": {
             "$ref": "#/components/schemas/System.Int64"
           },
+          "invoiceNumber": {
+            "$ref": "#/components/schemas/System.String"
+          },
           "weekEnding": {
             "oneOf": [
               {
@@ -26909,9 +26924,6 @@
           },
           "updatedByName": {
             "$ref": "#/components/schemas/System.String"
-          },
-          "invoiceNumber": {
-            "$ref": "#/components/schemas/System.String"
           }
         }
       },
@@ -26932,8 +26944,11 @@
           "subTotal": {
             "$ref": "#/components/schemas/System.Decimal"
           },
-          "hst": {
+          "tax": {
             "$ref": "#/components/schemas/System.Decimal"
+          },
+          "taxName": {
+            "$ref": "#/components/schemas/System.String"
           },
           "total": {
             "$ref": "#/components/schemas/System.Decimal"
@@ -27029,6 +27044,9 @@
           "createdAt": {
             "$ref": "#/components/schemas/System.DateOnly"
           },
+          "agencyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
           "companyProfileId": {
             "$ref": "#/components/schemas/System.Guid"
           },
@@ -27114,7 +27132,7 @@
           "subTotal": {
             "$ref": "#/components/schemas/System.Decimal"
           },
-          "hst": {
+          "tax": {
             "$ref": "#/components/schemas/System.Decimal"
           },
           "total": {
@@ -27249,34 +27267,14 @@
           }
         }
       },
-      "Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated": {
-        "type": "object",
-        "properties": {
-          "totalEarnings": {
-            "$ref": "#/components/schemas/System.Decimal"
-          },
-          "vacations": {
-            "$ref": "#/components/schemas/System.Decimal"
-          },
-          "totalPaid": {
-            "$ref": "#/components/schemas/System.Decimal"
-          },
-          "quantity": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "total": {
-            "$ref": "#/components/schemas/System.Decimal"
-          }
-        }
-      },
       "Covenant.Common.Models.Accounting.PayStub.PayStubHistoryModel": {
         "type": "object",
         "properties": {
-          "rowNumber": {
-            "$ref": "#/components/schemas/System.Int32"
-          },
           "id": {
             "$ref": "#/components/schemas/System.Guid"
+          },
+          "numberId": {
+            "$ref": "#/components/schemas/System.Int64"
           },
           "payStubNumber": {
             "$ref": "#/components/schemas/System.String"
@@ -27298,6 +27296,21 @@
           },
           "end": {
             "$ref": "#/components/schemas/System.DateTime"
+          },
+          "accumulatedQuantity": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedTotal": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "accumulatedVacations": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "accumulatedTotalEarnings": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "accumulatedTotalPaid": {
+            "$ref": "#/components/schemas/System.Decimal"
           },
           "items": {
             "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Accounting.PayStub.PayStubItemHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
@@ -29342,6 +29355,23 @@
           }
         }
       },
+      "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "pageIndex": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalPages": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalItems": {
+            "$ref": "#/components/schemas/System.Int32"
+          }
+        }
+      },
       "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.AgencyWorkerRequestModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "object",
         "properties": {
@@ -30211,6 +30241,76 @@
           },
           "ids": {
             "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+          }
+        }
+      },
+      "Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "numberId": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "jobTitle": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "companyFullName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "companyProfileId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "address": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "city": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "provinceName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "postalCode": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "entrance": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "requestStatus": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RequestStatus"
+          },
+          "workerRequestStatus": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.WorkerRequestStatus"
+          },
+          "isAsap": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "startWorking": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "finishWorking": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "location": {
+            "$ref": "#/components/schemas/System.String"
           }
         }
       },
@@ -31198,34 +31298,14 @@
           }
         }
       },
-      "Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated": {
-        "type": "object",
-        "properties": {
-          "regularHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "holidayHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "overtimeHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "missingHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "missingHoursOvertime": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "totalHours": {
-            "$ref": "#/components/schemas/System.Double"
-          }
-        }
-      },
       "Covenant.Common.Models.Request.TimeSheet.Agency.TimeSheetHistoryModel": {
         "type": "object",
         "properties": {
-          "rowNumber": {
-            "$ref": "#/components/schemas/System.Int32"
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/System.Guid"
           },
           "numberId": {
             "$ref": "#/components/schemas/System.Int32"
@@ -31259,6 +31339,24 @@
           },
           "totalHours": {
             "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedRegularHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedHolidayHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedOvertimeHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedMissingHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedMissingHoursOvertime": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedTotalHours": {
+            "$ref": "#/components/schemas/System.Double"
           }
         }
       },
@@ -31266,14 +31364,7 @@
         "type": "object",
         "properties": {
           "invoiceNumber": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/System.Nullable`1[[System.Int64, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            ]
+            "$ref": "#/components/schemas/System.String"
           },
           "payStubNumber": {
             "$ref": "#/components/schemas/System.String"
@@ -31939,9 +32030,6 @@
       "Covenant.Common.Models.Sales.Dashboard.SalesPeriodRangeModel": {
         "type": "object",
         "properties": {
-          "period": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
-          },
           "from": {
             "$ref": "#/components/schemas/System.DateTime"
           },
@@ -33588,6 +33676,12 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.Agency.ApplicantSearchResultModel"
         }
       },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel"
+        }
+      },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.AgencyApplicantListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
@@ -33808,6 +33902,15 @@
         "type": "integer"
       },
       "System.Nullable`1[[Covenant.Common.Models.Accounting.PayStub.GetPayStubsFilterSortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "integer"
+      },
+      "System.Nullable`1[[Covenant.Common.Models.Accounting.PayStub.WorkerPayStubHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "integer"
+      },
+      "System.Nullable`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "integer"
+      },
+      "System.Nullable`1[[Covenant.Common.Models.Request.TimeSheet.Agency.WorkerTimeSheetHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "integer"
       },
       "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]": {

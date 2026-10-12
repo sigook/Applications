@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Accounting.Invoice;
+﻿using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Enums;
 using System;
 using Xunit;
@@ -52,34 +52,5 @@ public class InvoiceStatusTest
         Assert.Equal(InvoiceStatus.Pending, invoice.Status);
         Assert.Equal(later, invoice.UpdatedAt);
         Assert.Equal(otherActor, invoice.UpdatedBy);
-    }
-
-    [Fact]
-    public void InvoiceUSA_DefaultsToPending_WithoutAudit()
-    {
-        var invoice = new InvoiceUSA();
-        Assert.Equal(InvoiceStatus.Pending, invoice.Status);
-        Assert.Null(invoice.UpdatedAt);
-        Assert.Null(invoice.UpdatedBy);
-    }
-
-    [Fact]
-    public void InvoiceUSA_ChangeStatus_SetsStatusAndAudit()
-    {
-        var invoice = new InvoiceUSA();
-        var result = invoice.ChangeStatus(InvoiceStatus.Paid, Actor, Now);
-        Assert.True(result);
-        Assert.Equal(InvoiceStatus.Paid, invoice.Status);
-        Assert.Equal(Now, invoice.UpdatedAt);
-        Assert.Equal(Actor, invoice.UpdatedBy);
-    }
-
-    [Fact]
-    public void InvoiceUSA_ChangeStatus_FailsWhenAlreadyInThatStatus()
-    {
-        var invoice = new InvoiceUSA();
-        var result = invoice.ChangeStatus(InvoiceStatus.Pending, Actor, Now);
-        Assert.False(result);
-        Assert.Null(invoice.UpdatedAt);
     }
 }

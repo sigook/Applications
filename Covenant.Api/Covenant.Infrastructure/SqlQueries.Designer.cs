@@ -51,12 +51,6 @@ namespace Covenant.Infrastructure {
             }
         }
         
-        public static string GetNextInvoiceUSANumber {
-            get {
-                return ResourceManager.GetString("GetNextInvoiceUSANumber", resourceCulture);
-            }
-        }
-        
         public static string GetNextPayStubNumbers {
             get {
                 return ResourceManager.GetString("GetNextPayStubNumbers", resourceCulture);

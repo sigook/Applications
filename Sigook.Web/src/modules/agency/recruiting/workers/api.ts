@@ -1,26 +1,18 @@
 import { api } from '@/app/security/apiService';
 import type { PaginatedList } from '@/shared/types/common';
-import type { WageHistoryFilter, TimeSheetHistoryFilter, WorkerWageHistoryItem, WorkerWageHistoryAccumulated, WorkerTimeSheetHistoryItem, WorkerTimeSheetHistoryAccumulated } from '@/modules/agency/recruiting/workers/types';
+import type { WorkerPayStubHistoryFilter, WorkerTimeSheetHistoryFilter, WorkerWageHistoryItem, WorkerTimeSheetHistoryItem, WorkerRequestHistoryFilter, WorkerRequestHistoryItem } from '@/modules/agency/recruiting/workers/types';
 import type { WorkerCommentCreateModel, WorkerCommentFilter, WorkerCommentList } from '@/shared/worker-profile/types';
-import type { AgencyWorkerFilter, AgencyWorkerListItem, AgencyWorkerDropdownItem, UpdateWorkerEmailModel, UpdateWorkerProfileFieldsPayload, AgencyWorkerHoliday, AddNewHolidayPayload, AgencyWorkerRequestHistoryItem } from '@/modules/agency/recruiting/workers/types';
+import type { AgencyWorkerFilter, AgencyWorkerListItem, AgencyWorkerDropdownItem, UpdateWorkerEmailModel, UpdateWorkerProfileFieldsPayload, AgencyWorkerHoliday, AddNewHolidayPayload } from '@/modules/agency/recruiting/workers/types';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 
 // Wage History
-export function getWorkerProfileWageHistory(filter: WageHistoryFilter): Promise<PaginatedList<WorkerWageHistoryItem>> {
+export function getWorkerProfileWageHistory(filter: WorkerPayStubHistoryFilter): Promise<PaginatedList<WorkerWageHistoryItem>> {
   return api.get<PaginatedList<WorkerWageHistoryItem>>(`/api/agency/recruiting/workers/${filter.profileId}/WageHistory`, { params: { ...filter } });
 }
 
-export function getWorkerProfileWageHistoryAccumulated(profileId: string, rowNumber: number): Promise<WorkerWageHistoryAccumulated> {
-  return api.get<WorkerWageHistoryAccumulated>(`/api/agency/recruiting/workers/${profileId}/WageHistory/${rowNumber}`);
-}
-
 // TimeSheet History
-export function getWorkerProfileTimeSheetHistory(filter: TimeSheetHistoryFilter): Promise<PaginatedList<WorkerTimeSheetHistoryItem>> {
+export function getWorkerProfileTimeSheetHistory(filter: WorkerTimeSheetHistoryFilter): Promise<PaginatedList<WorkerTimeSheetHistoryItem>> {
   return api.get<PaginatedList<WorkerTimeSheetHistoryItem>>(`/api/agency/recruiting/workers/${filter.profileId}/TimeSheetHistory`, { params: { ...filter } });
-}
-
-export function getWorkerProfileTimeSheetHistoryAccumulated(profileId: string, rowNumber: number): Promise<WorkerTimeSheetHistoryAccumulated> {
-  return api.get<WorkerTimeSheetHistoryAccumulated>(`/api/agency/recruiting/workers/${profileId}/TimeSheetHistory/${rowNumber}`);
 }
 
 // Workers list (paginated)
@@ -91,13 +83,8 @@ export function agencyCommentWorker(workerProfileId: string, comment: WorkerComm
 }
 
 // Request history for a worker
-export function getAgencyWorkerProfileRequestHistory(
-  workerId: string,
-  pagination: { size: number; page: number },
-): Promise<PaginatedList<AgencyWorkerRequestHistoryItem>> {
-  return api.get<PaginatedList<AgencyWorkerRequestHistoryItem>>(
-    `/api/agency/recruiting/workers/${workerId}/RequestHistory?PageSize=${pagination.size}&PageIndex=${pagination.page}`,
-  );
+export function getAgencyWorkerProfileRequestHistory(filter: WorkerRequestHistoryFilter): Promise<PaginatedList<WorkerRequestHistoryItem>> {
+  return api.get<PaginatedList<WorkerRequestHistoryItem>>(`/api/agency/recruiting/workers/${filter.profileId}/RequestHistory`, { params: { ...filter } });
 }
 
 // Worker holidays

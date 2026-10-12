@@ -1,4 +1,4 @@
-using Covenant.Api.Controllers.Agency.Accounting;
+﻿using Covenant.Api.Controllers.Agency.Accounting;
 using Covenant.Api.Authorization;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
@@ -53,7 +53,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         Assert.NotEmpty(preview.Items);
         Assert.NotEmpty(preview.Discounts);
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        Assert.Empty(await context.InvoicesUSA.ToListAsync());
+        Assert.Empty(await context.Invoices.ToListAsync());
     }
 
     [Fact, TestOrder(2)]
@@ -68,24 +68,31 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         HttpResponseMessage response = await _client.PostAsJsonAsync(InvoicesController.RouteName, model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        Assert.Single(await context.InvoicesUSA.ToListAsync());
+        var invoice = await context.Invoices
+            .Include(i => i.InvoiceTotals)
+            .Include(i => i.AdditionalItems)
+            .Include(i => i.Discounts)
+            .SingleAsync();
         Assert.Equal(_data.TimeSheets.Length, await context.TimeSheetTotals.CountAsync());
-        Assert.Equal(3, (await context.InvoicesUSA.SingleAsync()).Items.Count());
-        Assert.Equal(model.Discounts.Count(), (await context.InvoicesUSA.SingleAsync()).Discounts.Count());
-        Assert.Equal(InvoiceStatus.Pending, (await context.InvoicesUSA.SingleAsync()).Status);
+        Assert.Equal(_data.TimeSheets.Length, invoice.InvoiceTotals.Count());
+        Assert.Equal(model.AdditionalItems.Count(), invoice.AdditionalItems.Count());
+        Assert.Equal(model.Discounts.Count(), invoice.Discounts.Count());
+        Assert.Equal(InvoiceStatus.Pending, invoice.Status);
+        Assert.StartsWith("US-", invoice.InvoiceNumber);
+        Assert.Equal(invoice.InvoiceTotals.Sum(t => t.Total) * 0.06m, invoice.Tax);
     }
 
     [Fact, TestOrder(3)]
     public async Task ChangeStatus_ToPaid_RecordsAudit()
     {
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        var invoice = await context.InvoicesUSA.AsNoTracking().SingleAsync();
+        var invoice = await context.Invoices.AsNoTracking().SingleAsync();
 
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{InvoicesController.RouteName}/{invoice.Id}/status",
             new ChangeInvoiceStatusModel { Status = InvoiceStatus.Paid });
         response.EnsureSuccessStatusCode();
 
-        var updated = await context.InvoicesUSA.AsNoTracking().SingleAsync(i => i.Id == invoice.Id);
+        var updated = await context.Invoices.AsNoTracking().SingleAsync(i => i.Id == invoice.Id);
         Assert.Equal(InvoiceStatus.Paid, updated.Status);
         Assert.Equal(Data.CurrentUser.Id, updated.UpdatedBy);
         Assert.NotNull(updated.UpdatedAt);
@@ -95,7 +102,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
     public async Task ChangeStatus_SameStatus_ReturnsBadRequest()
     {
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        var invoice = await context.InvoicesUSA.AsNoTracking().SingleAsync();
+        var invoice = await context.Invoices.AsNoTracking().SingleAsync();
 
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{InvoicesController.RouteName}/{invoice.Id}/status",
             new ChangeInvoiceStatusModel { Status = InvoiceStatus.Paid });
@@ -125,6 +132,24 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         Assert.Empty(pending.Detail.Items);
     }
 
+    [Fact, TestOrder(7)]
+    public async Task Delete_ReleasesTimeSheetTotals()
+    {
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var invoice = await context.Invoices.AsNoTracking().SingleAsync();
+
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"{InvoicesController.RouteName}/{invoice.Id}")
+        {
+            Content = JsonContent.Create(new DeleteInvoiceModel())
+        };
+        HttpResponseMessage response = await _client.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        Assert.Empty(await context.Invoices.AsNoTracking().ToListAsync());
+        Assert.Empty(await context.InvoiceTotals.AsNoTracking().ToListAsync());
+        Assert.Empty(await context.TimeSheetTotals.AsNoTracking().ToListAsync());
+    }
+
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
@@ -143,6 +168,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             services.AddSingleton(invoiceContainer.Object);
             var payStubContainer = new Mock<IPayStubsContainer>();
             services.AddSingleton(payStubContainer.Object);
+            services.AddSingleton(Mock.Of<Covenant.Common.Interfaces.ITeamsService>());
             var currentUserService = new Mock<Covenant.Common.Interfaces.ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
             currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
@@ -172,7 +198,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             {
             }
 
-            public override Task<NextNumberModel> GetNextInvoiceUSANumber() => Task.FromResult(new NextNumberModel { NextNumber = _id++ });
+            public override Task<NextNumberModel> GetNextInvoiceNumber(Guid agencyId) => Task.FromResult(new NextNumberModel { NextNumber = _id++ });
         }
     }
 

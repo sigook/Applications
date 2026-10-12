@@ -523,15 +523,14 @@ public class WorkerRepository : IWorkerRepository
         return await query.ToListAsync();
     }
 
-    public async Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid workerProfileId, Pagination pagination)
+    public async Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid agencyId, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter)
     {
-        var payStubs = await _context.PayStubHistories
-            .Where(ps => ps.WorkerProfileId == workerProfileId)
-            .OrderByDescending(ps => ps.NumberId)
+        var query = _context.PayStubs
+            .Where(ps => ps.WorkerProfileId == workerProfileId && ps.WorkerProfile.AgencyId == agencyId)
             .Select(ps => new PayStubHistoryModel
             {
-                RowNumber = ps.RowNumber,
                 Id = ps.Id,
+                NumberId = ps.NumberId,
                 PayStubNumber = ps.PayStubNumber,
                 WeekEnding = ps.WeekEnding,
                 TotalEarnings = ps.TotalEarnings,
@@ -539,10 +538,13 @@ public class WorkerRepository : IWorkerRepository
                 TotalPaid = ps.TotalPaid,
                 Start = ps.DateWorkBegins,
                 End = ps.DateWorkEnd
-            })
-            .ToPaginatedList(pagination);
+            });
+        query = query.Where(ApplyFilterWageHistory(filter));
+        query = ApplySortWageHistory(query, filter);
+        var payStubs = await query.ToPaginatedList(filter);
         if (payStubs.Items.Any())
         {
+            await FillWageHistoryAccumulated(workerProfileId, payStubs.Items);
             var guids = payStubs.Items.Select(arg => arg.Id).ToList();
             var companies = await (from psw in _context.PayStubWageDetails.Where(d => guids.Any(psId => d.PayStubId == psId))
                                    select new
@@ -565,21 +567,67 @@ public class WorkerRepository : IWorkerRepository
         return payStubs;
     }
 
-    public async Task<PayStubHistoryAccumulated> GetWageHistoryAccumulated(Guid workerProfileId, int rowNumber)
+    private async Task FillWageHistoryAccumulated(Guid workerProfileId, List<PayStubHistoryModel> page)
     {
-        var payStubs = await _context.PayStubHistories
-            .Where(ps => ps.WorkerProfileId == workerProfileId && ps.RowNumber <= rowNumber)
+        var history = await _context.PayStubs
+            .Where(p => p.WorkerProfileId == workerProfileId)
+            .OrderBy(p => p.NumberId).ThenBy(p => p.Id)
+            .Select(p => new PayStubHistoryAmounts(
+                p.Id,
+                p.Vacations,
+                p.TotalEarnings,
+                p.TotalPaid,
+                p.Items.Sum(i => i.Quantity),
+                p.Items.Sum(i => i.Total)))
             .ToListAsync();
-        var result = new PayStubHistoryAccumulated
+        var byId = page.ToDictionary(p => p.Id);
+        double quantity = 0;
+        decimal total = 0, vacations = 0, totalEarnings = 0, totalPaid = 0;
+        foreach (var stub in history)
         {
-            Vacations = payStubs.Sum(ps => ps.Vacations),
-            TotalEarnings = payStubs.Sum(ps => ps.TotalEarnings),
-            TotalPaid = payStubs.Sum(ps => ps.TotalPaid)
-        };
-        var guids = payStubs.Select(arg => arg.Id).ToList();
-        result.Quantity = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Quantity);
-        result.Total = await _context.PayStubItems.Where(psi => guids.Contains(psi.PayStubId)).SumAsync(psi => psi.Total);
-        return result;
+            quantity += stub.Quantity;
+            total += stub.Total;
+            vacations += stub.Vacations;
+            totalEarnings += stub.TotalEarnings;
+            totalPaid += stub.TotalPaid;
+            if (!byId.TryGetValue(stub.Id, out var row)) continue;
+            row.AccumulatedQuantity = quantity;
+            row.AccumulatedTotal = total;
+            row.AccumulatedVacations = vacations;
+            row.AccumulatedTotalEarnings = totalEarnings;
+            row.AccumulatedTotalPaid = totalPaid;
+        }
+    }
+
+    private sealed record PayStubHistoryAmounts(Guid Id, decimal Vacations, decimal TotalEarnings, decimal TotalPaid, double Quantity, decimal Total);
+
+    private static Expression<Func<PayStubHistoryModel, bool>> ApplyFilterWageHistory(GetWorkerPayStubHistoryFilter filter)
+    {
+        var predicate = PredicateBuilder.New<PayStubHistoryModel>(true);
+        if (!string.IsNullOrWhiteSpace(filter.PayStubNumber))
+            predicate = predicate.And(p => p.PayStubNumber.Contains(filter.PayStubNumber));
+        if (filter.WeekEndingFrom.HasValue && filter.WeekEndingTo.HasValue)
+            predicate = predicate.And(p => p.WeekEnding.Date >= filter.WeekEndingFrom.Value.Date && p.WeekEnding.Date <= filter.WeekEndingTo.Value.Date);
+        return predicate;
+    }
+
+    private static IQueryable<PayStubHistoryModel> ApplySortWageHistory(IQueryable<PayStubHistoryModel> query, GetWorkerPayStubHistoryFilter filter)
+    {
+        switch (filter.SortBy)
+        {
+            case WorkerPayStubHistorySortBy.PayStubNumber:
+                return filter.IsDescending
+                    ? query.OrderByDescending(p => p.NumberId).ThenByDescending(p => p.Id)
+                    : query.OrderBy(p => p.NumberId).ThenBy(p => p.Id);
+            case WorkerPayStubHistorySortBy.WeekEnding:
+                return query.AddOrderBy(filter, p => p.WeekEnding).ThenBy(p => p.Id);
+            case WorkerPayStubHistorySortBy.TotalEarnings:
+                return query.AddOrderBy(filter, p => p.TotalEarnings).ThenBy(p => p.Id);
+            case WorkerPayStubHistorySortBy.TotalPaid:
+                return query.AddOrderBy(filter, p => p.TotalPaid).ThenBy(p => p.Id);
+            default:
+                return query.OrderByDescending(p => p.NumberId).ThenByDescending(p => p.Id);
+        }
     }
 
     public Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId)

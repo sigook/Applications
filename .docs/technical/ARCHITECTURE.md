@@ -230,7 +230,7 @@ same tree.
 | `Services/Shared/` | `UploadedFilesService` |
 | `Services/Accounting/` | `AccountingService`, `TimesheetCalculatorService` (hours breakdown + payroll deductions, shared by payroll and invoicing) |
 | `Services/Accounting/Deductions/` | `DeductionImportService` (CRA PDF import) |
-| `Services/Accounting/Invoices/` | `InvoiceService` (abstract base), `CanadaInvoiceService`, `UsaInvoiceService`, `InvoiceServiceFactory` (resolves the country service from the agency billing location) |
+| `Services/Accounting/Invoices/` | `InvoiceService` (single concrete `IInvoiceService`), `CanadaInvoiceStrategy` / `UsaInvoiceStrategy` (`IInvoiceCountryStrategy`: prefix, tax, unworked holidays, PDF decoration), `InvoiceCountryStrategyResolver` (picks the strategy from the agency billing location) |
 | `Services/Accounting/PayStubs/` | `PayStubService` |
 | `Services/Identity/` | see below |
 

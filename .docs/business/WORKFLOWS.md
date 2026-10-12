@@ -240,12 +240,12 @@ POST api/agency/accounting/invoices           → IInvoiceService.CreateInvoice
 → InvoicesController (Controllers/Agency/Accounting/InvoicesController.cs)
 ```
 
-The controller resolves the service through `InvoiceServiceFactory` (`Covenant.Core.BL/Services/Accounting/Invoices/`), which picks `CanadaInvoiceService` or `UsaInvoiceService`.
+The controller injects `IInvoiceService` (one `InvoiceService` in `Covenant.Core.BL/Services/Accounting/Invoices/`). Per invoice, the service resolves an `IInvoiceCountryStrategy` (`CanadaInvoiceStrategy` or `UsaInvoiceStrategy`) through `InvoiceCountryStrategyResolver` from the billed company's agency billing location; the strategy decides the number prefix (`AI`/`US`), the tax (`HST` global rate vs per-location tax) and whether unworked statutory holidays are charged.
 
 Key facts (full rules in `BILLING_RULES.md`):
 
-- Invoice subtotal = timesheets (at `AgencyRate`) + additional items + holidays − discounts.
-- Vacations and bonus are **not** billed — `VacationsRate`/`BonusRate` exist on the entity but never enter the totals (vacation 4% is a pay-stub concept).
+- Invoice subtotal = timesheets (at `AgencyRate`) + additional items + holidays − discounts; tax = `strategy.CalculateTax`.
+- Vacations and bonus are **not** billed — the invoice has no such columns (vacation 4% is a pay-stub concept).
 - HST is a single global configuration rate, not per-province.
 - Worked holidays are always billed at holiday rate on invoices (invoices hardcode `holidayIsPaid: true`), while pay stubs honor the timesheet's `HolidayIsPaid` flag.
 

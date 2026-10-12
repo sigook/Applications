@@ -18,7 +18,8 @@ public class RequestApplicantConfiguration : IEntityTypeConfiguration<RequestApp
         builder.Property(x => x.Status)
             .HasConversion(new EnumToStringConverter<RequestApplicantStatus>())
             .HasMaxLength(MaximumLengthStatus)
-            .HasDefaultValue(RequestApplicantStatus.Pending);
+            .HasDefaultValue(RequestApplicantStatus.Pending)
+            .HasSentinel((RequestApplicantStatus)0);
 
         builder.HasOne(x => x.Request)
             .WithMany()

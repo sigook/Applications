@@ -1,3 +1,6 @@
+import type { GridParams } from '@/shared/types/common';
+import type { RequestStatus, WorkerRequestStatus } from '@/shared/constants/enums';
+
 export interface WorkerFilter {
   page: number;
   pageSize: number;
@@ -11,16 +14,21 @@ export interface WorkerFilter {
 }
 
 // Worker Profile History types
-export interface WageHistoryFilter {
+// Mirrors backend GetWorkerPayStubHistoryFilter (SortBy = WorkerPayStubHistorySortBy).
+export interface WorkerPayStubHistoryFilter extends GridParams {
   profileId: string;
-  page?: number;
-  pageSize?: number;
+  payStubNumber?: string;
+  weekEndingFrom?: string | null;
+  weekEndingTo?: string | null;
 }
 
-export interface TimeSheetHistoryFilter {
+// Mirrors backend GetWorkerTimeSheetHistoryFilter (SortBy = WorkerTimeSheetHistorySortBy).
+export interface WorkerTimeSheetHistoryFilter extends GridParams {
   profileId: string;
-  page?: number;
-  pageSize?: number;
+  companyName?: string;
+  numberId?: number | string;
+  dateFrom?: string | null;
+  dateTo?: string | null;
 }
 
 // Mirrors backend PayStubItemHistoryModel.
@@ -32,8 +40,8 @@ export interface WorkerWageHistoryLine {
 
 // Item returned by GET /api/agency/recruiting/workers/{id}/WageHistory. Mirrors backend PayStubHistoryModel.
 export interface WorkerWageHistoryItem {
-  rowNumber: number;
   id: string;
+  numberId: number;
   payStubNumber: string;
   weekEnding: string;
   totalEarnings: number;
@@ -41,22 +49,19 @@ export interface WorkerWageHistoryItem {
   totalPaid: number;
   start: string;
   end: string;
+  accumulatedQuantity: number;
+  accumulatedTotal: number;
+  accumulatedVacations: number;
+  accumulatedTotalEarnings: number;
+  accumulatedTotalPaid: number;
   items: WorkerWageHistoryLine[];
   companies: string[];
 }
 
-// Returned by GET /api/agency/recruiting/workers/{id}/WageHistory/{rowNumber}. Mirrors backend PayStubHistoryAccumulated.
-export interface WorkerWageHistoryAccumulated {
-  totalEarnings: number;
-  vacations: number;
-  totalPaid: number;
-  quantity: number;
-  total: number;
-}
-
 // Item returned by GET /api/agency/recruiting/workers/{id}/TimeSheetHistory. Mirrors backend TimeSheetHistoryModel.
 export interface WorkerTimeSheetHistoryItem {
-  rowNumber: number;
+  id: string;
+  requestId: string;
   numberId: number;
   businessName: string;
   jobTitle: string;
@@ -68,16 +73,12 @@ export interface WorkerTimeSheetHistoryItem {
   missingHours: number;
   missingHoursOvertime: number;
   totalHours: number;
-}
-
-// Returned by GET /api/agency/recruiting/workers/{id}/TimeSheetHistory/{rowNumber}. Mirrors backend TimesheetHistoryAccumulated.
-export interface WorkerTimeSheetHistoryAccumulated {
-  regularHours: number;
-  holidayHours: number;
-  overtimeHours: number;
-  missingHours: number;
-  missingHoursOvertime: number;
-  totalHours: number;
+  accumulatedRegularHours: number;
+  accumulatedHolidayHours: number;
+  accumulatedOvertimeHours: number;
+  accumulatedMissingHours: number;
+  accumulatedMissingHoursOvertime: number;
+  accumulatedTotalHours: number;
 }
 
 // Filter for paginated worker list (agency view)
@@ -154,27 +155,33 @@ export interface AddNewHolidayPayload {
   date: string;
 }
 
+// Mirrors backend GetWorkerRequestHistoryFilter (SortBy = WorkerRequestHistorySortBy).
+export interface WorkerRequestHistoryFilter extends GridParams {
+  profileId: string;
+  numberId?: number | string;
+  companyFullName?: string;
+  jobTitle?: string;
+  location?: string;
+  statuses?: RequestStatus[];
+  workerRequestStatuses?: WorkerRequestStatus[];
+  startWorkingFrom?: string | null;
+  startWorkingTo?: string | null;
+}
+
 // Request history item returned for the Worker → Requests tab.
-// Mirrors backend RequestListModel (Covenant.Common.Models.Request).
-export interface AgencyWorkerRequestHistoryItem {
+// Mirrors backend WorkerRequestHistoryModel (Covenant.Common.Models.Request.Agency).
+export interface WorkerRequestHistoryItem {
   id: string;
   numberId: number;
   jobTitle: string;
   companyFullName: string;
-  agencyFullName?: string;
-  logo?: string;
+  companyProfileId: string;
   location: string;
   entrance?: string;
   createdAt: string;
-  finishAt?: string | null;
-  startWorking: string;
-  finishWorking: string;
-  workersQuantity: number;
-  workersQuantityWorking: number;
-  displayShift?: string;
+  requestStatus: RequestStatus;
+  workerRequestStatus: WorkerRequestStatus;
   isAsap: boolean;
-  isDirectHiring: boolean;
-  workerApprovedToWork?: string;
-  status: string;
-  companyProfileId: string;
+  startWorking: string | null;
+  finishWorking: string | null;
 }

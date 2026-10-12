@@ -1,4 +1,4 @@
-using Covenant.Common.Constants;
+﻿using Covenant.Common.Constants;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
@@ -59,7 +59,7 @@ public class TestGetInvoiceSummary
         var summaryModel = invoiceSummary;
         Assert.Equal(invoice.Id, summaryModel.Id);
         Assert.Equal(invoice.NumberId, summaryModel.NumberId);
-        Assert.Equal(Invoice.BuildInvoiceNumber(invoice.InvoiceNumber, invoice.CreatedAt), summaryModel.InvoiceNumber);
+        Assert.Equal(invoice.InvoiceNumber, summaryModel.InvoiceNumber);
         Assert.Equal(new DateOnly(invoice.CreatedAt.Year, invoice.CreatedAt.Month, invoice.CreatedAt.Day), summaryModel.CreatedAt);
         Assert.Equal(invoice.CompanyProfileId, summaryModel.CompanyProfileId);
         Assert.Equal(FakeProfile.FullName, summaryModel.CompanyFullName);
@@ -74,7 +74,8 @@ public class TestGetInvoiceSummary
         Assert.Equal(FakeProfile.Agency.FullName, summaryModel.AgencyFullName);
         Assert.Equal(FakeProfile.Agency.Logo.FileName, summaryModel.AgencyLogoFileName);
         Assert.Equal(invoice.SubTotal, summaryModel.SubTotal);
-        Assert.Equal(invoice.Hst, summaryModel.Hst);
+        Assert.Equal(invoice.Tax, summaryModel.Tax);
+        Assert.Equal(FakeProfile.AgencyId, summaryModel.AgencyId);
         Assert.Equal(invoice.TotalNet, summaryModel.Total);
         Assert.Equal(invoice.WeekEnding, summaryModel.WeedEnding);
         Assert.Equal(invoice.Discounts.Count(), summaryModel.Discounts.Count);
@@ -146,15 +147,10 @@ public class TestGetInvoiceSummary
         var invoice = new Invoice
         {
             CompanyProfileId = FakeProfile.Id,
-            InvoiceNumber = 1,
-            NightShiftRate = 1,
-            HolidayRate = 1,
-            OverTimeRate = 1,
-            VacationsRate = 1,
-            HstRate = 1,
-            BonusRate = 1,
+            InvoiceNumberId = 1,
+            InvoiceNumber = "AI-0001-19",
             SubTotal = 1,
-            Hst = 1,
+            Tax = 1,
             TotalNet = 1,
             CreatedAt = new DateTime(2019, 01, 01),
             WeekEnding = new DateTime(2019, 01, 07)
@@ -167,7 +163,6 @@ public class TestGetInvoiceSummary
         invoice.AddAdditionalItems(new[]{new InvoiceAdditionalItem(1,2,"One"),
             new InvoiceAdditionalItem(2,4,"Two") });
 
-        // Create InvoiceTotals with Description, Quantity, and Total for test expectations
         var invoiceTotals = new List<InvoiceTotal>
         {
             new InvoiceTotal

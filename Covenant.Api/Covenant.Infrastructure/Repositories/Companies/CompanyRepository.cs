@@ -703,7 +703,6 @@ public class CompanyRepository : ICompanyRepository
         {
             ["Requests"] = await _context.Requests.CountAsync(r => r.CompanyProfileId == companyProfileId),
             ["Invoices"] = await _context.Invoices.CountAsync(i => i.CompanyProfileId == companyProfileId),
-            ["USA invoices"] = await _context.InvoicesUSA.CountAsync(i => i.CompanyProfileId == companyProfileId),
             ["Deals"] = await _context.Deals.CountAsync(d => d.CompanyProfileId == companyProfileId),
             ["Interactions"] = await _context.CompanyInteractions.CountAsync(i => i.CompanyProfileId == companyProfileId),
             ["Worker comments"] = await _context.WorkerComments.CountAsync(c => c.CompanyProfileId == companyProfileId)

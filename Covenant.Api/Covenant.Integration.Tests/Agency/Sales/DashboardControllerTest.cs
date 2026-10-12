@@ -49,23 +49,25 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
         items.Single(i => i.Status == status).Count;
 
     [Fact]
-    public async Task SalesOnlySeesItsOwnDealsInTheCurrentWeek()
+    public async Task SalesOnlySeesItsOwnDealsInTheCurrentMonth()
     {
         DealsByStatusModel model = await DealsByStatus(await AsSales().GetAsync(DealsByStatusUri));
 
         Assert.Equal(7, model.Items.Count);
         Assert.Equal(2, CountOf(model.Items, DealStatus.Accepted));
         Assert.Equal(1, CountOf(model.Items, DealStatus.Sent));
-        Assert.Equal(3, model.TotalCount);
-        Assert.Equal(3500m, model.TotalValue);
+        Assert.Equal(1, CountOf(model.Items, DealStatus.ToSend));
+        Assert.Equal(4, model.TotalCount);
+        Assert.Equal(4200m, model.TotalValue);
+        Assert.Equal("September 2026", model.Period.Label);
     }
 
     [Fact]
-    public async Task AdminSeesEveryRepsDealsInTheCurrentWeek()
+    public async Task AdminSeesEveryRepsDealsInTheCurrentMonth()
     {
         DealsByStatusModel model = await DealsByStatus(await AsAdmin().GetAsync(DealsByStatusUri));
 
-        Assert.Equal(4, model.TotalCount);
+        Assert.Equal(5, model.TotalCount);
         Assert.Equal(1, CountOf(model.Items, DealStatus.Rejected));
     }
 
@@ -75,20 +77,28 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
         DealsByStatusModel model = await DealsByStatus(
             await AsSales().GetAsync($"{DealsByStatusUri}?ownerId={Data.OtherSalesUser.Id}"));
 
-        Assert.Equal(3, model.TotalCount);
+        Assert.Equal(4, model.TotalCount);
     }
 
     [Fact]
-    public async Task DealsOutsideTheWindowAreExcluded()
+    public async Task DealsOutsideTheRequestedDateRangeAreExcluded()
     {
-        DealsByStatusModel week = await DealsByStatus(await AsSales().GetAsync($"{DealsByStatusUri}?period={(int)SalesPeriod.Week}"));
-        DealsByStatusModel month = await DealsByStatus(await AsSales().GetAsync($"{DealsByStatusUri}?period={(int)SalesPeriod.Month}"));
+        DealsByStatusModel week = await DealsByStatus(await AsSales().GetAsync($"{DealsByStatusUri}?dateFrom=2026-09-06&dateTo=2026-09-12"));
+        DealsByStatusModel quarter = await DealsByStatus(await AsSales().GetAsync($"{DealsByStatusUri}?dateFrom=2026-06-01&dateTo=2026-09-30"));
 
         Assert.Equal(3, week.TotalCount);
-        Assert.Equal(4, month.TotalCount);
+        Assert.Equal(5, quarter.TotalCount);
         Assert.Equal(new DateTime(2026, 9, 6), week.Period.From);
         Assert.Equal(new DateTime(2026, 9, 12), week.Period.To);
-        Assert.Equal("September 2026", month.Period.Label);
+        Assert.Equal("Sep 6 - Sep 12, 2026", week.Period.Label);
+    }
+
+    [Fact]
+    public async Task ADateRangeEndingBeforeItStartsIsRejected()
+    {
+        HttpResponseMessage response = await AsSales().GetAsync($"{DealsByStatusUri}?dateFrom=2026-09-12&dateTo=2026-09-06");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -103,14 +113,14 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
     }
 
     [Fact]
-    public async Task APeriodOutsideTheEnumFallsBackToTheDefaultWeek()
+    public async Task AnUnbindableDateRangeFallsBackToTheCurrentMonth()
     {
-        // The API suppresses the automatic ModelState 400 (ApiServicesConfiguration), so an
-        // unbindable period keeps the filter default instead of failing, like every other filter.
-        DealsByStatusModel model = await DealsByStatus(await AsSales().GetAsync($"{DealsByStatusUri}?period=99"));
+        // The API suppresses the automatic ModelState 400 (ApiServicesConfiguration), so
+        // unbindable dates keep the filter default instead of failing, like every other filter.
+        DealsByStatusModel model = await DealsByStatus(await AsSales().GetAsync($"{DealsByStatusUri}?dateFrom=abc&dateTo=xyz"));
 
-        Assert.Equal(SalesPeriod.Week, model.Period.Period);
-        Assert.Equal(new DateTime(2026, 9, 6), model.Period.From);
+        Assert.Equal(new DateTime(2026, 9, 1), model.Period.From);
+        Assert.Equal(new DateTime(2026, 9, 30), model.Period.To);
     }
 
     [Fact]
@@ -196,7 +206,7 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
                 FakeData.FakeDeal(SalesUser.Id, FakeCompany.Id, Utc(9), DealStatus.Sent, 500m),
                 // Sales rep, same month but the previous week.
                 FakeData.FakeDeal(SalesUser.Id, FakeCompany.Id, Utc(2), DealStatus.ToSend, 700m),
-                // Sales rep, previous quarter.
+                // Sales rep, previous quarter (outside the current month and the summary quarter).
                 FakeData.FakeDeal(SalesUser.Id, FakeCompany.Id, new DateTime(2026, 6, 30, 12, 0, 0, DateTimeKind.Utc), DealStatus.Closed, 900m),
                 // Another rep, inside the current week.
                 FakeData.FakeDeal(OtherSalesUser.Id, FakeCompany.Id, Utc(7), DealStatus.Rejected, 300m),

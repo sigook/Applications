@@ -4,8 +4,8 @@ import type { CompanyInteraction, Deal } from '@/modules/agency/sales/clients/ty
 
 const baseUrl = '/api/agency/sales/dashboard';
 
-// Deal count and total value per status for a period (day / week / month / quarter),
-// resolved server-side in UTC. Sales users only see their own deals.
+// Deal count and total value per status for an inclusive date range (current UTC month
+// when omitted). Sales users only see their own deals.
 export function getDealsByStatus(filter: DealsByStatusFilter): Promise<DealsByStatusModel> {
   return api.get<DealsByStatusModel>(`${baseUrl}/deals-by-status`, { params: { ...filter } });
 }

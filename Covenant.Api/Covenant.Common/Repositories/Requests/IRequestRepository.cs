@@ -34,7 +34,7 @@ public interface IRequestRepository
     Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination);
     Task<WorkerRequestDetailModel> GetRequestDetailForWorker(Guid workerId, Guid requestId);
     Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, Pagination pagination);
-    Task<PaginatedList<RequestListModel>> GetRequestsHistoryByWorkerProfileId(Guid workerProfileId, Pagination pagination);
+    Task<PaginatedList<WorkerRequestHistoryModel>> GetWorkerRequestHistory(Guid agencyId, Guid workerProfileId, GetWorkerRequestHistoryFilter filter);
     Task<AgencyWorkerRequestModel> GetRequestWorkerByCompanyId(Guid companyId, Guid requestId, Guid workerId);
     Task<ShiftModel> GetRequestShift(Guid requestId);
     Task<RequestCancellationDetail> GetRequestCancellationDetail(Guid requestId);

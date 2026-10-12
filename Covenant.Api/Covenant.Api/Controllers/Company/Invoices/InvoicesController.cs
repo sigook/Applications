@@ -2,8 +2,6 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Models.Accounting.Invoice.Company;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +12,7 @@ namespace Covenant.Api.Controllers.Company.Invoices;
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Company)]
 [ServiceFilter(typeof(CompanyIdFilter))]
-public class InvoicesController(IInvoiceRepository invoiceRepository, ICompanyService companyService) : ControllerBase
+public class InvoicesController(ICompanyService companyService) : ControllerBase
 {
     public const string RouteName = "api/company/invoices";
 
@@ -24,14 +22,14 @@ public class InvoicesController(IInvoiceRepository invoiceRepository, ICompanySe
     [ProducesResponseType(typeof(PaginatedList<InvoiceListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(GetCompanyInvoiceFilter filter) => Ok(await companyService.GetCompanyInvoices(filter));
 
-    /// <summary>Gets the summary of a specific invoice by its identifier.</summary>
+    /// <summary>Gets the summary of a specific invoice belonging to the current company.</summary>
     /// <param name="id">Invoice identifier.</param>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(InvoiceSummaryModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(Guid id)
     {
-        var invoice = await invoiceRepository.GetInvoiceSummaryById(id);
+        var invoice = await companyService.GetCompanyInvoice(id);
         if (invoice is null) return NotFound();
         return Ok(invoice);
     }

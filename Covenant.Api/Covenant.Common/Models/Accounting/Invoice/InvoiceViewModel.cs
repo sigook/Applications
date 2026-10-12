@@ -14,7 +14,7 @@ public class InvoiceViewModel
     public string PhonePrincipal { get; set; }
     public int? PhonePrincipalExt { get; set; }
     public decimal SubTotal { get; set; }
-    public decimal Hst { get; set; }
+    public decimal Tax { get; set; }
     public decimal Total { get; set; }
     public string TaxName { get; set; }
     public string HstNumber { get; set; }

@@ -53,10 +53,20 @@
       <dashboard-card title="Deals by status">
         <template #subtitle>
           Total <span class="sd-total">{{ dealsByStatus?.totalCount ?? 0 }}</span>
-          <span v-if="dealsByStatus"> · {{ compactMoney(dealsByStatus.totalValue) }} · {{ dealsByStatus.period.label }}</span>
+          <span v-if="dealsByStatus"> · {{ compactMoney(dealsByStatus.totalValue) }}</span>
         </template>
         <template #actions>
-          <range-tabs v-model="period" />
+          <b-datepicker
+            v-model="dateRange"
+            class="sd-range"
+            size="is-small"
+            range
+            :mobile-native="false"
+            icon="calendar-today"
+            position="is-bottom-left"
+            append-to-body
+            @update:modelValue="loadDealsByStatus"
+          />
         </template>
         <div class="sd-by-status">
           <b-taginput
@@ -97,12 +107,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import DashboardCard from '@/modules/agency/sales/dashboard/components/DashboardCard.vue';
 import InteractionList from '@/modules/agency/sales/dashboard/components/InteractionList.vue';
 import ClientList from '@/modules/agency/sales/dashboard/components/ClientList.vue';
 import DealList from '@/modules/agency/sales/dashboard/components/DealList.vue';
-import RangeTabs from '@/modules/agency/sales/dashboard/components/RangeTabs.vue';
 import BarChart from '@/modules/agency/sales/dashboard/components/BarChart.vue';
 import MeterList from '@/modules/agency/sales/dashboard/components/MeterList.vue';
 import InteractionModal from '@/modules/agency/sales/clients/components/InteractionModal.vue';
@@ -117,18 +126,17 @@ import {
   getSalesDashboardSummary,
 } from '@/modules/agency/sales/dashboard/api';
 import { useCurrentAgent } from '@/modules/agency/sales/dashboard/useCurrentAgent';
-import { compactMoney, shortDate } from '@/modules/agency/sales/dashboard/format';
+import { calendarDate, compactMoney, currentMonthRange, shortDate } from '@/modules/agency/sales/dashboard/format';
 import { showAlertError } from '@/shared/utils/toast';
 import { DEAL_STATUSES, DEAL_STATUS_COLORS, DEAL_STATUS_LABELS, INTERACTION_TYPES, INTERACTION_TYPE_COLORS, INTERACTION_TYPE_LABELS } from '@/modules/agency/sales/clients/types';
 import type { Deal, CompanyInteraction, DealStatus } from '@/modules/agency/sales/clients/types';
 import type { CatalogItem } from '@/shared/types/common';
-import {
-  SalesPeriod,
-  type DealsByStatusModel,
-  type SalesBarPoint,
-  type SalesDashboardSummary,
-  type SalesMeter,
-  type SalesRecentClient,
+import type {
+  DealsByStatusModel,
+  SalesBarPoint,
+  SalesDashboardSummary,
+  SalesMeter,
+  SalesRecentClient,
 } from '@/modules/agency/sales/dashboard/types';
 
 const { agentName, loadAgentName } = useCurrentAgent();
@@ -144,13 +152,13 @@ const isClientModalOpen = ref(false);
 const deals = ref<Deal[]>([]);
 const editingDeal = ref<Deal | null>(null);
 const nowIso = new Date().toISOString();
-const period = ref<SalesPeriod>(SalesPeriod.Week);
+const dateRange = ref<Date[]>(currentMonthRange());
 const statusesSelected = ref<CatalogItem<DealStatus>[]>([]);
 const isInteractionModalOpen = ref(false);
 const isDealModalOpen = ref(false);
 const isNewClientModalOpen = ref(false);
 
-// Drops out-of-order responses when the period or the status filter changes fast.
+// Drops out-of-order responses when the date range or the status filter changes fast.
 let dealsByStatusRequest = 0;
 
 const statusOptions: CatalogItem<DealStatus>[] = DEAL_STATUSES.map((status) => ({
@@ -222,7 +230,8 @@ function startEditDeal(deal: Deal): void {
 function loadDealsByStatus(): void {
   const request = ++dealsByStatusRequest;
   getDealsByStatus({
-    period: period.value,
+    dateFrom: calendarDate(dateRange.value[0]),
+    dateTo: calendarDate(dateRange.value[1]),
     statuses: statusesSelected.value.length ? statusesSelected.value.map((status) => status.id) : undefined,
   })
     .then((result) => {
@@ -274,8 +283,6 @@ function onSaved(): void {
   loadSummary();
 }
 
-watch(period, () => loadDealsByStatus());
-
 onMounted(() => {
   isLoading.value = true;
   loadSummary();
@@ -326,6 +333,10 @@ onMounted(() => {
   .sd-total {
     color: $green;
     font-weight: 600;
+  }
+
+  .sd-range {
+    width: 13.5rem;
   }
 
   .sd-by-status {

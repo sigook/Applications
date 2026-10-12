@@ -1,8 +1,8 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
+using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,24 +11,17 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Workers;
 
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]
+[ServiceFilter(typeof(AgencyIdFilter))]
 [Route(RouteName)]
 public class WageHistoryController(IWorkerRepository workerRepository) : ControllerBase
 {
     public const string RouteName = "api/agency/recruiting/workers/{workerProfileId:guid}/wagehistory";
 
-    /// <summary>Gets the paginated wage history for a worker profile.</summary>
+    /// <summary>Gets the paginated pay stub history for a worker profile with running totals.</summary>
     /// <param name="workerProfileId">Worker profile identifier.</param>
-    /// <param name="pagination">Pagination criteria.</param>
+    /// <param name="filter">Filter, sort and pagination criteria.</param>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<PayStubHistoryModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Get(Guid workerProfileId, Pagination pagination) =>
-        Ok(await workerRepository.GetWageHistory(workerProfileId, pagination));
-
-    /// <summary>Gets the accumulated wage history for a worker profile up to a given row.</summary>
-    /// <param name="workerProfileId">Worker profile identifier.</param>
-    /// <param name="rowNumber">Row number to accumulate up to.</param>
-    [HttpGet("{rowNumber}")]
-    [ProducesResponseType(typeof(PayStubHistoryAccumulated), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAccumulated([FromRoute] Guid workerProfileId, [FromRoute] int rowNumber) =>
-        Ok(await workerRepository.GetWageHistoryAccumulated(workerProfileId, rowNumber));
+    public async Task<IActionResult> Get(Guid workerProfileId, [FromQuery] GetWorkerPayStubHistoryFilter filter) =>
+        Ok(await workerRepository.GetWageHistory(User.GetAgencyId(), workerProfileId, filter));
 }

@@ -1,4 +1,4 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using Covenant.Common.Models.Accounting.Invoice.Company;
 using Covenant.Common.Models.Company.Agency;
 using Covenant.Common.Models.Identity;
@@ -9,6 +9,7 @@ using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Covenant.Core.BL.Interfaces.Companies;
 using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Documents.Extensions;
@@ -48,6 +49,7 @@ public class CompanyService : ICompanyService
     private readonly ICatalogRepository catalogRepository;
     private readonly IRequestRepository requestRepository;
     private readonly IInvoiceRepository invoiceRepository;
+    private readonly IInvoiceCountryStrategyResolver invoiceStrategies;
     private readonly IUserAccountService userAccountService;
     private readonly ICurrentUserService currentUserService;
     private readonly IEmailService emailService;
@@ -66,6 +68,7 @@ public class CompanyService : ICompanyService
         ICatalogRepository catalogRepository,
         IRequestRepository requestRepository,
         IInvoiceRepository invoiceRepository,
+        IInvoiceCountryStrategyResolver invoiceStrategies,
         IUserAccountService userAccountService,
         ICurrentUserService currentUserService,
         IEmailService emailService,
@@ -84,6 +87,7 @@ public class CompanyService : ICompanyService
         this.catalogRepository = catalogRepository;
         this.requestRepository = requestRepository;
         this.invoiceRepository = invoiceRepository;
+        this.invoiceStrategies = invoiceStrategies;
         this.userAccountService = userAccountService;
         this.currentUserService = currentUserService;
         this.emailService = emailService;
@@ -263,22 +267,15 @@ public class CompanyService : ICompanyService
         return Result.Ok();
     }
 
-    public async Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter)
+    public Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter) =>
+        invoiceRepository.GetInvoicesForCompany(currentUserService.GetCompanyId(), filter);
+
+    public async Task<InvoiceSummaryModel> GetCompanyInvoice(Guid invoiceId)
     {
-        var companyId = currentUserService.GetCompanyId();
-        var companyDetail = await companyRepository.GetCompanyProfileDetail(cp => cp.CompanyId == companyId);
-        var locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfile.CompanyId == companyId);
-        var mainLocation = locations.FirstOrDefault(l => l.IsBilling);
-        PaginatedList<InvoiceListModel> result;
-        if (mainLocation?.IsUSA == true)
-        {
-            result = await invoiceRepository.GetInvoicesForCompanyUSA(companyId, filter);
-        }
-        else
-        {
-            result = await invoiceRepository.GetInvoicesForCompany(companyId, filter);
-        }
-        return result;
+        var summary = await invoiceRepository.GetInvoiceSummaryForCompany(currentUserService.GetCompanyId(), invoiceId);
+        if (summary is null) return null;
+        (await invoiceStrategies.ResolveForAgency(summary.AgencyId)).Decorate(summary);
+        return summary;
     }
 
     public async Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyProfileId = null)

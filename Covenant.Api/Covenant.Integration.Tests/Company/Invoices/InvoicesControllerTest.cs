@@ -1,4 +1,4 @@
-using Covenant.Api.Controllers.Company.Invoices;
+﻿using Covenant.Api.Controllers.Company.Invoices;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
@@ -49,6 +49,15 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         response.EnsureSuccessStatusCode();
         InvoiceSummaryModel model = await response.Content.ReadFromJsonAsync<InvoiceSummaryModel>();
         Assert.NotNull(model);
+        Assert.Equal(Data.Invoice.InvoiceNumber, model.InvoiceNumber);
+        Assert.Equal("HST", model.TaxName);
+    }
+
+    [Fact, TestOrder(3)]
+    public async Task GetById_OtherCompany_NotFound()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{ApiCompanyInvoice}/{Data.OtherInvoice.Id}");
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
     }
 }
 
@@ -103,22 +112,33 @@ public static class Data
     public static readonly Invoice Invoice = new Invoice
     {
         CompanyProfileId = CompanyProfile.Id,
-        InvoiceNumber = 1,
-        NightShiftRate = 1,
-        HolidayRate = 1,
-        OverTimeRate = 1,
-        VacationsRate = 1,
-        HstRate = 1,
-        BonusRate = 1,
+        InvoiceNumberId = 1,
+        InvoiceNumber = "AI-0001-26",
         SubTotal = 1,
-        Hst = 1,
+        Tax = 1,
+        TotalNet = 1
+    };
+
+    public static readonly CompanyProfile OtherCompanyProfile = new CompanyProfile
+    {
+        Company = new User(CvnEmail.Create("other@a.com").Value),
+        Agency = Agency,
+        Industry = CompanyProfileIndustry.Create("Test").Value
+    };
+    public static readonly Invoice OtherInvoice = new Invoice
+    {
+        CompanyProfileId = OtherCompanyProfile.Id,
+        InvoiceNumberId = 2,
+        InvoiceNumber = "AI-0002-26",
+        SubTotal = 1,
+        Tax = 1,
         TotalNet = 1
     };
 
     public static void Seed(this CovenantContext context)
     {
-        context.CompanyProfiles.Add(CompanyProfile);
-        context.AddRange(Invoice);
+        context.CompanyProfiles.AddRange(CompanyProfile, OtherCompanyProfile);
+        context.AddRange(Invoice, OtherInvoice);
         context.SaveChanges();
     }
 }

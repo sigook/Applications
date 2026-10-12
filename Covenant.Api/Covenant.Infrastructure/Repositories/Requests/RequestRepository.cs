@@ -829,37 +829,88 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 }).AsNoTracking().SingleOrDefaultAsync();
     }
 
-    public Task<PaginatedList<RequestListModel>> GetRequestsHistoryByWorkerProfileId(Guid workerProfileId, Pagination pagination) =>
-        GetWorkerRequestHistory(wp => wp.Id == workerProfileId, pagination);
-
-    private Task<PaginatedList<RequestListModel>> GetWorkerRequestHistory(Expression<Func<WorkerProfile, bool>> filter, Pagination pagination)
+    public Task<PaginatedList<WorkerRequestHistoryModel>> GetWorkerRequestHistory(Guid agencyId, Guid workerProfileId, GetWorkerRequestHistoryFilter filter)
     {
-        var query = from wp in context.WorkerProfiles.Where(filter)
-                    join wr in context.WorkerRequests on wp.Id equals wr.WorkerProfileId
-                    join r in context.Requests on new { Ag = wp.AgencyId, Re = wr.RequestId } equals new { Ag = r.CompanyProfile.AgencyId, Re = r.Id }
-                    orderby r.NumberId descending
-                    select new RequestListModel
-                    {
-                        Id = r.Id,
-                        NumberId = r.NumberId,
-                        IsAsap = r.IsAsap,
-                        CompanyFullName = r.CompanyProfile.FullName,
-                        Logo = r.CompanyProfile.Logo == null ? null : $"{filesConfiguration.FilesPath}{r.CompanyProfile.Logo.FileName}",
-                        AgencyFullName = r.CompanyProfile.Agency.FullName,
-                        CreatedAt = r.CreatedAt,
-                        JobTitle = r.JobTitle,
-                        Location = r.JobLocation.Address + " " + r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value + " " + r.JobLocation.PostalCode,
-                        RequestStatus = r.Status,
-                        WorkersQuantity = r.WorkersQuantity,
-                        WorkersQuantityWorking = r.WorkersQuantityWorking,
-                        StartWorking = (from wrS in context.WorkerRequests.Where(wrW => wrW.RequestId == r.Id)
-                                        from tS in wrS.TimeSheets
-                                        select tS.Date).DefaultIfEmpty().Min(),
-                        FinishWorking = (from wrS in context.WorkerRequests.Where(wrW => wrW.RequestId == r.Id)
-                                         from tS in wrS.TimeSheets
-                                         select tS.Date).DefaultIfEmpty().Max()
-                    };
-        return query.ToPaginatedList(pagination);
+        var query = context.WorkerRequests
+            .Where(wr => wr.WorkerProfileId == workerProfileId
+                         && wr.WorkerProfile.AgencyId == agencyId
+                         && wr.Request.CompanyProfile.AgencyId == agencyId)
+            .Select(wr => new WorkerRequestHistoryModel
+            {
+                Id = wr.RequestId,
+                NumberId = wr.Request.NumberId,
+                JobTitle = wr.Request.JobTitle,
+                CompanyFullName = wr.Request.CompanyProfile.FullName,
+                CompanyProfileId = wr.Request.CompanyProfileId,
+                Address = wr.Request.JobLocation.Address,
+                City = wr.Request.JobLocation.City.Value,
+                ProvinceName = wr.Request.JobLocation.City.Province.Value,
+                PostalCode = wr.Request.JobLocation.PostalCode,
+                Entrance = wr.Request.JobLocation.Entrance,
+                CreatedAt = wr.Request.CreatedAt,
+                RequestStatus = wr.Request.Status,
+                WorkerRequestStatus = wr.WorkerRequestStatus,
+                IsAsap = wr.Request.IsAsap,
+                StartWorking = wr.TimeSheets.Min(t => (DateTime?)t.Date) ?? wr.StartWorking,
+                FinishWorking = wr.TimeSheets.Max(t => (DateTime?)t.Date)
+            });
+        query = query.Where(ApplyFilterWorkerRequestHistory(filter));
+        query = ApplySortWorkerRequestHistory(query, filter);
+        return query.ToPaginatedList(filter);
+    }
+
+    private static Expression<Func<WorkerRequestHistoryModel, bool>> ApplyFilterWorkerRequestHistory(GetWorkerRequestHistoryFilter filter)
+    {
+        var predicate = PredicateBuilder.New<WorkerRequestHistoryModel>(true);
+        if (filter.NumberId.HasValue)
+            predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
+        if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
+        {
+            var client = filter.CompanyFullName.ToLower();
+            predicate = predicate.And(r => r.CompanyFullName.ToLower().Contains(client));
+        }
+        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
+        {
+            var jobTitle = filter.JobTitle.ToLower();
+            predicate = predicate.And(r => r.JobTitle.ToLower().Contains(jobTitle));
+        }
+        if (!string.IsNullOrWhiteSpace(filter.Location))
+        {
+            var location = filter.Location.ToLower();
+            predicate = predicate.And(r =>
+                r.Address.ToLower().Contains(location) ||
+                r.City.ToLower().Contains(location) ||
+                r.ProvinceName.ToLower().Contains(location) ||
+                r.PostalCode.ToLower().Contains(location));
+        }
+        if (filter.Statuses != null && filter.Statuses.Any())
+            predicate = predicate.And(r => filter.Statuses.Contains(r.RequestStatus));
+        if (filter.WorkerRequestStatuses != null && filter.WorkerRequestStatuses.Any())
+            predicate = predicate.And(r => filter.WorkerRequestStatuses.Contains(r.WorkerRequestStatus));
+        if (filter.StartWorkingFrom.HasValue && filter.StartWorkingTo.HasValue)
+            predicate = predicate.And(r => r.StartWorking >= filter.StartWorkingFrom.Value.Date && r.StartWorking <= filter.StartWorkingTo.Value.Date);
+        return predicate;
+    }
+
+    private static IQueryable<WorkerRequestHistoryModel> ApplySortWorkerRequestHistory(IQueryable<WorkerRequestHistoryModel> query, GetWorkerRequestHistoryFilter filter)
+    {
+        switch (filter.SortBy)
+        {
+            case WorkerRequestHistorySortBy.Client:
+                return query.AddOrderBy(filter, r => r.CompanyFullName).ThenByDescending(r => r.NumberId).ThenBy(r => r.Id);
+            case WorkerRequestHistorySortBy.JobTitle:
+                return query.AddOrderBy(filter, r => r.JobTitle).ThenByDescending(r => r.NumberId).ThenBy(r => r.Id);
+            case WorkerRequestHistorySortBy.StartWorking:
+                return query.AddOrderBy(filter, r => r.StartWorking).ThenBy(r => r.Id);
+            case WorkerRequestHistorySortBy.FinishWorking:
+                return query.AddOrderBy(filter, r => r.FinishWorking).ThenBy(r => r.Id);
+            case WorkerRequestHistorySortBy.CreatedAt:
+                return query.AddOrderBy(filter, r => r.CreatedAt).ThenBy(r => r.Id);
+            case WorkerRequestHistorySortBy.NumberId:
+                return query.AddOrderBy(filter, r => r.NumberId).ThenBy(r => r.Id);
+            default:
+                return query.OrderByDescending(r => r.NumberId).ThenBy(r => r.Id);
+        }
     }
 
     public Task<AgencyWorkerRequestModel> GetRequestWorkerByCompanyId(Guid companyId, Guid requestId, Guid workerProfileId)

@@ -425,12 +425,12 @@ Worker profile management from the agency's perspective.
 | `updateWorkerProfileWcCode(payload)` | PUT | `/api/agency/recruiting/workers/{id}/WcCode` | `UpdateWorkerProfileFieldsPayload` | `void` | |
 | `updateAgencyWorkerEmail(id, model)` | PUT | `/api/agency/recruiting/workers/{id}/Email` | `UpdateWorkerEmailModel` | `void` | |
 | `agencyCommentWorker(id, comment)` | POST | `/api/agency/recruiting/workers/{id}/Comments` | `AgencyWorkerCommentModel` | `void` | |
-| `getAgencyWorkerProfileRequestHistory(id, pagination)` | GET | `/api/agency/recruiting/workers/{id}/RequestHistory?PageSize={size}&PageIndex={page}` | — | `PaginatedList<AgencyWorkerRequestHistoryItem>` | Past assignments |
+| `getAgencyWorkerProfileRequestHistory(filter)` | GET | `/api/agency/recruiting/workers/{profileId}/RequestHistory` | `WorkerRequestHistoryFilter` (params: numberId, companyFullName, jobTitle, location, statuses, workerRequestStatuses, startWorkingFrom/To, sortBy, isDescending, paging) | `PaginatedList<WorkerRequestHistoryItem>` | Worker → Requests tab grid; Start/Finish = this worker's timesheets |
 | `getAgencyWorkerProfileHolidays(id)` | GET | `/api/agency/recruiting/workers/{id}/Holidays` | — | `AgencyWorkerHoliday[]` | |
 | `addUpdateAgencyWorkerProfileHolidays(id, data)` | POST | `/api/agency/recruiting/workers/{id}/Holidays` | `AgencyWorkerHoliday` | `void` | |
 | `addNewHoliday(id, payload)` | POST | `/api/agency/recruiting/workers/{id}/Holidays/new-holiday` | `AddNewHolidayPayload` | `void` | Bulk holiday add |
 
-**Types:** `AgencyWorkerFilter`, `AgencyWorkerListItem`, `AgencyWorkerDropdownItem`, `AgencyWorkerCommentModel`, `UpdateWorkerEmailModel`, `UpdateWorkerProfileFieldsPayload`, `AgencyWorkerHoliday`, `AddNewHolidayPayload`, `AgencyWorkerRequestHistoryItem` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes)); `WorkerProfile` (`src/shared/worker-profile/types`, `worker/requests/types`, `agency/recruiting/workers/types`)
+**Types:** `AgencyWorkerFilter`, `AgencyWorkerListItem`, `AgencyWorkerDropdownItem`, `AgencyWorkerCommentModel`, `UpdateWorkerEmailModel`, `UpdateWorkerProfileFieldsPayload`, `AgencyWorkerHoliday`, `AddNewHolidayPayload`, `WorkerRequestHistoryFilter`, `WorkerRequestHistoryItem` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes)); `WorkerProfile` (`src/shared/worker-profile/types`, `worker/requests/types`, `agency/recruiting/workers/types`)
 
 **Pinia:** `agencyWorkerProfileFilter` in `useAgencyStore`.
 
@@ -596,13 +596,14 @@ sales user always sees only their own rows, admin/superadmin see the whole agenc
 | `getRecentInteractions()` | GET | `/api/agency/sales/dashboard/recent-interactions` | — | `CompanyInteraction[]` | Feeds the "Log Interactions" card: the 6 newest interactions across all clients; no `ownerId` param |
 | `getRecentDeals()` | GET | `/api/agency/sales/dashboard/recent-deals` | — | `Deal[]` | Feeds the "Deals" card: the 6 deals with the latest `Date` across all clients; no `ownerId` param |
 
-**Query params (`DealsByStatusFilter`):** `period` (`SalesPeriod` 0 Day / 1 Week / 2 Month / 3 Quarter,
-default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&statuses[1]=3` by the qs
-`indices` format), `ownerId` (honored only for admin/superadmin).
+**Query params (`DealsByStatusFilter`):** `dateFrom` / `dateTo` (inclusive calendar dates `yyyy-MM-dd`,
+both or none; the current UTC month when omitted; 400 when `dateTo` precedes `dateFrom`), `statuses`
+(optional `DealStatus[]`, serialized `statuses[0]=0&statuses[1]=3` by the qs `indices` format), `ownerId`
+(honored only for admin/superadmin).
 
-**Types** (`src/modules/agency/sales/dashboard/types.ts`): `SalesPeriod`, `SalesPeriodRange`, `DealStatusSummary`,
+**Types** (`src/modules/agency/sales/dashboard/types.ts`): `SalesPeriodRange`, `DealStatusSummary`,
 `InteractionTypeSummary`, `DealsByStatusFilter`, `DealsByStatusModel`, `SalesDashboardSummary`, `SalesRecentClient`,
-`SalesBarPoint`, `SalesMeter`, `SALES_PERIOD_TABS`. Enum fields travel as numeric values.
+`SalesBarPoint`, `SalesMeter`. Enum fields travel as numeric values.
 
 **UI:** `pages/agency/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions:
 `.docs/business/SALES_MODULE.md`.
@@ -610,9 +611,9 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 ### Response shape
 
 ```jsonc
-// GET /api/agency/sales/dashboard/deals-by-status?period=1
+// GET /api/agency/sales/dashboard/deals-by-status?dateFrom=2026-09-06&dateTo=2026-09-12
 {
-  "period": { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00",
+  "period": { "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00",
               "label": "Sep 6 - Sep 12, 2026" },
   "totalCount": 9,
   "totalValue": 41500.00,
@@ -622,8 +623,8 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 // GET /api/agency/sales/dashboard/summary
 {
   "asOf": "2026-09-09T15:00:00Z",
-  "quarter": { "period": 3, "from": "2026-07-01T00:00:00", "to": "2026-09-30T00:00:00", "label": "Q3 2026" },
-  "week":    { "period": 1, "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00", "label": "Sep 6 - Sep 12, 2026" },
+  "quarter": { "from": "2026-07-01T00:00:00", "to": "2026-09-30T00:00:00", "label": "Q3 2026" },
+  "week":    { "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00", "label": "Sep 6 - Sep 12, 2026" },
   "pipeline": [ { "status": 0, "count": 24, "totalValue": 180000.00 } ],  // 7 rows, enum order
   "activity": [ { "type": 0, "count": 42 } ]                              // 4 rows, enum order
 }
@@ -635,21 +636,22 @@ default Week), `statuses` (optional `DealStatus[]`, serialized `statuses[0]=0&st
 ```
 
 `from`/`to` are **UTC calendar dates**, serialized without an offset so the browser renders them
-verbatim; `to` is inclusive. Windows are resolved server-side by
-`SalesService.GetPeriodWindow` (UTC, week Sunday–Saturday).
+verbatim; `to` is inclusive. The summary windows are resolved server-side by
+`SalesService.GetPeriodWindow` (UTC, week Sunday–Saturday); the deals-by-status window comes from the
+requested `dateFrom`/`dateTo` (or the current UTC month) through `SalesService.GetDateWindow`.
 
 ### Refresh behavior
 
 ```
 Dashboard.vue onMounted
 ├─ getSalesDashboardSummary()      → GET .../dashboard/summary               [LIVE]
-├─ getDealsByStatus({period})      → GET .../dashboard/deals-by-status       [LIVE]
+├─ getDealsByStatus({dateFrom, dateTo}) → GET .../dashboard/deals-by-status  [LIVE]
 ├─ getRecentInteractions()         → GET .../dashboard/recent-interactions   [LIVE]
 ├─ getRecentClients()              → GET .../dashboard/recent-clients        [LIVE]
 ├─ getRecentDeals()                → GET .../dashboard/recent-deals          [LIVE]
 └─ useCurrentAgent.loadAgentName() → GET /api/agency/profile/personnel                 [LIVE]
 
-period tab change / status filter change → getDealsByStatus() only
+date range change / status filter change → getDealsByStatus() only
 {Interaction,Deal,Client,ClientInteractions}Modal @saved → onSaved → all five data loaders re-run
 ```
 
@@ -792,10 +794,8 @@ Public landing site endpoints (no auth).
 ### Wage & TimeSheet History
 | Function | HTTP Method | Endpoint | Request Type | Response Type |
 |----------|------------|----------|--------------|---------------|
-| `getWorkerProfileWageHistory(filter)` | GET | `/api/agency/recruiting/workers/{profileId}/WageHistory` | `WageHistoryFilter` (params) | `PaginatedList<WorkerWageHistoryItem>` |
-| `getWorkerProfileWageHistoryAccumulated(id, rowNumber)` | GET | `/api/agency/recruiting/workers/{id}/WageHistory/{rowNumber}` | — | `WorkerWageHistoryItem` |
-| `getWorkerProfileTimeSheetHistory(filter)` | GET | `/api/agency/recruiting/workers/{profileId}/TimeSheetHistory` | `TimeSheetHistoryFilter` (params) | `PaginatedList<WorkerTimeSheetHistoryItem>` |
-| `getWorkerProfileTimeSheetHistoryAccumulated(id, rowNumber)` | GET | `/api/agency/recruiting/workers/{id}/TimeSheetHistory/{rowNumber}` | — | `WorkerTimeSheetHistoryItem` |
+| `getWorkerProfileWageHistory(filter)` | GET | `/api/agency/recruiting/workers/{profileId}/WageHistory` | `WorkerPayStubHistoryFilter` (params: payStubNumber, weekEndingFrom/To, sortBy, isDescending, paging) | `PaginatedList<WorkerWageHistoryItem>` — each row carries `accumulated*` running totals (oldest → that row, all-time) |
+| `getWorkerProfileTimeSheetHistory(filter)` | GET | `/api/agency/recruiting/workers/{profileId}/TimeSheetHistory` | `WorkerTimeSheetHistoryFilter` (params: companyName, numberId, dateFrom/To, sortBy, isDescending, paging) | `PaginatedList<WorkerTimeSheetHistoryItem>` — each row carries `accumulated*Hours` running totals (inclusive by date) |
 
 **Types:** from `src/shared/worker-profile/types`, `worker/requests/types`, `agency/recruiting/workers/types`; `ClockType` enum from `src/constants/enums`.
 
