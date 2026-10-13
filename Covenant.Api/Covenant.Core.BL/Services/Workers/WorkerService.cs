@@ -287,7 +287,7 @@ public class WorkerService(
         if (candidate is null) return Result.Fail("Email not found");
 
         candidate.UnsubscribeFromEmails();
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -309,7 +309,7 @@ public class WorkerService(
             entity.EmailNotification = false;
             entity.PushNotification = false;
             entity.SMSNotification = false;
-            await notificationRepository.Update(entity);
+            notificationRepository.Update(entity);
         }
 
         await notificationRepository.SaveChangesAsync();
@@ -533,7 +533,7 @@ public class WorkerService(
     private async Task<Result<RequestApplicant>> CreateApplicant(Result<RequestApplicant> applicant)
     {
         if (!applicant) return applicant;
-        await requestRepository.Create([applicant.Value]);
+        await requestRepository.Create(applicant.Value);
         await requestRepository.SaveChangesAsync();
         return applicant;
     }

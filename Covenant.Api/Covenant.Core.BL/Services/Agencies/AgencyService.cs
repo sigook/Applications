@@ -350,7 +350,7 @@ public class AgencyService : IAgencyService
         if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
         var result = request.IncreaseWorkersQuantityByOne();
         if (!result) return result;
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -364,9 +364,9 @@ public class AgencyService : IAgencyService
         var createdBy = currentUserService.GetNickname();
         var result = request.AddWorker(workerProfileId, model.StartWorking ?? timeProvider.GetLocalNow().DateTime.Date, createdBy);
         if (!result) return result;
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         var applicant = await requestRepository.GetRequestApplicant(ra => ra.RequestId == requestId && ra.WorkerProfileId == workerProfileId);
-        if (applicant != null) requestRepository.Delete([applicant]);
+        if (applicant != null) requestRepository.Delete(applicant);
         await requestRepository.SaveChangesAsync();
         var data = await notificationDataRepository.GetWorkerData(requestId, workerProfileId, NotificationType.WorkerHasBeenBooked.Id);
         if (data != null && data.EmailNotification)

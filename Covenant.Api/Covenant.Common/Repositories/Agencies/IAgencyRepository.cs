@@ -6,14 +6,11 @@ using Covenant.Common.Models.Location;
 
 namespace Covenant.Common.Repositories.Agencies;
 
-public interface IAgencyRepository
+public interface IAgencyRepository : IBaseRepository
 {
-    Task Create<T>(T entity) where T : class;
-    void Update<T>(T entity) where T : class;
     Task<Entities.Agency.Agency> GetAgency(Guid id);
     Task<AgencyModel> GetAgencyDetail(Guid id);
     Task<bool> AgencyExists(Guid id);
-    Task SaveChangesAsync();
     Task<IEnumerable<AgencyPersonnelModel>> GetAllPersonnel(Guid agencyId);
     Task<AgencyPersonnel> GetPersonnel(Guid id);
     Task<List<AgencyPersonnel>> GetPersonnels(IEnumerable<Guid> ids);
@@ -24,7 +21,6 @@ public interface IAgencyRepository
     Task<Guid> GetAgencyPersonnelIdForUser(Guid userId);
     Task<List<LocationDetailModel>> GetLocations(Guid agencyId);
     Task<LocationDetailModel> GetLocationDetail(Guid agencyId, Guid id);
-    Task DeletePersonnel(AgencyPersonnel entity);
     Task<bool> PersonnelHasRequests(Guid personnelId);
     Task<bool> PersonnelHasCompanies(Guid personnelId);
     Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId);

@@ -110,7 +110,7 @@ public class CreateRequestServiceTest
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.True(result);
         Assert.Empty(result.Errors);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<Covenant.Common.Entities.Request.Request>>()), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.IsAny<Covenant.Common.Entities.Request.Request>()), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
@@ -124,7 +124,7 @@ public class CreateRequestServiceTest
         };
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<List<RequestComplianceItem>>(items =>
+        _requestRepository.Verify(r => r.CreateRange(It.Is<List<RequestComplianceItem>>(items =>
             items.Count == 2
             && items.Any(i => i.Name == "ID" && i.IsMandatory && i.DocumentTarget == ComplianceDocumentTarget.Identification1)
             && items.Any(i => i.Name == "WP" && !i.IsMandatory && i.DocumentTarget == ComplianceDocumentTarget.OtherDocument))), Times.Once);

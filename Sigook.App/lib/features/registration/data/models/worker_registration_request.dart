@@ -17,7 +17,7 @@ import '../../domain/entities/uploaded_file.dart';
 import '../../domain/entities/profile_image.dart';
 
 /// Request model for worker profile registration
-/// Maps to https://staging.api.sigook.ca/api/WorkerProfile endpoint
+/// Maps to POST /api/worker/profile
 class WorkerRegistrationRequest {
   // Personal Info
   final String firstName;

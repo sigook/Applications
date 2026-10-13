@@ -10,11 +10,8 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
-public interface ITimesheetRepository
+public interface ITimesheetRepository : IBaseRepository
 {
-    Task SaveChangesAsync();
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
     Task<PaginatedList<TimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination);
     Task<TimeSheet> GetTimeSheet(Guid id);
     Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerId, Guid requestId, Expression<Func<Common.Entities.Request.Request, bool>> requestCondition);

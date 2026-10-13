@@ -28,7 +28,7 @@ public class RequestedByController(IRequestRepository repository) : ControllerBa
         var entity = await repository.GetRequestedBy(requestId, contactPersonId);
         if (entity != null) return BadRequest();
         entity = new RequestRequestedBy(requestId, contactPersonId);
-        await repository.Create<RequestRequestedBy>([entity]);
+        await repository.Create(entity);
         await repository.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { requestId, contactPersonId }, new { });
     }
@@ -56,7 +56,7 @@ public class RequestedByController(IRequestRepository repository) : ControllerBa
     {
         var entity = await repository.GetRequestedBy(requestId, contactPersonId);
         if (entity is null) return BadRequest();
-        repository.Delete<RequestRequestedBy>([entity]);
+        repository.Delete(entity);
         await repository.SaveChangesAsync();
         return Ok();
     }

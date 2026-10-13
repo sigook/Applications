@@ -14,21 +14,14 @@ using System.Text.RegularExpressions;
 
 namespace Covenant.Infrastructure.Repositories.Candidates;
 
-public class CandidateRepository : ICandidateRepository
+public class CandidateRepository(CovenantContext context, IOptions<FilesConfiguration> options) : BaseRepository<CovenantContext>(context), ICandidateRepository
 {
-    private readonly CovenantContext _context;
-    private readonly FilesConfiguration filesConfiguration;
+    private readonly FilesConfiguration filesConfiguration = options.Value;
 
-    public CandidateRepository(CovenantContext context, IOptions<FilesConfiguration> options)
-    {
-        _context = context;
-        filesConfiguration = options.Value;
-    }
-
-    public Task<bool> CandidateExists(string email) => _context.Candidates.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+    public Task<bool> CandidateExists(string email) => Context.Candidates.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()));
 
     public Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId) =>
-        _context.Candidates
+        Context.Candidates
             .AsNoTracking()
             .Where(c => c.AgencyId == agencyId && !c.Dnu && !c.EmailUnsubscribed)
             .Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains("@"))
@@ -52,7 +45,7 @@ public class CandidateRepository : ICandidateRepository
 
     public IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter)
     {
-        var candidates = _context.Candidates
+        var candidates = Context.Candidates
             .AsNoTracking()
             .Include(c => c.PhoneNumbers)
             .Include(c => c.Skills)
@@ -146,7 +139,7 @@ public class CandidateRepository : ICandidateRepository
     }
 
     public async Task<CandidateDetailModel> GetCandidateDetail(Guid id) =>
-        await _context.Candidates.Where(c => c.Id == id)
+        await Context.Candidates.Where(c => c.Id == id)
             .Select(c => new CandidateDetailModel
             {
                 Id = c.Id,
@@ -164,15 +157,15 @@ public class CandidateRepository : ICandidateRepository
             }).SingleOrDefaultAsync();
 
     public Task<PhoneNumberModel> GetPhoneNumberDetail(Guid candidateId, Guid id) =>
-        _context.CandidatePhones.Where(c => c.CandidateId == candidateId && c.Id == id)
+        Context.CandidatePhones.Where(c => c.CandidateId == candidateId && c.Id == id)
             .Select(p => new PhoneNumberModel { Id = p.Id, PhoneNumber = p.PhoneNumber }).SingleOrDefaultAsync();
 
     public async Task<SkillModel> GetSkillDetail(Guid candidateId, Guid id) =>
-        await _context.CandidateSkills.Where(c => c.CandidateId == candidateId && c.Id == id)
+        await Context.CandidateSkills.Where(c => c.CandidateId == candidateId && c.Id == id)
             .Select(p => new SkillModel { Id = p.Id, Skill = p.Skill }).SingleOrDefaultAsync();
 
     public async Task<PaginatedList<CovenantFileModel>> GetDocuments(Guid candidateId, Pagination pagination) =>
-        await _context.CandidateDocuments.Where(c => c.CandidateId == candidateId)
+        await Context.CandidateDocuments.Where(c => c.CandidateId == candidateId)
             .Select(s => new CovenantFileModel
             {
                 Id = s.DocumentId,
@@ -182,36 +175,28 @@ public class CandidateRepository : ICandidateRepository
             }).OrderBy(d => d.FileName).ToPaginatedList(pagination);
 
     public async Task<NoteModel> GetNoteDetail(Guid candidateId, Guid id) =>
-        await _context.CandidateNotes.AsNoTracking()
+        await Context.CandidateNotes.AsNoTracking()
             .Where(c => c.CandidateId == candidateId && c.NoteId == id)
             .Include(c => c.Note)
             .Select(CandidateExtensionsMapping.SelectNote)
             .SingleOrDefaultAsync();
 
     public async Task<PaginatedList<NoteModel>> GetNotes(Guid candidateId, Pagination pagination) =>
-        await _context.CandidateNotes.AsNoTracking()
+        await Context.CandidateNotes.AsNoTracking()
             .Where(c => c.CandidateId == candidateId && !c.Note.IsDeleted)
             .Select(CandidateExtensionsMapping.SelectNote).OrderByDescending(c => c.CreatedAt)
             .ToPaginatedList(pagination);
 
-    public Task Update<T>(T entity) where T : class => Task.FromResult(_context.Set<T>().Update(entity));
-
-    public async Task Create<T>(T entity) where T : class => await _context.Set<T>().AddAsync(entity);
-
-    public void Delete<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
-
-    public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
     public Task<CandidateNote> GetNote(Guid candidateId, Guid id) =>
-        _context.CandidateNotes.Where(c => c.CandidateId == candidateId && c.NoteId == id)
+        Context.CandidateNotes.Where(c => c.CandidateId == candidateId && c.NoteId == id)
             .Include(c => c.Note).SingleOrDefaultAsync();
 
     public Task<CandidateDocument> GetDocument(Guid candidateId, Guid id) =>
-        _context.CandidateDocuments.SingleOrDefaultAsync(c => c.CandidateId == candidateId && c.DocumentId == id);
+        Context.CandidateDocuments.SingleOrDefaultAsync(c => c.CandidateId == candidateId && c.DocumentId == id);
 
     public async Task<Common.Entities.Candidate.Candidate> GetCandidate(Expression<Func<Common.Entities.Candidate.Candidate, bool>> expression)
     {
-        var candidate = await _context.Candidates
+        var candidate = await Context.Candidates
             .Include(c => c.Gender)
             .Include(c => c.PhoneNumbers)
             .Include(c => c.Skills)
@@ -224,7 +209,7 @@ public class CandidateRepository : ICandidateRepository
 
     public async Task<bool> CandidatePhonesExists(IEnumerable<string> phone)
     {
-        return await _context.CandidatePhones.AnyAsync(cp => phone.Contains(cp.PhoneNumber));
+        return await Context.CandidatePhones.AnyAsync(cp => phone.Contains(cp.PhoneNumber));
     }
 
     public async Task BulkCandidates(IEnumerable<BulkCandidate> bulk)
@@ -234,23 +219,22 @@ public class CandidateRepository : ICandidateRepository
         var candidateSkills = bulk.SelectMany(c => c.CandidatesSkills).ToList();
         var candidateDocuments = bulk.Select(c => c.CandidatesDocument).ToList();
         var applicatnRequests = bulk.Select(c => c.RequestApplicant).ToList();
-        await _context.AddRangeAsync(candidates);
-        await _context.AddRangeAsync(candidatePhones);
+        await Context.AddRangeAsync(candidates);
+        await Context.AddRangeAsync(candidatePhones);
         if (candidateSkills.Any(cs => cs != null))
         {
-            await _context.AddRangeAsync(candidateSkills);
+            await Context.AddRangeAsync(candidateSkills);
         }
         if (candidateDocuments.Any(cd => cd != null))
         {
             var convenantFiles = candidateDocuments.Select(cd => cd.Document);
-            await _context.AddRangeAsync(convenantFiles);
-            await _context.AddRangeAsync(candidateDocuments);
+            await Context.AddRangeAsync(convenantFiles);
+            await Context.AddRangeAsync(candidateDocuments);
         }
         if (applicatnRequests.Any(ar => ar != null))
         {
-            await _context.AddRangeAsync(applicatnRequests);
+            await Context.AddRangeAsync(applicatnRequests);
         }
     }
 
-    public void Delete<T>(IEnumerable<T> entities) where T : class => _context.Set<T>().RemoveRange(entities);
 }

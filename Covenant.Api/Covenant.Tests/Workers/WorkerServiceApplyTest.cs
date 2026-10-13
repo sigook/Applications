@@ -130,7 +130,7 @@ public class WorkerServiceApplyTest
         SetupWorker("worker@mail.com");
         var result = await Apply(request.NumberId, "worker@mail.com");
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public class WorkerServiceApplyTest
         SetupRequest();
         var result = await Apply(4242, "unknown@mail.com");
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -158,8 +158,8 @@ public class WorkerServiceApplyTest
         var profile = SetupWorker("worker@mail.com");
         var result = await Apply(4242, "worker@mail.com");
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().WorkerProfileId == profile.Id && e.Single().CandidateId == null)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.WorkerProfileId == profile.Id && e.CandidateId == null)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(request, profile), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(It.IsAny<RequestEntity>(), It.IsAny<Candidate>()), Times.Never);
@@ -172,8 +172,8 @@ public class WorkerServiceApplyTest
         var profile = SetupWorker("worker@mail.com");
         var result = await Apply(4242, "  WORKER@MAIL.COM  ");
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().WorkerProfileId == profile.Id)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.WorkerProfileId == profile.Id)), Times.Once);
     }
 
     [Fact]
@@ -183,8 +183,8 @@ public class WorkerServiceApplyTest
         var profile = SetupWorker("worker@mail.com");
         var result = await Apply(4242, "worker@mail.com");
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().WorkerProfileId == profile.Id)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.WorkerProfileId == profile.Id)), Times.Once);
     }
 
     [Fact]
@@ -194,11 +194,11 @@ public class WorkerServiceApplyTest
         var candidate = SetupCandidate("jane@mail.com", "25 Bay St, Toronto ON");
         var result = await Apply(4242, "jane@mail.com");
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().CandidateId == candidate.Id
-            && e.Single().WorkerProfileId == null
-            && e.Single().CreatedBy == "Sigook"
-            && e.Single().Status == RequestApplicantStatus.Pending)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.CandidateId == candidate.Id
+            && e.WorkerProfileId == null
+            && e.CreatedBy == "Sigook"
+            && e.Status == RequestApplicantStatus.Pending)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(request, candidate), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(It.IsAny<RequestEntity>(), It.IsAny<WorkerProfile>()), Times.Never);
@@ -211,8 +211,8 @@ public class WorkerServiceApplyTest
         var candidate = SetupCandidate("jane@mail.com", "25 Bay St, MONTRÉAL QC");
         var result = await Apply(4242, "jane@mail.com");
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().CandidateId == candidate.Id)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.CandidateId == candidate.Id)), Times.Once);
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public class WorkerServiceApplyTest
         SetupCandidate("jane@mail.com", "25 Laurier Ave, Ottawa ON");
         var result = await Apply(4242, "jane@mail.com");
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class WorkerServiceApplyTest
         SetupCandidate("jane@mail.com", "25 Bay St, Toronto ON");
         var result = await Apply(4242, "jane@mail.com");
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -242,7 +242,7 @@ public class WorkerServiceApplyTest
         SetupCandidate("jane@mail.com", "25 Bay St, Toronto ON", dnu: true);
         var result = await Apply(4242, "jane@mail.com");
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -254,7 +254,7 @@ public class WorkerServiceApplyTest
         _requestRepository.Setup(r => r.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>())).ReturnsAsync(applicant);
         var result = await Apply(4242, "jane@mail.com");
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -264,8 +264,8 @@ public class WorkerServiceApplyTest
         var candidate = SetupCandidate("jane@mail.com", "25 Bay St, Toronto ON");
         var result = await Apply(4242, "  JANE@Mail.com ");
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().CandidateId == candidate.Id)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.CandidateId == candidate.Id)), Times.Once);
     }
 
     [Fact]
@@ -278,10 +278,10 @@ public class WorkerServiceApplyTest
         Assert.True(result);
         Assert.Equal(profile.Id, result.Value.WorkerProfileId);
         Assert.Equal(profile.WorkerId, result.Value.WorkerId);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().WorkerProfileId == profile.Id
-            && e.Single().CandidateId == null
-            && e.Single().Comments == "Hard Worker")), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.WorkerProfileId == profile.Id
+            && e.CandidateId == null
+            && e.Comments == "Hard Worker")), Times.Once);
     }
 
     [Fact]
@@ -292,8 +292,8 @@ public class WorkerServiceApplyTest
         _currentUserService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
         var result = await _sut.Apply(new WorkerRequestApplyModel { Email = "someone.else@mail.com" }, request.Id);
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e =>
-            e.Single().WorkerProfileId == profile.Id)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e =>
+            e.WorkerProfileId == profile.Id)), Times.Once);
     }
 
     [Fact]
@@ -302,7 +302,7 @@ public class WorkerServiceApplyTest
         var request = SetupRequest();
         var result = await ApplyAsSelf(request.Id);
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -314,7 +314,7 @@ public class WorkerServiceApplyTest
         _workerRequestRepository.Setup(r => r.WorkerRequestExists(profile.Id, request.Id)).ReturnsAsync(true);
         var result = await ApplyAsSelf(request.Id);
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]
@@ -326,6 +326,6 @@ public class WorkerServiceApplyTest
         _currentUserService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
         var result = await ApplyAsSelf(request.Id);
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 }

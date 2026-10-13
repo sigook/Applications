@@ -113,7 +113,7 @@ public class UserAdministrationService(
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null) return Result.Fail(UserNotFound);
 
-        await identityRepository.AddInactiveUser(user.Id);
+        await identityRepository.Create(new InactiveUser { UserId = user.Id });
         await identityRepository.SaveChangesAsync();
         await identityRepository.RevokeTokens(user.Id);
         return Result.Ok();

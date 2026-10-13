@@ -37,7 +37,7 @@ public class RequestApplicantConsumer : IAzureServiceBusConsumer
         var candidateAppliedBefore = await requestRepository.GetRequestApplicant(ra => ra.RequestId == message.RequestId && ra.WorkerProfileId == message.WorkerProfileId && ra.CandidateId == message.CandidateId);
         if (candidateAppliedBefore == null)
         {
-            await requestRepository.Create([message]);
+            await requestRepository.Create(message);
             await requestRepository.SaveChangesAsync();
         }
         await args.CompleteMessageAsync(args.Message);

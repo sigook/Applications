@@ -425,4 +425,6 @@ worker punch card. Data lives in `UserAttendance`, one row per **user** per day 
 - Admins edit a punch from the report row (`PUT api/agency/profile/attendance/{id}`): clock-in, clock-out and lunch
   (0–240 min, never longer than the shift), with a mandatory reason;
   the row keeps who edited it and is tagged "Edited".
+- The clock-out can be cleared (sent as `null`): the punch reopens and the user can clock out again that day.
+  This is the fix for an accidental clock-out.
 

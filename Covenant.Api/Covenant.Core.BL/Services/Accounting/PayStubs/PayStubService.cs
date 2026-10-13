@@ -519,7 +519,7 @@ public class PayStubService : IPayStubService
 
     public async Task DeletePayStub(Guid payStubId)
     {
-        await payStubRepository.Delete([payStubId]);
+        await payStubRepository.DeletePayStubs([payStubId]);
         await payStubsContainer.DeleteFileIfExists(payStubId.ToPayStubBlobName());
         await payStubRepository.SaveChangesAsync();
     }

@@ -87,7 +87,7 @@ public class WeeklyBoardService(
                 if (!result) return result;
             }
 
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -101,7 +101,7 @@ public class WeeklyBoardService(
         Result result = request.RemoveRecruiter(recruiterId, timeProvider.GetLocalNow().DateTime, workDate);
         if (!result) return result;
 
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -121,7 +121,7 @@ public class WeeklyBoardService(
         Result result = request.MoveRecruiterAssignment(model.FromRecruiterId, model.FromWorkDate, model.ToRecruiterId, model.ToWorkDate, timeProvider.GetLocalNow().DateTime);
         if (!result) return result;
 
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -145,7 +145,7 @@ public class WeeklyBoardService(
         if (names.TryGetValue(model.WorkerProfileId, out var name) && !string.IsNullOrWhiteSpace(name))
         {
             var note = CovenantNote.Create($"{name} was sent", CovenantNote.RedColor, recruiter.Name).Value;
-            await requestRepository.Create([new RequestNote(model.RequestId, note)]);
+            await requestRepository.CreateRange([new RequestNote(model.RequestId, note)]);
             await requestRepository.SaveChangesAsync();
         }
 

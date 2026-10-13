@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   width?: number
   height?: number
   color?: string

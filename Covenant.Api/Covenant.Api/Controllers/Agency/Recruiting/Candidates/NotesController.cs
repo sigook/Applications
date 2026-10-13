@@ -76,7 +76,7 @@ public class NotesController(ICandidateRepository candidateRepository) : Control
         var entity = await candidateRepository.GetNote(candidateId, id);
         if (entity is null) return BadRequest();
         entity.Update(result.Value, User.GetNickname());
-        await candidateRepository.Update(entity);
+        candidateRepository.Update(entity);
         await candidateRepository.SaveChangesAsync();
         return Ok();
     }
@@ -92,7 +92,7 @@ public class NotesController(ICandidateRepository candidateRepository) : Control
         var entity = await candidateRepository.GetNote(candidateId, id);
         if (entity is null) return BadRequest();
         entity.Delete(User.GetNickname());
-        await candidateRepository.Update(entity);
+        candidateRepository.Update(entity);
         await candidateRepository.SaveChangesAsync();
         return Ok();
     }

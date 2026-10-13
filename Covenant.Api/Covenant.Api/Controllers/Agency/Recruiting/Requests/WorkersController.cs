@@ -60,7 +60,7 @@ public class WorkersController(IAgencyService agencyService, IRequestService req
         if (entity is null || entity.RequestId != requestId) return BadRequest();
         Result result = entity.UpdateStartWorking(model.StartWorking.GetValueOrDefault());
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await repository.UpdateWorkerRequest(entity);
+        repository.Update(entity);
         await repository.SaveChangesAsync();
         return Ok();
     }

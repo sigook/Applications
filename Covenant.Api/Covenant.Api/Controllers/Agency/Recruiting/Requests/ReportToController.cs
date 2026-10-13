@@ -28,7 +28,7 @@ public class ReportToController(IRequestRepository repository) : ControllerBase
         var entity = await repository.GetReportTo(requestId, contactPersonId);
         if (entity != null) return BadRequest();
         entity = new RequestReportTo(requestId, contactPersonId);
-        await repository.Create<RequestReportTo>([entity]);
+        await repository.Create(entity);
         await repository.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { requestId, contactPersonId }, new { });
     }
@@ -56,7 +56,7 @@ public class ReportToController(IRequestRepository repository) : ControllerBase
     {
         RequestReportTo entity = await repository.GetReportTo(requestId, contactPersonId);
         if (entity is null) return BadRequest();
-        repository.Delete<RequestReportTo>([entity]);
+        repository.Delete(entity);
         await repository.SaveChangesAsync();
         return Ok();
     }

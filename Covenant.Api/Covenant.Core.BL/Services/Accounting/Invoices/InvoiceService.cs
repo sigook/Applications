@@ -158,7 +158,7 @@ public class InvoiceService(
         IReadOnlyList<string> payStubsDeleted = [];
         if (model?.PayStubs != null && model.PayStubs.Any())
         {
-            payStubsDeleted = await payStubRepository.Delete(model.PayStubs);
+            payStubsDeleted = await payStubRepository.DeletePayStubs(model.PayStubs);
         }
         await invoiceRepository.SaveChangesAsync();
         await invoicesContainer.DeleteFileIfExists(deletedInvoiceId.ToInvoiceBlobName());

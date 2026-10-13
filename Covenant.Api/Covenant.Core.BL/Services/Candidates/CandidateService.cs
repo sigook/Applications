@@ -179,7 +179,7 @@ public class CandidateService : ICandidateService
         profile.Worker = user.Value;
         profile.AgencyId = agency.Id;
 
-        candidateRepository.Delete<CandidateDocument>(candidate.Documents);
+        candidateRepository.DeleteRange(candidate.Documents);
 
         await workerRepository.Create(profile);
         await workerRepository.SaveChangesAsync();
@@ -282,7 +282,7 @@ public class CandidateService : ICandidateService
         {
             foreach (var requestApplicant in requestApplicatns)
             {
-                requestRepository.Delete([requestApplicant]);
+                requestRepository.Delete(requestApplicant);
             }
         }
         candidateRepository.Delete(candidate);
@@ -332,7 +332,7 @@ public class CandidateService : ICandidateService
             var rPhone = candidate.AddPhone(phone);
             if (!rPhone) return Result.Fail(rPhone.Errors);
         }
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -342,7 +342,7 @@ public class CandidateService : ICandidateService
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
         if (candidate == null) return Result.Fail();
         candidate.Recruiter = currentUserService.GetNickname();
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();
     }

@@ -7,11 +7,9 @@ using OpenIddict.Abstractions;
 
 namespace Covenant.Infrastructure.Repositories.Identity;
 
-public class IdentityRepository(IdentityContext context, IOpenIddictTokenManager tokenManager) : IIdentityRepository
+public class IdentityRepository(IdentityContext context, IOpenIddictTokenManager tokenManager) : BaseRepository<IdentityContext>(context), IIdentityRepository
 {
-    public Task<bool> IsInactive(Guid userId) => context.InactiveUsers.AnyAsync(iu => iu.UserId == userId);
-
-    public async Task AddInactiveUser(Guid userId) => await context.InactiveUsers.AddAsync(new InactiveUser { UserId = userId });
+    public Task<bool> IsInactive(Guid userId) => Context.InactiveUsers.AnyAsync(iu => iu.UserId == userId);
 
     public async Task RevokeTokens(Guid userId)
     {
@@ -22,24 +20,20 @@ public class IdentityRepository(IdentityContext context, IOpenIddictTokenManager
     }
 
     public async Task<IReadOnlyList<UserRoleModel>> GetUsersRoles(IEnumerable<Guid> userIds) =>
-        await context.UserRoles
+        await Context.UserRoles
             .Where(ur => userIds.Contains(ur.UserId))
-            .Join(context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new UserRoleModel(ur.UserId, r.Name))
+            .Join(Context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new UserRoleModel(ur.UserId, r.Name))
             .ToListAsync();
 
     public Task<List<PasswordResetCode>> GetPendingResetCodes(Guid userId) =>
-        context.PasswordResetCodes.Where(prc => prc.UserId == userId && !prc.Consumed).ToListAsync();
+        Context.PasswordResetCodes.Where(prc => prc.UserId == userId && !prc.Consumed).ToListAsync();
 
     public Task<PasswordResetCode> GetLatestPendingResetCode(Guid userId) =>
-        context.PasswordResetCodes
+        Context.PasswordResetCodes
             .Where(prc => prc.UserId == userId && !prc.Consumed)
             .OrderByDescending(prc => prc.CreatedAt)
             .FirstOrDefaultAsync();
 
-    public async Task AddResetCode(PasswordResetCode code) => await context.PasswordResetCodes.AddAsync(code);
-
     public Task<int> CountResetCodesSince(Guid userId, DateTimeOffset since) =>
-        context.PasswordResetCodes.CountAsync(prc => prc.UserId == userId && prc.CreatedAt > since);
-
-    public Task SaveChangesAsync() => context.SaveChangesAsync();
+        Context.PasswordResetCodes.CountAsync(prc => prc.UserId == userId && prc.CreatedAt > since);
 }

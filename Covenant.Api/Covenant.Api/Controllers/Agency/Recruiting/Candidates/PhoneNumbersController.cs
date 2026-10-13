@@ -28,7 +28,7 @@ public class PhoneNumbersController(ICandidateRepository candidateRepository) : 
         if (entity is null) return BadRequest();
         var result = entity.AddPhone(model.PhoneNumber);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await candidateRepository.Update(entity);
+        candidateRepository.Update(entity);
         await candidateRepository.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, new PhoneNumberModel { Id = result.Value.Id });
     }
@@ -58,7 +58,7 @@ public class PhoneNumbersController(ICandidateRepository candidateRepository) : 
         if (entity is null) return BadRequest();
         var result = entity.DeletePhone(id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await candidateRepository.Update(entity);
+        candidateRepository.Update(entity);
         await candidateRepository.SaveChangesAsync();
         return Ok();
     }

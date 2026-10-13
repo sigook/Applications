@@ -37,11 +37,13 @@ const showModal = ref(false);
 const isLoading = ref(false);
 
 function addReportTo(item: AgencyCompanyContactPerson) {
+  const id = item.id;
+  if (!id) return;
   isLoading.value = true;
-  postAgencyRequestReportTo(props.requestId, item.id!)
+  postAgencyRequestReportTo(props.requestId, id)
     .then(() => {
       isLoading.value = false;
-      contacts.value = [...contacts.value, { ...item, id: item.id! }];
+      contacts.value = [...contacts.value, { ...item, id }];
       showModal.value = false;
     })
     .catch(error => {
@@ -51,8 +53,9 @@ function addReportTo(item: AgencyCompanyContactPerson) {
 }
 
 function removeReportTo(item: { id?: string }) {
+  if (!item.id) return;
   isLoading.value = true;
-  deleteAgencyRequestReportTo(props.requestId, item.id!)
+  deleteAgencyRequestReportTo(props.requestId, item.id)
     .then(() => {
       isLoading.value = false;
       contacts.value = contacts.value.filter(x => x.id !== item.id);

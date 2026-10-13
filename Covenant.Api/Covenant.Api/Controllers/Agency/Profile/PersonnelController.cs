@@ -91,7 +91,7 @@ public class PersonnelController(IAgencyService agencyService, IAgencyRepository
             return BadRequest(ModelState.AddError("This user cannot be deleted because they are still assigned as a recruiter on one or more orders. Please reassign those orders first."));
         if (await agencyRepository.PersonnelHasCompanies(entity.Id))
             return BadRequest(ModelState.AddError("This user cannot be deleted because they are still set as the sales representative for one or more clients. Please reassign those clients first."));
-        await agencyRepository.DeletePersonnel(entity);
+        agencyRepository.Delete(entity);
         await agencyRepository.SaveChangesAsync();
         var result = await service.DeleteUserOrClaim(entity.UserId, new IdModel(agencyId));
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));

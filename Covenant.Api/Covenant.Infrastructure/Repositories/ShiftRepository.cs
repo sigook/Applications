@@ -1,14 +1,8 @@
-﻿using Covenant.Common.Entities;
 using Covenant.Common.Repositories;
 using Covenant.Infrastructure.Contexts;
 
-namespace Covenant.Infrastructure.Repositories
+namespace Covenant.Infrastructure.Repositories;
+
+public class ShiftRepository(CovenantContext context) : BaseRepository<CovenantContext>(context), IShiftRepository
 {
-    public class ShiftRepository : BaseRepository<Shift>, IShiftRepository
-    {
-        public ShiftRepository(CovenantContext context)
-            : base(context)
-        {
-        }
-    }
 }

@@ -11,23 +11,23 @@ using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Repositories.Requests;
 
-public class RunnerRepository(CovenantContext context) : IRunnerRepository
+public class RunnerRepository(CovenantContext context) : BaseRepository<CovenantContext>(context), IRunnerRepository
 {
     public Task<Runner> GetRunner(Expression<Func<Runner, bool>> expression) =>
-        context.Runners
+        Context.Runners
             .Include(r => r.StatusHistory)
             .Include(r => r.Interviews)
             .FirstOrDefaultAsync(expression);
 
     public Task<List<Runner>> GetRunners(Expression<Func<Runner, bool>> expression) =>
-        context.Runners.Where(expression).ToListAsync();
+        Context.Runners.Where(expression).ToListAsync();
 
     public Task<bool> RunnerExists(Guid requestId, Guid workerProfileId) =>
-        context.Runners.AnyAsync(r => r.RequestId == requestId && r.WorkerProfileId == workerProfileId);
+        Context.Runners.AnyAsync(r => r.RequestId == requestId && r.WorkerProfileId == workerProfileId);
 
     public async Task<PaginatedList<RunnerListModel>> GetRunners(Guid agencyId, GetRunnersFilter filter)
     {
-        var query = context.Runners
+        var query = Context.Runners
             .AsNoTracking()
             .Select(r => new RunnerListModel
             {
@@ -51,7 +51,7 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
     }
 
     public Task<RunnerDetailModel> GetRunnerDetail(Guid id) =>
-        context.Runners
+        Context.Runners
             .AsNoTracking()
             .Where(r => r.Id == id)
             .Select(r => new RunnerDetailModel
@@ -127,12 +127,4 @@ public class RunnerRepository(CovenantContext context) : IRunnerRepository
             GetRunnersSortBy.CreatedAt => query.AddOrderBy(filter, r => r.CreatedAt),
             _ => query.AddOrderBy(filter, r => r.CreatedAt)
         };
-
-    public Task Update<T>(T entity) where T : class => Task.FromResult(context.Set<T>().Update(entity));
-
-    public async Task Create<T>(T entity) where T : class => await context.Set<T>().AddAsync(entity);
-
-    public void Delete<T>(T entity) where T : class => context.Set<T>().Remove(entity);
-
-    public Task SaveChangesAsync() => context.SaveChangesAsync();
 }

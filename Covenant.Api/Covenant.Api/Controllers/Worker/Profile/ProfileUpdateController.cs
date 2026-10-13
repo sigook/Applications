@@ -38,7 +38,7 @@ public class ProfileUpdateController : ControllerBase
         if (entity is null) return BadRequest();
         Result result = await update(entity);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await _workerRepository.UpdateProfile(entity);
+        _workerRepository.Update(entity);
         await _workerRepository.SaveChangesAsync();
         return Ok();
     }

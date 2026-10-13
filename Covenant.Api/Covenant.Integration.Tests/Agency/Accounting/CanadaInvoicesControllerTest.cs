@@ -35,10 +35,10 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
         _data = factory.Data;
     }
 
-    [Fact, TestOrder(1)]
+    [Fact]
     public async Task Preview_UsesHst()
     {
-        var model = new CreateInvoiceModel { CompanyProfileId = _data.CompanyProfile.Id };
+        var model = new CreateInvoiceModel { CompanyProfileId = _data.PreviewCompanyProfile.Id };
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{InvoicesController.RouteName}/Preview", model);
         response.EnsureSuccessStatusCode();
         var preview = await response.Content.ReadFromJsonAsync<InvoicePreviewModel>();
@@ -47,7 +47,7 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
         Assert.Equal(preview.SubTotal * Rates.DefaultRates.Hst, preview.Tax);
     }
 
-    [Fact, TestOrder(2)]
+    [Fact]
     public async Task Post_CreatesCanadianInvoice()
     {
         var model = new CreateInvoiceModel { CompanyProfileId = _data.CompanyProfile.Id };
@@ -55,18 +55,22 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
         response.EnsureSuccessStatusCode();
 
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        var invoice = await context.Invoices.Include(i => i.InvoiceTotals).SingleAsync();
+        var invoice = await context.Invoices.Include(i => i.InvoiceTotals).SingleAsync(i => i.CompanyProfileId == _data.CompanyProfile.Id);
         Assert.StartsWith("AI-", invoice.InvoiceNumber);
         Assert.Equal(_data.TimeSheets.Length, invoice.InvoiceTotals.Count());
         Assert.Equal(invoice.SubTotal * Rates.DefaultRates.Hst, invoice.Tax);
         Assert.Equal(invoice.SubTotal + invoice.Tax, invoice.TotalNet);
     }
 
-    [Fact, TestOrder(3)]
+    [Fact]
     public async Task GetPayStubs_ReturnsOk()
     {
+        var model = new CreateInvoiceModel { CompanyProfileId = _data.PayStubsCompanyProfile.Id };
+        HttpResponseMessage created = await _client.PostAsJsonAsync(InvoicesController.RouteName, model);
+        created.EnsureSuccessStatusCode();
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        var invoice = await context.Invoices.AsNoTracking().SingleAsync();
+        var invoice = await context.Invoices.AsNoTracking().SingleAsync(i => i.CompanyProfileId == _data.PayStubsCompanyProfile.Id);
+
         var payStubs = await _client.GetFromJsonAsync<List<PayStubDeleteWarningListModel>>($"{InvoicesController.RouteName}/{invoice.Id}/paystubs");
         Assert.NotNull(payStubs);
     }
@@ -123,49 +127,74 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
     public class Data : ITestData
     {
         public static readonly Guid AgencyId = Guid.NewGuid();
-        public static readonly Guid CompanyProfileId = Guid.NewGuid();
         public static readonly DateTime FakeNow = new(2019, 01, 01);
         public static readonly User CurrentUser = FakeData.FakeUser();
 
         private readonly City toronto;
-        private readonly Request request;
+        private readonly BillableCompany post;
+        private readonly BillableCompany preview;
+        private readonly BillableCompany payStubs;
 
         public Covenant.Common.Entities.Agency.Agency Agency { get; }
-        public CompanyProfile CompanyProfile { get; }
-        public WorkerProfile Worker { get; }
-        public WorkerRequest WorkerRequest { get; }
-        public TimeSheet[] TimeSheets { get; }
+        public CompanyProfile CompanyProfile => post.CompanyProfile;
+        public CompanyProfile PreviewCompanyProfile => preview.CompanyProfile;
+        public CompanyProfile PayStubsCompanyProfile => payStubs.CompanyProfile;
+        public TimeSheet[] TimeSheets => post.TimeSheets;
 
         public Data()
         {
             toronto = FakeData.FakeCity(FakeData.FakeProvince(FakeData.FakeCountry("CA")));
             Agency = FakeData.FakeAgency(AgencyId, toronto);
-            CompanyProfile = FakeData.FakeCompanyProfile(Agency, city: toronto, id: CompanyProfileId);
-            Worker = FakeData.FakeWorkerProfile(Agency, "wor@wor.ca", toronto);
-
-            request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile))
-            {
-                AgencyRate = 2,
-                WorkerRate = 1
-            };
-            request.UpdateJobLocation(FakeData.FakeLocation(toronto), false);
-
-            WorkerRequest = WorkerRequest.AgencyBook(Worker.Id, request.Id);
-            var timeSheet = TimeSheet.CreateTimeSheet(WorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
-            var timeSheet1 = TimeSheet.CreateTimeSheet(WorkerRequest, FakeNow.AddDays(1), TimeSpan.FromHours(8), now: FakeNow).Value;
-            timeSheet.AddApprovedTime(FakeNow.AddHours(8), FakeNow.AddHours(16));
-            timeSheet1.AddApprovedTime(FakeNow.AddDays(1).AddHours(8), FakeNow.AddDays(1).AddHours(16));
-            TimeSheets = [timeSheet, timeSheet1];
+            post = new BillableCompany(Agency, toronto, "post");
+            preview = new BillableCompany(Agency, toronto, "preview");
+            payStubs = new BillableCompany(Agency, toronto, "paystubs");
         }
 
         public void Seed(CovenantContext context)
         {
             context.Cities.Add(toronto);
-            context.Requests.Add(request);
-            context.TimeSheets.AddRange(TimeSheets);
-            context.WorkerProfiles.Add(Worker);
             context.Users.Add(CurrentUser);
+            post.Seed(context);
+            preview.Seed(context);
+            payStubs.Seed(context);
             context.SaveChanges();
+        }
+
+        private class BillableCompany
+        {
+            private readonly Request request;
+            private readonly WorkerProfile worker;
+
+            public CompanyProfile CompanyProfile { get; }
+            public TimeSheet[] TimeSheets { get; }
+
+            public BillableCompany(Covenant.Common.Entities.Agency.Agency agency, City city, string key)
+            {
+                CompanyProfile = FakeData.FakeCompanyProfile(agency, city: city, companyEmail: $"{key}@company.ca");
+                worker = FakeData.FakeWorkerProfile(agency, $"{key}@worker.ca", city);
+                request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile))
+                {
+                    AgencyRate = 2,
+                    WorkerRate = 1
+                };
+                request.UpdateJobLocation(FakeData.FakeLocation(city), false);
+                var workerRequest = WorkerRequest.AgencyBook(worker.Id, request.Id);
+                TimeSheets = [Approved(workerRequest, FakeNow), Approved(workerRequest, FakeNow.AddDays(1))];
+            }
+
+            private static TimeSheet Approved(WorkerRequest workerRequest, DateTime date)
+            {
+                var timeSheet = TimeSheet.CreateTimeSheet(workerRequest, date, TimeSpan.FromHours(8), now: FakeNow).Value;
+                timeSheet.AddApprovedTime(date.AddHours(8), date.AddHours(16));
+                return timeSheet;
+            }
+
+            public void Seed(CovenantContext context)
+            {
+                context.Requests.Add(request);
+                context.TimeSheets.AddRange(TimeSheets);
+                context.WorkerProfiles.Add(worker);
+            }
         }
     }
 }

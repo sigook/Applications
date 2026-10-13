@@ -42,7 +42,7 @@ public class PasswordResetServiceTest
 
         await _sut.RequestCode(Email);
 
-        _repository.Verify(r => r.AddResetCode(It.Is<PasswordResetCode>(prc => prc.UserId == _user.Id)), Times.Once);
+        _repository.Verify(r => r.Create(It.Is<PasswordResetCode>(prc => prc.UserId == _user.Id)), Times.Once);
         _notifications.Verify(n => n.SendPasswordResetCode(_user, It.IsAny<string>(), It.IsAny<int>()), Times.Once);
     }
 
@@ -54,7 +54,7 @@ public class PasswordResetServiceTest
 
         await _sut.RequestCode(Email);
 
-        _repository.Verify(r => r.AddResetCode(It.IsAny<PasswordResetCode>()), Times.Never);
+        _repository.Verify(r => r.Create(It.IsAny<PasswordResetCode>()), Times.Never);
         _notifications.Verify(n => n.SendPasswordResetCode(It.IsAny<CovenantUser>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
     }
 
@@ -66,7 +66,7 @@ public class PasswordResetServiceTest
 
         await _sut.RequestCode(Email);
 
-        _repository.Verify(r => r.AddResetCode(It.IsAny<PasswordResetCode>()), Times.Never);
+        _repository.Verify(r => r.Create(It.IsAny<PasswordResetCode>()), Times.Never);
         _notifications.Verify(n => n.SendPasswordResetCode(It.IsAny<CovenantUser>(), It.IsAny<string>(), It.IsAny<int>()), Times.Never);
     }
 

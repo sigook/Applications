@@ -3,7 +3,7 @@ using Covenant.Common.Entities.Accounting.Deductions;
 
 namespace Covenant.Common.Repositories.Accounting.Deductions;
 
-public interface IDeductionsRepository
+public interface IDeductionsRepository : IBaseRepository
 {
     Task<decimal> GetCpp(decimal earnings, int year, PayPeriod payPeriod);
     Task<int> ImportCpp(int year, PayPeriod payPeriod, IReadOnlyList<CppDeduction> rows, int yearsKept);

@@ -16,26 +16,13 @@ using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Repositories.Agencies;
 
-public class AgencyRepository : IAgencyRepository
+public class AgencyRepository(CovenantContext context, IOptions<FilesConfiguration> options) : BaseRepository<CovenantContext>(context), IAgencyRepository
 {
-    private readonly CovenantContext _context;
-    private readonly FilesConfiguration filesConfiguration;
-
-    public AgencyRepository(
-        CovenantContext context,
-        IOptions<FilesConfiguration> options)
-    {
-        _context = context;
-        filesConfiguration = options.Value;
-    }
-
-    public async Task Create<T>(T entity) where T : class => await _context.Set<T>().AddAsync(entity);
-
-    public void Update<T>(T entity) where T : class => _context.Set<T>().Update(entity);
+    private readonly FilesConfiguration filesConfiguration = options.Value;
 
     public async Task<Common.Entities.Agency.Agency> GetAgency(Guid id)
     {
-        var query = _context.Agencies
+        var query = Context.Agencies
             .Include(a => a.User)
             .Include(c => c.Logo)
             .Include(c => c.WsibGroup).ThenInclude(c => c.WsibGroup)
@@ -47,7 +34,7 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<AgencyModel> GetAgencyDetail(Guid id)
     {
-        var query = _context.Agencies
+        var query = Context.Agencies
             .Where(a => a.Id == id)
             .Select(AgencyExtensionsMapping.SelectAgency);
         var agency = await query.FirstOrDefaultAsync();
@@ -58,20 +45,18 @@ public class AgencyRepository : IAgencyRepository
         return agency;
     }
 
-    public Task<bool> AgencyExists(Guid id) => _context.Agencies.AnyAsync(c => c.Id == id);
+    public Task<bool> AgencyExists(Guid id) => Context.Agencies.AnyAsync(c => c.Id == id);
 
     public Task<List<LocationDetailModel>> GetLocations(Guid agencyId) =>
-        _context.AgencyLocations.Where(w => w.AgencyId == agencyId)
+        Context.AgencyLocations.Where(w => w.AgencyId == agencyId)
             .Select(AgencyExtensionsMapping.SelectLocation).AsNoTracking().ToListAsync();
 
     public Task<LocationDetailModel> GetLocationDetail(Guid agencyId, Guid id) =>
-        _context.AgencyLocations.Where(w => w.AgencyId == agencyId && w.LocationId == id)
+        Context.AgencyLocations.Where(w => w.AgencyId == agencyId && w.LocationId == id)
             .Select(AgencyExtensionsMapping.SelectLocation).AsNoTracking().SingleOrDefaultAsync();
 
-    public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
     public async Task<IEnumerable<AgencyPersonnelModel>> GetAllPersonnel(Guid agencyId) =>
-        await _context.AgencyPersonnel.Where(c => c.AgencyId == agencyId)
+        await Context.AgencyPersonnel.Where(c => c.AgencyId == agencyId)
             .OrderBy(c => c.Name)
             .Select(s => new AgencyPersonnelModel
             {
@@ -82,20 +67,20 @@ public class AgencyRepository : IAgencyRepository
             }).ToListAsync();
 
     public Task<AgencyPersonnel> GetPersonnel(Guid id) =>
-        _context.AgencyPersonnel.Where(c => c.Id == id)
+        Context.AgencyPersonnel.Where(c => c.Id == id)
             .Include(i => i.User)
             .SingleOrDefaultAsync();
 
     public Task<List<AgencyPersonnel>> GetPersonnelByUserId(Guid id) =>
-        _context.AgencyPersonnel.Where(c => c.UserId == id)
+        Context.AgencyPersonnel.Where(c => c.UserId == id)
             .Include(i => i.User).ToListAsync();
 
     public Task<List<AgencyPersonnel>> GetPersonnels(IEnumerable<Guid> ids) =>
-        _context.AgencyPersonnel.Where(c => ids.Contains(c.Id))
+        Context.AgencyPersonnel.Where(c => ids.Contains(c.Id))
             .Include(i => i.User).ToListAsync();
 
     public Task<AgencyPersonnelModel> GetPersonnel(Guid agencyId, Guid id) =>
-        _context.AgencyPersonnel.Where(c => c.AgencyId == agencyId && c.Id == id)
+        Context.AgencyPersonnel.Where(c => c.AgencyId == agencyId && c.Id == id)
             .Select(s => new AgencyPersonnelModel
             {
                 Id = s.Id,
@@ -104,22 +89,16 @@ public class AgencyRepository : IAgencyRepository
                 Email = s.User.Email
             }).SingleOrDefaultAsync();
 
-    public Task DeletePersonnel(AgencyPersonnel entity)
-    {
-        _context.AgencyPersonnel.Remove(entity);
-        return Task.CompletedTask;
-    }
-
     public async Task<bool> PersonnelHasRequests(Guid personnelId) =>
-        await _context.RequestRecruiters.AnyAsync(r => r.RecruiterId == personnelId)
-        || await _context.RequestComissions.AnyAsync(c => c.AgencyPersonnelId == personnelId);
+        await Context.RequestRecruiters.AnyAsync(r => r.RecruiterId == personnelId)
+        || await Context.RequestComissions.AnyAsync(c => c.AgencyPersonnelId == personnelId);
 
     public Task<bool> PersonnelHasCompanies(Guid personnelId) =>
-        _context.CompanyProfiles.AnyAsync(c => c.SalesRepresentativeId == personnelId);
+        Context.CompanyProfiles.AnyAsync(c => c.SalesRepresentativeId == personnelId);
 
     public async Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId)
     {
-        var result = _context.AgencyPersonnel
+        var result = Context.AgencyPersonnel
             .Where(c => c.UserId == userId)
             .Select(s => new PersonnelAgencyModel
             {
@@ -135,7 +114,7 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<Location> GetBillingLocation(Guid agencyId)
     {
-        var agencyLocation = await _context.AgencyLocations
+        var agencyLocation = await Context.AgencyLocations
             .Include(i => i.Location).ThenInclude(l => l.City).ThenInclude(i => i.Province).ThenInclude(i => i.Country)
             .Where(f => f.AgencyId == agencyId && f.IsBilling)
             .FirstOrDefaultAsync();
@@ -143,12 +122,12 @@ public class AgencyRepository : IAgencyRepository
     }
 
     public Task<Guid> GetAgencyIdForUser(Guid userId) =>
-        _context.AgencyPersonnel.Where(w => w.UserId == userId)
+        Context.AgencyPersonnel.Where(w => w.UserId == userId)
             .OrderByDescending(o => o.IsPrimary)
             .Select(s => s.AgencyId).FirstOrDefaultAsync();
 
     public Task<Guid> GetAgencyPersonnelIdForUser(Guid userId) =>
-        _context.AgencyPersonnel.Where(w => w.UserId == userId)
+        Context.AgencyPersonnel.Where(w => w.UserId == userId)
             .OrderByDescending(o => o.IsPrimary)
             .Select(s => s.Id).FirstOrDefaultAsync();
 
@@ -163,7 +142,7 @@ public class AgencyRepository : IAgencyRepository
         }
 
         // Get the agency to check its type
-        var agency = await _context.Agencies
+        var agency = await Context.Agencies
             .Where(a => a.Id == agencyId)
             .Select(a => new { a.Id, a.AgencyType })
             .FirstOrDefaultAsync();
@@ -176,7 +155,7 @@ public class AgencyRepository : IAgencyRepository
         // If Master agency, include all child agencies
         if (agency.AgencyType == AgencyType.Master)
         {
-            var childAgencyIds = await _context.Agencies
+            var childAgencyIds = await Context.Agencies
                 .Where(a => a.AgencyParentId == agencyId)
                 .Select(a => a.Id)
                 .ToListAsync();
@@ -193,7 +172,7 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city)
     {
-        var country = await _context.Cities.AsNoTracking()
+        var country = await Context.Cities.AsNoTracking()
             .Where(c => c.Id == city.Id)
             .Select(c => c.Province.Country)
             .FirstOrDefaultAsync();
@@ -203,7 +182,7 @@ public class AgencyRepository : IAgencyRepository
 
     public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByCountry(Guid countryId)
     {
-        var agencyLocation = await _context.AgencyLocations
+        var agencyLocation = await Context.AgencyLocations
             .Include(al => al.Location)
             .ThenInclude(l => l.City)
             .ThenInclude(c => c.Province)
@@ -223,7 +202,7 @@ public class AgencyRepository : IAgencyRepository
 
     public IQueryable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter)
     {
-        var agencies = _context.Agencies
+        var agencies = Context.Agencies
             .Include(a => a.User)
             .Include(a => a.Locations).ThenInclude(l => l.Location).ThenInclude(l => l.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Where(a => a.AgencyParentId == agencyId);
@@ -308,7 +287,7 @@ public class AgencyRepository : IAgencyRepository
     }
 
     public Task<UserAttendance> GetUserAttendance(Guid userId, DateTime date) =>
-        _context.UserAttendances.FirstOrDefaultAsync(a => a.UserId == userId && a.Date == date.Date);
+        Context.UserAttendances.FirstOrDefaultAsync(a => a.UserId == userId && a.Date == date.Date);
 
     public Task<UserAttendance> GetUserAttendanceForAgency(Guid id, Guid agencyId) =>
         UserAttendancesOf(agencyId).FirstOrDefaultAsync(a => a.Id == id);
@@ -325,7 +304,7 @@ public class AgencyRepository : IAgencyRepository
             {
                 Id = a.Id,
                 UserId = a.UserId,
-                Name = _context.AgencyPersonnel
+                Name = Context.AgencyPersonnel
                     .Where(p => p.AgencyId == agencyId && p.UserId == a.UserId)
                     .Select(p => p.Name)
                     .FirstOrDefault(),
@@ -344,5 +323,5 @@ public class AgencyRepository : IAgencyRepository
     }
 
     private IQueryable<UserAttendance> UserAttendancesOf(Guid agencyId) =>
-        _context.UserAttendances.Where(a => _context.AgencyPersonnel.Any(p => p.AgencyId == agencyId && p.UserId == a.UserId));
+        Context.UserAttendances.Where(a => Context.AgencyPersonnel.Any(p => p.AgencyId == agencyId && p.UserId == a.UserId));
 }

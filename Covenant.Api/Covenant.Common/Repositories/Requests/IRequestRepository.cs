@@ -13,11 +13,8 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
-public interface IRequestRepository
+public interface IRequestRepository : IBaseRepository
 {
-    Task Create<T>(IEnumerable<T> entities) where T : class;
-    void Delete<T>(IEnumerable<T> entities) where T : class;
-    Task Update<T>(T entity) where T : class;
     Task<Entities.Request.Request> GetRequest(Expression<Func<Entities.Request.Request, bool>> condition);
     Task<IEnumerable<Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids);
     IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
@@ -70,7 +67,6 @@ public interface IRequestRepository
     Task<RequestApplicantComplianceItem> GetApplicantComplianceItem(Guid applicantId, Guid complianceItemId);
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceItems(Guid applicantId);
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceCompletions(IEnumerable<Guid> complianceItemIds);
-    Task SaveChangesAsync();
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
     Task<bool> ExistsRequestByNumber(int requestId);
     Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId);

@@ -97,7 +97,7 @@ public class WorkersController(
         var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
         if (entity is null) return BadRequest();
         entity.UpdateDnu();
-        await workerRepository.UpdateProfile(entity);
+        workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
         return Ok();
     }
@@ -115,7 +115,7 @@ public class WorkersController(
         if (entity is null) return BadRequest();
         var result = entity.UpdateContractor(timeProvider.GetLocalNow().DateTime);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await workerRepository.UpdateProfile(entity);
+        workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
         return Ok();
     }
@@ -133,7 +133,7 @@ public class WorkersController(
         if (entity is null) return BadRequest();
         var result = entity.UpdateSubcontractor(timeProvider.GetLocalNow().DateTime);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await workerRepository.UpdateProfile(entity);
+        workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
         return Ok();
     }
@@ -170,7 +170,7 @@ public class WorkersController(
         if (entity is null || entity.AgencyId != User.GetAgencyId()) return BadRequest();
         Result result = entity.UpdateApprovedToWork(timeProvider.GetLocalNow().DateTime);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await workerRepository.UpdateProfile(entity);
+        workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
         return Ok();
     }
@@ -186,7 +186,7 @@ public class WorkersController(
         var entity = await workerRepository.GetProfile(w => w.Id == id);
         if (entity is null) return NotFound();
         entity.ExternalId = model?.ExternalId;
-        await workerRepository.UpdateProfile(entity);
+        workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
         return Ok();
     }
@@ -202,7 +202,7 @@ public class WorkersController(
         var entity = await workerRepository.GetProfile(w => w.Id == id);
         if (entity is null) return NotFound();
         entity.WcCode = model?.WcCode;
-        await workerRepository.UpdateProfile(entity);
+        workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
         return Ok();
     }

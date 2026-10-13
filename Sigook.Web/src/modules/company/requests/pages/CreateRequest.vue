@@ -21,13 +21,13 @@
                 <div class="column is-6 is-4-desktop" v-if="directHiring">
                   <b-field :type="formErrors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
                     :message="formErrors.workerSalary || ''">
-                    <b-numberinput v-model="workerSalary" name="workerSalary" controls-alignment="right"></b-numberinput>
+                    <b-numberinput v-model="workerSalary" name="workerSalary" :controls="false"></b-numberinput>
                   </b-field>
                 </div>
                 <div class="column is-6 is-4-desktop">
                   <b-field :type="formErrors.workersQuantity ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
                     :message="formErrors.workersQuantity || ''">
-                    <b-numberinput v-model="workersQuantity" name="worker quantity" controls-alignment="right" expanded></b-numberinput>
+                    <b-numberinput v-model="workersQuantity" name="worker quantity" :controls="false" expanded></b-numberinput>
                   </b-field>
                 </div>
                 <div class="column is-6 is-4-desktop" v-if="!directHiring">
@@ -100,7 +100,7 @@
                 <div class="column is-6 is-3-desktop">
                   <b-field :type="formErrors.incentive ? 'is-danger' : ''" :label="'Incentive'"
                     :message="formErrors.incentive || ''">
-                    <b-numberinput controls-alignment="right" v-model="incentive" name="incentive" step="0.01" />
+                    <b-numberinput :controls="false" v-model="incentive" name="incentive" step="0.01" />
                   </b-field>
                 </div>
                 <div class="column is-6 is-9-desktop">

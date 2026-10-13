@@ -56,9 +56,9 @@ public class CancelRequestServiceTest
         Result result = await service.CancelRequest(request.Id, new RequestCancellationDetailModel());
         Assert.True(result);
         Assert.Equal(RequestStatus.Cancelled, request.Status);
-        requestRepository.Verify(c => c.Delete(It.IsAny<IEnumerable<RequestCancellationDetail>>()), Times.Once);
-        requestRepository.Verify(c => c.Create(It.IsAny<IEnumerable<RequestNote>>()), Times.Once);
-        requestRepository.Verify(c => c.Create(It.IsAny<IEnumerable<RequestCancellationDetail>>()), Times.Once);
+        requestRepository.Verify(c => c.Delete(It.IsAny<RequestCancellationDetail>()), Times.Once);
+        requestRepository.Verify(c => c.Create(It.IsAny<RequestNote>()), Times.Once);
+        requestRepository.Verify(c => c.Create(It.IsAny<RequestCancellationDetail>()), Times.Once);
         requestRepository.Verify(c => c.Update(request), Times.Once);
         requestRepository.Verify(c => c.SaveChangesAsync(), Times.Once);
     }

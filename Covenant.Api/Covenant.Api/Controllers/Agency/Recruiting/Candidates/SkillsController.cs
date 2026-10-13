@@ -29,7 +29,7 @@ public class SkillsController(ICandidateRepository candidateRepository) : Contro
         if (candidate is null) return BadRequest();
         var result = candidate.AddSkill(model.Skill);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         model.Id = result.Value.Id;
         return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
@@ -60,7 +60,7 @@ public class SkillsController(ICandidateRepository candidateRepository) : Contro
         if (candidate is null) return BadRequest();
         var result = candidate.DeleteSkill(id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Ok();
     }

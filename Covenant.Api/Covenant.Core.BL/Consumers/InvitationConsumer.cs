@@ -143,7 +143,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         {
             await sendGridService.SendTemplateBatch(request.CompanyProfile.Agency.RecruitmentEmail, recipients);
             request.InvitationSentItAt = now;
-            await requestRepository.Update(request);
+            requestRepository.Update(request);
             await requestRepository.SaveChangesAsync();
         }
         return Result.Ok(new InvitationSentResult(workersSentCount, candidatesSentCount, request.NumberId, request.JobTitle));

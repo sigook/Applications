@@ -8,12 +8,9 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Workers;
 
-public interface IWorkerRepository
+public interface IWorkerRepository : IBaseRepository
 {
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
     Task CreateWorkerProfileHoliday(WorkerProfileHoliday entity);
-    Task UpdateProfile(WorkerProfile entity);
     Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition);
     Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination);
     Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId);
@@ -34,5 +31,4 @@ public interface IWorkerRepository
     Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date);
     Task<IEnumerable<WorkerLicenseExpiredModel>> GetWorkerLicensesExpired(DateTime date);
     Task<WorkerProfileTaxCategory> GetWorkerProfileTaxCategory(Guid workerProfileId);
-    Task SaveChangesAsync();
 }

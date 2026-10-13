@@ -8,14 +8,12 @@ using Covenant.Common.Models.Company;
 
 namespace Covenant.Common.Repositories.Accounting.Invoices;
 
-public interface IInvoiceRepository
+public interface IInvoiceRepository : IBaseRepository
 {
-    Task Create(Invoice invoice);
     Task<List<InvoiceListModel>> GetAllInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
     Task<InvoiceListModelWithTotals> GetInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
     Task<Invoice> GetInvoiceForAgency(IEnumerable<Guid> agencyIds, Guid invoiceId);
     Task<(Guid InvoiceId, string InvoiceNumber)> DeleteInvoiceAndReportsSubcontractor(Guid invoiceId);
-    Task SaveChangesAsync();
     Task<InvoiceSummaryModel> GetInvoiceSummaryById(Guid id);
     Task<InvoiceSummaryModel> GetInvoiceSummaryForCompany(Guid companyId, Guid id);
     Task<PaginatedList<InvoiceListModel>> GetInvoicesForCompany(Guid companyId, GetCompanyInvoiceFilter filter);

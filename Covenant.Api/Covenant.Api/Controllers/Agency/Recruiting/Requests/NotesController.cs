@@ -31,7 +31,7 @@ public class NotesController(IRequestRepository repository) : Controller
         Result<CovenantNote> result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         var entity = new RequestNote(requestId, result.Value);
-        await repository.Create<RequestNote>([entity]);
+        await repository.Create(entity);
         await repository.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = entity.NoteId }, new NoteModel
         {
@@ -77,7 +77,7 @@ public class NotesController(IRequestRepository repository) : Controller
         RequestNote entity = await repository.GetNote(requestId, id);
         if (entity is null) return BadRequest();
         entity.Update(result.Value, User.GetNickname());
-        await repository.Update(entity);
+        repository.Update(entity);
         await repository.SaveChangesAsync();
         return Ok();
     }
@@ -93,7 +93,7 @@ public class NotesController(IRequestRepository repository) : Controller
         var entity = await repository.GetNote(requestId, id);
         if (entity is null) return BadRequest();
         entity.Delete(User.GetNickname());
-        await repository.Update(entity);
+        repository.Update(entity);
         await repository.SaveChangesAsync();
         return Ok();
     }

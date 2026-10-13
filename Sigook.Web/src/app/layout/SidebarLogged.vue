@@ -200,8 +200,9 @@ function setGroupRef(el: unknown, index: number) {
 // expanded state internally, so we set it directly on the menu-item instance).
 function expandActiveGroup() {
   menuGroups.value.forEach((group, i) => {
-    if (group.label && isGroupActive(group) && groupRefs.value[i]) {
-      groupRefs.value[i]!.newExpanded = true;
+    const groupRef = groupRefs.value[i];
+    if (group.label && isGroupActive(group) && groupRef) {
+      groupRef.newExpanded = true;
     }
   });
 }

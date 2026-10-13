@@ -84,7 +84,7 @@ public class RequestApplicantServiceTest
         var result = await _sut.Create(_requestId, new RequestApplicantModel { WorkerProfileId = Guid.NewGuid() });
         Assert.True(result);
         Assert.Equal(RequestApplicantStatus.InProgress, result.Value.Status);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicant>>(e => e.Single().Status == RequestApplicantStatus.InProgress)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestApplicant>(e => e.Status == RequestApplicantStatus.InProgress)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
@@ -216,7 +216,7 @@ public class RequestApplicantServiceTest
         _requestRepository.Setup(r => r.GetApplicantComplianceItem(applicant.Id, item.Id)).ReturnsAsync((RequestApplicantComplianceItem)null);
         var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, new CompleteApplicantComplianceItemModel());
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Single().RequestApplicantId == applicant.Id
+        _requestRepository.Verify(r => r.CreateRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Single().RequestApplicantId == applicant.Id
             && e.Single().RequestComplianceItemId == item.Id && e.Single().CompletedBy == "tester")), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
@@ -496,7 +496,7 @@ public class RequestApplicantServiceTest
         Assert.Equal("123-456-789", profile.SocialInsurance);
         Assert.Equal("sin.pdf", profile.SocialInsuranceFile.FileName);
         Assert.Equal("123-456-789", profile.IdentificationNumber1);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
+        _requestRepository.Verify(r => r.CreateRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
             e.Count() == 2
             && e.Any(c => c.RequestComplianceItemId == identificationItem.Id)
             && e.Any(c => c.RequestComplianceItemId == ssnItem.Id)
@@ -522,7 +522,7 @@ public class RequestApplicantServiceTest
         var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, identificationItem.Id, SinIdentificationModel(identificationTypeId));
 
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Count() == 1
+        _requestRepository.Verify(r => r.CreateRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Count() == 1
             && e.Single().RequestComplianceItemId == identificationItem.Id)), Times.Once);
     }
 
@@ -541,7 +541,7 @@ public class RequestApplicantServiceTest
         var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, SinIdentificationModel(identificationTypeId));
 
         Assert.False(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<RequestApplicantComplianceItem>>()), Times.Never);
+        _requestRepository.Verify(r => r.CreateRange(It.IsAny<IEnumerable<RequestApplicantComplianceItem>>()), Times.Never);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
     }
 
@@ -562,11 +562,11 @@ public class RequestApplicantServiceTest
 
         Assert.True(result);
         Assert.Equal("123-456-789", profile.SocialInsurance);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<WorkerProfileNote>>(e =>
-            e.Single().WorkerProfileId == workerProfileId
-            && e.Single().CreatedBy == "tester"
-            && e.Single().Note.Contains("******-777")
-            && e.Single().Note.Contains("******-789"))), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<WorkerProfileNote>(e =>
+            e.WorkerProfileId == workerProfileId
+            && e.CreatedBy == "tester"
+            && e.Note.Contains("******-777")
+            && e.Note.Contains("******-789"))), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
@@ -586,7 +586,7 @@ public class RequestApplicantServiceTest
         var result = await _sut.CompleteComplianceItem(_requestId, applicant.Id, item.Id, SinIdentificationModel(identificationTypeId));
 
         Assert.True(result);
-        _requestRepository.Verify(r => r.Create(It.IsAny<IEnumerable<WorkerProfileNote>>()), Times.Never);
+        _requestRepository.Verify(r => r.Create(It.IsAny<WorkerProfileNote>()), Times.Never);
     }
 
     [Fact]
@@ -622,7 +622,7 @@ public class RequestApplicantServiceTest
         Assert.True(result);
         Assert.Null(profile.SocialInsurance);
         Assert.Null(profile.SocialInsuranceFile);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Count() == 1)), Times.Once);
+        _requestRepository.Verify(r => r.CreateRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Count() == 1)), Times.Once);
     }
 
     [Fact]
@@ -634,7 +634,7 @@ public class RequestApplicantServiceTest
         _requestRepository.Setup(r => r.GetApplicantComplianceItem(applicant.Id, itemId)).ReturnsAsync(completion);
         var result = await _sut.UncompleteComplianceItem(_requestId, applicant.Id, itemId);
         Assert.True(result);
-        _requestRepository.Verify(r => r.Delete(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Single() == completion)), Times.Once);
+        _requestRepository.Verify(r => r.DeleteRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e => e.Single() == completion)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
@@ -657,7 +657,7 @@ public class RequestApplicantServiceTest
         var result = await _sut.UncompleteComplianceItem(_requestId, applicant.Id, ssnItem.Id);
 
         Assert.True(result);
-        _requestRepository.Verify(r => r.Delete(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
+        _requestRepository.Verify(r => r.DeleteRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
             e.Count() == 2 && e.Contains(ssnCompletion) && e.Contains(identificationCompletion))), Times.Once);
     }
 
@@ -680,7 +680,7 @@ public class RequestApplicantServiceTest
         var result = await _sut.UncompleteComplianceItem(_requestId, applicant.Id, identificationItem.Id);
 
         Assert.True(result);
-        _requestRepository.Verify(r => r.Delete(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
+        _requestRepository.Verify(r => r.DeleteRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
             e.Count() == 2 && e.Contains(ssnCompletion) && e.Contains(identificationCompletion))), Times.Once);
     }
 
@@ -702,7 +702,7 @@ public class RequestApplicantServiceTest
         var result = await _sut.UncompleteComplianceItem(_requestId, applicant.Id, ssnItem.Id);
 
         Assert.True(result);
-        _requestRepository.Verify(r => r.Delete(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
+        _requestRepository.Verify(r => r.DeleteRange(It.Is<IEnumerable<RequestApplicantComplianceItem>>(e =>
             e.Single() == ssnCompletion)), Times.Once);
     }
 

@@ -27,7 +27,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         _client = factory.CreateClient();
     }
 
-    [Fact, TestOrder(1)]
+    [Fact]
     public async Task Get()
     {
         HttpResponseMessage response = await _client.GetAsync(ApiCompanyInvoice);
@@ -42,7 +42,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.NotEmpty(list.Items);
     }
 
-    [Fact, TestOrder(2)]
+    [Fact]
     public async Task GetById()
     {
         HttpResponseMessage response = await _client.GetAsync($"{ApiCompanyInvoice}/{Data.Invoice.Id}");
@@ -53,7 +53,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.Equal("HST", model.TaxName);
     }
 
-    [Fact, TestOrder(3)]
+    [Fact]
     public async Task GetById_OtherCompany_NotFound()
     {
         HttpResponseMessage response = await _client.GetAsync($"{ApiCompanyInvoice}/{Data.OtherInvoice.Id}");

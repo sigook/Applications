@@ -5,15 +5,11 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
-public interface IRunnerRepository
+public interface IRunnerRepository : IBaseRepository
 {
     Task<Runner> GetRunner(Expression<Func<Runner, bool>> expression);
     Task<List<Runner>> GetRunners(Expression<Func<Runner, bool>> expression);
     Task<bool> RunnerExists(Guid requestId, Guid workerProfileId);
     Task<PaginatedList<RunnerListModel>> GetRunners(Guid agencyId, GetRunnersFilter filter);
     Task<RunnerDetailModel> GetRunnerDetail(Guid id);
-    Task SaveChangesAsync();
-    Task Update<T>(T entity) where T : class;
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
 }

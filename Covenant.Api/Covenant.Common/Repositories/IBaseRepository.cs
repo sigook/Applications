@@ -1,10 +1,12 @@
-namespace Covenant.Common.Repositories
+namespace Covenant.Common.Repositories;
+
+public interface IBaseRepository
 {
-    public interface IBaseRepository<in T> where T : class
-    {
-        Task Create(IEnumerable<T> entities);
-        Task Create(T entity);
-        Task Update(params T[] entity);
-        Task SaveChangesAsync();
-    }
+    Task Create<T>(T entity) where T : class;
+    Task CreateRange<T>(IEnumerable<T> entities) where T : class;
+    void Update<T>(T entity) where T : class;
+    void UpdateRange<T>(IEnumerable<T> entities) where T : class;
+    void Delete<T>(T entity) where T : class;
+    void DeleteRange<T>(IEnumerable<T> entities) where T : class;
+    Task SaveChangesAsync();
 }

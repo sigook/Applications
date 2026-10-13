@@ -8,10 +8,10 @@ using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Repositories.Accounting.Deductions;
 
-public class DeductionsRepository(CovenantContext context) : IDeductionsRepository
+public class DeductionsRepository(CovenantContext context) : BaseRepository<CovenantContext>(context), IDeductionsRepository
 {
     public Task<decimal> GetCpp(decimal earnings, int year, PayPeriod payPeriod) =>
-        context.CppDeductions
+        Context.CppDeductions
             .Where(c => c.Year == year && c.PayPeriod == payPeriod && earnings >= c.From && earnings <= c.To)
             .Select(w => w.Cpp)
             .SingleOrDefaultAsync();
@@ -23,7 +23,7 @@ public class DeductionsRepository(CovenantContext context) : IDeductionsReposito
     }
 
     public Task<decimal?> GetTax(decimal earnings, int year, PayPeriod payPeriod, TaxType taxType, TaxCategory category) =>
-        context.TaxDeductions
+        Context.TaxDeductions
             .Where(c => c.Year == year && c.PayPeriod == payPeriod && c.TaxType == taxType &&
                         earnings >= c.From && earnings < c.To)
             .Select(w =>
@@ -49,17 +49,17 @@ public class DeductionsRepository(CovenantContext context) : IDeductionsReposito
     private async Task<int> Import<TDeduction>(IReadOnlyList<TDeduction> rows, Expression<Func<TDeduction, bool>> replaced)
         where TDeduction : class
     {
-        if (!context.Database.IsRelational())
+        if (!Context.Database.IsRelational())
         {
-            context.Set<TDeduction>().RemoveRange(await context.Set<TDeduction>().Where(replaced).ToListAsync());
-            await context.Set<TDeduction>().AddRangeAsync(rows);
-            await context.SaveChangesAsync();
+            Context.Set<TDeduction>().RemoveRange(await Context.Set<TDeduction>().Where(replaced).ToListAsync());
+            await Context.Set<TDeduction>().AddRangeAsync(rows);
+            await Context.SaveChangesAsync();
             return rows.Count;
         }
 
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        await context.Set<TDeduction>().Where(replaced).ExecuteDeleteAsync();
-        await context.BulkInsertAsync(rows.ToList());
+        await using var transaction = await Context.Database.BeginTransactionAsync();
+        await Context.Set<TDeduction>().Where(replaced).ExecuteDeleteAsync();
+        await Context.BulkInsertAsync(rows.ToList());
         await transaction.CommitAsync();
         return rows.Count;
     }

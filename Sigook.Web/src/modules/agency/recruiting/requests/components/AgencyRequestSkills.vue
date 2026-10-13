@@ -36,8 +36,9 @@ function addSkill(item: { skill: string }) {
 }
 
 function removeSkill(item: AgencyRequestSkillModel) {
+  if (!item.id) return;
   isLoading.value = true;
-  deleteAgencyRequestSkill(props.requestId, item.id!)
+  deleteAgencyRequestSkill(props.requestId, item.id)
     .then(() => {
       isLoading.value = false;
       skills.value = skills.value.filter(x => x.id !== item.id);

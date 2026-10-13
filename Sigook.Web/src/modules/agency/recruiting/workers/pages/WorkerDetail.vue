@@ -166,8 +166,9 @@ function changeTab(tab: string) {
 }
 
 function updateComments() {
+  if (!worker.value) return;
   isLoading.value = true;
-  getAgencyWorkerComments(worker.value!.id, {
+  getAgencyWorkerComments(worker.value.id, {
     size: commentSize.value,
     pageIndex: commentPageIndex.value,
   })
@@ -207,8 +208,9 @@ function loadWorker() {
 }
 
 function toggleWorkerProfileDNU() {
+  if (!worker.value) return;
   isLoading.value = true;
-  updateAgencyWorkerProfileDNU(worker.value!.id)
+  updateAgencyWorkerProfileDNU(worker.value.id)
     .then(() => {
       showAlertSuccess('Updated');
       isLoading.value = false;

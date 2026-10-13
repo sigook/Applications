@@ -199,12 +199,6 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 | `Controllers/Company/Workers/` | `api/company/workers/{workerProfileId}/comments` | `CommentsController` |
 | `Controllers/Worker/` | `api/worker/{profile\|requests\|history\|comments}`, `api/worker/requests/{requestId}/timesheet` | the worker's own endpoints (Policy `Worker`): `Profile/ProfileController` (+ `ProfileUpdateController`, `JobExperienceController`), `Requests/RequestsController`, `History/HistoryController`, `Comments/CommentsController`, `TimeSheets/TimeSheetsController` (clock in/out) |
 
-**`Covenant.Api/WorkerModule/` is obsolete.** It holds the previous worker controllers
-(`api/WorkerProfile`, `api/WorkerRequest`, `api/WorkerRequestHistory`) untouched and marked
-`[Obsolete]`, because the Sigook.App build in the stores still calls them. Delete the folder and
-`Covenant.Integration.Tests/WorkerModule/` once the app that uses `api/worker/*` is published.
-Never add code there.
-
 Routing: every controller declares `public const string RouteName = "api/..."` +
 `[Route(RouteName)]` (grep for `RouteName =` to find an endpoint; integration tests reference the
 constant instead of literal URLs). Every API controller carries `[ApiController]`; the built-in
@@ -275,7 +269,13 @@ Contexts/         CovenantContext.cs (main DbContext), IdentityContext.cs (ASP.N
 Repositories/     by domain, plural folders mirroring Covenant.Common/Repositories/:
                   Accounting/{Deductions,Invoices,PayStubs,Subcontractors}/, Agencies/, Candidates/,
                   Companies/, Identity/, Notifications/, Requests/, Workers/ + root repositories
-                  (Catalog, Location, Shift, User); shared plumbing in BaseRepository.cs
+                  (Catalog, Location, Shift, User). Every repository inherits
+                  BaseRepository<TContext> (CovenantContext, or IdentityContext for
+                  IdentityRepository), which implements IBaseRepository: generic
+                  Create/CreateRange (async), Update/UpdateRange and Delete/DeleteRange
+                  (synchronous change-tracker calls) and SaveChangesAsync. Repository
+                  interfaces extend IBaseRepository and only declare queries and methods
+                  with logic (upserts, bulk imports, cascading deletes)
 Mappers/          entity→model projection extensions used inside repositories:
                   AgencyExtensionsMapping, CandidateExtensionsMapping, CompanyExtensionsMapping,
                   RequestExtensionsMapping, WorkerRequestExtensionsMapping
