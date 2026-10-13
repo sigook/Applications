@@ -153,6 +153,17 @@
       border-color: var(--c-brand-cyan);
       box-shadow: var(--focus-ring-cyan);
     }
+
+    &.is-empty {
+      color: rgba(255, 255, 255, 0.40);
+    }
+
+    &[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+      background-color: var(--c-glass-fill);
+      border-color: var(--c-glass-border);
+    }
   }
 
   .taginput .taginput-container.is-focusable {

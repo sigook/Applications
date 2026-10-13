@@ -126,6 +126,28 @@ public class ClientsControllerTest : IClassFixture<CustomWebApplicationFactory<C
         Assert.Equal(model.Comments, entity.VaccinationRequiredComments);
     }
 
+    [Fact]
+    public async Task PaymentTerms_UpdatesDays()
+    {
+        var model = new CompanyProfilePaymentTermsUpdateModel { PaymentTermDays = 14 };
+        Guid id = Startup.FakeCompanyProfile.Id;
+        HttpResponseMessage response = await _client.PatchAsJsonAsync($"{RequestUri(id)}/PaymentTerms", model);
+        response.EnsureSuccessStatusCode();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        CompanyProfile entity = await context.CompanyProfiles.AsNoTracking().SingleAsync(s => s.Id == id);
+        Assert.Equal(model.PaymentTermDays, entity.PaymentTermDays);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(366)]
+    public async Task PaymentTerms_OutOfRange_ReturnsBadRequest(int days)
+    {
+        var model = new CompanyProfilePaymentTermsUpdateModel { PaymentTermDays = days };
+        HttpResponseMessage response = await _client.PatchAsJsonAsync($"{RequestUri(Startup.FakeCompanyProfile.Id)}/PaymentTerms", model);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     public class Startup
     {
         private static readonly DateTime FakeNow = new DateTime(2021, 01, 01);

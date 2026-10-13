@@ -20,7 +20,9 @@ export function useApplicationForm() {
       .required('Phone is required')
       .matches(/^\d{3} \d{3}-\d{4}$/, 'Phone format must be: ### ###-####'),
     countryId: yup.string().required('Country is required'),
-    address: yup.string().required('City/Address is required').max(100, 'Address must be at most 100 characters'),
+    provinceId: yup.string().required('Province/State is required'),
+    cityId: yup.string().required('City is required'),
+    address: yup.string().required('Address is required').max(100, 'Address must be at most 100 characters'),
     status: yup.string().required('Immigration status is required'),
     sourceId: yup.string().nullable(),
     skills: yup.array().of(yup.string().max(20, 'Each skill must be at most 20 characters')),
@@ -39,6 +41,8 @@ export function useApplicationForm() {
       email: '',
       phone: '',
       countryId: '',
+      provinceId: '',
+      cityId: '',
       address: '',
       status: undefined,
       sourceId: null,
@@ -55,6 +59,8 @@ export function useApplicationForm() {
   const [email, emailProps] = defineField('email', { validateOnModelUpdate: false })
   const [phone, phoneProps] = defineField('phone', { validateOnModelUpdate: false })
   const [countryId, countryIdProps] = defineField('countryId', { validateOnModelUpdate: false })
+  const [provinceId, provinceIdProps] = defineField('provinceId', { validateOnModelUpdate: false })
+  const [cityId, cityIdProps] = defineField('cityId', { validateOnModelUpdate: false })
   const [address, addressProps] = defineField('address', { validateOnModelUpdate: false })
   const [status, statusProps] = defineField('status', { validateOnModelUpdate: false })
   const [sourceId, sourceIdProps] = defineField('sourceId', { validateOnModelUpdate: false })
@@ -83,7 +89,9 @@ export function useApplicationForm() {
         .required('Phone is required')
         .matches(/^\d{3} \d{3}-\d{4}$/, 'Phone format must be: ### ###-####'),
       countryId: yup.string().required('Country is required'),
-      address: yup.string().required('City/Address is required').max(100, 'Address must be at most 100 characters')
+      provinceId: yup.string().required('Province/State is required'),
+      cityId: yup.string().required('City is required'),
+      address: yup.string().required('Address is required').max(100, 'Address must be at most 100 characters')
     })
 
     const step2Schema = yup.object({
@@ -109,6 +117,8 @@ export function useApplicationForm() {
         email: values.email,
         phone: values.phone,
         countryId: values.countryId,
+        provinceId: values.provinceId,
+        cityId: values.cityId,
         address: values.address
       }
     } else if (currentStep.value === 2) {
@@ -165,6 +175,10 @@ export function useApplicationForm() {
       phoneProps,
       countryId,
       countryIdProps,
+      provinceId,
+      provinceIdProps,
+      cityId,
+      cityIdProps,
       address,
       addressProps,
       status,

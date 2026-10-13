@@ -56,7 +56,7 @@
           <template v-slot="props">
             <p class="is-capitalized">{{ props.row.address }}</p>
             <i class="fz-2 is-block pl-1">
-              {{ props.row.postalCode }}
+              {{ [props.row.city, props.row.province].filter(Boolean).join(', ') }} {{ props.row.postalCode }}
             </i>
           </template>
         </b-table-column>

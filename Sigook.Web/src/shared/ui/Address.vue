@@ -26,7 +26,7 @@
           </a>
         </template>
         <b-autocomplete :data="filteredProvinces" :placeholder="'Select'" v-model="province" open-on-focus
-          name="province" :loading="loadingProvinces" @select="onProvinceSelected"></b-autocomplete>
+          name="province" :loading="loadingProvinces" :disabled="!country" @select="onProvinceSelected"></b-autocomplete>
       </b-field>
     </div>
     <div class="column is-6">
@@ -35,8 +35,8 @@
           {{ 'City' }} <span class="has-text-danger">*</span>
         </template>
         <b-autocomplete :data="filteredCities" ref="autoCompleteCities" :placeholder="'Select'" v-model="city"
-          open-on-focus name="city" :loading="loadingCities" selectable-footer @select="onCitySelected"
-          @select-footer="addCity">
+          open-on-focus name="city" :loading="loadingCities" :disabled="!provinceSelected" selectable-footer
+          @select="onCitySelected" @select-footer="addCity">
           <template v-if="isAgency" #footer>
             <a><span> Add new... </span></a>
           </template>
@@ -55,7 +55,7 @@
     <div class="column is-6">
       <b-field :type="errors.postalCode ? 'is-danger' : ''" :message="errors.postalCode || ''">
         <template #label>
-          {{ 'Postal/ZIP Code' }} <span class="has-text-danger">*</span>
+          {{ 'Postal/ZIP Code' }} <span v-if="requirePostalCode" class="has-text-danger">*</span>
         </template>
         <b-input type="text" v-model="postalCode" name="postalCode" />
       </b-field>
@@ -88,6 +88,14 @@ import { appGlobals } from '@/app/globals';
 import type { BAutocomplete } from 'buefy';
 import type { City, Country, LocationDetailModel, Province, ProvinceSettings } from '@/shared/types/common';
 
+const props = withDefaults(defineProps<{
+  model?: LocationDetailModel | null;
+  enableProvinceSettings?: boolean;
+  requirePostalCode?: boolean;
+}>(), {
+  requirePostalCode: true,
+});
+
 const addressSchema = yup.object({
   country: yup.mixed().required('Country is required'),
   province: yup.string().required('Province is required'),
@@ -98,10 +106,8 @@ const addressSchema = yup.object({
     .min(6, 'Address must be at least 6 characters')
     .max(100, 'Address must be at most 100 characters')
     .matches(appGlobals.$regexAddress, 'Invalid address format'),
-  postalCode: postalCodeSchema(true),
+  postalCode: postalCodeSchema(props.requirePostalCode),
 });
-
-const props = defineProps<{ model?: LocationDetailModel | null; enableProvinceSettings?: boolean }>();
 const emit = defineEmits<{
   (e: 'isCanada', v: boolean): void;
   (e: 'isLoading', v: boolean): void;
@@ -197,7 +203,7 @@ function getCityByProvince(p: Province | null) {
 
 // created()
 loadCountries();
-if (localModel.value && localModel.value.id) {
+if (localModel.value?.city?.province?.country) {
   getProvincesByCountry(localModel.value.city.province.country);
   getCityByProvince(localModel.value.city.province);
   country.value = localModel.value.city.province.country;

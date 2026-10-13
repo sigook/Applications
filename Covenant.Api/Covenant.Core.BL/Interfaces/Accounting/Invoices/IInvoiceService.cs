@@ -9,6 +9,8 @@ public interface IInvoiceService
 {
     Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilter filter);
     Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilter filter);
+    Task<ResultGenerateDocument<byte[]>> GetInvoicesPaymentsReport(GetInvoicesFilter filter);
+    Task<int> MarkOverdueInvoices();
     Task<Result<InvoicePreviewModel>> PreviewInvoice(CreateInvoiceModel model);
     Task<Result<Guid>> CreateInvoice(CreateInvoiceModel model);
     Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId);

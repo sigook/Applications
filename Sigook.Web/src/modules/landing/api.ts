@@ -34,7 +34,7 @@ export function submitCandidateApplication(data: CandidateFormData, requestId?: 
     phone: data.phone,
     skills: data.skills,
     status: data.status || '',
-    countryId: data.countryId,
+    cityId: data.cityId,
     address: data.address,
     fileName,
     hasVehicle: data.hasVehicle,

@@ -10,7 +10,7 @@ public interface ICandidateAdapter
 {
     Result<Candidate> ConvertCandidateModelToCandidate(CandidateCreateModel model, Guid agencyId);
 
-    Task<WorkerProfileCreateModel> ConvertCandidateToWorkerProfile(Candidate candidate);
+    WorkerProfileCreateModel ConvertCandidateToWorkerProfile(Candidate candidate);
 
     Task<BulkCandidate> ConvertCandidateCsvToCandidateBulk(CandidateCsvModel model, Guid agencyId, Request request);
 }

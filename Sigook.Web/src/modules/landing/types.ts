@@ -29,7 +29,7 @@ export interface CandidateFormData {
   fullName: string;
   email: string;
   phone: string;
-  countryId: string;
+  cityId: string;
   address: string;
   status: ResidencyStatus | '' | null | undefined;
   sourceId: string | null;
@@ -46,7 +46,7 @@ export interface CandidateApplyPayload {
   phone: string;
   skills: string[];
   status: string;
-  countryId: string;
+  cityId: string;
   address: string;
   fileName: string | null;
   hasVehicle: boolean;

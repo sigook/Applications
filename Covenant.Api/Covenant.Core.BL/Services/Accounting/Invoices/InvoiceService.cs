@@ -59,13 +59,39 @@ public class InvoiceService(
 
     private sealed record InvoiceDraft(Invoice Invoice, IInvoiceCountryStrategy Strategy);
 
-    public Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilter filter) =>
-        invoiceRepository.GetInvoicesForAgency(currentUserService.GetAgencyIds(), filter);
+    public async Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilter filter)
+    {
+        var result = await invoiceRepository.GetInvoicesForAgency(currentUserService.GetAgencyIds(), filter);
+        SetDueDays(result.Detail.Items);
+        return result;
+    }
 
     public async Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilter filter)
     {
-        var result = await invoiceRepository.GetAllInvoicesForAgency(currentUserService.GetAgencyIds(), filter);
+        var result = await GetAllInvoices(filter);
         return await mediator.Send(new GenerateInvoicesReport(result));
+    }
+
+    public async Task<ResultGenerateDocument<byte[]>> GetInvoicesPaymentsReport(GetInvoicesFilter filter)
+    {
+        var result = await GetAllInvoices(filter);
+        return await mediator.Send(new GenerateInvoicesPaymentsReport(result));
+    }
+
+    public Task<int> MarkOverdueInvoices() =>
+        invoiceRepository.MarkPendingInvoicesAsDue(timeProvider.GetLocalNow().DateTime);
+
+    private async Task<List<InvoiceListModel>> GetAllInvoices(GetInvoicesFilter filter)
+    {
+        var result = await invoiceRepository.GetAllInvoicesForAgency(currentUserService.GetAgencyIds(), filter);
+        SetDueDays(result);
+        return result;
+    }
+
+    private void SetDueDays(IEnumerable<InvoiceListModel> invoices)
+    {
+        var today = timeProvider.GetLocalNow().DateTime;
+        foreach (var invoice in invoices) invoice.SetDueDays(today);
     }
 
     public async Task<Result<InvoicePreviewModel>> PreviewInvoice(CreateInvoiceModel model)
@@ -112,7 +138,7 @@ public class InvoiceService(
         var invoice = await invoiceRepository.GetInvoiceForAgency(currentUserService.GetAgencyIds(), invoiceId);
         if (invoice is null) return Result.Fail("Invoice not found");
 
-        var result = invoice.ChangeStatus(model.Status, currentUserService.GetUserId(), timeProvider.GetLocalNow().DateTime);
+        var result = invoice.ChangeStatus(model.Status, currentUserService.GetUserId(), timeProvider.GetLocalNow().DateTime, model.PaidAt);
         if (!result) return result;
         await invoiceRepository.SaveChangesAsync();
         return Result.Ok();

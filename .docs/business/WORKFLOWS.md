@@ -257,7 +257,13 @@ GET    api/agency/accounting/invoices/{invoiceId}/pdf       → IInvoiceService.
 POST   api/agency/accounting/invoices/{invoiceId}/email     → IInvoiceService.SendInvoiceEmail (multipart, optional attachments)
 GET    api/agency/accounting/invoices/{invoiceId}/paystubs  → pay stubs linked to the invoice (delete warnings)
 DELETE api/agency/accounting/invoices/{id}                  → IInvoiceService.DeleteInvoice (cascades selected pay stubs)
+PUT    api/agency/accounting/invoices/{invoiceId}/status    → IInvoiceService.ChangeInvoiceStatus (Paid with payment date / Pending)
+GET    api/agency/accounting/invoices/file                  → Excel list (N° Invoice, Created At, Company, Total, Status)
+GET    api/agency/accounting/invoices/payments-report       → payments follow-up Excel (B4 Tax, Amount, Net, Due Date, Due Days, Payment Date)
+POST   api/jobs/scheduletasks/MarkOverdueInvoices           → nightly job: Pending → Due once CreatedAt + CompanyProfile.PaymentTermDays < today
 ```
+
+Status rules (Pending / Due / Paid, payment terms per company) are in `BILLING_RULES.md` → *Invoice Status & Payment Terms*.
 
 ---
 

@@ -1,8 +1,8 @@
 <template>
   <nav class="page-header-breadcrumb" v-if="crumbs.length || backTo">
-    <a class="page-header-back" v-if="backTo" @click="goBack(backTo)" role="button" aria-label="Go back">
+    <router-link class="page-header-back" v-if="backTo" :to="backTo" aria-label="Go back">
       <b-icon icon="arrow-left" size="is-small"></b-icon>
-    </a>
+    </router-link>
     <template v-for="(crumb, index) in crumbs" :key="index">
       <router-link v-if="crumb.to" :to="crumb.to">{{ crumb.label }}</router-link>
       <span v-else>{{ crumb.label }}</span>
@@ -13,7 +13,6 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router';
-import { useGoBack } from '@/shared/composables/useGoBack';
 import type { PageBreadcrumb } from '@/shared/types/common';
 
 withDefaults(defineProps<{
@@ -23,6 +22,4 @@ withDefaults(defineProps<{
   crumbs: () => [],
   backTo: null,
 });
-
-const { goBack } = useGoBack();
 </script>

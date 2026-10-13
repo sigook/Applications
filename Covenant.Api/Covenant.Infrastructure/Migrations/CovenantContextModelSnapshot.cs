@@ -139,6 +139,9 @@ namespace Covenant.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NumberId"));
 
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -953,6 +956,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid>("AgencyId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("CityId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -995,6 +1001,8 @@ namespace Covenant.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AgencyId");
+
+                    b.HasIndex("CityId");
 
                     b.HasIndex("GenderId");
 
@@ -1155,6 +1163,11 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<bool>("PaidHolidays")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("PaymentTermDays")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(30);
 
                     b.Property<string>("Phone")
                         .HasColumnType("text");
@@ -3621,6 +3634,11 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Covenant.Common.Entities.City", "City")
+                        .WithMany()
+                        .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Covenant.Common.Entities.Gender", "Gender")
                         .WithMany()
                         .HasForeignKey("GenderId");
@@ -3631,6 +3649,8 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Agency");
+
+                    b.Navigation("City");
 
                     b.Navigation("Gender");
 

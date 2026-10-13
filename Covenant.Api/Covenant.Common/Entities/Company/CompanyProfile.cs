@@ -14,6 +14,7 @@ namespace Covenant.Common.Entities.Company
 
         public static readonly TimeSpan DefaultOvertimeStarts = TimeSpan.FromHours(44);
         public static readonly TimeSpan MinimumOvertimeStarts = TimeSpan.FromHours(40);
+        public const int DefaultPaymentTermDays = 30;
 
         public CompanyProfile()
         {
@@ -68,6 +69,7 @@ namespace Covenant.Common.Entities.Company
         public bool? VaccinationRequired { get; set; }
         public string VaccinationRequiredComments { get; set; }
         public TimeSpan OvertimeStartsAfter { get; set; } = DefaultOvertimeStarts;
+        public int PaymentTermDays { get; set; } = DefaultPaymentTermDays;
         public Location BillingAddress => Locations
             .FirstOrDefault(l => l.IsBilling)?.Location ?? Locations.FirstOrDefault()?.Location;
         public string FormattedPhone => $"{Phone} {(PhoneExt.HasValue ? $"Ext:{PhoneExt.Value}" : string.Empty)}";

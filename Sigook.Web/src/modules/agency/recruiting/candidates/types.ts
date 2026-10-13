@@ -1,4 +1,4 @@
-import { CatalogItem, Skill } from '@/shared/types/common';
+import { CatalogItem, City, Skill } from '@/shared/types/common';
 
 // Candidate item returned by GET /api/agency/recruiting/candidates.
 // Mirrors backend CandidateListModel (Covenant.Common.Models.Candidate).
@@ -9,6 +9,8 @@ export interface Candidate {
   email?: string;
   address?: string;
   postalCode?: string;
+  city?: string;
+  province?: string;
   residencyStatus?: string;
   phoneNumbers: CandidatePhoneNumberModel[];
   skills: Skill[];
@@ -36,6 +38,7 @@ export interface CandidateDetail {
   email?: string;
   address?: string;
   postalCode?: string;
+  city?: City | null;
   gender?: CatalogItem | null;
   hasVehicle: boolean;
   residencyStatus?: string;
@@ -95,6 +98,7 @@ export interface CreateCandidateModel {
   email?: string;
   address?: string;
   postalCode?: string;
+  city?: City | null;
   gender?: { id: string; value?: string } | null;
   hasVehicle: boolean;
   residencyStatus?: string;

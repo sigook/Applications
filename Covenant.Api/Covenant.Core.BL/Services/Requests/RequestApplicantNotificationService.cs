@@ -37,7 +37,7 @@ public class RequestApplicantNotificationService(ISendGridService sendGridServic
             Nmae = candidate.Name,
             candidate.Email,
             Phone = candidate.PhoneNumbers?.FirstOrDefault()?.PhoneNumber,
-            candidate.Address,
+            Address = candidate.City == null ? candidate.Address : $"{candidate.Address} {candidate.City.Value}, {candidate.City.Province?.Code} {candidate.PostalCode}".Trim(),
             Skills = string.Join(",", candidate.Skills?.Select(s => s.Skill) ?? [])
         });
 

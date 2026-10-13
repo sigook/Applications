@@ -410,7 +410,8 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
                 },
                 RequiresPermissionToSeeRequests = cp.RequiresPermissionToSeeRequests,
                 SalesRepresentativeId = cp.SalesRepresentativeId,
-                OvertimeStartsAfter = cp.OvertimeStartsAfter.TotalHours
+                OvertimeStartsAfter = cp.OvertimeStartsAfter.TotalHours,
+                PaymentTermDays = cp.PaymentTermDays
             });
 
     public Task<Guid> GetCompanyIdForUser(Guid userId) =>

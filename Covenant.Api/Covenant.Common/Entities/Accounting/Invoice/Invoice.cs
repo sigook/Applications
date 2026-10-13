@@ -24,6 +24,7 @@ public class Invoice
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? WeekEnding { get; set; }
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Pending;
+    public DateTime? PaidAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedBy { get; set; }
     public User UpdatedByUser { get; set; }
@@ -31,10 +32,11 @@ public class Invoice
     public decimal TotalOvertime => InvoiceTotals.Sum(c => c.Overtime);
     public decimal TotalRegular => InvoiceTotals.Sum(c => c.Regular);
 
-    public Result ChangeStatus(InvoiceStatus next, Guid changedBy, DateTime now)
+    public Result ChangeStatus(InvoiceStatus next, Guid changedBy, DateTime now, DateTime? paidAt = null)
     {
         if (Status == next) return Result.Fail($"Invoice is already {next}");
         Status = next;
+        PaidAt = next == InvoiceStatus.Paid ? paidAt ?? now : null;
         UpdatedAt = now;
         UpdatedBy = changedBy;
         return Result.Ok();

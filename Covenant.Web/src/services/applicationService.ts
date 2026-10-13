@@ -40,7 +40,7 @@ export const applicationService = {
       phone: data.phone,
       skills: data.skills,
       status: data.status || '',
-      countryId: data.countryId,
+      cityId: data.cityId,
       address: data.address,
       fileName: fileName,
       hasVehicle: data.hasVehicle,

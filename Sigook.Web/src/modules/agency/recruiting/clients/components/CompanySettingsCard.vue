@@ -18,6 +18,12 @@
           <b-button :loading="isLoading" @click="update('overtimeStartsAfter', Number(overtime))">Save</b-button>
         </p>
       </b-field>
+      <b-field label="Payment terms (days to pay an invoice)" class="company-settings-overtime">
+        <b-input v-model="paymentTermDays" type="number" min="1" max="365" step="1" />
+        <p class="control">
+          <b-button :loading="isSavingPaymentTerms" @click="savePaymentTerms">Save</b-button>
+        </p>
+      </b-field>
     </div>
   </detail-card>
 </template>
@@ -25,7 +31,7 @@
 <script setup lang="ts" generic="T extends CompanyProfileDetail">
 import { ref, watch } from 'vue';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
-import { updateOvertime, updatePaidHolidays, updatePermissionToSeeRequests } from '@/modules/agency/recruiting/clients/api';
+import { updateOvertime, updatePaidHolidays, updatePaymentTerms, updatePermissionToSeeRequests } from '@/modules/agency/recruiting/clients/api';
 import type { CompanyProfileDetail } from '@/shared/company-profile/types';
 import type { CompanyProfileSettingsUpdate } from '@/modules/agency/recruiting/clients/types';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
@@ -47,6 +53,30 @@ const overtime = ref(String(props.company.overtimeStartsAfter ?? ''));
 watch(() => props.company.overtimeStartsAfter, (value) => {
   overtime.value = String(value ?? '');
 });
+
+const isSavingPaymentTerms = ref(false);
+const paymentTermDays = ref(String(props.company.paymentTermDays ?? ''));
+
+watch(() => props.company.paymentTermDays, (value) => {
+  paymentTermDays.value = String(value ?? '');
+});
+
+function savePaymentTerms() {
+  const days = Number(paymentTermDays.value);
+  const previous = props.company;
+  emit('update:company', { ...props.company, paymentTermDays: days });
+  isSavingPaymentTerms.value = true;
+  updatePaymentTerms(props.company.id, { paymentTermDays: days })
+    .then(() => showAlertSuccess('Updated'))
+    .catch((error) => {
+      emit('update:company', previous);
+      paymentTermDays.value = String(previous.paymentTermDays ?? '');
+      showAlertError(error);
+    })
+    .finally(() => {
+      isSavingPaymentTerms.value = false;
+    });
+}
 
 function update<K extends SettingKey>(key: K, value: CompanyProfileSettingsUpdate[K]) {
   const previous = props.company;

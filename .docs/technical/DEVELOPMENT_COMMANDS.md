@@ -37,7 +37,7 @@ dotnet test Covenant.Api/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj
 cd Covenant.Api/Sigook.Functions && func start   # Local run (requires Azure Functions Core Tools v4)
 ```
 
-Functions (three, in two files): `NotificationSinExpiration` and `WarnLicensesExpiration` (Timer triggers, `Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs`); `CraTableUploaded` (Blob trigger, `Covenant.Api/Sigook.Functions/Functions/CraTables.cs`). They call the API over HTTP with a client-credentials token issued by the API itself (`ScheduleTasks:AccountsUrl`).
+Functions (four, in two files): `NotificationSinExpiration`, `WarnLicensesExpiration` and `MarkOverdueInvoices` (Timer triggers, `Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs`); `CraTableUploaded` (Blob trigger, `Covenant.Api/Sigook.Functions/Functions/CraTables.cs`). They call the API over HTTP with a client-credentials token issued by the API itself (`ScheduleTasks:AccountsUrl`).
 
 ## Sigook.App (Flutter) - Requires Flutter `3.47.4`, JDK 17, Android SDK 37
 

@@ -28,7 +28,8 @@ public class ClientsController(
     IRequestRepository requestRepository,
     IAgencyService agencyService,
     ICompanyService companyService,
-    IValidator<UpdateEmailModel> updateEmailValidator) : ControllerBase
+    IValidator<UpdateEmailModel> updateEmailValidator,
+    IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator) : ControllerBase
 {
     public const string RouteName = "api/agency/recruiting/clients";
 
@@ -149,6 +150,26 @@ public class ClientsController(
         if (profile is null) return NotFound();
         var result = profile.UpdateOvertimeStartsAfter(TimeSpan.FromHours(settingsUpdateModel.OvertimeStartsAfter));
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        companyRepository.Update(profile);
+        await companyRepository.SaveChangesAsync();
+        return Ok();
+    }
+
+    /// <summary>Updates the number of days the company has to pay an invoice before it becomes due.</summary>
+    /// <param name="id">Identifier of the company profile.</param>
+    /// <param name="model">Payment terms in days.</param>
+    [HttpPatch("{id:guid}/PaymentTerms")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePaymentTerms([FromRoute] Guid id, [FromBody] CompanyProfilePaymentTermsUpdateModel model)
+    {
+        var validation = await paymentTermsValidator.ValidateAsync(model);
+        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
+
+        var profile = await companyRepository.GetCompanyProfile(cp => cp.Id == id);
+        if (profile is null) return NotFound();
+        profile.PaymentTermDays = model.PaymentTermDays;
         companyRepository.Update(profile);
         await companyRepository.SaveChangesAsync();
         return Ok();

@@ -73,7 +73,15 @@ namespace Covenant.Infrastructure.Repositories
                     Code = c.Code,
                     Province = new ProvinceModel
                     {
-                        Code = c.Province.Code
+                        Id = c.Province.Id,
+                        Value = c.Province.Value,
+                        Code = c.Province.Code,
+                        Country = new CountryModel
+                        {
+                            Id = c.Province.Country.Id,
+                            Value = c.Province.Country.Value,
+                            Code = c.Province.Country.Code
+                        }
                     }
                 })
                 .FirstOrDefaultAsync(c => c.Id == cityId);

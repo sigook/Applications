@@ -259,7 +259,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 Location = r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value,
                 Salary = r.WorkerRate.HasValue ? r.WorkerRate.Value.ToString("C") : r.WorkerSalary.Value.ToString("C"),
                 Title = r.JobTitle,
-                Type = Regex.Replace(r.EmploymentType.ToString(), "([A-Z])", " $1", RegexOptions.Compiled).Trim(),
+                Type = r.EmploymentType.ToDisplayName(),
                 CreatedAt = r.CreatedAt,
                 Shift = r.Shift == null ? string.Empty : r.Shift.DisplayShift
             });

@@ -2,6 +2,7 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
+using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -25,7 +26,7 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
             .AsNoTracking()
             .Where(c => c.AgencyId == agencyId && !c.Dnu && !c.EmailUnsubscribed)
             .Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains("@"))
-            .Where(c => !string.IsNullOrEmpty(c.Address))
+            .Where(c => c.CityId.HasValue || !string.IsNullOrEmpty(c.Address))
             .Where(c => !c.RequestApplicants.Any(ra => ra.RequestId == requestId))
             .OrderBy(c => c.NumberId)
             .Select(c => new CandidateContactInfoModel
@@ -33,7 +34,8 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
                 Id = c.Id,
                 Name = c.Name,
                 Email = c.Email,
-                Address = c.Address
+                Address = c.Address,
+                CityId = c.CityId
             })
             .ToListAsync();
 
@@ -64,6 +66,8 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
             Email = c.Email,
             Address = c.Address,
             PostalCode = c.PostalCode,
+            City = c.City.Value,
+            Province = c.City.Province.Code,
             Source = c.Source.Value,
             PhoneNumbers = c.PhoneNumbers.Select(p => new PhoneNumberModel { Id = p.Id, PhoneNumber = p.PhoneNumber }),
             Skills = c.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Skill)).OrderBy(s => s.Skill).Select(s => new SkillModel { Id = s.Id, Skill = s.Skill }),
@@ -105,7 +109,8 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
             var address = filter.Address.ToLower();
             predicate = predicate.And(c =>
                 c.Address.ToLower().Contains(address) ||
-                c.PostalCode.ToLower().Contains(address));
+                c.PostalCode.ToLower().Contains(address) ||
+                c.City.ToLower().Contains(address));
         }
         if (filter.NumberId.HasValue)
             predicate = predicate.And(c => c.Requests.Any(r => r.Value == filter.NumberId.Value.ToString()));
@@ -148,6 +153,24 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
                 Email = c.Email,
                 Address = c.Address,
                 PostalCode = c.PostalCode,
+                City = c.City == null ? null : new CityModel
+                {
+                    Id = c.City.Id,
+                    Value = c.City.Value,
+                    Code = c.City.Code,
+                    Province = new ProvinceModel
+                    {
+                        Id = c.City.Province.Id,
+                        Value = c.City.Province.Value,
+                        Code = c.City.Province.Code,
+                        Country = new CountryModel
+                        {
+                            Id = c.City.Province.Country.Id,
+                            Value = c.City.Province.Country.Value,
+                            Code = c.City.Province.Country.Code
+                        }
+                    }
+                },
                 Gender = c.Gender == null ? null : new BaseModel<Guid> { Id = c.Gender.Id, Value = c.Gender.Value },
                 HasVehicle = c.HasVehicle,
                 ResidencyStatus = c.ResidencyStatus,
@@ -202,7 +225,7 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
             .Include(c => c.Skills)
             .Include(c => c.Documents).ThenInclude(d => d.Document)
             .Include(c => c.Notes).ThenInclude(n => n.Note)
-            .Include(c => c.Gender)
+            .Include(c => c.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .FirstOrDefaultAsync(expression);
         return candidate;
     }

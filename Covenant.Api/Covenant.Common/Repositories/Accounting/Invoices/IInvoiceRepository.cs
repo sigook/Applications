@@ -13,6 +13,7 @@ public interface IInvoiceRepository : IBaseRepository
     Task<List<InvoiceListModel>> GetAllInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
     Task<InvoiceListModelWithTotals> GetInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
     Task<Invoice> GetInvoiceForAgency(IEnumerable<Guid> agencyIds, Guid invoiceId);
+    Task<int> MarkPendingInvoicesAsDue(DateTime today);
     Task<(Guid InvoiceId, string InvoiceNumber)> DeleteInvoiceAndReportsSubcontractor(Guid invoiceId);
     Task<InvoiceSummaryModel> GetInvoiceSummaryById(Guid id);
     Task<InvoiceSummaryModel> GetInvoiceSummaryForCompany(Guid companyId, Guid id);

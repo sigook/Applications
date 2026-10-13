@@ -1,4 +1,5 @@
 using Covenant.Common.Entities.Accounting.Invoice;
+using Covenant.Common.Enums;
 using Covenant.Common.Models.Accounting.Invoice.Company;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
@@ -46,6 +47,14 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
 
     public Task<Invoice> GetInvoiceForAgency(IEnumerable<Guid> agencyIds, Guid invoiceId) =>
         Context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceId && agencyIds.Contains(i.CompanyProfile.AgencyId));
+
+    public Task<int> MarkPendingInvoicesAsDue(DateTime today) =>
+        Context.Invoices
+            .Where(i => i.Status == InvoiceStatus.Pending && i.CreatedAt.Date.AddDays(i.CompanyProfile.PaymentTermDays) < today.Date)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(i => i.Status, InvoiceStatus.Due)
+                .SetProperty(i => i.UpdatedAt, today)
+                .SetProperty(i => i.UpdatedBy, (Guid?)null));
 
     public async Task<List<InvoiceListModel>> GetAllInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
@@ -204,11 +213,15 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                         CompanyFullName = i.CompanyProfile.FullName,
                         CompanyProfileId = i.CompanyProfile.Id,
                         SalesRepresentative = i.CompanyProfile.SalesRepresentative.Name,
+                        SubTotal = i.SubTotal,
+                        Tax = i.Tax,
                         TotalNet = i.TotalNet,
                         CreatedAt = i.CreatedAt,
                         WeekEnding = i.WeekEnding.HasValue ? i.WeekEnding.Value : null,
                         Email = i.Email ?? i.CompanyProfile.Company.Email,
                         Status = i.Status,
+                        PaymentTermDays = i.CompanyProfile.PaymentTermDays,
+                        PaidAt = i.PaidAt,
                         UpdatedAt = i.UpdatedAt,
                         UpdatedByName = Context.AgencyPersonnel
                             .Where(p => p.UserId == i.UpdatedBy && p.AgencyId == i.CompanyProfile.AgencyId)

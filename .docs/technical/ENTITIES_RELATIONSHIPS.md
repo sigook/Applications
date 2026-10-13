@@ -148,7 +148,8 @@ The client company, always owned by an agency. Key fields:
 - Sales: `CompanyStatus` (`Lead=1, Potential, Prospect, Quoted, Client, Blocked, Inactive=7` —
   `Enums/CompanyStatus.cs`), `SalesRepresentativeId` → AgencyPersonnel
 - Billing/payroll behavior: `PaidHolidays`, `OvertimeStartsAfter` (TimeSpan, default 44h,
-  minimum 40h), `RequiredPaymentMethod`
+  minimum 40h), `PaymentTermDays` (int, default 30, 1–365; days to pay an invoice — see
+  `.docs/business/BILLING_RULES.md` → *Invoice Status & Payment Terms*), `RequiredPaymentMethod`
 - Access: `RequiresPermissionToSeeRequests`, `Active`
 - Misc: `Industry` (CompanyProfileIndustry), `VaccinationRequired(+Comments)`, `About`,
   `InternalInfo`, audit fields
@@ -236,10 +237,15 @@ Pre-registration prospect managed by recruiters — no `User`, no login, minimal
 
 ### Candidate (`Candidate.cs`)
 
-`Id`, `NumberId` (long), `AgencyId`, `Name`, `Email`, `Address`, `PostalCode`, `GenderId`,
+`Id`, `NumberId` (long), `AgencyId`, `Name`, `Email`, `Address` (free text, street only),
+`PostalCode`, `CityId` → City (nullable FK; the province/country are reached through it), `GenderId`,
 `HasVehicle`, `SourceId` → Source (where the candidate came from), `Recruiter` (string),
 `ResidencyStatus`, `Dnu`, `CreatedAt`. Domain methods `AddSkill`/`AddPhone`/`AddEmail`
-(duplicate-skill guard, phone required).
+(duplicate-skill guard, phone required). `CanConvertToWorker` requires email, phone, city and not DNU:
+the worker's `Location` is built from the candidate's `Address` + `PostalCode` + `CityId`, and the
+master agency is resolved from the city's country. Request matching (apply as candidate, invitations)
+compares `CityId` with the request `JobLocation.CityId`; candidates without a city fall back to a
+text match of `Address` against the city name.
 
 Children:
 
@@ -414,8 +420,10 @@ Weekly invoice to a company — one entity (table `Invoices`) for every agency, 
 `InvoiceNumber` (string, the stored formatted number `AI-0333-19` / `US-1001-23`; non-unique
 index `IX_Invoices_InvoiceNumber`), `Email` (optional recipient override, falls back to
 `CompanyProfile.Company.Email`), `CreatedAt`, `WeekEnding` (null for direct hiring), totals
-(`SubTotal`, `Tax`, `TotalNet`), `Status` (`InvoiceStatus` Pending/Paid stored as string),
-`UpdatedAt`, `UpdatedBy` → User. There are no rate snapshot or bill-to/bill-from columns:
+(`SubTotal`, `Tax`, `TotalNet`), `Status` (`InvoiceStatus` Pending/Paid/Due stored as string),
+`PaidAt` (date the company paid, set only while `Paid`), `UpdatedAt`, `UpdatedBy` → User (null
+when the `MarkOverdueInvoices` job changed the status). The due date is not stored: it is
+`CreatedAt + CompanyProfile.PaymentTermDays`. There are no rate snapshot or bill-to/bill-from columns:
 multipliers come from global config at creation and company/agency address data is read live
 through `CompanyProfile` and `CompanyProfile.Agency` when the summary/PDF is built. Which
 country rules apply (`AI`/`US` prefix, HST vs per-location tax, unworked holiday charge) is

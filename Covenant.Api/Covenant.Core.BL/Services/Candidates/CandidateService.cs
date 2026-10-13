@@ -147,8 +147,9 @@ public class CandidateService : ICandidateService
         if (candidate == null) return Result.Fail("Candidate not found");
         var canConvert = candidate.CanConvertToWorker();
         if (!canConvert) return canConvert;
-        var worker = await candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
+        var worker = candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
         var agency = await agencyRepository.GetAgencyMasterByLocation(worker.Location.City);
+        if (agency == null) return Result.Fail("No master agency found for the candidate's country");
         var profile = new WorkerProfile();
         var result = profile.PatchBasicInformation(worker);
         if (!result) return Result.Fail(result.Errors);
@@ -314,6 +315,7 @@ public class CandidateService : ICandidateService
         candidate.AddEmail(result.Value);
         candidate.Name = model.Name;
         candidate.Address = model.Address;
+        candidate.CityId = model.City?.Id;
         candidate.ResidencyStatus = model.ResidencyStatus;
         candidate.GenderId = model.Gender?.Id;
         candidate.HasVehicle = model.HasVehicle;

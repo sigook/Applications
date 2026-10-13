@@ -31,12 +31,8 @@
               @formattedPhone="(phone: string) => phoneNumber = phone" />
           </div>
           <div class="column is-12 mb-3">
-            <b-field :type="formErrors.address ? 'is-danger' : ''" :message="formErrors.address">
-              <template #label>
-                Address <span class="has-text-danger">*</span>
-              </template>
-              <b-input type="text" v-model="address" name="address" />
-            </b-field>
+            <AddressComponent ref="addressComponent" v-model:model="location" :require-postal-code="false"
+              @isLoading="(value: boolean) => isLoading = value" />
           </div>
           <div class="column is-12">
             <b-field :type="sourceError ? 'is-danger' : ''" :message="sourceError">
@@ -88,8 +84,9 @@ import { residencyList } from "@/shared/constants/catalog";
 import { getAgencyCandidate, updateAgencyCandidate } from "@/modules/agency/recruiting/candidates/api";
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
+import AddressComponent from '@/shared/ui/Address.vue';
 import type { CandidateDetail } from '@/modules/agency/recruiting/candidates/types';
-import type { Gender, Source } from "@/shared/types/common";
+import type { Gender, LocationModel, Source } from "@/shared/types/common";
 
 const props = defineProps<{ candidateId: number | string }>();
 const emit = defineEmits<{ (e: 'onUpdateWorker', value: boolean): void }>();
@@ -99,24 +96,24 @@ const { isAdmin } = useAdmin();
 const schema = yup.object({
   name: yup.string().required('Full Name is required').min(2, 'Min 2 characters').max(60, 'Max 60 characters'),
   email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
-  address: yup.string().required('Address is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
 });
 
-const form = useStickyForm<{ name: string; email: string; address: string }>({
+const form = useStickyForm<{ name: string; email: string }>({
   schema,
-  initialValues: { name: '', email: '', address: '' },
+  initialValues: { name: '', email: '' },
 });
-const { name, email, address } = form.fields;
+const { name, email } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
 const candidate = ref<CandidateDetail | null>(null);
-const showPostalCode = ref(false);
 const genderList = ref<Gender[]>([]);
 const sourceList = ref<Source[]>([]);
 const sourceError = ref('');
 const phoneNumber = ref('');
 const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const addressComponent = ref<InstanceType<typeof AddressComponent> | null>(null);
+const location = ref<LocationModel>({ address: '', postalCode: '', city: null });
 
 const genders = computed(() => genderList.value);
 const hasDnuPermission = computed(() => {
@@ -134,13 +131,16 @@ function loadCandidate() {
   getAgencyCandidate(String(props.candidateId))
     .then(response => {
       isLoading.value = false;
+      location.value = {
+        address: response.address || '',
+        postalCode: response.postalCode || '',
+        city: response.city ?? null,
+      };
       candidate.value = response;
-      showPostalCode.value = true;
       phoneNumber.value = response.phoneNumbers?.[0]?.phoneNumber || '';
       form.hydrate({
         name: response.name || '',
         email: response.email || '',
-        address: response.address || '',
       });
     })
     .catch(error => {
@@ -153,8 +153,9 @@ async function validateForm() {
   form.markInteracted();
   const { valid } = await form.validate();
   const phoneValid = phoneComponent.value ? await phoneComponent.value.validatePhone() : false;
+  const addressValid = addressComponent.value ? await addressComponent.value.validateAddress() : false;
   sourceError.value = candidate.value.sourceId ? '' : 'Source is required';
-  if (!valid || !phoneValid || sourceError.value) {
+  if (!valid || !phoneValid || !addressValid || sourceError.value) {
     showAlertError('Please make sure all required fields are filled out correctly');
     return;
   }
@@ -167,7 +168,9 @@ function submitCandidate() {
     ...candidate.value,
     name: name.value,
     email: email.value,
-    address: address.value,
+    address: location.value.address,
+    postalCode: location.value.postalCode || undefined,
+    city: location.value.city ? { id: location.value.city.id, value: location.value.city.value } : null,
     phoneNumbers: [{ phoneNumber: phoneNumber.value }],
   };
   updateAgencyCandidate(String(props.candidateId), payload)

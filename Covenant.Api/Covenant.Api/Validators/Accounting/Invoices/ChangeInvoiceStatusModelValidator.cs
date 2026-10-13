@@ -1,3 +1,4 @@
+using Covenant.Common.Enums;
 using Covenant.Common.Models.Accounting.Invoice;
 using FluentValidation;
 
@@ -7,6 +8,14 @@ public class ChangeInvoiceStatusModelValidator : AbstractValidator<ChangeInvoice
 {
     public ChangeInvoiceStatusModelValidator()
     {
-        RuleFor(m => m.Status).IsInEnum();
+        RuleFor(m => m.Status)
+            .IsInEnum()
+            .NotEqual(InvoiceStatus.Due)
+            .WithMessage("Due is assigned automatically when the payment term expires");
+
+        RuleFor(m => m.PaidAt)
+            .Null()
+            .When(m => m.Status != InvoiceStatus.Paid)
+            .WithMessage("Payment date only applies when marking the invoice as Paid");
     }
 }

@@ -3605,6 +3605,45 @@
         }
       }
     },
+    "/api/jobs/scheduletasks/MarkOverdueInvoices": {
+      "post": {
+        "tags": [
+          "ScheduleTasks"
+        ],
+        "summary": "Marks pending invoices whose payment term has expired as Due. Returns the number of invoices updated.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Int32"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/account/ChangeEmail": {
       "post": {
         "tags": [
@@ -16163,6 +16202,83 @@
         }
       }
     },
+    "/api/agency/recruiting/clients/{id}/PaymentTerms": {
+      "patch": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Updates the number of days the company has to pay an invoice before it becomes due.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Payment terms in days.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/recruiting/clients/{id}/deletion-check": {
       "get": {
         "tags": [
@@ -22548,6 +22664,107 @@
         }
       }
     },
+    "/api/agency/accounting/invoices/payments-report": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Exports the filtered invoices to the payments follow-up Excel (amounts before/after tax, due date, due days, payment date).",
+        "parameters": [
+          {
+            "name": "InvoiceNumber",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "CreatedAtFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "CreatedAtTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "CompanyFullName",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "SalesRepresentative",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Accounting.Invoice.GetInvoicesFilterSortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/accounting/invoices/Preview": {
       "post": {
         "tags": [
@@ -22824,7 +23041,7 @@
         "tags": [
           "Invoices"
         ],
-        "summary": "Changes the status of an invoice (Pending / Paid) and records who changed it and when.",
+        "summary": "Changes the status of an invoice (Pending / Paid) and records who changed it and when. Paid accepts an optional payment date (defaults to today).",
         "parameters": [
           {
             "name": "invoiceId",
@@ -22837,7 +23054,7 @@
           }
         ],
         "requestBody": {
-          "description": "The new status.",
+          "description": "The new status and, for Paid, the payment date.",
           "content": {
             "application/json": {
               "schema": {
@@ -24654,6 +24871,16 @@
         "properties": {
           "status": {
             "$ref": "#/components/schemas/Covenant.Common.Enums.InvoiceStatus"
+          },
+          "paidAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
           }
         }
       },
@@ -24774,6 +25001,12 @@
           "email": {
             "$ref": "#/components/schemas/System.String"
           },
+          "subTotal": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "tax": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
           "totalNet": {
             "$ref": "#/components/schemas/System.Decimal"
           },
@@ -24801,6 +25034,25 @@
           },
           "status": {
             "$ref": "#/components/schemas/Covenant.Common.Enums.InvoiceStatus"
+          },
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "dueDate": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "dueDays": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "paidAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
           },
           "updatedAt": {
             "oneOf": [
@@ -25807,6 +26059,9 @@
           "postalCode": {
             "$ref": "#/components/schemas/System.String"
           },
+          "city": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Location.CityModel"
+          },
           "gender": {
             "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
           },
@@ -25861,6 +26116,9 @@
           "postalCode": {
             "$ref": "#/components/schemas/System.String"
           },
+          "city": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Location.CityModel"
+          },
           "gender": {
             "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
           },
@@ -25910,6 +26168,12 @@
             "$ref": "#/components/schemas/System.String"
           },
           "postalCode": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "city": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "province": {
             "$ref": "#/components/schemas/System.String"
           },
           "residencyStatus": {
@@ -26070,6 +26334,9 @@
           },
           "overtimeStartsAfter": {
             "$ref": "#/components/schemas/System.Double"
+          },
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },
@@ -26214,6 +26481,14 @@
           },
           "salesRepresentative": {
             "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
+      "Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel": {
+        "type": "object",
+        "properties": {
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },
@@ -26445,6 +26720,9 @@
           },
           "overtimeStartsAfter": {
             "$ref": "#/components/schemas/System.Double"
+          },
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },

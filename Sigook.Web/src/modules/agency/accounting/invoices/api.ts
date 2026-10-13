@@ -30,6 +30,10 @@ export function changeInvoiceStatus(invoiceId: string, payload: ChangeInvoiceSta
 // Invoice document / verification / paystubs
 // ---------------------------------------------------------------------------
 
+export function downloadInvoicesPaymentsReport(filter: AgencyInvoiceFilter): Promise<Blob> {
+  return api.get<Blob>('/api/agency/accounting/invoices/payments-report', { params: { ...filter }, responseType: 'blob' });
+}
+
 export function downloadInvoicePdf(invoiceId: string): Promise<Blob> {
   return api.get<Blob>(`/api/agency/accounting/invoices/${invoiceId}/pdf`, { responseType: 'blob' });
 }

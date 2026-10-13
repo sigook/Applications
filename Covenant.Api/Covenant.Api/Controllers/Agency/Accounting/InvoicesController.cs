@@ -41,6 +41,17 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
         return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
     }
 
+    /// <summary>Exports the filtered invoices to the payments follow-up Excel (amounts before/after tax, due date, due days, payment date).</summary>
+    /// <param name="filter">Filter criteria for invoices.</param>
+    [HttpGet("payments-report")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInvoicesPaymentsReport([FromQuery] GetInvoicesFilter filter)
+    {
+        var file = await invoiceService.GetInvoicesPaymentsReport(filter);
+        return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
     /// <summary>Generates a preview of an invoice without persisting it.</summary>
     /// <param name="model">Invoice data to preview.</param>
     [HttpPost("Preview")]
@@ -102,9 +113,9 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
         return BadRequest(ModelState.AddError(result.StringErrors));
     }
 
-    /// <summary>Changes the status of an invoice (Pending / Paid) and records who changed it and when.</summary>
+    /// <summary>Changes the status of an invoice (Pending / Paid) and records who changed it and when. Paid accepts an optional payment date (defaults to today).</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
-    /// <param name="model">The new status.</param>
+    /// <param name="model">The new status and, for Paid, the payment date.</param>
     [HttpPut("{invoiceId:guid}/status")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

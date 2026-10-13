@@ -153,6 +153,7 @@ Candidate pool (recruitment funnel before conversion to Worker).
 | `updatePermissionToSeeRequests(id, settings)` | PATCH | `/api/agency/recruiting/clients/{id}/RequiresPermissionToSeeRequests` | `CompanyProfileSettingsUpdate` | `void` | Restrict request visibility |
 | `updatePaidHolidays(id, settings)` | PATCH | `/api/agency/recruiting/clients/{id}/PaidHolidays` | `CompanyProfileSettingsUpdate` | `void` | |
 | `updateOvertime(id, settings)` | PATCH | `/api/agency/recruiting/clients/{id}/Overtime` | `CompanyProfileSettingsUpdate` | `void` | |
+| `updatePaymentTerms(id, model)` | PATCH | `/api/agency/recruiting/clients/{id}/PaymentTerms` | `CompanyProfilePaymentTermsUpdate` | `void` | Days to pay an invoice (1–365); drives invoice due date / `Due` status |
 
 ### Company Users (Agency-Managed)
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -212,9 +213,10 @@ Agency → company billing.
 | `downloadInvoicePdf(id)` | GET | `/api/agency/accounting/invoices/{id}/pdf` | — | Blob | |
 | `getPayStubsByInvoice(id)` | GET | `/api/agency/accounting/invoices/{id}/paystubs` | — | `PayStubDeleteWarningItem[]` | Linked pay stubs (delete warning) |
 | `sendInvoiceEmail(payload)` | POST | `/api/agency/accounting/invoices/{invoiceId}/email` | FormData (multipart) | `void` | Email invoice + attachments |
-| `changeInvoiceStatus(id, payload)` | PUT | `/api/agency/accounting/invoices/{invoiceId}/status` | `ChangeInvoiceStatusModel` | `void` | Pending ↔ Paid; backend records `UpdatedAt`/`UpdatedBy` |
+| `changeInvoiceStatus(id, payload)` | PUT | `/api/agency/accounting/invoices/{invoiceId}/status` | `ChangeInvoiceStatusModel` | `void` | Pending/Due → Paid (with optional `paidAt`, ISO instant of the picked day) or Paid → Pending; `Due` is job-only; backend records `UpdatedAt`/`UpdatedBy` |
+| `downloadInvoicesPaymentsReport(filter)` | GET | `/api/agency/accounting/invoices/payments-report` | `AgencyInvoiceFilter` (params) | Blob | Payments follow-up Excel (B4 Tax, Amount, Net, Due Date, Due Days, Payment Date) |
 
-**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse`, `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (`accounting/{invoices,paystubs}/types.ts` + `src/shared/types/invoice`)
+**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse` (rows carry `paymentTermDays`, `dueDate`, `dueDays`, `paidAt`), `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (`accounting/{invoices,paystubs}/types.ts` + `src/shared/types/invoice`)
 
 **Pinia:** `agencyInvoiceFilter` in `useAgencyStore`.
 

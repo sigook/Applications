@@ -104,6 +104,7 @@ export interface CompanyProfileDetail {
   industry: CompanyProfileIndustryDetail;
   salesRepresentativeId: string | null;
   overtimeStartsAfter: number;
+  paymentTermDays: number;
 }
 
 // Matches CompanyProfileSummaryModel

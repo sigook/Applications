@@ -92,8 +92,9 @@ usecases — pure Dart), `data/` (Freezed models, local/remote datasources, repo
 
 ### Sigook.Functions (.NET 10, isolated worker, `Microsoft.Azure.Functions.Worker` 2.x)
 
-`Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs` holds two timer triggers
-(`0 0 0 * * 1-5`): `NotificationSinExpiration` and `WarnLicensesExpiration`.
+`Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs` holds three timer triggers:
+`NotificationSinExpiration` and `WarnLicensesExpiration` (`0 0 0 * * 1-5`) and
+`MarkOverdueInvoices` (`0 0 1 * * *`, moves `Pending` invoices past their payment term to `Due`).
 `Functions/CraTables.cs` holds a blob trigger, `CraTableUploaded`, on the `cra-tables` container
 (`CraTablesStorage` connection): it reads the table, the pay period and the year from the blob name
 (`Utils/CraBlobName.cs`) and asks the API to import the CRA CPP or income tax table.
@@ -285,7 +286,11 @@ Configurations/   EF Core IEntityTypeConfiguration classes, same plural tree as 
                   pick configurations by the exact namespace
                   Covenant.Infrastructure.Configurations.Identity, so never nest folders under it
 Migrations/       EF Core migrations for CovenantContext; Migrations/Identity/ for IdentityContext
-Scripts/          raw SQL (views, functions, stored procedures) run at startup
+Scripts/          raw SQL run at startup by DatabaseScriptRunner (copied to the output dir).
+                  Schemas/ Tables/ Views/ Functions/ StoredProcedures/ Types/ run on EVERY
+                  start (must be idempotent: CREATE OR REPLACE). Data/ runs each file ONCE,
+                  in a transaction, tracked by file name in the "ScriptHistory" table
+                  (one-off data fixes that don't deserve an EF migration)
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,

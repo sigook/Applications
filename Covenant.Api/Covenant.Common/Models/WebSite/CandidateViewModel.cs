@@ -7,7 +7,7 @@ public class CandidateViewModel
     public string Phone { get; set; }
     public IList<string> Skills { get; set; }
     public string Status { get; set; }
-    public Guid CountryId { get; set; }
+    public Guid? CityId { get; set; }
     public string Address { get; set; }
     public string FileName { get; set; }
     public bool HasVehicle { get; set; }
@@ -16,6 +16,6 @@ public class CandidateViewModel
 
     public override string ToString()
     {
-        return $"{FullName}|{Email}|{Phone}|{CountryId}|{string.Join(", ", Skills)}";
+        return $"{FullName}|{Email}|{Phone}|{CityId}|{string.Join(", ", Skills ?? [])}";
     }
 }

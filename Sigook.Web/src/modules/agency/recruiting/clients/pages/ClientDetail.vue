@@ -133,6 +133,7 @@ const kpis = computed<DetailKpi[]>(() => {
       value: `${current.overtimeStartsAfter} h`,
       hint: current.paidHolidays ? '· paid holidays' : undefined,
     },
+    { key: 'payment-terms', label: 'Payment terms', value: `Net ${current.paymentTermDays}`, hint: 'days' },
     ...(counts.salesRepresentativeName
       ? [{ key: 'sales', label: 'Sales owner', value: counts.salesRepresentativeName }]
       : []),

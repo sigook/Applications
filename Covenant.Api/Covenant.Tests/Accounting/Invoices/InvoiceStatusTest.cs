@@ -41,6 +41,32 @@ public class InvoiceStatusTest
     }
 
     [Fact]
+    public void Invoice_ChangeStatus_ToPaid_DefaultsPaidAtToNow()
+    {
+        var invoice = new Invoice();
+        invoice.ChangeStatus(InvoiceStatus.Paid, Actor, Now);
+        Assert.Equal(Now, invoice.PaidAt);
+    }
+
+    [Fact]
+    public void Invoice_ChangeStatus_ToPaid_KeepsGivenPaymentDate()
+    {
+        var invoice = new Invoice();
+        var paidOn = new DateTime(2026, 9, 30, 4, 0, 0, DateTimeKind.Utc);
+        invoice.ChangeStatus(InvoiceStatus.Paid, Actor, Now, paidOn);
+        Assert.Equal(paidOn, invoice.PaidAt);
+    }
+
+    [Fact]
+    public void Invoice_ChangeStatus_LeavingPaid_ClearsPaidAt()
+    {
+        var invoice = new Invoice();
+        invoice.ChangeStatus(InvoiceStatus.Paid, Actor, Now);
+        invoice.ChangeStatus(InvoiceStatus.Pending, Actor, Now.AddDays(1));
+        Assert.Null(invoice.PaidAt);
+    }
+
+    [Fact]
     public void Invoice_ChangeStatus_CanRevertToPending()
     {
         var invoice = new Invoice();

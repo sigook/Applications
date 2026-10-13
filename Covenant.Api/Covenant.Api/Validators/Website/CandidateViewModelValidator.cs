@@ -20,6 +20,9 @@ public class CandidateViewModelValidator : AbstractValidator<CandidateViewModel>
             .WithMessage("The correct format for phone number is: ### ###-####");
         RuleFor(c => c.Address)
             .MaximumLength(100);
+        RuleFor(c => c.CityId)
+            .NotEmpty()
+            .When(c => !string.IsNullOrWhiteSpace(c.FullName));
         RuleFor(c => c.Skills)
             .ForEach(skill => skill.MaximumLength(20));
     }

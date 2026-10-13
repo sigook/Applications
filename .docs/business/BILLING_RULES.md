@@ -247,15 +247,40 @@ Two paths remove subcontractor reports:
 
 ---
 
-## Invoice Status
+## Invoice Status & Payment Terms
 
-`Invoice` carries a payment status, `InvoiceStatus` (`Covenant.Common/Enums/InvoiceStatus.cs`): `Pending = 1` (default, column default `'Pending'`) and `Paid = 2`. Stored as a string (`EnumToStringConverter`, max 20).
+`Invoice` carries a payment status, `InvoiceStatus` (`Covenant.Common/Enums/InvoiceStatus.cs`): `Pending = 1` (default, column default `'Pending'`), `Paid = 2` and `Due = 3`. Stored as a string (`EnumToStringConverter`, max 20).
 
-- **Who/when:** every change writes `UpdatedAt` and `UpdatedBy` (FK to `Users`, `UpdatedByUser` navigation) on the invoice row. There is no status history table.
-- **Rule:** `Invoice.ChangeStatus` rejects a change to the status the invoice already has (`"Invoice is already {status}"`). Any other transition is allowed, including `Paid → Pending`.
-- **Endpoint:** `PUT api/agency/accounting/invoices/{invoiceId}/status` with `ChangeInvoiceStatusModel { Status }` → `InvoiceService.ChangeInvoiceStatus`, which loads the invoice through `GetInvoiceForAgency`, scoped to the caller's agencies, so an invoice of another agency answers "Invoice not found".
+### Payment terms (per company)
+
+- `CompanyProfile.PaymentTermDays` (int, default 30, column default `30`) is the number of days the company has to pay an invoice — the "Net" of accounting's spreadsheet. Range 1–365, validated by `CompanyProfilePaymentTermsUpdateModelValidator`.
+- Edited from the client's Settings card: `PATCH api/agency/recruiting/clients/{id}/PaymentTerms` with `CompanyProfilePaymentTermsUpdateModel { PaymentTermDays }`.
+- **Due date** = `Invoice.CreatedAt.Date + CompanyProfile.PaymentTermDays`. It is never stored: `InvoiceListModel.DueDate` is computed from the live company setting, so changing the terms changes the due date of every invoice of that company, past ones included.
+- **Due days** = `today − DueDate` when positive, `0` otherwise and always `0` for `Paid` invoices (`InvoiceListModel.SetDueDays`, filled by `InvoiceService` with `TimeProvider`).
+
+### Transitions
+
+| From | To | Who | Effect |
+|------|----|-----|--------|
+| `Pending` / `Due` | `Paid` | Agency admin (`PUT …/status`) | `PaidAt` = the instant sent in `ChangeInvoiceStatusModel.PaidAt` (the web sends the picked day's local midnight as ISO, same convention as `CreatedAt`), or now when omitted |
+| `Paid` | `Pending` | Agency admin | `PaidAt` cleared. The nightly job may move it to `Due` again if the term already expired |
+| `Pending` | `Due` | `MarkOverdueInvoices` job only | Bulk `ExecuteUpdate` (`IInvoiceRepository.MarkPendingInvoicesAsDue`): `Status = 'Pending'` and `DueDate < today`. `UpdatedAt` = run time, `UpdatedBy` = null (no user) |
+
+- `Due` cannot be set by hand: `ChangeInvoiceStatusModelValidator` rejects it, and `PaidAt` is only accepted together with `Paid`.
+- `Invoice.ChangeStatus` rejects a change to the status the invoice already has (`"Invoice is already {status}"`).
+- The job never moves `Due` back to `Pending` (e.g. after the company's terms are extended); fix those by hand.
+- **Who/when:** every manual change writes `UpdatedAt` and `UpdatedBy` (FK to `Users`, `UpdatedByUser` navigation) on the invoice row. There is no status history table.
+- **Endpoint:** `PUT api/agency/accounting/invoices/{invoiceId}/status` → `InvoiceService.ChangeInvoiceStatus`, which loads the invoice through `GetInvoiceForAgency`, scoped to the caller's agencies, so an invoice of another agency answers "Invoice not found".
+- **Job:** `POST api/jobs/scheduletasks/MarkOverdueInvoices` (`ScheduleTasksController`, returns the number of invoices updated) called by the Azure Function `MarkOverdueInvoices` (`Sigook.Functions/Functions/ScheduleTasks.cs`, timer `0 0 1 * * *`, daily at 01:00) through the usual client-credentials flow; result posted to Teams like the other scheduled tasks.
 - **Status does not affect billing:** it never touches totals, timesheet links (`TimeSheetTotal`), pay stubs or the PDF. Deleting an invoice ignores the status.
-- **List & export:** `InvoiceListModel` exposes `Status`, `UpdatedAt` and `UpdatedByName` (the `AgencyPersonnel.Name` of the user in the invoice's agency, falling back to the user email). `GetInvoicesFilter.Status` filters, `GetInvoicesFilterSortBy.Status` sorts, and the Excel export has a `Status` column.
+
+### List & exports
+
+- `InvoiceListModel` exposes `Status`, `PaymentTermDays`, `DueDate`, `DueDays`, `PaidAt`, `SubTotal`, `Tax`, `UpdatedAt` and `UpdatedByName` (the `AgencyPersonnel.Name` of the user in the invoice's agency, falling back to the user email). `GetInvoicesFilter.Status` filters (`Due` included), `GetInvoicesFilterSortBy.Status` sorts.
+- Agency grid (`Sigook.Web` → Invoices): the status tag tooltip shows `Due Date (Net N) · Due Days · Updated by/at`; a `Payment Date` column shows `PaidAt`. "Mark as Paid" opens `MarkInvoicePaidModal` (payment date, defaults to today, max today); "Mark as Pending" is a confirm.
+- Two Excel exports, both over the grid's current filter:
+  - `GET …/invoices/file` (`GenerateInvoicesReport`): N° Invoice, Created At, Company, Total, Status.
+  - `GET …/invoices/payments-report` (`GenerateInvoicesPaymentsReport`, grid action "Payments report"): Invoice Date, Invoice, Company, B4 Tax (`SubTotal`), Tax, Amount (`TotalNet`), Status, Net (`PaymentTermDays`), Due Date, Due Days, Payment Date — mirrors accounting's payments follow-up spreadsheet.
 - The company portal list does not show the status.
 
 ---
