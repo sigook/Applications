@@ -54,6 +54,12 @@ export interface CandidateApplyPayload {
   requestId?: string;
 }
 
+// JSON part sent when an already registered worker or candidate applies to a posting by email only.
+export interface RegisteredApplyPayload {
+  email: string;
+  requestId: string;
+}
+
 // Job context carried into the candidate apply modal when opened from a posting.
 export interface CandidateApplyModalContext {
   readonly jobTitle?: string;

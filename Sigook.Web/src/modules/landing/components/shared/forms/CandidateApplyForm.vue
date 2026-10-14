@@ -5,7 +5,46 @@
       <span class="reg-form__context-value">{{ contextLine }}</span>
     </p>
 
-    <div v-if="isLoading" class="reg-form__loader" aria-live="polite">
+    <nav v-if="props.requestId" class="tabs is-toggle is-fullwidth reg-form__tabs" role="tablist">
+      <ul>
+        <li :class="{ 'is-active': activeTab === 'new' }">
+          <a role="tab" :aria-selected="activeTab === 'new'" @click="activeTab = 'new'">New Applicant</a>
+        </li>
+        <li :class="{ 'is-active': activeTab === 'registered' }">
+          <a role="tab" :aria-selected="activeTab === 'registered'" @click="activeTab = 'registered'">
+            Already Registered
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <form v-if="activeTab === 'registered'" @submit.prevent="onSubmitRegistered">
+      <h3 class="title">Already registered</h3>
+      <p class="reg-form__hint">
+        Enter the email you used to register with Sigook and we will attach your existing profile to this application.
+      </p>
+
+      <div class="columns is-multiline">
+        <div class="column is-12">
+          <b-field :type="registeredEmailError ? 'is-danger' : ''" :message="registeredEmailError">
+            <template #label>
+              Email <span class="has-text-danger">*</span>
+            </template>
+            <b-input type="email" v-model="registeredEmail" name="registeredEmail" placeholder="you@email.com"
+              :maxlength="100" :has-counter="false" autocomplete="email" />
+          </b-field>
+        </div>
+      </div>
+
+      <div class="step-navigation-buttons">
+        <span></span>
+        <b-button type="is-primary" native-type="submit" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Submitting…' : 'Submit Application' }}
+        </b-button>
+      </div>
+    </form>
+
+    <div v-else-if="isLoading" class="reg-form__loader" aria-live="polite">
       <span class="reg-form__spinner" aria-hidden="true"></span>
       <span>{{ loadingText }}</span>
     </div>
@@ -264,7 +303,7 @@ import PhoneInput from '@/shared/ui/PhoneInput.vue'
 
 import { getSources, getSkills } from '@/shared/api/catalogApi'
 import { getCountries, getProvinces, getCities } from '@/shared/api/locationApi'
-import { submitCandidateApplication } from '@/modules/landing/api'
+import { submitCandidateApplication, submitRegisteredApplication } from '@/modules/landing/api'
 import { residencyList } from '@/shared/constants/catalog'
 import type { City, Country, Province, Source, Skill } from '@/shared/types/common'
 import type { CandidateFormData } from '@/modules/landing/types'
@@ -284,6 +323,9 @@ const emit = defineEmits<{
 }>()
 
 const contextLine = computed(() => props.jobTitle || '')
+
+type ApplyTab = 'new' | 'registered'
+const activeTab = ref<ApplyTab>('new')
 
 const activeStep = ref(0)
 const LAST_STEP = 2
@@ -551,6 +593,34 @@ async function onSubmit(): Promise<void> {
   }
 }
 
+const registeredEmail = ref('')
+const registeredEmailError = ref('')
+const registeredEmailSchema = yup.string().required().email().min(6).max(100)
+
+watch(registeredEmail, () => {
+  registeredEmailError.value = ''
+})
+
+async function onSubmitRegistered(): Promise<void> {
+  if (!props.requestId) return
+  const value = registeredEmail.value.trim()
+  if (!registeredEmailSchema.isValidSync(value)) {
+    registeredEmailError.value = 'Enter a valid email address'
+    return
+  }
+
+  isSubmitting.value = true
+  try {
+    await submitRegisteredApplication(value, props.requestId)
+    showAlertSuccess('Your application has been submitted')
+    emit('submitted')
+  } catch (err: unknown) {
+    showAlertError((err as { data?: string })?.data ?? 'Something went wrong')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     const [countryList, sourceList, skillList] = await Promise.all([
@@ -599,6 +669,13 @@ onMounted(async () => {
 .reg-form__context-value {
   color: #fff;
   font-weight: 600;
+}
+
+.reg-form__hint {
+  margin: 0 0 clamp(18px, 2.2vw, 24px);
+  font-size: clamp(13px, 1.1vw, 14px);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .reg-form__loader {

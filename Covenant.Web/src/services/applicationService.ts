@@ -74,7 +74,7 @@ export const applicationService = {
     // Append data field with CandidateViewModel JSON
     formData.append('data', JSON.stringify(candidateViewModel))
 
-    await api.post('/api/website/v2/candidate', formData, {
+    await api.post('/api/website/candidate', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
   }

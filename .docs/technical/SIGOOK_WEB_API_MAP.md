@@ -714,8 +714,10 @@ Public landing site endpoints (no auth).
 | `getJobs(filter)` | GET | `/api/website/jobs` | `JobSearchFilter` (params; `countries` defaults to `['USA','CA']`) | `JobViewModel[]` | Public job search |
 | `submitContactForm(contact)` | POST | `/api/website/contact` | `ContactForm` | `void` | |
 | `submitCandidate(formData)` | POST | `/api/website/candidate` | FormData (multipart) | `void` | Public candidate apply |
+| `submitCandidateApplication(data, requestId?)` | POST | `/api/website/candidate` | `CandidateApplyPayload` (multipart: `data` + resume file) | `void` | New applicant; builds the multipart from the form |
+| `submitRegisteredApplication(email, requestId)` | POST | `/api/website/candidate` | `RegisteredApplyPayload` (multipart: `data` only) | `void` | "Already Registered" tab: email + request only; the consumer resolves the existing worker/candidate and creates the applicant |
 
-**Types:** `JobSearchFilter`, `JobViewModel`, `ContactForm` (`src/modules/landing/types`)
+**Types:** `JobSearchFilter`, `JobViewModel`, `ContactForm`, `CandidateFormData`, `CandidateApplyPayload`, `RegisteredApplyPayload` (`src/modules/landing/types`)
 
 ---
 
