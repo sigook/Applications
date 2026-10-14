@@ -12,6 +12,7 @@ using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Utils.Extensions;
@@ -153,6 +154,9 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         Assert.Null(overdueUpdated.UpdatedBy);
         Assert.NotNull(overdueUpdated.UpdatedAt);
         Assert.Equal(InvoiceStatus.Pending, (await context.Invoices.AsNoTracking().SingleAsync(i => i.Id == current.Id)).Status);
+        Startup.Teams.Verify(t => t.SendNotification(
+            It.IsAny<string>(),
+            It.Is<TeamsNotificationModel>(n => n.Text.Contains(overdue.InvoiceNumber) && !n.Text.Contains(current.InvoiceNumber))), Times.AtLeastOnce);
 
         var due = await GetInvoices($"?status={(int)InvoiceStatus.Due}");
         InvoiceListModel row = due.Detail.Items.Single(i => i.Id == overdue.Id);
@@ -221,6 +225,8 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
 
     public class Startup
     {
+        public static readonly Mock<Covenant.Common.Interfaces.ITeamsService> Teams = new();
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();
@@ -237,7 +243,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             services.AddSingleton(invoiceContainer.Object);
             var payStubContainer = new Mock<IPayStubsContainer>();
             services.AddSingleton(payStubContainer.Object);
-            services.AddSingleton(Mock.Of<Covenant.Common.Interfaces.ITeamsService>());
+            services.AddSingleton(Teams.Object);
             var currentUserService = new Mock<Covenant.Common.Interfaces.ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
             currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });

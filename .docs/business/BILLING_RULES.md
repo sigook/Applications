@@ -264,14 +264,14 @@ Two paths remove subcontractor reports:
 |------|----|-----|--------|
 | `Pending` / `Due` | `Paid` | Agency admin (`PUT …/status`) | `PaidAt` = the instant sent in `ChangeInvoiceStatusModel.PaidAt` (the web sends the picked day's local midnight as ISO, same convention as `CreatedAt`), or now when omitted |
 | `Paid` | `Pending` | Agency admin | `PaidAt` cleared. The nightly job may move it to `Due` again if the term already expired |
-| `Pending` | `Due` | `MarkOverdueInvoices` job only | Bulk `ExecuteUpdate` (`IInvoiceRepository.MarkPendingInvoicesAsDue`): `Status = 'Pending'` and `DueDate < today`. `UpdatedAt` = run time, `UpdatedBy` = null (no user) |
+| `Pending` | `Due` | `MarkOverdueInvoices` job only | Bulk `ExecuteUpdate` (`IInvoiceRepository.MarkPendingInvoicesAsDue`): `Status = 'Pending'` and `DueDate < today`. `UpdatedAt` = run time, `UpdatedBy` = null (no user). Returns the invoice numbers it marked, ordered by `NumberId` |
 
 - `Due` cannot be set by hand: `ChangeInvoiceStatusModelValidator` rejects it, and `PaidAt` is only accepted together with `Paid`.
 - `Invoice.ChangeStatus` rejects a change to the status the invoice already has (`"Invoice is already {status}"`).
 - The job never moves `Due` back to `Pending` (e.g. after the company's terms are extended); fix those by hand.
 - **Who/when:** every manual change writes `UpdatedAt` and `UpdatedBy` (FK to `Users`, `UpdatedByUser` navigation) on the invoice row. There is no status history table.
 - **Endpoint:** `PUT api/agency/accounting/invoices/{invoiceId}/status` → `InvoiceService.ChangeInvoiceStatus`, which loads the invoice through `GetInvoiceForAgency`, scoped to the caller's agencies, so an invoice of another agency answers "Invoice not found".
-- **Job:** `POST api/jobs/scheduletasks/MarkOverdueInvoices` (`ScheduleTasksController`, returns the number of invoices updated) called by the Azure Function `MarkOverdueInvoices` (`Sigook.Functions/Functions/ScheduleTasks.cs`, timer `0 0 1 * * *`, daily at 01:00) through the usual client-credentials flow; result posted to Teams like the other scheduled tasks.
+- **Job:** `POST api/jobs/scheduletasks/MarkOverdueInvoices` (`ScheduleTasksController`, returns the number of invoices updated) called by the Azure Function `MarkOverdueInvoices` (`Sigook.Functions/Functions/ScheduleTasks.cs`, timer `0 0 1 * * *`, daily at 01:00) through the usual client-credentials flow; the Function posts the HTTP result to Teams like the other scheduled tasks. When at least one invoice was marked, `InvoiceService.MarkOverdueInvoices` also posts a warning to the Accounting Teams channel (the same one that receives invoice deletions): `"Invoices marked as Due"` / `"Invoices {numbers} are Due"` (`"Invoice {number} is Due"` for a single one), so accounting sees exactly which invoices changed. Nothing is posted when no invoice was marked.
 - **Status does not affect billing:** it never touches totals, timesheet links (`TimeSheetTotal`), pay stubs or the PDF. Deleting an invoice ignores the status.
 
 ### List & exports

@@ -290,7 +290,10 @@ Scripts/          raw SQL run at startup by DatabaseScriptRunner (copied to the 
                   Schemas/ Tables/ Views/ Functions/ StoredProcedures/ Types/ run on EVERY
                   start (must be idempotent: CREATE OR REPLACE). Data/ runs each file ONCE,
                   in a transaction, tracked by file name in the "ScriptHistory" table
-                  (one-off data fixes that don't deserve an EF migration)
+                  (one-off data fixes that don't deserve an EF migration). The root
+                  .gitignore ignores *.sql, so a script only ships (and only runs in
+                  staging/production) when added with `git add -f`; the integration test
+                  exercises the runner with a temporary script instead of a real one
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,

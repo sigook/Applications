@@ -18,10 +18,13 @@ public static class DatabaseScriptRunner
         "Types",
     ];
 
+    private static readonly string BasePath =
+        Path.Combine(Path.GetDirectoryName(typeof(CovenantContext).Assembly.Location)!, "Scripts");
+
+    public static string DataPath => Path.Combine(BasePath, DataFolder);
+
     public static async Task RunAsync(DbContext context)
     {
-        var assemblyFolder = Path.GetDirectoryName(typeof(CovenantContext).Assembly.Location)!;
-        var basePath = Path.Combine(assemblyFolder, "Scripts");
         var connection = context.Database.GetDbConnection();
         var wasClosed = connection.State != ConnectionState.Open;
         if (wasClosed)
@@ -30,27 +33,24 @@ public static class DatabaseScriptRunner
         }
         foreach (var folder in Folders)
         {
-            foreach (var file in GetScripts(basePath, folder))
+            foreach (var file in GetScripts(Path.Combine(BasePath, folder)))
             {
                 await ExecuteAsync(connection, await File.ReadAllTextAsync(file));
             }
         }
-        await RunOnceAsync(connection, basePath);
+        await RunOnceAsync(connection);
         if (wasClosed)
         {
             await connection.CloseAsync();
         }
     }
 
-    private static IEnumerable<string> GetScripts(string basePath, string folder)
-    {
-        var fullDir = Path.Combine(basePath, folder);
-        return Directory.Exists(fullDir) ? Directory.GetFiles(fullDir, "*.sql").OrderBy(f => f) : [];
-    }
+    private static IEnumerable<string> GetScripts(string folder) =>
+        Directory.Exists(folder) ? Directory.GetFiles(folder, "*.sql").OrderBy(f => f) : [];
 
-    private static async Task RunOnceAsync(DbConnection connection, string basePath)
+    private static async Task RunOnceAsync(DbConnection connection)
     {
-        var scripts = GetScripts(basePath, DataFolder).ToList();
+        var scripts = GetScripts(DataPath).ToList();
         if (scripts.Count == 0) return;
 
         await ExecuteAsync(connection, """

@@ -78,8 +78,18 @@ public class InvoiceService(
         return await mediator.Send(new GenerateInvoicesPaymentsReport(result));
     }
 
-    public Task<int> MarkOverdueInvoices() =>
-        invoiceRepository.MarkPendingInvoicesAsDue(timeProvider.GetLocalNow().DateTime);
+    public async Task<int> MarkOverdueInvoices()
+    {
+        var invoiceNumbers = await invoiceRepository.MarkPendingInvoicesAsDue(timeProvider.GetLocalNow().DateTime);
+        if (invoiceNumbers.Count > 0)
+        {
+            string text = invoiceNumbers.Count == 1
+                ? $"Invoice {invoiceNumbers[0]} is Due"
+                : $"Invoices {string.Join(", ", invoiceNumbers)} are Due";
+            await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning("Invoices marked as Due", text));
+        }
+        return invoiceNumbers.Count;
+    }
 
     private async Task<List<InvoiceListModel>> GetAllInvoices(GetInvoicesFilter filter)
     {

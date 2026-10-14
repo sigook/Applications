@@ -48,13 +48,24 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
     public Task<Invoice> GetInvoiceForAgency(IEnumerable<Guid> agencyIds, Guid invoiceId) =>
         Context.Invoices.FirstOrDefaultAsync(i => i.Id == invoiceId && agencyIds.Contains(i.CompanyProfile.AgencyId));
 
-    public Task<int> MarkPendingInvoicesAsDue(DateTime today) =>
-        Context.Invoices
+    public async Task<IReadOnlyList<string>> MarkPendingInvoicesAsDue(DateTime today)
+    {
+        var overdue = await Context.Invoices
             .Where(i => i.Status == InvoiceStatus.Pending && i.CreatedAt.Date.AddDays(i.CompanyProfile.PaymentTermDays) < today.Date)
+            .OrderBy(i => i.NumberId)
+            .Select(i => new { i.Id, i.InvoiceNumber })
+            .ToListAsync();
+        if (overdue.Count == 0) return [];
+
+        var ids = overdue.Select(i => i.Id).ToList();
+        await Context.Invoices
+            .Where(i => ids.Contains(i.Id))
             .ExecuteUpdateAsync(s => s
                 .SetProperty(i => i.Status, InvoiceStatus.Due)
                 .SetProperty(i => i.UpdatedAt, today)
                 .SetProperty(i => i.UpdatedBy, (Guid?)null));
+        return overdue.Select(i => i.InvoiceNumber).ToList();
+    }
 
     public async Task<List<InvoiceListModel>> GetAllInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
