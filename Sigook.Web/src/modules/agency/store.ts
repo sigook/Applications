@@ -4,6 +4,7 @@ import type { AgencyDetail, PersonnelAgencyItem } from '@/modules/agency/profile
 import type { AgencyListFilter } from '@/modules/agency/sales/agencies/types';
 import type { AgencyRequestFilter } from '@/modules/agency/recruiting/requests/types';
 import type { AgencyApplicantsFilter } from '@/modules/agency/recruiting/applicants/types';
+import type { AgencyRunnersFilter } from '@/modules/agency/recruiting/runners/types';
 import type { AgencyWorkerFilter } from '@/modules/agency/recruiting/workers/types';
 import type { AgencyCompanyFilter } from '@/modules/agency/recruiting/clients/types';
 import type { AgencyCandidateFilter } from '@/modules/agency/recruiting/candidates/types';
@@ -15,6 +16,7 @@ interface AgencyStoreState {
   personnelAgencies: PersonnelAgencyItem[];
   agencyRequestFilter: AgencyRequestFilter | null;
   agencyApplicantsFilter: AgencyApplicantsFilter | null;
+  agencyRunnersFilter: AgencyRunnersFilter | null;
   agencyCandidateFilter: AgencyCandidateFilter | null;
   agencyWorkerProfileFilter: AgencyWorkerFilter | null;
   agencyCompanyProfileFilter: AgencyCompanyFilter | null;
@@ -32,6 +34,7 @@ export const useAgencyStore = defineStore('agency', {
     personnelAgencies: [],
     agencyRequestFilter: null,
     agencyApplicantsFilter: null,
+    agencyRunnersFilter: null,
     agencyCandidateFilter: null,
     agencyWorkerProfileFilter: null,
     agencyCompanyProfileFilter: null,
@@ -63,6 +66,9 @@ export const useAgencyStore = defineStore('agency', {
     },
     updateAgencyApplicantsFilter(data: AgencyApplicantsFilter | null) {
       this.agencyApplicantsFilter = data;
+    },
+    updateAgencyRunnersFilter(data: AgencyRunnersFilter | null) {
+      this.agencyRunnersFilter = data;
     },
     updateAgencyCandidateFilter(data: AgencyCandidateFilter | null) {
       this.agencyCandidateFilter = data;

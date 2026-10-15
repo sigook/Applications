@@ -41,8 +41,58 @@
       </div>
     </div>
 
-    <SigookGrid :data="report.items" :paginated="false" :fit-viewport="false">
+    <SigookGrid v-if="isSummary" :data="summary" :paginated="false" :fit-viewport="false" focusable
+      @click="selectUser">
       <template #actions>
+        <b-button icon-left="file-excel" :disabled="report.items.length === 0" @click="exportReport">
+          Export Excel
+        </b-button>
+      </template>
+      <b-table-column field="name" label="User" v-slot="props">
+        {{ props.row.name }}
+      </b-table-column>
+      <b-table-column field="days" label="Days" numeric v-slot="props">
+        {{ props.row.days }}
+      </b-table-column>
+      <b-table-column field="workedHours" label="Worked" numeric v-slot="props">
+        {{ formatHours(props.row.workedHours) }}
+      </b-table-column>
+      <b-table-column field="lunchHours" label="Lunch" numeric v-slot="props">
+        {{ formatHours(props.row.lunchHours) }}
+      </b-table-column>
+      <b-table-column field="regularHours" label="Regular" numeric v-slot="props">
+        {{ formatHours(props.row.regularHours) }}
+      </b-table-column>
+      <b-table-column field="overtimeHours" label="Overtime" numeric cell-class="attendance-overtime-cell"
+        v-slot="props">
+        {{ formatHours(props.row.overtimeHours) }}
+      </b-table-column>
+      <b-table-column field="status" label="Status" v-slot="props">
+        <b-tag v-if="props.row.missingClockOuts > 0" type="is-danger is-light">
+          {{ props.row.missingClockOuts }} missing out
+        </b-tag>
+      </b-table-column>
+      <b-table-column field="actions" v-slot="props">
+        <b-button type="is-info" outlined rounded icon-right="chevron-right" aria-label="View detail"
+          @click="selectUser(props.row)"></b-button>
+      </b-table-column>
+      <template #footer>
+        <template v-if="summary.length > 0">
+          <th>Total</th>
+          <th class="has-text-right">{{ report.items.length }}</th>
+          <th class="has-text-right">{{ formatHours(report.totals.workedHours) }}</th>
+          <th class="has-text-right">{{ formatHours(report.totals.lunchHours) }}</th>
+          <th class="has-text-right">{{ formatHours(report.totals.regularHours) }}</th>
+          <th class="has-text-right attendance-overtime-cell">{{ formatHours(report.totals.overtimeHours) }}</th>
+          <th></th>
+          <th></th>
+        </template>
+      </template>
+    </SigookGrid>
+
+    <SigookGrid v-else :data="report.items" :paginated="false" :fit-viewport="false">
+      <template #actions>
+        <b-button icon-left="arrow-left" @click="userId = ''">All users</b-button>
         <b-button icon-left="file-excel" :disabled="report.items.length === 0" @click="exportReport">
           Export Excel
         </b-button>
@@ -115,7 +165,7 @@ import { downloadAttendanceReport, getAttendanceReport } from '@/modules/agency/
 import { downloadFile } from '@/shared/utils/downloadFile';
 import { showAlertError } from '@/shared/utils/toast';
 import { formatHours } from '@/modules/agency/profile/attendance';
-import type { AgencyPersonnelListItem, UserAttendanceListItem, UserAttendanceReport, UserAttendanceReportFilter } from '@/modules/agency/profile/types';
+import type { AgencyPersonnelListItem, UserAttendanceListItem, UserAttendanceReport, UserAttendanceReportFilter, UserAttendanceSummaryItem } from '@/modules/agency/profile/types';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import AttendanceEditModal from '@/modules/agency/profile/components/AttendanceEditModal.vue';
 
@@ -135,6 +185,36 @@ const report = ref<UserAttendanceReport>({
 });
 const showEdit = ref(false);
 const editing = ref<UserAttendanceListItem | null>(null);
+
+const isSummary = computed(() => !userId.value);
+
+const summary = computed<UserAttendanceSummaryItem[]>(() => {
+  const byUser = new Map<string, UserAttendanceSummaryItem>();
+  for (const item of report.value.items) {
+    const row = byUser.get(item.userId) ?? {
+      userId: item.userId,
+      name: item.name,
+      days: 0,
+      missingClockOuts: 0,
+      workedHours: 0,
+      lunchHours: 0,
+      regularHours: 0,
+      overtimeHours: 0,
+    };
+    row.days += 1;
+    row.missingClockOuts += item.isMissingClockOut ? 1 : 0;
+    row.workedHours += item.workedHours;
+    row.lunchHours += item.lunchHours;
+    row.regularHours += item.regularHours;
+    row.overtimeHours += item.overtimeHours;
+    byUser.set(item.userId, row);
+  }
+  return [...byUser.values()].sort((a, b) => a.name.localeCompare(b.name));
+});
+
+function selectUser(row: UserAttendanceSummaryItem) {
+  userId.value = row.userId;
+}
 
 const filter = computed<UserAttendanceReportFilter | null>(() => {
   if (dates.value?.length !== 2) return null;

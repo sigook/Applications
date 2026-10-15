@@ -390,7 +390,20 @@ Runners — recruiting pipeline of prospects per request (list, status transitio
 
 **Types:** `AgencyRunnerFilter`, `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, `CreateRunnerInterviewModel`, `RescheduleRunnerInterviewModel` (`src/modules/agency/recruiting/requests/runners/types`); `ApplicantSearchResult` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes))
 
-**UI:** `components/agency_request/Runners.vue` + `components/runner/*` (CreateRunner, RunnerStatusModal, RunnerInterviewModal, RunnerHistoryModal). See WORKFLOWS.md → Runner Pipeline Flow.
+**UI:** `recruiting/requests/components/Runners.vue` (the request tab) and `recruiting/runners/pages/Runners.vue` (the cross-request board) both render `recruiting/runners/components/RunnersGrid.vue`, whose detail row is `RunnerDetailPanel` (history timeline + interviews); `requests/runners/*` keeps CreateRunner, RunnerActionsDropdown, RunnerActionModals (status, interview, history = the same panel in a modal, used by the weekly board) and `useRunnerActions`. See WORKFLOWS.md → Runner Pipeline Flow.
+
+### Runners board → `src/modules/agency/recruiting/runners/api.ts`
+Runners of every request of the agency, grouped by request. Base: `/api/agency/recruiting/runners`.
+
+| Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
+|----------|------------|----------|--------------|---------------|-------|
+| `getAgencyRunners(filter)` | GET | `/api/agency/recruiting/runners` | `AgencyRunnersFilter` (params) | `AgencyRunnersPagedResponse` | Same contract as the applicants board: the page is a page of REQUESTS (`pageSize` counts requests), each one carries all its matching runners, only requests with runners appear; `totalRunners` counts the whole filter. `onlyMine` resolves to the requests the caller is recruiter of |
+| `changeAgencyRunnersStatus(model)` | PUT | `/api/agency/recruiting/runners/Status` | `ChangeRunnersStatusModel` | `ChangeRunnersStatusResult` | Bulk change across requests: applies what it can and returns `skipped[]` with the reason (hired runner, request without runners, not found). `InterviewRescheduled` is never a target; `Hired` requires `startDate` |
+| (Export) | GET | `/api/agency/recruiting/runners/File` | `AgencyRunnersFilter` (params) | Excel | Every runner of the filter, one row each |
+
+**Types:** `RunnerRow`, `AgencyRunnersFilter`, `AgencyRunnerSortBy`, `AgencyRunner`, `AgencyRequestRunners`, `AgencyRunnersPagedResponse`, `ChangeRunnersStatusModel`, `SkippedRunner`, `ChangeRunnersStatusResult` (`src/modules/agency/recruiting/runners/types`)
+
+**Pinia:** `agencyRunnersFilter` in `useAgencyStore`.
 
 ---
 

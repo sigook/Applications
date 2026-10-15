@@ -336,6 +336,20 @@ PUT api/agency/recruiting/requests/{requestId}/runners/{id}/Interview/{interview
 
 All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
 
+### Step 5: Work every request's runners from one board
+
+**Recruiting → Runners** (`/recruiting/runners`, `Controllers/Agency/Recruiting/Runners/RunnersController.cs`) lists the runners of every open request of the agency, grouped by request, with the same shell as the Applicants board: filters (request #, name/email, client, position, type, status, start date), *Assigned to me* (requests the caller is recruiter of), expand/collapse, Excel export and a selection bar.
+
+```
+GET api/agency/recruiting/runners            → RunnerService.GetAgencyRunners      (page of REQUESTS; a request never splits across pages; only requests with runners appear)
+GET api/agency/recruiting/runners/File       → GenerateAgencyRunnersReport          (one row per runner of the filter)
+PUT api/agency/recruiting/runners/Status     → RunnerService.ChangeRunnersStatus    { "runnerIds", "status", "comments", "startDate" }
+```
+
+Each request header shows `hired/workersQuantity` and whether it still uses runners (a request switched to the compliance checklist shows its runners read-only). Each runner row expands inline into the same history timeline + interviews the Runners tab and the weekly board show, with *Change status*, *Add interview* and *Delete*.
+
+The bulk status change applies the entity rules per runner and never fails as a whole: hired runners, runners of requests without runners and unknown ids are returned in `skipped[]` with the reason, the rest are updated with one history entry each carrying the comments. `InterviewRescheduled` is never a bulk target (it is only set by rescheduling an interview) and `Hired` requires `startDate` for the whole batch.
+
 ### Punch card gating
 
 - **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` composable, used in `AgencyPunchCardWorkerContainer.vue` via `v-if="isAdmin"` / `:disabled="!isAdmin || ..."`); the attendance `0` is entered by whoever may edit.
