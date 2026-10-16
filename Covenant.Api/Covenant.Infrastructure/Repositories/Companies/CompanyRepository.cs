@@ -19,31 +19,18 @@ using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Repositories.Companies;
 
-public class CompanyRepository : ICompanyRepository
+public class CompanyRepository(CovenantContext context, IOptions<FilesConfiguration> options) : BaseRepository<CovenantContext>(context), ICompanyRepository
 {
-    private readonly CovenantContext _context;
-    private readonly FilesConfiguration filesConfiguration;
-
-    public CompanyRepository(CovenantContext context, IOptions<FilesConfiguration> options)
-    {
-        _context = context;
-        filesConfiguration = options.Value;
-    }
-
-    public async Task Create<T>(T entity) where T : class => await _context.Set<T>().AddAsync(entity);
-
-    public void Delete<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
-
-    public void Update<T>(T entity) where T : class => _context.Set<T>().Update(entity);
+    private readonly FilesConfiguration filesConfiguration = options.Value;
 
     public Task<CompanyProfileIdsModel> GetCompanyProfileId(Expression<Func<CompanyProfile, bool>> condition) =>
-        _context.CompanyProfiles.Where(condition)
+        Context.CompanyProfiles.Where(condition)
             .Select(p => new CompanyProfileIdsModel { Id = p.Id, CompanyId = p.CompanyId })
             .SingleOrDefaultAsync();
 
     public async Task<IEnumerable<LocationDetailModel>> GetCompanyLocations(Expression<Func<CompanyProfileLocation, bool>> condition)
     {
-        var locations = await _context.CompanyProfileLocations
+        var locations = await Context.CompanyProfileLocations
             .Include(cpl => cpl.Location)
             .ThenInclude(l => l.City)
             .ThenInclude(c => c.Province)
@@ -69,7 +56,7 @@ public class CompanyRepository : ICompanyRepository
 
     public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression)
     {
-        var query = _context.CompanyProfileJobPositionRates.Where(expression)
+        var query = Context.CompanyProfileJobPositionRates.Where(expression)
             .Select(s => new CompanyProfileJobPositionRateModel
             {
                 Id = s.Id,
@@ -113,10 +100,10 @@ public class CompanyRepository : ICompanyRepository
         return result;
     }
 
-    public async Task<CompanyProfileJobPositionRate> GetJobPosition(Guid id) => await _context.CompanyProfileJobPositionRates.FirstOrDefaultAsync(cpj => cpj.Id == id);
+    public async Task<CompanyProfileJobPositionRate> GetJobPosition(Guid id) => await Context.CompanyProfileJobPositionRates.FirstOrDefaultAsync(cpj => cpj.Id == id);
 
     public Task<CompanyProfileJobPositionRateModel> GetJobPositionDetail(Guid id) =>
-        _context.CompanyProfileJobPositionRates.Where(c => c.Id == id)
+        Context.CompanyProfileJobPositionRates.Where(c => c.Id == id)
             .Select(s => new CompanyProfileJobPositionRateModel
             {
                 Id = s.Id,
@@ -158,7 +145,7 @@ public class CompanyRepository : ICompanyRepository
 
     public async Task<CompanyProfile> GetCompanyProfile(Expression<Func<CompanyProfile, bool>> expression)
     {
-        var profile = await _context.CompanyProfiles.Where(expression)
+        var profile = await Context.CompanyProfiles.Where(expression)
             .Include(c => c.Agency).ThenInclude(a => a.User)
             .Include(c => c.Company)
             .Include(c => c.Logo)
@@ -167,7 +154,7 @@ public class CompanyRepository : ICompanyRepository
             .Include(c => c.Industry).ThenInclude(i => i.Industry)
             .SingleOrDefaultAsync();
         if (profile is null) return null;
-        var positionRates = await _context.CompanyProfileJobPositionRates
+        var positionRates = await Context.CompanyProfileJobPositionRates
             .Where(c => !c.IsDeleted && c.CompanyProfileId == profile.Id)
             .ToListAsync();
         profile.JobPositionRates = positionRates;
@@ -182,7 +169,7 @@ public class CompanyRepository : ICompanyRepository
 
     public IQueryable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter)
     {
-        var companies = _context.CompanyProfiles
+        var companies = Context.CompanyProfiles
             .Include(cp => cp.Locations)
             .Include(cp => cp.Industry).ThenInclude(i => i.Industry)
             .Include(cp => cp.Company)
@@ -191,7 +178,7 @@ public class CompanyRepository : ICompanyRepository
         if (filter.SalesPersonnelId.HasValue)
             companies = companies.Where(cp => cp.SalesRepresentativeId == filter.SalesPersonnelId.Value);
         var query = from cp in companies
-                    from cpcp in _context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).Take(1).DefaultIfEmpty()
+                    from cpcp in Context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).OrderBy(cpcp => cpcp.Id).Take(1).DefaultIfEmpty()
                     orderby cp.FullName
                     select new CompanyProfileListModel
                     {
@@ -228,7 +215,7 @@ public class CompanyRepository : ICompanyRepository
         var companyList = GetAllCompaniesProfileForAgency(agencyId, filter).ToList();
         var profileIds = companyList.Select(c => c.Id).ToList();
 
-        var contacts = await _context.CompanyProfileContactPeople
+        var contacts = await Context.CompanyProfileContactPeople
             .Where(cp => profileIds.Contains(cp.CompanyProfileId))
             .Select(cp => new CompanyProfileContactPersonModel
             {
@@ -245,7 +232,7 @@ public class CompanyRepository : ICompanyRepository
                 OfficeNumberExt = cp.OfficeNumberExt
             }).ToListAsync();
 
-        var jobPositions = await _context.CompanyProfileJobPositionRates
+        var jobPositions = await Context.CompanyProfileJobPositionRates
             .Where(jp => profileIds.Contains(jp.CompanyProfileId) && !jp.IsDeleted)
             .Select(jp => new CompanyProfileJobPositionRateModel
             {
@@ -261,7 +248,7 @@ public class CompanyRepository : ICompanyRepository
                 JobPosition = jp.JobPosition
             }).ToListAsync();
 
-        var users = await _context.CompanyUsers
+        var users = await Context.CompanyUsers
             .Where(cu => profileIds.Contains(cu.CompanyProfileId))
             .Select(cu => new CompanyUserModel
             {
@@ -360,17 +347,17 @@ public class CompanyRepository : ICompanyRepository
         var model = await SelectCompanyProfileDetail<AgencyCompanyProfileDetailModel>(cp => cp.Id == companyProfileId)
             .FirstOrDefaultAsync();
         if (model is null) return null;
-        model.Summary = await _context.CompanyProfiles
+        model.Summary = await Context.CompanyProfiles
             .Where(cp => cp.Id == companyProfileId)
             .Select(cp => new CompanyProfileSummaryModel
             {
-                OpenRequestsCount = _context.Requests.Count(r => r.CompanyProfileId == cp.Id && r.Status == RequestStatus.Open),
-                AsapRequestsCount = _context.Requests.Count(r => r.CompanyProfileId == cp.Id && r.Status == RequestStatus.Open && r.IsAsap),
-                WorkersWorkingCount = _context.Requests.Where(r => r.CompanyProfileId == cp.Id && r.Status != RequestStatus.Cancelled)
+                OpenRequestsCount = Context.Requests.Count(r => r.CompanyProfileId == cp.Id && r.Status == RequestStatus.Open),
+                AsapRequestsCount = Context.Requests.Count(r => r.CompanyProfileId == cp.Id && r.Status == RequestStatus.Open && r.IsAsap),
+                WorkersWorkingCount = Context.Requests.Where(r => r.CompanyProfileId == cp.Id && r.Status != RequestStatus.Cancelled)
                     .Sum(r => r.WorkersQuantityWorking),
                 RolesCount = cp.JobPositionRates.Count(j => !j.IsDeleted),
                 ContactsCount = cp.ContactPeople.Count,
-                UsersCount = _context.CompanyUsers.Count(cu => cu.CompanyProfileId == cp.Id),
+                UsersCount = Context.CompanyUsers.Count(cu => cu.CompanyProfileId == cp.Id),
                 LocationsCount = cp.Locations.Count,
                 DocumentsCount = cp.Documents.Count,
                 SalesRepresentativeName = cp.SalesRepresentative == null
@@ -383,7 +370,7 @@ public class CompanyRepository : ICompanyRepository
 
     private IQueryable<T> SelectCompanyProfileDetail<T>(Expression<Func<CompanyProfile, bool>> expression)
         where T : CompanyProfileDetailModel, new() =>
-        _context.CompanyProfiles
+        Context.CompanyProfiles
             .Where(expression)
             .Select(cp => new T
             {
@@ -423,27 +410,26 @@ public class CompanyRepository : ICompanyRepository
                 },
                 RequiresPermissionToSeeRequests = cp.RequiresPermissionToSeeRequests,
                 SalesRepresentativeId = cp.SalesRepresentativeId,
-                OvertimeStartsAfter = cp.OvertimeStartsAfter.TotalHours
+                OvertimeStartsAfter = cp.OvertimeStartsAfter.TotalHours,
+                PaymentTermDays = cp.PaymentTermDays
             });
 
-    public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
     public Task<Guid> GetCompanyIdForUser(Guid userId) =>
-        _context.CompanyUsers.Where(w => w.UserId == userId)
+        Context.CompanyUsers.Where(w => w.UserId == userId)
             .Select(s => s.CompanyProfile.CompanyId).SingleOrDefaultAsync();
 
     public Task<CompanyUserModel> GetCompanyUserDetail(Guid id) =>
-        _context.CompanyUsers.Where(uw => uw.UserId == id)
+        Context.CompanyUsers.Where(uw => uw.UserId == id)
             .Select(CompanyExtensionsMapping.SelectCompanyUser).SingleOrDefaultAsync();
 
     public Task<CompanyUser> GetCompanyUser(Guid id) =>
-        _context.CompanyUsers.Where(uw => uw.UserId == id)
+        Context.CompanyUsers.Where(uw => uw.UserId == id)
             .Include(u => u.User)
             .SingleOrDefaultAsync();
 
     public async Task<IEnumerable<CompanyProfileContactPersonModel>> GetContactPeople(Expression<Func<CompanyProfileContactPerson, bool>> condition)
     {
-        var query = await _context.CompanyProfileContactPeople
+        var query = await Context.CompanyProfileContactPeople
             .Where(condition)
             .Select(CompanyExtensionsMapping.SelectContactPerson)
             .ToListAsync();
@@ -451,13 +437,13 @@ public class CompanyRepository : ICompanyRepository
     }
 
     public Task<CompanyProfileContactPersonModel> GetContactPersonDetail(Guid profileId, Guid id) =>
-        _context.CompanyProfileContactPeople.Where(c => c.CompanyProfileId == profileId && c.Id == id)
+        Context.CompanyProfileContactPeople.Where(c => c.CompanyProfileId == profileId && c.Id == id)
             .Select(CompanyExtensionsMapping.SelectContactPerson).SingleOrDefaultAsync();
 
-    public Task<CompanyProfileContactPerson> GetContactPerson(Guid id) => _context.CompanyProfileContactPeople.SingleOrDefaultAsync(c => c.Id == id);
+    public Task<CompanyProfileContactPerson> GetContactPerson(Guid id) => Context.CompanyProfileContactPeople.SingleOrDefaultAsync(c => c.Id == id);
 
     public Task<CompanyProfileLocationDetailModel> GetLocationDetail(Guid id) =>
-        _context.CompanyProfileLocations.Where(c => c.LocationId == id)
+        Context.CompanyProfileLocations.Where(c => c.LocationId == id)
             .Select(l => new CompanyProfileLocationDetailModel
             {
                 Id = l.LocationId,
@@ -477,12 +463,13 @@ public class CompanyRepository : ICompanyRepository
             }).SingleOrDefaultAsync();
 
     public Task<CompanyProfileLocation> GetLocation(Guid id) =>
-        _context.CompanyProfileLocations.Where(c => c.LocationId == id)
+        Context.CompanyProfileLocations.Where(c => c.LocationId == id)
             .Include(c => c.Location)
             .Select(l => l).SingleOrDefaultAsync();
 
     public Task<PaginatedList<CompanyProfileDocumentModel>> GetDocuments(Guid profileId, Pagination pagination) =>
-        _context.CompanyProfileDocuments.Where(c => c.CompanyProfileId == profileId)
+        Context.CompanyProfileDocuments.Where(c => c.CompanyProfileId == profileId)
+            .OrderByDescending(c => c.CreatedAt)
             .Select(s => new CompanyProfileDocumentModel
             {
                 Id = s.DocumentId,
@@ -493,58 +480,58 @@ public class CompanyRepository : ICompanyRepository
                 CanDownload = true
             }).ToPaginatedList(pagination);
 
-    public Task<CompanyProfileDocument> GetDocument(Guid id) => _context.CompanyProfileDocuments.SingleOrDefaultAsync(c => c.DocumentId == id);
+    public Task<CompanyProfileDocument> GetDocument(Guid id) => Context.CompanyProfileDocuments.SingleOrDefaultAsync(c => c.DocumentId == id);
 
     public Task<PaginatedList<NoteModel>> GetNotes(Guid profileId, Pagination pagination) =>
-        _context.CompanyProfileNotes.Where(w => w.CompanyProfileId == profileId && !w.Note.IsDeleted)
+        Context.CompanyProfileNotes.Where(w => w.CompanyProfileId == profileId && !w.Note.IsDeleted)
             .Select(CompanyExtensionsMapping.SelectNote).OrderByDescending(c => c.CreatedAt).ToPaginatedList(pagination);
 
     public Task<NoteModel> GetNoteDetail(Guid profileId, Guid id) =>
-        _context.CompanyProfileNotes.Where(w => w.CompanyProfileId == profileId && w.NoteId == id)
+        Context.CompanyProfileNotes.Where(w => w.CompanyProfileId == profileId && w.NoteId == id)
             .Select(CompanyExtensionsMapping.SelectNote).SingleOrDefaultAsync();
 
     public Task<CompanyProfileNote> GetNote(Guid profileId, Guid id) =>
-        _context.CompanyProfileNotes.Where(c => c.CompanyProfileId == profileId && c.NoteId == id)
+        Context.CompanyProfileNotes.Where(c => c.CompanyProfileId == profileId && c.NoteId == id)
             .Include(c => c.Note).SingleOrDefaultAsync();
 
     public Task<string> GetCompanyProfileInvoiceNotes(Guid companyProfileId) =>
-        _context.CompanyProfileInvoiceNotes.Where(n => n.CompanyProfileId == companyProfileId)
+        Context.CompanyProfileInvoiceNotes.Where(n => n.CompanyProfileId == companyProfileId)
             .Select(n => n.HtmlNotes)
             .AsNoTracking()
             .SingleOrDefaultAsync();
 
     public async Task UpdateCompanyProfileInvoiceNotes(Guid companyProfileId, string htmlNotes)
     {
-        CompanyProfileInvoiceNotes notes = await _context.CompanyProfileInvoiceNotes.Where(n => n.CompanyProfileId == companyProfileId)
+        CompanyProfileInvoiceNotes notes = await Context.CompanyProfileInvoiceNotes.Where(n => n.CompanyProfileId == companyProfileId)
             .SingleOrDefaultAsync();
         if (notes is null)
         {
-            await _context.CompanyProfileInvoiceNotes.AddAsync(new CompanyProfileInvoiceNotes(companyProfileId, htmlNotes));
+            await Context.CompanyProfileInvoiceNotes.AddAsync(new CompanyProfileInvoiceNotes(companyProfileId, htmlNotes));
         }
         else
         {
             notes.ChangeHtmlNotes(htmlNotes);
-            _context.CompanyProfileInvoiceNotes.Update(notes);
+            Context.CompanyProfileInvoiceNotes.Update(notes);
         }
-        await _context.SaveChangesAsync();
+        await Context.SaveChangesAsync();
     }
 
     public Task<List<CompanyProfileInvoiceRecipientModel>> GetInvoiceRecipients(Guid companyProfileId) =>
-        _context.CompanyProfileInvoiceRecipients.Where(r => r.CompanyProfileId == companyProfileId)
+        Context.CompanyProfileInvoiceRecipients.Where(r => r.CompanyProfileId == companyProfileId)
             .Select(r => new CompanyProfileInvoiceRecipientModel { Id = r.Id, Email = r.Email, Name = r.Name })
             .ToListAsync();
     public async Task<CompanyProfileInvoiceRecipient> GetInvoiceRecipient(Guid id)
     {
-        return await _context.CompanyProfileInvoiceRecipients.FirstOrDefaultAsync(cpir => cpir.Id == id);
+        return await Context.CompanyProfileInvoiceRecipients.FirstOrDefaultAsync(cpir => cpir.Id == id);
     }
 
     public async Task UpdateInvoiceRecipient(Guid id, CompanyProfileInvoiceRecipientModel model)
     {
-        var entity = await _context.CompanyProfileInvoiceRecipients.FirstOrDefaultAsync(r => r.Id == id);
+        var entity = await Context.CompanyProfileInvoiceRecipients.FirstOrDefaultAsync(r => r.Id == id);
         if (entity is null) return;
         entity.Name = model.Name;
         entity.UpdateEmail(model.Email);
-        _context.CompanyProfileInvoiceRecipients.Update(entity);
+        Context.CompanyProfileInvoiceRecipients.Update(entity);
     }
 
     public async Task<Guid> CreateInvoiceRecipient(Guid companyProfileId, CompanyProfileInvoiceRecipientModel model)
@@ -556,7 +543,7 @@ public class CompanyRepository : ICompanyRepository
 
     public async Task<IEnumerable<CompanyUserModel>> GetAllCompanyUsers(Guid companyProfileId)
     {
-        var companyUsers = await _context.CompanyUsers
+        var companyUsers = await Context.CompanyUsers
             .Where(cu => cu.CompanyProfileId == companyProfileId)
             .OrderBy(cu => cu.Name).ThenBy(cu => cu.Lastname)
             .Select(CompanyExtensionsMapping.SelectCompanyUser).ToListAsync();
@@ -569,15 +556,15 @@ public class CompanyRepository : ICompanyRepository
         var companyPhones = bulk.Select(c => c.ContactPerson).ToList();
         var companyLocations = bulk.Select(c => c.CompanyLocation).ToList();
 
-        await _context.AddRangeAsync(companies);
-        await _context.AddRangeAsync(companyPhones);
-        await _context.AddRangeAsync(companyLocations);
+        await Context.AddRangeAsync(companies);
+        await Context.AddRangeAsync(companyPhones);
+        await Context.AddRangeAsync(companyLocations);
 
     }
 
     public async Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, Guid? companyProfileId, GetDealsFilter filter)
     {
-        var deals = _context.Deals.Where(d => d.CompanyProfile.AgencyId == agencyId);
+        var deals = Context.Deals.Where(d => d.CompanyProfile.AgencyId == agencyId);
         if (companyProfileId.HasValue) deals = deals.Where(d => d.CompanyProfileId == companyProfileId.Value);
         var query = deals
             .Select(d => new DealListModel
@@ -604,11 +591,11 @@ public class CompanyRepository : ICompanyRepository
     }
 
     public Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression) =>
-        _context.Deals.FirstOrDefaultAsync(expression);
+        Context.Deals.FirstOrDefaultAsync(expression);
 
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, Guid? companyProfileId, GetCompanyInteractionsFilter filter)
     {
-        var interactions = _context.CompanyInteractions.Where(i => i.CompanyProfile.AgencyId == agencyId);
+        var interactions = Context.CompanyInteractions.Where(i => i.CompanyProfile.AgencyId == agencyId);
         if (companyProfileId.HasValue) interactions = interactions.Where(i => i.CompanyProfileId == companyProfileId.Value);
         var query = interactions
             .Select(i => new CompanyInteractionListModel
@@ -631,11 +618,11 @@ public class CompanyRepository : ICompanyRepository
     }
 
     public Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression) =>
-        _context.CompanyInteractions.FirstOrDefaultAsync(expression);
+        Context.CompanyInteractions.FirstOrDefaultAsync(expression);
 
     public Task<List<DealStatusSummaryModel>> GetDealsByStatus(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive, List<DealStatus> statuses)
     {
-        var query = _context.Deals
+        var query = Context.Deals
             .Where(d => d.CompanyProfile.AgencyId == agencyId && d.Date >= fromUtc && d.Date < toUtcExclusive);
         if (ownerId.HasValue) query = query.Where(d => d.UserId == ownerId.Value);
         if (statuses is { Count: > 0 }) query = query.Where(d => statuses.Contains(d.Status));
@@ -652,7 +639,7 @@ public class CompanyRepository : ICompanyRepository
 
     public Task<List<InteractionTypeSummaryModel>> GetInteractionsByType(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive)
     {
-        var query = _context.CompanyInteractions
+        var query = Context.CompanyInteractions
             .Where(i => i.CompanyProfile.AgencyId == agencyId && i.CreatedAt >= fromUtc && i.CreatedAt < toUtcExclusive);
         if (ownerId.HasValue) query = query.Where(i => i.UserId == ownerId.Value);
         return query
@@ -667,9 +654,9 @@ public class CompanyRepository : ICompanyRepository
 
     public Task<List<RecentClientModel>> GetRecentInteractionClients(Guid agencyId, Guid? ownerId, int take)
     {
-        var interactions = _context.CompanyInteractions.AsQueryable();
+        var interactions = Context.CompanyInteractions.AsQueryable();
         if (ownerId.HasValue) interactions = interactions.Where(i => i.UserId == ownerId.Value);
-        return _context.CompanyProfiles
+        return Context.CompanyProfiles
             .Where(cp => cp.AgencyId == agencyId)
             .Select(cp => new
             {
@@ -693,19 +680,18 @@ public class CompanyRepository : ICompanyRepository
 
     public async Task<CompanyDeletionCheckModel> GetDeletionCheck(Guid companyProfileId)
     {
-        var model = await _context.CompanyProfiles
+        var model = await Context.CompanyProfiles
             .Where(c => c.Id == companyProfileId)
             .Select(c => new CompanyDeletionCheckModel { Id = c.Id, FullName = c.FullName })
             .SingleOrDefaultAsync();
         if (model is null) return null;
         var counts = new Dictionary<string, int>
         {
-            ["Requests"] = await _context.Requests.CountAsync(r => r.CompanyProfileId == companyProfileId),
-            ["Invoices"] = await _context.Invoices.CountAsync(i => i.CompanyProfileId == companyProfileId),
-            ["USA invoices"] = await _context.InvoicesUSA.CountAsync(i => i.CompanyProfileId == companyProfileId),
-            ["Deals"] = await _context.Deals.CountAsync(d => d.CompanyProfileId == companyProfileId),
-            ["Interactions"] = await _context.CompanyInteractions.CountAsync(i => i.CompanyProfileId == companyProfileId),
-            ["Worker comments"] = await _context.WorkerComments.CountAsync(c => c.CompanyProfileId == companyProfileId)
+            ["Requests"] = await Context.Requests.CountAsync(r => r.CompanyProfileId == companyProfileId),
+            ["Invoices"] = await Context.Invoices.CountAsync(i => i.CompanyProfileId == companyProfileId),
+            ["Deals"] = await Context.Deals.CountAsync(d => d.CompanyProfileId == companyProfileId),
+            ["Interactions"] = await Context.CompanyInteractions.CountAsync(i => i.CompanyProfileId == companyProfileId),
+            ["Worker comments"] = await Context.WorkerComments.CountAsync(c => c.CompanyProfileId == companyProfileId)
         };
         model.Blockers = counts.Where(c => c.Value > 0)
             .Select(c => new CompanyDeletionBlockerModel { Entity = c.Key, Count = c.Value })
@@ -714,34 +700,34 @@ public class CompanyRepository : ICompanyRepository
     }
 
     public Task<List<Guid>> GetCompanyUserIds(Guid companyProfileId) =>
-        _context.CompanyUsers.Where(cu => cu.CompanyProfileId == companyProfileId)
+        Context.CompanyUsers.Where(cu => cu.CompanyProfileId == companyProfileId)
             .Select(cu => cu.UserId).ToListAsync();
 
     public async Task DeleteCompanyProfile(Guid companyProfileId)
     {
-        var locationIds = await _context.CompanyProfileLocations
+        var locationIds = await Context.CompanyProfileLocations
             .Where(l => l.CompanyProfileId == companyProfileId).Select(l => l.LocationId).ToListAsync();
-        var noteIds = await _context.CompanyProfileNotes
+        var noteIds = await Context.CompanyProfileNotes
             .Where(n => n.CompanyProfileId == companyProfileId).Select(n => n.NoteId).ToListAsync();
-        var fileIds = await _context.CompanyProfileDocuments
+        var fileIds = await Context.CompanyProfileDocuments
             .Where(d => d.CompanyProfileId == companyProfileId).Select(d => d.DocumentId).ToListAsync();
-        var logoId = await _context.CompanyProfiles
+        var logoId = await Context.CompanyProfiles
             .Where(c => c.Id == companyProfileId).Select(c => c.LogoId).SingleOrDefaultAsync();
         if (logoId.HasValue) fileIds.Add(logoId.Value);
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-        await _context.CompanyProfileNotes.Where(n => n.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyProfileDocuments.Where(d => d.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyProfileLocations.Where(l => l.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyProfileContactPeople.Where(c => c.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyProfileJobPositionRates.Where(j => j.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyProfileInvoiceNotes.Where(n => n.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyProfileInvoiceRecipients.Where(r => r.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyUsers.Where(u => u.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
-        await _context.CompanyProfiles.Where(c => c.Id == companyProfileId).ExecuteDeleteAsync();
-        await _context.CovenantNotes.Where(n => noteIds.Contains(n.Id)).ExecuteDeleteAsync();
-        await _context.Locations.Where(l => locationIds.Contains(l.Id)).ExecuteDeleteAsync();
-        await _context.CovenantFiles.Where(f => fileIds.Contains(f.Id)).ExecuteDeleteAsync();
+        await using var transaction = await Context.Database.BeginTransactionAsync();
+        await Context.CompanyProfileNotes.Where(n => n.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyProfileDocuments.Where(d => d.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyProfileLocations.Where(l => l.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyProfileContactPeople.Where(c => c.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyProfileJobPositionRates.Where(j => j.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyProfileInvoiceNotes.Where(n => n.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyProfileInvoiceRecipients.Where(r => r.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyUsers.Where(u => u.CompanyProfileId == companyProfileId).ExecuteDeleteAsync();
+        await Context.CompanyProfiles.Where(c => c.Id == companyProfileId).ExecuteDeleteAsync();
+        await Context.CovenantNotes.Where(n => noteIds.Contains(n.Id)).ExecuteDeleteAsync();
+        await Context.Locations.Where(l => locationIds.Contains(l.Id)).ExecuteDeleteAsync();
+        await Context.CovenantFiles.Where(f => fileIds.Contains(f.Id)).ExecuteDeleteAsync();
         await transaction.CommitAsync();
     }
 
@@ -794,7 +780,7 @@ public class CompanyRepository : ICompanyRepository
 
     public async Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm)
     {
-        var companyProfiles = _context.CompanyProfiles.Where(cp => cp.AgencyId == agencyId);
+        var companyProfiles = Context.CompanyProfiles.Where(cp => cp.AgencyId == agencyId);
         var query = companyProfiles
             .Select(cp => new BaseModel<Guid>
             {

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using OpenIddict.Validation.AspNetCore;
 using Scalar.AspNetCore;
 using System.Globalization;
@@ -127,12 +128,12 @@ if (string.IsNullOrEmpty(connectionString))
 {
     logger.LogWarning("Database connection string is missing or empty. Application will start but health checks will report unhealthy.");
     // Register DbContext with empty connection string to prevent startup errors
-    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql("").ConfigureWarnings(IgnorePendingModelChanges));
+    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql("", UseSplitQueries).ConfigureWarnings(IgnorePendingModelChanges));
     builder.Services.AddDbContext<MyKeysContext>(b => b.UseNpgsql("").ConfigureWarnings(IgnorePendingModelChanges));
 }
 else
 {
-    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql(connectionString).ConfigureWarnings(IgnorePendingModelChanges));
+    builder.Services.AddDbContext<CovenantContext>(b => b.UseNpgsql(connectionString, UseSplitQueries).ConfigureWarnings(IgnorePendingModelChanges));
     builder.Services.AddDbContext<MyKeysContext>(b => b.UseNpgsql(connectionString).ConfigureWarnings(IgnorePendingModelChanges))
         .AddDataProtection()
         .PersistKeysToDbContext<MyKeysContext>();
@@ -140,6 +141,9 @@ else
 
 static void IgnorePendingModelChanges(WarningsConfigurationBuilder warnings) =>
     warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
+
+static void UseSplitQueries(NpgsqlDbContextOptionsBuilder npgsql) =>
+    npgsql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
 
 builder.Services.AddCovenantIdentity(builder.Configuration);
 builder.Services.AddCovenantOpenIddict(builder.Configuration, builder.Environment);

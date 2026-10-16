@@ -1,7 +1,8 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Request.Agency;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,11 +17,11 @@ public class RequestHistoryController(IRequestRepository requestRepository) : Co
 {
     public const string RouteName = "api/agency/recruiting/workers/{workerProfileId}/requesthistory";
 
-    /// <summary>Gets a paginated request history for the specified worker profile.</summary>
+    /// <summary>Gets the paginated request history for the specified worker profile.</summary>
     /// <param name="workerProfileId">Identifier of the worker profile.</param>
-    /// <param name="pagination">Pagination parameters.</param>
+    /// <param name="filter">Filter, sort and pagination criteria.</param>
     [HttpGet]
-    [ProducesResponseType(typeof(PaginatedList<RequestListModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult> Get(Guid workerProfileId, Pagination pagination) =>
-        Ok(await requestRepository.GetRequestsHistoryByWorkerProfileId(workerProfileId, pagination));
+    [ProducesResponseType(typeof(PaginatedList<WorkerRequestHistoryModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult> Get(Guid workerProfileId, [FromQuery] GetWorkerRequestHistoryFilter filter) =>
+        Ok(await requestRepository.GetWorkerRequestHistory(User.GetAgencyId(), workerProfileId, filter));
 }

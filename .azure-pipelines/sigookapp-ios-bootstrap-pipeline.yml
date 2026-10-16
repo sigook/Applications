@@ -1,6 +1,6 @@
-name: SigookApp-iOS-Bootstrap-$(Date:yyyyMMdd)$(Rev:.r)
+name: Sigook.App-iOS-Bootstrap-$(Date:yyyyMMdd)$(Rev:.r)
 
-# PIPELINE: SigookApp iOS bootstrap (manual, one-off)
+# PIPELINE: Sigook.App iOS bootstrap (manual, one-off)
 # ============================================
 # Runs the iOS project migrations that a new Flutter release applies on first
 # build (Swift Package Manager, UIScene, Xcode project format) on a hosted
@@ -32,7 +32,7 @@ parameters:
 
 variables:
 - name: workingDirectory
-  value: '$(System.DefaultWorkingDirectory)/SigookApp'
+  value: '$(System.DefaultWorkingDirectory)/Sigook.App'
 
 stages:
 - stage: Bootstrap

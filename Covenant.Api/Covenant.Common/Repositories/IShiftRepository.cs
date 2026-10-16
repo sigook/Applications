@@ -1,8 +1,5 @@
-﻿using Covenant.Common.Entities;
+namespace Covenant.Common.Repositories;
 
-namespace Covenant.Common.Repositories
+public interface IShiftRepository : IBaseRepository
 {
-    public interface IShiftRepository : IBaseRepository<Shift>
-    {
-    }
 }

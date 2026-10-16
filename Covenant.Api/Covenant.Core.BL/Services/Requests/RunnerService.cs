@@ -4,7 +4,9 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Request.Runners;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
+using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Requests;
+using FluentValidation;
 
 namespace Covenant.Core.BL.Services.Requests;
 
@@ -12,7 +14,8 @@ public class RunnerService(
     IRunnerRepository runnerRepository,
     IRequestRepository requestRepository,
     IWorkerRepository workerRepository,
-    ICurrentUserService currentUserService) : IRunnerService
+    ICurrentUserService currentUserService,
+    IValidator<ChangeRunnersStatusModel> changeRunnersStatusValidator) : IRunnerService
 {
     private const string RunnersNotAllowed = "This order does not accept runners";
 
@@ -56,6 +59,32 @@ public class RunnerService(
         if (!result) return result;
         await runnerRepository.SaveChangesAsync();
         return Result.Ok();
+    }
+
+    public Task<AgencyRunnersPagedResponse> GetAgencyRunners(GetAgencyRunnersFilter filter) =>
+        runnerRepository.GetAgencyRunners(currentUserService.GetAgencyId(), filter);
+
+    public async Task<Result<ChangeRunnersStatusResultModel>> ChangeRunnersStatus(ChangeRunnersStatusModel model)
+    {
+        var validationResult = await changeRunnersStatusValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure<ChangeRunnersStatusResultModel>();
+        var agencyId = currentUserService.GetAgencyId();
+        var changedBy = currentUserService.GetUserId();
+        var runners = await runnerRepository.GetRunners(r => model.RunnerIds.Contains(r.Id) && r.Request.CompanyProfile.AgencyId == agencyId);
+        var response = new ChangeRunnersStatusResultModel();
+        foreach (var runner in runners)
+        {
+            var result = runner.Request.UsesRunners
+                ? runner.ChangeStatus(model.Status, changedBy, model.Comments, model.StartDate)
+                : Result.Fail(RunnersNotAllowed);
+            if (result) response.Updated++;
+            else response.Skipped.Add(new SkippedRunnerModel { RunnerId = runner.Id, Reason = result.StringErrors });
+        }
+        response.Skipped.AddRange(model.RunnerIds
+            .Where(id => runners.TrueForAll(r => r.Id != id))
+            .Select(id => new SkippedRunnerModel { RunnerId = id, Reason = "Runner not found" }));
+        if (response.Updated > 0) await runnerRepository.SaveChangesAsync();
+        return Result.Ok(response);
     }
 
     public async Task<Result<Guid>> AddInterview(Guid runnerId, RunnerInterviewCreateModel model)

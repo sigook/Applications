@@ -1,4 +1,4 @@
-using Covenant.Common.Configuration;
+﻿using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
@@ -11,42 +11,20 @@ using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Repositories.Requests;
 
-public class TimesheetRepository : ITimesheetRepository
+public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimits timeLimits) : BaseRepository<CovenantContext>(context), ITimesheetRepository
 {
-    private readonly CovenantContext _context;
-    private readonly Rates rates;
-    private readonly IRequestRepository requestRepository;
-    private readonly TimeLimits timeLimits;
-
-    public TimesheetRepository(
-        CovenantContext context,
-        Rates rates,
-        IRequestRepository requestRepository,
-        TimeLimits timeLimits)
-    {
-        _context = context;
-        this.rates = rates;
-        this.requestRepository = requestRepository;
-        this.timeLimits = timeLimits;
-    }
-
-    public async Task Create<T>(T entity) where T : class => await _context.Set<T>().AddAsync(entity);
-
-    public void Delete<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
-
-    public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
-    public Task<TimeSheet> GetTimeSheet(Guid id) => _context.TimeSheets.SingleOrDefaultAsync(s => s.Id == id);
+    public Task<TimeSheet> GetTimeSheet(Guid id) => Context.TimeSheets.SingleOrDefaultAsync(s => s.Id == id);
 
     public async Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerProfileId, Guid requestId, Expression<Func<Common.Entities.Request.Request, bool>> requestCondition)
     {
-        var query = from wr in _context.WorkerRequests.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
-                    join r in _context.Requests.Where(requestCondition) on wr.RequestId equals r.Id
+        var query = from wr in Context.WorkerRequests.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
+                    join r in Context.Requests.Where(requestCondition) on wr.RequestId equals r.Id
                     from ts in wr.TimeSheets
                     select ts;
         return await query.ToListAsync();
@@ -54,7 +32,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerProfileId, Guid requestId, DateTime? startDate, DateTime? endDate)
     {
-        var timeSheet = _context.TimeSheets.AsQueryable();
+        var timeSheet = Context.TimeSheets.AsQueryable();
         if (startDate.HasValue)
         {
             timeSheet = timeSheet.Where(ts => ts.Date >= startDate.Value);
@@ -63,7 +41,7 @@ public class TimesheetRepository : ITimesheetRepository
         {
             timeSheet = timeSheet.Where(ts => ts.Date <= endDate.Value);
         }
-        var query = from wr in _context.WorkerRequests.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
+        var query = from wr in Context.WorkerRequests.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
                     join ts in timeSheet on wr.Id equals ts.WorkerRequestId
                     orderby ts.Date
                     select new TimeSheetListModel
@@ -99,46 +77,103 @@ public class TimesheetRepository : ITimesheetRepository
         return result;
     }
 
-    public async Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid workerProfileId, Pagination pagination)
+    public async Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid agencyId, Guid workerProfileId, GetWorkerTimeSheetHistoryFilter filter)
     {
-        var query = from th in _context.TimesheetHistories.Where(th => th.WorkerProfileId == workerProfileId)
-                    select new TimeSheetHistoryModel
-                    {
-                        RowNumber = th.RowNumber,
-                        NumberId = th.NumberId,
-                        BusinessName = th.CompanyName,
-                        JobTitle = th.JobTitle,
-                        Date = th.Date,
-                        IsHoliday = th.IsHoliday,
-                        RegularHours = !th.RegularHours.HasValue ? 0 : th.RegularHours.Value.TotalHours,
-                        HolidayHours = !th.HolidayHours.HasValue ? 0 : th.HolidayHours.Value.TotalHours,
-                        OvertimeHours = !th.OvertimeHours.HasValue ? 0 : th.OvertimeHours.Value.TotalHours,
-                        MissingHours = !th.MissingHours.HasValue ? 0 : th.MissingHours.Value.TotalHours,
-                        MissingHoursOvertime = !th.MissingHoursOvertime.HasValue ? 0 : th.MissingHoursOvertime.Value.TotalHours
-                    };
-        var result = await query.ToPaginatedList(pagination);
-        return result;
+        var query = Context.TimeSheets
+            .Where(ts => ts.WorkerRequest.WorkerProfileId == workerProfileId && ts.WorkerRequest.WorkerProfile.AgencyId == agencyId)
+            .Select(ts => new TimeSheetHistoryModel
+            {
+                Id = ts.Id,
+                RequestId = ts.WorkerRequest.RequestId,
+                NumberId = ts.WorkerRequest.Request.NumberId,
+                BusinessName = ts.WorkerRequest.Request.CompanyProfile.FullName,
+                JobTitle = ts.WorkerRequest.Request.JobTitle,
+                Date = ts.Date,
+                IsHoliday = ts.IsHoliday,
+                RegularHours = ts.TimeSheetTotal == null ? 0 : ts.TimeSheetTotal.RegularHours.TotalHours,
+                HolidayHours = ts.TimeSheetTotal == null ? 0 : ts.TimeSheetTotal.HolidayHours.TotalHours,
+                OvertimeHours = ts.TimeSheetTotal == null ? 0 : ts.TimeSheetTotal.OvertimeHours.TotalHours,
+                MissingHours = ts.MissingHours.TotalHours,
+                MissingHoursOvertime = ts.MissingHoursOvertime.TotalHours
+            });
+        query = query.Where(ApplyFilterTimeSheetHistory(filter));
+        query = ApplySortTimeSheetHistory(query, filter);
+        var page = await query.ToPaginatedList(filter);
+        if (page.Items.Any())
+        {
+            await FillTimeSheetHistoryAccumulated(workerProfileId, page.Items);
+        }
+        return page;
     }
 
-    public async Task<TimesheetHistoryAccumulated> GetTimesheetHistoryAccumulated(Guid workerProfileId, int rowNumber)
+    private async Task FillTimeSheetHistoryAccumulated(Guid workerProfileId, List<TimeSheetHistoryModel> page)
     {
-        var timesheets = await _context.TimesheetHistories
-            .Where(th => th.WorkerProfileId == workerProfileId && th.RowNumber <= rowNumber)
+        var history = await Context.TimeSheets
+            .Where(t => t.WorkerRequest.WorkerProfileId == workerProfileId)
+            .OrderBy(t => t.Date).ThenBy(t => t.Id)
+            .Select(t => new TimeSheetHistoryHours(
+                t.Id,
+                t.TimeSheetTotal == null ? 0 : t.TimeSheetTotal.RegularHours.TotalHours,
+                t.TimeSheetTotal == null ? 0 : t.TimeSheetTotal.HolidayHours.TotalHours,
+                t.TimeSheetTotal == null ? 0 : t.TimeSheetTotal.OvertimeHours.TotalHours,
+                t.MissingHours.TotalHours,
+                t.MissingHoursOvertime.TotalHours))
             .ToListAsync();
-        var result = new TimesheetHistoryAccumulated
+        var byId = page.ToDictionary(t => t.Id);
+        double regular = 0, holiday = 0, overtime = 0, missing = 0, missingOvertime = 0;
+        foreach (var timeSheet in history)
         {
-            RegularHours = timesheets.Sum(th => th.RegularHours?.TotalHours ?? 0d),
-            HolidayHours = timesheets.Sum(th => th.HolidayHours?.TotalHours ?? 0d),
-            OvertimeHours = timesheets.Sum(th => th.OvertimeHours?.TotalHours ?? 0d),
-            MissingHours = timesheets.Sum(th => th.MissingHours?.TotalHours ?? 0d),
-            MissingHoursOvertime = timesheets.Sum(th => th.MissingHoursOvertime?.TotalHours ?? 0d)
-        };
-        return result;
+            regular += timeSheet.Regular;
+            holiday += timeSheet.Holiday;
+            overtime += timeSheet.Overtime;
+            missing += timeSheet.Missing;
+            missingOvertime += timeSheet.MissingOvertime;
+            if (!byId.TryGetValue(timeSheet.Id, out var row)) continue;
+            row.AccumulatedRegularHours = regular;
+            row.AccumulatedHolidayHours = holiday;
+            row.AccumulatedOvertimeHours = overtime;
+            row.AccumulatedMissingHours = missing;
+            row.AccumulatedMissingHoursOvertime = missingOvertime;
+        }
+    }
+
+    private sealed record TimeSheetHistoryHours(Guid Id, double Regular, double Holiday, double Overtime, double Missing, double MissingOvertime);
+
+    private static Expression<Func<TimeSheetHistoryModel, bool>> ApplyFilterTimeSheetHistory(GetWorkerTimeSheetHistoryFilter filter)
+    {
+        var predicate = PredicateBuilder.New<TimeSheetHistoryModel>(true);
+        if (!string.IsNullOrWhiteSpace(filter.CompanyName))
+        {
+            var companyName = filter.CompanyName.ToLower();
+            predicate = predicate.And(t => t.BusinessName.ToLower().Contains(companyName));
+        }
+        if (filter.NumberId.HasValue)
+            predicate = predicate.And(t => t.NumberId == filter.NumberId.Value);
+        if (filter.DateFrom.HasValue && filter.DateTo.HasValue)
+            predicate = predicate.And(t => t.Date.Date >= filter.DateFrom.Value.Date && t.Date.Date <= filter.DateTo.Value.Date);
+        return predicate;
+    }
+
+    private static IQueryable<TimeSheetHistoryModel> ApplySortTimeSheetHistory(IQueryable<TimeSheetHistoryModel> query, GetWorkerTimeSheetHistoryFilter filter)
+    {
+        switch (filter.SortBy)
+        {
+            case WorkerTimeSheetHistorySortBy.Company:
+                return query.AddOrderBy(filter, t => t.BusinessName).ThenByDescending(t => t.Date).ThenBy(t => t.Id);
+            case WorkerTimeSheetHistorySortBy.Request:
+                return query.AddOrderBy(filter, t => t.NumberId).ThenByDescending(t => t.Date).ThenBy(t => t.Id);
+            case WorkerTimeSheetHistorySortBy.Date:
+                return filter.IsDescending
+                    ? query.OrderByDescending(t => t.Date).ThenByDescending(t => t.Id)
+                    : query.OrderBy(t => t.Date).ThenBy(t => t.Id);
+            default:
+                return query.OrderByDescending(t => t.Date).ThenByDescending(t => t.Id);
+        }
     }
 
     public async Task<PaginatedList<TimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination)
     {
-        var query = (from workerRequest in _context.WorkerRequests
+        var query = (from workerRequest in Context.WorkerRequests
                      from timeSheet in workerRequest.TimeSheets
                      where workerRequest.WorkerProfile.WorkerId == workerId && workerRequest.RequestId == requestId
                      select new TimeSheetListModel
@@ -162,7 +197,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<List<TimeSheetApprovedBillingModel>> GetTimeSheetForCreatingInvoice(IEnumerable<Guid> agencyIds, CreateInvoiceModel model)
     {
-        var timeSheet = _context.TimeSheets
+        var timeSheet = Context.TimeSheets
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(ts => ts.Request)
             .ThenInclude(ts => ts.CompanyProfile).ThenInclude(cp => cp.Agency)
@@ -217,7 +252,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyProfileId)
     {
-        var timeSheets = _context.TimeSheets
+        var timeSheets = Context.TimeSheets
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
             .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId))
             .Where(ts => ts.WorkerRequest.Request.CompanyProfileId == companyProfileId);
@@ -266,7 +301,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId)
     {
-        var timeSheets = _context.TimeSheets
+        var timeSheets = Context.TimeSheets
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
             .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId))
             .Where(ts => ts.WorkerRequest.WorkerProfile.WorkerId == workerId);
@@ -313,7 +348,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<List<TimeSheetApprovedPayrollModel>> GetApprovedTimeSheetsInRange(Guid workerProfileId, DateTime start, DateTime end)
     {
-        var timeSheets = _context.TimeSheets
+        var timeSheets = Context.TimeSheets
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null)
             .Where(ts => ts.Date.Date >= start.Date && ts.Date.Date <= end.Date);
 
@@ -360,7 +395,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds)
     {
-        var timeSheet = _context.TimeSheets.Where(c => c.TimeInApproved != null
+        var timeSheet = Context.TimeSheets.Where(c => c.TimeInApproved != null
                                                       && c.TimeOutApproved != null
                                                       && agencyIds.Contains(c.WorkerRequest.Request.CompanyProfile.AgencyId)
                                                       && c.TimeSheetTotalPayroll == null);
@@ -390,23 +425,12 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<TimeSheetUsagesModel> GetTimeSheetUsages(Guid requestId, Guid workerProfileId, Guid id)
     {
-        var request = await requestRepository.GetRequestDetailForAgency(requestId);
-        var timesheetTotal = _context.TimeSheetTotals.Where(ts => ts.TimeSheetId == id);
-        long? invoiceNumber;
-        if (request.JobLocation.IsUSA)
-        {
-            invoiceNumber = await (from tst in timesheetTotal
-                                   join iut in _context.InvoiceUSATimeSheetTotals on tst.Id equals iut.TimeSheetTotalId
-                                   select iut.InvoiceUSA.InvoiceNumberId).FirstOrDefaultAsync();
-        }
-        else
-        {
-            invoiceNumber = await (from tst in timesheetTotal
-                                   join it in _context.InvoiceTotals on tst.Id equals it.TimeSheetTotalId
-                                   select it.Invoice.InvoiceNumber).FirstOrDefaultAsync();
-        }
-        var paystubNumber = await (from tst in _context.TimeSheetTotals.Where(tst => tst.TimeSheetId == id)
-                                   join pswd in _context.PayStubWageDetails on tst.Id equals pswd.TimeSheetTotalId
+        var invoiceNumber = await Context.InvoiceTotals
+            .Where(it => it.TimeSheetTotal.TimeSheetId == id)
+            .Select(it => it.Invoice.InvoiceNumber)
+            .FirstOrDefaultAsync();
+        var paystubNumber = await (from tst in Context.TimeSheetTotals.Where(tst => tst.TimeSheetId == id)
+                                   join pswd in Context.PayStubWageDetails on tst.Id equals pswd.TimeSheetTotalId
                                    select pswd.PayStub.PayStubNumber).FirstOrDefaultAsync();
         return new TimeSheetUsagesModel
         {
@@ -417,7 +441,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<IEnumerable<HoursWorkedResponse>> GetHoursWorked(Guid agencyId, HoursWorkedFilter filter)
     {
-        var timeSheets = _context.TimeSheets
+        var timeSheets = Context.TimeSheets
             .AsNoTracking()
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
@@ -468,7 +492,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(Guid agencyId, TimesheetsReportFilter filter)
     {
-        var timeSheets = _context.TimeSheets
+        var timeSheets = Context.TimeSheets
             .AsNoTracking()
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
@@ -518,7 +542,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, DateTime startDate, DateTime endDate)
     {
-        var agencyCompanyProfileJobPositionRate = _context.TimeSheets
+        var agencyCompanyProfileJobPositionRate = Context.TimeSheets
             .AsNoTracking()
             .Include(ts => ts.WorkerRequest).ThenInclude(wr => wr.Request).ThenInclude(r => r.JobPositionRate)
             .Where(ts => ts.Date.Date >= startDate && ts.Date.Date <= endDate)
@@ -539,7 +563,7 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<TimeSheet> GetLatestTimesheet(Guid workerId, Guid requestId, DateTime from)
     {
-        var timeSheet = _context.TimeSheets
+        var timeSheet = Context.TimeSheets
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
             .ThenInclude(r => r.JobLocation)
@@ -554,15 +578,15 @@ public class TimesheetRepository : ITimesheetRepository
     }
 
     public Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition) =>
-        (from wp in _context.WorkerProfiles.Where(condition)
-         join wr in _context.WorkerRequests.Where(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked) on wp.Id equals wr.WorkerProfileId
+        (from wp in Context.WorkerProfiles.Where(condition)
+         join wr in Context.WorkerRequests.Where(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked) on wp.Id equals wr.WorkerProfileId
          from ts in wr.TimeSheets
          select ts).OrderByDescending(c => c.Date).FirstOrDefaultAsync();
 
     public async Task<TimeSheet> GetTimeSheeFromTheLast14Hours(Guid workerId, Guid requestId, DateTime now)
     {
         var last14Hours = now.AddHours(-TimeLimits.DefaultTimeLimits.MaximumHoursDay);
-        var timeSheet = _context.TimeSheets
+        var timeSheet = Context.TimeSheets
             .Where(ts => ts.ClockIn.HasValue && (ts.ClockIn.Value.Date == now.Date || ts.ClockIn.Value.Date == last14Hours.Date));
         var query = from ts in timeSheet
                     where ts.WorkerRequest.RequestId == requestId
@@ -574,14 +598,14 @@ public class TimesheetRepository : ITimesheetRepository
 
     public async Task<bool> TimesheetUsedByAccounting(Guid id)
     {
-        var timesheetInvoice = await _context.TimeSheetTotals.AnyAsync(ts => ts.TimeSheetId == id);
-        var timsheetPayroll = await _context.TimeSheetTotalPayrolls.AnyAsync(ts => ts.TimeSheetId == id);
+        var timesheetInvoice = await Context.TimeSheetTotals.AnyAsync(ts => ts.TimeSheetId == id);
+        var timsheetPayroll = await Context.TimeSheetTotalPayrolls.AnyAsync(ts => ts.TimeSheetId == id);
         return timesheetInvoice && timsheetPayroll;
     }
 
     public Task<List<RequestTimeSheetModel>> GetRequestTimeSheet(Guid requestId)
     {
-        var query = from ts in _context.TimeSheets.Where(ts => ts.WorkerRequest.Request.Id == requestId)
+        var query = from ts in Context.TimeSheets.Where(ts => ts.WorkerRequest.Request.Id == requestId)
                     select new RequestTimeSheetModel
                     {
                         CompanyFullName = ts.WorkerRequest.Request.CompanyProfile.FullName,

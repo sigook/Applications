@@ -8,12 +8,9 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Workers;
 
-public interface IWorkerRepository
+public interface IWorkerRepository : IBaseRepository
 {
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
     Task CreateWorkerProfileHoliday(WorkerProfileHoliday entity);
-    Task UpdateProfile(WorkerProfile entity);
     Task<WorkerProfile> GetProfile(Expression<Func<WorkerProfile, bool>> condition);
     Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination);
     Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId);
@@ -28,12 +25,10 @@ public interface IWorkerRepository
     Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression);
     Task<bool> SocialInsuranceIsAlreadyTaken(string socialInsurance, Guid? excludeProfileId = null);
     Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId);
-    Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid workerProfileId, Pagination pagination);
-    Task<PayStubHistoryAccumulated> GetWageHistoryAccumulated(Guid workerProfileId, int rowNumber);
+    Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid agencyId, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter);
     Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination);
     Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId);
     Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date);
     Task<IEnumerable<WorkerLicenseExpiredModel>> GetWorkerLicensesExpired(DateTime date);
     Task<WorkerProfileTaxCategory> GetWorkerProfileTaxCategory(Guid workerProfileId);
-    Task SaveChangesAsync();
 }

@@ -97,7 +97,7 @@ Landing page of the module (`/sales/dashboard`, reached from the sidebar — sig
 | Log Interactions | What were my last touchpoints? (6 most recent, newest first) |
 | Clients | Which clients did I contact last? (10 clients with the most recent interaction, newest first; a sales rep only counts the interactions they own, admin/superadmin count everyone's). Clicking a client opens its interaction history with a shortcut to log a new one |
 | Deals | What are my latest proposals and where are they? (6 most recent) |
-| Deals by status | How many deals are To Send, Sent, Under Review, Accepted, Rejected, Closed or Completed for today / this week / this month? |
+| Deals by status | How many deals are To Send, Sent, Under Review, Accepted, Rejected, Closed or Completed in a date range? The range picker defaults to the current month |
 | This quarter | Two breakdowns: **pipeline by status** (how many deals sit in each `DealStatus` this quarter) and **activity this week** (how many interactions per channel) |
 
 ### KPI definitions
@@ -107,7 +107,7 @@ Served live by `GET api/agency/sales/dashboard/*` (see `.docs/technical/SIGOOK_W
 | KPI | Definition |
 |-----|------------|
 | Recent clients | Companies ordered by the `CreatedAt` of their latest interaction, newest first, top 10; companies without interactions are left out |
-| Deals by status | Count of deals per `DealStatus`, plus the summed `Value` per status, over deals whose `Date` falls in the selected period |
+| Deals by status | Count of deals per `DealStatus`, plus the summed `Value` per status, over deals whose `Date` falls in the selected date range (inclusive calendar days; current UTC month when none is sent) |
 | Pipeline by status | Count of deals per `DealStatus` over deals whose `Date` falls in the current quarter |
 | Activity this week | Count of interactions per `InteractionType` whose `CreatedAt` falls in the current week |
 
@@ -122,7 +122,7 @@ zero-filled, so the chart keeps a stable column order.
 
 ### Where things are decided
 
-- The period selector (Today / This week / This month) **re-queries** — each tab is one request.
+- The date range picker of "Deals by status" **re-queries** — each completed range is one request. The browser sends calendar dates (`yyyy-MM-dd`), never instants, so the window is the same in every time zone.
 - The period label ("Q3 2026", "Sep 6 - Sep 12, 2026") is **computed server-side**, not by the browser.
 - Column colors and labels live in the **front end** (`DEAL_STATUS_COLORS`, `DEAL_STATUS_LABELS`); the
   endpoint returns data only, so it stays chart-agnostic.

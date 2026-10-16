@@ -7,7 +7,6 @@ using Covenant.Common.Models.Agency;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
-using Microsoft.Extensions.Time.Testing;
 using System.Net.Http.Json;
 using System.Net;
 using Xunit;
@@ -164,6 +163,31 @@ public class AttendanceControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
     }
 
     [Fact]
+    public async Task AdminClearsAnAccidentalClockOutAndTheUserClocksOutAgain()
+    {
+        var model = new UpdateUserAttendanceModel
+        {
+            ClockIn = new DateTime(2026, 10, 6, 8, 0, 0),
+            ClockOut = null,
+            LunchMinutes = 60,
+            Reason = "Clocked out by mistake."
+        };
+
+        HttpResponseMessage response = await AsAdmin().PutAsJsonAsync($"{RouteName}/{Data.Accident.Id}", model);
+        response.EnsureSuccessStatusCode();
+
+        HttpClient client = ClientAs(CovenantConstants.Role.Recruiting, Data.AccidentUser.Id);
+        Data.SetNow(new DateTime(2026, 10, 6, 12, 0, 0));
+        var reopened = await client.GetFromJsonAsync<UserAttendanceTodayModel>($"{RouteName}/today?timeZone={TimeZone}");
+        Assert.Equal(AttendanceStatus.ClockedIn, reopened.Status);
+        Assert.Null(reopened.ClockOut);
+
+        UserAttendanceTodayModel stopped = await Toggle(client, new DateTime(2026, 10, 6, 17, 0, 0));
+        Assert.Equal(AttendanceStatus.ClockedOut, stopped.Status);
+        Assert.Equal(8m, stopped.WorkedHours);
+    }
+
+    [Fact]
     public async Task EditRejectsALunchLongerThanTheShift()
     {
         var model = new UpdateUserAttendanceModel
@@ -231,9 +255,9 @@ public class AttendanceControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
 
     private static class Data
     {
-        public static readonly FakeTimeProvider Clock = new(new DateTimeOffset(2026, 10, 5, 8, 0, 0, TimeSpan.FromHours(-5)));
+        public static readonly TestClock Clock = new(new DateTimeOffset(2026, 10, 5, 8, 0, 0, TimeSpan.FromHours(-5)));
 
-        public static void SetNow(DateTime bogotaNow) => Clock.SetUtcNow(new DateTimeOffset(bogotaNow, TimeSpan.FromHours(-5)));
+        public static void SetNow(DateTime bogotaNow) => Clock.Set(new DateTimeOffset(bogotaNow, TimeSpan.FromHours(-5)));
 
         public static readonly Covenant.Common.Entities.Agency.Agency Agency = FakeData.FakeAgency();
         public static readonly Covenant.Common.Entities.Agency.Agency OtherAgency = FakeData.FakeAgency();
@@ -243,9 +267,11 @@ public class AttendanceControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         public static readonly User ReportUser = new(CvnEmail.Create("report@attendance.com").Value);
         public static readonly User EditUser = new(CvnEmail.Create("edit@attendance.com").Value);
         public static readonly User ForeignUser = new(CvnEmail.Create("foreign@attendance.com").Value);
+        public static readonly User AccidentUser = new(CvnEmail.Create("accident@attendance.com").Value);
 
         public static readonly UserAttendance ToEdit = UserAttendance.Start(EditUser.Id, new DateTime(2026, 9, 29, 9, 0, 0));
         public static readonly UserAttendance Foreign = UserAttendance.Start(ForeignUser.Id, new DateTime(2026, 9, 30, 8, 0, 0));
+        public static readonly UserAttendance Accident = Closed(AccidentUser, new DateTime(2026, 10, 6, 8, 0, 0), new DateTime(2026, 10, 6, 8, 5, 0));
 
         private static UserAttendance Closed(User user, DateTime clockIn, DateTime clockOut)
         {
@@ -257,19 +283,21 @@ public class AttendanceControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         public static void Seed(CovenantContext context)
         {
             context.Agencies.AddRange(Agency, OtherAgency);
-            context.Users.AddRange(AdminUser, PunchUser, ReportUser, EditUser, ForeignUser);
+            context.Users.AddRange(AdminUser, PunchUser, ReportUser, EditUser, ForeignUser, AccidentUser);
             context.AgencyPersonnel.AddRange(
                 AgencyPersonnel.CreatePrimary(Agency.Id, AdminUser.Id, "Admin"),
                 AgencyPersonnel.CreatePrimary(Agency.Id, PunchUser.Id, "Punch User"),
                 AgencyPersonnel.CreatePrimary(Agency.Id, ReportUser.Id, "Report User"),
                 AgencyPersonnel.CreatePrimary(Agency.Id, EditUser.Id, "Edit User"),
-                AgencyPersonnel.CreatePrimary(OtherAgency.Id, ForeignUser.Id, "Foreign User"));
+                AgencyPersonnel.CreatePrimary(OtherAgency.Id, ForeignUser.Id, "Foreign User"),
+                AgencyPersonnel.CreatePrimary(Agency.Id, AccidentUser.Id, "Accident User"));
             context.UserAttendances.AddRange(
                 Closed(ReportUser, new DateTime(2026, 9, 28, 8, 0, 0), new DateTime(2026, 9, 28, 18, 30, 0)),
                 UserAttendance.Start(ReportUser.Id, new DateTime(2026, 10, 1, 9, 0, 0)),
                 Closed(ReportUser, new DateTime(2026, 10, 3, 10, 0, 0), new DateTime(2026, 10, 3, 13, 0, 0)),
                 ToEdit,
-                Foreign);
+                Foreign,
+                Accident);
             context.SaveChanges();
         }
     }

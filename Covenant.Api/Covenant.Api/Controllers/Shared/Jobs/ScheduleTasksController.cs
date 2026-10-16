@@ -1,3 +1,4 @@
+using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +9,7 @@ namespace Covenant.Api.Controllers.Shared.Jobs;
 [ApiController]
 [Authorize]
 [Route(RouteName)]
-public class ScheduleTasksController(IAgencyService agencyService) : ControllerBase
+public class ScheduleTasksController(IAgencyService agencyService, IInvoiceService invoiceService) : ControllerBase
 {
     public const string RouteName = "api/jobs/scheduletasks";
 
@@ -33,4 +34,12 @@ public class ScheduleTasksController(IAgencyService agencyService) : ControllerB
         await agencyService.NotifyLicensesExpired();
         return Ok();
     }
+
+    /// <summary>
+    /// Marks pending invoices whose payment term has expired as Due. Returns the number of invoices updated.
+    /// </summary>
+    [HttpPost("MarkOverdueInvoices")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    public async Task<IActionResult> MarkOverdueInvoices() =>
+        Ok(await invoiceService.MarkOverdueInvoices());
 }

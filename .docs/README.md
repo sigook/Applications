@@ -44,7 +44,7 @@
 
 **Modify billing:**
 1. [BILLING_RULES.md](./business/BILLING_RULES.md) — billing rules
-2. Code: `Covenant.Api/Covenant.Core.BL/Services/Invoices/` (CanadaInvoiceService, UsaInvoiceService)
+2. Code: `Covenant.Api/Covenant.Core.BL/Services/Accounting/Invoices/` (InvoiceService, CanadaInvoiceStrategy, UsaInvoiceStrategy)
 
 **Modify timesheets:**
 1. [TIMESHEET_RULES.md](./business/TIMESHEET_RULES.md) — hours calculation rules

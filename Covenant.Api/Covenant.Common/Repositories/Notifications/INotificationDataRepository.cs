@@ -2,7 +2,7 @@ using Covenant.Common.Models.Notification;
 
 namespace Covenant.Common.Repositories.Notifications;
 
-public interface INotificationDataRepository
+public interface INotificationDataRepository : IBaseRepository
 {
     Task<NotificationAgencyModel> GetAgencyData(Guid requestId, Guid workerId, int notificationTypeId);
     Task<NotificationCompanyModel> GetCompanyData(Guid requestId, Guid workerId, int notificationTypeId);

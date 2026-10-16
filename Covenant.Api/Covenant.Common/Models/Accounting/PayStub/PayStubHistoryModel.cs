@@ -1,10 +1,9 @@
-using Covenant.Common.Models.Worker;
 namespace Covenant.Common.Models.Accounting.PayStub;
 
 public class PayStubHistoryModel
 {
-    public int RowNumber { get; set; }
     public Guid Id { get; set; }
+    public long NumberId { get; set; }
     public string PayStubNumber { get; set; }
     public DateTime WeekEnding { get; set; }
     public decimal TotalEarnings { get; set; }
@@ -12,6 +11,11 @@ public class PayStubHistoryModel
     public decimal TotalPaid { get; set; }
     public DateTime Start { get; set; }
     public DateTime End { get; set; }
+    public double AccumulatedQuantity { get; set; }
+    public decimal AccumulatedTotal { get; set; }
+    public decimal AccumulatedVacations { get; set; }
+    public decimal AccumulatedTotalEarnings { get; set; }
+    public decimal AccumulatedTotalPaid { get; set; }
     public IEnumerable<PayStubItemHistoryModel> Items { get; set; } = new List<PayStubItemHistoryModel>();
     public IEnumerable<string> Companies { get; set; } = new List<string>();
 }

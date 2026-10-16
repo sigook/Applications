@@ -65,21 +65,21 @@
       <div class="column is-6">
         <b-field label="Missing Worker Rate" :type="formErrors.deductionsW ? 'is-danger' : ''"
           :message="formErrors.deductionsW">
-          <b-numberinput v-model="deductionsW" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="deductionsW" step="0.01" :controls="false">
           </b-numberinput>
         </b-field>
       </div>
       <div class="column is-6">
         <b-field label="Missing Agency Rate" :type="formErrors.deductionsC ? 'is-danger' : ''"
           :message="formErrors.deductionsC">
-          <b-numberinput v-model="deductionsC" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="deductionsC" step="0.01" :controls="false">
           </b-numberinput>
         </b-field>
       </div>
       <div class="column is-6">
         <b-field label="Deductions Others" :type="formErrors.deductions ? 'is-danger' : ''"
           :message="formErrors.deductions">
-          <b-numberinput v-model="deductions" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="deductions" step="0.01" :controls="false">
           </b-numberinput>
         </b-field>
       </div>
@@ -92,7 +92,7 @@
       <div class="column is-6">
         <b-field label="Bonus or others" :type="formErrors.bonus ? 'is-danger' : ''"
           :message="formErrors.bonus">
-          <b-numberinput v-model="bonus" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="bonus" step="0.01" :controls="false">
           </b-numberinput>
         </b-field>
       </div>
@@ -105,7 +105,7 @@
       <div class="column is-6">
         <b-field label="Reimbursements" :type="formErrors.reimbursements ? 'is-danger' : ''"
           :message="formErrors.reimbursements">
-          <b-numberinput v-model="reimbursements" step="0.01" controls-alignment="right">
+          <b-numberinput v-model="reimbursements" step="0.01" :controls="false">
           </b-numberinput>
         </b-field>
       </div>

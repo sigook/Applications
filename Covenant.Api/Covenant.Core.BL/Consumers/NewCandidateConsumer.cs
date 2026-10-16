@@ -9,6 +9,7 @@ using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Website;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
+using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Requests;
@@ -50,6 +51,7 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
         var workerRepository = scope.ServiceProvider.GetService<IWorkerRepository>();
         var requestRepository = scope.ServiceProvider.GetService<IRequestRepository>();
         var agencyRepository = scope.ServiceProvider.GetService<IAgencyRepository>();
+        var catalogRepository = scope.ServiceProvider.GetService<ICatalogRepository>();
         var candidateService = scope.ServiceProvider.GetService<ICandidateService>();
         var filesContainer = scope.ServiceProvider.GetService<IFilesContainer>();
         var message = args.Message.Body.ToObjectFromJson<CandidateViewModel>();
@@ -71,13 +73,20 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                     {
                         if (!string.IsNullOrWhiteSpace(message.FullName))
                         {
-                            var agency = await agencyRepository.GetAgencyMasterByCountry(message.CountryId);
+                            var city = await catalogRepository.GetCity(message.CityId.Value);
+                            var agency = city == null ? null : await agencyRepository.GetAgencyMasterByCountry(city.Province.Country.Id);
+                            if (agency == null)
+                            {
+                                errorMessage = $"Candidate with email: {email.Value.Email} selected a city ({message.CityId}) without a master agency";
+                                goto Reply;
+                            }
                             var agencyId = agency.Id;
                             var model = new CandidateCreateModel
                             {
                                 Email = email.Value,
                                 Name = message.FullName,
                                 Address = message.Address,
+                                City = city,
                                 HasVehicle = message.HasVehicle,
                                 ResidencyStatus = message.Status,
                                 SourceId = message.SourceId,
@@ -106,7 +115,7 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                             var candidateId = await candidateService.CreateCandidate(model, agencyId, false);
                             if (candidateId && request != null)
                             {
-                                if (request.JobLocation.City.Province.CountryId == message.CountryId)
+                                if (request.JobLocation.City.Province.CountryId == city.Province.Country.Id)
                                 {
                                     requestApplicant = RequestApplicant.CreateWithCandidate(message.RequestId.Value, candidateId.Value, "Sigook", string.Empty, RequestApplicantStatus.Pending);
                                     response.Body = new BinaryData(requestApplicant.Value);
@@ -154,6 +163,7 @@ public class NewCandidateConsumer : IAzureServiceBusConsumer
                 builder.AppendLine($"Validation Errors: {string.Join(", ", candidateValidation.Errors.Select(e => e.ErrorMessage))}");
                 errorMessage = builder.ToString();
             }
+        Reply:
             if (!string.IsNullOrWhiteSpace(errorMessage))
             {
                 await filesContainer.DeleteFileIfExists(message.FileName);

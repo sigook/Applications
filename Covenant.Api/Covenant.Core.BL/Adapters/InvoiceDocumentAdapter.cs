@@ -64,7 +64,7 @@ public class InvoiceDocumentAdapter : IInvoiceDocumentAdapter
             AgencyFaxExt = model.AgencyFaxExt,
             BillTo = model.CompanyFullName,
             HstNumber = model.HstNumber,
-            Hst = model.Hst,
+            Tax = model.Tax,
             TaxName = model.TaxName,
             WeekEnding = model.WeedEnding,
             InvoiceColor = model.InvoiceColor,

@@ -153,6 +153,17 @@
       border-color: var(--c-brand-cyan);
       box-shadow: var(--focus-ring-cyan);
     }
+
+    &.is-empty {
+      color: rgba(255, 255, 255, 0.40);
+    }
+
+    &[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+      background-color: var(--c-glass-fill);
+      border-color: var(--c-glass-border);
+    }
   }
 
   .taginput .taginput-container.is-focusable {
@@ -352,6 +363,48 @@
 
     .control-label {
       color: rgba(255, 255, 255, 0.85);
+    }
+  }
+
+  .tabs.is-toggle {
+    margin-bottom: clamp(24px, 3vw, 36px);
+
+    ul {
+      border: 0;
+    }
+
+    li a {
+      height: auto;
+      padding: 11px 18px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--c-glass-border);
+      color: rgba(255, 255, 255, 0.70);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: var(--c-glass-border-hover);
+        color: #fff;
+      }
+    }
+
+    li:first-child a {
+      border-radius: 999px 0 0 999px;
+    }
+
+    li:last-child a {
+      border-radius: 0 999px 999px 0;
+    }
+
+    li.is-active a {
+      z-index: 1;
+      background: rgba(0, 173, 239, 0.22);
+      border-color: var(--c-brand-cyan);
+      color: #fff;
     }
   }
 

@@ -6,6 +6,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
+using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
@@ -54,6 +55,7 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
                 Email = $"{modelType}pepe@e.com",
                 Address = "MAIN 123",
                 PostalCode = "M1M2M1",
+                City = new CityModel(Startup.FakeCity.Id, Startup.FakeCity.Value),
                 Gender = new BaseModel<Guid>(Startup.Male.Id),
                 HasVehicle = true,
                 SourceId = Startup.WebPageSource.Id,
@@ -76,6 +78,7 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         Assert.Equal(model.Email, entity.Email);
         Assert.Equal(model.Address, entity.Address);
         Assert.Equal(model.PostalCode, entity.PostalCode);
+        Assert.Equal(model.City?.Id, entity.CityId);
         Assert.Equal(model.Gender?.Id, entity.Gender?.Id);
         Assert.Equal(model.HasVehicle, entity.HasVehicle);
         Assert.Equal(model.SourceId, entity.SourceId);
@@ -96,6 +99,8 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         Assert.Equal(Startup.FakeCandidate.Email, model.Email);
         Assert.Equal(Startup.FakeCandidate.Address, model.Address);
         Assert.Equal(Startup.FakeCandidate.PostalCode, model.PostalCode);
+        Assert.Equal(Startup.FakeCity.Value, model.City);
+        Assert.Equal(Startup.FakeCity.Province.Code, model.Province);
         Assert.Equal(Startup.FakeCandidate.Recruiter, model.Recruiter);
         Assert.Equal(Startup.FakeCandidate.ResidencyStatus, model.ResidencyStatus);
         DateAssert.Equal(Startup.FakeCandidate.CreatedAt, model.CreatedAt);
@@ -112,6 +117,9 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         Assert.Equal(entity.NumberId, result.NumberId);
         Assert.Equal(entity.Name, result.Name);
         Assert.Equal(entity.Email, result.Email);
+        Assert.Equal(Startup.FakeCity.Id, result.City.Id);
+        Assert.Equal(Startup.FakeCity.Province.Id, result.City.Province.Id);
+        Assert.Equal(Startup.FakeCity.Province.Country.Id, result.City.Province.Country.Id);
     }
 
     [Fact]
@@ -122,6 +130,7 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
             Name = "Rosa Rojas",
             Address = "4567 Dundas",
             PostalCode = "M2P1T7",
+            City = new CityModel(Startup.FakeOtherCity.Id, Startup.FakeOtherCity.Value),
             Gender = new BaseModel<Guid>(Startup.Female.Id),
             HasVehicle = true,
             Email = "r@m.com",
@@ -134,6 +143,7 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         Assert.Equal(model.Name, entity.Name);
         Assert.Equal(model.Address, entity.Address);
         Assert.Equal(model.PostalCode, entity.PostalCode);
+        Assert.Equal(model.City.Id, entity.CityId);
         Assert.Equal(model.Gender.Id, entity.Gender.Id);
         Assert.Equal(model.HasVehicle, entity.HasVehicle);
         Assert.Equal(model.Email, entity.Email);
@@ -170,9 +180,12 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         public static readonly Source WebPageSource = new Source { Id = Guid.NewGuid(), Value = "Web page" };
         private static readonly User FakeAgencyUser = new User(CvnEmail.Create("FakeAgencyUser@email.com").Value);
         private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
+        public static readonly City FakeCity = FakeData.FakeCity();
+        public static readonly City FakeOtherCity = FakeData.FakeCity(FakeCity.Province);
         public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "J Martin")
         {
             Address = "MAIN 123",
+            CityId = FakeCity.Id,
             Gender = new Gender { Value = "Female" },
             HasVehicle = true,
             SourceId = WebPageSource.Id,
@@ -232,6 +245,7 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
             });
             context.Genders.AddRange(Male, Female);
             context.Sources.Add(WebPageSource);
+            context.Cities.AddRange(FakeCity, FakeOtherCity);
             context.Agencies.Add(FakeAgency);
             context.Candidates.Add(FakeCandidate);
             context.Candidates.Add(FakeCandidateEmpty);

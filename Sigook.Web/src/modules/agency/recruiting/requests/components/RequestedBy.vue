@@ -37,11 +37,13 @@ const showModal = ref(false);
 const isLoading = ref(false);
 
 function addRequestedBy(item: AgencyCompanyContactPerson) {
+  const id = item.id;
+  if (!id) return;
   isLoading.value = true;
-  postAgencyRequestRequestedBy(props.requestId, item.id!)
+  postAgencyRequestRequestedBy(props.requestId, id)
     .then(() => {
       isLoading.value = false;
-      contacts.value = [...contacts.value, { ...item, id: item.id! }];
+      contacts.value = [...contacts.value, { ...item, id }];
       showModal.value = false;
     })
     .catch(error => {
@@ -51,8 +53,9 @@ function addRequestedBy(item: AgencyCompanyContactPerson) {
 }
 
 function removeRequestedBy(item: { id?: string }) {
+  if (!item.id) return;
   isLoading.value = true;
-  deleteAgencyRequestRequestedBy(props.requestId, item.id!)
+  deleteAgencyRequestRequestedBy(props.requestId, item.id)
     .then(() => {
       isLoading.value = false;
       contacts.value = contacts.value.filter(x => x.id !== item.id);

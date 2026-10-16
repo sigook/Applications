@@ -47,7 +47,7 @@ public class ShiftController(IRequestRepository requestRepository, IShiftReposit
         entity.OnNewShift += async (sender, e) => await shiftRepository.Create(newShift);
         Result result = entity.UpdateShift(newShift);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await requestRepository.Update(entity);
+        requestRepository.Update(entity);
         await requestRepository.SaveChangesAsync();
         return Ok(new AgencyRequestDetailModel { Id = entity.Id, DisplayShift = newShift.DisplayShift });
     }

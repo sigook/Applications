@@ -29,7 +29,7 @@ export interface CandidateFormData {
   fullName: string;
   email: string;
   phone: string;
-  countryId: string;
+  cityId: string;
   address: string;
   status: ResidencyStatus | '' | null | undefined;
   sourceId: string | null;
@@ -46,12 +46,18 @@ export interface CandidateApplyPayload {
   phone: string;
   skills: string[];
   status: string;
-  countryId: string;
+  cityId: string;
   address: string;
   fileName: string | null;
   hasVehicle: boolean;
   sourceId: string | null;
   requestId?: string;
+}
+
+// JSON part sent when an already registered worker or candidate applies to a posting by email only.
+export interface RegisteredApplyPayload {
+  email: string;
+  requestId: string;
 }
 
 // Job context carried into the candidate apply modal when opened from a posting.

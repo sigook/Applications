@@ -64,7 +64,7 @@ public class PasswordResetService(
         previousCodes.ForEach(prc => prc.Consumed = true);
 
         var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
-        await identityRepository.AddResetCode(new PasswordResetCode
+        await identityRepository.Create(new PasswordResetCode
         {
             UserId = user.Id,
             CodeHash = passwordHasher.HashPassword(user, code),

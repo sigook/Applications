@@ -24,7 +24,7 @@ export interface InvoiceSummaryModel {
   agencyFaxExt?: number | null;
   agencyWebSite?: string;
   subTotal: number;
-  hst: number;
+  tax: number;
   total: number;
   taxName?: string;
   weedEnding?: string | null;
@@ -35,6 +35,16 @@ export interface InvoiceSummaryModel {
   holidays: InvoiceSummaryHolidayItem[];
   additionalItems: InvoiceSummaryAdditionalItem[];
   items: InvoiceSummaryItem[];
+}
+
+// Result of POST /api/agency/accounting/invoices/Preview. Mirrors backend InvoicePreviewModel.
+export interface InvoicePreviewModel {
+  subTotal: number;
+  tax: number;
+  taxName?: string;
+  total: number;
+  items: InvoiceSummaryItem[];
+  discounts: InvoiceSummaryItem[];
 }
 
 export interface InvoiceSummaryItem {

@@ -3,6 +3,8 @@ export interface CandidateFormData {
   email: string
   phone: string
   countryId: string
+  provinceId: string
+  cityId: string
   address: string
   status: ResidencyStatus | '' | null | undefined
   sourceId: string | null
@@ -21,6 +23,12 @@ export interface Country {
 export interface Province {
   id: string
   value: string  // "Ontario", "Quebec", ...
+  code?: string
+}
+
+export interface City {
+  id: string
+  value: string
   code?: string
 }
 
@@ -70,7 +78,7 @@ export interface CandidateViewModel {
   phone: string
   skills: string[]
   status: string
-  countryId: string
+  cityId: string
   address: string
   fileName: string | null
   hasVehicle: boolean

@@ -4,9 +4,8 @@ using Covenant.Common.Models.Accounting.PayStub;
 
 namespace Covenant.Common.Repositories.Accounting.PayStubs;
 
-public interface IPayStubRepository
+public interface IPayStubRepository : IBaseRepository
 {
-    Task Create<T>(T entity) where T : class;
     Task<List<NextNumberModel>> GetNextPayStubNumbers(int limit);
     Task<bool> IsPayStubNumberTaken(long payStubNumber);
     Task<PaginatedList<PayStubListModel>> GetPayStubs(IEnumerable<Guid> agencyId, GetPayStubsFilter filter);
@@ -16,8 +15,7 @@ public interface IPayStubRepository
     Task<List<PayStubDeleteWarningListModel>> GetPayStubs(Guid invoiceId);
     Task<PaginatedList<WeeklyPayrollModel>> GetWeeklyPayrollGroupByPaymentDate(IEnumerable<Guid> agencyIds, Pagination pagination);
     Task<List<WeeklyPayStubModel>> GetWeeklyPayrollDetailByPaymentDate(DateTime paymentDate);
-    Task<IReadOnlyList<string>> Delete(IEnumerable<Guid> payStubsId);
+    Task<IReadOnlyList<string>> DeletePayStubs(IEnumerable<Guid> payStubsId);
     Task<IEnumerable<PayStubT4Model>> GetPayStubsByDates(DateTime startDate, DateTime endDate);
     Task<PayStubYtdModel> GetYtdSummary(Guid workerProfileId, int year);
-    Task SaveChangesAsync();
 }

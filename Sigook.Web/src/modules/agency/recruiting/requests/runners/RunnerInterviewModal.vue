@@ -66,9 +66,10 @@ function submit() {
   form.markInteracted();
   form.handleSubmit(
     values => {
+      if (!values.scheduledDate) return;
       isLoading.value = true;
       createRunnerInterview(props.requestId, props.runnerId, {
-        scheduledDate: values.scheduledDate!.toISOString(),
+        scheduledDate: values.scheduledDate.toISOString(),
         type: values.type,
         interviewer: values.interviewer || undefined,
         notes: values.notes || undefined,

@@ -224,7 +224,7 @@ import { invoicesCrumbs } from '@/shared/ui/breadcrumbs';
 import type { CompanyProfileListItem } from '@/modules/agency/recruiting/clients/types';
 import type { AgencyRequestListItem } from '@/modules/agency/recruiting/requests/types';
 import type { CreateAgencyInvoiceModel, CreateInvoiceItemModel } from '@/modules/agency/accounting/invoices/types';
-import type { InvoiceSummaryModel } from '@/shared/types/invoice';
+import type { InvoicePreviewModel } from '@/shared/types/invoice';
 
 const router = useRouter();
 
@@ -259,7 +259,7 @@ const requestSearch = ref('');
 const isLoadingRequests = ref(false);
 const additionalItems = ref<CreateInvoiceItemModel[]>([]);
 const discounts = ref<CreateInvoiceItemModel[]>([]);
-const previewData = ref<InvoiceSummaryModel | null>(null);
+const previewData = ref<InvoicePreviewModel | null>(null);
 const dateSelected = ref<Date[]>([]);
 const previewContainer = ref<HTMLElement | null>(null);
 

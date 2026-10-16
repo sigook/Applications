@@ -26,12 +26,8 @@
                 @formattedPhone="(phone: string) => phoneNumber = phone" />
             </div>
             <div class="column is-12">
-              <b-field :type="errors.address ? 'is-danger' : ''" :message="errors.address">
-                <template #label>
-                  Address <span class="has-text-danger">*</span>
-                </template>
-                <b-input type="text" v-model="address" />
-              </b-field>
+              <AddressComponent ref="addressComponent" v-model:model="location" :require-postal-code="false"
+                @isLoading="(value: boolean) => isLoading = value" />
             </div>
             <div class="column is-12">
               <b-field :type="sourceError ? 'is-danger' : ''" :message="sourceError">
@@ -104,35 +100,33 @@ import { ref, reactive, computed, watch } from 'vue';
 import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
+import AddressComponent from '@/shared/ui/Address.vue';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { generateFileName } from "@/shared/utils/fileNaming";
 import { getGenders, getSources } from "@/shared/api/catalogApi";
 import { residencyList } from "@/shared/constants/catalog";
 import { createAgencyCandidate } from "@/modules/agency/recruiting/candidates/api";
 import type { CreateCandidateModel } from '@/modules/agency/recruiting/candidates/types';
-import type { Source, Gender } from "@/shared/types/common";
+import type { Source, Gender, LocationModel } from "@/shared/types/common";
 
 const emit = defineEmits<{ (e: 'onClose', value: boolean): void }>();
 
 const schema = yup.object({
   name: yup.string().required('Full name is required').min(2).max(60),
   email: yup.string().required('Email is required').email('Invalid email').min(6).max(50),
-  address: yup.string().required('Address is required').min(2).max(100),
 });
 
 const { errors: formErrors, validateField, handleSubmit } = useForm({
   validationSchema: schema,
-  initialValues: { name: '', email: '', address: '' },
+  initialValues: { name: '', email: '' },
 });
 
 const { value: name } = useField<string>('name');
 const { value: email } = useField<string>('email');
-const { value: address } = useField<string>('address');
 
 const interacted = reactive<Record<string, boolean>>({});
 watch(name, () => { interacted.name = true; });
 watch(email, () => { interacted.email = true; });
-watch(address, () => { interacted.address = true; });
 
 const errors = computed(() => {
   const out: Record<string, string> = {};
@@ -153,6 +147,8 @@ const sourceList = ref<Source[]>([]);
 const sourceError = ref('');
 const phoneNumber = ref('');
 const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const addressComponent = ref<InstanceType<typeof AddressComponent> | null>(null);
+const location = ref<LocationModel>({ address: '', postalCode: '', city: null });
 const candidate = reactive<{
   phoneNumbers: Array<{ phoneNumber: string }>;
   skills: string[];
@@ -173,13 +169,14 @@ const file = ref<File | null>(null);
 watch(() => candidate.sourceId, () => { sourceError.value = ''; });
 
 async function validateStep1(): Promise<boolean> {
-  const fields = ['name', 'email', 'address'];
+  const fields = ['name', 'email'];
   markInteracted(fields);
   const results = await Promise.all(fields.map((f) => validateField(f as Parameters<typeof validateField>[0])));
   const fieldsValid = results.every((r) => r.valid);
   const phoneValid = phoneComponent.value ? await phoneComponent.value.validatePhone() : false;
+  const addressValid = addressComponent.value ? await addressComponent.value.validateAddress() : false;
   sourceError.value = candidate.sourceId ? '' : 'Source is required';
-  return fieldsValid && phoneValid && !sourceError.value;
+  return fieldsValid && phoneValid && addressValid && !sourceError.value;
 }
 
 async function validateAndGoToStep(currentStep: number) {
@@ -210,12 +207,14 @@ function submit() {
   })();
 }
 
-function submitCandidate(values: Pick<CreateCandidateModel, 'name' | 'email' | 'address'>) {
+function submitCandidate(values: Pick<CreateCandidateModel, 'name' | 'email'>) {
   isLoading.value = true;
   const payload: CreateCandidateModel = {
     name: values.name,
     email: values.email,
-    address: values.address,
+    address: location.value.address,
+    postalCode: location.value.postalCode || undefined,
+    city: location.value.city ? { id: location.value.city.id, value: location.value.city.value } : null,
     skills: candidate.skills.map((s: string) => ({ skill: s })),
     phoneNumbers: phoneNumber.value ? [{ phoneNumber: phoneNumber.value }] : [],
     sourceId: candidate.sourceId,

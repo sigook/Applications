@@ -1,17 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<ItemGroup>
-	  <None Remove="Scripts\Functions\get_week_start_sunday.sql" />
-	  <None Remove="Scripts\Views\PayStubHistory.sql" />
-	  <None Remove="Scripts\Views\TimesheetHistory.sql" />
+	  <None Remove="Scripts\**\*.sql" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Include="Scripts\Functions\get_week_start_sunday.sql">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\Views\PayStubHistory.sql">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\Views\TimesheetHistory.sql">
+	  <Content Include="Scripts\**\*.sql">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

@@ -7,6 +7,7 @@ import type {
   ContactForm,
   CandidateFormData,
   CandidateApplyPayload,
+  RegisteredApplyPayload,
 } from '@/modules/landing/types';
 
 export function getJobs(filter: JobSearchFilter = {}): Promise<JobViewModel[]> {
@@ -34,7 +35,7 @@ export function submitCandidateApplication(data: CandidateFormData, requestId?: 
     phone: data.phone,
     skills: data.skills,
     status: data.status || '',
-    countryId: data.countryId,
+    cityId: data.cityId,
     address: data.address,
     fileName,
     hasVehicle: data.hasVehicle,
@@ -43,4 +44,9 @@ export function submitCandidateApplication(data: CandidateFormData, requestId?: 
   };
 
   return submitCandidate(buildMultipartFormData(model, fileName ? { [fileName]: data.resume } : {}));
+}
+
+export function submitRegisteredApplication(email: string, requestId: string): Promise<void> {
+  const model: RegisteredApplyPayload = { email, requestId };
+  return submitCandidate(buildMultipartFormData(model));
 }

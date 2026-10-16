@@ -19,2116 +19,6 @@
     }
   ],
   "paths": {
-    "/api/WorkerRequest": {
-      "get": {
-        "tags": [
-          "WorkerRequest"
-        ],
-        "summary": "Lists all requests the authenticated worker can apply to.",
-        "parameters": [
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "PaginatedList",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Worker.WorkerRequestListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerRequest/{id}": {
-      "get": {
-        "tags": [
-          "WorkerRequest"
-        ],
-        "summary": "Gets the detail of a specific request for the authenticated worker.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestDetailModel"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerRequest/{requestId}/Apply": {
-      "post": {
-        "tags": [
-          "WorkerRequest"
-        ],
-        "summary": "Applies the authenticated worker to a request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Application data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestApplicantDetailModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerRequest/Apply": {
-      "post": {
-        "tags": [
-          "WorkerRequest"
-        ],
-        "summary": "Applies a worker or a candidate to a request from an invitation link (anonymous).",
-        "requestBody": {
-          "description": "Public request number and the invited person's email.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestApplicantDetailModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/WorkerRequest/{requestId}/TimeSheet": {
-      "get": {
-        "tags": [
-          "WorkerRequestTimeSheet"
-        ],
-        "summary": "Lists the timesheets of a request for the authenticated worker.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Accounting.TimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "WorkerRequestTimeSheet"
-        ],
-        "summary": "Registers a clock-in/clock-out timesheet entry for the authenticated worker.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Worker location data of the punch.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerLocationModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerLocationModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerLocationModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.RegisterTimeSheetResultModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerRequest/{requestId}/TimeSheet/clock-type/{latitude}/{longitude}": {
-      "get": {
-        "tags": [
-          "WorkerRequestTimeSheet"
-        ],
-        "summary": "Gets the next expected clock type (clock-in or clock-out) for a request.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "latitude",
-            "in": "path",
-            "description": "Current latitude of the worker.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Double"
-            }
-          },
-          {
-            "name": "longitude",
-            "in": "path",
-            "description": "Current longitude of the worker.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Double"
-            }
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "description": "Optional date to evaluate the clock type for.",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Enums.ClockType"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerRequestHistory": {
-      "get": {
-        "tags": [
-          "WorkerRequestHistory"
-        ],
-        "summary": "Lists the request history for the authenticated worker.",
-        "parameters": [
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Worker.WorkerRequestListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerRequestHistory/{id}": {
-      "get": {
-        "tags": [
-          "WorkerRequestHistory"
-        ],
-        "summary": "Gets the detail of a historic request for the authenticated worker.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the request.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestDetailModel"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile": {
-      "post": {
-        "tags": [
-          "WorkerProfile"
-        ],
-        "summary": "Registers a new worker profile from a multipart/form-data payload.",
-        "parameters": [
-          {
-            "name": "requestId",
-            "in": "query",
-            "description": "Optional request identifier the worker is registering against.",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Guid"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/me": {
-      "get": {
-        "tags": [
-          "WorkerProfile"
-        ],
-        "summary": "Gets the detail of the authenticated worker's own profile.",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileDetailModel"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/JobExperience": {
-      "post": {
-        "tags": [
-          "WorkerProfileJobExperience"
-        ],
-        "summary": "Adds a job experience entry to a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Job experience data to add.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileJobExperienceModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileJobExperienceModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileJobExperienceModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/JobExperience/{id}": {
-      "put": {
-        "tags": [
-          "WorkerProfileJobExperience"
-        ],
-        "summary": "Updates an existing job experience entry of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the job experience entry.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Updated job experience data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileJobExperienceModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileJobExperienceModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileJobExperienceModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "WorkerProfileJobExperience"
-        ],
-        "summary": "Deletes a job experience entry from a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the job experience entry.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Availabilities": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the availabilities of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Collection of availability identifiers.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/AvailabilityDays": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the availability days of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Collection of availability day identifiers.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/AvailabilityTimes": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the availability times of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Collection of availability time identifiers.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/BasicInformation": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the basic information of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Basic information data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileBasicInformationModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileBasicInformationModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileBasicInformationModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Certificates": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Uploads certificate documents for a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Certificates/{certificateId}": {
-      "delete": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Deletes a certificate from a worker profile.",
-        "parameters": [
-          {
-            "name": "certificateId",
-            "in": "path",
-            "description": "Identifier of the certificate.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "profileId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/ContactInformation": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the contact information of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Contact information data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileContactInformation"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileContactInformation"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileContactInformation"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/EmergencyInformation": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the emergency information of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Emergency information data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.EmergencyInformationModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.EmergencyInformationModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.EmergencyInformationModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Languages": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the languages of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Collection of language identifiers.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Licenses": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Uploads license documents for a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Licenses/{licenseId}": {
-      "delete": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Deletes a license from a worker profile.",
-        "parameters": [
-          {
-            "name": "licenseId",
-            "in": "path",
-            "description": "Identifier of the license.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "profileId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/LocationPreferences": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the location preferences of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Collection of location preference identifiers.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/OtherInformation": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates other information of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Other information data.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileOtherInformationModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileOtherInformationModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/Covenant.Common.Models.Worker.WorkerProfileOtherInformationModel"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/ProfileImage": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Uploads or updates the profile image of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/SinInformation": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Uploads social insurance documents for a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Skills": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Updates the skills of a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Collection of skill names.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Documents": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Uploads identification documents for a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/Resume": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Uploads the resume document for a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/OtherDocument": {
-      "post": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Uploads other documents for a worker profile.",
-        "parameters": [
-          {
-            "name": "profileId",
-            "in": "path",
-            "description": "Identifier of the worker profile.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/{profileId}/OtherDocument/{otherDocumentId}": {
-      "delete": {
-        "tags": [
-          "WorkerProfileUpdate"
-        ],
-        "summary": "Deletes an other document from a worker profile.",
-        "parameters": [
-          {
-            "name": "otherDocumentId",
-            "in": "path",
-            "description": "Identifier of the document.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "profileId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/WorkerProfile/me/Comments": {
-      "get": {
-        "tags": [
-          "WorkerComment"
-        ],
-        "summary": "Gets the paginated comments written about the current worker.",
-        "parameters": [
-          {
-            "name": "IsDescending",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Boolean"
-            }
-          },
-          {
-            "name": "PageIndex",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          },
-          {
-            "name": "PageSize",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Worker.WorkerCommentModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/worker/requests/{requestId}/timesheet": {
       "get": {
         "tags": [
@@ -5338,6 +3228,45 @@
         }
       }
     },
+    "/api/mobileapp/version": {
+      "get": {
+        "tags": [
+          "MobileApp"
+        ],
+        "summary": "Gets the minimum supported version of the worker mobile app and the store links to update it.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.MobileAppVersionModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.MobileAppVersionModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.MobileAppVersionModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/website/contact": {
       "post": {
         "tags": [
@@ -5663,6 +3592,45 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/jobs/scheduletasks/MarkOverdueInvoices": {
+      "post": {
+        "tags": [
+          "ScheduleTasks"
+        ],
+        "summary": "Marks pending invoices whose payment term has expired as Due. Returns the number of invoices updated.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Int32"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Int32"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Int32"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -8291,7 +6259,7 @@
         "tags": [
           "Invoices"
         ],
-        "summary": "Gets the summary of a specific invoice by its identifier.",
+        "summary": "Gets the summary of a specific invoice belonging to the current company.",
         "parameters": [
           {
             "name": "id",
@@ -8851,13 +6819,20 @@
         "tags": [
           "Dashboard"
         ],
-        "summary": "Gets the deal count and total value per status for a period. Sales users only see the deals they own.",
+        "summary": "Gets the deal count and total value per status for a date range (current month when omitted). Sales users only see the deals they own.",
         "parameters": [
           {
-            "name": "Period",
+            "name": "DateFrom",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
             }
           },
           {
@@ -10472,7 +8447,7 @@
         "tags": [
           "RequestHistory"
         ],
-        "summary": "Gets a paginated request history for the specified worker profile.",
+        "summary": "Gets the paginated request history for the specified worker profile.",
         "parameters": [
           {
             "name": "workerProfileId",
@@ -10481,6 +8456,69 @@
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "CompanyFullName",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "JobTitle",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Location",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Enums.RequestStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "WorkerRequestStatuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Enums.WorkerRequestStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "StartWorkingFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "StartWorkingTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -10511,7 +8549,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.RequestListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -10533,7 +8571,7 @@
         "tags": [
           "TimeSheetHistory"
         ],
-        "summary": "Gets the paginated timesheet history for a worker profile.",
+        "summary": "Gets the paginated timesheet history for a worker profile with running totals.",
         "parameters": [
           {
             "name": "workerProfileId",
@@ -10542,6 +8580,41 @@
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "CompanyName",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Request.TimeSheet.Agency.WorkerTimeSheetHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -10583,65 +8656,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.TimeSheet.Agency.TimeSheetHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/agency/recruiting/workers/{workerProfileId}/timesheethistory/{rowNumber}": {
-      "get": {
-        "tags": [
-          "TimeSheetHistory"
-        ],
-        "summary": "Gets the accumulated timesheet history for a worker profile up to a given row.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "rowNumber",
-            "in": "path",
-            "description": "Row number to accumulate up to.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated"
                 }
               }
             }
@@ -10663,7 +8677,7 @@
         "tags": [
           "WageHistory"
         ],
-        "summary": "Gets the paginated wage history for a worker profile.",
+        "summary": "Gets the paginated pay stub history for a worker profile with running totals.",
         "parameters": [
           {
             "name": "workerProfileId",
@@ -10672,6 +8686,34 @@
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "PayStubNumber",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "WeekEndingFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "WeekEndingTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Accounting.PayStub.WorkerPayStubHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -10713,65 +8755,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Accounting.PayStub.PayStubHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/agency/recruiting/workers/{workerProfileId}/wagehistory/{rowNumber}": {
-      "get": {
-        "tags": [
-          "WageHistory"
-        ],
-        "summary": "Gets the accumulated wage history for a worker profile up to a given row.",
-        "parameters": [
-          {
-            "name": "workerProfileId",
-            "in": "path",
-            "description": "Worker profile identifier.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          },
-          {
-            "name": "rowNumber",
-            "in": "path",
-            "description": "Row number to accumulate up to.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated"
                 }
               }
             }
@@ -12217,6 +10200,339 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
               }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/runners": {
+      "get": {
+        "tags": [
+          "Runners"
+        ],
+        "summary": "Gets the runners of every request of the current agency, paginated by request so no request is split across pages.",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "JobTitle",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "CompanyProfileId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.RunnerType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.RunnerStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "RequestStatuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.RequestStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "OnlyMine",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "Recruiter",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "StartAtFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "StartAtTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.GetAgencyRunnerSortBy"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.AgencyRunnersPagedResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/runners/Status": {
+      "put": {
+        "tags": [
+          "Runners"
+        ],
+        "summary": "Changes the status of several runners at once, skipping the ones the transition is not valid for.",
+        "requestBody": {
+          "description": "Runners to change, the target status and its optional comments and start date.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.ChangeRunnersStatusModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.ChangeRunnersStatusModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.ChangeRunnersStatusModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.ChangeRunnersStatusResultModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/runners/File": {
+      "get": {
+        "tags": [
+          "Runners"
+        ],
+        "summary": "Generates and downloads an Excel report with every runner that matches the filter.",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "JobTitle",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "CompanyProfileId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.RunnerType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.RunnerStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "RequestStatuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.RequestStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "OnlyMine",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "Recruiter",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "StartAtFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "StartAtTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.GetAgencyRunnerSortBy"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              },
+              "application/json": { }
             }
           },
           "500": {
@@ -18175,6 +16491,83 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/Covenant.Common.Models.Company.Agency.CompanyProfileSettingsUpdateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/clients/{id}/PaymentTerms": {
+      "patch": {
+        "tags": [
+          "Clients"
+        ],
+        "summary": "Updates the number of days the company has to pay an invoice before it becomes due.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Payment terms in days.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel"
               }
             }
           },
@@ -24604,6 +22997,107 @@
         }
       }
     },
+    "/api/agency/accounting/invoices/payments-report": {
+      "get": {
+        "tags": [
+          "Invoices"
+        ],
+        "summary": "Exports the filtered invoices to the payments follow-up Excel (amounts before/after tax, due date, due days, payment date).",
+        "parameters": [
+          {
+            "name": "InvoiceNumber",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "CreatedAtFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "CreatedAtTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "CompanyFullName",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "SalesRepresentative",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Models.Accounting.Invoice.GetInvoicesFilterSortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "IsDescending",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "PageIndex",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/accounting/invoices/Preview": {
       "post": {
         "tags": [
@@ -24880,7 +23374,7 @@
         "tags": [
           "Invoices"
         ],
-        "summary": "Changes the status of an invoice (Pending / Paid) and records who changed it and when.",
+        "summary": "Changes the status of an invoice (Pending / Paid) and records who changed it and when. Paid accepts an optional payment date (defaults to today).",
         "parameters": [
           {
             "name": "invoiceId",
@@ -24893,7 +23387,7 @@
           }
         ],
         "requestBody": {
-          "description": "The new status.",
+          "description": "The new status and, for Paid, the payment date.",
           "content": {
             "application/json": {
               "schema": {
@@ -26603,9 +25097,6 @@
       "Covenant.Common.Enums.RunnerType": {
         "type": "integer"
       },
-      "Covenant.Common.Enums.SalesPeriod": {
-        "type": "integer"
-      },
       "Covenant.Common.Enums.WorkerRequestStatus": {
         "type": "integer"
       },
@@ -26713,6 +25204,16 @@
         "properties": {
           "status": {
             "$ref": "#/components/schemas/Covenant.Common.Enums.InvoiceStatus"
+          },
+          "paidAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
           }
         }
       },
@@ -26833,11 +25334,20 @@
           "email": {
             "$ref": "#/components/schemas/System.String"
           },
+          "subTotal": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "tax": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
           "totalNet": {
             "$ref": "#/components/schemas/System.Decimal"
           },
           "invoiceNumberId": {
             "$ref": "#/components/schemas/System.Int64"
+          },
+          "invoiceNumber": {
+            "$ref": "#/components/schemas/System.String"
           },
           "weekEnding": {
             "oneOf": [
@@ -26858,6 +25368,25 @@
           "status": {
             "$ref": "#/components/schemas/Covenant.Common.Enums.InvoiceStatus"
           },
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "dueDate": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "dueDays": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "paidAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
           "updatedAt": {
             "oneOf": [
               {
@@ -26869,9 +25398,6 @@
             ]
           },
           "updatedByName": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "invoiceNumber": {
             "$ref": "#/components/schemas/System.String"
           }
         }
@@ -26893,8 +25419,11 @@
           "subTotal": {
             "$ref": "#/components/schemas/System.Decimal"
           },
-          "hst": {
+          "tax": {
             "$ref": "#/components/schemas/System.Decimal"
+          },
+          "taxName": {
+            "$ref": "#/components/schemas/System.String"
           },
           "total": {
             "$ref": "#/components/schemas/System.Decimal"
@@ -26990,6 +25519,9 @@
           "createdAt": {
             "$ref": "#/components/schemas/System.DateOnly"
           },
+          "agencyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
           "companyProfileId": {
             "$ref": "#/components/schemas/System.Guid"
           },
@@ -27075,7 +25607,7 @@
           "subTotal": {
             "$ref": "#/components/schemas/System.Decimal"
           },
-          "hst": {
+          "tax": {
             "$ref": "#/components/schemas/System.Decimal"
           },
           "total": {
@@ -27210,34 +25742,14 @@
           }
         }
       },
-      "Covenant.Common.Models.Accounting.PayStub.PayStubHistoryAccumulated": {
-        "type": "object",
-        "properties": {
-          "totalEarnings": {
-            "$ref": "#/components/schemas/System.Decimal"
-          },
-          "vacations": {
-            "$ref": "#/components/schemas/System.Decimal"
-          },
-          "totalPaid": {
-            "$ref": "#/components/schemas/System.Decimal"
-          },
-          "quantity": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "total": {
-            "$ref": "#/components/schemas/System.Decimal"
-          }
-        }
-      },
       "Covenant.Common.Models.Accounting.PayStub.PayStubHistoryModel": {
         "type": "object",
         "properties": {
-          "rowNumber": {
-            "$ref": "#/components/schemas/System.Int32"
-          },
           "id": {
             "$ref": "#/components/schemas/System.Guid"
+          },
+          "numberId": {
+            "$ref": "#/components/schemas/System.Int64"
           },
           "payStubNumber": {
             "$ref": "#/components/schemas/System.String"
@@ -27259,6 +25771,21 @@
           },
           "end": {
             "$ref": "#/components/schemas/System.DateTime"
+          },
+          "accumulatedQuantity": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedTotal": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "accumulatedVacations": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "accumulatedTotalEarnings": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "accumulatedTotalPaid": {
+            "$ref": "#/components/schemas/System.Decimal"
           },
           "items": {
             "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Accounting.PayStub.PayStubItemHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
@@ -27865,6 +26392,9 @@
           "postalCode": {
             "$ref": "#/components/schemas/System.String"
           },
+          "city": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Location.CityModel"
+          },
           "gender": {
             "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
           },
@@ -27919,6 +26449,9 @@
           "postalCode": {
             "$ref": "#/components/schemas/System.String"
           },
+          "city": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Location.CityModel"
+          },
           "gender": {
             "$ref": "#/components/schemas/Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
           },
@@ -27968,6 +26501,12 @@
             "$ref": "#/components/schemas/System.String"
           },
           "postalCode": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "city": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "province": {
             "$ref": "#/components/schemas/System.String"
           },
           "residencyStatus": {
@@ -28128,6 +26667,9 @@
           },
           "overtimeStartsAfter": {
             "$ref": "#/components/schemas/System.Double"
+          },
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },
@@ -28272,6 +26814,14 @@
           },
           "salesRepresentative": {
             "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
+      "Covenant.Common.Models.Company.Agency.CompanyProfilePaymentTermsUpdateModel": {
+        "type": "object",
+        "properties": {
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },
@@ -28503,6 +27053,9 @@
           },
           "overtimeStartsAfter": {
             "$ref": "#/components/schemas/System.Double"
+          },
+          "paymentTermDays": {
+            "$ref": "#/components/schemas/System.Int32"
           }
         }
       },
@@ -28991,6 +27544,20 @@
           }
         }
       },
+      "Covenant.Common.Models.MobileAppVersionModel": {
+        "type": "object",
+        "properties": {
+          "minimumVersion": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "androidStoreUrl": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "iosStoreUrl": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
       "Covenant.Common.Models.NoteModel": {
         "type": "object",
         "properties": {
@@ -29277,6 +27844,23 @@
         "properties": {
           "items": {
             "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.NoteModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "pageIndex": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalPages": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalItems": {
+            "$ref": "#/components/schemas/System.Int32"
+          }
+        }
+      },
+      "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
           },
           "pageIndex": {
             "$ref": "#/components/schemas/System.Int32"
@@ -30161,6 +28745,76 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "numberId": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "jobTitle": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "companyFullName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "companyProfileId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "address": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "city": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "provinceName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "postalCode": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "entrance": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "requestStatus": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RequestStatus"
+          },
+          "workerRequestStatus": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.WorkerRequestStatus"
+          },
+          "isAsap": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "startWorking": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "finishWorking": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "location": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
       "Covenant.Common.Models.Request.AgencyApplicantListModel": {
         "type": "object",
         "properties": {
@@ -30884,6 +29538,207 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.Runners.AgencyRequestRunnersModel": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "numberId": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "companyFullName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "jobTitle": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "city": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "provinceName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "displayShift": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "startAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "isAsap": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "isDirectHiring": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "usesRunners": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "workersQuantity": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "hiredRunners": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalRunners": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "runners": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.AgencyRunnerListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        }
+      },
+      "Covenant.Common.Models.Request.Runners.AgencyRunnerListModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "numberId": {
+            "$ref": "#/components/schemas/System.Int64"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "workerProfileId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "name": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "email": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "type": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RunnerType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RunnerStatus"
+          },
+          "startDate": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "interviewsCount": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "lastInterviewAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "createdByEmail": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "requestNumberId": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "companyFullName": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "jobTitle": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "startAt": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "isAsap": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "isDirectHiring": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "usesRunners": {
+            "$ref": "#/components/schemas/System.Boolean"
+          }
+        }
+      },
+      "Covenant.Common.Models.Request.Runners.AgencyRunnersPagedResponse": {
+        "type": "object",
+        "properties": {
+          "totalRunners": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "items": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.AgencyRequestRunnersModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "pageIndex": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalPages": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalItems": {
+            "$ref": "#/components/schemas/System.Int32"
+          }
+        }
+      },
+      "Covenant.Common.Models.Request.Runners.ChangeRunnersStatusModel": {
+        "type": "object",
+        "properties": {
+          "runnerIds": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.RunnerStatus"
+          },
+          "comments": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "startDate": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          }
+        }
+      },
+      "Covenant.Common.Models.Request.Runners.ChangeRunnersStatusResultModel": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "skipped": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.SkippedRunnerModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          }
+        }
+      },
       "Covenant.Common.Models.Request.Runners.ChangeRunnerStatusModel": {
         "type": "object",
         "properties": {
@@ -30904,6 +29759,9 @@
             ]
           }
         }
+      },
+      "Covenant.Common.Models.Request.Runners.GetAgencyRunnerSortBy": {
+        "type": "integer"
       },
       "Covenant.Common.Models.Request.Runners.GetRunnersSortBy": {
         "type": "integer"
@@ -31134,6 +29992,17 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.Runners.SkippedRunnerModel": {
+        "type": "object",
+        "properties": {
+          "runnerId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
       "Covenant.Common.Models.Request.SkippedApplicantModel": {
         "type": "object",
         "properties": {
@@ -31145,34 +30014,14 @@
           }
         }
       },
-      "Covenant.Common.Models.Request.TimeSheet.Agency.TimesheetHistoryAccumulated": {
-        "type": "object",
-        "properties": {
-          "regularHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "holidayHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "overtimeHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "missingHours": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "missingHoursOvertime": {
-            "$ref": "#/components/schemas/System.Double"
-          },
-          "totalHours": {
-            "$ref": "#/components/schemas/System.Double"
-          }
-        }
-      },
       "Covenant.Common.Models.Request.TimeSheet.Agency.TimeSheetHistoryModel": {
         "type": "object",
         "properties": {
-          "rowNumber": {
-            "$ref": "#/components/schemas/System.Int32"
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/System.Guid"
           },
           "numberId": {
             "$ref": "#/components/schemas/System.Int32"
@@ -31206,6 +30055,24 @@
           },
           "totalHours": {
             "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedRegularHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedHolidayHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedOvertimeHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedMissingHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedMissingHoursOvertime": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "accumulatedTotalHours": {
+            "$ref": "#/components/schemas/System.Double"
           }
         }
       },
@@ -31213,14 +30080,7 @@
         "type": "object",
         "properties": {
           "invoiceNumber": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/System.Nullable`1[[System.Int64, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            ]
+            "$ref": "#/components/schemas/System.String"
           },
           "payStubNumber": {
             "$ref": "#/components/schemas/System.String"
@@ -31886,9 +30746,6 @@
       "Covenant.Common.Models.Sales.Dashboard.SalesPeriodRangeModel": {
         "type": "object",
         "properties": {
-          "period": {
-            "$ref": "#/components/schemas/Covenant.Common.Enums.SalesPeriod"
-          },
           "from": {
             "$ref": "#/components/schemas/System.DateTime"
           },
@@ -33535,6 +32392,12 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.Agency.ApplicantSearchResultModel"
         }
       },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Request.Agency.WorkerRequestHistoryModel"
+        }
+      },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.AgencyApplicantListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
@@ -33565,10 +32428,28 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.RequestListModel"
         }
       },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.AgencyRequestRunnersModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.AgencyRequestRunnersModel"
+        }
+      },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.AgencyRunnerListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.AgencyRunnerListModel"
+        }
+      },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.RunnerListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.RunnerListModel"
+        }
+      },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Runners.SkippedRunnerModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Request.Runners.SkippedRunnerModel"
         }
       },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.SkippedApplicantModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
@@ -33757,6 +32638,15 @@
       "System.Nullable`1[[Covenant.Common.Models.Accounting.PayStub.GetPayStubsFilterSortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "integer"
       },
+      "System.Nullable`1[[Covenant.Common.Models.Accounting.PayStub.WorkerPayStubHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "integer"
+      },
+      "System.Nullable`1[[Covenant.Common.Models.Request.Agency.WorkerRequestHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "integer"
+      },
+      "System.Nullable`1[[Covenant.Common.Models.Request.TimeSheet.Agency.WorkerTimeSheetHistorySortBy, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "integer"
+      },
       "System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]": {
         "type": "boolean"
       },
@@ -33838,27 +32728,6 @@
   ],
   "tags": [
     {
-      "name": "WorkerRequest"
-    },
-    {
-      "name": "WorkerRequestTimeSheet"
-    },
-    {
-      "name": "WorkerRequestHistory"
-    },
-    {
-      "name": "WorkerProfile"
-    },
-    {
-      "name": "WorkerProfileJobExperience"
-    },
-    {
-      "name": "WorkerProfileUpdate"
-    },
-    {
-      "name": "WorkerComment"
-    },
-    {
       "name": "TimeSheets"
     },
     {
@@ -33890,6 +32759,9 @@
     },
     {
       "name": "Location"
+    },
+    {
+      "name": "MobileApp"
     },
     {
       "name": "Website"
@@ -33970,6 +32842,9 @@
       "name": "WeeklyBoard"
     },
     {
+      "name": "Runners"
+    },
+    {
       "name": "Applicants"
     },
     {
@@ -33980,9 +32855,6 @@
     },
     {
       "name": "RequestsList"
-    },
-    {
-      "name": "Runners"
     },
     {
       "name": "Skills"

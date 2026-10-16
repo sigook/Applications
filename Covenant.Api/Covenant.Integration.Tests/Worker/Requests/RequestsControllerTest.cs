@@ -1,5 +1,4 @@
 using Covenant.Api.Controllers.Worker.Requests;
-using Covenant.Api.WorkerModule.WorkerRequest.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -34,12 +33,9 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     private static string RequestUri() => RequestsController.RouteName;
 
-    [Fact, TestOrder(1)]
+    [Fact]
     public async Task Get()
     {
-        var context = _factory.Services.GetService<CovenantContext>();
-        context.WorkerRequests.Add(Data.FakeWorkerRequest);
-        context.SaveChanges();
         HttpResponseMessage response = await _client.GetAsync(RequestUri());
         response.EnsureSuccessStatusCode();
         var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
@@ -58,7 +54,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.Equal(request.DurationTerm.ToString(), model.DurationTerm);
     }
 
-    [Fact, TestOrder(2)]
+    [Fact]
     public async Task GetById()
     {
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeRequest.Id}");
@@ -94,7 +90,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     public async Task Apply2()
     {
         var model = new WorkerRequestApplyModel { Comments = "Hard Worker" };
-        var url = $"{RequestUri()}/{Data.FakeRequest.Id}/Apply";
+        var url = $"{RequestUri()}/{Data.OpenRequest.Id}/Apply";
         HttpResponseMessage response = await _client.PostAsJsonAsync(url, model);
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<RequestApplicantDetailModel>();
@@ -134,10 +130,11 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            context.Requests.Add(Data.FakeRequest);
+            context.Requests.AddRange(Data.FakeRequest, Data.OpenRequest);
             context.CompanyProfiles.Add(Data.CompanyProfile);
             context.CompanyProfileJobPositionRates.Add(Data.FakeRate);
             context.WorkerProfiles.Add(Data.WorkerProfile);
+            context.WorkerRequests.Add(Data.FakeWorkerRequest);
             context.SaveChanges();
         }
     }
@@ -174,6 +171,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                 }
             }
         }, Now, FakeRate.Id).Value;
+        public static readonly Request OpenRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
         public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest;
 
         static Data()

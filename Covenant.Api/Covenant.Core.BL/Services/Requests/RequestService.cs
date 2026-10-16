@@ -98,7 +98,7 @@ public class RequestService : IRequestService
         var rRequest = await MapRequest(model);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;
-        await requestRepository.Create([request]);
+        await requestRepository.Create(request);
         if (model.SalesRepresentativeId.HasValue)
         {
             var requestComission = new RequestComission
@@ -106,7 +106,7 @@ public class RequestService : IRequestService
                 AgencyPersonnelId = model.SalesRepresentativeId.Value,
                 RequestId = request.Id,
             };
-            await requestRepository.Create([requestComission]);
+            await requestRepository.Create(requestComission);
         }
         if (model.CompanyUserIds != null && model.CompanyUserIds.Any())
         {
@@ -117,12 +117,12 @@ public class RequestService : IRequestService
                     CompanyUserId = companyUserId,
                     RequestId = request.Id
                 };
-                await requestRepository.Create([requestCompanyUser]);
+                await requestRepository.Create(requestCompanyUser);
             }
         }
         var complianceItems = requestAdapter.MapToComplianceItems(request.Id, model.ComplianceItems);
         if (!complianceItems) return Result.Fail<Guid>(complianceItems.Errors);
-        await requestRepository.Create(complianceItems.Value);
+        await requestRepository.CreateRange(complianceItems.Value);
         await requestRepository.SaveChangesAsync();
         var location = await locationRepository.GetLocationById(model.LocationId.Value);
         var currency = location.IsUSA ? "USD" : "CAD";
@@ -144,12 +144,12 @@ public class RequestService : IRequestService
         {
             var rSkill = RequestSkill.Create(requestId, skill.Skill);
             if (!rSkill) return Result.Fail<Guid>(rSkill.Errors);
-            await requestRepository.Create<RequestSkill>([rSkill.Value]);
+            await requestRepository.Create(rSkill.Value);
         }
         var requestedBy = await requestRepository.GetRequestedByList(sourceRequestId, Pagination.Default);
-        await requestRepository.Create(requestedBy.Items.Select(p => new RequestRequestedBy(requestId, p.Id)).ToList());
+        await requestRepository.CreateRange(requestedBy.Items.Select(p => new RequestRequestedBy(requestId, p.Id)).ToList());
         var reportTo = await requestRepository.GetReportToList(sourceRequestId, Pagination.Default);
-        await requestRepository.Create(reportTo.Items.Select(p => new RequestReportTo(requestId, p.Id)).ToList());
+        await requestRepository.CreateRange(reportTo.Items.Select(p => new RequestReportTo(requestId, p.Id)).ToList());
         var sources = await requestRepository.GetRequestSources(sourceRequestId);
         await requestRepository.ReplaceRequestSources(requestId, sources.Select(s => new CreateRequestSourceModel { SourceId = s.SourceId }));
         await requestRepository.SaveChangesAsync();
@@ -189,18 +189,18 @@ public class RequestService : IRequestService
         if (!result) return result;
 
         var note = CovenantNote.Create("Request open", CovenantNote.RedColor, finalizedBy).Value;
-        await requestRepository.Create([new RequestNote(requestId, note)]);
+        await requestRepository.CreateRange([new RequestNote(requestId, note)]);
         var requestFinalizationDetail = await requestRepository.GetRequestFinalizationDetail(requestId);
         if (requestFinalizationDetail != null)
         {
-            requestRepository.Delete([requestFinalizationDetail]);
+            requestRepository.Delete(requestFinalizationDetail);
         }
         var requestCancellationDetail = await requestRepository.GetRequestCancellationDetail(requestId);
         if (requestCancellationDetail != null)
         {
-            requestRepository.Delete([requestCancellationDetail]);
+            requestRepository.Delete(requestCancellationDetail);
         }
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -259,7 +259,7 @@ public class RequestService : IRequestService
                     RequestId = request.Id,
                     AgencyPersonnelId = model.SalesRepresentativeId.Value
                 };
-                await requestRepository.Create([requestComission]);
+                await requestRepository.Create(requestComission);
             }
             else if (requestComission.AgencyPersonnelId != model.SalesRepresentativeId.Value)
             {
@@ -269,7 +269,7 @@ public class RequestService : IRequestService
         var requestCompanyUsers = await requestRepository.GetRequestCompanyUsers(request.Id);
         foreach (var user in requestCompanyUsers)
         {
-            requestRepository.Delete([user]);
+            requestRepository.Delete(user);
         }
         if (model.CompanyUserIds != null && model.CompanyUserIds.Any())
         {
@@ -280,7 +280,7 @@ public class RequestService : IRequestService
                     CompanyUserId = companyUserId,
                     RequestId = request.Id
                 };
-                await requestRepository.Create([requestCompanyUser]);
+                await requestRepository.Create(requestCompanyUser);
             }
         }
         var existingComplianceItems = await requestRepository.GetComplianceItems(request.Id);
@@ -288,8 +288,8 @@ public class RequestService : IRequestService
         var keptComplianceItemIds = complianceItems.Where(c => c.Id.HasValue).Select(c => c.Id.Value).ToList();
         var removedComplianceItemIds = existingComplianceItems.Where(c => !keptComplianceItemIds.Contains(c.Id)).Select(c => c.Id).ToList();
         if (removedComplianceItemIds.Count > 0)
-            requestRepository.Delete(await requestRepository.GetApplicantComplianceCompletions(removedComplianceItemIds));
-        requestRepository.Delete(existingComplianceItems.Where(c => !keptComplianceItemIds.Contains(c.Id)));
+            requestRepository.DeleteRange(await requestRepository.GetApplicantComplianceCompletions(removedComplianceItemIds));
+        requestRepository.DeleteRange(existingComplianceItems.Where(c => !keptComplianceItemIds.Contains(c.Id)));
         foreach (var existingComplianceItem in existingComplianceItems.Where(c => keptComplianceItemIds.Contains(c.Id)))
         {
             var complianceItem = complianceItems.First(c => c.Id == existingComplianceItem.Id);
@@ -301,8 +301,8 @@ public class RequestService : IRequestService
             request.Id,
             complianceItems.Where(c => !c.Id.HasValue || !existingComplianceItemIds.Contains(c.Id.Value)));
         if (!newComplianceItems) return Result.Fail(newComplianceItems.Errors);
-        await requestRepository.Create(newComplianceItems.Value);
-        await requestRepository.Update(request);
+        await requestRepository.CreateRange(newComplianceItems.Value);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -314,7 +314,7 @@ public class RequestService : IRequestService
         var request = await requestRepository.GetRequest(r => r.Id == id);
         var update = request.UpdateRequirements(model.Requirements);
         if (!update) return update;
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -324,7 +324,7 @@ public class RequestService : IRequestService
         var request = await requestRepository.GetRequest(r => r.Id == id);
         var update = request.UpdateIsAsap();
         if (!update) return update;
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -394,11 +394,11 @@ public class RequestService : IRequestService
         var existing = await requestRepository.GetRequestCancellationDetail(request.Id);
         if (existing != null)
         {
-            requestRepository.Delete([existing]);
+            requestRepository.Delete(existing);
         }
-        await requestRepository.Create([note]);
-        await requestRepository.Create([entity]);
-        await requestRepository.Update(request);
+        await requestRepository.Create(note);
+        await requestRepository.Create(entity);
+        requestRepository.Update(request);
         return Result.Ok();
     }
 
@@ -418,7 +418,7 @@ public class RequestService : IRequestService
         if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
         Result result = request.DecreaseWorkersQuantityByOne();
         if (!result) return result;
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -516,7 +516,7 @@ public class RequestService : IRequestService
         var rejectedBy = currentUserService.GetNickname();
         var result = request.RejectWorker(workerProfileId, model.Comments, rejectedBy);
         if (!result) return result;
-        await requestRepository.Update(request);
+        requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
         var data = await notificationDataRepository.GetWorkerData(requestId, workerProfileId, NotificationType.WorkerHasBeenRejected.Id);
         if (data != null && data.EmailNotification)

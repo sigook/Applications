@@ -11,5 +11,6 @@ public class CompanyProfileConfiguration : IEntityTypeConfiguration<CompanyProfi
         builder.ToTable("CompanyProfiles");
         builder.Property(c => c.NumberId).ValueGeneratedOnAdd();
         builder.HasIndex(p => p.CompanyId).IsUnique();
+        builder.Property(c => c.PaymentTermDays).HasDefaultValue(CompanyProfile.DefaultPaymentTermDays);
     }
 }

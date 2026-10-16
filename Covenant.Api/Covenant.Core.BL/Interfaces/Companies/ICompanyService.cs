@@ -1,4 +1,4 @@
-using Covenant.Common.Functionals;
+﻿using Covenant.Common.Functionals;
 using Covenant.Common.Models.Accounting.Invoice.Company;
 using Covenant.Common.Models.Company.Agency;
 using Covenant.Common.Models.Website;
@@ -19,6 +19,7 @@ public interface ICompanyService
     Task<Result> RequestNewJobPosition(ContactDto contact);
     Task<Result> RequestNewWorker(Guid requestId, CommentsModel model);
     Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter);
+    Task<InvoiceSummaryModel> GetCompanyInvoice(Guid invoiceId);
     Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyProfileId = null);
     Task<Result> CreateContact(CompanyProfileContactPersonModel model);
     Task<Result> DeleteCompanyUser(Guid userId, Guid? companyProfileId = null);

@@ -33,13 +33,13 @@
                 <div class="column is-6 is-4-desktop" v-if="directHiring">
                   <b-field :type="errors.workerSalary ? 'is-danger' : ''" label="Worker Salary *"
                     :message="errors.workerSalary || ''">
-                    <b-numberinput v-model="workerSalary" name="workerSalary" controls-alignment="right"></b-numberinput>
+                    <b-numberinput v-model="workerSalary" name="workerSalary" :controls="false"></b-numberinput>
                   </b-field>
                 </div>
                 <div class="column is-6 is-4-desktop">
                   <b-field :type="errors.workersQuantity ? 'is-danger' : ''" :label="`${'Workers Quantity'} *`"
                     :message="errors.workersQuantity || ''">
-                    <b-numberinput v-model="workersQuantity" name="worker quantity" controls-alignment="right" expanded></b-numberinput>
+                    <b-numberinput v-model="workersQuantity" name="worker quantity" :controls="false" expanded></b-numberinput>
                   </b-field>
                 </div>
                 <div class="column is-6 is-4-desktop" v-if="!directHiring">
@@ -149,7 +149,7 @@
                 <div class="column is-6 is-3-desktop">
                   <b-field :type="errors.incentive ? 'is-danger' : ''" :label="'Incentive'"
                     :message="errors.incentive || ''">
-                    <b-numberinput controls-alignment="right" v-model="incentive" name="incentive" step="0.01" />
+                    <b-numberinput :controls="false" v-model="incentive" name="incentive" step="0.01" />
                   </b-field>
                 </div>
                 <div class="column is-6 is-9-desktop">
@@ -653,8 +653,8 @@ function onSubmit() {
 
 function createRequest(payload: CreateAgencyRequestModel) {
   isLoading.value = true;
-  const create = isDuplicate.value
-    ? duplicateAgencyRequest(sourceRequest!.id, payload)
+  const create = isDuplicate.value && sourceRequest
+    ? duplicateAgencyRequest(sourceRequest.id, payload)
     : postAgencyRequest(payload);
   create
     .then((response: AgencyRequestDetail) => {

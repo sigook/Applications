@@ -1,5 +1,4 @@
 using Covenant.Api.Controllers.Worker.Comments;
-using Covenant.Api.WorkerModule.WorkerComment.Controllers;
 using Covenant.Common.Entities;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;

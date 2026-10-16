@@ -287,7 +287,7 @@ public class WorkerService(
         if (candidate is null) return Result.Fail("Email not found");
 
         candidate.UnsubscribeFromEmails();
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -309,7 +309,7 @@ public class WorkerService(
             entity.EmailNotification = false;
             entity.PushNotification = false;
             entity.SMSNotification = false;
-            await notificationRepository.Update(entity);
+            notificationRepository.Update(entity);
         }
 
         await notificationRepository.SaveChangesAsync();
@@ -513,7 +513,10 @@ public class WorkerService(
         var candidate = await candidateRepository.GetCandidate(c => c.AgencyId == request.CompanyProfile.AgencyId && c.Email != null && c.Email.ToLower() == email);
         if (candidate is null || candidate.Dnu) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
         var city = request.JobLocation?.City?.Value;
-        if (string.IsNullOrWhiteSpace(city) || !candidate.Address.ContainsNormalized(city)) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
+        var sameCity = candidate.CityId.HasValue
+            ? candidate.CityId == request.JobLocation?.CityId
+            : !string.IsNullOrWhiteSpace(city) && candidate.Address.ContainsNormalized(city);
+        if (!sameCity) return Result.Fail<RequestApplicantDetailModel>(ApiResources.RequestNotAvailable);
         if (await requestRepository.GetRequestApplicant(ra => ra.RequestId == request.Id && ra.CandidateId == candidate.Id) is not null) return AlreadyApplied();
 
         var created = await CreateApplicant(RequestApplicant.CreateWithCandidate(request.Id, candidate.Id, "Sigook", comments, RequestApplicantStatus.Pending));
@@ -533,7 +536,7 @@ public class WorkerService(
     private async Task<Result<RequestApplicant>> CreateApplicant(Result<RequestApplicant> applicant)
     {
         if (!applicant) return applicant;
-        await requestRepository.Create([applicant.Value]);
+        await requestRepository.Create(applicant.Value);
         await requestRepository.SaveChangesAsync();
         return applicant;
     }

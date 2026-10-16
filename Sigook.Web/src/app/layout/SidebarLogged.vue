@@ -200,8 +200,9 @@ function setGroupRef(el: unknown, index: number) {
 // expanded state internally, so we set it directly on the menu-item instance).
 function expandActiveGroup() {
   menuGroups.value.forEach((group, i) => {
-    if (group.label && isGroupActive(group) && groupRefs.value[i]) {
-      groupRefs.value[i]!.newExpanded = true;
+    const groupRef = groupRefs.value[i];
+    if (group.label && isGroupActive(group) && groupRef) {
+      groupRef.newExpanded = true;
     }
   });
 }
@@ -255,12 +256,21 @@ async function getWorkerInfo() {
   profileUrl.value = '/worker-profile';
 }
 
+function landingPathAfterSwitch(): string {
+  if (Object.keys(route.params).length === 0) return route.fullPath;
+  const parent = router.getRoutes()
+    .filter((r) => !r.redirect && !r.path.includes(':') && route.path.startsWith(`${r.path}/`))
+    .sort((a, b) => b.path.length - a.path.length)[0];
+  return parent?.path ?? menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
+}
+
 function switchAgency(agency: { id: string; isPrimary: boolean }) {
   if (agency.isPrimary) return;
-  switchPersonnelAgency(agency.id).then(async () => {
-    router.push(menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles));
-    await getAgencyInfo();
-    window.location.reload();
+  isLoading.value = true;
+  const target = landingPathAfterSwitch();
+  switchPersonnelAgency(agency.id).then(() => {
+    if (target === route.fullPath) window.location.reload();
+    else window.location.assign(target);
   });
 }
 

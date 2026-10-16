@@ -4,104 +4,31 @@ import type { PaginatedList } from '@/shared/types/common';
 export enum InvoiceStatus {
   Pending = 1,
   Paid = 2,
+  Due = 3,
 }
 
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   [InvoiceStatus.Pending]: 'Pending',
   [InvoiceStatus.Paid]: 'Paid',
+  [InvoiceStatus.Due]: 'Due',
 };
 
-export const INVOICE_STATUSES: InvoiceStatus[] = [InvoiceStatus.Pending, InvoiceStatus.Paid];
+export const INVOICE_STATUSES: InvoiceStatus[] = [InvoiceStatus.Pending, InvoiceStatus.Due, InvoiceStatus.Paid];
 
 export function invoiceStatusTagType(status: InvoiceStatus): string {
   switch (status) {
     case InvoiceStatus.Paid: return 'is-success';
+    case InvoiceStatus.Due: return 'is-danger';
     case InvoiceStatus.Pending:
     default: return 'is-warning';
   }
 }
 
 // Body for PUT /api/agency/accounting/invoices/{id}/status. Mirrors ChangeInvoiceStatusModel.
+// paidAt (ISO instant, local midnight of the picked day) only applies when status is Paid; the API defaults it to now.
 export interface ChangeInvoiceStatusModel {
   status: InvoiceStatus;
-}
-
-export interface Invoice {
-  id: string;
-  companyProfileId: string;
-  invoiceNumber: number;
-  nightShiftRate: number;
-  holidayRate: number;
-  overTimeRate: number;
-  vacationsRate: number;
-  hstRate: number;
-  bonusRate: number;
-  subTotal: number;
-  hst: number;
-  totalNet: number;
-  createdAt: string;
-  weekEnding: string;
-  companyName: string;
-  totals: InvoiceTotal[];
-  holidays: InvoiceHoliday[];
-  discounts: InvoiceDiscount[];
-  additionalItems: InvoiceAdditionalItem[];
-}
-
-export interface InvoiceTotal {
-  id: string;
-  invoiceId: string;
-  workerRequestId: string;
-  workerName: string;
-  regularHours: string;
-  overtimeHours: string;
-  nightShiftHours: string;
-  holidayHours: string;
-  regularAmount: number;
-  overtimeAmount: number;
-  nightShiftAmount: number;
-  holidayAmount: number;
-  total: number;
-}
-
-export interface InvoiceHoliday {
-  id: string;
-  invoiceId: string;
-  name: string;
-  date: string;
-  hours: number;
-  rate: number;
-  amount: number;
-}
-
-export interface InvoiceDiscount {
-  id: string;
-  invoiceId: string;
-  description: string;
-  amount: number;
-}
-
-export interface InvoiceAdditionalItem {
-  id: string;
-  invoiceId: string;
-  description: string;
-  amount: number;
-}
-
-export interface InvoiceModel {
-  id: string;
-  totalNet: number;
-  companyId: string;
-  numberId: number;
-  companyEmail: string;
-}
-
-export interface InvoiceFilter {
-  page: number;
-  pageSize: number;
-  companyProfileId?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
+  paidAt?: string | null;
 }
 
 // Filter for GET /api/agency/accounting/invoices. Mirrors GetInvoicesFilterV2.
@@ -126,6 +53,8 @@ export interface AgencyInvoiceListItem {
   agencyFullName?: string;
   companyFullName?: string;
   email?: string;
+  subTotal: number;
+  tax: number;
   totalNet: number;
   invoiceNumberId: number;
   weekEnding?: string | null;
@@ -133,6 +62,10 @@ export interface AgencyInvoiceListItem {
   salesRepresentative?: string;
   invoiceNumber: string;
   status: InvoiceStatus;
+  paymentTermDays: number;
+  dueDate: string;
+  dueDays: number;
+  paidAt?: string | null;
   updatedAt?: string | null;
   updatedByName?: string | null;
 }

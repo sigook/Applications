@@ -34,25 +34,29 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 
-    [Fact, TestOrder(1)]
+    [Fact]
     public async Task DeleteReturnsBadRequestWhenTheDateIsInvalid()
     {
+        int before = await Context.ReportSubcontractors.CountAsync();
+
         HttpResponseMessage response = await _client.DeleteAsync($"{Url}?weekEnding=not-a-date");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(3, await Context.ReportSubcontractors.CountAsync());
+        Assert.Equal(before, await Context.ReportSubcontractors.CountAsync());
     }
 
-    [Fact, TestOrder(2)]
+    [Fact]
     public async Task DeleteReturnsBadRequestWhenTheWeekHasNoReports()
     {
+        int before = await Context.ReportSubcontractors.CountAsync();
+
         HttpResponseMessage response = await _client.DeleteAsync($"{Url}?weekEnding=2019-02-02");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(3, await Context.ReportSubcontractors.CountAsync());
+        Assert.Equal(before, await Context.ReportSubcontractors.CountAsync());
     }
 
-    [Fact, TestOrder(3)]
+    [Fact]
     public async Task DeleteRemovesTheWeekReportsAndReleasesTheirTimesheets()
     {
         HttpResponseMessage response = await _client.DeleteAsync($"{Url}?weekEnding={Data.WeekOne:yyyy-MM-dd}");
@@ -61,26 +65,29 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
 
         var context = Context;
         List<ReportSubcontractor> reports = await context.ReportSubcontractors.AsNoTracking().ToListAsync();
-        Assert.Equal(2, reports.Count);
         Assert.DoesNotContain(reports, r => r.Id == _data.ReportWeekOne.Id);
         Assert.Contains(reports, r => r.Id == _data.ReportWeekTwo.Id);
         Assert.Contains(reports, r => r.Id == _data.ReportOtherAgency.Id);
 
         List<ReportSubcontractorWageDetail> wageDetails = await context.ReportSubcontractorWageDetails.AsNoTracking().ToListAsync();
-        Assert.Single(wageDetails);
-        Assert.Equal(_data.ReportWeekTwo.Id, wageDetails[0].ReportSubcontractorId);
+        Assert.DoesNotContain(wageDetails, w => w.ReportSubcontractorId == _data.ReportWeekOne.Id);
+        Assert.Contains(wageDetails, w => w.ReportSubcontractorId == _data.ReportWeekTwo.Id);
 
+        Guid[] releasedTimeSheetIds = [_data.TimeSheets[0].Id, _data.TimeSheets[1].Id];
         List<TimeSheetTotalPayroll> payrollTotals = await context.TimeSheetTotalPayrolls.AsNoTracking().ToListAsync();
-        Assert.Single(payrollTotals);
-        Assert.Equal(_data.TimeSheets[2].Id, payrollTotals[0].TimeSheetId);
+        Assert.DoesNotContain(payrollTotals, p => releasedTimeSheetIds.Contains(p.TimeSheetId));
+        Assert.Contains(payrollTotals, p => p.TimeSheetId == _data.TimeSheets[2].Id);
 
         Assert.Equal(_data.TimeSheets.Length, await context.TimeSheets.CountAsync());
     }
 
-    [Fact, TestOrder(4)]
+    [Fact]
     public async Task DeleteReturnsBadRequestWhenTheWeekWasAlreadyDeleted()
     {
-        HttpResponseMessage response = await _client.DeleteAsync($"{Url}?weekEnding={Data.WeekOne:yyyy-MM-dd}");
+        HttpResponseMessage first = await _client.DeleteAsync($"{Url}?weekEnding={Data.WeekThree:yyyy-MM-dd}");
+        first.EnsureSuccessStatusCode();
+
+        HttpResponseMessage response = await _client.DeleteAsync($"{Url}?weekEnding={Data.WeekThree:yyyy-MM-dd}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -123,6 +130,7 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
         public static readonly DateTime FakeNow = new(2019, 01, 01);
         public static readonly DateTime WeekOne = new(2019, 01, 05);
         public static readonly DateTime WeekTwo = new(2019, 01, 12);
+        public static readonly DateTime WeekThree = new(2019, 01, 19);
 
         private readonly City city;
         private readonly Request request;
@@ -135,6 +143,7 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
         public TimeSheet[] TimeSheets { get; }
         public ReportSubcontractor ReportWeekOne { get; }
         public ReportSubcontractor ReportWeekTwo { get; }
+        public ReportSubcontractor ReportWeekThree { get; }
         public ReportSubcontractor ReportOtherAgency { get; }
 
         public Data()
@@ -157,11 +166,13 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
             [
                 ApprovedTimeSheet(FakeNow),
                 ApprovedTimeSheet(FakeNow.AddDays(1)),
-                ApprovedTimeSheet(FakeNow.AddDays(7))
+                ApprovedTimeSheet(FakeNow.AddDays(7)),
+                ApprovedTimeSheet(FakeNow.AddDays(14))
             ];
 
             ReportWeekOne = Report(Worker.Id, WeekOne, 1, [WageDetail(TimeSheets[0]), WageDetail(TimeSheets[1])]);
             ReportWeekTwo = Report(Worker.Id, WeekTwo, 2, [WageDetail(TimeSheets[2])]);
+            ReportWeekThree = Report(Worker.Id, WeekThree, 4, [WageDetail(TimeSheets[3])]);
 
             otherAgency = FakeData.FakeAgency(city: city);
             OtherAgencyWorker = FakeData.FakeWorkerProfile(otherAgency, "other.subcontractor@test.com", city);
@@ -212,7 +223,7 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
             context.Requests.Add(request);
             context.WorkerProfiles.AddRange(Worker, OtherAgencyWorker);
             context.TimeSheets.AddRange(TimeSheets);
-            context.ReportSubcontractors.AddRange(ReportWeekOne, ReportWeekTwo, ReportOtherAgency);
+            context.ReportSubcontractors.AddRange(ReportWeekOne, ReportWeekTwo, ReportWeekThree, ReportOtherAgency);
             context.SaveChanges();
         }
     }

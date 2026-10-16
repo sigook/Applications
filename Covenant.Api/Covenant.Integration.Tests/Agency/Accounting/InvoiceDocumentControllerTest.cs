@@ -1,4 +1,4 @@
-using Covenant.Api.Controllers.Agency.Accounting;
+﻿using Covenant.Api.Controllers.Agency.Accounting;
 using Covenant.Api.Authorization;
 using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Entities;
@@ -104,34 +104,28 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
         public static string InvoiceHtmlPath;
         public static EmailParams SentEmailParams;
 
-        public static InvoiceUSA FakeInvoice;
+        public static Invoice FakeInvoice;
 
         public Startup()
         {
             FakeAgency.AddLocation(new Location { Address = "1701 Coral Way", PostalCode = "33145", City = Miami }, true);
             FakeCompany.AddLocation(Location.Create(Miami.Id, "2525 SW 3rd Ave", "M4P1M7").Value, true);
-            var fakeItems = new[] { new InvoiceUSAItem(1, 1, "Regular") };
+            var fakeItems = new[] { new InvoiceAdditionalItem(1, 1, "Regular") };
             var fakeSubTotal = fakeItems.Sum(i => i.Total);
             var fakeTax = fakeSubTotal * 0.06m;
-            FakeInvoice = new InvoiceUSA
+            FakeInvoice = new Invoice
             {
                 InvoiceNumberId = 1,
+                InvoiceNumber = $"US-0001-{FakeNow:yy}",
                 CreatedAt = FakeNow,
+                WeekEnding = FakeNow,
                 CompanyProfileId = FakeCompany.Id,
-                Items = fakeItems,
-                Discounts = [],
+                Email = FakeCompany.Company.Email,
                 SubTotal = fakeSubTotal,
                 Tax = fakeTax,
-                TotalNet = fakeSubTotal + fakeTax,
-                InvoiceNumber = $"{InvoiceUSA.PrefixInvoiceNumber}-0001-{FakeNow:yy}"
+                TotalNet = fakeSubTotal + fakeTax
             };
-            FakeInvoice.WeekEnding = FakeNow;
-            FakeInvoice.BillFromAddress = FakeAgency.BillingAddress.FormattedAddress;
-            FakeInvoice.BillFromPhone = FakeAgency.FormattedPhone;
-            FakeInvoice.BillToAddress = FakeCompany.BillingAddress.FormattedAddress;
-            FakeInvoice.BillToPhone = FakeCompany.FormattedPhone;
-            FakeInvoice.BillToFax = FakeCompany.FormattedFax;
-            FakeInvoice.BillToEmail = FakeCompany.Company.Email;
+            FakeInvoice.AddAdditionalItems(fakeItems);
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -182,7 +176,7 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
             context.Cities.Add(Miami);
             context.Agencies.Add(FakeAgency);
             context.CompanyProfiles.Add(FakeCompany);
-            context.InvoicesUSA.Add(FakeInvoice);
+            context.Invoices.Add(FakeInvoice);
             context.SaveChanges();
         }
     }

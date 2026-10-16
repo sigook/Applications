@@ -60,9 +60,6 @@ public class CovenantContext : DbContext
     public DbSet<RequestCompanyUser> RequestCompanyUsers { get; set; }
     public DbSet<Location> Locations { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
-    public DbSet<InvoiceUSA> InvoicesUSA { get; set; }
-    public DbSet<InvoiceUSAItem> InvoiceUSAItems { get; set; }
-    public DbSet<InvoiceUSATimeSheetTotal> InvoiceUSATimeSheetTotals { get; set; }
     public DbSet<InvoiceTotal> InvoiceTotals { get; set; }
     public DbSet<InvoiceAdditionalDetail> InvoiceAdditionalDetails { get; set; }
     public DbSet<CompanyProfileInvoiceRecipient> CompanyProfileInvoiceRecipients { get; set; }
@@ -110,8 +107,6 @@ public class CovenantContext : DbContext
     public DbSet<UserAttendance> UserAttendances { get; set; }
     public DbSet<AgencyLocation> AgencyLocations { get; set; }
     public DbSet<WorkerProfileTaxCategory> WorkerProfileTaxCategories { get; set; }
-    public DbSet<PayStubHistory> PayStubHistories { get; set; }
-    public DbSet<TimesheetHistory> TimesheetHistories { get; set; }
     public DbSet<CompanyProfileContactPerson> CompanyProfileContactPeople { get; set; }
     public DbSet<CompanyProfileNote> CompanyProfileNotes { get; set; }
     public DbSet<WorkerProfileOtherDocument> WorkerProfileOtherDocuments { get; set; }

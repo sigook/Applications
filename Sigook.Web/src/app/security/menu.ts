@@ -66,6 +66,11 @@ export default {
           label: "Applicants",
         },
         {
+          to: "/recruiting/runners",
+          icon: "account-arrow-right-outline",
+          label: "Runners",
+        },
+        {
           to: "/recruiting/candidates",
           icon: "account-hard-hat",
           label: "Candidates",

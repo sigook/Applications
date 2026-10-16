@@ -11,11 +11,8 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Companies;
 
-public interface ICompanyRepository
+public interface ICompanyRepository : IBaseRepository
 {
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
-    void Update<T>(T entity) where T : class;
     Task<CompanyProfileJobPositionRate> GetJobPosition(Guid id);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter);
@@ -44,7 +41,6 @@ public interface ICompanyRepository
     Task<PaginatedList<NoteModel>> GetNotes(Guid profileId, Pagination pagination);
     Task<NoteModel> GetNoteDetail(Guid profileId, Guid id);
     Task<CompanyProfileNote> GetNote(Guid profileId, Guid id);
-    Task SaveChangesAsync();
     Task<IEnumerable<CompanyUserModel>> GetAllCompanyUsers(Guid companyProfileId);
     Task<Guid> GetCompanyIdForUser(Guid userId);
     Task<CompanyUserModel> GetCompanyUserDetail(Guid id);

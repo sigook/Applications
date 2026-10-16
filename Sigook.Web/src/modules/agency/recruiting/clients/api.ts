@@ -4,7 +4,7 @@ import { generateFileName } from '@/shared/utils/fileNaming';
 import type { CatalogItem, PaginatedList } from '@/shared/types/common';
 import type { AgencyCompanyFilter, AgencyCompanyListItem, AgencyCompanyContactPerson, AgencyCompanyLocationModel, AgencyCompanyJobPosition, AgencyCompanyJobPositionFilter, VaccinationRequiredModel, InvoiceNotesModel, InvoiceRecipientModel, PetitionJobPositionPayload, UpdateIsAsapRequestsPayload, CompanyDeletionCheck } from '@/modules/agency/recruiting/clients/types';
 import type { CovenantFileModel } from '@/shared/types/common';
-import type { AgencyCompanyProfileDetail, CompanyProfileDocumentModel, CompanyProfileListItem, CompanyProfileSettingsUpdate } from '@/modules/agency/recruiting/clients/types';
+import type { AgencyCompanyProfileDetail, CompanyProfileDocumentModel, CompanyProfileListItem, CompanyProfilePaymentTermsUpdate, CompanyProfileSettingsUpdate } from '@/modules/agency/recruiting/clients/types';
 import type { CompanyProfileDetail, CompanyUserModel, CreateCompanyUserModel } from '@/shared/company-profile/types';
 
 const companyProfilesUrl = '/api/agency/recruiting/clients';
@@ -179,6 +179,10 @@ export function updatePaidHolidays(companyId: string, settings: CompanyProfileSe
 
 export function updateOvertime(companyId: string, settings: CompanyProfileSettingsUpdate): Promise<void> {
   return api.patch(`${companyProfilesUrl}/${companyId}/Overtime`, settings);
+}
+
+export function updatePaymentTerms(companyId: string, model: CompanyProfilePaymentTermsUpdate): Promise<void> {
+  return api.patch(`${companyProfilesUrl}/${companyId}/PaymentTerms`, model);
 }
 
 export function getCompanyUsers(profileId: string): Promise<CompanyUserModel[]> {

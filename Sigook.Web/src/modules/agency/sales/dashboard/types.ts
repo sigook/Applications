@@ -1,17 +1,8 @@
 import type { DealStatus, InteractionType } from '@/modules/agency/sales/clients/types';
 
-// Mirrors backend SalesPeriod (Covenant.Common/Enums/SalesPeriod.cs).
-export enum SalesPeriod {
-  Day = 0,
-  Week = 1,
-  Month = 2,
-  Quarter = 3,
-}
-
 // Mirrors backend SalesPeriodRangeModel. `from`/`to` are UTC calendar dates,
 // serialized without an offset so the browser renders them verbatim; `to` is inclusive.
 export interface SalesPeriodRange {
-  readonly period: SalesPeriod;
   readonly from: string;
   readonly to: string;
   readonly label: string;
@@ -29,8 +20,10 @@ export interface InteractionTypeSummary {
 }
 
 // GET /api/agency/sales/dashboard/deals-by-status
+// `dateFrom`/`dateTo` are inclusive calendar dates (yyyy-MM-dd); both or none.
 export interface DealsByStatusFilter {
-  period: SalesPeriod;
+  dateFrom?: string;
+  dateTo?: string;
   statuses?: DealStatus[];
   ownerId?: string | null;
 }
@@ -75,9 +68,3 @@ export interface SalesMeter {
   readonly count: number;
   readonly color: string;
 }
-
-export const SALES_PERIOD_TABS: readonly { readonly key: SalesPeriod; readonly label: string }[] = [
-  { key: SalesPeriod.Day, label: 'Today' },
-  { key: SalesPeriod.Week, label: 'This week' },
-  { key: SalesPeriod.Month, label: 'This month' },
-];

@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 
@@ -6,22 +6,15 @@ namespace Covenant.Common.Entities.Accounting.Invoice;
 
 public class Invoice
 {
-    public const string PrefixInvoiceNumber = "AI";
-
     public Guid Id { get; set; } = Guid.NewGuid();
     public long NumberId { get; set; }
-    public long InvoiceNumber { get; set; }
+    public long InvoiceNumberId { get; set; }
+    public string InvoiceNumber { get; set; }
     public Guid CompanyProfileId { get; set; }
     public CompanyProfile CompanyProfile { get; set; }
     public string Email { get; set; }
-    public decimal NightShiftRate { get; set; }
-    public decimal HolidayRate { get; set; }
-    public decimal OverTimeRate { get; set; }
-    public decimal VacationsRate { get; set; }
-    public decimal HstRate { get; set; }
-    public decimal BonusRate { get; set; }
     public decimal SubTotal { get; set; }
-    public decimal Hst { get; set; }
+    public decimal Tax { get; set; }
     public decimal TotalNet { get; set; }
     public IEnumerable<InvoiceTotal> InvoiceTotals { get; set; } = new List<InvoiceTotal>();
     public IEnumerable<InvoiceDiscount> Discounts { get; set; } = new List<InvoiceDiscount>();
@@ -31,6 +24,7 @@ public class Invoice
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime? WeekEnding { get; set; }
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Pending;
+    public DateTime? PaidAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedBy { get; set; }
     public User UpdatedByUser { get; set; }
@@ -38,10 +32,11 @@ public class Invoice
     public decimal TotalOvertime => InvoiceTotals.Sum(c => c.Overtime);
     public decimal TotalRegular => InvoiceTotals.Sum(c => c.Regular);
 
-    public Result ChangeStatus(InvoiceStatus next, Guid changedBy, DateTime now)
+    public Result ChangeStatus(InvoiceStatus next, Guid changedBy, DateTime now, DateTime? paidAt = null)
     {
         if (Status == next) return Result.Fail($"Invoice is already {next}");
         Status = next;
+        PaidAt = next == InvoiceStatus.Paid ? paidAt ?? now : null;
         UpdatedAt = now;
         UpdatedBy = changedBy;
         return Result.Ok();
@@ -71,7 +66,14 @@ public class Invoice
         foreach (InvoiceDiscount item in Discounts) item.AssignTo(this);
     }
 
-    public string DisplayInvoiceNumber() => BuildInvoiceNumber(InvoiceNumber, CreatedAt);
-
-    public static string BuildInvoiceNumber(long number, DateTime date) => $"{PrefixInvoiceNumber}-{number:0000}-{date:yy}";
+    public void SetAdditionalDetail(string clientSiteAddress)
+    {
+        if (string.IsNullOrWhiteSpace(clientSiteAddress)) return;
+        AdditionalDetail = new InvoiceAdditionalDetail
+        {
+            ClientSiteAddress = clientSiteAddress,
+            InvoiceId = Id,
+            Invoice = this
+        };
+    }
 }

@@ -3,7 +3,7 @@ import { buildMultipartFormData } from '@/shared/utils/multipart';
 import type { PaginatedList } from '@/shared/types/common';
 import type { Deal, DealFilter, CreateDealModel, UpdateDealModel, CompanyInteraction, CompanyInteractionFilter, CreateCompanyInteractionModel, UpdateCompanyInteractionModel } from '@/modules/agency/sales/clients/types';
 
-const companyProfilesUrl = '/api/agency/recruiting/clients';
+const companyProfilesUrl = '/api/agency/sales/clients';
 
 export function getCompanyInteractions(profileId: string, filter: CompanyInteractionFilter): Promise<PaginatedList<CompanyInteraction>> {
   return api.get<PaginatedList<CompanyInteraction>>(`${companyProfilesUrl}/${profileId}/Interactions`, { params: { ...filter } });

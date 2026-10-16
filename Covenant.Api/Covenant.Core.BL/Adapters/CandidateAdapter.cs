@@ -10,32 +10,20 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories;
 
 namespace Covenant.Core.BL.Adapters;
 
-public class CandidateAdapter : ICandidateAdapter
+public class CandidateAdapter(
+    ICatalogRepository catalogRepository,
+    ICurrentUserService currentUserService,
+    ITeamsService teamsService,
+    IFilesContainer filesContainer) : ICandidateAdapter
 {
-    private readonly IAgencyRepository agencyRepository;
-    private readonly ICatalogRepository catalogRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly ITeamsService teamsService;
-    private readonly IFilesContainer filesContainer;
-
-    public CandidateAdapter(
-        IAgencyRepository agencyRepository,
-        ICatalogRepository catalogRepository,
-        ICurrentUserService currentUserService,
-        ITeamsService teamsService,
-        IFilesContainer filesContainer)
-    {
-        this.agencyRepository = agencyRepository;
-        this.catalogRepository = catalogRepository;
-        this.currentUserService = currentUserService;
-        this.teamsService = teamsService;
-        this.filesContainer = filesContainer;
-    }
+    private readonly ICatalogRepository catalogRepository = catalogRepository;
+    private readonly ICurrentUserService currentUserService = currentUserService;
+    private readonly ITeamsService teamsService = teamsService;
+    private readonly IFilesContainer filesContainer = filesContainer;
 
     public async Task<BulkCandidate> ConvertCandidateCsvToCandidateBulk(CandidateCsvModel model, Guid agencyId, Request request)
     {
@@ -89,6 +77,7 @@ public class CandidateAdapter : ICandidateAdapter
         var candidate = new Candidate(agencyId, model.Name)
         {
             Address = model.Address,
+            CityId = model.City?.Id,
             GenderId = model.Gender?.Id,
             HasVehicle = model.HasVehicle,
             SourceId = model.SourceId,
@@ -130,7 +119,7 @@ public class CandidateAdapter : ICandidateAdapter
         return Result.Ok(candidate);
     }
 
-    public async Task<WorkerProfileCreateModel> ConvertCandidateToWorkerProfile(Candidate candidate)
+    public WorkerProfileCreateModel ConvertCandidateToWorkerProfile(Candidate candidate)
     {
         var model = new WorkerProfileCreateModel();
         var name = candidate.Name.Split(" ");
@@ -138,14 +127,13 @@ public class CandidateAdapter : ICandidateAdapter
         model.LastName = string.Join(" ", name.Skip(1));
         model.Email = candidate.Email;
         model.Phone = candidate.PhoneNumbers.FirstOrDefault()?.PhoneNumber;
-        var agencyLocation = (await agencyRepository.GetLocations(currentUserService.GetAgencyId())).FirstOrDefault();
         model.Location = new LocationModel
         {
             Address = candidate.Address,
             PostalCode = candidate.PostalCode,
             City = new CityModel
             {
-                Id = agencyLocation.City.Id
+                Id = candidate.CityId.Value
             }
         };
         model.HasVehicle = candidate.HasVehicle;

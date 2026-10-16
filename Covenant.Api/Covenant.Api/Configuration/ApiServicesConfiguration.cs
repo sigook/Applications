@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.HealthChecks;
 using Covenant.Api.Utils;
 using Covenant.Common.Configuration;
@@ -25,6 +25,7 @@ using Covenant.Common.Repositories.Identity;
 using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Consumers;
 using Covenant.Core.BL.Interfaces.Accounting.Deductions;
+using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Covenant.Core.BL.Interfaces.Accounting.PayStubs;
 using Covenant.Core.BL.Interfaces.Accounting;
 using Covenant.Core.BL.Interfaces.Agencies;
@@ -149,10 +150,10 @@ public static class ApiServicesConfiguration
         // Shared calculation services
         services.AddScoped<ITimesheetCalculatorService, TimesheetCalculatorService>();
 
-        // Invoice services with Strategy pattern
-        services.AddScoped<UsaInvoiceService>();
-        services.AddScoped<CanadaInvoiceService>();
-        services.AddScoped<InvoiceServiceFactory>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IInvoiceCountryStrategy, CanadaInvoiceStrategy>();
+        services.AddScoped<IInvoiceCountryStrategy, UsaInvoiceStrategy>();
+        services.AddScoped<IInvoiceCountryStrategyResolver, InvoiceCountryStrategyResolver>();
 
         // CRA deduction tables
         services.AddScoped<ICraPdfParser, CraPdfParser>();
@@ -192,6 +193,7 @@ public static class ApiServicesConfiguration
         services.Configure<PushNotificationConfiguration>(configuration.GetSection(nameof(PushNotificationConfiguration)));
         services.Configure<SendGridConfiguration>(configuration.GetSection(nameof(SendGridConfiguration)));
         services.Configure<Microsoft365Configuration>(configuration.GetSection(nameof(Microsoft365Configuration)));
+        services.Configure<MobileAppConfiguration>(configuration.GetSection(nameof(MobileAppConfiguration)));
         services.Configure<RequestLocalizationOptions>(options =>
         {
             var supportedCultures = new[] { new CultureInfo(EnUsCulture), new CultureInfo(EsCulture) };

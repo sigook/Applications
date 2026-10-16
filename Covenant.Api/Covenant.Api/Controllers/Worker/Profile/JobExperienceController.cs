@@ -33,7 +33,7 @@ public class JobExperienceController : ControllerBase
         if (entity is null) return BadRequest();
         var result = entity.AddJobExperience(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await _workerRepository.UpdateProfile(entity);
+        _workerRepository.Update(entity);
         await _workerRepository.SaveChangesAsync();
         return Ok();
     }
@@ -54,7 +54,7 @@ public class JobExperienceController : ControllerBase
         if (entity is null) return BadRequest();
         Result result = entity.UpdateJobExperience(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await _workerRepository.UpdateProfile(entity);
+        _workerRepository.Update(entity);
         await _workerRepository.SaveChangesAsync();
         return Ok();
     }
@@ -73,7 +73,7 @@ public class JobExperienceController : ControllerBase
         if (entity is null) return BadRequest();
         Result result = entity.DeleteJobExperience(id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await _workerRepository.UpdateProfile(entity);
+        _workerRepository.Update(entity);
         await _workerRepository.SaveChangesAsync();
         return Ok();
     }

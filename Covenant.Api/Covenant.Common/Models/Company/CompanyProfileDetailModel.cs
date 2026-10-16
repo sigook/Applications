@@ -29,4 +29,5 @@ public class CompanyProfileDetailModel
     public CompanyProfileIndustryDetailModel Industry { get; set; }
     public Guid? SalesRepresentativeId { get; set; }
     public double OvertimeStartsAfter { get; set; }
+    public int PaymentTermDays { get; set; }
 }

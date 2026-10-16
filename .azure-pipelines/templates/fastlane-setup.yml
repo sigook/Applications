@@ -2,7 +2,7 @@
 # Usage:
 #   - template: templates/fastlane-setup.yml
 #     parameters:
-#       workingDirectory: '$(System.DefaultWorkingDirectory)/SigookApp'
+#       workingDirectory: '$(System.DefaultWorkingDirectory)/Sigook.App'
 
 parameters:
   - name: workingDirectory

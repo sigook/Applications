@@ -1,4 +1,4 @@
-using Covenant.Api.Controllers.Agency.Accounting;
+﻿using Covenant.Api.Controllers.Agency.Accounting;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
@@ -75,15 +75,10 @@ public static class Data
     public static readonly Invoice Invoice = new Invoice
     {
         CompanyProfileId = CompanyProfile.Id,
-        InvoiceNumber = 1,
-        NightShiftRate = 1,
-        HolidayRate = 1,
-        OverTimeRate = 1,
-        VacationsRate = 1,
-        HstRate = 1,
-        BonusRate = 1,
+        InvoiceNumberId = 1,
+        InvoiceNumber = "AI-0001-26",
         SubTotal = 1,
-        Hst = 1,
+        Tax = 1,
         TotalNet = 1
     };
 

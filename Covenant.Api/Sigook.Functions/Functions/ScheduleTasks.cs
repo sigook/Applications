@@ -27,6 +27,10 @@ public class ScheduleTasks(
     public async Task WarnLicensesExpiration(
         [TimerTrigger("0 0 0 * * 1-5")] TimerInfo timerInfo) => await Execute(nameof(WarnLicensesExpiration));
 
+    [Function(nameof(MarkOverdueInvoices))]
+    public async Task MarkOverdueInvoices(
+        [TimerTrigger("0 0 1 * * *")] TimerInfo timerInfo) => await Execute(nameof(MarkOverdueInvoices));
+
     private async Task Execute(string action)
     {
         logger.LogInformation("Starting scheduled task: {Action}", action);

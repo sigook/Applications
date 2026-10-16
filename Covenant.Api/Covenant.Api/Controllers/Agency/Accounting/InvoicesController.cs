@@ -1,4 +1,4 @@
-using Covenant.Api.Authorization;
+﻿using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Models.Accounting;
@@ -6,7 +6,6 @@ using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Core.BL.Interfaces.Accounting.Invoices;
-using Covenant.Core.BL.Services.Accounting.Invoices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
@@ -17,11 +16,9 @@ namespace Covenant.Api.Controllers.Agency.Accounting;
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Admin)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPayStubRepository payStubRepository) : ControllerBase
+public class InvoicesController(IInvoiceService invoiceService, IPayStubRepository payStubRepository) : ControllerBase
 {
     public const string RouteName = "api/agency/accounting/invoices";
-
-    private readonly Lazy<Task<IInvoiceService>> invoiceService = new Lazy<Task<IInvoiceService>>(invoiceServiceFactory.Resolve);
 
     /// <summary>Gets the list of invoices matching the given filter with totals.</summary>
     /// <param name="filter">Filter criteria for invoices.</param>
@@ -29,8 +26,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     [ProducesResponseType(typeof(InvoiceListModelWithTotals), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInvoices([FromQuery] GetInvoicesFilter filter)
     {
-        var service = await invoiceService.Value;
-        var data = await service.GetInvoices(filter);
+        var data = await invoiceService.GetInvoices(filter);
         return Ok(data);
     }
 
@@ -41,8 +37,18 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInvoicesFile([FromQuery] GetInvoicesFilter filter)
     {
-        var service = await invoiceService.Value;
-        var file = await service.GetInvoicesFile(filter);
+        var file = await invoiceService.GetInvoicesFile(filter);
+        return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
+    /// <summary>Exports the filtered invoices to the payments follow-up Excel (amounts before/after tax, due date, due days, payment date).</summary>
+    /// <param name="filter">Filter criteria for invoices.</param>
+    [HttpGet("payments-report")]
+    [Produces("application/octet-stream")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInvoicesPaymentsReport([FromQuery] GetInvoicesFilter filter)
+    {
+        var file = await invoiceService.GetInvoicesPaymentsReport(filter);
         return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
     }
 
@@ -53,8 +59,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Preview([FromBody] CreateInvoiceModel model)
     {
-        var service = await invoiceService.Value;
-        var result = await service.PreviewInvoice(model);
+        var result = await invoiceService.PreviewInvoice(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok(result.Value);
     }
@@ -66,8 +71,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] CreateInvoiceModel model)
     {
-        var service = await invoiceService.Value;
-        var result = await service.CreateInvoice(model);
+        var result = await invoiceService.CreateInvoice(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -80,8 +84,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetInvoicePdf(Guid invoiceId)
     {
-        var service = await invoiceService.Value;
-        var document = await service.GetInvoicePdf(invoiceId);
+        var document = await invoiceService.GetInvoicePdf(invoiceId);
         if (document is null) return NotFound();
         return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
     }
@@ -105,23 +108,21 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model, IFormFileCollection files)
     {
         model.Attachments = files.ToEmailAttachments();
-        var service = await invoiceService.Value;
-        var result = await service.SendInvoiceEmail(invoiceId, model);
+        var result = await invoiceService.SendInvoiceEmail(invoiceId, model);
         if (result) return Ok();
         return BadRequest(ModelState.AddError(result.StringErrors));
     }
 
-    /// <summary>Changes the status of an invoice (Pending / Paid) and records who changed it and when.</summary>
+    /// <summary>Changes the status of an invoice (Pending / Paid) and records who changed it and when. Paid accepts an optional payment date (defaults to today).</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
-    /// <param name="model">The new status.</param>
+    /// <param name="model">The new status and, for Paid, the payment date.</param>
     [HttpPut("{invoiceId:guid}/status")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ChangeStatus([FromRoute] Guid invoiceId, [FromBody] ChangeInvoiceStatusModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var service = await invoiceService.Value;
-        var result = await service.ChangeInvoiceStatus(invoiceId, model);
+        var result = await invoiceService.ChangeInvoiceStatus(invoiceId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -133,8 +134,7 @@ public class InvoicesController(InvoiceServiceFactory invoiceServiceFactory, IPa
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Delete([FromRoute] Guid id, [FromBody] DeleteInvoiceModel model)
     {
-        var service = await invoiceService.Value;
-        await service.DeleteInvoice(id, model);
+        await invoiceService.DeleteInvoice(id, model);
         return Ok();
     }
 }

@@ -27,7 +27,7 @@ public static class TestStartupExtensions
 {
     public static IServiceCollection AddTestDatabase(this IServiceCollection services) =>
         services.AddDbContext<CovenantContext>(
-            b => b.UseNpgsql(PostgresTestDatabase.Current), ServiceLifetime.Singleton);
+            b => b.UseNpgsql(PostgresTestDatabase.Current, o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)), ServiceLifetime.Singleton);
 
     public static void AddDefaultTestConfiguration(this IServiceCollection services)
     {

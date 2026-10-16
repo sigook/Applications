@@ -30,6 +30,8 @@ public class SalesServiceDashboardTest
     private static readonly DateTimeOffset Now = new(2026, 9, 9, 15, 0, 0, TimeSpan.Zero);
     private static readonly DateTime WeekFromUtc = new(2026, 9, 6, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime WeekToUtc = new(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime MonthFromUtc = new(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime MonthToUtc = new(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime QuarterFromUtc = new(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
     private static readonly DateTime QuarterToUtc = new(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -109,7 +111,7 @@ public class SalesServiceDashboardTest
     }
 
     [Fact]
-    public async Task GetDealsByStatusQueriesTheUtcWeekWindow()
+    public async Task GetDealsByStatusDefaultsToTheUtcMonthWindow()
     {
         DateTime capturedFrom = default;
         DateTime capturedTo = default;
@@ -122,12 +124,39 @@ public class SalesServiceDashboardTest
             })
             .ReturnsAsync([]);
 
-        var result = await _sut.GetDealsByStatus(new GetDealsByStatusFilter { Period = SalesPeriod.Week });
+        var result = await _sut.GetDealsByStatus(new GetDealsByStatusFilter());
 
-        Assert.Equal(WeekFromUtc, capturedFrom);
-        Assert.Equal(WeekToUtc, capturedTo);
-        Assert.Equal(new DateTime(2026, 9, 6), result.Value.Period.From);
-        Assert.Equal(new DateTime(2026, 9, 12), result.Value.Period.To);
+        Assert.Equal(MonthFromUtc, capturedFrom);
+        Assert.Equal(MonthToUtc, capturedTo);
+        Assert.Equal(new DateTime(2026, 9, 1), result.Value.Period.From);
+        Assert.Equal(new DateTime(2026, 9, 30), result.Value.Period.To);
+    }
+
+    [Fact]
+    public async Task GetDealsByStatusQueriesTheRequestedDateRange()
+    {
+        DateTime capturedFrom = default;
+        DateTime capturedTo = default;
+        _companyRepository
+            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
+            {
+                capturedFrom = from;
+                capturedTo = to;
+            })
+            .ReturnsAsync([]);
+
+        var result = await _sut.GetDealsByStatus(new GetDealsByStatusFilter
+        {
+            DateFrom = new DateTime(2026, 8, 20),
+            DateTo = new DateTime(2026, 9, 5)
+        });
+
+        Assert.Equal(new DateTime(2026, 8, 20, 0, 0, 0, DateTimeKind.Utc), capturedFrom);
+        Assert.Equal(new DateTime(2026, 9, 6, 0, 0, 0, DateTimeKind.Utc), capturedTo);
+        Assert.Equal(new DateTime(2026, 8, 20), result.Value.Period.From);
+        Assert.Equal(new DateTime(2026, 9, 5), result.Value.Period.To);
+        Assert.Equal("Aug 20 - Sep 5, 2026", result.Value.Period.Label);
     }
 
     [Fact]
@@ -161,9 +190,13 @@ public class SalesServiceDashboardTest
     }
 
     [Fact]
-    public async Task GetDealsByStatusRejectsAPeriodOutsideTheEnum()
+    public async Task GetDealsByStatusRejectsADateRangeEndingBeforeItStarts()
     {
-        var result = await _sut.GetDealsByStatus(new GetDealsByStatusFilter { Period = (SalesPeriod)99 });
+        var result = await _sut.GetDealsByStatus(new GetDealsByStatusFilter
+        {
+            DateFrom = new DateTime(2026, 9, 5),
+            DateTo = new DateTime(2026, 9, 4)
+        });
 
         Assert.False(result);
         _companyRepository.Verify(

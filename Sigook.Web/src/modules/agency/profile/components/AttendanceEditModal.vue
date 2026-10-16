@@ -6,6 +6,9 @@
     <b-message v-if="attendance.isMissingClockOut" type="is-warning" has-icon>
       Missing clock-out. Hours count as 0 until fixed.
     </b-message>
+    <b-message v-else-if="!clockOut" type="is-info" has-icon>
+      Saving without a clock-out reopens the punch: the user can clock out again today.
+    </b-message>
     <div class="columns is-multiline">
       <div class="column is-6">
         <b-field label="Clock in *" :type="formErrors.clockIn ? 'is-danger' : ''" :message="formErrors.clockIn">
@@ -13,14 +16,17 @@
         </b-field>
       </div>
       <div class="column is-6">
-        <b-field label="Clock out *" :type="formErrors.clockOut ? 'is-danger' : ''" :message="formErrors.clockOut">
-          <b-timepicker v-model="clockOut" hour-format="24" />
+        <b-field label="Clock out" :type="formErrors.clockOut ? 'is-danger' : ''" :message="formErrors.clockOut">
+          <b-timepicker v-model="clockOut" hour-format="24" expanded />
+          <p class="control">
+            <b-button icon-left="close" aria-label="Clear clock out" :disabled="!clockOut" @click="clockOut = null" />
+          </p>
         </b-field>
       </div>
       <div class="column is-12">
         <b-field label="Lunch (minutes) *" :type="formErrors.lunchMinutes ? 'is-danger' : ''"
           :message="formErrors.lunchMinutes">
-          <b-numberinput v-model="lunchMinutes" :min="0" :max="240" :step="15" controls-alignment="right" />
+          <b-numberinput v-model="lunchMinutes" :min="0" :max="240" :step="15" :controls="false" />
         </b-field>
       </div>
       <div class="column is-12">
@@ -78,7 +84,7 @@ const emit = defineEmits<{ (e: 'saved'): void }>();
 
 const schema = yup.object({
   clockIn: yup.date().required('Clock in is required'),
-  clockOut: yup.date().required('Clock out is required')
+  clockOut: yup.date().nullable()
     .test('after', 'Clock out must be after clock in', (value, context) =>
       !value || !context.parent.clockIn || value > context.parent.clockIn),
   lunchMinutes: yup.number().typeError('Lunch is required').required('Lunch is required')
@@ -116,7 +122,7 @@ async function save() {
   isLoading.value = true;
   updateAttendance(props.attendance.id, {
     clockIn: toLocalDateTime(onAttendanceDay(clockIn.value)),
-    clockOut: toLocalDateTime(onAttendanceDay(clockOut.value)),
+    clockOut: clockOut.value ? toLocalDateTime(onAttendanceDay(clockOut.value)) : null,
     lunchMinutes: lunchMinutes.value,
     reason: reason.value,
   })

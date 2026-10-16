@@ -2,7 +2,8 @@ namespace Covenant.Common.Models.Request.TimeSheet.Agency;
 
 public class TimeSheetHistoryModel
 {
-    public int RowNumber { get; set; }
+    public Guid Id { get; set; }
+    public Guid RequestId { get; set; }
     public int NumberId { get; set; }
     public string BusinessName { get; set; }
     public string JobTitle { get; set; }
@@ -14,4 +15,10 @@ public class TimeSheetHistoryModel
     public double MissingHours { get; set; }
     public double MissingHoursOvertime { get; set; }
     public double TotalHours => RegularHours + HolidayHours + OvertimeHours + MissingHours + MissingHoursOvertime;
+    public double AccumulatedRegularHours { get; set; }
+    public double AccumulatedHolidayHours { get; set; }
+    public double AccumulatedOvertimeHours { get; set; }
+    public double AccumulatedMissingHours { get; set; }
+    public double AccumulatedMissingHoursOvertime { get; set; }
+    public double AccumulatedTotalHours => AccumulatedRegularHours + AccumulatedHolidayHours + AccumulatedOvertimeHours + AccumulatedMissingHours + AccumulatedMissingHoursOvertime;
 }

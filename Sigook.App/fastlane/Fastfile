@@ -1,0 +1,337 @@
+# Fastfile for Sigook.App Flutter Build Automation
+#
+# IMPORTANT PATH HANDLING:
+# - Fastlane automatically changes directory to 'fastlane/' when executing
+# - Fastlane actions (gradle) resolve relative paths from the ORIGINAL CWD (where fastlane was called)
+# - SOLUTION: Use File.expand_path("../path", __dir__) to convert to absolute paths
+#
+# AZURE DEVOPS VARIABLE GROUPS:
+# - SigookApp-Android: KEY_ALIAS, KEY_PASSWORD, KEYSTORE_FILE
+# - SigookApp-Staging / SigookApp-Production: API_BASE_URL, APP_NAME, AUTH_AUTHORITY, CLIENT_ID,
+#   GOOGLE_PLAY_JSON_KEY, POST_LOGOUT_REDIRECT_URI, REDIRECT_URI, SCOPES, APP_INSIGHTS_CONNECTION_STRING
+# - SigookApp-iOS: APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_API_KEY
+#   (base64 .p8), MATCH_GIT_URL, MATCH_PASSWORD, IOS_RELEASE_NOTES (optional)
+#
+# LANE / TARGET MAPPING (see .azure-pipelines/sigookapp-pipeline.yml):
+# - dev  -> android deploy track:"Closed Testing - SIGOOK V2" | ios build + ios beta (TestFlight internal group "Staging")
+# - main -> android deploy track:production | ios build + ios release (App Store, submitted for review)
+
+default_platform(:android)
+
+ANDROID_PACKAGE_NAME = "com.sigook.sigook"
+IOS_BUNDLE_ID = "com.all2job.all2job"
+IOS_TEAM_ID = "NGXFWU4H7Z"
+TESTFLIGHT_STAGING_GROUP = "Staging"
+
+# Every value the app reads through String.fromEnvironment (lib/core/config/environment.dart)
+DART_DEFINE_KEYS = %w[
+  ENVIRONMENT
+  AUTH_AUTHORITY
+  API_BASE_URL
+  CLIENT_ID
+  REDIRECT_URI
+  POST_LOGOUT_REDIRECT_URI
+  SCOPES
+  APP_NAME
+  APP_INSIGHTS_CONNECTION_STRING
+].freeze
+OPTIONAL_DART_DEFINE_KEYS = %w[APP_INSIGHTS_CONNECTION_STRING].freeze
+
+def project_path(relative)
+  File.expand_path("../#{relative}", __dir__)
+end
+
+# Azure DevOps secret variables hold the key material base64-encoded; local
+# runs may export the plain text instead.
+def decode_if_base64(raw, plain_prefix)
+  return raw if raw.strip.start_with?(plain_prefix)
+
+  require "base64"
+  Base64.decode64(raw)
+end
+
+# Azure Pipelines exposes its job token as SYSTEM_ACCESSTOKEN; Azure Repos
+# accepts it as a basic-auth password with any username. Local runs fall
+# back to whatever git credentials the developer already has.
+def match_git_authorization
+  token = ENV["SYSTEM_ACCESSTOKEN"]
+  return nil if token.nil? || token.empty?
+
+  require "base64"
+  Base64.strict_encode64("x:#{token}")
+end
+
+# fastlane runs lanes from fastlane/, so a relative artifact path handed in by
+# the pipeline must be resolved against the project root, not the cwd.
+def resolve_artifact(path, default_glob)
+  return Dir.glob(project_path(default_glob)).first if path.to_s.empty?
+
+  File.expand_path(path, project_path("."))
+end
+
+def require_ipa(options)
+  ipa_path = resolve_artifact(options[:ipa], "build/ios/ipa/*.ipa")
+  UI.user_error!("❌ IPA not found. Build the app first with 'fastlane ios build'") if ipa_path.nil? || !File.exist?(ipa_path)
+  ipa_path
+end
+
+# ============================================
+# Android Lanes
+# ============================================
+platform :android do
+  desc "Build and sign Android app bundle for production"
+  lane :production do |options|
+    gradle(
+      project_dir: project_path("android"),
+      task: "bundle",
+      build_type: "Release",
+      print_command: true,
+      properties: {
+        "android.injected.signing.store.file" => ENV["KEYSTORE_FILE"],
+        "android.injected.signing.store.password" => ENV["KEY_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["KEY_PASSWORD"]
+      }
+    )
+
+    UI.success("✅ Android Production AAB built and signed successfully!")
+  end
+
+  desc "Build APK for local testing"
+  lane :apk do
+    gradle(
+      project_dir: project_path("android"),
+      task: "assemble",
+      build_type: "Release"
+    )
+  end
+
+  desc "Run Android tests"
+  lane :test do
+    gradle(
+      project_dir: project_path("android"),
+      task: "test",
+      build_type: "Debug"
+    )
+  end
+
+  desc "Deploy AAB to a Google Play track (track: internal | alpha | beta | production | custom closed track name)"
+  lane :deploy do |options|
+    track = options[:track].to_s.strip
+    UI.user_error!("❌ track: is required (internal, alpha, beta, production or a custom closed-testing track name)") if track.empty?
+
+    aab_path = resolve_artifact(options[:aab], "build/app/outputs/bundle/release/*.aab")
+    if aab_path.nil? || !File.exist?(aab_path)
+      UI.user_error!("❌ AAB not found at expected path. Build the app first with 'fastlane android production'")
+    end
+
+    UI.message("📤 Uploading to Google Play (#{track}): #{aab_path}")
+    UI.message("📦 Package name: #{ANDROID_PACKAGE_NAME}")
+
+    json_key_raw = ENV["GOOGLE_PLAY_JSON_KEY"]
+    if json_key_raw.nil? || json_key_raw.empty?
+      UI.user_error!("❌ GOOGLE_PLAY_JSON_KEY environment variable is not set")
+    end
+
+    upload_to_play_store(
+      track: track,
+      release_status: "completed",
+      aab: aab_path,
+      json_key_data: decode_if_base64(json_key_raw, "{"),
+      package_name: ANDROID_PACKAGE_NAME,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    UI.success("✅ Successfully uploaded to Google Play track '#{track}'!")
+  end
+
+  desc "Clean Android build artifacts"
+  lane :clean do
+    gradle(
+      project_dir: project_path("android"),
+      task: "clean"
+    )
+    UI.success("✅ Cleaned Android build artifacts")
+  end
+end
+
+# ============================================
+# iOS Lanes
+# ============================================
+platform :ios do
+  private_lane :asc_api_key do
+    raw = ENV["APP_STORE_CONNECT_API_KEY"]
+    UI.user_error!("❌ APP_STORE_CONNECT_API_KEY environment variable is not set") if raw.nil? || raw.empty?
+
+    app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: decode_if_base64(raw, "-----BEGIN"),
+      in_house: false
+    )
+  end
+
+  desc "Sign with match and build the App Store IPA (entry_point:, version:, build_number:, match_readonly:)"
+  lane :build do |options|
+    entry_point = options[:entry_point] || "lib/main_staging.dart"
+    version = options[:version]
+    build_number = options[:build_number]
+    UI.user_error!("❌ version: and build_number: are required") if version.to_s.empty? || build_number.to_s.empty?
+
+    missing = (DART_DEFINE_KEYS - OPTIONAL_DART_DEFINE_KEYS).select { |key| ENV[key].to_s.empty? }
+    UI.user_error!("❌ Missing dart-define values: #{missing.join(', ')}") unless missing.empty?
+
+    setup_ci(force: true)
+    api_key = asc_api_key
+
+    match(
+      api_key: api_key,
+      type: "appstore",
+      app_identifier: IOS_BUNDLE_ID,
+      readonly: options[:match_readonly].to_s.downcase != "false",
+      git_basic_authorization: match_git_authorization
+    )
+    profile_mapping = lane_context[SharedValues::MATCH_PROVISIONING_PROFILE_MAPPING]
+
+    update_code_signing_settings(
+      path: project_path("ios/Runner.xcodeproj"),
+      targets: ["Runner"],
+      build_configurations: ["Release"],
+      use_automatic_signing: false,
+      team_id: IOS_TEAM_ID,
+      bundle_identifier: IOS_BUNDLE_ID,
+      code_sign_identity: "Apple Distribution",
+      profile_name: profile_mapping[IOS_BUNDLE_ID]
+    )
+
+    dart_defines = DART_DEFINE_KEYS.map { |key| "--dart-define=#{key}=#{ENV[key]}" }
+    UI.message("🔨 flutter build ios (#{entry_point}, #{version} (#{build_number}))")
+    Dir.chdir(project_path(".")) do
+      sh(
+        "flutter", "build", "ios",
+        "--release",
+        "--no-codesign",
+        "-t", entry_point,
+        "--build-name=#{version}",
+        "--build-number=#{build_number}",
+        *dart_defines,
+        log: false
+      )
+    end
+
+    build_app(
+      workspace: project_path("ios/Runner.xcworkspace"),
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      export_team_id: IOS_TEAM_ID,
+      export_options: {
+        provisioningProfiles: profile_mapping,
+        signingStyle: "manual",
+        manageAppVersionAndBuildNumber: false
+      },
+      output_directory: project_path("build/ios/ipa"),
+      output_name: "Runner.ipa"
+    )
+
+    UI.success("✅ iOS IPA built and signed: #{lane_context[SharedValues::IPA_OUTPUT_PATH]}")
+  end
+
+  desc "Upload staging IPA to TestFlight and add it to the internal '#{TESTFLIGHT_STAGING_GROUP}' group"
+  lane :beta do |options|
+    ipa_path = require_ipa(options)
+    UI.message("📤 Uploading to TestFlight: #{ipa_path}")
+
+    upload_to_testflight(
+      api_key: asc_api_key,
+      ipa: ipa_path,
+      app_identifier: IOS_BUNDLE_ID,
+      groups: [TESTFLIGHT_STAGING_GROUP],
+      distribute_external: false,
+      notify_external_testers: false,
+      skip_waiting_for_build_processing: false
+    )
+
+    UI.success("✅ Build available to TestFlight group '#{TESTFLIGHT_STAGING_GROUP}'!")
+  end
+
+  # deliver only expands "default" when it is a metadata/ folder; as a hash key
+  # it is treated as a literal locale and the real ones get no whatsNew, which
+  # App Store Connect rejects at submission. Resolve the locales the listing
+  # already has instead.
+  private_lane :store_locales do |options|
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from(hash: options[:api_key])
+    app = Spaceship::ConnectAPI::App.find(IOS_BUNDLE_ID)
+    UI.user_error!("❌ App #{IOS_BUNDLE_ID} not found in App Store Connect") if app.nil?
+
+    version = app.get_edit_app_store_version || app.get_live_app_store_version
+    locales = version&.get_app_store_version_localizations&.map(&:locale) || []
+    locales = ["en-US"] if locales.empty?
+    UI.message("🌐 Store locales: #{locales.join(', ')}")
+    locales
+  end
+
+  desc "Upload production IPA and submit it for App Store review (version:)"
+  lane :release do |options|
+    ipa_path = require_ipa(options)
+    UI.user_error!("❌ version: is required") if options[:version].to_s.empty?
+    UI.message("📤 Uploading #{options[:version]} to App Store Connect: #{ipa_path}")
+
+    api_key = asc_api_key
+    release_notes = ENV.fetch("IOS_RELEASE_NOTES", "Bug fixes and performance improvements.")
+    localized_notes = store_locales(api_key: api_key).to_h { |locale| [locale, release_notes] }
+
+    upload_to_app_store(
+      api_key: api_key,
+      ipa: ipa_path,
+      app_identifier: IOS_BUNDLE_ID,
+      app_version: options[:version],
+      release_notes: localized_notes,
+      skip_screenshots: true,
+      skip_app_version_update: false,
+      force: true,
+      run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false,
+      submit_for_review: true,
+      automatic_release: true,
+      reject_if_possible: true,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false,
+        content_rights_contains_third_party_content: false
+      }
+    )
+
+    UI.success("✅ #{options[:version]} submitted for App Store review!")
+  end
+end
+
+# ============================================
+# Shared Lanes
+# ============================================
+
+desc "Display environment information"
+lane :info do
+  UI.header("Environment Information")
+  UI.message("Fastlane version: #{Fastlane::VERSION}")
+  UI.message("Ruby version: #{RUBY_VERSION}")
+  UI.message("Working directory: #{Dir.pwd}")
+  UI.message("Android project path: #{project_path('android')}")
+  UI.message("iOS workspace path: #{project_path('ios/Runner.xcworkspace')}")
+
+  if is_ci
+    UI.message("Running in CI environment")
+    UI.message("CI Platform: #{ENV['CI'] || 'Unknown'}")
+  else
+    UI.message("Running locally")
+  end
+end
+
+# Error handling
+error do |lane, exception|
+  UI.error("Error in lane '#{lane}':")
+  UI.error(exception.message)
+  UI.error(exception.backtrace.join("\n")) if exception.backtrace
+end

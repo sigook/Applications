@@ -5,7 +5,46 @@
       <span class="reg-form__context-value">{{ contextLine }}</span>
     </p>
 
-    <div v-if="isLoading" class="reg-form__loader" aria-live="polite">
+    <nav v-if="props.requestId" class="tabs is-toggle is-fullwidth reg-form__tabs" role="tablist">
+      <ul>
+        <li :class="{ 'is-active': activeTab === 'new' }">
+          <a role="tab" :aria-selected="activeTab === 'new'" @click="activeTab = 'new'">New Applicant</a>
+        </li>
+        <li :class="{ 'is-active': activeTab === 'registered' }">
+          <a role="tab" :aria-selected="activeTab === 'registered'" @click="activeTab = 'registered'">
+            Already Registered
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <form v-if="activeTab === 'registered'" @submit.prevent="onSubmitRegistered">
+      <h3 class="title">Already registered</h3>
+      <p class="reg-form__hint">
+        Enter the email you used to register with Sigook and we will attach your existing profile to this application.
+      </p>
+
+      <div class="columns is-multiline">
+        <div class="column is-12">
+          <b-field :type="registeredEmailError ? 'is-danger' : ''" :message="registeredEmailError">
+            <template #label>
+              Email <span class="has-text-danger">*</span>
+            </template>
+            <b-input type="email" v-model="registeredEmail" name="registeredEmail" placeholder="you@email.com"
+              :maxlength="100" :has-counter="false" autocomplete="email" />
+          </b-field>
+        </div>
+      </div>
+
+      <div class="step-navigation-buttons">
+        <span></span>
+        <b-button type="is-primary" native-type="submit" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Submitting…' : 'Submit Application' }}
+        </b-button>
+      </div>
+    </form>
+
+    <div v-else-if="isLoading" class="reg-form__loader" aria-live="polite">
       <span class="reg-form__spinner" aria-hidden="true"></span>
       <span>{{ loadingText }}</span>
     </div>
@@ -49,12 +88,35 @@
               </b-field>
             </div>
             <div class="column is-6">
+              <b-field :type="errors.provinceId ? 'is-danger' : ''" :message="errors.provinceId || ''">
+                <template #label>
+                  Province/State <span class="has-text-danger">*</span>
+                </template>
+                <b-select v-model="selectedProvince" name="province" placeholder="Select province/state" expanded
+                  :loading="loadingProvinces" :disabled="!selectedCountry">
+                  <option v-for="item in provinces" :key="item.id" :value="item">{{ item.value }}</option>
+                </b-select>
+              </b-field>
+            </div>
+            <div class="column is-6">
+              <b-field :type="errors.cityId ? 'is-danger' : ''" :message="errors.cityId || ''">
+                <template #label>
+                  City <span class="has-text-danger">*</span>
+                </template>
+                <b-autocomplete v-model="cityQuery" :data="filteredCities" field="value" name="city"
+                  placeholder="Select city" open-on-focus :loading="loadingCities" :disabled="!selectedProvince"
+                  @select="onCitySelected">
+                  <template #empty>No results for {{ cityQuery }}</template>
+                </b-autocomplete>
+              </b-field>
+            </div>
+            <div class="column is-6">
               <b-field :type="errors.address ? 'is-danger' : ''" :message="errors.address || ''">
                 <template #label>
-                  City / Address <span class="has-text-danger">*</span>
+                  Address <span class="has-text-danger">*</span>
                 </template>
-                <b-input type="text" v-model="address" name="address" placeholder="City / Address"
-                  :maxlength="100" :has-counter="false" />
+                <b-input type="text" v-model="address" name="address" placeholder="Street address"
+                  :maxlength="100" :has-counter="false" autocomplete="street-address" />
               </b-field>
             </div>
           </div>
@@ -177,8 +239,8 @@
               <dd>{{ selectedCountry?.value || '—' }}</dd>
             </div>
             <div class="reg-form__summary-row">
-              <dt>City / Address</dt>
-              <dd>{{ address || '—' }}</dd>
+              <dt>Address</dt>
+              <dd>{{ [address, selectedCity?.value, selectedProvince?.code].filter(Boolean).join(', ') || '—' }}</dd>
             </div>
             <div class="reg-form__summary-row">
               <dt>Immigration Status</dt>
@@ -240,10 +302,10 @@ import * as yup from 'yup'
 import PhoneInput from '@/shared/ui/PhoneInput.vue'
 
 import { getSources, getSkills } from '@/shared/api/catalogApi'
-import { getCountries } from '@/shared/api/locationApi'
-import { submitCandidateApplication } from '@/modules/landing/api'
+import { getCountries, getProvinces, getCities } from '@/shared/api/locationApi'
+import { submitCandidateApplication, submitRegisteredApplication } from '@/modules/landing/api'
 import { residencyList } from '@/shared/constants/catalog'
-import type { Country, Source, Skill } from '@/shared/types/common'
+import type { City, Country, Province, Source, Skill } from '@/shared/types/common'
 import type { CandidateFormData } from '@/modules/landing/types'
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast'
 
@@ -262,6 +324,9 @@ const emit = defineEmits<{
 
 const contextLine = computed(() => props.jobTitle || '')
 
+type ApplyTab = 'new' | 'registered'
+const activeTab = ref<ApplyTab>('new')
+
 const activeStep = ref(0)
 const LAST_STEP = 2
 
@@ -274,7 +339,9 @@ const schema = yup.object({
     .min(6, 'Email must be at least 6 characters')
     .max(100, 'Email must be at most 100 characters'),
   countryId: yup.string().required('Country is required'),
-  address: yup.string().required('City/Address is required').max(100, 'Address must be at most 100 characters'),
+  provinceId: yup.string().required('Province/State is required'),
+  cityId: yup.string().required('City is required'),
+  address: yup.string().required('Address is required').max(100, 'Address must be at most 100 characters'),
   status: yup.string().required('Immigration status is required'),
   termsAccepted: yup.boolean().oneOf([true], 'You must accept the terms and conditions'),
 })
@@ -285,6 +352,8 @@ const { errors: formErrors, validateField } = useForm({
     fullName: '',
     email: '',
     countryId: '',
+    provinceId: '',
+    cityId: '',
     address: '',
     status: '',
     termsAccepted: false,
@@ -294,6 +363,8 @@ const { errors: formErrors, validateField } = useForm({
 const { value: fullName } = useField<string>('fullName')
 const { value: email } = useField<string>('email')
 const { value: countryId } = useField<string>('countryId')
+const { value: provinceId } = useField<string>('provinceId')
+const { value: cityId } = useField<string>('cityId')
 const { value: address } = useField<string>('address')
 const { value: status } = useField<string>('status')
 const { value: termsAccepted } = useField<boolean>('termsAccepted')
@@ -310,6 +381,8 @@ const watched: Array<[string, { value: unknown }]> = [
   ['fullName', { value: fullName }],
   ['email', { value: email }],
   ['countryId', { value: countryId }],
+  ['provinceId', { value: provinceId }],
+  ['cityId', { value: cityId }],
   ['address', { value: address }],
   ['status', { value: status }],
   ['termsAccepted', { value: termsAccepted }],
@@ -332,13 +405,64 @@ interface StatusOption { id: string; value: string }
 const statusOptions: StatusOption[] = residencyList.map((s) => ({ id: s, value: s }))
 
 const countries = ref<Country[]>([])
+const provinces = ref<Province[]>([])
+const cities = ref<City[]>([])
 const sources = ref<Source[]>([])
+const loadingProvinces = ref(false)
+const loadingCities = ref(false)
 
 const selectedCountry = ref<Country | null>(null)
+const selectedProvince = ref<Province | null>(null)
+const selectedCity = ref<City | null>(null)
+const cityQuery = ref('')
 const selectedStatus = ref<StatusOption | null>(null)
 const selectedSource = ref<Source | null>(null)
 
-watch(selectedCountry, (c) => { countryId.value = c?.id ?? '' })
+const filteredCities = computed<City[]>(() => {
+  const q = cityQuery.value.trim().toLowerCase()
+  if (!q) return cities.value
+  return cities.value.filter((c) => c.value.toLowerCase().includes(q))
+})
+
+watch(selectedCountry, async (c) => {
+  countryId.value = c?.id ?? ''
+  selectedProvince.value = null
+  provinces.value = []
+  if (!c) return
+  loadingProvinces.value = true
+  try {
+    provinces.value = await getProvinces(c.id)
+  } finally {
+    loadingProvinces.value = false
+  }
+})
+
+watch(selectedProvince, async (p) => {
+  provinceId.value = p?.id ?? ''
+  selectedCity.value = null
+  cityQuery.value = ''
+  cities.value = []
+  if (!p) return
+  loadingCities.value = true
+  try {
+    cities.value = await getCities(p.id)
+  } finally {
+    loadingCities.value = false
+  }
+})
+
+watch(cityQuery, (q) => {
+  if (selectedCity.value && selectedCity.value.value !== q) {
+    selectedCity.value = null
+    cityId.value = ''
+  }
+})
+
+function onCitySelected(c: City | null): void {
+  selectedCity.value = c
+  cityId.value = c?.id ?? ''
+}
+
 watch(selectedStatus, (s) => { status.value = s?.id ?? '' })
 
 const resumeRequired = computed(() => selectedSource.value?.value === 'Linkedin')
@@ -383,7 +507,7 @@ function deleteResume(): void {
 }
 
 async function validateStepPersonal(): Promise<boolean> {
-  const fields = ['fullName', 'email', 'countryId', 'address']
+  const fields = ['fullName', 'email', 'countryId', 'provinceId', 'cityId', 'address']
   markInteracted(fields)
   const results = await Promise.all(fields.map((f) => validateField(f as never)))
   const phoneValid = await phoneComponent.value?.validatePhone()
@@ -448,7 +572,7 @@ async function onSubmit(): Promise<void> {
     fullName: fullName.value,
     email: email.value,
     phone: phone.value,
-    countryId: countryId.value,
+    cityId: cityId.value,
     address: address.value,
     status: (status.value as CandidateFormData['status']) || '',
     sourceId: selectedSource.value?.id ?? null,
@@ -460,6 +584,34 @@ async function onSubmit(): Promise<void> {
 
   try {
     await submitCandidateApplication(payload, props.requestId)
+    showAlertSuccess('Your application has been submitted')
+    emit('submitted')
+  } catch (err: unknown) {
+    showAlertError((err as { data?: string })?.data ?? 'Something went wrong')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const registeredEmail = ref('')
+const registeredEmailError = ref('')
+const registeredEmailSchema = yup.string().required().email().min(6).max(100)
+
+watch(registeredEmail, () => {
+  registeredEmailError.value = ''
+})
+
+async function onSubmitRegistered(): Promise<void> {
+  if (!props.requestId) return
+  const value = registeredEmail.value.trim()
+  if (!registeredEmailSchema.isValidSync(value)) {
+    registeredEmailError.value = 'Enter a valid email address'
+    return
+  }
+
+  isSubmitting.value = true
+  try {
+    await submitRegisteredApplication(value, props.requestId)
     showAlertSuccess('Your application has been submitted')
     emit('submitted')
   } catch (err: unknown) {
@@ -517,6 +669,13 @@ onMounted(async () => {
 .reg-form__context-value {
   color: #fff;
   font-weight: 600;
+}
+
+.reg-form__hint {
+  margin: 0 0 clamp(18px, 2.2vw, 24px);
+  font-size: clamp(13px, 1.1vw, 14px);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .reg-form__loader {

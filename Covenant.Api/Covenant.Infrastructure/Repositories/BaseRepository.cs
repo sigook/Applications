@@ -1,24 +1,23 @@
 using Covenant.Common.Repositories;
-using Covenant.Infrastructure.Contexts;
+using Microsoft.EntityFrameworkCore;
 
-namespace Covenant.Infrastructure.Repositories
+namespace Covenant.Infrastructure.Repositories;
+
+public abstract class BaseRepository<TContext>(TContext context) : IBaseRepository where TContext : DbContext
 {
-    public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
-    {
-        private readonly CovenantContext _context;
+    protected TContext Context { get; } = context;
 
-        protected BaseRepository(CovenantContext context) => _context = context;
+    public async Task Create<T>(T entity) where T : class => await Context.Set<T>().AddAsync(entity);
 
-        public Task Create(IEnumerable<T> entities) => _context.AddRangeAsync(entities);
+    public Task CreateRange<T>(IEnumerable<T> entities) where T : class => Context.Set<T>().AddRangeAsync(entities);
 
-        public async Task Create(T entity) => await _context.AddAsync(entity);
+    public void Update<T>(T entity) where T : class => Context.Set<T>().Update(entity);
 
-        public Task Update(params T[] entity)
-        {
-            foreach (T e in entity) _context.Update(e);
-            return Task.CompletedTask;
-        }
+    public void UpdateRange<T>(IEnumerable<T> entities) where T : class => Context.Set<T>().UpdateRange(entities);
 
-        public Task SaveChangesAsync() => _context.SaveChangesAsync();
-    }
+    public void Delete<T>(T entity) where T : class => Context.Set<T>().Remove(entity);
+
+    public void DeleteRange<T>(IEnumerable<T> entities) where T : class => Context.Set<T>().RemoveRange(entities);
+
+    public Task SaveChangesAsync() => Context.SaveChangesAsync();
 }

@@ -186,7 +186,9 @@ public class SalesService(
         var agencyId = currentUserService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
         var statuses = (filter.Statuses ?? []).Distinct().OrderBy(s => s).ToList();
-        var window = GetPeriodWindow(filter.Period, timeProvider.GetLocalNow());
+        var window = filter.DateFrom.HasValue && filter.DateTo.HasValue
+            ? GetDateWindow(filter.DateFrom.Value.Date, filter.DateTo.Value.Date)
+            : GetPeriodWindow(SalesPeriod.Month, timeProvider.GetLocalNow());
         var rows = await companyRepository.GetDealsByStatus(agencyId, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
         var items = FillStatuses(rows, statuses.Count > 0 ? statuses : Enum.GetValues<DealStatus>().ToList());
         return Result.Ok(new DealsByStatusModel
@@ -251,35 +253,41 @@ public class SalesService(
         DateTime today = now.UtcDateTime.Date;
         (DateTime from, DateTime toExclusive) = period switch
         {
-            SalesPeriod.Day => (today, today.AddDays(1)),
             SalesPeriod.Week => (today.StartOfWeekSunday(), today.StartOfWeekSunday().AddDays(7)),
             SalesPeriod.Month => (today.StartOfMonth(), today.StartOfMonth().AddMonths(1)),
             SalesPeriod.Quarter => (today.StartOfQuarter(), today.StartOfQuarter().AddMonths(3)),
             _ => throw new ArgumentOutOfRangeException(nameof(period))
         };
         DateTime to = toExclusive.AddDays(-1);
-        return new SalesPeriodWindow
-        {
-            Range = new SalesPeriodRangeModel
-            {
-                Period = period,
-                From = DateTime.SpecifyKind(from, DateTimeKind.Unspecified),
-                To = DateTime.SpecifyKind(to, DateTimeKind.Unspecified),
-                Label = GetLabel(period, from, to)
-            },
-            FromUtc = DateTime.SpecifyKind(from, DateTimeKind.Utc),
-            ToUtcExclusive = DateTime.SpecifyKind(toExclusive, DateTimeKind.Utc)
-        };
+        return BuildWindow(from, to, GetLabel(period, from, to));
     }
+
+    private static SalesPeriodWindow GetDateWindow(DateTime from, DateTime to) =>
+        BuildWindow(from, to, GetRangeLabel(from, to));
+
+    private static SalesPeriodWindow BuildWindow(DateTime from, DateTime to, string label) => new()
+    {
+        Range = new SalesPeriodRangeModel
+        {
+            From = DateTime.SpecifyKind(from, DateTimeKind.Unspecified),
+            To = DateTime.SpecifyKind(to, DateTimeKind.Unspecified),
+            Label = label
+        },
+        FromUtc = DateTime.SpecifyKind(from, DateTimeKind.Utc),
+        ToUtcExclusive = DateTime.SpecifyKind(to.AddDays(1), DateTimeKind.Utc)
+    };
 
     private static string GetLabel(SalesPeriod period, DateTime from, DateTime to) => period switch
     {
-        SalesPeriod.Day => from.ToString("MMM d, yyyy", CultureInfo.InvariantCulture),
-        SalesPeriod.Week => $"{from.ToString("MMM d", CultureInfo.InvariantCulture)} - {to.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)}",
+        SalesPeriod.Week => GetRangeLabel(from, to),
         SalesPeriod.Month => from.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
         SalesPeriod.Quarter => $"Q{from.Quarter()} {from.Year}",
         _ => throw new ArgumentOutOfRangeException(nameof(period))
     };
+
+    private static string GetRangeLabel(DateTime from, DateTime to) => from == to
+        ? from.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)
+        : $"{from.ToString("MMM d", CultureInfo.InvariantCulture)} - {to.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)}";
 
     private static List<DealStatusSummaryModel> FillStatuses(List<DealStatusSummaryModel> rows, List<DealStatus> statuses) =>
         statuses

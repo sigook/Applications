@@ -1,0 +1,265 @@
+import 'package:flutter/foundation.dart';
+import '../../domain/entities/registration_form.dart';
+import 'worker_profile_data.dart';
+import '../../domain/entities/language.dart';
+import '../../domain/entities/skill.dart';
+import '../../domain/entities/available_time.dart';
+import '../../domain/entities/gender.dart';
+import '../../domain/entities/availability_type.dart';
+import '../../domain/entities/identification_type.dart';
+import '../../domain/entities/day_of_week.dart';
+import '../../domain/entities/location.dart';
+import '../../domain/entities/city.dart';
+import '../../domain/entities/province.dart';
+import '../../domain/entities/country.dart';
+import '../../domain/entities/lifting_capacity.dart';
+import '../../domain/entities/uploaded_file.dart';
+import '../../domain/entities/profile_image.dart';
+
+/// Request model for worker profile registration
+/// Maps to POST /api/worker/profile
+class WorkerRegistrationRequest {
+  // Personal Info
+  final String firstName;
+  final String lastName;
+  final String birthDay; // ISO 8601 format
+  final Gender gender;
+  final ProfileImage? profileImage;
+
+  // Identification 1 (required)
+  final String identificationNumber1;
+  final IdentificationType identificationType1;
+  final UploadedFile? identificationType1File;
+
+  // Identification 2 (optional)
+  final String? identificationNumber2;
+  final IdentificationType? identificationType2;
+  final UploadedFile? identificationType2File;
+
+  // Documents
+  final UploadedFile? resume;
+
+  // Contact
+  final String? mobileNumber;
+  final String? phone;
+
+  // Location
+  final Location location;
+
+  // Lifting capacity
+  final LiftingCapacity? lift;
+
+  final bool hasVehicle;
+
+  // Availability
+  final List<AvailabilityType> availabilities;
+  final List<AvailableTime> availabilityTimes;
+  final List<DayOfWeekEntity> availabilityDays;
+
+  // Professional
+  final List<Language> languages;
+  final List<Skill> skills;
+
+  // Auth
+  final String email;
+  final String password;
+  final String confirmPassword;
+  final bool agreeTermsAndConditions;
+
+  WorkerRegistrationRequest({
+    required this.firstName,
+    required this.lastName,
+    required this.birthDay,
+    required this.gender,
+    this.profileImage,
+    required this.identificationNumber1,
+    required this.identificationType1,
+    this.identificationType1File,
+    this.identificationNumber2,
+    this.identificationType2,
+    this.identificationType2File,
+    this.resume,
+    this.mobileNumber,
+    this.phone,
+    required this.location,
+    this.lift,
+    required this.hasVehicle,
+    required this.availabilities,
+    required this.availabilityTimes,
+    required this.availabilityDays,
+    required this.languages,
+    required this.skills,
+    required this.email,
+    required this.password,
+    required this.confirmPassword,
+    required this.agreeTermsAndConditions,
+  });
+
+  /// Create from registration form entity (NEW 4-section structure)
+  factory WorkerRegistrationRequest.fromEntity(RegistrationForm form) {
+    if (form.basicInfo == null ||
+        form.preferencesInfo == null ||
+        form.accountInfo == null) {
+      throw ArgumentError('Required form sections must be completed');
+    }
+
+    final basicInfo = form.basicInfo!;
+    final preferencesInfo = form.preferencesInfo!;
+    final accountInfo = form.accountInfo!;
+    final documentsInfo = form.documentsInfo;
+
+    // Format date as ISO 8601
+    final formattedDate = basicInfo.dateOfBirth.toIso8601String();
+
+    // Days, times, and availability type already have IDs from catalog
+    final availabilityDays = preferencesInfo.availableDays;
+    final availabilityTimes = preferencesInfo.availableTimes;
+    final availabilityType = preferencesInfo.availabilityType;
+
+    // Use identification from BasicInfo or documents
+    // If not provided in BasicInfo, use placeholder (will be updated via documents upload)
+    final identificationType = basicInfo.identificationType != null
+        ? IdentificationType(
+            id: null, // ID will be resolved by backend from value
+            value: basicInfo.identificationType!,
+          )
+        : IdentificationType(
+            id: null,
+            value: 'ID', // Placeholder if not provided
+          );
+
+    final identificationNumber = basicInfo.identificationNumber ?? 'PENDING';
+
+    // Build Location object using catalog entities with IDs
+    final location = basicInfo.city != null
+        ? Location(
+            city: basicInfo.city!,
+            address: basicInfo.address,
+            postalCode: basicInfo.zipCode.value,
+          )
+        : Location(
+            // Fallback with empty GUIDs if location entities not selected
+            city: City(
+              id: '00000000-0000-0000-0000-000000000000',
+              value: 'Not specified',
+              code: null,
+              province: Province(
+                id: '00000000-0000-0000-0000-000000000000',
+                value: 'Not specified',
+                code: null,
+                country: Country(
+                  id: '00000000-0000-0000-0000-000000000000',
+                  value: 'Not specified',
+                  code: null,
+                ),
+              ),
+            ),
+            address: basicInfo.address,
+            postalCode: basicInfo.zipCode.value,
+          );
+
+    // Lifting capacity already has ID from catalog
+    final lift = preferencesInfo.liftingCapacity;
+
+    // Extract documents from form
+    final identification1 = documentsInfo?.identification1;
+    final identification2 = documentsInfo?.identification2;
+    final resumeFile = documentsInfo?.resume;
+
+    debugPrint('🔍 DEBUG fromFormState: identification1 = $identification1');
+    debugPrint(
+      '🔍 DEBUG fromFormState: identification1?.file = ${identification1?.file}',
+    );
+    debugPrint(
+      '🔍 DEBUG fromFormState: identification1?.file.filePath = ${identification1?.file.filePath}',
+    );
+
+    // Create IdentificationType from document data if available
+    final identType1 = identification1 != null
+        ? IdentificationType(
+            id: identification1.identificationTypeId,
+            value: identification1.identificationTypeValue,
+          )
+        : identificationType;
+
+    final identNumber1 =
+        identification1?.identificationNumber ?? identificationNumber;
+
+    // Convert profile photo to profile image
+    final profileImage = basicInfo.profilePhoto.hasPhoto
+        ? ProfileImage.fromPath(basicInfo.profilePhoto.path)
+        : null;
+
+    return WorkerRegistrationRequest(
+      firstName: basicInfo.firstName.value,
+      lastName: basicInfo.lastName.value,
+      birthDay: formattedDate,
+      gender: basicInfo.gender,
+      profileImage: profileImage,
+      identificationNumber1: identNumber1,
+      identificationType1: identType1,
+      identificationType1File: identification1?.file,
+      identificationNumber2: identification2?.identificationNumber,
+      identificationType2: identification2 != null
+          ? IdentificationType(
+              id: identification2.identificationTypeId,
+              value: identification2.identificationTypeValue,
+            )
+          : null,
+      identificationType2File: identification2?.file,
+      resume: resumeFile,
+      mobileNumber: basicInfo.mobileNumber.nationalFormat,
+      phone: null,
+      location: location,
+      lift: lift,
+      hasVehicle: preferencesInfo.hasVehicle,
+      availabilities: [
+        if (availabilityType.id?.isNotEmpty ?? false) availabilityType,
+      ],
+      availabilityTimes: availabilityTimes,
+      availabilityDays: availabilityDays,
+      languages: preferencesInfo.languages,
+      skills: preferencesInfo.skills,
+      email: accountInfo.email.value,
+      password: accountInfo.password.value,
+      confirmPassword: accountInfo.confirmPassword,
+      agreeTermsAndConditions: accountInfo.termsAccepted,
+    );
+  }
+
+  WorkerProfileData toWorkerProfileData({
+    String? profileImageFileName,
+    String? identificationType1FileName,
+    String? identificationType2FileName,
+    String? resumeFileName,
+  }) {
+    return WorkerProfileData(
+      firstName: firstName,
+      lastName: lastName,
+      birthDay: birthDay,
+      gender: gender,
+      identificationNumber1: identificationNumber1,
+      identificationType1: identificationType1,
+      identificationNumber2: identificationNumber2,
+      identificationType2: identificationType2,
+      mobileNumber: mobileNumber,
+      phone: phone,
+      location: location,
+      lift: lift,
+      hasVehicle: hasVehicle,
+      availabilities: availabilities,
+      availabilityTimes: availabilityTimes,
+      availabilityDays: availabilityDays,
+      languages: languages,
+      skills: skills,
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+      agreeTermsAndConditions: agreeTermsAndConditions,
+      profileImageFileName: profileImageFileName,
+      identificationType1FileName: identificationType1FileName,
+      identificationType2FileName: identificationType2FileName,
+      resumeFileName: resumeFileName,
+    );
+  }
+}

@@ -50,6 +50,11 @@ export interface CompanyProfileSettingsUpdate {
   paidHolidays?: boolean;
 }
 
+// PATCH /api/agency/recruiting/clients/{id}/PaymentTerms. Matches CompanyProfilePaymentTermsUpdateModel (1..365 days)
+export interface CompanyProfilePaymentTermsUpdate {
+  paymentTermDays: number;
+}
+
 // Filter for GET /api/agency/recruiting/clients. Mirrors backend GetCompanyForAgencyFilter.
 export interface AgencyCompanyFilter {
   pageIndex?: number;

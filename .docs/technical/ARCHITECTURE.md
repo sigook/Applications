@@ -8,7 +8,7 @@ Monorepo with six applications. Each has its own `CLAUDE.md` with app-specific c
 | `Covenant.Api/Sigook.Functions/` | Azure Functions v4 (.NET 10 isolated) | Scheduled background triggers (same solution as the API) |
 | `Sigook.Web/` | Vue 3 + Pinia + buefy 3 | Agency web portal (main platform) |
 | `Covenant.Web/` | Vue 3 + Vuetify | Public marketing website |
-| `SigookApp/` | Flutter | Worker mobile app |
+| `Sigook.App/` | Flutter | Worker mobile app |
 | `Sigook.CognitiveServices/` | .NET 8 | AI/speech services (Azure Cognitive) |
 
 ---
@@ -64,7 +64,7 @@ Hosting:    Azure Static Web Apps (staging: lively-island-020c8260f.7.azurestati
 Both web apps use **pnpm** as their package manager (`packageManager: pnpm@11.7.0`, via
 corepack). Covenant.Web builds to `dist/` (Sigook.Web builds to `wwwroot/`).
 
-### SigookApp (Flutter)
+### Sigook.App (Flutter)
 
 ```
 Framework:  Flutter (Dart ^3.9.2), Clean Architecture per feature (domain/data/presentation)
@@ -92,8 +92,9 @@ usecases — pure Dart), `data/` (Freezed models, local/remote datasources, repo
 
 ### Sigook.Functions (.NET 10, isolated worker, `Microsoft.Azure.Functions.Worker` 2.x)
 
-`Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs` holds two timer triggers
-(`0 0 0 * * 1-5`): `NotificationSinExpiration` and `WarnLicensesExpiration`.
+`Covenant.Api/Sigook.Functions/Functions/ScheduleTasks.cs` holds three timer triggers:
+`NotificationSinExpiration` and `WarnLicensesExpiration` (`0 0 0 * * 1-5`) and
+`MarkOverdueInvoices` (`0 0 1 * * *`, moves `Pending` invoices past their payment term to `Due`).
 `Functions/CraTables.cs` holds a blob trigger, `CraTableUploaded`, on the `cra-tables` container
 (`CraTablesStorage` connection): it reads the table, the pay period and the year from the blob name
 (`Utils/CraBlobName.cs`) and asks the API to import the CRA CPP or income tax table.
@@ -180,12 +181,13 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 |---|---|---|
 | `Controllers/Identity/` | `/connect/*`, `/Account`, `/Password`, `/External`, `/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
 | `Controllers/Shared/` | `api/catalog`, `api/location`, `api/file`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint), `EmailPreferencesController`, `WebsiteController` (public marketing endpoints) |
-| `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed SigookApp builds call them), `UserNotificationController` |
+| `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed Sigook.App builds call them), `UserNotificationController` |
 | `Controllers/Shared/Jobs/` | `api/jobs/scheduletasks`, `api/jobs/deductions` | machine-to-machine, called by Sigook.Functions: `ScheduleTasksController`, `DeductionsController` (CRA table import) |
 | `Controllers/Agency/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |
 | `Controllers/Agency/Profile/` | `api/agency/profile[/locations\|personnel\|personnel/agencies\|attendance]` | the caller's own agency: `AgencyProfileController`, `LocationsController`, `PersonnelController`, `PersonnelAgenciesController` (agencies the caller belongs to), `AttendanceController` (staff clock in/out) |
 | `Controllers/Agency/Recruiting/Requests/` | `api/agency/recruiting/requests[/{requestId}/…]` | `RequestsListController` (lists + Excel, Policy `Recruiting`), `RequestsController` (detail/CRUD), `ApplicantsController`, `RunnersController` (Policy `Recruiting`), `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController`, `WorkersReportController`, `NotesController`, `ShiftController`, `SkillsController`, `ReportToController`, `RequestedByController` |
 | `Controllers/Agency/Recruiting/Applicants/` | `api/agency/recruiting/applicants` | `ApplicantsController` (cross-request applicants board) |
+| `Controllers/Agency/Recruiting/Runners/` | `api/agency/recruiting/runners` | `RunnersController` (cross-request runners board: grouped list, bulk status, Excel) |
 | `Controllers/Agency/Recruiting/WeeklyBoard/` | `api/agency/recruiting/weeklyboard` | `WeeklyBoardController` |
 | `Controllers/Agency/Recruiting/Candidates/` | `api/agency/recruiting/candidates[/{candidateId}/…]` | `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
 | `Controllers/Agency/Recruiting/Workers/` | `api/agency/recruiting/workers[/{workerProfileId}/…]` | `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController`, `TimeSheetHistoryController`, `WageHistoryController` |
@@ -198,12 +200,6 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 | `Controllers/Company/Invoices/` | `api/company/invoices` | `InvoicesController` |
 | `Controllers/Company/Workers/` | `api/company/workers/{workerProfileId}/comments` | `CommentsController` |
 | `Controllers/Worker/` | `api/worker/{profile\|requests\|history\|comments}`, `api/worker/requests/{requestId}/timesheet` | the worker's own endpoints (Policy `Worker`): `Profile/ProfileController` (+ `ProfileUpdateController`, `JobExperienceController`), `Requests/RequestsController`, `History/HistoryController`, `Comments/CommentsController`, `TimeSheets/TimeSheetsController` (clock in/out) |
-
-**`Covenant.Api/WorkerModule/` is obsolete.** It holds the previous worker controllers
-(`api/WorkerProfile`, `api/WorkerRequest`, `api/WorkerRequestHistory`) untouched and marked
-`[Obsolete]`, because the SigookApp build in the stores still calls them. Delete the folder and
-`Covenant.Integration.Tests/WorkerModule/` once the app that uses `api/worker/*` is published.
-Never add code there.
 
 Routing: every controller declares `public const string RouteName = "api/..."` +
 `[Route(RouteName)]` (grep for `RouteName =` to find an endpoint; integration tests reference the
@@ -230,7 +226,7 @@ same tree.
 | `Services/Shared/` | `UploadedFilesService` |
 | `Services/Accounting/` | `AccountingService`, `TimesheetCalculatorService` (hours breakdown + payroll deductions, shared by payroll and invoicing) |
 | `Services/Accounting/Deductions/` | `DeductionImportService` (CRA PDF import) |
-| `Services/Accounting/Invoices/` | `InvoiceService` (abstract base), `CanadaInvoiceService`, `UsaInvoiceService`, `InvoiceServiceFactory` (resolves the country service from the agency billing location) |
+| `Services/Accounting/Invoices/` | `InvoiceService` (single concrete `IInvoiceService`), `CanadaInvoiceStrategy` / `UsaInvoiceStrategy` (`IInvoiceCountryStrategy`: prefix, tax, unworked holidays, PDF decoration), `InvoiceCountryStrategyResolver` (picks the strategy from the agency billing location) |
 | `Services/Accounting/PayStubs/` | `PayStubService` |
 | `Services/Identity/` | see below |
 
@@ -275,7 +271,13 @@ Contexts/         CovenantContext.cs (main DbContext), IdentityContext.cs (ASP.N
 Repositories/     by domain, plural folders mirroring Covenant.Common/Repositories/:
                   Accounting/{Deductions,Invoices,PayStubs,Subcontractors}/, Agencies/, Candidates/,
                   Companies/, Identity/, Notifications/, Requests/, Workers/ + root repositories
-                  (Catalog, Location, Shift, User); shared plumbing in BaseRepository.cs
+                  (Catalog, Location, Shift, User). Every repository inherits
+                  BaseRepository<TContext> (CovenantContext, or IdentityContext for
+                  IdentityRepository), which implements IBaseRepository: generic
+                  Create/CreateRange (async), Update/UpdateRange and Delete/DeleteRange
+                  (synchronous change-tracker calls) and SaveChangesAsync. Repository
+                  interfaces extend IBaseRepository and only declare queries and methods
+                  with logic (upserts, bulk imports, cascading deletes)
 Mappers/          entity→model projection extensions used inside repositories:
                   AgencyExtensionsMapping, CandidateExtensionsMapping, CompanyExtensionsMapping,
                   RequestExtensionsMapping, WorkerRequestExtensionsMapping
@@ -285,7 +287,14 @@ Configurations/   EF Core IEntityTypeConfiguration classes, same plural tree as 
                   pick configurations by the exact namespace
                   Covenant.Infrastructure.Configurations.Identity, so never nest folders under it
 Migrations/       EF Core migrations for CovenantContext; Migrations/Identity/ for IdentityContext
-Scripts/          raw SQL (views, functions, stored procedures) run at startup
+Scripts/          raw SQL run at startup by DatabaseScriptRunner (copied to the output dir).
+                  Schemas/ Tables/ Views/ Functions/ StoredProcedures/ Types/ run on EVERY
+                  start (must be idempotent: CREATE OR REPLACE). Data/ runs each file ONCE,
+                  in a transaction, tracked by file name in the "ScriptHistory" table
+                  (one-off data fixes that don't deserve an EF migration). The root
+                  .gitignore ignores *.sql, so a script only ships (and only runs in
+                  staging/production) when added with `git add -f`; the integration test
+                  exercises the runner with a temporary script instead of a real one
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
@@ -369,7 +378,7 @@ rather than constructing clients directly.
   `/connect/token`, `/connect/userinfo`, `/connect/endsession` and `/connect/revocation`
   (`Covenant.Api/Configuration/OpenIddictConfiguration.cs`, controller
   `Controllers/Identity/AuthorizationController.cs`). Enabled flows: authorization code + PKCE
-  (Sigook.Web browser login), password (Sigook.Web and SigookApp native login screens), refresh
+  (Sigook.Web browser login), password (Sigook.Web and Sigook.App native login screens), refresh
   token (non-rolling, 30 days; access tokens last 1 hour) and client credentials (Sigook.Functions).
   Access tokens are plain signed JWTs (encryption disabled) with `aud = api1`; the API validates
   them in-process (`AddValidation().UseLocalServer()`), so there is no discovery round-trip.
@@ -418,7 +427,7 @@ rather than constructing clients directly.
   sliding 10-minute window, answering `429` beyond it. The client IP comes from `X-Forwarded-For`
   (`ForwardedHeadersOptions` trusts any proxy because the App Service front end is the only way
   in). Both Sigook.Web (`/forgot-password`)
-  and SigookApp (`/forgot-password` route, 2-step screen) consume it; Web and App also offer a
+  and Sigook.App (`/forgot-password` route, 2-step screen) consume it; Web and App also offer a
   resend-confirmation action when login fails with `email_not_confirmed`
   (`POST /Account/ResendConfirmationLink`, always `200` so it does not reveal whether an email exists).
 - **Account-activation emails** link to Sigook.Web (`{WebClientUrl}/confirm-email` or

@@ -76,7 +76,7 @@ function onSave() {
     .filter(b => selection[b.id]?.active)
     .map(b => ({
       sourceId: b.id,
-      publishedAt: selection[b.id].publishedAt ? selection[b.id].publishedAt!.toISOString() : null,
+      publishedAt: selection[b.id].publishedAt?.toISOString() ?? null,
       externalUrl: selection[b.id].externalUrl?.trim() || null,
     }));
   setAgencyRequestSources(props.requestId, payload)

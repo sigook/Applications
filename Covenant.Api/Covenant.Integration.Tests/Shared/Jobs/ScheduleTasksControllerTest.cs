@@ -1,6 +1,7 @@
 using Covenant.Api.Controllers.Shared.Jobs;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
@@ -28,6 +29,7 @@ public class ScheduleTasksControllerTest : IClassFixture<CustomWebApplicationFac
     [Theory]
     [InlineData("NotificationSinExpiration")]
     [InlineData("WarnLicensesExpiration")]
+    [InlineData("MarkOverdueInvoices")]
     public async Task Execute(string action)
     {
         var response = await _client.PostAsync($"{ScheduleTasksController.RouteName}/{action}", new StringContent(""));
@@ -41,6 +43,9 @@ public class ScheduleTasksControllerTest : IClassFixture<CustomWebApplicationFac
             services.AddDefaultTestConfiguration();
             services.AddTestAuthenticationBuilder().AddTestAuth(o => { });
             services.AddSingleton(new Mock<IGeocodeService>().Object);
+            services.AddSingleton(Mock.Of<IPayStubsContainer>());
+            services.AddSingleton(Mock.Of<ITeamsService>());
+            services.AddSingleton(Mock.Of<ICurrentUserService>());
             services.AddTestDatabase();
             services.AddSingleton<IAgencyService, AgencyService>();
             services.AddSingleton<ITimesheetRepository, TimesheetRepository>();

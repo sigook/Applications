@@ -19,7 +19,7 @@ import type { PaginatedList } from '@/shared/types/common';
 import type { NoteItem, CreateNoteResponse, RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/modules/agency/shared/notes/types';
 import ModalNotes from '@/modules/agency/shared/notes/ModalNotes.vue';
 
-const props = defineProps<{
+defineProps<{
   userId: string;
   requestId?: string;
   notesCount?: number;

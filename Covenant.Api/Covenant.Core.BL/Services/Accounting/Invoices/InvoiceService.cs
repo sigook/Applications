@@ -1,6 +1,5 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Enums;
 using Covenant.Common.Entities.Accounting.Subcontractor;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -12,8 +11,8 @@ using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Accounting.Invoices;
+using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Common.Repositories.Accounting.Subcontractors;
-using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
@@ -29,18 +28,18 @@ using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
 namespace Covenant.Core.BL.Services.Accounting.Invoices;
 
-public abstract class InvoiceService(
+public class InvoiceService(
     ITimesheetRepository timeSheetRepository,
     IInvoiceRepository invoiceRepository,
-    IAgencyRepository agencyRepository,
     ICompanyRepository companyRepository,
-    ILocationRepository locationRepository,
     ICatalogRepository catalogRepository,
+    IPayStubRepository payStubRepository,
     TimeProvider timeProvider,
     Rates rates,
     ISubcontractorRepository subcontractorRepository,
     TimeLimits timeLimits,
     ITimesheetCalculatorService calculatorService,
+    IInvoiceCountryStrategyResolver strategies,
     ICurrentUserService currentUserService,
     IInvoicesContainer invoicesContainer,
     IRazorViewToStringRenderer renderer,
@@ -56,73 +55,100 @@ public abstract class InvoiceService(
     private const string InvoiceHtmlTemplate = "/Views/Billing/Invoice/Invoice.cshtml";
     private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
 
-    protected readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
-    protected readonly IInvoiceRepository invoiceRepository = invoiceRepository;
-    protected readonly IAgencyRepository agencyRepository = agencyRepository;
-    protected readonly ICompanyRepository companyRepository = companyRepository;
-    protected readonly ILocationRepository locationRepository = locationRepository;
-    protected readonly ICatalogRepository catalogRepository = catalogRepository;
-    protected readonly TimeProvider timeProvider = timeProvider;
-    protected readonly Rates rates = rates;
-    protected readonly ISubcontractorRepository subcontractorRepository = subcontractorRepository;
-    protected readonly TimeLimits timeLimits = timeLimits;
-    protected readonly ITimesheetCalculatorService calculatorService = calculatorService;
-
-    private readonly ICurrentUserService currentUserService = currentUserService;
-    private readonly IInvoicesContainer invoicesContainer = invoicesContainer;
-    private readonly IRazorViewToStringRenderer renderer = renderer;
-    private readonly IPdfGeneratorService pdfGenerator = pdfGenerator;
-    private readonly IEmailService emailService = emailService;
-    private readonly IMediator mediator = mediator;
-    private readonly IPayStubsContainer payStubsContainer = payStubsContainer;
-    private readonly ITeamsService teamsService = teamsService;
     private readonly TeamsWebhookConfiguration teamsConfiguration = teamsOptions.Value;
-    private readonly IInvoiceDocumentAdapter invoiceDocumentAdapter = invoiceDocumentAdapter;
-    private readonly IValidator<ChangeInvoiceStatusModel> changeStatusValidator = changeStatusValidator;
 
-    public abstract Task<Result<InvoicePreviewModel>> PreviewAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
-    public abstract Task<Result<Guid>> CreateAsync(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
-    protected abstract Task<InvoiceListModelWithTotals> FetchInvoices(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
-    protected abstract Task<List<InvoiceListModel>> FetchInvoicesForExport(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
-    protected abstract Task<InvoiceSummaryModel> FetchInvoiceSummary(Guid invoiceId);
-    protected abstract Task<(Guid InvoiceId, string InvoiceNumber, IReadOnlyList<string> PayStubsDeleted)> DeleteInvoiceData(Guid invoiceId, DeleteInvoiceModel model);
-    protected abstract Task<Result> ChangeStatusData(IEnumerable<Guid> agencyIds, Guid invoiceId, InvoiceStatus status, Guid changedBy, DateTime now);
-
-    #region Invoice Orchestration
+    private sealed record InvoiceDraft(Invoice Invoice, IInvoiceCountryStrategy Strategy);
 
     public async Task<InvoiceListModelWithTotals> GetInvoices(GetInvoicesFilter filter)
     {
-        var agencyIds = currentUserService.GetAgencyIds();
-        return await FetchInvoices(agencyIds, filter);
+        var result = await invoiceRepository.GetInvoicesForAgency(currentUserService.GetAgencyIds(), filter);
+        SetDueDays(result.Detail.Items);
+        return result;
     }
 
     public async Task<ResultGenerateDocument<byte[]>> GetInvoicesFile(GetInvoicesFilter filter)
     {
-        var agencyIds = currentUserService.GetAgencyIds();
-        var result = await FetchInvoicesForExport(agencyIds, filter);
+        var result = await GetAllInvoices(filter);
         return await mediator.Send(new GenerateInvoicesReport(result));
+    }
+
+    public async Task<ResultGenerateDocument<byte[]>> GetInvoicesPaymentsReport(GetInvoicesFilter filter)
+    {
+        var result = await GetAllInvoices(filter);
+        return await mediator.Send(new GenerateInvoicesPaymentsReport(result));
+    }
+
+    public async Task<int> MarkOverdueInvoices()
+    {
+        var invoiceNumbers = await invoiceRepository.MarkPendingInvoicesAsDue(timeProvider.GetLocalNow().DateTime);
+        if (invoiceNumbers.Count > 0)
+        {
+            string text = invoiceNumbers.Count == 1
+                ? $"Invoice {invoiceNumbers[0]} is Due"
+                : $"Invoices {string.Join(", ", invoiceNumbers)} are Due";
+            await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning("Invoices marked as Due", text));
+        }
+        return invoiceNumbers.Count;
+    }
+
+    private async Task<List<InvoiceListModel>> GetAllInvoices(GetInvoicesFilter filter)
+    {
+        var result = await invoiceRepository.GetAllInvoicesForAgency(currentUserService.GetAgencyIds(), filter);
+        SetDueDays(result);
+        return result;
+    }
+
+    private void SetDueDays(IEnumerable<InvoiceListModel> invoices)
+    {
+        var today = timeProvider.GetLocalNow().DateTime;
+        foreach (var invoice in invoices) invoice.SetDueDays(today);
     }
 
     public async Task<Result<InvoicePreviewModel>> PreviewInvoice(CreateInvoiceModel model)
     {
-        var agencyIds = currentUserService.GetAgencyIds();
-        return await PreviewAsync(agencyIds, model);
+        var result = await BuildInvoice(currentUserService.GetAgencyIds(), model);
+        if (!result) return Result.Fail<InvoicePreviewModel>(result.Errors);
+
+        var (invoice, strategy) = result.Value;
+        var items = ConsolidatePreviewItems(invoice.InvoiceTotals)
+            .Concat(ConsolidatePreviewAdditionalItems(invoice.AdditionalItems))
+            .Concat(ConsolidatePreviewHolidays(invoice.Holidays))
+            .ToList();
+
+        return Result.Ok(new InvoicePreviewModel
+        {
+            SubTotal = invoice.SubTotal,
+            Tax = invoice.Tax,
+            TaxName = strategy.TaxName,
+            Total = invoice.TotalNet,
+            Items = items,
+            Discounts = ConsolidatePreviewDiscounts(invoice.Discounts)
+        });
     }
 
     public async Task<Result<Guid>> CreateInvoice(CreateInvoiceModel model)
     {
         var agencyIds = currentUserService.GetAgencyIds();
-        return await CreateAsync(agencyIds, model);
+        var result = await BuildInvoice(agencyIds, model);
+        if (!result) return Result.Fail<Guid>(result.Errors);
+
+        var invoice = result.Value.Invoice;
+        await invoiceRepository.Create(invoice);
+        await invoiceRepository.SaveChangesAsync();
+        await CreateSubcontractorReportsAsync(agencyIds, model.CompanyProfileId);
+
+        return Result.Ok(invoice.Id);
     }
 
     public async Task<Result> ChangeInvoiceStatus(Guid invoiceId, ChangeInvoiceStatusModel model)
     {
         var validationResult = await changeStatusValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
-        var agencyIds = currentUserService.GetAgencyIds();
-        var changedBy = currentUserService.GetUserId();
-        var now = timeProvider.GetLocalNow().DateTime;
-        var result = await ChangeStatusData(agencyIds, invoiceId, model.Status, changedBy, now);
+
+        var invoice = await invoiceRepository.GetInvoiceForAgency(currentUserService.GetAgencyIds(), invoiceId);
+        if (invoice is null) return Result.Fail("Invoice not found");
+
+        var result = invoice.ChangeStatus(model.Status, currentUserService.GetUserId(), timeProvider.GetLocalNow().DateTime, model.PaidAt);
         if (!result) return result;
         await invoiceRepository.SaveChangesAsync();
         return Result.Ok();
@@ -130,8 +156,9 @@ public abstract class InvoiceService(
 
     public async Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId)
     {
-        var model = await FetchInvoiceSummary(invoiceId);
+        var model = await invoiceRepository.GetInvoiceSummaryById(invoiceId);
         if (model is null) return null;
+        (await strategies.ResolveForAgency(model.AgencyId)).Decorate(model);
 
         string fileName = invoiceId.ToInvoiceBlobName();
         byte[] content = await invoicesContainer.Download(fileName);
@@ -163,7 +190,12 @@ public abstract class InvoiceService(
 
     public async Task DeleteInvoice(Guid invoiceId, DeleteInvoiceModel model)
     {
-        var (deletedInvoiceId, invoiceNumber, payStubsDeleted) = await DeleteInvoiceData(invoiceId, model);
+        var (deletedInvoiceId, invoiceNumber) = await invoiceRepository.DeleteInvoiceAndReportsSubcontractor(invoiceId);
+        IReadOnlyList<string> payStubsDeleted = [];
+        if (model?.PayStubs != null && model.PayStubs.Any())
+        {
+            payStubsDeleted = await payStubRepository.DeletePayStubs(model.PayStubs);
+        }
         await invoiceRepository.SaveChangesAsync();
         await invoicesContainer.DeleteFileIfExists(deletedInvoiceId.ToInvoiceBlobName());
         await payStubsContainer.DeleteFilesIfExists(model?.PayStubs?.Select(p => p.ToPayStubBlobName()));
@@ -171,6 +203,76 @@ public abstract class InvoiceService(
         string text = $"{invoiceNumber} {(payStubsDeleted.Any() ? " - " : string.Empty)}{string.Join(" - ", payStubsDeleted)}";
         string name = currentUserService.GetNickname();
         await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning($"Invoice deleted by {name}", text));
+    }
+
+    private async Task<Result<InvoiceDraft>> BuildInvoice(IEnumerable<Guid> agencyIds, CreateInvoiceModel model)
+    {
+        var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.Id == model.CompanyProfileId);
+        if (companyProfile is null) return Result.Fail<InvoiceDraft>("Company not found");
+        var strategy = await strategies.ResolveForAgency(companyProfile.AgencyId);
+
+        var timesheets = await timeSheetRepository.GetTimeSheetForCreatingInvoice(agencyIds, model);
+        if (timesheets.Count == 0 && !model.DirectHiring)
+        {
+            return Result.Fail<InvoiceDraft>("No approved timesheets found for the selected period");
+        }
+
+        var holidays = new List<DateTime>();
+        if (timesheets.Count != 0)
+        {
+            var from = timesheets.Min(ts => ts.Date);
+            var to = timesheets.Max(ts => ts.Date);
+            holidays.AddRange(await GetHolidaysForPeriod(from, to, timesheets[0].CountryCode));
+        }
+
+        var invoiceTotals = new List<InvoiceTotal>();
+        var invoiceHolidays = new List<InvoiceHoliday>();
+        var timesheetsTax = 0m;
+        if (!model.DirectHiring)
+        {
+            invoiceTotals.AddRange(ProcessTimesheets(timesheets, holidays, out timesheetsTax));
+            if (strategy.BillsUnworkedHolidays)
+            {
+                invoiceHolidays = await GetInvoiceHolidaysAsync(timesheets, holidays, model.CompanyProfileId);
+            }
+        }
+
+        var additionalItems = (model.AdditionalItems ?? [])
+            .Select(a => new InvoiceAdditionalItem(a.Quantity, a.UnitPrice, a.Description))
+            .ToList();
+        var discounts = (model.Discounts ?? [])
+            .Select(d => new InvoiceDiscount(d.Quantity, d.UnitPrice, d.Description))
+            .ToList();
+
+        var subtotal = invoiceTotals.Sum(t => t.TotalGross)
+            + additionalItems.Sum(a => a.Total)
+            + invoiceHolidays.Sum(h => h.Amount)
+            - discounts.Sum(d => d.Amount);
+        var tax = strategy.CalculateTax(subtotal, timesheetsTax, model);
+
+        var createdAt = model.InvoiceDate ?? timeProvider.GetLocalNow().DateTime;
+        var nextNumber = await invoiceRepository.GetNextInvoiceNumber(companyProfile.AgencyId);
+
+        var invoice = new Invoice
+        {
+            CompanyProfileId = model.CompanyProfileId,
+            InvoiceNumberId = nextNumber.NextNumber,
+            InvoiceNumber = strategy.BuildInvoiceNumber(nextNumber.NextNumber, createdAt),
+            Email = model.Email,
+            SubTotal = subtotal,
+            Tax = tax,
+            TotalNet = subtotal + tax,
+            CreatedAt = createdAt,
+            WeekEnding = model.DirectHiring || timesheets.Count == 0 ? null : timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek()
+        };
+
+        invoice.AddInvoiceTotals(invoiceTotals);
+        invoice.AddHolidays(invoiceHolidays);
+        invoice.AddAdditionalItems(additionalItems);
+        invoice.AddDiscounts(discounts);
+        invoice.SetAdditionalDetail(model.ClientSiteAddress);
+
+        return Result.Ok(new InvoiceDraft(invoice, strategy));
     }
 
     private async Task<byte[]> UploadInvoicePdf(InvoiceSummaryModel model)
@@ -193,28 +295,41 @@ public abstract class InvoiceService(
         return pdf.Value;
     }
 
-
-    #endregion
-
-    #region Helper Methods
-
-    /// <summary>
-    /// Checks if a date is a public holiday
-    /// </summary>
-    protected bool IsPublicHoliday(DateTime date, List<DateTime> holidays)
+    private async Task<List<InvoiceHoliday>> GetInvoiceHolidaysAsync(
+        IEnumerable<TimeSheetApprovedBillingModel> timesheets,
+        List<DateTime> holidays,
+        Guid companyProfileId)
     {
-        return holidays.Any(h => h.Date == date.Date);
+        var invoiceHolidays = new List<InvoiceHoliday>();
+        var paidHolidays = timesheets.FirstOrDefault()?.PaidHolidays ?? false;
+        if (!paidHolidays || holidays.Count == 0)
+        {
+            return invoiceHolidays;
+        }
+
+        foreach (var holiday in holidays)
+        {
+            var holidayWeekEnd = holiday.GetEnd();
+            var lookbackStart = holidayWeekEnd.GetStart();
+            var qualifyingDays = holiday.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay();
+            var workersCharges = await invoiceRepository.GetCompanyRegularCharges(companyProfileId, holiday, lookbackStart, holidayWeekEnd, qualifyingDays);
+
+            foreach (var workerCharge in workersCharges)
+            {
+                var result = InvoiceHoliday.Create(holiday, workerCharge.HoursToPay, workerCharge.AmountToPay, workerCharge.WorkerProfileId);
+                if (result)
+                {
+                    invoiceHolidays.Add(result.Value);
+                }
+            }
+        }
+
+        return invoiceHolidays;
     }
 
-    /// <summary>
-    /// Calculates hours breakdown for a single timesheet item.
-    /// Delegates to ITimesheetCalculatorService with breakIsPaid=false, holidayIsPaid=true
-    /// (invoices always subtract break and always pay holidays).
-    /// </summary>
-    protected TimeSheetHoursBreakdown CalculateHoursForItem(
-        ITimeSheetHoursCalculable item,
-        ref TimeSpan accumulatedRegularHours,
-        bool isHoliday)
+    private bool IsPublicHoliday(DateTime date, List<DateTime> holidays) => holidays.Any(h => h.Date == date.Date);
+
+    private TimeSheetHoursBreakdown CalculateHoursForItem(ITimeSheetHoursCalculable item, ref TimeSpan accumulatedRegularHours, bool isHoliday)
     {
         if (!item.TimeOutApproved.HasValue || !item.TimeInApproved.HasValue)
         {
@@ -233,10 +348,7 @@ public abstract class InvoiceService(
             timeLimits.MaxHoursWeek);
     }
 
-    /// <summary>
-    /// Gets holidays for a given period
-    /// </summary>
-    protected async Task<List<DateTime>> GetHolidaysForPeriod(DateTime? from, DateTime? to, string countryCode)
+    private async Task<List<DateTime>> GetHolidaysForPeriod(DateTime? from, DateTime? to, string countryCode)
     {
         if (!from.HasValue || !to.HasValue)
             return new List<DateTime>();
@@ -254,27 +366,11 @@ public abstract class InvoiceService(
         return [.. holidays.Distinct()];
     }
 
-    /// <summary>
-    /// Processes timesheets and returns invoice line items with TimeSheetTotal entities
-    /// Creates TimeSheetTotal entities and assigns them to navigation properties
-    /// EF Core will cascade insert TimeSheetTotal entities when the invoice is saved
-    /// </summary>
-    protected List<T> ProcessTimesheets<T>(
-        List<TimeSheetApprovedBillingModel> timesheets,
-        List<DateTime> holidays) where T : IInvoiceLineItem, new()
-    {
-        return ProcessTimesheets<T>(timesheets, holidays, out _);
-    }
-
-    protected List<T> ProcessTimesheets<T>(
-        List<TimeSheetApprovedBillingModel> timesheets,
-        List<DateTime> holidays,
-        out decimal tax) where T : IInvoiceLineItem, new()
+    private List<InvoiceTotal> ProcessTimesheets(List<TimeSheetApprovedBillingModel> timesheets, List<DateTime> holidays, out decimal tax)
     {
         tax = 0m;
-        var items = new List<T>();
+        var items = new List<InvoiceTotal>();
 
-        // Group timesheets by week, worker and request — overtime accumulates per request
         var workerWeekGroups = timesheets
             .GroupBy(t => new { Week = t.Date.GetWeekEndingCurrentWeek(), t.WorkerId, t.RequestId });
 
@@ -282,14 +378,12 @@ public abstract class InvoiceService(
         {
             TimeSpan accumulatedRegularHours = TimeSpan.Zero;
 
-            // Process each timesheet individually, ordered by date
             foreach (var timesheet in group.OrderBy(t => t.Date))
             {
                 var itemsBeforeTimesheet = items.Count;
                 bool isHoliday = IsPublicHoliday(timesheet.Date, holidays);
                 var hoursBreakdown = CalculateHoursForItem(timesheet, ref accumulatedRegularHours, isHoliday);
 
-                // Create TimeSheetTotal entity for this timesheet
                 var timeSheetTotal = calculatorService.CreateTimeSheetTotalEntity(
                     timesheet.TimeSheetId,
                     hoursBreakdown,
@@ -298,103 +392,39 @@ public abstract class InvoiceService(
                 var jobTitle = timesheet.JobTitle;
                 var agencyRate = timesheet.AgencyRate;
 
-                // Create items for this timesheet with TimeSheetTotal reference
                 var regularHours = hoursBreakdown.RegularHours.TotalHours + hoursBreakdown.OtherRegularHours.TotalHours;
                 if (regularHours > 0)
                 {
                     var regularAmount = calculatorService.CalculateRegularAmount(agencyRate, regularHours);
-                    var item = new T
-                    {
-                        Quantity = regularHours,
-                        UnitPrice = agencyRate,
-                        Description = $"Charge for {jobTitle} / Regular",
-                        AgencyRate = agencyRate,
-                        Regular = regularAmount,
-                        Total = regularAmount,
-                        TotalGross = regularAmount,
-                        TotalNet = regularAmount
-                    };
-                    AssignTimeSheetTotal(item, timeSheetTotal);
-                    items.Add(item);
+                    items.Add(CreateItem(timeSheetTotal, regularHours, agencyRate, $"Charge for {jobTitle} / Regular", agencyRate, regularAmount, item => item.Regular = regularAmount));
                 }
 
                 var overtimeHours = hoursBreakdown.OvertimeHours.TotalHours;
                 if (overtimeHours > 0)
                 {
-                    var overtimeRate = agencyRate * rates.OverTime;
                     var overtimeAmount = calculatorService.CalculateOvertimeAmount(agencyRate, rates.OverTime, overtimeHours);
-                    var item = new T
-                    {
-                        Quantity = overtimeHours,
-                        UnitPrice = overtimeRate,
-                        Description = $"Charge for {jobTitle} / Overtime",
-                        AgencyRate = agencyRate,
-                        Overtime = overtimeAmount,
-                        Total = overtimeAmount,
-                        TotalGross = overtimeAmount,
-                        TotalNet = overtimeAmount
-                    };
-                    AssignTimeSheetTotal(item, timeSheetTotal);
-                    items.Add(item);
+                    items.Add(CreateItem(timeSheetTotal, overtimeHours, agencyRate * rates.OverTime, $"Charge for {jobTitle} / Overtime", agencyRate, overtimeAmount, item => item.Overtime = overtimeAmount));
                 }
 
                 var holidayHours = hoursBreakdown.HolidayHours.TotalHours;
                 if (holidayHours > 0)
                 {
-                    var holidayRate = agencyRate * rates.Holiday;
                     var holidayAmount = calculatorService.CalculateHolidayAmount(agencyRate, rates.Holiday, holidayHours);
-                    var item = new T
-                    {
-                        Quantity = holidayHours,
-                        UnitPrice = holidayRate,
-                        Description = $"Charge for {jobTitle} / Holiday",
-                        AgencyRate = agencyRate,
-                        Holiday = holidayAmount,
-                        Total = holidayAmount,
-                        TotalGross = holidayAmount,
-                        TotalNet = holidayAmount
-                    };
-                    AssignTimeSheetTotal(item, timeSheetTotal);
-                    items.Add(item);
+                    items.Add(CreateItem(timeSheetTotal, holidayHours, agencyRate * rates.Holiday, $"Charge for {jobTitle} / Holiday", agencyRate, holidayAmount, item => item.Holiday = holidayAmount));
                 }
 
                 var missingHours = timesheet.MissingHours.TotalHours;
                 if (missingHours > 0)
                 {
                     var missingAmount = calculatorService.CalculateMissingAmount(agencyRate, missingHours);
-                    var item = new T
-                    {
-                        Quantity = missingHours,
-                        UnitPrice = agencyRate,
-                        Description = $"Charge for {jobTitle} / Missing Hours",
-                        AgencyRate = agencyRate,
-                        Missing = missingAmount,
-                        Total = missingAmount,
-                        TotalGross = missingAmount,
-                        TotalNet = missingAmount
-                    };
-                    AssignTimeSheetTotal(item, timeSheetTotal);
-                    items.Add(item);
+                    items.Add(CreateItem(timeSheetTotal, missingHours, agencyRate, $"Charge for {jobTitle} / Missing Hours", agencyRate, missingAmount, item => item.Missing = missingAmount));
                 }
 
                 var missingOvertimeHours = timesheet.MissingHoursOvertime.TotalHours;
                 if (missingOvertimeHours > 0)
                 {
-                    var missingOvertimeRate = agencyRate * rates.OverTime;
                     var missingOvertimeAmount = calculatorService.CalculateOvertimeAmount(agencyRate, rates.OverTime, missingOvertimeHours);
-                    var item = new T
-                    {
-                        Quantity = missingOvertimeHours,
-                        UnitPrice = missingOvertimeRate,
-                        Description = $"Charge for {jobTitle} / Missing Overtime Hours",
-                        AgencyRate = agencyRate,
-                        MissingOvertime = missingOvertimeAmount,
-                        Total = missingOvertimeAmount,
-                        TotalGross = missingOvertimeAmount,
-                        TotalNet = missingOvertimeAmount
-                    };
-                    AssignTimeSheetTotal(item, timeSheetTotal);
-                    items.Add(item);
+                    items.Add(CreateItem(timeSheetTotal, missingOvertimeHours, agencyRate * rates.OverTime, $"Charge for {jobTitle} / Missing Overtime Hours", agencyRate, missingOvertimeAmount, item => item.MissingOvertime = missingOvertimeAmount));
                 }
 
                 var timesheetGross = items.Skip(itemsBeforeTimesheet).Sum(i => i.Total);
@@ -405,56 +435,32 @@ public abstract class InvoiceService(
         return items;
     }
 
-    /// <summary>
-    /// Assigns TimeSheetTotal entity to invoice line item
-    /// Works for both InvoiceTotal and InvoiceUSAItem
-    /// </summary>
-    private void AssignTimeSheetTotal<T>(T item, TimeSheetTotalEntity timeSheetTotal) where T : IInvoiceLineItem
+    private static InvoiceTotal CreateItem(TimeSheetTotalEntity timeSheetTotal, double quantity, decimal unitPrice, string description, decimal agencyRate, decimal amount, Action<InvoiceTotal> setBucket)
     {
-        // Use pattern matching to assign TimeSheetTotal navigation property
-        if (item is InvoiceTotal invoiceTotal)
+        var item = new InvoiceTotal
         {
-            invoiceTotal.TimeSheetTotalId = timeSheetTotal.Id;
-            invoiceTotal.TimeSheetTotal = timeSheetTotal;
-        }
-        else if (item is InvoiceUSAItem invoiceUSAItem)
-        {
-            invoiceUSAItem.TimeSheetTotalId = timeSheetTotal.Id;
-            invoiceUSAItem.TimeSheetTotal = timeSheetTotal;
-        }
+            TimeSheetTotalId = timeSheetTotal.Id,
+            TimeSheetTotal = timeSheetTotal,
+            Quantity = quantity,
+            UnitPrice = unitPrice,
+            Description = description,
+            AgencyRate = agencyRate,
+            Total = amount,
+            TotalGross = amount,
+            TotalNet = amount
+        };
+        setBucket(item);
+        return item;
     }
 
-    /// <summary>
-    /// Consolidates invoice items for preview display
-    /// Groups items by description and sums quantities and totals
-    /// </summary>
-    protected List<InvoiceSummaryItemModel> ConsolidatePreviewItems<T>(IEnumerable<T> items) where T : IInvoiceLineItem
-    {
-        return items
+    private static List<InvoiceSummaryItemModel> ConsolidatePreviewItems(IEnumerable<InvoiceTotal> items) =>
+        items
             .GroupBy(i => i.Description)
-            .Select(group =>
-            {
-                var totalQty = group.Sum(i => i.Quantity);
-                var totalAmount = group.Sum(i => i.Total);
-                var unitPrice = totalQty > 0 ? totalAmount / (decimal)totalQty : 0;
-
-                return new InvoiceSummaryItemModel
-                {
-                    Description = group.Key,
-                    Quantity = totalQty,
-                    UnitPrice = unitPrice,
-                    Total = totalAmount
-                };
-            })
+            .Select(group => ToPreviewItem(group.Key, group.Sum(i => i.Quantity), group.Sum(i => i.Total)))
             .ToList();
-    }
 
-    /// <summary>
-    /// Converts additional items to preview format
-    /// </summary>
-    protected List<InvoiceSummaryItemModel> ConsolidatePreviewAdditionalItems(IEnumerable<InvoiceAdditionalItem> additionalItems)
-    {
-        return additionalItems
+    private static List<InvoiceSummaryItemModel> ConsolidatePreviewAdditionalItems(IEnumerable<InvoiceAdditionalItem> additionalItems) =>
+        additionalItems
             .Select(item => new InvoiceSummaryItemModel
             {
                 Description = item.Description,
@@ -463,21 +469,32 @@ public abstract class InvoiceService(
                 Total = item.Total
             })
             .ToList();
-    }
 
-    #endregion
+    private static List<InvoiceSummaryItemModel> ConsolidatePreviewDiscounts(IEnumerable<InvoiceDiscount> discounts) =>
+        discounts
+            .GroupBy(d => d.Description)
+            .Select(group => ToPreviewItem(group.Key, group.Sum(d => d.Quantity), group.Sum(d => d.Amount)))
+            .ToList();
 
-    #region Subcontractor Reports
+    private static List<InvoiceSummaryItemModel> ConsolidatePreviewHolidays(IEnumerable<InvoiceHoliday> holidays) =>
+        holidays
+            .GroupBy(h => h.Holiday.Date)
+            .Select(group => ToPreviewItem($"Charge for Holiday {group.Key:D}", group.Sum(h => h.Hours), group.Sum(h => h.Amount)))
+            .ToList();
 
-    /// <summary>
-    /// Creates subcontractor reports for the given agency and company
-    /// </summary>
-    protected async Task CreateSubcontractorReportsAsync(IEnumerable<Guid> agencyIds, Guid companyProfileId)
+    private static InvoiceSummaryItemModel ToPreviewItem(string description, double quantity, decimal total) => new()
+    {
+        Description = description,
+        Quantity = quantity,
+        UnitPrice = quantity > 0 ? total / (decimal)quantity : 0,
+        Total = total
+    };
+
+    private async Task CreateSubcontractorReportsAsync(IEnumerable<Guid> agencyIds, Guid companyProfileId)
     {
         var timesheets = await timeSheetRepository.GetTimeSheetForCreatingReportsSubcontractor(agencyIds, companyProfileId);
         if (timesheets.Count == 0) return;
 
-        // Group by worker and week — overtime accumulator resets per request inside
         var workerWeekGroups = timesheets
             .GroupBy(t => new { t.WorkerId, Week = t.Date.GetWeekEndingCurrentWeek() });
 
@@ -488,8 +505,7 @@ public abstract class InvoiceService(
 
             var from = group.Min(t => t.Date);
             var to = group.Max(t => t.Date);
-            var countryCode = first.CountryCode;
-            var holidays = await GetHolidaysForPeriod(from, to, countryCode);
+            var holidays = await GetHolidaysForPeriod(from, to, first.CountryCode);
 
             var wageDetails = new List<ReportSubcontractorWageDetail>();
 
@@ -516,7 +532,7 @@ public abstract class InvoiceService(
                         hoursBreakdown,
                         accumulatedRegularHours);
 
-                    var wageDetail = new ReportSubcontractorWageDetail(
+                    wageDetails.Add(new ReportSubcontractorWageDetail(
                         workerRate: workerRate,
                         regular: regularAmount,
                         otherRegular: 0,
@@ -524,13 +540,10 @@ public abstract class InvoiceService(
                         missingOvertime: 0,
                         nightShift: 0,
                         holiday: holidayAmount,
-                        overtime: overtimeAmount
-                    )
+                        overtime: overtimeAmount)
                     {
                         TimeSheetTotal = timeSheetTotal
-                    };
-
-                    wageDetails.Add(wageDetail);
+                    });
                 }
             }
 
@@ -539,7 +552,6 @@ public abstract class InvoiceService(
             var totalHoliday = wageDetails.Sum(w => w.Holiday);
             var gross = totalRegular + totalOvertime + totalHoliday;
 
-            // Create report
             var report = new ReportSubcontractor
             {
                 WorkerProfileId = workerProfileId,
@@ -555,7 +567,6 @@ public abstract class InvoiceService(
 
             report.AddWageDetail(wageDetails);
 
-            // Handle other deductions
             var otherDeductions = group
                 .Where(t => t.DeductionsOthers > 0)
                 .Select(t => ReportSubContractorOtherDeduction.CreateDefaultDeduction(t.DeductionsOthers, t.DeductionsOthersDescription));
@@ -567,6 +578,4 @@ public abstract class InvoiceService(
 
         await subcontractorRepository.SaveChangesAsync();
     }
-
-    #endregion
 }

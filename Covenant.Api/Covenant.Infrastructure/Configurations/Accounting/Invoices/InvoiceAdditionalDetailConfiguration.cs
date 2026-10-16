@@ -11,14 +11,9 @@ public class InvoiceAdditionalDetailConfiguration : IEntityTypeConfiguration<Inv
         builder.ToTable("InvoiceAdditionalDetails");
         builder.HasKey(k => k.Id);
 
-        builder.HasOne(d => d.CanadaInvoice)
+        builder.HasOne(d => d.Invoice)
             .WithOne(i => i.AdditionalDetail)
-            .HasForeignKey<InvoiceAdditionalDetail>(d => d.CanadaInvoiceId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(d => d.UsaInvoice)
-            .WithOne(i => i.AdditionalDetail)
-            .HasForeignKey<InvoiceAdditionalDetail>(d => d.UsaInvoiceId)
+            .HasForeignKey<InvoiceAdditionalDetail>(d => d.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

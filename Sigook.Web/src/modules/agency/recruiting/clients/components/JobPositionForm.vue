@@ -11,7 +11,7 @@
       <div v-if="isAdmin" class="column is-6">
         <b-field label="Overtime Starts After (hours)" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
           :message="formErrors.overtimeStartsAfter || 'Leave empty to inherit from company/province default'">
-          <b-numberinput v-model="overtimeStartsAfter" name="overtimeStartsAfter" controls-alignment="right"
+          <b-numberinput v-model="overtimeStartsAfter" name="overtimeStartsAfter" :controls="false"
             step="0.5" :min="0" placeholder="44">
           </b-numberinput>
         </b-field>
@@ -19,7 +19,7 @@
       <div v-if="isAdmin" class="column is-4">
         <b-field :label="'Agency Rate'" :type="formErrors.rate ? 'is-danger' : ''"
           :message="formErrors.rate || ''">
-          <b-numberinput v-model="rate" name="rate" controls-alignment="right" step="0.01" placeholder="10.00">
+          <b-numberinput v-model="rate" name="rate" :controls="false" step="0.01" placeholder="10.00">
           </b-numberinput>
         </b-field>
       </div>
@@ -28,7 +28,7 @@
         <b-field :label="'Worker Rate'" :type="formErrors.workerRate ? 'is-danger' : ''"
           :message="formErrors.workerRate || ''">
           <b-numberinput v-model="workerRate" :disabled="!isAdmin" name="workerRate"
-            controls-alignment="right" step="0.01" placeholder="10.00">
+            :controls="false" step="0.01" placeholder="10.00">
           </b-numberinput>
         </b-field>
       </div>
@@ -36,7 +36,7 @@
         :class="isAdmin ? 'column is-4' : 'column is-6'">
         <b-field :label="'Worker Rate Max'" :type="formErrors.workerRateMax ? 'is-danger' : ''"
           :message="formErrors.workerRateMax || ''">
-          <b-numberinput v-model="workerRateMax" name="workerRateMax" controls-alignment="right"
+          <b-numberinput v-model="workerRateMax" name="workerRateMax" :controls="false"
             step="0.01" placeholder="10.00">
           </b-numberinput>
         </b-field>

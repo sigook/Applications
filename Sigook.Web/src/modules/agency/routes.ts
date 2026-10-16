@@ -9,6 +9,7 @@ import {
 const AgencyRequests = () => import("@/modules/agency/recruiting/requests/pages/Requests.vue");
 const AgencyWeeklyBoard = () => import("@/modules/agency/recruiting/weekly-board/pages/WeeklyBoard.vue");
 const AgencyApplicants = () => import("@/modules/agency/recruiting/applicants/pages/Applicants.vue");
+const AgencyRunners = () => import("@/modules/agency/recruiting/runners/pages/Runners.vue");
 const AgencyRequest = () => import("@/modules/agency/recruiting/requests/pages/Request.vue");
 const AgencyCreateRequest = () => import("@/modules/agency/recruiting/requests/pages/CreateRequest.vue");
 const AgencyWorkers = () => import("@/modules/agency/recruiting/workers/pages/Workers.vue");
@@ -53,6 +54,15 @@ const routesAgency: RouteRecordRaw[] = [
     path: "/recruiting/applicants",
     component: AgencyApplicants,
     name: "agency-applicants",
+    meta: {
+      requiresAuth: true,
+      role: recruitingAccess,
+    },
+  },
+  {
+    path: "/recruiting/runners",
+    component: AgencyRunners,
+    name: "agency-runners",
     meta: {
       requiresAuth: true,
       role: recruitingAccess,

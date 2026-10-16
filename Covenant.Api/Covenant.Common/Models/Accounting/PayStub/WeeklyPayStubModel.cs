@@ -13,11 +13,12 @@ public class WeeklyPayStubModel
     public decimal Ei { get; set; }
     public decimal FederalTax { get; set; }
     public decimal ProvincialTax { get; set; }
+    public decimal OtherDeductions { get; set; }
     public decimal TotalDeductions { get; set; }
     public decimal TotalPaid { get; set; }
     public DateTime WeedEnding { get; set; }
     public DateTime PaymentDate { get; set; }
     public List<WeeklyPayStubItemModel> Items { get; set; } = [];
     public List<string> Companies { get; set; } = [];
-    public List<string> OtherDeductions { get; set; } = [];
+    public List<string> OtherDeductionsDetail { get; set; } = [];
 }

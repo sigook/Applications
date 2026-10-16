@@ -120,7 +120,10 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         var candidates = await candidateRepository.GetCandidatesAvailableToInvite(agencyId, requestId);
         foreach (var candidate in candidates)
         {
-            if (!candidate.Address.ContainsNormalized(city)) continue;
+            var sameCity = candidate.CityId.HasValue
+                ? candidate.CityId == request.JobLocation.CityId
+                : candidate.Address.ContainsNormalized(city);
+            if (!sameCity) continue;
             if (!invitedEmails.Add(candidate.Email)) continue;
             var candidateUnsubscribeUrl = BuildUnsubscribeUrl(sendGridConfiguration.UnsubscribeUrl, candidate.Email);
             object data = new
@@ -143,7 +146,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         {
             await sendGridService.SendTemplateBatch(request.CompanyProfile.Agency.RecruitmentEmail, recipients);
             request.InvitationSentItAt = now;
-            await requestRepository.Update(request);
+            requestRepository.Update(request);
             await requestRepository.SaveChangesAsync();
         }
         return Result.Ok(new InvitationSentResult(workersSentCount, candidatesSentCount, request.NumberId, request.JobTitle));

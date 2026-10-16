@@ -147,8 +147,9 @@ public class CandidateService : ICandidateService
         if (candidate == null) return Result.Fail("Candidate not found");
         var canConvert = candidate.CanConvertToWorker();
         if (!canConvert) return canConvert;
-        var worker = await candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
+        var worker = candidateAdapter.ConvertCandidateToWorkerProfile(candidate);
         var agency = await agencyRepository.GetAgencyMasterByLocation(worker.Location.City);
+        if (agency == null) return Result.Fail("No master agency found for the candidate's country");
         var profile = new WorkerProfile();
         var result = profile.PatchBasicInformation(worker);
         if (!result) return Result.Fail(result.Errors);
@@ -179,7 +180,7 @@ public class CandidateService : ICandidateService
         profile.Worker = user.Value;
         profile.AgencyId = agency.Id;
 
-        candidateRepository.Delete<CandidateDocument>(candidate.Documents);
+        candidateRepository.DeleteRange(candidate.Documents);
 
         await workerRepository.Create(profile);
         await workerRepository.SaveChangesAsync();
@@ -282,7 +283,7 @@ public class CandidateService : ICandidateService
         {
             foreach (var requestApplicant in requestApplicatns)
             {
-                requestRepository.Delete([requestApplicant]);
+                requestRepository.Delete(requestApplicant);
             }
         }
         candidateRepository.Delete(candidate);
@@ -314,6 +315,7 @@ public class CandidateService : ICandidateService
         candidate.AddEmail(result.Value);
         candidate.Name = model.Name;
         candidate.Address = model.Address;
+        candidate.CityId = model.City?.Id;
         candidate.ResidencyStatus = model.ResidencyStatus;
         candidate.GenderId = model.Gender?.Id;
         candidate.HasVehicle = model.HasVehicle;
@@ -332,7 +334,7 @@ public class CandidateService : ICandidateService
             var rPhone = candidate.AddPhone(phone);
             if (!rPhone) return Result.Fail(rPhone.Errors);
         }
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -342,7 +344,7 @@ public class CandidateService : ICandidateService
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
         if (candidate == null) return Result.Fail();
         candidate.Recruiter = currentUserService.GetNickname();
-        await candidateRepository.Update(candidate);
+        candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();
     }

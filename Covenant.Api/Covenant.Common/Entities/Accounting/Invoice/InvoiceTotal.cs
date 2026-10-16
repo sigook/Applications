@@ -1,6 +1,6 @@
 ﻿namespace Covenant.Common.Entities.Accounting.Invoice;
 
-public class InvoiceTotal : IInvoiceLineItem
+public class InvoiceTotal
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid InvoiceId { get; set; }

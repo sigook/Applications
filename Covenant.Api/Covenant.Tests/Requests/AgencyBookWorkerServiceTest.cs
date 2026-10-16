@@ -95,7 +95,7 @@ public class AgencyBookWorkerServiceTest
         Assert.True(result);
 
         requestRepository.Verify(c => c.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>()), Times.Once);
-        requestRepository.Verify(c => c.Delete(It.IsAny<IEnumerable<RequestApplicant>>()), Times.Once);
+        requestRepository.Verify(c => c.Delete(It.IsAny<RequestApplicant>()), Times.Once);
         requestRepository.Verify(c => c.Update(request), Times.Once);
         requestRepository.Verify(c => c.SaveChangesAsync(), Times.Once);
     }

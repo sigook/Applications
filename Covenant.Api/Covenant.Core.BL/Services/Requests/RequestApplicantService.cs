@@ -64,7 +64,7 @@ public class RequestApplicantService(
             entity = result.Value;
         }
         else return Result.Fail<RequestApplicantDetailModel>("A candidate or a worker profile is required");
-        await requestRepository.Create([entity]);
+        await requestRepository.Create(entity);
         await requestRepository.SaveChangesAsync();
         return Result.Ok(new RequestApplicantDetailModel
         {
@@ -98,7 +98,7 @@ public class RequestApplicantService(
     {
         var entity = await requestRepository.GetRequestApplicant(ra => ra.Id == applicantId);
         if (entity is null) return Result.Fail(ApplicantNotFound);
-        requestRepository.Delete([entity]);
+        requestRepository.Delete(entity);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -235,7 +235,7 @@ public class RequestApplicantService(
                 completions.Add(socialInsuranceCompletion.Value);
             }
         }
-        await requestRepository.Create(completions);
+        await requestRepository.CreateRange(completions);
         await requestRepository.SaveChangesAsync();
         if (hasFile) await uploadedFilesService.Upload([model.FileName]);
         return Result.Ok();
@@ -260,7 +260,7 @@ public class RequestApplicantService(
             var linkedItemIds = items.Where(i => linkedTargets.Contains(i.DocumentTarget)).Select(i => i.Id).ToList();
             completionsToDelete.AddRange(completions.Where(c => c.RequestComplianceItemId != itemId && linkedItemIds.Contains(c.RequestComplianceItemId)));
         }
-        requestRepository.Delete(completionsToDelete);
+        requestRepository.DeleteRange(completionsToDelete);
         await requestRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -372,7 +372,7 @@ public class RequestApplicantService(
                             string.Format(ApiResources.SocialInsuranceReplacedNote, previousMaskedSocialInsurance, identificationNumber.MaskSIN()),
                             currentUserService.GetNickname());
                         if (!note) return Result.Fail<bool>(note.Errors);
-                        await requestRepository.Create([note.Value]);
+                        await requestRepository.Create(note.Value);
                     }
                 }
                 var currentIdentificationFile = isFirstSlot
@@ -443,7 +443,7 @@ public class RequestApplicantService(
             .Where(f => f.Previous is null && f.Current is not null)
             .Select(f => f.Current)
             .ToList();
-        if (newFiles.Count > 0) await requestRepository.Create(newFiles);
+        if (newFiles.Count > 0) await requestRepository.CreateRange(newFiles);
     }
 
     private async Task<Result> ValidateIdentification(Guid profileId, RequestComplianceItem item, string identificationNumber, Guid? identificationTypeId)

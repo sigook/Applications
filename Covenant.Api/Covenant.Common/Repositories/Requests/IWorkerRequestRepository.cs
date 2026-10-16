@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
-public interface IWorkerRequestRepository
+public interface IWorkerRequestRepository : IBaseRepository
 {
     Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid id);
     Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid workerId, Guid requestId);
@@ -15,11 +15,7 @@ public interface IWorkerRequestRepository
     Task<bool> WorkerRequestExists(Guid workerProfileId, Guid requestId);
     Task<bool> CanClockIn(Expression<Func<WorkerProfile, bool>> condition, DateTime now);
     Task<WorkerRequestInfoModel> GetWorkerRequestInfo(Guid workerId, Guid requestId, DateTime now);
-    Task CreateNote(WorkerRequestNote entity);
     Task<PaginatedList<NoteModel>> GetNotes(Guid workerRequestId, Pagination pagination);
     Task<NoteModel> GetNoteDetail(Guid id);
     Task<WorkerRequestNote> GetNote(Guid id);
-    Task Update(WorkerRequestNote entity);
-    Task UpdateWorkerRequest(Common.Entities.Request.WorkerRequest entity);
-    Task SaveChangesAsync();
 }

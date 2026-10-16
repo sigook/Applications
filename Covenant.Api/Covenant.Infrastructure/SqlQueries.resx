@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -119,25 +119,19 @@
   </resheader>
   <data name="GetNextInvoiceNumber" xml:space="preserve">
     <value>
-            WITH minimum AS (SELECT coalesce(min(I."InvoiceNumber"),1) "StartFrom" FROM "Invoices" I ),
-            maximum AS (SELECT (coalesce(max(I2."InvoiceNumber")+1,(SELECT "StartFrom" FROM minimum))) "StopIn"
-            FROM "Invoices" I2)
-            SELECT series AS "NextNumber"
-            FROM generate_series((SELECT "StartFrom" FROM minimum), (SELECT "StopIn" FROM maximum), 1) series
-            LEFT JOIN "Invoices" ON series = "InvoiceNumber"
-            WHERE "InvoiceNumber" IS NULL
-            ORDER BY "NextNumber" LIMIT 1
-        </value>
-  </data>
-  <data name="GetNextInvoiceUSANumber" xml:space="preserve">
-    <value>
-            WITH minimum AS (SELECT coalesce(min(I."InvoiceNumberId"),1) "StartFrom" FROM "InvoicesUSA" I ),
+            WITH minimum AS (SELECT coalesce(min(I."InvoiceNumberId"),1) "StartFrom"
+                FROM "Invoices" I JOIN "CompanyProfiles" CP ON CP."Id" = I."CompanyProfileId"
+                WHERE CP."AgencyId" = {0}),
             maximum AS (SELECT (coalesce(max(I2."InvoiceNumberId")+1,(SELECT "StartFrom" FROM minimum))) "StopIn"
-            FROM "InvoicesUSA" I2)
+                FROM "Invoices" I2 JOIN "CompanyProfiles" CP2 ON CP2."Id" = I2."CompanyProfileId"
+                WHERE CP2."AgencyId" = {0}),
+            used AS (SELECT I3."InvoiceNumberId"
+                FROM "Invoices" I3 JOIN "CompanyProfiles" CP3 ON CP3."Id" = I3."CompanyProfileId"
+                WHERE CP3."AgencyId" = {0})
             SELECT series AS "NextNumber"
             FROM generate_series((SELECT "StartFrom" FROM minimum), (SELECT "StopIn" FROM maximum), 1) series
-            LEFT JOIN "InvoicesUSA" ON series = "InvoiceNumberId"
-            WHERE "InvoiceNumberId" IS NULL
+            LEFT JOIN used ON series = used."InvoiceNumberId"
+            WHERE used."InvoiceNumberId" IS NULL
             ORDER BY "NextNumber" LIMIT 1
         </value>
   </data>

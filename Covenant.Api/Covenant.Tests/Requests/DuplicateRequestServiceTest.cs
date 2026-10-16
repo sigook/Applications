@@ -108,15 +108,15 @@ public class DuplicateRequestServiceTest
 
         Assert.True(result);
         Assert.NotEqual(_sourceRequestId, result.Value);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<Covenant.Common.Entities.Request.Request>>(requests =>
-            requests.Single().Shift.Monday == true)), Times.Once);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestSkill>>(skills =>
-            skills.Single().Skill == "Forklift")), Times.Once);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<RequestSkill>>(skills =>
-            skills.Single().Skill == "WHMIS")), Times.Once);
-        _requestRepository.Verify(r => r.Create(It.Is<List<RequestRequestedBy>>(items =>
+        _requestRepository.Verify(r => r.Create(It.Is<Covenant.Common.Entities.Request.Request>(requests =>
+            requests.Shift.Monday == true)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestSkill>(skills =>
+            skills.Skill == "Forklift")), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestSkill>(skills =>
+            skills.Skill == "WHMIS")), Times.Once);
+        _requestRepository.Verify(r => r.CreateRange(It.Is<List<RequestRequestedBy>>(items =>
             items.Single().ContactPersonId == _requestedById && items.Single().RequestId == result.Value)), Times.Once);
-        _requestRepository.Verify(r => r.Create(It.Is<List<RequestReportTo>>(items =>
+        _requestRepository.Verify(r => r.CreateRange(It.Is<List<RequestReportTo>>(items =>
             items.Single().ContactPersonId == _reportToId && items.Single().RequestId == result.Value)), Times.Once);
     }
 
@@ -140,8 +140,8 @@ public class DuplicateRequestServiceTest
 
         Assert.True(result);
         _requestRepository.Verify(r => r.GetRequestShift(It.IsAny<Guid>()), Times.Never);
-        _requestRepository.Verify(r => r.Create(It.Is<IEnumerable<Covenant.Common.Entities.Request.Request>>(requests =>
-            requests.Single().Shift.Tuesday == true)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<Covenant.Common.Entities.Request.Request>(requests =>
+            requests.Shift.Tuesday == true)), Times.Once);
     }
 
     [Fact]

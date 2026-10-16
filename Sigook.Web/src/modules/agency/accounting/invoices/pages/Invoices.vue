@@ -13,6 +13,12 @@
             Create
           </b-button>
         </template>
+        <template #dropdown-actions>
+          <b-dropdown-item aria-role="listitem" @click="onDownloadPaymentsReport">
+            <b-icon icon="file-excel"></b-icon>
+            <span>Payments report</span>
+          </b-dropdown-item>
+        </template>
         <b-table-column field="invoiceNumber" label="Invoice Number" sortable searchable>
           <template v-slot:searchable>
             <b-input v-model="serverParams.invoiceNumber" placeholder="Search..." icon="magnify" size="is-small"></b-input>
@@ -57,11 +63,14 @@
             </b-select>
           </template>
           <template v-slot="props">
-            <b-tooltip v-if="props.row.updatedAt" :label="statusTooltip(props.row)" type="is-dark" position="is-top"
-              append-to-body>
+            <b-tooltip :label="statusTooltip(props.row)" type="is-dark" position="is-top" multilined append-to-body>
               <b-tag :type="invoiceStatusTagType(props.row.status)">{{ INVOICE_STATUS_LABELS[props.row.status] }}</b-tag>
             </b-tooltip>
-            <b-tag v-else :type="invoiceStatusTagType(props.row.status)">{{ INVOICE_STATUS_LABELS[props.row.status] }}</b-tag>
+          </template>
+        </b-table-column>
+        <b-table-column field="paidAt" label="Payment Date">
+          <template v-slot="props">
+            {{ dateMonth(props.row.paidAt ?? null) }}
           </template>
         </b-table-column>
         <b-table-column field="totalNet" label="Total">
@@ -76,8 +85,12 @@
             </template>
             <b-dropdown-item aria-role="listitem" @click="onDownloadInvoicePdf(props.row)">Download</b-dropdown-item>
             <b-dropdown-item aria-role="listitem" @click="openSendEmailModal(props.row)">Send Email</b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" @click="onToggleStatus(props.row)">
-              {{ props.row.status === InvoiceStatus.Paid ? 'Mark as Pending' : 'Mark as Paid' }}
+            <b-dropdown-item v-if="props.row.status === InvoiceStatus.Paid" aria-role="listitem"
+              @click="onMarkAsPending(props.row)">
+              Mark as Pending
+            </b-dropdown-item>
+            <b-dropdown-item v-else aria-role="listitem" @click="openMarkPaidModal(props.row)">
+              Mark as Paid
             </b-dropdown-item>
             <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="openDeleteModal(props.row)">
               Delete
@@ -94,6 +107,11 @@
     <b-modal custom-content-class="card" v-model="showSendEmailModal" width="500px">
       <send-invoice-email v-if="currentInvoice" :invoice="currentInvoice" @sent="onSendInvoiceEmail" />
     </b-modal>
+
+    <b-modal has-modal-card v-model="showMarkPaidModal" width="460px" :destroy-on-hide="true">
+      <mark-invoice-paid-modal v-if="currentInvoice" :invoice="currentInvoice" @updated="onStatusUpdated"
+        @close="showMarkPaidModal = false" />
+    </b-modal>
   </div>
 </template>
 
@@ -101,13 +119,14 @@
 import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
-import { downloadPDF } from '@/shared/utils/downloadFile';
-import { getAgencyInvoices, downloadInvoicePdf, changeInvoiceStatus } from '@/modules/agency/accounting/invoices/api';
+import { downloadFile, downloadPDF } from '@/shared/utils/downloadFile';
+import { getAgencyInvoices, downloadInvoicePdf, downloadInvoicesPaymentsReport, changeInvoiceStatus } from '@/modules/agency/accounting/invoices/api';
 import { currency, dateMonth } from '@/shared/format';
 import { InvoiceStatus, INVOICE_STATUSES, INVOICE_STATUS_LABELS, invoiceStatusTagType } from '@/modules/agency/accounting/invoices/types';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import DeleteInvoice from '@/modules/agency/accounting/invoices/components/DeleteInvoice.vue';
 import SendInvoiceEmail from '@/modules/agency/accounting/invoices/components/SendInvoiceEmail.vue';
+import MarkInvoicePaidModal from '@/modules/agency/accounting/invoices/components/MarkInvoicePaidModal.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { accountingCrumbs } from '@/shared/ui/breadcrumbs';
 import type { AgencyInvoiceFilter, AgencyInvoiceListItem } from '@/modules/agency/accounting/invoices/types';
@@ -136,6 +155,7 @@ const serverParams = ref<AgencyInvoiceFilter>(agencyStore.agencyInvoiceFilter ??
 const showDeleteModal = ref(false);
 const currentInvoice = ref<AgencyInvoiceListItem | null>(null);
 const showSendEmailModal = ref(false);
+const showMarkPaidModal = ref(false);
 
 if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
   createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
@@ -158,24 +178,43 @@ function onStatusChange() {
 }
 
 function statusTooltip(invoice: AgencyInvoiceListItem): string {
-  const who = invoice.updatedByName ? `${invoice.updatedByName} · ` : '';
-  return `${who}${dateMonth(invoice.updatedAt ?? null)}`;
+  const lines = [`Due Date: ${dateMonth(invoice.dueDate)} (Net ${invoice.paymentTermDays})`, `Due Days: ${invoice.dueDays}`];
+  if (invoice.updatedAt) {
+    const who = invoice.updatedByName ? `${invoice.updatedByName} · ` : '';
+    lines.push(`Updated: ${who}${dateMonth(invoice.updatedAt)}`);
+  }
+  return lines.join(' · ');
 }
 
-async function onToggleStatus(invoice: AgencyInvoiceListItem) {
-  const next = invoice.status === InvoiceStatus.Paid ? InvoiceStatus.Pending : InvoiceStatus.Paid;
-  const label = INVOICE_STATUS_LABELS[next];
-  const confirmed = await showAlertConfirm(`Mark as ${label}`, `Invoice <b>${invoice.invoiceNumber}</b> will be marked as ${label}.`, 'Confirm');
+async function onMarkAsPending(invoice: AgencyInvoiceListItem) {
+  const confirmed = await showAlertConfirm('Mark as Pending', `Invoice <b>${invoice.invoiceNumber}</b> will be marked as Pending and its payment date cleared.`, 'Confirm');
   if (!confirmed) return;
   isLoading.value = true;
   try {
-    await changeInvoiceStatus(invoice.id, { status: next });
-    showAlertSuccess(`Invoice marked as ${label}`);
+    await changeInvoiceStatus(invoice.id, { status: InvoiceStatus.Pending });
+    showAlertSuccess('Invoice marked as Pending');
     grid.value?.reload();
   } catch (error) {
     isLoading.value = false;
     showAlertError(error);
   }
+}
+
+function openMarkPaidModal(invoice: AgencyInvoiceListItem) {
+  currentInvoice.value = invoice;
+  showMarkPaidModal.value = true;
+}
+
+function onStatusUpdated() {
+  grid.value?.reload();
+}
+
+function onDownloadPaymentsReport() {
+  isLoading.value = true;
+  downloadInvoicesPaymentsReport(serverParams.value)
+    .then((file) => downloadFile(file, `Payments_${new Date().toLocaleDateString()}`))
+    .catch((error) => showAlertError(error))
+    .finally(() => { isLoading.value = false; });
 }
 
 function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<AgencyInvoiceListItem>> {

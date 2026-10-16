@@ -240,12 +240,12 @@ POST api/agency/accounting/invoices           → IInvoiceService.CreateInvoice
 → InvoicesController (Controllers/Agency/Accounting/InvoicesController.cs)
 ```
 
-The controller resolves the service through `InvoiceServiceFactory` (`Covenant.Core.BL/Services/Accounting/Invoices/`), which picks `CanadaInvoiceService` or `UsaInvoiceService`.
+The controller injects `IInvoiceService` (one `InvoiceService` in `Covenant.Core.BL/Services/Accounting/Invoices/`). Per invoice, the service resolves an `IInvoiceCountryStrategy` (`CanadaInvoiceStrategy` or `UsaInvoiceStrategy`) through `InvoiceCountryStrategyResolver` from the billed company's agency billing location; the strategy decides the number prefix (`AI`/`US`), the tax (`HST` global rate vs per-location tax) and whether unworked statutory holidays are charged.
 
 Key facts (full rules in `BILLING_RULES.md`):
 
-- Invoice subtotal = timesheets (at `AgencyRate`) + additional items + holidays − discounts.
-- Vacations and bonus are **not** billed — `VacationsRate`/`BonusRate` exist on the entity but never enter the totals (vacation 4% is a pay-stub concept).
+- Invoice subtotal = timesheets (at `AgencyRate`) + additional items + holidays − discounts; tax = `strategy.CalculateTax`.
+- Vacations and bonus are **not** billed — the invoice has no such columns (vacation 4% is a pay-stub concept).
 - HST is a single global configuration rate, not per-province.
 - Worked holidays are always billed at holiday rate on invoices (invoices hardcode `holidayIsPaid: true`), while pay stubs honor the timesheet's `HolidayIsPaid` flag.
 
@@ -257,7 +257,13 @@ GET    api/agency/accounting/invoices/{invoiceId}/pdf       → IInvoiceService.
 POST   api/agency/accounting/invoices/{invoiceId}/email     → IInvoiceService.SendInvoiceEmail (multipart, optional attachments)
 GET    api/agency/accounting/invoices/{invoiceId}/paystubs  → pay stubs linked to the invoice (delete warnings)
 DELETE api/agency/accounting/invoices/{id}                  → IInvoiceService.DeleteInvoice (cascades selected pay stubs)
+PUT    api/agency/accounting/invoices/{invoiceId}/status    → IInvoiceService.ChangeInvoiceStatus (Paid with payment date / Pending)
+GET    api/agency/accounting/invoices/file                  → Excel list (N° Invoice, Created At, Company, Total, Status)
+GET    api/agency/accounting/invoices/payments-report       → payments follow-up Excel (B4 Tax, Amount, Net, Due Date, Due Days, Payment Date)
+POST   api/jobs/scheduletasks/MarkOverdueInvoices           → nightly job: Pending → Due once CreatedAt + CompanyProfile.PaymentTermDays < today
 ```
+
+Status rules (Pending / Due / Paid, payment terms per company) are in `BILLING_RULES.md` → *Invoice Status & Payment Terms*.
 
 ---
 
@@ -329,6 +335,20 @@ PUT api/agency/recruiting/requests/{requestId}/runners/{id}/Interview/{interview
 `GET api/agency/recruiting/requests/{requestId}/runners/{id}` returns the runner detail with the full status timeline (latest first) and the list of interviews. The "Add interview" and "Reschedule" actions are hidden/disabled outside the two interview-enabled states, and "Change status" is hidden once the runner is `Hired`.
 
 All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`, the Hired-terminal guard, append-only history), so the API is the source of truth; the UI only mirrors them.
+
+### Step 5: Work every request's runners from one board
+
+**Recruiting → Runners** (`/recruiting/runners`, `Controllers/Agency/Recruiting/Runners/RunnersController.cs`) lists the runners of every open request of the agency, grouped by request, with the same shell as the Applicants board: filters (request #, name/email, client, position, type, status, start date), *Assigned to me* (requests the caller is recruiter of), expand/collapse, Excel export and a selection bar.
+
+```
+GET api/agency/recruiting/runners            → RunnerService.GetAgencyRunners      (page of REQUESTS; a request never splits across pages; only requests with runners appear)
+GET api/agency/recruiting/runners/File       → GenerateAgencyRunnersReport          (one row per runner of the filter)
+PUT api/agency/recruiting/runners/Status     → RunnerService.ChangeRunnersStatus    { "runnerIds", "status", "comments", "startDate" }
+```
+
+Each request header shows `hired/workersQuantity` and whether it still uses runners (a request switched to the compliance checklist shows its runners read-only). Each runner row expands inline into the same history timeline + interviews the Runners tab and the weekly board show, with *Change status*, *Add interview* and *Delete*.
+
+The bulk status change applies the entity rules per runner and never fails as a whole: hired runners, runners of requests without runners and unknown ids are returned in `skipped[]` with the reason, the rest are updated with one history entry each carrying the comments. `InterviewRescheduled` is never a bulk target (it is only set by rescheduling an interview) and `Hired` requires `startDate` for the whole batch.
 
 ### Punch card gating
 
@@ -425,4 +445,6 @@ worker punch card. Data lives in `UserAttendance`, one row per **user** per day 
 - Admins edit a punch from the report row (`PUT api/agency/profile/attendance/{id}`): clock-in, clock-out and lunch
   (0–240 min, never longer than the shift), with a mandatory reason;
   the row keeps who edited it and is tagged "Edited".
+- The clock-out can be cleared (sent as `null`): the punch reopens and the user can clock out again that day.
+  This is the fix for an accidental clock-out.
 

@@ -19,8 +19,8 @@ public class DashboardController(ISalesService salesService) : ControllerBase
 {
     public const string RouteName = "api/agency/sales/dashboard";
 
-    /// <summary>Gets the deal count and total value per status for a period. Sales users only see the deals they own.</summary>
-    /// <param name="filter">Period (day, week, month, quarter), optional statuses and owner.</param>
+    /// <summary>Gets the deal count and total value per status for a date range (current month when omitted). Sales users only see the deals they own.</summary>
+    /// <param name="filter">Inclusive date range (both dates or none), optional statuses and owner.</param>
     [HttpGet("deals-by-status")]
     [ProducesResponseType(typeof(DealsByStatusModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

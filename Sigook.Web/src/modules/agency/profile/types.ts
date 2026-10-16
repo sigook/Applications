@@ -166,6 +166,13 @@ export interface UserAttendanceReport {
   totals: UserAttendanceHours;
 }
 
+export interface UserAttendanceSummaryItem extends UserAttendanceHours {
+  userId: string;
+  name: string;
+  days: number;
+  missingClockOuts: number;
+}
+
 export interface UserAttendanceReportFilter {
   userId?: string;
   from: string;

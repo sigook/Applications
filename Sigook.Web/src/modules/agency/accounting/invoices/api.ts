@@ -1,6 +1,6 @@
 import { api } from '@/app/security/apiService';
 import type { AgencyInvoiceFilter, AgencyInvoiceListResponse, ChangeInvoiceStatusModel, CreateAgencyInvoiceModel, DeleteInvoicePayload, PayStubDeleteWarningItem, SendInvoiceEmailPayload } from '@/modules/agency/accounting/invoices/types';
-import type { InvoiceSummaryModel } from '@/shared/types/invoice';
+import type { InvoicePreviewModel } from '@/shared/types/invoice';
 
 // ---------------------------------------------------------------------------
 // Invoices CRUD
@@ -10,8 +10,8 @@ export function getAgencyInvoices(filter: AgencyInvoiceFilter): Promise<AgencyIn
   return api.get<AgencyInvoiceListResponse>('/api/agency/accounting/invoices', { params: { ...filter } });
 }
 
-export function previewAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<InvoiceSummaryModel> {
-  return api.post<InvoiceSummaryModel>('/api/agency/accounting/invoices/Preview', payload);
+export function previewAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<InvoicePreviewModel> {
+  return api.post<InvoicePreviewModel>('/api/agency/accounting/invoices/Preview', payload);
 }
 
 export function createAgencyInvoice(payload: CreateAgencyInvoiceModel): Promise<void> {
@@ -29,6 +29,10 @@ export function changeInvoiceStatus(invoiceId: string, payload: ChangeInvoiceSta
 // ---------------------------------------------------------------------------
 // Invoice document / verification / paystubs
 // ---------------------------------------------------------------------------
+
+export function downloadInvoicesPaymentsReport(filter: AgencyInvoiceFilter): Promise<Blob> {
+  return api.get<Blob>('/api/agency/accounting/invoices/payments-report', { params: { ...filter }, responseType: 'blob' });
+}
 
 export function downloadInvoicePdf(invoiceId: string): Promise<Blob> {
   return api.get<Blob>(`/api/agency/accounting/invoices/${invoiceId}/pdf`, { responseType: 'blob' });

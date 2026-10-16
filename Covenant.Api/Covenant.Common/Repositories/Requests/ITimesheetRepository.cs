@@ -10,11 +10,8 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
-public interface ITimesheetRepository
+public interface ITimesheetRepository : IBaseRepository
 {
-    Task SaveChangesAsync();
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
     Task<PaginatedList<TimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination);
     Task<TimeSheet> GetTimeSheet(Guid id);
     Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerId, Guid requestId, Expression<Func<Common.Entities.Request.Request, bool>> requestCondition);
@@ -23,8 +20,7 @@ public interface ITimesheetRepository
     Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyProfileId);
     Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId);
     Task<List<TimeSheetApprovedPayrollModel>> GetApprovedTimeSheetsInRange(Guid workerProfileId, DateTime start, DateTime end);
-    Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid workerProfileId, Pagination pagination);
-    Task<TimesheetHistoryAccumulated> GetTimesheetHistoryAccumulated(Guid workerProfileId, int rowNumber);
+    Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid agencyId, Guid workerProfileId, GetWorkerTimeSheetHistoryFilter filter);
     Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds);
     Task<TimeSheetUsagesModel> GetTimeSheetUsages(Guid requestId, Guid workerProfileId, Guid id);
     Task<IEnumerable<HoursWorkedResponse>> GetHoursWorked(Guid agencyId, HoursWorkedFilter filter);

@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Candidates;
 
-public interface ICandidateRepository
+public interface ICandidateRepository : IBaseRepository
 {
     Task<Common.Entities.Candidate.Candidate> GetCandidate(Expression<Func<Common.Entities.Candidate.Candidate, bool>> expression);
     Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId);
@@ -21,10 +21,5 @@ public interface ICandidateRepository
     Task<PaginatedList<NoteModel>> GetNotes(Guid candidateId, Pagination pagination);
     Task<CandidateNote> GetNote(Guid candidateId, Guid id);
     Task<bool> CandidatePhonesExists(IEnumerable<string> phone);
-    Task SaveChangesAsync();
-    Task Update<T>(T entity) where T : class;
-    Task Create<T>(T entity) where T : class;
-    void Delete<T>(T entity) where T : class;
-    void Delete<T>(IEnumerable<T> entities) where T : class;
     Task BulkCandidates(IEnumerable<BulkCandidate> bulk);
 }

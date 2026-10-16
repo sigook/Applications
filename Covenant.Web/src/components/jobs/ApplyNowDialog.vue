@@ -48,8 +48,18 @@
                         :items="countries" item-title="value" item-value="id" :error-messages="errors.countryId"
                         :loading="loadingCountries" variant="outlined"></v-select>
                     </v-col>
-                    <v-col cols="12">
-                      <v-text-field v-model="fields.address.value" v-bind="fields.addressProps" label="City / Address *"
+                    <v-col cols="12" md="6">
+                      <v-select v-model="fields.provinceId.value" v-bind="fields.provinceIdProps" label="Province / State *"
+                        :items="provinces" item-title="value" item-value="id" :error-messages="errors.provinceId"
+                        :loading="loadingProvinces" :disabled="!fields.countryId.value" variant="outlined"></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-autocomplete v-model="fields.cityId.value" v-bind="fields.cityIdProps" label="City *"
+                        :items="cities" item-title="value" item-value="id" :error-messages="errors.cityId"
+                        :loading="loadingCities" :disabled="!fields.provinceId.value" variant="outlined"></v-autocomplete>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                      <v-text-field v-model="fields.address.value" v-bind="fields.addressProps" label="Address *"
                         :error-messages="errors.address" counter="100" variant="outlined"></v-text-field>
                     </v-col>
                   </v-row>
@@ -133,7 +143,7 @@
                             <strong>Country:</strong> {{ selectedCountryName || 'Not selected' }}
                           </div>
                           <div class="mb-1 text-body-2">
-                            <strong>City/Address:</strong> {{ values.address || 'Not provided' }}
+                            <strong>Address:</strong> {{ formattedAddress || 'Not provided' }}
                           </div>
                           <div class="mb-1 text-body-2">
                             <strong>Immigration Status:</strong> {{ values.status || 'Not selected' }}
@@ -223,7 +233,7 @@ import { applicationService } from '@/services/applicationService'
 import { locationService } from '@/services/locationService'
 import { RESIDENCY_STATUS } from '@/services/types/application.types'
 import type { Job } from '@/services/types/job.types'
-import type { BaseModel, Country } from '@/services/types/application.types'
+import type { BaseModel, City, Country, Province } from '@/services/types/application.types'
 
 const props = defineProps<{
   modelValue: boolean
@@ -246,6 +256,10 @@ const { currentStep, values, errors, fields, validateCurrentStep, resetForm, set
 const activeTab = ref('new')
 const countries = ref<Country[]>([])
 const loadingCountries = ref(false)
+const provinces = ref<Province[]>([])
+const loadingProvinces = ref(false)
+const cities = ref<City[]>([])
+const loadingCities = ref(false)
 const suggestedSkills = ref<string[]>([])
 const loadingSkills = ref(false)
 const sources = ref<BaseModel[]>([])
@@ -276,6 +290,42 @@ const resumeRequired = computed(() => selectedSourceName.value === 'Linkedin')
 const selectedCountryName = computed(() => {
   const country = countries.value.find((c) => c.id === values.countryId)
   return country?.value || ''
+})
+
+const formattedAddress = computed(() => {
+  const province = provinces.value.find((p) => p.id === values.provinceId)
+  const city = cities.value.find((c) => c.id === values.cityId)
+  return [values.address, city?.value, province?.code || province?.value]
+    .filter(Boolean)
+    .join(', ')
+})
+
+watch(() => values.countryId, async (countryId) => {
+  setFieldValue('provinceId', '')
+  provinces.value = []
+  if (!countryId) return
+  loadingProvinces.value = true
+  try {
+    provinces.value = await locationService.getProvinces(countryId)
+  } catch (error) {
+    console.error('Failed to load provinces:', error)
+  } finally {
+    loadingProvinces.value = false
+  }
+})
+
+watch(() => values.provinceId, async (provinceId) => {
+  setFieldValue('cityId', '')
+  cities.value = []
+  if (!provinceId) return
+  loadingCities.value = true
+  try {
+    cities.value = await locationService.getCities(provinceId)
+  } catch (error) {
+    console.error('Failed to load cities:', error)
+  } finally {
+    loadingCities.value = false
+  }
 })
 
 // Cleave.js instance for phone formatting

@@ -70,6 +70,6 @@ export interface PunchCardWorker {
 // Response shape of GET /api/agency/recruiting/requests/{}/Workers/{}/TimeSheets/{}/Usages.
 // Mirrors backend TimeSheetUsagesModel — single object, not an array.
 export interface TimeSheetUsagesModel {
-  invoiceNumber?: number | null;
+  invoiceNumber?: string | null;
   payStubNumber?: string | null;
 }

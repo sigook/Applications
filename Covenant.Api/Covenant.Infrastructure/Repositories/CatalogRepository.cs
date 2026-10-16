@@ -8,20 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Repositories
 {
-    public class CatalogRepository : ICatalogRepository
+    public class CatalogRepository(CovenantContext context) : BaseRepository<CovenantContext>(context), ICatalogRepository
     {
-        private readonly CovenantContext _context;
-
-        public CatalogRepository(CovenantContext context) => _context = context;
-
-        public async Task Create<T>(T entity) where T : class => await _context.Set<T>().AddAsync(entity);
-
         public Task<List<BaseModel<Guid>>> GetWsibGroups() =>
-            _context.WsibGroups.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+            Context.WsibGroups.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
         public async Task<List<CountryModel>> GetCountries()
         {
-            var query = _context.Countries.Select(c => new CountryModel
+            var query = Context.Countries.Select(c => new CountryModel
             {
                 Id = c.Id,
                 Value = c.Value,
@@ -31,7 +25,7 @@ namespace Covenant.Infrastructure.Repositories
         }
 
         public async Task<List<ProvinceModel>> GetProvinces(Guid countryId) =>
-            await _context.Provinces.AsNoTracking()
+            await Context.Provinces.AsNoTracking()
                 .Where(c => c.CountryId == countryId)
                 .Select(s => new ProvinceModel
                 {
@@ -42,7 +36,7 @@ namespace Covenant.Infrastructure.Repositories
                 .OrderBy(c => c.Value)
                 .ToListAsync();
         public async Task<List<ProvinceModel>> GetProvinces(string countryCode) =>
-            await _context.Provinces.AsNoTracking()
+            await Context.Provinces.AsNoTracking()
                 .Where(c => c.Country.Code == countryCode)
                 .Select(s => new ProvinceModel
                 {
@@ -54,7 +48,7 @@ namespace Covenant.Infrastructure.Repositories
                 .ToListAsync();
 
         public Task<List<CityModel>> GetCities(Guid provinceId) =>
-            _context.Cities.Where(c => c.ProvinceId == provinceId)
+            Context.Cities.Where(c => c.ProvinceId == provinceId)
                 .GroupBy(c => c.Value)
                 .Select(c => new CityModel
                 {
@@ -71,7 +65,7 @@ namespace Covenant.Infrastructure.Repositories
 
         public async Task<CityModel> GetCity(Guid cityId)
         {
-            var result = await _context.Cities
+            var result = await Context.Cities
                 .Select(c => new CityModel
                 {
                     Id = c.Id,
@@ -79,7 +73,15 @@ namespace Covenant.Infrastructure.Repositories
                     Code = c.Code,
                     Province = new ProvinceModel
                     {
-                        Code = c.Province.Code
+                        Id = c.Province.Id,
+                        Value = c.Province.Value,
+                        Code = c.Province.Code,
+                        Country = new CountryModel
+                        {
+                            Id = c.Province.Country.Id,
+                            Value = c.Province.Country.Value,
+                            Code = c.Province.Country.Code
+                        }
                     }
                 })
                 .FirstOrDefaultAsync(c => c.Id == cityId);
@@ -88,7 +90,7 @@ namespace Covenant.Infrastructure.Repositories
 
         public async Task<CityModel> GetCity(string name)
         {
-            var city = await _context.Cities
+            var city = await Context.Cities
                 .Select(c => new CityModel
                 {
                     Id = c.Id,
@@ -100,98 +102,96 @@ namespace Covenant.Infrastructure.Repositories
 
         public async Task<bool> CityExists(string name)
         {
-            return await _context.Cities
+            return await Context.Cities
                 .AnyAsync(c => c.Value.ToLower() == name.ToLower());
         }
 
 
         public Task<List<BaseModel<Guid>>> GetAvailability() =>
-            _context.Availabilities.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+            Context.Availabilities.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
         public Task<List<BaseModel<Guid>>> GetAvailabilityTime() =>
-            _context.AvailabilityTimes.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+            Context.AvailabilityTimes.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
         public Task<List<BaseModel<Guid>>> GetDay() =>
-            _context.Days.Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+            Context.Days.Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
         public Task<List<BaseModel<Guid>>> GetGender() =>
-            _context.Genders.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+            Context.Genders.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
         public Task<List<IdentificationTypeModel>> GetIdentificationType() =>
-            _context.IdentificationTypes.OrderBy(c => c.Value)
+            Context.IdentificationTypes.OrderBy(c => c.Value)
                 .Select(c => new IdentificationTypeModel { Id = c.Id, Value = c.Value, Code = c.Code })
                 .ToListAsync();
 
         public Task<IdentificationTypeCode> GetIdentificationTypeCode(Guid id) =>
-            _context.IdentificationTypes.Where(c => c.Id == id).Select(c => c.Code).FirstOrDefaultAsync();
+            Context.IdentificationTypes.Where(c => c.Id == id).Select(c => c.Code).FirstOrDefaultAsync();
 
         public Task<List<BaseModel<Guid>>> GetLanguage() =>
-            _context.Languages.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+            Context.Languages.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
-        public Task<List<BaseModel<Guid>>> GetLift() => _context.Lifts.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
+        public Task<List<BaseModel<Guid>>> GetLift() => Context.Lifts.OrderBy(c => c.Value).Select(c => new BaseModel<Guid>(c.Id, c.Value)).ToListAsync();
 
         public Task<List<BaseModel<Guid>>> GetIndustries() =>
-            _context.Industries
+            Context.Industries
             .Where(c => !c.IsDeleted)
             .OrderBy(d => d.Value)
             .Select(i => new BaseModel<Guid>(i.Id, i.Value))
             .ToListAsync();
 
         public Task<List<BaseModel<Guid>>> GetSources() =>
-            _context.Sources
+            Context.Sources
             .OrderBy(c => c.Value)
             .Select(c => new BaseModel<Guid>(c.Id, c.Value))
             .ToListAsync();
 
         public Task<List<BaseModel<Guid>>> GetSourcesForRequests() =>
-            _context.Sources
+            Context.Sources
             .Where(c => c.IsAvailableForRequests)
             .OrderBy(c => c.Value)
             .Select(c => new BaseModel<Guid>(c.Id, c.Value))
             .ToListAsync();
 
         public Task<List<ReasonCancellationRequest>> GetReasonCancellationRequest() =>
-            _context.ReasonCancellationRequests.AsNoTracking().ToListAsync();
+            Context.ReasonCancellationRequests.AsNoTracking().ToListAsync();
 
-        public Task<bool> IsHoliday(DateTime date, string countryCode) => _context.Holidays.AnyAsync(c => c.Date.Date == date.Date && c.CountryCode == countryCode);
+        public Task<bool> IsHoliday(DateTime date, string countryCode) => Context.Holidays.AnyAsync(c => c.Date.Date == date.Date && c.CountryCode == countryCode);
 
         public virtual Task<List<DateTime>> GetHolidaysInWeek(DateTime firstDateOfTheWeek, string countryCode)
         {
             var endOfWeek = firstDateOfTheWeek.Date.AddDays(7);
-            return _context.Holidays.Where(holiday =>
+            return Context.Holidays.Where(holiday =>
                 holiday.Date >= firstDateOfTheWeek.Date &&
                 holiday.Date < endOfWeek &&
                 holiday.CountryCode == countryCode
             ).Select(h => h.Date).ToListAsync();
         }
 
-        public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
         public async Task CreateHolidayIfNotExist(string countryCode, DateTime date)
         {
-            var holiday = await _context.Holidays.FirstOrDefaultAsync(h => h.Date == date && h.CountryCode == countryCode);
+            var holiday = await Context.Holidays.FirstOrDefaultAsync(h => h.Date == date && h.CountryCode == countryCode);
             if (holiday == null)
             {
                 holiday = new Holiday(date)
                 {
                     CountryCode = countryCode
                 };
-                await _context.Holidays.AddAsync(holiday);
+                await Context.Holidays.AddAsync(holiday);
             }
         }
 
         public async Task UpsertProvinceSettings(ProvinceSetting settings)
         {
-            var existing = await _context.ProvinceSettings.FindAsync(settings.ProvinceId);
+            var existing = await Context.ProvinceSettings.FindAsync(settings.ProvinceId);
             if (existing == null)
             {
-                await _context.ProvinceSettings.AddAsync(settings);
+                await Context.ProvinceSettings.AddAsync(settings);
             }
             else
             {
                 existing.PaidHolidays = settings.PaidHolidays;
                 existing.OvertimeStartsAfter = settings.OvertimeStartsAfter;
-                _context.ProvinceSettings.Update(existing);
+                Context.ProvinceSettings.Update(existing);
             }
         }
     }

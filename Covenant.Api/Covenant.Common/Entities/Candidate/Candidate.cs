@@ -24,6 +24,8 @@ namespace Covenant.Common.Entities.Candidate
         public string Email { get; set; }
         public string Address { get; set; }
         public string PostalCode { get; set; }
+        public Guid? CityId { get; set; }
+        public City City { get; set; }
         public Guid? GenderId { get; set; }
         public Gender Gender { get; set; }
         public bool HasVehicle { get; set; }
@@ -52,6 +54,8 @@ namespace Covenant.Common.Entities.Candidate
                 return Result.Fail("The candidate must have an email to be converted to a worker");
             if (!PhoneNumbers.Any())
                 return Result.Fail("The candidate must have a phone number to be converted to a worker");
+            if (!CityId.HasValue)
+                return Result.Fail("The candidate must have a city to be converted to a worker");
             if (Dnu)
                 return Result.Fail("A candidate marked as Do Not Use cannot be converted to a worker");
             return Result.Ok();

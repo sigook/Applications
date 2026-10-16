@@ -8,8 +8,15 @@ public class GetDealsByStatusFilterValidator : AbstractValidator<GetDealsByStatu
     public GetDealsByStatusFilterValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
-        RuleFor(f => f.Period)
-            .IsInEnum();
+        RuleFor(f => f.DateFrom)
+            .NotNull()
+            .When(f => f.DateTo.HasValue);
+        RuleFor(f => f.DateTo)
+            .NotNull()
+            .When(f => f.DateFrom.HasValue);
+        RuleFor(f => f.DateTo)
+            .GreaterThanOrEqualTo(f => f.DateFrom)
+            .When(f => f.DateFrom.HasValue && f.DateTo.HasValue);
         RuleForEach(f => f.Statuses)
             .IsInEnum();
     }

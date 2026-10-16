@@ -21,6 +21,13 @@ public class CandidateConfiguration : IEntityTypeConfiguration<Common.Entities.C
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
+            .HasOne(x => x.City)
+            .WithMany()
+            .HasForeignKey(x => x.CityId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
             .HasMany(x => x.PhoneNumbers)
             .WithOne(x => x.Candidate)
             .HasForeignKey(x => x.CandidateId)

@@ -6,6 +6,7 @@ public class InvoiceSummaryModel
     public long NumberId { get; set; }
     public string InvoiceNumber { get; set; }
     public DateOnly CreatedAt { get; set; }
+    public Guid AgencyId { get; set; }
     public Guid CompanyProfileId { get; set; }
     public string CompanyFullName { get; set; }
     public string Email { get; set; }
@@ -25,14 +26,13 @@ public class InvoiceSummaryModel
     public int? AgencyFaxExt { get; set; }
     public string AgencyWebSite { get; set; }
     public decimal SubTotal { get; set; }
-    public decimal Hst { get; set; }
+    public decimal Tax { get; set; }
     public decimal Total { get; set; }
     public string TaxName { get; set; } = "HST";
     public DateTime? WeedEnding { get; set; }
     public InvoiceColor InvoiceColor { get; set; }
     public InvoicePayroll InvoicePayroll { get; set; }
     public string ClientSiteAddress { get; set; }
-
 
     public List<InvoiceSummaryDiscountModel> Discounts { get; set; } = new List<InvoiceSummaryDiscountModel>();
     public List<InvoiceSummaryHolidayModel> Holidays { get; set; } = new List<InvoiceSummaryHolidayModel>();

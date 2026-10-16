@@ -5,9 +5,8 @@ using Covenant.Common.Models.Location;
 
 namespace Covenant.Common.Repositories;
 
-public interface ICatalogRepository
+public interface ICatalogRepository : IBaseRepository
 {
-    Task Create<T>(T entity) where T: class;
     Task<List<BaseModel<Guid>>> GetWsibGroups();
     Task<List<CountryModel>> GetCountries();
     Task<List<ProvinceModel>> GetProvinces(Guid countryId);
@@ -30,7 +29,6 @@ public interface ICatalogRepository
     Task<List<BaseModel<Guid>>> GetSourcesForRequests();
     Task<bool> IsHoliday(DateTime date, string countryCode);
     Task<List<DateTime>> GetHolidaysInWeek(DateTime firstDateOfTheWeek, string countryCode);
-    Task SaveChangesAsync();
     Task CreateHolidayIfNotExist(string countryCode, DateTime date);
     Task UpsertProvinceSettings(ProvinceSetting settings);
 }

@@ -46,7 +46,7 @@
             <div class="column is-2-mobile is-2 has-text-right">{{ discount.quantity.toFixed(2) }}</div>
             <div class="column is-2-mobile is-2 has-text-right">{{ currency(discount.unitPrice) }}
             </div>
-            <div class="column is-2-mobile is-2 has-text-right">-{{ currency(discount.amount) }}</div>
+            <div class="column is-2-mobile is-2 has-text-right">-{{ currency(discount.total) }}</div>
           </div>
         </div>
       </div>
@@ -59,8 +59,8 @@
             <div class="column is-6-mobile is-6 has-text-right has-text-weight-semibold">{{ currency(preview.subTotal) }}</div>
           </div>
           <div class="columns is-multiline mb-2">
-            <div class="column is-6-mobile is-6">TAX/HST:</div>
-            <div class="column is-6-mobile is-6 has-text-right has-text-weight-semibold">{{ currency(preview.hst) }}</div>
+            <div class="column is-6-mobile is-6">{{ preview.taxName ?? 'Tax' }}:</div>
+            <div class="column is-6-mobile is-6 has-text-right has-text-weight-semibold">{{ currency(preview.tax) }}</div>
           </div>
           <hr class="my-2">
           <div class="columns is-multiline">
@@ -76,9 +76,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { currency } from '@/shared/format';
-import type { InvoiceSummaryModel } from '@/shared/types/invoice';
+import type { InvoicePreviewModel } from '@/shared/types/invoice';
 
-defineProps<{ preview: InvoiceSummaryModel }>();
+defineProps<{ preview: InvoicePreviewModel }>();
 
 const currentDate = computed(() =>
   new Date().toLocaleDateString('en-US', {

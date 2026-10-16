@@ -33,7 +33,7 @@ public class WorkerRequestRepositoryTest
         var mockFilesConfiguration = new Mock<IOptions<FilesConfiguration>>();
         mockFilesConfiguration.Setup(m => m.Value).Returns(new FilesConfiguration());
         _sut = new WorkerRequestRepository(_context);
-        _sut2 = new TimesheetRepository(_context, Mock.Of<Rates>(), Mock.Of<IRequestRepository>(), Mock.Of<TimeLimits>());
+        _sut2 = new TimesheetRepository(_context, Mock.Of<Rates>(), Mock.Of<TimeLimits>());
         FakeRequest.UpdateShift(new Shift());
         Wr.UpdateStartWorking(FakeNow);
         _context.WorkerProfiles.Add(Wp);

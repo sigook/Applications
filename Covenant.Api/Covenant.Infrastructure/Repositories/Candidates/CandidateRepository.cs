@@ -2,6 +2,7 @@ using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Candidate;
+using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -14,25 +15,18 @@ using System.Text.RegularExpressions;
 
 namespace Covenant.Infrastructure.Repositories.Candidates;
 
-public class CandidateRepository : ICandidateRepository
+public class CandidateRepository(CovenantContext context, IOptions<FilesConfiguration> options) : BaseRepository<CovenantContext>(context), ICandidateRepository
 {
-    private readonly CovenantContext _context;
-    private readonly FilesConfiguration filesConfiguration;
+    private readonly FilesConfiguration filesConfiguration = options.Value;
 
-    public CandidateRepository(CovenantContext context, IOptions<FilesConfiguration> options)
-    {
-        _context = context;
-        filesConfiguration = options.Value;
-    }
-
-    public Task<bool> CandidateExists(string email) => _context.Candidates.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+    public Task<bool> CandidateExists(string email) => Context.Candidates.AnyAsync(u => u.Email.ToLower().Equals(email.ToLower()));
 
     public Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId) =>
-        _context.Candidates
+        Context.Candidates
             .AsNoTracking()
             .Where(c => c.AgencyId == agencyId && !c.Dnu && !c.EmailUnsubscribed)
             .Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains("@"))
-            .Where(c => !string.IsNullOrEmpty(c.Address))
+            .Where(c => c.CityId.HasValue || !string.IsNullOrEmpty(c.Address))
             .Where(c => !c.RequestApplicants.Any(ra => ra.RequestId == requestId))
             .OrderBy(c => c.NumberId)
             .Select(c => new CandidateContactInfoModel
@@ -40,7 +34,8 @@ public class CandidateRepository : ICandidateRepository
                 Id = c.Id,
                 Name = c.Name,
                 Email = c.Email,
-                Address = c.Address
+                Address = c.Address,
+                CityId = c.CityId
             })
             .ToListAsync();
 
@@ -52,7 +47,7 @@ public class CandidateRepository : ICandidateRepository
 
     public IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter)
     {
-        var candidates = _context.Candidates
+        var candidates = Context.Candidates
             .AsNoTracking()
             .Include(c => c.PhoneNumbers)
             .Include(c => c.Skills)
@@ -71,6 +66,8 @@ public class CandidateRepository : ICandidateRepository
             Email = c.Email,
             Address = c.Address,
             PostalCode = c.PostalCode,
+            City = c.City.Value,
+            Province = c.City.Province.Code,
             Source = c.Source.Value,
             PhoneNumbers = c.PhoneNumbers.Select(p => new PhoneNumberModel { Id = p.Id, PhoneNumber = p.PhoneNumber }),
             Skills = c.Skills.Where(s => !string.IsNullOrWhiteSpace(s.Skill)).OrderBy(s => s.Skill).Select(s => new SkillModel { Id = s.Id, Skill = s.Skill }),
@@ -112,7 +109,8 @@ public class CandidateRepository : ICandidateRepository
             var address = filter.Address.ToLower();
             predicate = predicate.And(c =>
                 c.Address.ToLower().Contains(address) ||
-                c.PostalCode.ToLower().Contains(address));
+                c.PostalCode.ToLower().Contains(address) ||
+                c.City.ToLower().Contains(address));
         }
         if (filter.NumberId.HasValue)
             predicate = predicate.And(c => c.Requests.Any(r => r.Value == filter.NumberId.Value.ToString()));
@@ -129,37 +127,24 @@ public class CandidateRepository : ICandidateRepository
         return predicate;
     }
 
-    private IQueryable<CandidateListModel> ApplySortCandidates(IQueryable<CandidateListModel> query, GetCandidatesFilter filter)
+    private static IQueryable<CandidateListModel> ApplySortCandidates(IQueryable<CandidateListModel> query, GetCandidatesFilter filter)
     {
-        switch (filter.SortBy)
+        var ordered = filter.SortBy switch
         {
-            case GetCandidatesSortBy.Name:
-                query = query.AddOrderBy(filter, c => c.Name);
-                break;
-            case GetCandidatesSortBy.Address:
-                query = query.AddOrderBy(filter, c => c.Address);
-                break;
-            case GetCandidatesSortBy.Skills:
-                query = query.AddOrderBy(filter, c => c.Skills.Any() ? c.Skills.FirstOrDefault().Skill : null);
-                break;
-            case GetCandidatesSortBy.CreateAt:
-                query = query.AddOrderBy(filter, c => c.CreatedAt);
-                break;
-            case GetCandidatesSortBy.Recruiter:
-                query = query.AddOrderBy(filter, c => c.Recruiter);
-                break;
-            case GetCandidatesSortBy.Status:
-                query = query.AddOrderBy(filter, c => c.ResidencyStatus);
-                break;
-            case GetCandidatesSortBy.Source:
-                query = query.AddOrderBy(filter, c => c.Source);
-                break;
-        }
-        return query;
+            GetCandidatesSortBy.Name => query.AddOrderBy(filter, c => c.Name),
+            GetCandidatesSortBy.Address => query.AddOrderBy(filter, c => c.Address),
+            GetCandidatesSortBy.Skills => query.AddOrderBy(filter, c => c.Skills.Any() ? c.Skills.FirstOrDefault().Skill : null),
+            GetCandidatesSortBy.CreateAt => query.AddOrderBy(filter, c => c.CreatedAt),
+            GetCandidatesSortBy.Recruiter => query.AddOrderBy(filter, c => c.Recruiter),
+            GetCandidatesSortBy.Status => query.AddOrderBy(filter, c => c.ResidencyStatus),
+            GetCandidatesSortBy.Source => query.AddOrderBy(filter, c => c.Source),
+            _ => query.OrderByDescending(c => c.CreatedAt)
+        };
+        return ordered.ThenBy(c => c.Id);
     }
 
     public async Task<CandidateDetailModel> GetCandidateDetail(Guid id) =>
-        await _context.Candidates.Where(c => c.Id == id)
+        await Context.Candidates.Where(c => c.Id == id)
             .Select(c => new CandidateDetailModel
             {
                 Id = c.Id,
@@ -168,6 +153,24 @@ public class CandidateRepository : ICandidateRepository
                 Email = c.Email,
                 Address = c.Address,
                 PostalCode = c.PostalCode,
+                City = c.City == null ? null : new CityModel
+                {
+                    Id = c.City.Id,
+                    Value = c.City.Value,
+                    Code = c.City.Code,
+                    Province = new ProvinceModel
+                    {
+                        Id = c.City.Province.Id,
+                        Value = c.City.Province.Value,
+                        Code = c.City.Province.Code,
+                        Country = new CountryModel
+                        {
+                            Id = c.City.Province.Country.Id,
+                            Value = c.City.Province.Country.Value,
+                            Code = c.City.Province.Country.Code
+                        }
+                    }
+                },
                 Gender = c.Gender == null ? null : new BaseModel<Guid> { Id = c.Gender.Id, Value = c.Gender.Value },
                 HasVehicle = c.HasVehicle,
                 ResidencyStatus = c.ResidencyStatus,
@@ -177,67 +180,59 @@ public class CandidateRepository : ICandidateRepository
             }).SingleOrDefaultAsync();
 
     public Task<PhoneNumberModel> GetPhoneNumberDetail(Guid candidateId, Guid id) =>
-        _context.CandidatePhones.Where(c => c.CandidateId == candidateId && c.Id == id)
+        Context.CandidatePhones.Where(c => c.CandidateId == candidateId && c.Id == id)
             .Select(p => new PhoneNumberModel { Id = p.Id, PhoneNumber = p.PhoneNumber }).SingleOrDefaultAsync();
 
     public async Task<SkillModel> GetSkillDetail(Guid candidateId, Guid id) =>
-        await _context.CandidateSkills.Where(c => c.CandidateId == candidateId && c.Id == id)
+        await Context.CandidateSkills.Where(c => c.CandidateId == candidateId && c.Id == id)
             .Select(p => new SkillModel { Id = p.Id, Skill = p.Skill }).SingleOrDefaultAsync();
 
     public async Task<PaginatedList<CovenantFileModel>> GetDocuments(Guid candidateId, Pagination pagination) =>
-        await _context.CandidateDocuments.Where(c => c.CandidateId == candidateId)
+        await Context.CandidateDocuments.Where(c => c.CandidateId == candidateId)
             .Select(s => new CovenantFileModel
             {
                 Id = s.DocumentId,
                 FileName = s.Document.FileName,
                 Description = s.Document.Description,
                 PathFile = $"{filesConfiguration.FilesPath}{s.Document.FileName}"
-            }).ToPaginatedList(pagination);
+            }).OrderBy(d => d.FileName).ToPaginatedList(pagination);
 
     public async Task<NoteModel> GetNoteDetail(Guid candidateId, Guid id) =>
-        await _context.CandidateNotes.AsNoTracking()
+        await Context.CandidateNotes.AsNoTracking()
             .Where(c => c.CandidateId == candidateId && c.NoteId == id)
             .Include(c => c.Note)
             .Select(CandidateExtensionsMapping.SelectNote)
             .SingleOrDefaultAsync();
 
     public async Task<PaginatedList<NoteModel>> GetNotes(Guid candidateId, Pagination pagination) =>
-        await _context.CandidateNotes.AsNoTracking()
+        await Context.CandidateNotes.AsNoTracking()
             .Where(c => c.CandidateId == candidateId && !c.Note.IsDeleted)
             .Select(CandidateExtensionsMapping.SelectNote).OrderByDescending(c => c.CreatedAt)
             .ToPaginatedList(pagination);
 
-    public Task Update<T>(T entity) where T : class => Task.FromResult(_context.Set<T>().Update(entity));
-
-    public async Task Create<T>(T entity) where T : class => await _context.Set<T>().AddAsync(entity);
-
-    public void Delete<T>(T entity) where T : class => _context.Set<T>().Remove(entity);
-
-    public Task SaveChangesAsync() => _context.SaveChangesAsync();
-
     public Task<CandidateNote> GetNote(Guid candidateId, Guid id) =>
-        _context.CandidateNotes.Where(c => c.CandidateId == candidateId && c.NoteId == id)
+        Context.CandidateNotes.Where(c => c.CandidateId == candidateId && c.NoteId == id)
             .Include(c => c.Note).SingleOrDefaultAsync();
 
     public Task<CandidateDocument> GetDocument(Guid candidateId, Guid id) =>
-        _context.CandidateDocuments.SingleOrDefaultAsync(c => c.CandidateId == candidateId && c.DocumentId == id);
+        Context.CandidateDocuments.SingleOrDefaultAsync(c => c.CandidateId == candidateId && c.DocumentId == id);
 
     public async Task<Common.Entities.Candidate.Candidate> GetCandidate(Expression<Func<Common.Entities.Candidate.Candidate, bool>> expression)
     {
-        var candidate = await _context.Candidates
+        var candidate = await Context.Candidates
             .Include(c => c.Gender)
             .Include(c => c.PhoneNumbers)
             .Include(c => c.Skills)
             .Include(c => c.Documents).ThenInclude(d => d.Document)
             .Include(c => c.Notes).ThenInclude(n => n.Note)
-            .Include(c => c.Gender)
+            .Include(c => c.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .FirstOrDefaultAsync(expression);
         return candidate;
     }
 
     public async Task<bool> CandidatePhonesExists(IEnumerable<string> phone)
     {
-        return await _context.CandidatePhones.AnyAsync(cp => phone.Contains(cp.PhoneNumber));
+        return await Context.CandidatePhones.AnyAsync(cp => phone.Contains(cp.PhoneNumber));
     }
 
     public async Task BulkCandidates(IEnumerable<BulkCandidate> bulk)
@@ -247,23 +242,22 @@ public class CandidateRepository : ICandidateRepository
         var candidateSkills = bulk.SelectMany(c => c.CandidatesSkills).ToList();
         var candidateDocuments = bulk.Select(c => c.CandidatesDocument).ToList();
         var applicatnRequests = bulk.Select(c => c.RequestApplicant).ToList();
-        await _context.AddRangeAsync(candidates);
-        await _context.AddRangeAsync(candidatePhones);
+        await Context.AddRangeAsync(candidates);
+        await Context.AddRangeAsync(candidatePhones);
         if (candidateSkills.Any(cs => cs != null))
         {
-            await _context.AddRangeAsync(candidateSkills);
+            await Context.AddRangeAsync(candidateSkills);
         }
         if (candidateDocuments.Any(cd => cd != null))
         {
             var convenantFiles = candidateDocuments.Select(cd => cd.Document);
-            await _context.AddRangeAsync(convenantFiles);
-            await _context.AddRangeAsync(candidateDocuments);
+            await Context.AddRangeAsync(convenantFiles);
+            await Context.AddRangeAsync(candidateDocuments);
         }
         if (applicatnRequests.Any(ar => ar != null))
         {
-            await _context.AddRangeAsync(applicatnRequests);
+            await Context.AddRangeAsync(applicatnRequests);
         }
     }
 
-    public void Delete<T>(IEnumerable<T> entities) where T : class => _context.Set<T>().RemoveRange(entities);
 }

@@ -1,75 +1,99 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
-    <SigookGrid :fetch="getWorkerProfileTimeSheetHistory" v-model:params="serverParams" focusable
-      @update:loading="(value) => isLoading = value">
-      <b-table-column field="businessName" label="Company" v-slot="tableProps">
-        {{ tableProps.row.businessName }}
+    <SigookGrid ref="grid" :fetch="getWorkerProfileTimeSheetHistory" v-model:params="serverParams" :sort-map="sortMap"
+      focusable @update:loading="(value) => isLoading = value">
+      <b-table-column field="businessName" label="Company" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.companyName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="tableProps">{{ tableProps.row.businessName }}</template>
       </b-table-column>
-      <b-table-column field="numberId" label="Request" v-slot="tableProps">
-        {{ tableProps.row.numberId }}
-        <i class="fz-2 block"> {{ tableProps.row.jobTitle }}</i>
+      <b-table-column field="numberId" label="Request" sortable searchable>
+        <template v-slot:searchable>
+          <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+        </template>
+        <template v-slot="tableProps">
+          <router-link :to="{ path: requestBase + '/' + tableProps.row.requestId }">
+            {{ tableProps.row.numberId }}
+          </router-link>
+          <i class="fz-2 block">{{ tableProps.row.jobTitle }}</i>
+        </template>
       </b-table-column>
-      <b-table-column field="date" label="Date" v-slot="tableProps">
-        {{ dateMonth(tableProps.row.date) }} <i v-if="tableProps.row.isHoliday" class="holiday-text">Holiday</i>
+      <b-table-column field="date" label="Date" sortable searchable>
+        <template v-slot:searchable>
+          <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+            :icon-right="datesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
+            @icon-right-click="onDatesCleared" range v-model="datesSelected"
+            @update:modelValue="onDatesSelected" append-to-body>
+          </b-datepicker>
+        </template>
+        <template v-slot="tableProps">
+          {{ dateMonth(tableProps.row.date) }} <i v-if="tableProps.row.isHoliday" class="holiday-text">Holiday</i>
+        </template>
       </b-table-column>
       <b-table-column field="regularHours" label="Regular" v-slot="tableProps">
         {{ hour(tableProps.row.regularHours) }}
+        <i class="fz-2 block">Acc. {{ hour(tableProps.row.accumulatedRegularHours) }}</i>
       </b-table-column>
       <b-table-column field="holidayHours" label="Holiday" v-slot="tableProps">
-        {{ tableProps.row.holidayHours }}
+        {{ hour(tableProps.row.holidayHours) }}
+        <i class="fz-2 block">Acc. {{ hour(tableProps.row.accumulatedHolidayHours) }}</i>
       </b-table-column>
       <b-table-column field="overtimeHours" label="Overtime" v-slot="tableProps">
-        {{ tableProps.row.overtimeHours }}
+        {{ hour(tableProps.row.overtimeHours) }}
+        <i class="fz-2 block">Acc. {{ hour(tableProps.row.accumulatedOvertimeHours) }}</i>
       </b-table-column>
       <b-table-column field="missingHours" label="Missing" v-slot="tableProps">
-        {{ tableProps.row.missingHours }}
+        {{ hour(tableProps.row.missingHours) }}
+        <i class="fz-2 block">Acc. {{ hour(tableProps.row.accumulatedMissingHours) }}</i>
       </b-table-column>
       <b-table-column field="missingHoursOvertime" label="Missing Overtime" v-slot="tableProps">
-        {{ tableProps.row.missingHoursOvertime }}
+        {{ hour(tableProps.row.missingHoursOvertime) }}
+        <i class="fz-2 block">Acc. {{ hour(tableProps.row.accumulatedMissingHoursOvertime) }}</i>
       </b-table-column>
       <b-table-column field="totalHours" label="Total" v-slot="tableProps">
         {{ hour(tableProps.row.totalHours) }}
-      </b-table-column>
-      <b-table-column field="actions" v-slot="tableProps">
-        <b-tooltip type="is-light" :triggers="['click']" :auto-close="['outside', 'escape']"
-          @open="getAccumulated(tableProps.row)" @close="rowDetail = {}" append-to-body>
-          <template v-slot:content>
-            <div><strong>Regular: </strong>{{ rowDetail.regularHours }}</div>
-            <div><strong>Holiday: </strong>{{ rowDetail.holidayHours }}</div>
-            <div><strong>Overtime: </strong>{{ rowDetail.overtimeHours }}</div>
-            <div><strong>Missing: </strong>{{ rowDetail.missingHours }}</div>
-            <div><strong>Missing Overtime: </strong>{{ rowDetail.missingHoursOvertime }}</div>
-            <div><strong>Total: </strong>{{ rowDetail.totalHours }}</div>
-          </template>
-          <b-button type="is-info" outlined rounded label="Accumulated" />
-        </b-tooltip>
+        <i class="fz-2 block">Acc. {{ hour(tableProps.row.accumulatedTotalHours) }}</i>
       </b-table-column>
     </SigookGrid>
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
-import { showAlertError } from '@/shared/utils/toast';
+import { ref, useTemplateRef } from 'vue';
 import { dateMonth, hour } from '@/shared/format';
-import { getWorkerProfileTimeSheetHistory, getWorkerProfileTimeSheetHistoryAccumulated } from '@/modules/agency/recruiting/workers/api';
-import type { TimeSheetHistoryFilter, WorkerTimeSheetHistoryAccumulated } from '@/modules/agency/recruiting/workers/types';
-import type { GridParams } from '@/shared/types/common';
+import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
+import { getWorkerProfileTimeSheetHistory } from '@/modules/agency/recruiting/workers/api';
+import type { WorkerTimeSheetHistoryFilter } from '@/modules/agency/recruiting/workers/types';
+import type { GridHandle } from '@/shared/types/common';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
 const props = defineProps<{ workerId: string }>();
 
+const { requestBase } = useModuleBase();
+const grid = useTemplateRef<GridHandle>('grid');
+const sortMap = {
+  businessName: 0,
+  numberId: 1,
+  date: 2,
+};
+
 const isLoading = ref(false);
-const serverParams = ref<TimeSheetHistoryFilter & GridParams>({
+const datesSelected = ref<Date[]>([]);
+const serverParams = ref<WorkerTimeSheetHistoryFilter>({
   profileId: props.workerId,
-  sortBy: 3,
+  sortBy: 2,
   isDescending: true,
 });
-const rowDetail = ref<Partial<WorkerTimeSheetHistoryAccumulated>>({});
 
-function getAccumulated(row: { rowNumber: number }) {
-  getWorkerProfileTimeSheetHistoryAccumulated(props.workerId, row.rowNumber)
-    .then((response) => (rowDetail.value = response))
-    .catch((error) => showAlertError(error));
+function onDatesSelected() {
+  serverParams.value.dateFrom = datesSelected.value[0]?.toISOString() ?? null;
+  serverParams.value.dateTo = datesSelected.value[1]?.toISOString() ?? null;
+  grid.value?.search();
+}
+
+function onDatesCleared() {
+  datesSelected.value = [];
+  onDatesSelected();
 }
 </script>

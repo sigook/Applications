@@ -28,7 +28,7 @@ public class WorkerTimeSheetsApprovalControllerTest : BaseTestOrder, IClassFixtu
 
     public WorkerTimeSheetsApprovalControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
-    [Fact, TestOrder(1)]
+    [Fact]
     public async Task Get()
     {
         HttpResponseMessage response = await _client.GetAsync(_requestUri);
@@ -47,7 +47,7 @@ public class WorkerTimeSheetsApprovalControllerTest : BaseTestOrder, IClassFixtu
         Assert.Equal(Data.TimeSheet.TimeOutApproved, model.TimeOutApproved);
     }
 
-    [Fact, TestOrder(2)]
+    [Fact]
     public async Task Put()
     {
         var model = new TimeSheetModel
