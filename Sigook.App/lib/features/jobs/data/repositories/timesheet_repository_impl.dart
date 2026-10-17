@@ -20,7 +20,6 @@ class TimesheetRepositoryImpl implements TimesheetRepository {
 
   @override
   Future<Either<Failure, ClockType>> getClockType({
-    required DateTime date,
     required String requestId,
     required double latitude,
     required double longitude,
@@ -31,7 +30,6 @@ class TimesheetRepositoryImpl implements TimesheetRepository {
 
     try {
       final result = await remoteDataSource.getClockType(
-        date,
         requestId,
         latitude,
         longitude,

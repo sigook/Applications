@@ -10,7 +10,6 @@ import 'dart:convert';
 
 abstract class TimesheetRemoteDatasource {
   Future<ClockType> getClockType(
-    DateTime date,
     String requestId,
     double latitude,
     double longitude,
@@ -34,14 +33,13 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
 
   @override
   Future<ClockType> getClockType(
-    DateTime date,
     String requestId,
     double latitude,
     double longitude,
   ) async {
     try {
       final response = await apiClient.dio.get(
-        '/worker/requests/$requestId/TimeSheet/clock-type/$latitude/$longitude?date=${date.toIso8601String()}',
+        '/worker/requests/$requestId/TimeSheet/clock-type/$latitude/$longitude',
       );
       if (response.statusCode == 200) {
         return clockTypeFromInt(response.data);

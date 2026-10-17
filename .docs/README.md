@@ -24,6 +24,7 @@
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
 | [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every feature `api.ts` mapped to backend endpoints, types, and Pinia stores; live sales dashboard aggregates (§18) |
 | [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature (incl. sales dashboard layout), Pinia stores, global plumbing |
+| [SIGOOK_APP_STRUCTURE.md](./technical/SIGOOK_APP_STRUCTURE.md) | Sigook.App (Flutter worker app) — folder layout, feature anatomy, error-handling flow, core widget/service catalogue, environments, new-feature walkthrough |
 
 ---
 

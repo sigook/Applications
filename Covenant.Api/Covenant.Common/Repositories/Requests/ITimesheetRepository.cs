@@ -27,8 +27,7 @@ public interface ITimesheetRepository : IBaseRepository
     Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(Guid agencyId, TimesheetsReportFilter filter);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, DateTime startDate, DateTime endDate);
     Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition);
-    Task<TimeSheet> GetLatestTimesheet(Guid workerId, Guid requestId, DateTime from);
-    Task<TimeSheet> GetTimeSheeFromTheLast14Hours(Guid workerId, Guid requestId, DateTime now);
+    Task<TimeSheet> GetLatestTimesheet(Guid workerId, Guid requestId);
     Task<bool> TimesheetUsedByAccounting(Guid id);
     Task<List<RequestTimeSheetModel>> GetRequestTimeSheet(Guid requestId);
 }

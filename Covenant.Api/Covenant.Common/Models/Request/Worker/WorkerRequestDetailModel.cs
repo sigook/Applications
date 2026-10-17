@@ -32,6 +32,7 @@ public class WorkerRequestDetailModel
     public DateTime? FinishAt { get; set; }
     public string Location { get; set; }
     public LocationDetailModel JobLocation { get; set; }
+    public PunchCheckpointModel PunchCheckpoint { get; set; }
     public bool IsApplicant { get; set; }
     public bool PunchCardOptionEnabled { get; set; }
 }

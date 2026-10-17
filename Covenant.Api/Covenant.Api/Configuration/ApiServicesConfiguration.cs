@@ -136,7 +136,8 @@ public static class ApiServicesConfiguration
         services.AddSingleton<IMicrosoft365AccountService, Microsoft365AccountService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISendGridService, SendGridService>();
-        services.AddScoped<IPushNotifications, PushNotifications>();
+        services.AddScoped<IPushNotifications, PushNotificationPublisher>();
+        services.AddSingleton<IPushNotificationSender, FirebasePushNotificationSender>();
         services.AddScoped<ITeamsService, TeamsService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
@@ -144,7 +145,6 @@ public static class ApiServicesConfiguration
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<CompanyIdFilter>();
         services.AddScoped<AgencyIdFilter>();
-        services.AddScoped<AgencyPersonnelIdFilter>();
         services.AddScoped<CaptchaFilter>();
 
         // Shared calculation services
@@ -288,6 +288,7 @@ public static class ApiServicesConfiguration
             services.AddSingleton<IAzureServiceBusConsumer, RequestApplicantConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, BulkPayStubEmailConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, InvitationConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, PushNotificationConsumer>();
         }
 
         return services;

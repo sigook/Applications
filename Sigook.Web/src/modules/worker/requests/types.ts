@@ -35,6 +35,12 @@ export interface WorkerRequestListItem {
   durationTerm?: string;
 }
 
+export interface PunchCheckpoint {
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+}
+
 export interface WorkerRequestDetail extends WorkerRequestListItem {
   agencyLogo?: string;
   description?: string;
@@ -52,6 +58,7 @@ export interface WorkerRequestDetail extends WorkerRequestListItem {
   incentiveDescription?: string;
   requestStatus?: string;
   jobLocation?: LocationDetailModel | null;
+  punchCheckpoint?: PunchCheckpoint | null;
   isApplicant?: boolean;
   punchCardOptionEnabled?: boolean;
 }

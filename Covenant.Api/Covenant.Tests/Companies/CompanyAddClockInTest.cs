@@ -11,7 +11,6 @@ using Covenant.Core.BL.Services;
 using MediatR;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -55,7 +54,6 @@ public class CompanyAddClockInTest
             _timeSheetRepository.Object,
             Mock.Of<IRequestRepository>(),
             catalogRepository.Object,
-            Mock.Of<IConfiguration>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<IMediator>(),
             new TelemetryClient(new TelemetryConfiguration()));

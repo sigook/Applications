@@ -179,6 +179,20 @@ public class SalesService(
         return Result.Ok();
     }
 
+    public async Task<Result<SalesDashboardModel>> GetDashboard(GetDealsByStatusFilter filter)
+    {
+        var dealsByStatus = await GetDealsByStatus(filter);
+        if (!dealsByStatus) return Result.Fail<SalesDashboardModel>(dealsByStatus.Errors);
+        return Result.Ok(new SalesDashboardModel
+        {
+            Summary = await GetDashboardSummary(new GetSalesDashboardSummaryFilter { OwnerId = filter.OwnerId }),
+            DealsByStatus = dealsByStatus.Value,
+            RecentClients = await GetRecentClients(),
+            RecentInteractions = await GetRecentInteractions(),
+            RecentDeals = await GetRecentDeals()
+        });
+    }
+
     public async Task<Result<DealsByStatusModel>> GetDealsByStatus(GetDealsByStatusFilter filter)
     {
         var validationResult = await dealsByStatusValidator.ValidateAsync(filter);

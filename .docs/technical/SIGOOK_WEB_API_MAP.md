@@ -605,7 +605,8 @@ sales user always sees only their own rows, admin/superadmin see the whole agenc
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getDealsByStatus(filter)` | GET | `/api/agency/sales/dashboard/deals-by-status` | `DealsByStatusFilter` | `DealsByStatusModel` | Feeds the "Deals by status" column chart |
+| `getSalesDashboard(filter)` | GET | `/api/agency/sales/dashboard` | `DealsByStatusFilter` | `SalesDashboardModel` | Every card in one round trip: `summary`, `dealsByStatus` (driven by the filter), `recentClients`, `recentInteractions`, `recentDeals`. Page load and post-save refresh |
+| `getDealsByStatus(filter)` | GET | `/api/agency/sales/dashboard/deals-by-status` | `DealsByStatusFilter` | `DealsByStatusModel` | Feeds the "Deals by status" column chart when only the range/status filter changes |
 | `getSalesDashboardSummary()` | GET | `/api/agency/sales/dashboard/summary` | — | `SalesDashboardSummary` | Feeds the "This quarter" meters and the header period label |
 | `getRecentClients()` | GET | `/api/agency/sales/dashboard/recent-clients` | — | `SalesRecentClient[]` | Feeds the "Clients" card: the 10 clients with the most recent interaction, newest first; no `ownerId` param |
 | `getRecentInteractions()` | GET | `/api/agency/sales/dashboard/recent-interactions` | — | `CompanyInteraction[]` | Feeds the "Log Interactions" card: the 6 newest interactions across all clients; no `ownerId` param |
@@ -618,7 +619,7 @@ both or none; the current UTC month when omitted; 400 when `dateTo` precedes `da
 
 **Types** (`src/modules/agency/sales/dashboard/types.ts`): `SalesPeriodRange`, `DealStatusSummary`,
 `InteractionTypeSummary`, `DealsByStatusFilter`, `DealsByStatusModel`, `SalesDashboardSummary`, `SalesRecentClient`,
-`SalesBarPoint`, `SalesMeter`. Enum fields travel as numeric values.
+`SalesDashboardModel`, `SalesBarPoint`, `SalesMeter`. Enum fields travel as numeric values.
 
 **UI:** `pages/agency/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions:
 `.docs/business/SALES_MODULE.md`.
@@ -626,6 +627,15 @@ both or none; the current UTC month when omitted; 400 when `dateTo` precedes `da
 ### Response shape
 
 ```jsonc
+// GET /api/agency/sales/dashboard?dateFrom=2026-09-06&dateTo=2026-09-12
+{
+  "summary": { /* same as /summary */ },
+  "dealsByStatus": { /* same as /deals-by-status for the given range */ },
+  "recentClients": [ /* same as /recent-clients */ ],
+  "recentInteractions": [ /* same as /recent-interactions */ ],
+  "recentDeals": [ /* same as /recent-deals */ ]
+}
+
 // GET /api/agency/sales/dashboard/deals-by-status?dateFrom=2026-09-06&dateTo=2026-09-12
 {
   "period": { "from": "2026-09-06T00:00:00", "to": "2026-09-12T00:00:00",
@@ -658,20 +668,19 @@ requested `dateFrom`/`dateTo` (or the current UTC month) through `SalesService.G
 ### Refresh behavior
 
 ```
-Dashboard.vue onMounted
-├─ getSalesDashboardSummary()      → GET .../dashboard/summary               [LIVE]
-├─ getDealsByStatus({dateFrom, dateTo}) → GET .../dashboard/deals-by-status  [LIVE]
-├─ getRecentInteractions()         → GET .../dashboard/recent-interactions   [LIVE]
-├─ getRecentClients()              → GET .../dashboard/recent-clients        [LIVE]
-├─ getRecentDeals()                → GET .../dashboard/recent-deals          [LIVE]
-└─ useCurrentAgent.loadAgentName() → GET /api/agency/profile/personnel                 [LIVE]
+Dashboard.vue onMounted (full-page b-loading until both settle)
+├─ getSalesDashboard({dateFrom, dateTo}) → GET .../dashboard                 [LIVE]  one call, all five cards
+└─ useCurrentAgent.loadAgentName()       → GET /api/agency/profile/personnel [LIVE]
 
 date range change / status filter change → getDealsByStatus() only
-{Interaction,Deal,Client,ClientInteractions}Modal @saved → onSaved → all five data loaders re-run
+{Interaction,Deal,Client,ClientInteractions}Modal @saved → onSaved → getSalesDashboard() again
+  (no full-page overlay; a list that is empty shows an inline spinner instead of its empty text)
 ```
 
-The whole dashboard is live; nothing is cached and there is no static JSON left. `loadDealsByStatus`
-carries a request counter so a fast tab switch cannot render a stale response.
+The whole dashboard is live; nothing is cached and there is no static JSON left. Each dashboard
+request runs the agency/personnel action filters once, so one aggregate call replaces five rounds of
+them. `loadDealsByStatus` and `loadDashboard` share a request counter so a fast range or status change
+cannot render a stale deals-by-status block. The five per-card endpoints remain for direct use.
 
 **Known limits:**
 - An unbindable `period` (e.g. `?period=99`) falls back to the default week rather than returning 400 —
@@ -750,7 +759,7 @@ Public landing site endpoints (no auth).
 |----------|------------|----------|--------------|---------------|-------|
 | `workerRegisterTime(requestId, lat, lon)` | POST | `/api/worker/requests/{requestId}/timesheet` | `{ latitude, longitude }` | `void` | Clock-in with GPS |
 | `workerGetTimeSheet(requestId)` | GET | `/api/worker/requests/{requestId}/timesheet` | — | `WorkerTimeSheetItem[]` | |
-| `getClockType(requestId, latitude, longitude, date)` | GET | `/api/worker/requests/{requestId}/timesheet/clock-type/{latitude}/{longitude}` | `date` (param) | `ClockType` (enum, `src/constants/enums`) | Can clock in/out? Coordinates resolve the time zone |
+| `getClockType(requestId, latitude, longitude)` | GET | `/api/worker/requests/{requestId}/timesheet/clock-type/{latitude}/{longitude}` | — | `ClockType` (enum, `src/constants/enums`) | Next punch: ClockOut while the latest punch is open and under 14 h, ClockIn otherwise. Coordinates resolve the time zone |
 
 ### Comments
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |

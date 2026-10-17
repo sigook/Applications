@@ -12,7 +12,6 @@ class GetClockType implements UseCase<ClockType, GetClockTypeParams> {
   @override
   Future<Either<Failure, ClockType>> call(GetClockTypeParams params) async {
     return await repository.getClockType(
-      date: params.date,
       requestId: params.requestId,
       latitude: params.latitude,
       longitude: params.longitude,
@@ -21,13 +20,11 @@ class GetClockType implements UseCase<ClockType, GetClockTypeParams> {
 }
 
 class GetClockTypeParams {
-  final DateTime date;
   final String requestId;
   final double latitude;
   final double longitude;
 
   GetClockTypeParams({
-    required this.date,
     required this.requestId,
     required this.latitude,
     required this.longitude,

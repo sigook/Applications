@@ -1,5 +1,5 @@
 <template>
-  <dashboard-list :is-empty="!items.length">
+  <dashboard-list :is-empty="!items.length" :loading="loading">
     <dashboard-list-row
       v-for="item in items"
       :key="item.id"
@@ -30,10 +30,14 @@ import { INTERACTION_TYPE_ICONS, INTERACTION_TYPE_LABELS } from '@/modules/agenc
 import type { CompanyInteraction } from '@/modules/agency/sales/clients/types';
 import { relativeTime } from '@/modules/agency/sales/dashboard/format';
 
-defineProps<{
-  items: readonly CompanyInteraction[];
-  asOf: string;
-}>();
+withDefaults(
+  defineProps<{
+    items: readonly CompanyInteraction[];
+    asOf: string;
+    loading?: boolean;
+  }>(),
+  { loading: false }
+);
 
 const emit = defineEmits<{ (e: 'edit', interaction: CompanyInteraction): void }>();
 </script>

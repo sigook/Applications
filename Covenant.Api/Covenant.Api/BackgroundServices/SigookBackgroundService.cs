@@ -105,6 +105,7 @@ public class SigookBackgroundService(
         await client.CreateQueueIfNotExistsAsync(busConfiguration.ValidateCandidateQueue);
         await client.CreateQueueIfNotExistsAsync(busConfiguration.BulkPayStubEmailQueue);
         await client.CreateQueueIfNotExistsAsync(busConfiguration.InvitationQueue);
+        await client.CreateQueueIfNotExistsAsync(busConfiguration.PushNotificationQueue);
         await client.CreateTopicIfNotExistsAsync(busConfiguration.CreateApplicantTopic);
         await client.CreateSubscriptionIfNotExistsAsync(busConfiguration.CreateApplicantTopic, TopicSubscription.TeamsNotification);
         await client.CreateSubscriptionIfNotExistsAsync(busConfiguration.CreateApplicantTopic, TopicSubscription.RequestApplicantNotification);

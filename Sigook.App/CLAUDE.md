@@ -21,6 +21,8 @@ lib/
     ├── history/                   Worker assignment history
     ├── jobs/                      Job listing, details, apply, timesheets
     ├── profile/                   Worker profile — split into sub-features (see below)
+    ├── comments/                  Agency comments on the worker (read-only section)
+    ├── legal/                     Terms and privacy policy pages
     ├── registration/              Multi-step worker registration form
     ├── app_update/                Forced-update gate: GET /mobileapp/version, blocks the whole UI (MyApp builder) when the build is below MinimumVersion; re-checks on resume
     ├── about/                     Static info page

@@ -1,5 +1,6 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;
@@ -529,6 +530,24 @@ public class WorkerService(
             CandidateId = candidate.Id
         });
     }
+
+    public async Task<WorkerRequestDetailModel> GetRequestDetail(Guid requestId)
+    {
+        var detail = await requestRepository.GetRequestDetailForWorker(currentUserService.GetUserId(), requestId);
+        if (detail is null) return null;
+        detail.PunchCheckpoint = PunchCheckpoint(detail.JobLocation);
+        return detail;
+    }
+
+    private static PunchCheckpointModel PunchCheckpoint(LocationDetailModel location) =>
+        location is { Latitude: double latitude, Longitude: double longitude }
+            ? new PunchCheckpointModel
+            {
+                Latitude = latitude,
+                Longitude = longitude,
+                RadiusMeters = CovenantConstants.Punch.CheckpointRadiusMeters
+            }
+            : null;
 
     private static Result<RequestApplicantDetailModel> AlreadyApplied() =>
         Result.Fail<RequestApplicantDetailModel>("You already apply to this request");

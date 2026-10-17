@@ -102,7 +102,8 @@ Landing page of the module (`/sales/dashboard`, reached from the sidebar — sig
 
 ### KPI definitions
 
-Served live by `GET api/agency/sales/dashboard/*` (see `.docs/technical/SIGOOK_WEB_API_MAP.md` §18).
+Served live by `GET api/agency/sales/dashboard` (every card in one response) and the per-card
+`GET api/agency/sales/dashboard/*` endpoints (see `.docs/technical/SIGOOK_WEB_API_MAP.md` §18).
 
 | KPI | Definition |
 |-----|------------|

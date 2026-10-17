@@ -14,10 +14,21 @@ namespace Covenant.Api.Controllers.Agency.Sales;
 [Produces("application/json")]
 [Authorize(Policy = PolicyConfiguration.Sales)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-[ServiceFilter(typeof(AgencyPersonnelIdFilter))]
 public class DashboardController(ISalesService salesService) : ControllerBase
 {
     public const string RouteName = "api/agency/sales/dashboard";
+
+    /// <summary>Gets the whole dashboard in one call: quarter/week summary, deals per status for the date range, and the recent clients, interactions and deals. Sales users only see what they own.</summary>
+    /// <param name="filter">Inclusive date range for the deals-by-status block (both dates or none), optional statuses and owner.</param>
+    [HttpGet]
+    [ProducesResponseType(typeof(SalesDashboardModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetDashboard([FromQuery] GetDealsByStatusFilter filter)
+    {
+        var result = await salesService.GetDashboard(filter);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok(result.Value);
+    }
 
     /// <summary>Gets the deal count and total value per status for a date range (current month when omitted). Sales users only see the deals they own.</summary>
     /// <param name="filter">Inclusive date range (both dates or none), optional statuses and owner.</param>

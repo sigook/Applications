@@ -19,7 +19,7 @@
       </b-tab-item>
       <b-tab-item v-if="request.punchCardOptionEnabled" label="Punch Card" value="Punch Card">
         <PunchCard v-if="visitedTabs.includes('Punch Card') && timesheet" :requestId="request.id" :timesheet="timesheet"
-          :request="request" @refreshTimeSheet="getTimeSheet" />
+          :request="request" @refreshTimeSheet="getTimeSheet" @refreshRequest="refreshRequest" />
       </b-tab-item>
       <b-tab-item v-if="request.punchCardOptionEnabled" label="Time Sheet" value="Time Sheet">
         <TimeSheet v-if="visitedTabs.includes('Time Sheet')" :data="timesheet" />
@@ -67,6 +67,14 @@ function getTimeSheet() {
     .catch(() => {
       isLoading.value = false;
     });
+}
+
+function refreshRequest() {
+  getWorkerRequest(route.params.id as string)
+    .then((response) => {
+      request.value = response;
+    })
+    .catch(() => undefined);
 }
 
 function getWorkerRequestFn() {

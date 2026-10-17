@@ -55,17 +55,16 @@ public class TimeSheetsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the next expected clock type (clock-in or clock-out) for a request.
+    /// Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, clock-in otherwise.
     /// </summary>
     /// <param name="requestId">Identifier of the request.</param>
     /// <param name="latitude">Current latitude of the worker.</param>
     /// <param name="longitude">Current longitude of the worker.</param>
-    /// <param name="date">Optional date to evaluate the clock type for.</param>
     [HttpGet("clock-type/{latitude:double}/{longitude:double}")]
     [ProducesResponseType(typeof(ClockType), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromRoute] double latitude, [FromRoute] double longitude, [FromQuery] DateTime? date)
+    public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromRoute] double latitude, [FromRoute] double longitude)
     {
-        var result = await timesheetService.GetClockType(requestId, latitude, longitude, date);
+        var result = await timesheetService.GetClockType(requestId, latitude, longitude);
         return Ok(result.Value);
     }
 }

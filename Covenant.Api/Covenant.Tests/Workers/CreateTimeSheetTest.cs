@@ -13,7 +13,6 @@ using Covenant.Core.BL.Services;
 using MediatR;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -58,7 +57,6 @@ public class CreateTimeSheetTest
             _timeSheetRepository.Object,
             Mock.Of<IRequestRepository>(),
             catalogRepository.Object,
-            Mock.Of<IConfiguration>(),
             currentUserService.Object,
             Mock.Of<IMediator>(),
             new TelemetryClient(new TelemetryConfiguration()));

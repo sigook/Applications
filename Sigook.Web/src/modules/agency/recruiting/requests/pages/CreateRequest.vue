@@ -281,7 +281,7 @@ import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { useAdmin } from '@/shared/composables/useAdmin';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import { createAgencyCompanyLocation, getAgencyCompanyJobPositions, getAgencyCompanyLocation } from '@/modules/agency/recruiting/clients/api';
-import { postAgencyRequest, updateAgencyRequest, duplicateAgencyRequest } from '@/modules/agency/recruiting/requests/api';
+import { postAgencyRequest, updateAgencyRequest, duplicateAgencyRequest, getAgencyRequestLookup } from '@/modules/agency/recruiting/requests/api';
 import {
   DurationTerm,
   DurationTermLabels,
@@ -403,15 +403,14 @@ const errorMessage = 'Please make sure all required fields are filled out correc
 const showRolesModal = ref(false);
 const showLocationModal = ref(false);
 const showComplianceModal = ref(false);
-const lookup = (route.meta as Record<string, unknown>).requestLookup as AgencyRequestLookup;
-const sourceRequest = lookup.request;
-const isDuplicate = ref(!!(route.meta as Record<string, unknown>).isDuplicate && !!sourceRequest);
-const isUpdate = ref(!!sourceRequest && !isDuplicate.value);
+const sourceRequest = ref<AgencyRequestDetail | null>(null);
+const isDuplicate = computed(() => !!(route.meta as Record<string, unknown>).isDuplicate && !!sourceRequest.value);
+const isUpdate = computed(() => !!sourceRequest.value && !isDuplicate.value);
 const companyUserTagInput = ref<InstanceType<typeof BTaginput> | null>(null);
 
 const pageTitle = computed(() => {
   if (isUpdate.value) return `Update Request (${request.value.numberId})`;
-  if (isDuplicate.value) return `Duplicate Request (from ${sourceRequest?.numberId})`;
+  if (isDuplicate.value) return `Duplicate Request (from ${sourceRequest.value?.numberId})`;
   return 'Create Request';
 });
 
@@ -502,14 +501,25 @@ const clearedOnDuplicate = {
   finishAt: null,
 };
 
-(() => {
+async function init(): Promise<void> {
+  isLoading.value = true;
+  let lookup: AgencyRequestLookup;
+  try {
+    lookup = await getAgencyRequestLookup(companyProfileId.value, route.params.requestId as string | undefined);
+  } catch (error) {
+    showAlertError(error);
+    return;
+  } finally {
+    isLoading.value = false;
+  }
   companyJobPositions.value = lookup.jobPositions;
   locations.value = lookup.locations;
   salesRepresentatives.value = lookup.personnel;
   companyUsers.value = lookup.companyUsers;
-  if (!sourceRequest) return;
+  sourceRequest.value = lookup.request;
+  if (!lookup.request) return;
 
-  const agencyRequest = sourceRequest;
+  const agencyRequest = lookup.request;
   request.value = {
     ...agencyRequest,
     durationBreak: agencyRequest.breakIsPaid ? dayjs(`${dayjs().format('YYYY-MM-DD')}T${agencyRequest.durationBreak}`).toDate() : dayjs().startOf('day').toDate(),
@@ -564,7 +574,8 @@ const clearedOnDuplicate = {
     incentiveDescription: agencyRequest.incentiveDescription,
     startAt: isDuplicate.value ? null : new Date(agencyRequest.startAt as string),
   });
-})();
+}
+init();
 
 function onJobPositionSelected(option: AgencyCompanyJobPosition | null) {
   jobPositionSelected.value = option;
@@ -653,8 +664,8 @@ function onSubmit() {
 
 function createRequest(payload: CreateAgencyRequestModel) {
   isLoading.value = true;
-  const create = isDuplicate.value && sourceRequest
-    ? duplicateAgencyRequest(sourceRequest.id, payload)
+  const create = isDuplicate.value && sourceRequest.value
+    ? duplicateAgencyRequest(sourceRequest.value.id, payload)
     : postAgencyRequest(payload);
   create
     .then((response: AgencyRequestDetail) => {

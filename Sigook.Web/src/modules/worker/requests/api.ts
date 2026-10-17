@@ -29,13 +29,6 @@ export function workerGetTimeSheet(requestId: string): Promise<PaginatedList<Wor
   return api.get<PaginatedList<WorkerTimeSheetItem>>(`/api/worker/requests/${requestId}/TimeSheet`);
 }
 
-export function getClockType(
-  requestId: string,
-  latitude: number,
-  longitude: number,
-  date: string
-): Promise<ClockType> {
-  return api.get<ClockType>(`/api/worker/requests/${requestId}/TimeSheet/clock-type/${latitude}/${longitude}`, {
-    params: { date }
-  });
+export function getClockType(requestId: string, latitude: number, longitude: number): Promise<ClockType> {
+  return api.get<ClockType>(`/api/worker/requests/${requestId}/TimeSheet/clock-type/${latitude}/${longitude}`);
 }

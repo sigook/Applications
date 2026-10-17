@@ -1,5 +1,5 @@
 <template>
-  <dashboard-list :is-empty="!items.length">
+  <dashboard-list :is-empty="!items.length" :loading="loading">
     <dashboard-list-row
       v-for="item in items"
       :key="item.id"
@@ -39,9 +39,13 @@ import { DEAL_STATUS_LABELS } from '@/modules/agency/sales/clients/types';
 import type { Deal } from '@/modules/agency/sales/clients/types';
 import { compactMoney } from '@/modules/agency/sales/dashboard/format';
 
-defineProps<{
-  items: readonly Deal[];
-}>();
+withDefaults(
+  defineProps<{
+    items: readonly Deal[];
+    loading?: boolean;
+  }>(),
+  { loading: false }
+);
 
 const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
 </script>

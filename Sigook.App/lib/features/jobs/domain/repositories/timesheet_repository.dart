@@ -6,7 +6,6 @@ import 'package:sigook_app_flutter/features/jobs/domain/entities/paginated_times
 
 abstract class TimesheetRepository {
   Future<Either<Failure, ClockType>> getClockType({
-    required DateTime date,
     required String requestId,
     required double latitude,
     required double longitude,

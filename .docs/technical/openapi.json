@@ -154,7 +154,7 @@
         "tags": [
           "TimeSheets"
         ],
-        "summary": "Gets the next expected clock type (clock-in or clock-out) for a request.",
+        "summary": "Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, clock-in otherwise.",
         "parameters": [
           {
             "name": "requestId",
@@ -181,14 +181,6 @@
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/System.Double"
-            }
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "description": "Optional date to evaluate the clock type for.",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
             }
           }
         ],
@@ -6800,6 +6792,75 @@
                 }
               },
               "application/json": { }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/sales/dashboard": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Gets the whole dashboard in one call: quarter/week summary, deals per status for the date range, and the recent clients, interactions and deals. Sales users only see what they own.",
+        "parameters": [
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.DealStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Sales.Dashboard.SalesDashboardModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
             }
           },
           "500": {
@@ -30380,6 +30441,20 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.Worker.PunchCheckpointModel": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "longitude": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "radiusMeters": {
+            "$ref": "#/components/schemas/System.Double"
+          }
+        }
+      },
       "Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel": {
         "type": "object",
         "properties": {
@@ -30519,6 +30594,9 @@
           },
           "jobLocation": {
             "$ref": "#/components/schemas/Covenant.Common.Models.Location.LocationDetailModel"
+          },
+          "punchCheckpoint": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.PunchCheckpointModel"
           },
           "isApplicant": {
             "$ref": "#/components/schemas/System.Boolean"
@@ -30720,6 +30798,26 @@
           },
           "lastInteractionAt": {
             "$ref": "#/components/schemas/System.DateTime"
+          }
+        }
+      },
+      "Covenant.Common.Models.Sales.Dashboard.SalesDashboardModel": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Sales.Dashboard.SalesDashboardSummaryModel"
+          },
+          "dealsByStatus": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Sales.Dashboard.DealsByStatusModel"
+          },
+          "recentClients": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Sales.Dashboard.RecentClientModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "recentInteractions": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Sales.CompanyInteractionListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "recentDeals": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Sales.DealListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
           }
         }
       },

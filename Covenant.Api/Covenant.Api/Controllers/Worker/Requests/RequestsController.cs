@@ -47,7 +47,7 @@ public class RequestsController : ControllerBase
     [ProducesResponseType(typeof(WorkerRequestDetailModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id) =>
-        this.GetByIdResult(await _requestRepository.GetRequestDetailForWorker(User.GetUserId(), id));
+        this.GetByIdResult(await workerService.GetRequestDetail(id));
 
     /// <summary>
     /// Applies the authenticated worker to a request.

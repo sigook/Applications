@@ -296,7 +296,8 @@ Scripts/          raw SQL run at startup by DatabaseScriptRunner (copied to the 
                   staging/production) when added with `git add -f`; the integration test
                   exercises the runner with a temporary script instead of a real one
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
-                  (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
+                  (Google Maps), PushNotificationPublisher (IPushNotifications → `PushNotificationQueue`
+                  on Service Bus) + FirebasePushNotificationSender (IPushNotificationSender, FCM), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
                   UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
                   accountEnabled check), CraPdfParser (PdfPig reader for the CRA
@@ -358,14 +359,16 @@ applies pending EF migrations for `MyKeysContext`, `CovenantContext` and (when
 `Covenant.Infrastructure/Scripts/`, seeds the 7 roles, runs `OpenIddictSeeder` (the
 `api1`/`roles` scopes, the Sigook.Functions confidential client, and the `sigook.com`/`android`
 public clients in Development), creates queues/topics/subscriptions if missing
-(`ValidateCandidateQueue`, `BulkPayStubEmailQueue`, `InvitationQueue`, `CreateApplicantTopic`
-with Teams/Email/RequestApplicant subscriptions), then calls `OnInit()` on every registered
-consumer.
+(`ValidateCandidateQueue`, `BulkPayStubEmailQueue`, `InvitationQueue`, `PushNotificationQueue`,
+`CreateApplicantTopic` with Teams/Email/RequestApplicant subscriptions), then calls `OnInit()` on
+every registered consumer.
 
-Consumers live in `Covenant.Core.BL/Consumers/`; exactly **5** are registered as
+Consumers live in `Covenant.Core.BL/Consumers/`; exactly **6** are registered as
 `IAzureServiceBusConsumer` singletons in `AddAzureServiceBusConsumer`
 (`ApiServicesConfiguration.cs`): `NewCandidateConsumer`, `TeamsConsumer`,
-`RequestApplicantConsumer`, `BulkPayStubEmailConsumer`, `InvitationConsumer`.
+`RequestApplicantConsumer`, `BulkPayStubEmailConsumer`, `InvitationConsumer`,
+`PushNotificationConsumer` (the "Job Alert" FCM push of a new request: `RequestService.CreateRequest`
+only publishes to the queue, so the HTTP response never waits on Firebase).
 
 Local development connects to the **staging** Service Bus — inject `ISigookBusClient` (mockable)
 rather than constructing clients directly.
@@ -462,10 +465,11 @@ rather than constructing clients directly.
 
 Claims are injected per-request by action filters in `Covenant.Api/Authorization/`:
 
-- `AgencyIdFilter` — resolves the caller's `agencyId` (and all `agencyIds`) claim for agency
-  staff; repositories filter with it.
-- `AgencyPersonnelIdFilter` — resolves the caller's `agencyPersonnelId` claim (read via
-  `GetAgencyPersonnelId()` in `Covenant.Common/Utils/Extensions/PrincipalExtensions.cs`).
+- `AgencyIdFilter` — resolves the caller's `agencyId`, `agencyIds` (master agency + children) and
+  `agencyPersonnelId` claims for agency staff in one pass (`IAgencyRepository.GetAgencyContextForUser`,
+  two queries), replacing whatever the token carried; repositories filter with them. Read via
+  `GetAgencyId()` / `GetAgencyIds()` / `GetAgencyPersonnelId()` in
+  `Covenant.Common/Utils/Extensions/PrincipalExtensions.cs`.
 - `CompanyIdFilter` — same idea for company users.
 
 Scoping rules:

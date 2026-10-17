@@ -11,7 +11,6 @@ void main() {
   late MockTimesheetRepository mockRepo;
   late GetClockType usecase;
 
-  final tDate = DateTime(2024, 6, 15);
   const tRequestId = 'req-001';
   const tLatitude = 43.6532;
   const tLongitude = -79.3832;
@@ -23,7 +22,6 @@ void main() {
 
   test('returns ClockType.clockIn when worker can clock in', () async {
     when(() => mockRepo.getClockType(
-          date: tDate,
           requestId: tRequestId,
           latitude: tLatitude,
           longitude: tLongitude,
@@ -31,7 +29,6 @@ void main() {
 
     final result = await usecase(
       GetClockTypeParams(
-        date: tDate,
         requestId: tRequestId,
         latitude: tLatitude,
         longitude: tLongitude,
@@ -43,7 +40,6 @@ void main() {
 
   test('returns ClockType.clockOut when worker must clock out', () async {
     when(() => mockRepo.getClockType(
-          date: any(named: 'date'),
           requestId: any(named: 'requestId'),
           latitude: any(named: 'latitude'),
           longitude: any(named: 'longitude'),
@@ -51,7 +47,6 @@ void main() {
 
     final result = await usecase(
       GetClockTypeParams(
-        date: tDate,
         requestId: tRequestId,
         latitude: tLatitude,
         longitude: tLongitude,
@@ -61,9 +56,8 @@ void main() {
     expect(result, const Right(ClockType.clockOut));
   });
 
-  test('passes date, requestId and location to repository', () async {
+  test('passes requestId and location to repository', () async {
     when(() => mockRepo.getClockType(
-          date: tDate,
           requestId: tRequestId,
           latitude: tLatitude,
           longitude: tLongitude,
@@ -71,7 +65,6 @@ void main() {
 
     await usecase(
       GetClockTypeParams(
-        date: tDate,
         requestId: tRequestId,
         latitude: tLatitude,
         longitude: tLongitude,
@@ -79,7 +72,6 @@ void main() {
     );
 
     verify(() => mockRepo.getClockType(
-          date: tDate,
           requestId: tRequestId,
           latitude: tLatitude,
           longitude: tLongitude,
@@ -89,7 +81,6 @@ void main() {
   test('returns ServerFailure when repository fails', () async {
     const failure = ServerFailure(message: 'timesheet error');
     when(() => mockRepo.getClockType(
-          date: any(named: 'date'),
           requestId: any(named: 'requestId'),
           latitude: any(named: 'latitude'),
           longitude: any(named: 'longitude'),
@@ -97,7 +88,6 @@ void main() {
 
     final result = await usecase(
       GetClockTypeParams(
-        date: tDate,
         requestId: tRequestId,
         latitude: tLatitude,
         longitude: tLongitude,

@@ -24,7 +24,8 @@ class JobPage extends ConsumerStatefulWidget {
   ConsumerState<JobPage> createState() => _JobPageState();
 }
 
-class _JobPageState extends ConsumerState<JobPage> {
+class _JobPageState extends ConsumerState<JobPage>
+    with WidgetsBindingObserver {
   JobDetails? _jobDetails;
   bool _isLoading = true;
   String? _error;
@@ -32,7 +33,32 @@ class _JobPageState extends ConsumerState<JobPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadJobDetails();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _jobDetails != null) {
+      _refreshJobDetails();
+    }
+  }
+
+  Future<void> _refreshJobDetails() async {
+    final useCase = ref.read(getJobDetailsUseCaseProvider);
+    final result = await useCase(GetJobDetailsParams(jobId: widget.jobId));
+    if (!mounted) return;
+    result.fold((_) {}, (jobDetails) {
+      setState(() {
+        _jobDetails = jobDetails;
+      });
+    });
   }
 
   Future<void> _loadJobDetails() async {
@@ -117,114 +143,113 @@ class _JobPageState extends ConsumerState<JobPage> {
       length: tabCount,
       child: Scaffold(
         backgroundColor: AppTheme.surfaceGrey,
-        body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                title: const NavbarLogo(),
-                expandedHeight: 100,
-                pinned: true,
-                backgroundColor: AppTheme.secondaryRed,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    notifyLogoFlash();
-                    Navigator.of(context).pop();
-                  },
-                ),
-                actions: [
-                  Builder(
-                    builder: (context) => IconButton(
-                      icon: const Icon(Icons.menu, color: Colors.white),
-                      onPressed: () {
-                        notifyLogoFlash();
-                        Scaffold.of(context).openEndDrawer();
-                      },
-                    ),
+        appBar: AppBar(
+          title: const NavbarLogo(),
+          backgroundColor: AppTheme.secondaryRed,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              notifyLogoFlash();
+              Navigator.of(context).pop();
+            },
+          ),
+          actions: [
+            Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () {
+                  notifyLogoFlash();
+                  Scaffold.of(context).openEndDrawer();
+                },
+              ),
+            ),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(60),
+            child: Container(
+              color: Colors.white,
+              child: TabBar(
+                indicator: UnderlineTabIndicator(
+                  borderSide: const BorderSide(
+                    color: AppTheme.primaryBlue,
+                    width: 3,
                   ),
-                ],
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(60),
-                  child: Container(
-                    color: Colors.white,
-                    child: TabBar(
-                      indicator: UnderlineTabIndicator(
-                        borderSide: const BorderSide(
-                          color: AppTheme.primaryBlue,
-                          width: 3,
-                        ),
-                        insets: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      labelColor: AppTheme.primaryBlue,
-                      unselectedLabelColor: Colors.grey.shade600,
-                      labelStyle: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.8,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                      tabs: [
-                        Tab(
-                          height: 60,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.work_outline, size: 24),
-                              const SizedBox(height: 4),
-                              const Text('JOB'),
-                            ],
-                          ),
-                        ),
-                        if (showTimesheetPunchcard) ...[
-                          Tab(
-                            height: 60,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.access_time, size: 24),
-                                const SizedBox(height: 4),
-                                const Text('PUNCH'),
-                              ],
-                            ),
-                          ),
-                          Tab(
-                            height: 60,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.receipt_long, size: 24),
-                                const SizedBox(height: 4),
-                                const Text('TIMESHEET'),
-                              ],
-                            ),
-                          ),
-                        ],
+                  insets: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                labelColor: AppTheme.primaryBlue,
+                unselectedLabelColor: Colors.grey.shade600,
+                labelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.5,
+                ),
+                tabs: [
+                  Tab(
+                    height: 60,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.work_outline, size: 24),
+                        const SizedBox(height: 4),
+                        const Text('JOB'),
                       ],
                     ),
                   ),
-                ),
+                  if (showTimesheetPunchcard) ...[
+                    Tab(
+                      height: 60,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.access_time, size: 24),
+                          const SizedBox(height: 4),
+                          const Text('PUNCH'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      height: 60,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.receipt_long, size: 24),
+                          const SizedBox(height: 4),
+                          const Text('TIMESHEET'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ];
-          },
-          body: TabBarView(
-            children: [
-              JobDetailsTab(
-                jobDetails: jobDetails,
-                isFromHistory: widget.isFromHistory,
-                onApplySuccess: () {
-                  context.go(AppRoutes.jobs);
-                },
-              ),
-              if (showTimesheetPunchcard) ...[
-                PunchCardTab(jobId: widget.jobId),
-                TimesheetTab(jobId: widget.jobId),
-              ],
-            ],
+            ),
           ),
+        ),
+        body: TabBarView(
+          children: [
+            JobDetailsTab(
+              jobDetails: jobDetails,
+              isFromHistory: widget.isFromHistory,
+              onApplySuccess: () {
+                context.go(AppRoutes.jobs);
+              },
+            ),
+            if (showTimesheetPunchcard) ...[
+              PunchCardTab(
+                jobId: widget.jobId,
+                jobNumberId: jobDetails.numberId,
+                checkpointLatitude: jobDetails.checkpointLatitude,
+                checkpointLongitude: jobDetails.checkpointLongitude,
+                checkpointRadiusMeters: jobDetails.checkpointRadiusMeters,
+                onRefreshCheckpoint: _refreshJobDetails,
+              ),
+              TimesheetTab(jobId: widget.jobId),
+            ],
+          ],
         ),
         endDrawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       ),

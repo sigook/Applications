@@ -16,9 +16,7 @@ public interface IAgencyRepository : IBaseRepository
     Task<List<AgencyPersonnel>> GetPersonnels(IEnumerable<Guid> ids);
     Task<List<AgencyPersonnel>> GetPersonnelByUserId(Guid id);
     Task<AgencyPersonnelModel> GetPersonnel(Guid agencyId, Guid id);
-    Task<Guid> GetAgencyIdForUser(Guid userId);
-    Task<List<Guid>> GetAgencyIdsForUser(Guid userId);
-    Task<Guid> GetAgencyPersonnelIdForUser(Guid userId);
+    Task<AgencyUserContextModel> GetAgencyContextForUser(Guid userId);
     Task<List<LocationDetailModel>> GetLocations(Guid agencyId);
     Task<LocationDetailModel> GetLocationDetail(Guid agencyId, Guid id);
     Task<bool> PersonnelHasRequests(Guid personnelId);

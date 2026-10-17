@@ -30,9 +30,13 @@ class JobDetailsModel extends JobDetails {
     super.incentiveDescription,
     super.durationBreak,
     super.requestStatus,
+    super.checkpointLatitude,
+    super.checkpointLongitude,
+    super.checkpointRadiusMeters,
   });
 
   factory JobDetailsModel.fromJson(Map<String, dynamic> json) {
+    final checkpoint = json['punchCheckpoint'] as Map<String, dynamic>?;
     return JobDetailsModel(
       id: json['id'] as String,
       jobTitle: json['jobTitle'] as String? ?? '',
@@ -68,6 +72,9 @@ class JobDetailsModel extends JobDetails {
       incentiveDescription: json['incentiveDescription']?.toString(),
       durationBreak: json['durationBreak']?.toString(),
       requestStatus: json['requestStatus'] as String?,
+      checkpointLatitude: (checkpoint?['latitude'] as num?)?.toDouble(),
+      checkpointLongitude: (checkpoint?['longitude'] as num?)?.toDouble(),
+      checkpointRadiusMeters: (checkpoint?['radiusMeters'] as num?)?.toDouble(),
     );
   }
 
@@ -101,6 +108,13 @@ class JobDetailsModel extends JobDetails {
       'incentiveDescription': incentiveDescription,
       'durationBreak': durationBreak,
       'requestStatus': requestStatus,
+      'punchCheckpoint': hasPunchCheckpoint
+          ? {
+              'latitude': checkpointLatitude,
+              'longitude': checkpointLongitude,
+              'radiusMeters': checkpointRadiusMeters,
+            }
+          : null,
     };
   }
 }

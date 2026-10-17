@@ -1,5 +1,5 @@
 <template>
-  <dashboard-list :is-empty="!items.length" empty-text="No interactions yet">
+  <dashboard-list :is-empty="!items.length" :loading="loading" empty-text="No interactions yet">
     <dashboard-list-row
       v-for="item in items"
       :key="item.id"
@@ -32,10 +32,14 @@ import DashboardListRow from '@/modules/agency/sales/dashboard/components/Dashbo
 import type { SalesRecentClient } from '@/modules/agency/sales/dashboard/types';
 import { initialsOf, relativeTime } from '@/modules/agency/sales/dashboard/format';
 
-defineProps<{
-  items: readonly SalesRecentClient[];
-  asOf: string;
-}>();
+withDefaults(
+  defineProps<{
+    items: readonly SalesRecentClient[];
+    asOf: string;
+    loading?: boolean;
+  }>(),
+  { loading: false }
+);
 
 const emit = defineEmits<{
   (e: 'select', client: SalesRecentClient): void;

@@ -10,27 +10,18 @@ using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services;
 
-public class PushNotifications : IPushNotifications
+public class FirebasePushNotificationSender(
+    IOptions<PushNotificationConfiguration> options,
+    ILogger<FirebasePushNotificationSender> logger) : IPushNotificationSender
 {
-    private readonly PushNotificationConfiguration pushNotificationConfiguration;
-    private readonly ILogger<PushNotifications> logger;
-
-    public PushNotifications(
-        IOptions<PushNotificationConfiguration> options,
-        ILogger<PushNotifications> logger)
-    {
-        pushNotificationConfiguration = options.Value;
-        this.logger = logger;
-    }
-
-    public async Task SendNotification(NotificationModel model)
+    public async Task Send(NotificationModel model)
     {
         try
         {
             var defaultApp = FirebaseApp.DefaultInstance;
             if (defaultApp is null)
             {
-                var json = JsonSerializer.Serialize(pushNotificationConfiguration);
+                var json = JsonSerializer.Serialize(options.Value);
                 defaultApp = FirebaseApp.Create(new AppOptions { Credential = GoogleCredential.FromJson(json) });
             }
             var message = new Message
@@ -39,12 +30,11 @@ public class PushNotifications : IPushNotifications
                 Topic = model.Topic,
                 Data = model.Data
             };
-            var messaging = FirebaseMessaging.GetMessaging(defaultApp);
-            await messaging.SendAsync(message);
+            await FirebaseMessaging.GetMessaging(defaultApp).SendAsync(message);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "PsuhNotification Error");
+            logger.LogError(ex, "Push notification failed. Topic={Topic} Title={Title}", model.Topic, model.Title);
         }
     }
 }

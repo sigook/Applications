@@ -159,7 +159,7 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/modules/agency/store';
 import { useAppStore } from '@/app/stores/app';
 import { downloadFile } from '@/shared/utils/downloadFile';
@@ -169,6 +169,7 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/uti
 import { getAgencyCompanies, bulkAgencyCompanies, getCompanyDeletionCheck, deleteAgencyCompany } from '@/modules/agency/recruiting/clients/api';
 import { getSalesCompanies } from '@/modules/agency/sales/api';
 import { downloadAgencyReport } from '@/shared/api/reportApi';
+import { getCompanyStatus } from '@/shared/api/catalogApi';
 import { getAgencyCompanyNotes, createAgencyCompanyNote, deleteAgencyCompanyNote } from '@/modules/agency/shared/notes/api';
 import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '@/modules/agency/shared/notes/types';
 import { dateMonth } from '@/shared/format';
@@ -181,7 +182,6 @@ import NotesPopover from '@/modules/agency/shared/notes/NotesPopover.vue';
 import BulkData from '@/modules/agency/recruiting/candidates/components/BulkData.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 
-const route = useRoute();
 const router = useRouter();
 const { isSalesView, requestBase, companyBase: companyDetailBase, moduleCrumbs } = useModuleBase();
 const exportUrl = computed(() =>
@@ -218,10 +218,14 @@ const deleteCompanyNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCo
 
 const isMobile = computed(() => appStore.isMobile);
 
-statuses.value = route.meta.companyStatuses as CatalogItem<CompanyStatus>[];
-if (serverParams.value.companyStatuses) {
-  statusesSelected.value = statuses.value.filter((s) => serverParams.value.companyStatuses?.includes(s.id));
-}
+getCompanyStatus()
+  .then((result) => {
+    statuses.value = result as CatalogItem<CompanyStatus>[];
+    if (serverParams.value.companyStatuses) {
+      statusesSelected.value = statuses.value.filter((s) => serverParams.value.companyStatuses?.includes(s.id));
+    }
+  })
+  .catch((error) => showAlertError(error));
 if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
   createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
   createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);

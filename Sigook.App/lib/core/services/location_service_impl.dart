@@ -11,17 +11,26 @@ class LocationServiceImpl implements LocationService {
   LocationSettings _settings({
     required LocationAccuracy accuracy,
     Duration? interval,
+    int distanceFilter = 0,
   }) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return AndroidSettings(accuracy: accuracy, intervalDuration: interval);
+        return AndroidSettings(
+          accuracy: accuracy,
+          intervalDuration: interval,
+          distanceFilter: distanceFilter,
+        );
       case TargetPlatform.iOS:
         return AppleSettings(
           accuracy: accuracy,
           activityType: ActivityType.otherNavigation,
+          distanceFilter: distanceFilter,
         );
       default:
-        return LocationSettings(accuracy: accuracy);
+        return LocationSettings(
+          accuracy: accuracy,
+          distanceFilter: distanceFilter,
+        );
     }
   }
 
@@ -46,6 +55,20 @@ class LocationServiceImpl implements LocationService {
     } catch (_) {
       return null;
     }
+  }
+
+  @override
+  Stream<Position> watchPosition({int distanceFilterMeters = 5}) async* {
+    if (!await ensurePermissions()) return;
+    yield* _geolocator
+        .getPositionStream(
+          locationSettings: _settings(
+            accuracy: LocationAccuracy.bestForNavigation,
+            interval: const Duration(seconds: 3),
+            distanceFilter: distanceFilterMeters,
+          ),
+        )
+        .handleError((_) {});
   }
 
   @override

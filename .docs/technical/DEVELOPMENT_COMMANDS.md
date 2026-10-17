@@ -51,9 +51,9 @@ flutter test
 flutter analyze
 ```
 
-Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app starts with no API or auth URLs. `.env.local`, `.env.staging` and `.env.production` are committed (public values only; `APP_INSIGHTS_CONNECTION_STRING` stays empty and CI injects it). `.env.local` reaches the local Api from the Android emulator over plain HTTP (`http://10.0.2.2:5000`), allowed only in debug builds. Running a release build locally (signing with the debug key) is described in `Sigook.App/README.md` → *Release Build (Local)*.
+Each entry point reads its configuration from the matching `.env` file via `--dart-define-from-file`; without that flag the app boots into a red "Initialization Failed" screen listing the missing keys. `.env.local`, `.env.staging` and `.env.production` are committed (public values only; `APP_INSIGHTS_CONNECTION_STRING` stays empty and CI injects it). `.env.local` reaches the local Api from the Android emulator over plain HTTP (`http://10.0.2.2:5000`), allowed only in debug builds. Prerequisites, emulator setup and a local release build (signing with the debug key) are in `Sigook.App/README.md`.
 
-**Flavors are iOS-only.** `ios/Runner.xcodeproj` defines `staging` and `production` schemes, so `--flavor` works there. `android/app/build.gradle.kts` declares no `productFlavors`, so passing `--flavor` to an Android build fails.
+**No flavors on either platform.** `android/app/build.gradle.kts` declares no `productFlavors` and `ios/Runner.xcodeproj` has a single scheme (`Runner`), so `--flavor` fails everywhere; the entry point plus the `--dart-define` values select the environment.
 
 Android toolchain floor is enforced by Flutter itself and bumps with each release — 3.47.4 requires Gradle >= 8.14.0 (`android/gradle/wrapper/gradle-wrapper.properties`) and Kotlin >= 2.2.20 (`android/settings.gradle.kts`), and warns below Gradle 9.1.0 / AGP 9.0.1 / Kotlin 2.3.20, which is what the project uses. The app still applies the Kotlin Gradle Plugin (`android.builtInKotlin=false`) because `file_picker` and `package_info_plus` apply KGP themselves. Building with an older Flutter than the pinned one is untested.
 

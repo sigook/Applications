@@ -29,6 +29,9 @@ class JobDetails extends Equatable {
   final String? incentiveDescription;
   final String? durationBreak;
   final String? requestStatus;
+  final double? checkpointLatitude;
+  final double? checkpointLongitude;
+  final double? checkpointRadiusMeters;
 
   const JobDetails({
     required this.id,
@@ -59,7 +62,15 @@ class JobDetails extends Equatable {
     this.incentiveDescription,
     this.durationBreak,
     this.requestStatus,
+    this.checkpointLatitude,
+    this.checkpointLongitude,
+    this.checkpointRadiusMeters,
   });
+
+  bool get hasPunchCheckpoint =>
+      checkpointLatitude != null &&
+      checkpointLongitude != null &&
+      checkpointRadiusMeters != null;
 
   bool get shouldShowApplyButton =>
       status.toLowerCase() != 'booked' && !isApplicant;
@@ -97,5 +108,8 @@ class JobDetails extends Equatable {
     incentiveDescription,
     durationBreak,
     requestStatus,
+    checkpointLatitude,
+    checkpointLongitude,
+    checkpointRadiusMeters,
   ];
 }

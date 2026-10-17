@@ -27,7 +27,7 @@ public interface IWorkerRepository : IBaseRepository
     Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId);
     Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid agencyId, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter);
     Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination);
-    Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId);
+    Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid cityId);
     Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date);
     Task<IEnumerable<WorkerLicenseExpiredModel>> GetWorkerLicensesExpired(DateTime date);
     Task<WorkerProfileTaxCategory> GetWorkerProfileTaxCategory(Guid workerProfileId);

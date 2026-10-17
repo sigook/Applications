@@ -4,14 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:permission_handler/permission_handler.dart'
     as permission_handler;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/enums.dart';
+import '../../../../core/utils/geo.dart';
 import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/providers/location_provider.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 import '../../domain/usecases/get_clock_type.dart';
 import '../../domain/usecases/submit_timesheet.dart';
 import '../providers/timesheet_providers.dart';
@@ -20,8 +21,26 @@ enum _PrecisionAction { cancel, continueAnyway, retry }
 
 class PunchCardTab extends ConsumerStatefulWidget {
   final String jobId;
+  final int jobNumberId;
+  final double? checkpointLatitude;
+  final double? checkpointLongitude;
+  final double? checkpointRadiusMeters;
+  final Future<void> Function()? onRefreshCheckpoint;
 
-  const PunchCardTab({super.key, required this.jobId});
+  const PunchCardTab({
+    super.key,
+    required this.jobId,
+    required this.jobNumberId,
+    this.checkpointLatitude,
+    this.checkpointLongitude,
+    this.checkpointRadiusMeters,
+    this.onRefreshCheckpoint,
+  });
+
+  bool get hasCheckpoint =>
+      checkpointLatitude != null &&
+      checkpointLongitude != null &&
+      checkpointRadiusMeters != null;
 
   @override
   ConsumerState<PunchCardTab> createState() => _PunchCardTabState();
@@ -32,14 +51,18 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
   static const double _maxUsableAccuracyMeters = 50;
   static const Duration _refreshFixAfter = Duration(seconds: 10);
   static const Duration _maxSubmitFixAge = Duration(seconds: 60);
+  static const String _locationError =
+      'Could not get your location. Tap to retry.';
 
-  DateTime _focusedDay = DateTime.now();
-  DateTime _selectedDay = DateTime.now();
   DateTime _currentTime = DateTime.now();
   Timer? _timer;
   ClockType _clockType = ClockType.none;
+  bool _isLoadingClockType = true;
+  String? _clockTypeError;
   bool _isSubmitting = false;
   int _clockTypeRequestId = 0;
+  StreamSubscription<Position>? _positionSubscription;
+  Position? _livePosition;
 
   @override
   void initState() {
@@ -52,10 +75,46 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       }
     });
     _loadClockType();
+    _syncPositionWatch();
   }
 
-  Future<void> _loadClockType() async {
+  @override
+  void didUpdateWidget(covariant PunchCardTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hasCheckpoint != widget.hasCheckpoint) {
+      _syncPositionWatch();
+    }
+  }
+
+  void _syncPositionWatch() {
+    if (widget.hasCheckpoint) {
+      _positionSubscription ??= ref
+          .read(locationServiceProvider)
+          .watchPosition()
+          .listen(_onLivePosition);
+    } else {
+      _positionSubscription?.cancel();
+      _positionSubscription = null;
+    }
+  }
+
+  void _onLivePosition(Position position) {
+    if (!mounted) return;
+    setState(() {
+      _livePosition = position;
+    });
+  }
+
+  Future<void> _loadClockType({bool refreshCheckpoint = false}) async {
     final requestId = ++_clockTypeRequestId;
+    setState(() {
+      _isLoadingClockType = true;
+      _clockTypeError = null;
+    });
+    if (refreshCheckpoint) {
+      await widget.onRefreshCheckpoint?.call();
+      if (!mounted || requestId != _clockTypeRequestId) return;
+    }
     final useCase = ref.read(getClockTypeUseCaseProvider);
     final position = await ref
         .read(locationServiceProvider)
@@ -66,6 +125,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     if (position == null) {
       setState(() {
         _clockType = ClockType.none;
+        _isLoadingClockType = false;
+        _clockTypeError = _locationError;
       });
       _showErrorSnackBar(
         'Failed to get location. Please enable location services.',
@@ -78,9 +139,10 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       return;
     }
 
+    _livePosition ??= position;
+
     final result = await useCase(
       GetClockTypeParams(
-        date: _selectedDay,
         requestId: widget.jobId,
         latitude: position.latitude,
         longitude: position.longitude,
@@ -89,124 +151,34 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
 
     if (!mounted || requestId != _clockTypeRequestId) return;
 
-    result.fold(
-      (failure) {
-        setState(() {
+    setState(() {
+      _isLoadingClockType = false;
+      result.fold(
+        (failure) {
           _clockType = ClockType.none;
-        });
-      },
-      (clockType) {
-        setState(() {
+          _clockTypeError = 'Could not check your shift status. Tap to retry.';
+        },
+        (clockType) {
           _clockType = clockType;
-        });
-      },
-    );
+          _clockTypeError = null;
+        },
+      );
+    });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _positionSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 100),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 12),
-                _buildCalendarCard(),
-                const SizedBox(height: 12),
-                _buildClockCard(),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCalendarCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Select Date',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TableCalendar(
-              firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                });
-                _loadClockType();
-              },
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: const BoxDecoration(
-                  color: AppTheme.primaryBlue,
-                  shape: BoxShape.circle,
-                ),
-                selectedTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                todayTextStyle: const TextStyle(
-                  color: AppTheme.primaryBlue,
-                  fontWeight: FontWeight.bold,
-                ),
-                weekendTextStyle: TextStyle(
-                  color: AppTheme.errorRed.withValues(alpha: 0.7),
-                ),
-              ),
-              headerStyle: const HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              daysOfWeekStyle: DaysOfWeekStyle(
-                weekdayStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade700,
-                ),
-                weekendStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.errorRed.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(top: 12, bottom: 24),
+      child: _buildClockCard(),
     );
   }
 
@@ -275,7 +247,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      DateFormat('EEEE, MMMM dd, yyyy').format(_selectedDay),
+                      DateFormat('EEEE, MMMM dd, yyyy').format(_currentTime),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -288,69 +260,211 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             ),
           ),
         ),
+        if (widget.hasCheckpoint) ...[
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildCheckpointStrip(),
+          ),
+        ],
         const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: SizedBox(
             width: double.infinity,
             height: 56,
-            child: ElevatedButton(
-              onPressed: _clockType == ClockType.none || _isSubmitting
-                  ? null
-                  : _onClockTapped,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _clockType == ClockType.clockIn
-                    ? AppTheme.successGreen
-                    : _clockType == ClockType.clockOut
-                    ? AppTheme.errorRed
-                    : Colors.grey,
-                foregroundColor: Colors.white,
-                elevation: 4,
-                shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                disabledBackgroundColor: Colors.grey.shade400,
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _clockType == ClockType.clockIn
-                              ? Icons.login
-                              : _clockType == ClockType.clockOut
-                              ? Icons.logout
-                              : Icons.block,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          _clockType == ClockType.clockIn
-                              ? 'CLOCK IN'
-                              : _clockType == ClockType.clockOut
-                              ? 'CLOCK OUT'
-                              : 'UNAVAILABLE',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
+            child: _buildClockButton(),
           ),
         ),
+        if (_clockTypeError != null) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              _clockTypeError!,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  Widget _buildCheckpointStrip() {
+    final position = _livePosition;
+    final Color color;
+    final IconData icon;
+    final String title;
+    String? subtitle;
+
+    if (position == null) {
+      color = Colors.grey.shade600;
+      if (_clockTypeError == _locationError) {
+        icon = Icons.location_disabled;
+        title = 'Turn on location to see your distance to the check point.';
+      } else {
+        icon = Icons.location_searching;
+        title = 'Checking your distance to the check point...';
+      }
+    } else {
+      final meters = distanceInMeters(
+        widget.checkpointLatitude!,
+        widget.checkpointLongitude!,
+        position.latitude,
+        position.longitude,
+      );
+      final accuracy = position.accuracy;
+      final radius = widget.checkpointRadiusMeters!;
+      if (meters + accuracy <= radius) {
+        color = AppTheme.successGreen;
+        icon = Icons.check_circle;
+        title = 'At the check point';
+      } else if (meters <= radius) {
+        color = AppTheme.warningOrange;
+        icon = Icons.location_searching;
+        title =
+            'About ${meters.round()} m from the check point (GPS ±${accuracy.round()} m)';
+        subtitle = 'Move a bit closer to be safe.';
+      } else {
+        final direction = cardinalDirection(
+          widget.checkpointLatitude!,
+          widget.checkpointLongitude!,
+          position.latitude,
+          position.longitude,
+        );
+        color = AppTheme.errorRed;
+        icon = Icons.location_off;
+        title = 'About ${meters.round()} m $direction of the check point';
+        subtitle = 'Get closer before you clock in.';
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClockButton() {
+    final isBusy = _isSubmitting || _isLoadingClockType;
+    final isRetry = !isBusy && _clockTypeError != null;
+    final backgroundColor = isRetry
+        ? AppTheme.warningOrange
+        : _clockType == ClockType.clockIn
+        ? AppTheme.successGreen
+        : _clockType == ClockType.clockOut
+        ? AppTheme.errorRed
+        : Colors.grey;
+    final onPressed = isBusy
+        ? null
+        : isRetry
+        ? () => _loadClockType(refreshCheckpoint: true)
+        : _clockType == ClockType.none
+        ? null
+        : _onClockTapped;
+
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        disabledBackgroundColor: _isLoadingClockType
+            ? AppTheme.primaryBlue.withValues(alpha: 0.6)
+            : Colors.grey.shade400,
+        disabledForegroundColor: Colors.white,
+      ),
+      child: isBusy
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                if (_isLoadingClockType && !_isSubmitting) ...[
+                  const SizedBox(width: 12),
+                  const Text(
+                    'CHECKING...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isRetry
+                      ? Icons.refresh
+                      : _clockType == ClockType.clockIn
+                      ? Icons.login
+                      : _clockType == ClockType.clockOut
+                      ? Icons.logout
+                      : Icons.block,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  isRetry
+                      ? 'RETRY'
+                      : _clockType == ClockType.clockIn
+                      ? 'CLOCK IN'
+                      : _clockType == ClockType.clockOut
+                      ? 'CLOCK OUT'
+                      : 'UNAVAILABLE',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -459,6 +573,9 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       }
 
       if (!mounted) return;
+      setState(() {
+        _livePosition = submitPosition;
+      });
       if (_fixAge(submitPosition) > _maxSubmitFixAge ||
           submitPosition.accuracy > _maxUsableAccuracyMeters) {
         setState(() {
@@ -530,7 +647,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                     'is_mocked': submitPosition.isMocked,
                   },
                 );
-            _showTooFarFromCheckpointError();
+            _showTooFarFromCheckpointError(failure.message);
           } else if (is3MinuteRestriction) {
             // Track 3-minute restriction hit for monitoring
             ref
@@ -563,7 +680,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                 },
               );
           _showSuccessSnackBar(response.workerFullName, response.finish);
-          await _loadClockType();
+          await _loadClockType(refreshCheckpoint: true);
           if (!mounted) return;
           setState(() {
             _isSubmitting = false;
@@ -695,7 +812,17 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
-  void _showTooFarFromCheckpointError() {
+  String _punchReference() {
+    final profile = ref.read(cachedWorkerProfileProvider).value;
+    final worker = profile == null
+        ? 'Worker: unknown'
+        : 'Worker #${profile.numberId ?? '-'} · ${profile.fullName}';
+    final when = DateFormat('MMM dd, yyyy hh:mm a').format(DateTime.now());
+    return '$worker\nRequest #${widget.jobNumberId} · $when';
+  }
+
+  void _showTooFarFromCheckpointError(String message) {
+    final reference = _punchReference();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -716,9 +843,11 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'You are too far from the designated checkpoint to clock in/out.',
-              style: TextStyle(fontSize: 15),
+            Text(message, style: const TextStyle(fontSize: 15)),
+            const SizedBox(height: 8),
+            Text(
+              reference,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
             ),
             const SizedBox(height: 16),
             Container(
