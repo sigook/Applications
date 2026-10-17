@@ -280,6 +280,11 @@ _WorkerProfileModel _$WorkerProfileModelFromJson(
   isContractor: json['isContractor'] as bool? ?? false,
   dnu: json['dnu'] as bool? ?? false,
   punchCardId: json['punchCardId'] as String?,
+  missingRequirements:
+      (json['missingRequirements'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$WorkerProfileModelToJson(_WorkerProfileModel instance) =>
@@ -334,4 +339,5 @@ Map<String, dynamic> _$WorkerProfileModelToJson(_WorkerProfileModel instance) =>
       'isContractor': instance.isContractor,
       'dnu': instance.dnu,
       'punchCardId': instance.punchCardId,
+      'missingRequirements': instance.missingRequirements,
     };

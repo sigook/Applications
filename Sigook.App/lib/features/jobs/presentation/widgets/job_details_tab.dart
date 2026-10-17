@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/usecases/apply_to_job.dart';
 import '../providers/jobs_providers.dart';
 import 'job_header_card.dart';
+import 'profile_warning_banner.dart';
 
 class JobDetailsTab extends ConsumerStatefulWidget {
   final JobDetails jobDetails;
@@ -31,6 +33,9 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isApprovedToWork =
+        ref.watch(cachedWorkerProfileProvider).value?.approvedToWork ?? true;
+
     return Stack(
       children: [
         SingleChildScrollView(
@@ -66,7 +71,9 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
             bottom: 16,
             left: 16,
             right: 16,
-            child: _buildActionButton(context),
+            child: isApprovedToWork
+                ? _buildActionButton(context)
+                : const NotApprovedCard(),
           ),
       ],
     );

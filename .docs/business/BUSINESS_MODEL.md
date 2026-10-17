@@ -38,7 +38,7 @@ Job seeker using the Flutter mobile app. Entity: `Covenant.Common/Entities/Worke
 A worker **User** has exactly **one** `WorkerProfile`, bound to exactly one agency (`WorkerProfile.AgencyId` is non-nullable, and `WorkerId` has a single-column unique index); companies follow the same pattern (`CompanyProfile.CompanyId` unique). Only agency staff genuinely span agencies, via multiple `AgencyPersonnel` rows (the `agencyIds` claim).
 
 Key flags on `WorkerProfile`:
-- `ApprovedToWork` — set by the agency after reviewing documents; gates applying/booking.
+- `ApprovedToWork` — set by the agency after reviewing documents; gates applying/booking. The single source of the requirements is `WorkerRequirementService` (`Covenant.Core.BL/Services/Workers/`): profile photo, tax category (Canada only), SIN number + document (not expired when it expires), and at least one identification (number + file on the same slot, 1 or 2). The resume is optional. Subcontractors and contractors have no requirements. The same list is exposed as `missingRequirements` on `WorkerProfileDetailModel`, so Sigook.Web and Sigook.App only render it.
 - `Dnu` (Do Not Use) — blacklisted by the agency.
 - `IsSubcontractor` / `IsContractor` — different tax treatment (subcontractor tax-category overrides zero out deductions).
 

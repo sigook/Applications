@@ -29,6 +29,20 @@ void main() {
     expect(forward, closeTo(backward, 0.000001));
   });
 
+  group('formatDistance', () {
+    test('meters under one kilometre', () {
+      expect(formatDistance(164.6), '165 m');
+    });
+
+    test('one decimal under ten kilometres', () {
+      expect(formatDistance(2460), '2.5 km');
+    });
+
+    test('whole kilometres from ten kilometres', () {
+      expect(formatDistance(875111), '875 km');
+    });
+  });
+
   group('cardinalDirection from the pin to the worker', () {
     test('north', () {
       expect(

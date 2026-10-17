@@ -63,8 +63,6 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.NotNull(detail);
         Assert.Equal(Data.FakeRequest.Id, detail.Id);
         Assert.Equal(Data.FakeRequest.JobTitle, detail.JobTitle);
-        Assert.Equal(Data.FakeAgency.FullName, detail.AgencyFullName);
-        Assert.EndsWith(Data.FakeAgency.Logo.FileName, detail.AgencyLogo);
         Assert.Equal(Data.FakeRequest.Description, detail.Description);
         Assert.Equal(Data.FakeRequest.Requirements, detail.Requirements);
         Assert.Equal(Data.FakeRequest.WorkersQuantity, detail.WorkersQuantity);

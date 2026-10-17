@@ -6,7 +6,7 @@
         <b-button icon-left="plus" @click="showModal = true">Add</b-button>
       </template>
       <b-table-column field="email" label="Email" v-slot="props">
-        {{ props.row.email }}
+        <copy-link kind="email" :value="props.row.email" />
       </b-table-column>
       <b-table-column field="name" label="Name" v-slot="props">
         {{ props.row.name }}
@@ -15,7 +15,7 @@
         {{ props.row.lastname }}
       </b-table-column>
       <b-table-column field="mobileNumber" label="Mobile Number" v-slot="props">
-        {{ props.row.mobileNumber }}
+        <copy-link kind="phone" :value="props.row.mobileNumber" />
       </b-table-column>
       <b-table-column field="position" label="Position" v-slot="props">
         {{ props.row.position }}
@@ -39,6 +39,7 @@ import { showAlertError } from "@/shared/utils/toast";
 import { getCompanyUsers, deleteCompanyProfileUser, createCompanyProfileUser } from '@/modules/agency/recruiting/clients/api';
 import CreateUser from "@/shared/company-profile/CompanyCreateUserModal.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import type { AgencyCompanyProfileDetail } from '@/modules/agency/recruiting/clients/types';
 import type { CompanyUserModel } from '@/shared/company-profile/types';
 

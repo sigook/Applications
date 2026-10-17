@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
-import 'package:sigook_app_flutter/core/constants/enums.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/entities/punch_status.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/timesheet_response.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/paginated_timesheet.dart';
 
 abstract class TimesheetRepository {
-  Future<Either<Failure, ClockType>> getClockType({
+  Future<Either<Failure, PunchStatus>> getPunchStatus({
     required String requestId,
     required double latitude,
     required double longitude,

@@ -2,6 +2,9 @@
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
     <div class="columns is-multiline">
+      <div class="column is-12">
+        <p class="identification-heading">Identification 1 <span class="has-text-danger">*</span></p>
+      </div>
       <div class="column is-6">
         <b-field :type="formErrors.identificationType1 ? 'is-danger' : ''"
           :message="formErrors.identificationType1 || ''">
@@ -43,12 +46,12 @@
           </b-field>
         </b-field>
       </div>
+      <div class="column is-12">
+        <p class="identification-heading">Identification 2 <span class="has-text-grey">(optional)</span></p>
+      </div>
       <div class="column is-6">
-        <b-field :type="formErrors.identificationType2 ? 'is-danger' : ''"
+        <b-field label="Identification type" :type="formErrors.identificationType2 ? 'is-danger' : ''"
           :message="formErrors.identificationType2 || ''">
-          <template #label>
-            Identification type <span class="has-text-danger">*</span>
-          </template>
           <b-select v-model="identificationType2" name="identificationType2" expanded>
             <option :value="null" disabled>{{ "Select" }}</option>
             <option v-for="(type, index) in identificationTypes" :value="type"
@@ -119,7 +122,11 @@ const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
 const schema = yup.object({
   identificationType1: yup.mixed().required('Identification type is required'),
   identificationNumber1: identificationNumberSchema('identificationType1'),
-  identificationType2: yup.mixed().required('Identification type is required'),
+  identificationType2: yup.mixed().nullable().test(
+    'required-with-number',
+    'Identification type is required',
+    (value, context) => !!value || !context.parent.identificationNumber2,
+  ),
   identificationNumber2: identificationNumberSchema('identificationType2'),
 });
 
@@ -241,6 +248,10 @@ function validateAll() {
 </script>
 
 <style scoped>
+.identification-heading {
+  margin: 0;
+  font-weight: 600;
+}
 .selected-file-display {
   display: flex;
   align-items: center;

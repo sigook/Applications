@@ -133,6 +133,7 @@
 import { computed, ref, watch, nextTick, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAgencyStore } from '@/modules/agency/store';
+import { useWorkerStore } from '@/modules/worker/store';
 import { useSecurityStore } from '@/app/stores/security';
 import { useBreakpoint } from '@/shared/composables/useBreakpoint';
 import { avatarLetters } from '@/shared/format';
@@ -160,6 +161,7 @@ interface MenuGroup {
 const router = useRouter();
 const route = useRoute();
 const agencyStore = useAgencyStore();
+const workerStore = useWorkerStore();
 const securityStore = useSecurityStore();
 
 const isLoading = ref(false);
@@ -251,6 +253,7 @@ async function getCompanyUserInfo() {
 
 async function getWorkerInfo() {
   const data = await getMyProfile();
+  workerStore.setWorkerProfile(data);
   currentUser.value.fullName = `${data.firstName} ${data.lastName}`;
   currentUser.value.profileImage = data.profileImage?.pathFile ?? null;
   profileUrl.value = '/worker-profile';

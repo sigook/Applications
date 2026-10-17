@@ -3,7 +3,7 @@
     <header class="modal-card-head">
       <div>
         <p class="modal-card-title">{{ detail?.name || 'History' }}</p>
-        <i v-if="detail?.email" class="fz-2 is-lowercase">{{ detail.email }}</i>
+        <i v-if="detail?.email" class="fz-2 is-lowercase"><copy-link kind="email" :value="detail.email" /></i>
       </div>
     </header>
     <section class="modal-card-body" style="min-width: 720px; position: relative">
@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import type { RunnerDetail } from '@/modules/agency/recruiting/requests/runners/types';
 import RunnerDetailPanel from '@/modules/agency/recruiting/runners/components/RunnerDetailPanel.vue';
 

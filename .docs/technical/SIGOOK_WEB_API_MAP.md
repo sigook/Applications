@@ -758,8 +758,8 @@ Public landing site endpoints (no auth).
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `workerRegisterTime(requestId, lat, lon)` | POST | `/api/worker/requests/{requestId}/timesheet` | `{ latitude, longitude }` | `void` | Clock-in with GPS |
-| `workerGetTimeSheet(requestId)` | GET | `/api/worker/requests/{requestId}/timesheet` | — | `WorkerTimeSheetItem[]` | |
-| `getClockType(requestId, latitude, longitude)` | GET | `/api/worker/requests/{requestId}/timesheet/clock-type/{latitude}/{longitude}` | — | `ClockType` (enum, `src/constants/enums`) | Next punch: ClockOut while the latest punch is open and under 14 h, ClockIn otherwise. Coordinates resolve the time zone |
+| `workerGetTimeSheet(requestId)` | GET | `/api/worker/requests/{requestId}/timesheet` | — | `WorkerTimeSheetItem[]` | Loaded only when the Time Sheet tab is opened; the punch card no longer depends on it |
+| `getPunchStatus(requestId, latitude, longitude)` | GET | `/api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}` | — | `PunchStatus` (`clockType`, `clockIn`, `clockOut`, `dayHours`, `weekHours`) | One call for the whole punch card: next punch (ClockOut while the latest punch is open and under 14 h, ClockIn otherwise), the stamps of the open or today's punch, and the hours since Sunday. Coordinates resolve the time zone. Replaces `clock-type`, which the API keeps only (`[Obsolete]`) for older mobile builds |
 
 ### Comments
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |

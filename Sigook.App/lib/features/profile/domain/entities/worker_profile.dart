@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'worker_requirement.dart';
 
 class WorkerLicense extends Equatable {
   final String? id;
@@ -152,6 +153,7 @@ class WorkerProfile extends Equatable {
   final String? contactEmergencyName;
   final String? contactEmergencyLastName;
   final String? contactEmergencyPhone;
+  final List<WorkerRequirement> missingRequirements;
 
   const WorkerProfile({
     required this.id,
@@ -221,9 +223,12 @@ class WorkerProfile extends Equatable {
     this.contactEmergencyName,
     this.contactEmergencyLastName,
     this.contactEmergencyPhone,
+    this.missingRequirements = const [],
   });
 
   bool get isCanada => countryCode?.toUpperCase() == 'CA';
+
+  bool get hasMissingRequirements => missingRequirements.isNotEmpty;
 
   String get fullName {
     final parts = [firstName, middleName, lastName, secondLastName]
@@ -303,5 +308,6 @@ class WorkerProfile extends Equatable {
     approvedToWork, punchCardId, haveAnyHealthProblem,
     healthProblem, otherHealthProblem,
     contactEmergencyName, contactEmergencyLastName, contactEmergencyPhone,
+    missingRequirements,
   ];
 }

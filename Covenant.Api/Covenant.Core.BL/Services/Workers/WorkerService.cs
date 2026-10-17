@@ -65,7 +65,8 @@ public class WorkerService(
     ICandidateRepository candidateRepository,
     IUploadedFilesService uploadedFilesService,
     ICatalogRepository catalogRepository,
-    IRequestApplicantNotificationService applicantNotificationService) : IWorkerService
+    IRequestApplicantNotificationService applicantNotificationService,
+    IWorkerRequirementService workerRequirementService) : IWorkerService
 {
     private readonly IWorkerRepository workerRepository = workerRepository;
     private readonly IAgencyRepository agencyRepository = agencyRepository;
@@ -167,6 +168,14 @@ public class WorkerService(
     public Task<Result> DeleteWorker(Guid workerProfileId)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<WorkerProfileDetailModel> GetProfileDetail(Expression<Func<WorkerProfile, bool>> condition)
+    {
+        var model = await workerRepository.GetWorkerProfileDetail(condition);
+        if (model is null) return null;
+        model.MissingRequirements = workerRequirementService.GetMissing(model);
+        return model;
     }
 
     public async Task<Result<RequestApplicantDetailModel>> Apply(WorkerRequestApplyModel model, Guid? requestId = null)
@@ -494,6 +503,7 @@ public class WorkerService(
 
     private async Task<Result<RequestApplicantDetailModel>> ApplyAsWorker(Request request, WorkerProfile workerProfile, string comments)
     {
+        if (!workerProfile.ApprovedToWork) return Result.Fail<RequestApplicantDetailModel>(ApiResources.WorkerNotApprovedToWork);
         if (await workerRequestRepository.WorkerRequestExists(workerProfile.Id, request.Id)) return AlreadyApplied();
         if (await requestRepository.GetRequestApplicant(ra => ra.RequestId == request.Id && ra.WorkerProfileId == workerProfile.Id) is not null) return AlreadyApplied();
 

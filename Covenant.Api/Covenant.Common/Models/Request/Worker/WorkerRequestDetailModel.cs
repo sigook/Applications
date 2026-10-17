@@ -8,8 +8,6 @@ public class WorkerRequestDetailModel
     public Guid Id { get; set; }
     public int NumberId { get; set; }
     public string JobTitle { get; set; }
-    public string AgencyFullName { get; set; }
-    public string AgencyLogo { get; set; }
     public string Description { get; set; }
     public string Requirements { get; set; }
     public string Responsibilities { get; set; }

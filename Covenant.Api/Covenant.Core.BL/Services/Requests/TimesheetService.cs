@@ -18,6 +18,7 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Documents.Services;
 using MediatR;
 using Microsoft.ApplicationInsights;
+using System.Globalization;
 
 namespace Covenant.Core.BL.Services.Requests;
 
@@ -194,7 +195,7 @@ public class TimesheetService(
             var direction = CardinalDirection(
                 info.Latitude.Value, info.Longitude.Value,
                 workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
-            return Result.Fail($"You are too far from check point: {Math.Round(distanceBetween)} m to the {direction}. Please get closer.");
+            return Result.Fail($"You are too far from check point: {FormatDistance(distanceBetween)} to the {direction}. Please get closer.");
         }
         return Result.Ok();
     }
@@ -283,16 +284,42 @@ public class TimesheetService(
 
     public async Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude)
     {
+        var punch = await ResolvePunch(requestId, latitude, longitude);
+        return Result.Ok(punch.ClockType);
+    }
+
+    public async Task<Result<PunchStatusModel>> GetPunchStatus(Guid requestId, double latitude, double longitude)
+    {
+        var punch = await ResolvePunch(requestId, latitude, longitude);
+        var status = new PunchStatusModel { ClockType = punch.ClockType };
+        if (punch.Info is null) return Result.Ok(status);
+
+        var weekStart = punch.Now.Date.AddDays(-(int)punch.Now.DayOfWeek);
+        var week = await timeSheetRepository.GetTimesheetsSince(punch.WorkerId, requestId, weekStart);
+        var active = punch.ClockType == ClockType.ClockOut
+            ? punch.Latest
+            : week.FirstOrDefault(ts => ts.Date == punch.Now.Date);
+        status.ClockIn = active?.ClockIn;
+        status.ClockOut = active?.ClockOut;
+        status.DayHours = active?.TotalHours ?? 0;
+        status.WeekHours = week.Sum(ts => ts.TotalHours);
+        return Result.Ok(status);
+    }
+
+    private sealed record PunchResolution(Guid WorkerId, WorkerRequestInfoModel Info, DateTime Now, TimeSheet Latest, ClockType ClockType);
+
+    private async Task<PunchResolution> ResolvePunch(Guid requestId, double latitude, double longitude)
+    {
         var workerId = currentUserService.GetUserId();
         var workerNow = timeProvider.GetLocalNow(latitude, longitude).DateTime;
         var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, workerNow);
         if (info is null)
         {
-            return Result.Ok(ClockType.None);
+            return new PunchResolution(workerId, null, workerNow, null, ClockType.None);
         }
         var now = GetJobNow(info, latitude, longitude).DateTime;
-        var timeSheet = await timeSheetRepository.GetLatestTimesheet(workerId, requestId);
-        return Result.Ok(NextPunch(timeSheet, now));
+        var latest = await timeSheetRepository.GetLatestTimesheet(workerId, requestId);
+        return new PunchResolution(workerId, info, now, latest, NextPunch(latest, now));
     }
 
     public async Task<Result> RemoveTimeSheet(Guid id)
@@ -338,6 +365,13 @@ public class TimesheetService(
                 + Math.Cos(lat1) * Math.Cos(lat2) * Math.Pow(Math.Sin(deltaLon / 2.0), 2.0);
         return earthRadiusMeters * (2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a)));
     }
+
+    private static string FormatDistance(double meters) => meters switch
+    {
+        < 1000 => $"{Math.Round(meters)} m",
+        < 10000 => $"{(meters / 1000).ToString("0.0", CultureInfo.InvariantCulture)} km",
+        _ => $"{Math.Round(meters / 1000)} km"
+    };
 
     private static string CardinalDirection(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
     {

@@ -50,7 +50,6 @@ class HistoryRemoteDataSourceImpl implements HistoryRemoteDataSource {
                 (map['workerApprovedToWork'] as String).toLowerCase() == 'true';
           }
           map['jobTitle'] ??= '';
-          map['agencyFullName'] ??= '';
           return map;
         }).toList();
 

@@ -196,7 +196,7 @@ class _JobPageState extends ConsumerState<JobPage>
                       children: [
                         Icon(Icons.work_outline, size: 24),
                         const SizedBox(height: 4),
-                        const Text('JOB'),
+                        const Text('DETAIL'),
                       ],
                     ),
                   ),
@@ -208,7 +208,7 @@ class _JobPageState extends ConsumerState<JobPage>
                         children: [
                           Icon(Icons.access_time, size: 24),
                           const SizedBox(height: 4),
-                          const Text('PUNCH'),
+                          const Text('PUNCH CARD'),
                         ],
                       ),
                     ),
@@ -219,7 +219,7 @@ class _JobPageState extends ConsumerState<JobPage>
                         children: [
                           Icon(Icons.receipt_long, size: 24),
                           const SizedBox(height: 4),
-                          const Text('TIMESHEET'),
+                          const Text('TIME SHEET'),
                         ],
                       ),
                     ),
@@ -240,11 +240,7 @@ class _JobPageState extends ConsumerState<JobPage>
             ),
             if (showTimesheetPunchcard) ...[
               PunchCardTab(
-                jobId: widget.jobId,
-                jobNumberId: jobDetails.numberId,
-                checkpointLatitude: jobDetails.checkpointLatitude,
-                checkpointLongitude: jobDetails.checkpointLongitude,
-                checkpointRadiusMeters: jobDetails.checkpointRadiusMeters,
+                jobDetails: jobDetails,
                 onRefreshCheckpoint: _refreshJobDetails,
               ),
               TimesheetTab(jobId: widget.jobId),

@@ -57,7 +57,7 @@ class JobCard extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                job.jobTitle,
+                                '${job.numberId} · ${job.jobTitle}',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,

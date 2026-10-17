@@ -11,8 +11,8 @@
       </h2>
       <slot name="chips" />
       <div class="worker-header-contact">
-        <span v-if="props.worker.mobileNumber"><b-icon icon="cellphone" size="is-small" />{{ props.worker.mobileNumber }}</span>
-        <a v-if="props.worker.email" :href="`mailto:${props.worker.email}`"><b-icon icon="email-outline" size="is-small" />{{ props.worker.email }}</a>
+        <copy-link kind="phone" :value="props.worker.mobileNumber" icon />
+        <copy-link kind="email" :value="props.worker.email" icon />
         <span v-if="city"><b-icon icon="map-marker-outline" size="is-small" />{{ city }}</span>
       </div>
     </div>
@@ -27,6 +27,7 @@ import { computed } from 'vue';
 import { lowercase } from '@/shared/format';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import ImageDetail from '@/shared/worker-profile/forms/WorkImageDetail.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const props = defineProps<{ worker: WorkerProfileDetail; numberClass?: string }>();
 const emit = defineEmits<{ (e: 'updateProfile'): void }>();
@@ -92,14 +93,13 @@ const city = computed(() => {
   color: $grey-font;
   overflow-wrap: anywhere;
 
-  span,
-  a {
+  > span {
     display: inline-flex;
     align-items: center;
     gap: 4px;
   }
 
-  a {
+  :deep(a) {
     color: $blue;
   }
 }

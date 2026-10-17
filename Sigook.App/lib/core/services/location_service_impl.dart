@@ -11,28 +11,26 @@ class LocationServiceImpl implements LocationService {
   LocationSettings _settings({
     required LocationAccuracy accuracy,
     Duration? interval,
-    int distanceFilter = 0,
   }) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return AndroidSettings(
-          accuracy: accuracy,
-          intervalDuration: interval,
-          distanceFilter: distanceFilter,
-        );
+        return AndroidSettings(accuracy: accuracy, intervalDuration: interval);
       case TargetPlatform.iOS:
         return AppleSettings(
           accuracy: accuracy,
           activityType: ActivityType.otherNavigation,
-          distanceFilter: distanceFilter,
         );
       default:
-        return LocationSettings(
-          accuracy: accuracy,
-          distanceFilter: distanceFilter,
-        );
+        return LocationSettings(accuracy: accuracy);
     }
   }
+
+  Stream<Position> _punchPositionStream() => _geolocator.getPositionStream(
+    locationSettings: _settings(
+      accuracy: LocationAccuracy.bestForNavigation,
+      interval: const Duration(seconds: 1),
+    ),
+  );
 
   @override
   Future<bool> ensurePermissions() async {
@@ -58,17 +56,9 @@ class LocationServiceImpl implements LocationService {
   }
 
   @override
-  Stream<Position> watchPosition({int distanceFilterMeters = 5}) async* {
+  Stream<Position> watchPosition() async* {
     if (!await ensurePermissions()) return;
-    yield* _geolocator
-        .getPositionStream(
-          locationSettings: _settings(
-            accuracy: LocationAccuracy.bestForNavigation,
-            interval: const Duration(seconds: 3),
-            distanceFilter: distanceFilterMeters,
-          ),
-        )
-        .handleError((_) {});
+    yield* _punchPositionStream().handleError((_) {});
   }
 
   @override
@@ -117,14 +107,10 @@ class LocationServiceImpl implements LocationService {
     final deadline = DateTime.now().add(overallTimeout);
     Position? best;
     Position? latest;
-    final stream = _geolocator
-        .getPositionStream(
-          locationSettings: _settings(
-            accuracy: LocationAccuracy.bestForNavigation,
-            interval: const Duration(seconds: 1),
-          ),
-        )
-        .timeout(fixDroughtTimeout, onTimeout: (sink) => sink.close());
+    final stream = _punchPositionStream().timeout(
+      fixDroughtTimeout,
+      onTimeout: (sink) => sink.close(),
+    );
     try {
       await for (final position in stream) {
         final age = DateTime.now().difference(position.timestamp);

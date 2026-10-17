@@ -207,6 +207,64 @@
         }
       }
     },
+    "/api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}": {
+      "get": {
+        "tags": [
+          "TimeSheets"
+        ],
+        "summary": "Gets everything the punch card needs in one call: the next expected punch, the clock-in/clock-out of the open or today's punch, and the hours worked since Sunday in the job's time zone.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "latitude",
+            "in": "path",
+            "description": "Current latitude of the worker.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Double"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "path",
+            "description": "Current longitude of the worker.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.PunchStatusModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/worker/requests": {
       "get": {
         "tags": [
@@ -699,7 +757,7 @@
         "tags": [
           "Profile"
         ],
-        "summary": "Gets the detail of the authenticated worker's own profile.",
+        "summary": "Gets the detail of the authenticated worker's own profile, including the requirements still missing to be approved to work.",
         "responses": {
           "200": {
             "description": "OK",
@@ -9567,7 +9625,7 @@
         "tags": [
           "Workers"
         ],
-        "summary": "Marks a worker profile as approved to work.",
+        "summary": "Toggles the approved-to-work flag of a worker profile. Approval requires every worker requirement to be met.",
         "parameters": [
           {
             "name": "id",
@@ -25161,6 +25219,16 @@
       "Covenant.Common.Enums.WorkerRequestStatus": {
         "type": "integer"
       },
+      "Covenant.Common.Enums.WorkerRequirement": {
+        "enum": [
+          "ProfileImage",
+          "TaxCategory",
+          "SocialInsuranceNumber",
+          "SocialInsuranceFile",
+          "SocialInsuranceExpired",
+          "Identification"
+        ]
+      },
       "Covenant.Common.Models.Accounting.Deductions.ImportCraTableFromBlobModel": {
         "type": "object",
         "properties": {
@@ -30179,6 +30247,40 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.TimeSheet.PunchStatusModel": {
+        "type": "object",
+        "properties": {
+          "clockType": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.ClockType"
+          },
+          "clockIn": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "clockOut": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "dayHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "weekHours": {
+            "$ref": "#/components/schemas/System.Double"
+          }
+        }
+      },
       "Covenant.Common.Models.Request.TimeSheet.RegisterTimeSheetResultModel": {
         "type": "object",
         "properties": {
@@ -30488,12 +30590,6 @@
           "jobTitle": {
             "$ref": "#/components/schemas/System.String"
           },
-          "agencyFullName": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "agencyLogo": {
-            "$ref": "#/components/schemas/System.String"
-          },
           "description": {
             "$ref": "#/components/schemas/System.String"
           },
@@ -30625,9 +30721,6 @@
             "$ref": "#/components/schemas/System.String"
           },
           "entrance": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "agencyFullName": {
             "$ref": "#/components/schemas/System.String"
           },
           "status": {
@@ -31754,6 +31847,9 @@
           },
           "wcCode": {
             "$ref": "#/components/schemas/System.String"
+          },
+          "missingRequirements": {
+            "$ref": "#/components/schemas/System.Collections.Generic.IReadOnlyList`1[[Covenant.Common.Enums.WorkerRequirement, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
           }
         }
       },
@@ -32260,6 +32356,12 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/System.String"
+        }
+      },
+      "System.Collections.Generic.IReadOnlyList`1[[Covenant.Common.Enums.WorkerRequirement, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Enums.WorkerRequirement"
         }
       },
       "System.Collections.Generic.List`1[[Covenant.Common.Enums.DealStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {

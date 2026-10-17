@@ -33,7 +33,7 @@
                 class="cursor-poiner"></b-icon>
             </span>
             <i class="fz-2 ellipsis-150 is-lowercase">
-              <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
+              <copy-link kind="email" :value="props.row.email" />
             </i>
           </template>
         </b-table-column>
@@ -227,6 +227,7 @@ import { getSources } from '@/shared/api/catalogApi';
 import { dateMonth, emailName } from '@/shared/format';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import {
   getCandidateNotes,

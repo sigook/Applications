@@ -85,7 +85,12 @@ class JobsViewModel extends _$JobsViewModel {
   }
 
   Future<void> refresh() async {
-    state = const JobsState();
+    state = state.copyWith(
+      isLoadingMore: false,
+      error: null,
+      currentPage: 1,
+      hasMore: true,
+    );
     await loadJobs();
   }
 }

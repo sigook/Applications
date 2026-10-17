@@ -1,17 +1,17 @@
 import 'package:dartz/dartz.dart';
-import 'package:sigook_app_flutter/core/constants/enums.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/core/usecases/usecase.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/entities/punch_status.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/repositories/timesheet_repository.dart';
 
-class GetClockType implements UseCase<ClockType, GetClockTypeParams> {
+class GetPunchStatus implements UseCase<PunchStatus, GetPunchStatusParams> {
   final TimesheetRepository repository;
 
-  GetClockType(this.repository);
+  GetPunchStatus(this.repository);
 
   @override
-  Future<Either<Failure, ClockType>> call(GetClockTypeParams params) async {
-    return await repository.getClockType(
+  Future<Either<Failure, PunchStatus>> call(GetPunchStatusParams params) {
+    return repository.getPunchStatus(
       requestId: params.requestId,
       latitude: params.latitude,
       longitude: params.longitude,
@@ -19,12 +19,12 @@ class GetClockType implements UseCase<ClockType, GetClockTypeParams> {
   }
 }
 
-class GetClockTypeParams {
+class GetPunchStatusParams {
   final String requestId;
   final double latitude;
   final double longitude;
 
-  GetClockTypeParams({
+  GetPunchStatusParams({
     required this.requestId,
     required this.latitude,
     required this.longitude,

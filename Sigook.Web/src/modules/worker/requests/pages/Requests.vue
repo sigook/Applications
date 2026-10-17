@@ -1,65 +1,29 @@
 <template>
   <div>
-    <b-loading v-model="isLoading"></b-loading>
+    <b-loading :model-value="isLoading"></b-loading>
     <!-- If is not approved to work -->
-    <b-message type="is-warning" v-if="!currentUser.approvedToWork" :closable="false">
+    <b-message type="is-warning" v-if="isProfileLoaded && !currentUser.approvedToWork" :closable="false">
       You are not approved to work
     </b-message>
-    <b-message type="is-warning" v-if="hasMissingDocuments" :closable="false">
+    <b-message type="is-warning" v-if="missingRequirements.length" :closable="false">
       <p><b>Your Profile is Incomplete</b></p>
       <p class="fz-1">Please update the following information to be able to work with us.</p>
       <ul class="normal-list fz-1">
-        <li v-if="missingSocialInsurance">Social Insurance</li>
-        <li v-if="missingIdentification1">Identification Document</li>
-        <li v-if="missingIdentification2">Second Identification Document</li>
-        <li v-if="missingResume">Resume</li>
+        <li v-for="requirement in missingRequirements" :key="requirement">
+          <router-link :to="{ path: '/worker-profile', query: { section: workerRequirementSection(requirement) } }">
+            {{ workerRequirementLabel(requirement) }}
+          </router-link>
+        </li>
       </ul>
       <b-button tag="router-link" to="/worker-profile" type="is-danger" class="mtop-5">
-        UPDATE DOCUMENTS
+        OPEN MY PROFILE
       </b-button>
     </b-message>
     <h2 class="fz1 pt-3">Jobs</h2>
     <div>
-      <SigookGrid :fetch="getJobs" v-model:params="serverParams" @update:loading="(value) => isLoading = value" @click="onRowClick">
+      <SigookGrid :fetch="getJobs" v-model:params="serverParams" @update:loading="(value) => isGridLoading = value" @click="onRowClick">
         <template #mobile-card="{ row }">
-          <div class="rcard is-clickable" @click="onRowClick(row)">
-            <div class="rcard__head">
-              <div>
-                <span class="rcard__title">{{ row.numberId }}</span>
-                <span v-if="row.isAsap" class="asap ml-2">Asap</span>
-              </div>
-              <div v-if="row.status && row.status !== 'None'" class="capitailized has-text-weight-bold"
-                :class="row.status">
-                {{ row.status }}
-              </div>
-            </div>
-            <p class="rcard__title">{{ row.jobTitle }}</p>
-            <div class="rcard__rows">
-              <div class="rcard__row">
-                <span class="rcard__label">Location</span>
-                <span>{{ row.location }}<span v-if="row.entrance"> - {{ row.entrance }}</span></span>
-              </div>
-              <div class="rcard__row">
-                <span class="rcard__label">Duration</span>
-                <span>
-                  {{ dateMonth(row.startAt) }}
-                  <span v-if="row.durationTerm !== appGlobals.$longTerm"> - {{ dateMonth(row.finishAt) }}</span>
-                  <span
-                    v-if="(row.status === appGlobals.$statusFilled || row.status === appGlobals.$statusCancelled) && row.durationTerm === appGlobals.$longTerm">
-                    - {{ dateMonth(row.finishAt) }}</span>
-                  <i class="fz-2 block">{{ splitCapital(row.durationTerm) }}</i>
-                </span>
-              </div>
-              <div class="rcard__row">
-                <span class="rcard__label">Rate / Salary</span>
-                <span>{{ currency(row.workerRate) }}</span>
-              </div>
-              <div class="rcard__row">
-                <span class="rcard__label">Spots</span>
-                <span>{{ row.workersQuantity }}</span>
-              </div>
-            </div>
-          </div>
+          <JobCard :job="row" clickable @click="onRowClick(row)" />
         </template>
         <b-table-column field="numberId" label="Request ID" v-slot="props">
           {{ props.row.numberId }}
@@ -111,27 +75,35 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWorkerStore } from '@/modules/worker/store';
 import { getJobs } from '@/modules/worker/requests/api';
+import { getMyProfile } from '@/modules/worker/profile/api';
+import { showAlertError } from '@/shared/utils/toast';
 import type { WorkerRequestFilter, WorkerRequestListItem } from '@/modules/worker/requests/types';
 import { dateMonth, splitCapital, currency } from '@/shared/format';
+import { workerRequirementLabel, workerRequirementSection } from '@/shared/worker-profile/useWorkerProfileStatus';
 import { appGlobals } from '@/app/globals';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import JobCard from '@/modules/worker/requests/components/JobCard.vue';
 
 const router = useRouter();
 const workerStore = useWorkerStore();
 
-const isLoading = ref(true);
+const isGridLoading = ref(true);
 const serverParams = ref<WorkerRequestFilter>({
   isDescending: false,
 });
 
 const currentUser = computed(() => workerStore.workerProfile);
-const missingSocialInsurance = computed(() => !currentUser.value.socialInsurance || !currentUser.value.socialInsuranceFile?.fileName);
-const missingIdentification1 = computed(() => !currentUser.value.identificationType1File?.fileName || !currentUser.value.identificationNumber1);
-const missingIdentification2 = computed(() => !currentUser.value.identificationType2File?.fileName || !currentUser.value.identificationNumber2);
-const missingResume = computed(() => !currentUser.value.resume?.fileName);
-const hasMissingDocuments = computed(() =>
-  missingSocialInsurance.value || missingIdentification1.value || missingIdentification2.value || missingResume.value,
-);
+const isProfileLoaded = computed(() => !!currentUser.value.id);
+const isProfileLoading = ref(!isProfileLoaded.value);
+const isLoading = computed(() => isGridLoading.value || isProfileLoading.value);
+const missingRequirements = computed(() => currentUser.value.missingRequirements ?? []);
+
+if (isProfileLoading.value) {
+  getMyProfile()
+    .then((data) => workerStore.setWorkerProfile(data))
+    .catch((error) => showAlertError(error))
+    .finally(() => { isProfileLoading.value = false; });
+}
 
 function onRowClick(row: WorkerRequestListItem) {
   switch (row.status) {

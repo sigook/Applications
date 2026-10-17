@@ -81,7 +81,16 @@ export interface WorkerProfileDetail {
   punchCardId: string | null;
   externalId: string | null;
   wcCode: string | null;
+  missingRequirements: WorkerRequirement[];
 }
+
+export type WorkerRequirement =
+  | 'ProfileImage'
+  | 'TaxCategory'
+  | 'SocialInsuranceNumber'
+  | 'SocialInsuranceFile'
+  | 'SocialInsuranceExpired'
+  | 'Identification';
 
 export type WorkerAttentionSeverity = 'danger' | 'warning';
 

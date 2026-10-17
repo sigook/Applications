@@ -18,6 +18,7 @@ using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Agencies;
+using Covenant.Core.BL.Services.Workers;
 using Covenant.Core.BL.Services;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
@@ -72,7 +73,8 @@ public class AgencyBookWorkerServiceTest
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<ILogger<AgencyService>>(),
             Mock.Of<IServiceProvider>(),
-            Mock.Of<IValidator<AgencyPersonnelModel>>());
+            Mock.Of<IValidator<AgencyPersonnelModel>>(),
+            new WorkerRequirementService(new FakeTimeProvider()));
     }
 
     [Fact]

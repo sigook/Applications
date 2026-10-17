@@ -52,6 +52,8 @@ public class RegisterTimesheetLocationTest
     [InlineData(200, 0, "200 m to the north")]
     [InlineData(0, 150, "150 m to the east")]
     [InlineData(-120, -120, "170 m to the south-west")]
+    [InlineData(2460, 0, "2.5 km to the north")]
+    [InlineData(875000, 0, "875 km to the north")]
     public async Task TooFar_ReportsDistanceAndDirectionFromCheckpoint(double metersNorth, double metersEast, string expected)
     {
         var result = await _sut.Register(_requestId, WorkerAt(metersNorth, metersEast));

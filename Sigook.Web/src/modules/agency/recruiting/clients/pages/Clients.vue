@@ -45,8 +45,8 @@
           </template>
           <template v-slot="props">
             {{ props.row.contactName || 'No contact name' }}
-            <p><i class="fz-2 block">{{ props.row.email }}</i></p>
-            <p><i class="fz-2 block">{{ props.row.phone || 'No phone' }}</i></p>
+            <p><i class="fz-2 block"><copy-link kind="email" :value="props.row.email" /></i></p>
+            <p><i class="fz-2 block"><copy-link kind="phone" v-if="props.row.phone" :phone="props.row.phone" /><template v-else>No phone</template></i></p>
             <p><i class="fz-2 block">{{ props.row.contactRole || 'No role' }}</i></p>
             <p>
               <i v-if="!props.row.website" class="fz-2 block">No website</i>
@@ -178,6 +178,7 @@ import type { AgencyCompanyFilter, AgencyCompanyListItem } from '@/modules/agenc
 import type { CatalogItem, GridHandle, TableColumnRef } from '@/shared/types/common';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import NotesPopover from '@/modules/agency/shared/notes/NotesPopover.vue';
 import BulkData from '@/modules/agency/recruiting/candidates/components/BulkData.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';

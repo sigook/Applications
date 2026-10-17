@@ -8,8 +8,8 @@
     <div v-if="main" class="detail-list-item">
       <span class="company-contact-name">{{ fullName(main) }}</span>
       <span v-if="main.position" class="detail-muted">{{ main.position }}</span>
-      <a v-if="main.mobileNumber" :href="`tel:${main.mobileNumber}`">{{ main.mobileNumber }}</a>
-      <a v-if="main.email" :href="`mailto:${main.email}`">{{ main.email }}</a>
+      <copy-link kind="phone" :value="main.mobileNumber" />
+      <copy-link kind="email" :value="main.email" />
     </div>
     <div v-else class="company-contact-empty">
       <span class="detail-empty">No contacts</span>
@@ -23,6 +23,7 @@ import { computed, ref } from 'vue';
 import { showAlertError } from '@/shared/utils/toast';
 import type { CompanyContactSummary } from '@/shared/company-profile/types';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const props = defineProps<{ fetchContacts: () => Promise<CompanyContactSummary[]> }>();
 const emit = defineEmits<{
@@ -52,7 +53,7 @@ props.fetchContacts()
   font-weight: 600;
 }
 
-.detail-list-item a {
+.detail-list-item :deep(a) {
   color: $blue;
 }
 

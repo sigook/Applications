@@ -41,7 +41,7 @@ GET api/agency/recruiting/workers/{id}                → WorkersController.GetB
 PUT api/agency/recruiting/workers/{id}/ApprovedToWork → WorkersController.UpdateApprovedToWork
 ```
 
-Approval calls the domain method `WorkerProfile.UpdateApprovedToWork(now)`, which enforces that required documents are complete. Related toggles on the same controller:
+Approval calls `WorkerProfile.UpdateApprovedToWork(missingRequirements)` with the list computed by `IWorkerRequirementService.GetMissing(profile)`: profile photo, tax category (Canada only), SIN number + document (not expired), and at least one identification (number + file on the same slot). The resume is not required. Every missing item comes back as an error, so the agency sees the full list at once. Subcontractors and contractors skip the list. Booking (`WorkerProfile.CanBeBook`) only re-checks the SIN items (missing or expired) on top of `ApprovedToWork`, so workers approved before a requirement was added can still be booked. Turning the contractor or subcontractor flag **off** requires the full document list (`GetMissingDocuments`). Related toggles on the same controller:
 
 ```
 PUT api/agency/recruiting/workers/{id}/Dnu             (Do Not Use — WorkerProfile.UpdateDnu)
@@ -59,8 +59,10 @@ Once approved, the worker sees their profile(s) and available jobs:
 
 ```
 GET api/worker/profile/{profileId}   → ProfileController.GetById
-GET api/worker/profile/me            → ProfileController.GetMyProfile
+GET api/worker/profile/me            → ProfileController.GetMyProfile → WorkerService.GetProfileDetail
 ```
+
+`GetProfileDetail` (also behind `GET api/agency/recruiting/workers/{id}`) fills `missingRequirements` with the codes from `IWorkerRequirementService`. Sigook.Web (jobs banner, profile "needs attention" list) and Sigook.App (jobs banner) render that list; neither client recomputes the rule.
 
 ---
 
@@ -113,7 +115,7 @@ POST api/worker/requests/{requestId}/Apply    → RequestsController.Apply → W
 
 There is no `/Available` suffix — the plain `GET api/worker/requests` already returns only requests the authenticated worker can apply to.
 
-Both apply routes share one service method, `WorkerService.Apply(WorkerRequestApplyModel model, Guid? requestId = null)`, and one payload, `WorkerRequestApplyModel { NumberId?, Email, Comments }`. The route decides how the applicant is resolved: with `requestId` the worker comes from the token and any `Email` in the body is ignored; without it the worker is looked up by `Email` within the request's agency. Once resolved, `Apply` branches into `ApplyAsWorker` or `ApplyAsCandidate`, each of which owns its duplicate guard, its `RequestApplicant` factory and its notification. Sending the recruiter email is `IRequestApplicantNotificationService` (`NEW_APPLICANT` SendGrid template, one overload per applicant kind); it only notifies — the row is always created by the caller beforehand.
+Both apply routes share one service method, `WorkerService.Apply(WorkerRequestApplyModel model, Guid? requestId = null)`, and one payload, `WorkerRequestApplyModel { NumberId?, Email, Comments }`. The route decides how the applicant is resolved: with `requestId` the worker comes from the token and any `Email` in the body is ignored; without it the worker is looked up by `Email` within the request's agency. Once resolved, `Apply` branches into `ApplyAsWorker` or `ApplyAsCandidate`, each of which owns its duplicate guard, its `RequestApplicant` factory and its notification. `ApplyAsWorker` rejects workers with `ApprovedToWork = false` (`WorkerNotApprovedToWork`); Sigook.Web hides the Apply button and Sigook.App shows the "not approved" card instead of it, but the API is the gate. Sending the recruiter email is `IRequestApplicantNotificationService` (`NEW_APPLICANT` SendGrid template, one overload per applicant kind); it only notifies — the row is always created by the caller beforehand.
 
 Invitation emails (workers and candidates) carry a unified anonymous link `/worker-apply?n={requestNumberId}&e={email}` handled by `POST api/worker/requests/Apply` (`[AllowAnonymous]`) → `RequestsController.ApplyFromInvitation`: the request is resolved by its public `NumberId`, the email is matched (case/whitespace-insensitive) against workers of the request's agency first, then candidates. Candidates are invited and allowed to apply **only if their free-text address contains the request's city** (accent/case-insensitive containment; a request without a city accepts no candidates), are excluded when DNU, and become `RequestApplicant` rows (`Pending`, created by "Sigook"). The invitation consumer (`InvitationConsumer`) sends one batch to workers whose profile location is in the request's city (`Location.CityId`) plus city-matched candidates of the agency (`Candidate.CityId`, free-text address containment only for legacy candidates without a city), deduplicated by email. Both audiences get the same SendGrid template and the same unsubscribe link shape, built from the single `UnsubscribeUrl` setting: `/email-preferences?email={email}`. `POST api/emailpreferences/Unsubscribe` receives the email address and an optional `TypeId` (the `NotificationType` id; when absent it defaults to `NewRequestNotifyWorker`, the only type these emails opt out of), and resolves the audience itself: if the email matches a `User` the opt-out is a `UserNotificationType` row for that type with every channel off, otherwise it falls back to the candidate with that email and stores `Candidate.EmailUnsubscribed`, which excludes them from later invitation batches.
 
@@ -168,15 +170,21 @@ POST api/worker/requests/{requestId}/timesheet
 → TimeSheetsController.Post (Controllers/Worker/TimeSheets/TimeSheetsController.cs)
 → TimesheetService.Register(requestId, WorkerLocationModel)     (payload = GPS location of the punch)
 
+GET api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}
+→ TimesheetService.GetPunchStatus   (everything the punch card shows, in one call)
+  clockType = next expected punch. No date parameter: it depends only on the worker's latest
+  punch for the request (open and under 14 h → clock-out, otherwise clock-in; None when the
+  worker is not booked yet or the open punch was already approved). clockIn/clockOut/dayHours =
+  the open punch, else today's entry. weekHours = entries since Sunday. "Today", "Sunday" and
+  elapsed hours are evaluated in the job site's time zone (Request.JobLocation), falling back
+  to the caller's coordinates. Never in server time.
+
 GET api/worker/requests/{requestId}/timesheet/clock-type/{latitude}/{longitude}
-→ TimesheetService.GetClockType     (next expected punch: clock-in or clock-out)
-  No date parameter: the answer depends only on the worker's latest punch for the request
-  (open and under 14 h → clock-out, otherwise clock-in; None when the worker is not booked yet
-  or the open punch was already approved). Elapsed hours are evaluated in the job site's time
-  zone (Request.JobLocation), falling back to the caller's coordinates. Never in server time.
+→ TimesheetService.GetClockType     [Obsolete] clockType only; kept for mobile builds released
+  before punch-status. New clients never call it.
 
 GET api/worker/requests/{requestId}/timesheet
-→ ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list)
+→ ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list, Time Sheet tab only)
 ```
 
 ### Step 2: Agency reviews and edits the punch card

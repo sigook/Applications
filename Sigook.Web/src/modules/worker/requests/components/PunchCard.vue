@@ -6,7 +6,7 @@
     <div class="punch-card">
       <div class="punch-card__head">
         <span class="punch-card__head-label">Punch card</span>
-        <span class="punch-card__head-date">{{ date(activeItem ? activeItem.day : today) }}</span>
+        <span class="punch-card__head-date">{{ date(today) }}</span>
       </div>
 
       <div class="punch-card__body">
@@ -25,6 +25,10 @@
           <div>
             <div class="punch-geo__title">{{ geo.title }}</div>
             <div v-if="geo.subtitle" class="punch-geo__sub">{{ geo.subtitle }}</div>
+            <div v-if="geo.coordinates" class="punch-geo__coords">
+              <b-icon icon="crosshairs-gps" size="is-small"></b-icon>
+              {{ geo.coordinates }}
+            </div>
           </div>
         </div>
 
@@ -49,18 +53,30 @@
           <div v-if="ctaHint" class="punch-hint">{{ ctaHint }}</div>
         </template>
 
+        <div v-if="punchRejected" class="punch-rejected">
+          <b-icon icon="map-marker-off-outline" size="is-small"></b-icon>
+          <div class="punch-rejected__body">
+            <div class="punch-rejected__title">Too far from workplace</div>
+            <div class="punch-rejected__message">{{ punchRejected.message }}</div>
+            <div class="punch-rejected__ref">{{ punchRejected.reference }}</div>
+          </div>
+          <button type="button" class="punch-rejected__close" aria-label="Dismiss" @click="punchRejected = null">
+            <b-icon icon="close" size="is-small"></b-icon>
+          </button>
+        </div>
+
         <div class="punch-stamps">
           <div class="punch-stamps__cell">
             <div class="punch-stamps__label">Clock in</div>
-            <div class="punch-stamps__value" :class="{ 'is-empty': !activeItem || !activeItem.clockIn }">
-              {{ activeItem && activeItem.clockIn ? time(activeItem.clockIn) : '--:--' }}
+            <div class="punch-stamps__value" :class="{ 'is-empty': !status.clockIn }">
+              {{ status.clockIn ? time(status.clockIn) : '--:--' }}
             </div>
           </div>
           <div class="punch-stamps__sep"></div>
           <div class="punch-stamps__cell">
             <div class="punch-stamps__label">Clock out</div>
-            <div class="punch-stamps__value" :class="{ 'is-empty': !activeItem || !activeItem.clockOut }">
-              {{ activeItem && activeItem.clockOut ? time(activeItem.clockOut) : '--:--' }}
+            <div class="punch-stamps__value" :class="{ 'is-empty': !status.clockOut }">
+              {{ status.clockOut ? time(status.clockOut) : '--:--' }}
             </div>
           </div>
         </div>
@@ -68,7 +84,7 @@
     </div>
 
     <div class="punch-foot">
-      <span>This week: {{ hour(weekHours) }} h</span>
+      <span>This week: {{ hour(status.weekHours) }} h</span>
     </div>
   </div>
 </template>
@@ -76,14 +92,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useAppStore } from '@/app/stores/app';
-import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
+import { useWorkerStore } from '@/modules/worker/store';
+import { getErrorMessage, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import dayjs from 'dayjs';
-import { workerRegisterTime, getClockType as getClockTypeApi } from '@/modules/worker/requests/api';
+import { workerRegisterTime, getPunchStatus } from '@/modules/worker/requests/api';
 import { ClockType } from '@/shared/constants/enums';
 import { date, time, hour } from '@/shared/format';
-import { distanceInMeters, cardinalDirection } from '@/shared/utils/geo';
-import type { PaginatedList } from '@/shared/types/common';
-import type { WorkerRequestDetail, WorkerTimeSheetItem } from '@/modules/worker/requests/types';
+import { distanceInMeters, cardinalDirection, formatDistance } from '@/shared/utils/geo';
+import type { PunchStatus, WorkerRequestDetail } from '@/modules/worker/requests/types';
 import DataEntryTerms from '@/shared/punch-card/DataEntryTerms.vue';
 
 type GeoState = 'checking' | 'denied' | 'neutral' | 'ok' | 'edge' | 'far';
@@ -93,13 +109,20 @@ interface GeoStrip {
   icon: string;
   title: string;
   subtitle: string;
+  coordinates?: string;
+}
+
+interface PunchRejected {
+  message: string;
+  reference: string;
 }
 
 const props = defineProps<{
   requestId: string;
-  timesheet?: PaginatedList<WorkerTimeSheetItem>;
   request?: WorkerRequestDetail;
 }>();
+
+const emptyStatus = (): PunchStatus => ({ clockType: ClockType.None, dayHours: 0, weekHours: 0 });
 
 const emit = defineEmits<{
   (e: 'refreshTimeSheet'): void;
@@ -107,11 +130,14 @@ const emit = defineEmits<{
 }>();
 
 const appStore = useAppStore();
+const workerStore = useWorkerStore();
 
 const isLoading = ref(false);
+const punchRejected = ref<PunchRejected | null>(null);
 const today = ref<Date | null>(null);
 const now = ref(dayjs());
-const clockType = ref<ClockType>(ClockType.None);
+const status = ref<PunchStatus>(emptyStatus());
+const clockType = computed(() => status.value.clockType);
 const clockTypeFailed = ref(false);
 const position = ref<GeolocationPosition | null>(null);
 const positionResolved = ref(false);
@@ -120,27 +146,12 @@ const confirmAction = ref<'in' | 'out' | null>(null);
 let markPositionReady: () => void = () => undefined;
 const positionReady = new Promise<void>((resolve) => (markPositionReady = resolve));
 
-const items = computed<WorkerTimeSheetItem[]>(() => props.timesheet?.items ?? []);
-
 const hasPosition = computed(() => position.value !== null);
-
-const openItem = computed(() => {
-  return (
-    items.value.find((item) => item.clockIn && !item.clockOut && dayjs().diff(dayjs(item.clockIn), 'hour') < 14) ?? null
-  );
-});
-
-const todayItem = computed(() => {
-  if (!today.value) return null;
-  return items.value.find((item) => dayjs(item.day).isSame(today.value, 'day')) ?? null;
-});
-
-const activeItem = computed(() => openItem.value ?? todayItem.value);
 
 const phase = computed(() => {
   if (clockTypeFailed.value) return 'error';
   if (clockType.value === ClockType.ClockOut) return 'working';
-  if (todayItem.value?.clockIn && todayItem.value?.clockOut) return 'done';
+  if (status.value.clockIn && status.value.clockOut) return 'done';
   if (hasPosition.value && clockType.value === ClockType.None) return 'none';
   return 'idle';
 });
@@ -175,36 +186,48 @@ const geo = computed<GeoStrip>(() => {
       subtitle: 'Allow location in your browser so we can confirm you are at the check point.'
     };
   }
+  const { latitude, longitude, accuracy } = current.coords;
+  const coordinates = `${latitude.toFixed(6)}, ${longitude.toFixed(6)} (±${Math.round(accuracy)} m)`;
   const checkpoint = props.request?.punchCheckpoint;
   if (!checkpoint) {
     return {
       state: 'neutral',
       icon: 'map-marker-outline',
       title: 'Location shared',
-      subtitle: `${props.request?.location ?? 'Check point'} · your location is checked when you punch.`
+      subtitle: `${props.request?.location ?? 'Check point'} · your location is checked when you punch.`,
+      coordinates
     };
   }
-  const meters = distanceInMeters(checkpoint.latitude, checkpoint.longitude, current.coords.latitude, current.coords.longitude);
-  const accuracy = current.coords.accuracy;
+  const meters = distanceInMeters(checkpoint.latitude, checkpoint.longitude, latitude, longitude);
   if (meters + accuracy <= checkpoint.radiusMeters) {
-    return { state: 'ok', icon: 'check-circle-outline', title: 'At the check point', subtitle: '' };
+    return { state: 'ok', icon: 'check-circle-outline', title: 'At the check point', subtitle: '', coordinates };
   }
   if (meters <= checkpoint.radiusMeters) {
     return {
       state: 'edge',
       icon: 'crosshairs-gps',
       title: `About ${Math.round(meters)} m from the check point (GPS ±${Math.round(accuracy)} m)`,
-      subtitle: 'Move a bit closer to be safe.'
+      subtitle: 'Move a bit closer to be safe.',
+      coordinates
     };
   }
-  const direction = cardinalDirection(checkpoint.latitude, checkpoint.longitude, current.coords.latitude, current.coords.longitude);
+  const direction = cardinalDirection(checkpoint.latitude, checkpoint.longitude, latitude, longitude);
   return {
     state: 'far',
     icon: 'map-marker-off-outline',
-    title: `About ${Math.round(meters)} m ${direction} of the check point`,
-    subtitle: 'Get closer before you clock in.'
+    title: `About ${formatDistance(meters)} ${direction} of the check point`,
+    subtitle: 'Get closer before you clock in.',
+    coordinates
   };
 });
+
+function punchReference(): string {
+  const profile = workerStore.workerProfile;
+  const worker = profile.numberId
+    ? `Worker #${profile.numberId} · ${[profile.firstName, profile.lastName].filter(Boolean).join(' ')}`
+    : 'Worker: unknown';
+  return `${worker} · Request #${props.request?.numberId ?? '-'} · ${dayjs().format('MMM DD, YYYY hh:mm A')}`;
+}
 
 function elapsed(seconds: number): string {
   const pad = (value: number) => String(value).padStart(2, '0');
@@ -212,16 +235,16 @@ function elapsed(seconds: number): string {
 }
 
 const clockValue = computed(() => {
-  if (phase.value === 'working' && activeItem.value?.clockIn) {
-    return elapsed(Math.max(0, now.value.diff(dayjs(activeItem.value.clockIn), 'second')));
+  if (phase.value === 'working' && status.value.clockIn) {
+    return elapsed(Math.max(0, now.value.diff(dayjs(status.value.clockIn), 'second')));
   }
-  if (phase.value === 'done') return `${hour(activeItem.value?.totalHours ?? 0)} h`;
+  if (phase.value === 'done') return `${hour(status.value.dayHours)} h`;
   if (phase.value === 'none') return '--:--';
   return now.value.format('HH:mm:ss');
 });
 
 const clockLabel = computed(() => {
-  if (phase.value === 'working' && activeItem.value?.clockIn) return `Since ${time(activeItem.value.clockIn)}`;
+  if (phase.value === 'working' && status.value.clockIn) return `Since ${time(status.value.clockIn)}`;
   if (phase.value === 'done') return 'Sent to your agency for approval';
   if (phase.value === 'none') return 'No shift to punch on this day';
   if (phase.value === 'error') return 'Could not check your shift status';
@@ -246,13 +269,6 @@ const ctaHint = computed(() => {
   return '';
 });
 
-const weekHours = computed(() => {
-  const start = dayjs(today.value ?? undefined).startOf('week');
-  return items.value
-    .filter((item) => dayjs(item.day).isAfter(start))
-    .reduce((total, item) => total + (item.totalHours ?? 0), 0);
-});
-
 function askConfirm() {
   confirmAction.value = phase.value === 'working' ? 'out' : 'in';
 }
@@ -269,22 +285,23 @@ async function refreshClockType() {
   await positionReady;
   clockTypeFailed.value = false;
   if (!position.value) {
-    clockType.value = ClockType.None;
+    status.value = emptyStatus();
     return;
   }
   try {
-    clockType.value = await getClockTypeApi(
+    status.value = await getPunchStatus(
       props.requestId,
       position.value.coords.latitude,
       position.value.coords.longitude
     );
   } catch {
-    clockType.value = ClockType.None;
+    status.value = emptyStatus();
     clockTypeFailed.value = true;
   }
 }
 
 async function retry() {
+  punchRejected.value = null;
   isLoading.value = true;
   emit('refreshRequest');
   await refreshClockType();
@@ -295,6 +312,7 @@ function registerHour() {
   if (!position.value) return;
   const wasClockIn = confirmAction.value === 'in';
   confirmAction.value = null;
+  punchRejected.value = null;
   isLoading.value = true;
   return workerRegisterTime(props.requestId, position.value.coords.latitude, position.value.coords.longitude)
     .then(async () => {
@@ -304,9 +322,15 @@ function registerHour() {
       isLoading.value = false;
       showAlertSuccess(wasClockIn ? 'Enjoy your shift!' : 'Thanks for your job!');
     })
-    .catch((error: unknown) => {
+    .catch(async (error: unknown) => {
       isLoading.value = false;
-      showAlertError((error as { data?: unknown }).data);
+      const data = (error as { data?: unknown }).data;
+      const message = (await getErrorMessage(data)).replace(/<br\/>/g, ' ').trim();
+      if (/too far/i.test(message)) {
+        punchRejected.value = { message, reference: punchReference() };
+        return;
+      }
+      showAlertError(data);
     });
 }
 
@@ -552,6 +576,64 @@ watch(today, async (value) => {
   color: $grey-light;
   margin-top: 2px;
   text-wrap: pretty;
+}
+
+.punch-geo__coords {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: $grey-light;
+  font-variant-numeric: tabular-nums;
+}
+
+.punch-rejected {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba($danger, 0.3);
+  border-radius: 10px;
+  background: rgba($danger, 0.08);
+  color: $danger-hover;
+}
+
+.punch-rejected__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.punch-rejected__title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.punch-rejected__message {
+  margin-top: 2px;
+  font-size: 13px;
+  color: $navy;
+  text-wrap: pretty;
+}
+
+.punch-rejected__ref {
+  margin-top: 4px;
+  font-size: 11px;
+  color: $grey-light;
+}
+
+.punch-rejected__close {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $grey-light;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: $navy;
+  }
 }
 
 .punch-confirm {

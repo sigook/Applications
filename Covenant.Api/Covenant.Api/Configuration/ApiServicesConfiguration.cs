@@ -113,6 +113,7 @@ public static class ApiServicesConfiguration
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAgencyService, AgencyService>();
         services.AddScoped<IWorkerService, WorkerService>();
+        services.AddScoped<IWorkerRequirementService, WorkerRequirementService>();
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IRunnerService, RunnerService>();

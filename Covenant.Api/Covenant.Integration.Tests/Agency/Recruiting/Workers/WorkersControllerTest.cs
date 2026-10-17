@@ -147,6 +147,12 @@ public partial class WorkersControllerTest : BaseTestOrder
         {
             Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } }
         };
+        foreach (var worker in new[] { FakeWorkerToDelete, FakeWorkerIsContractor, FakeWorkerIsSubcontractor })
+        {
+            worker.PatchIdentification1("111111111", null, new CovenantFile("id1.pdf"));
+        }
+        FakeWorkerIsContractor.PatchProfileImage(new CovenantFile("contractor.png"));
+        FakeWorkerIsSubcontractor.PatchProfileImage(new CovenantFile("subcontractor.png"));
         var basicInformation = new Mock<IWorkerBasicInformation<ICatalog<Guid>>>();
         basicInformation.SetupGet(i => i.FirstName).Returns("Juan");
         basicInformation.SetupGet(i => i.LastName).Returns("Perez");

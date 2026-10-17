@@ -569,6 +569,15 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
             .OrderByDescending(ts => ts.ClockIn)
             .FirstOrDefaultAsync();
 
+    public Task<List<TimeSheet>> GetTimesheetsSince(Guid workerId, Guid requestId, DateTime since) =>
+        Context.TimeSheets
+            .Where(ts => ts.Date >= since
+                         && ts.WorkerRequest.RequestId == requestId
+                         && ts.WorkerRequest.WorkerProfile.WorkerId == workerId)
+            .OrderByDescending(ts => ts.Date)
+            .ThenByDescending(ts => ts.ClockIn)
+            .ToListAsync();
+
     public Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition) =>
         (from wp in Context.WorkerProfiles.Where(condition)
          join wr in Context.WorkerRequests.Where(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked) on wp.Id equals wr.WorkerProfileId

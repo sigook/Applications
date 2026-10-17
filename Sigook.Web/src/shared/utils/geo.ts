@@ -13,6 +13,12 @@ export function distanceInMeters(latitude1: number, longitude1: number, latitude
   return EARTH_RADIUS_METERS * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
+export function formatDistance(meters: number): string {
+  if (meters < 1000) return `${Math.round(meters)} m`;
+  if (meters < 10000) return `${(meters / 1000).toFixed(1)} km`;
+  return `${Math.round(meters / 1000)} km`;
+}
+
 export function cardinalDirection(fromLatitude: number, fromLongitude: number, toLatitude: number, toLongitude: number): string {
   const lat1 = toRadians(fromLatitude);
   const lat2 = toRadians(toLatitude);

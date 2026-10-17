@@ -31,6 +31,12 @@ double distanceInMeters(
       (2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a)));
 }
 
+String formatDistance(double meters) {
+  if (meters < 1000) return '${meters.round()} m';
+  if (meters < 10000) return '${(meters / 1000).toStringAsFixed(1)} km';
+  return '${(meters / 1000).round()} km';
+}
+
 String cardinalDirection(
   double fromLatitude,
   double fromLongitude,

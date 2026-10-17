@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/worker_profile.dart';
+import '../../domain/entities/worker_requirement.dart';
 
 part 'worker_profile_model.freezed.dart';
 part 'worker_profile_model.g.dart';
@@ -184,6 +185,7 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
     @Default(false) bool isContractor,
     @Default(false) bool dnu,
     String? punchCardId,
+    @Default([]) List<String> missingRequirements,
   }) = _WorkerProfileModel;
 
   factory WorkerProfileModel.fromJson(Map<String, dynamic> json) =>
@@ -282,6 +284,10 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
       contactEmergencyName: contactEmergencyName,
       contactEmergencyLastName: contactEmergencyLastName,
       contactEmergencyPhone: contactEmergencyPhone,
+      missingRequirements: missingRequirements
+          .map(WorkerRequirement.fromCode)
+          .whereType<WorkerRequirement>()
+          .toList(),
     );
   }
 }

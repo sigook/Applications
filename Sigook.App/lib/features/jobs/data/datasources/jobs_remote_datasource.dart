@@ -56,7 +56,6 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
           }
           // API can return null for required String fields — provide defaults
           map['jobTitle'] ??= '';
-          map['agencyFullName'] ??= '';
           return map;
         }).toList();
         return PaginatedJobsModel.fromJson({...data, 'items': items});
@@ -99,7 +98,6 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
         }
         // API can return null for required String fields — provide defaults
         map['jobTitle'] ??= '';
-        map['agencyFullName'] ??= '';
         map['status'] ??= '';
         return JobDetailsModel.fromJson(map);
       } else {

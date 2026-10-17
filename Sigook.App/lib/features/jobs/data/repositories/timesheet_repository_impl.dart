@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:sigook_app_flutter/core/error/exceptions.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/core/network/network_info.dart';
-import 'package:sigook_app_flutter/core/constants/enums.dart';
 import 'package:sigook_app_flutter/features/jobs/data/datasources/timesheet_remote_datasource.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/entities/punch_status.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/timesheet_response.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/paginated_timesheet.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/repositories/timesheet_repository.dart';
@@ -19,7 +19,7 @@ class TimesheetRepositoryImpl implements TimesheetRepository {
   });
 
   @override
-  Future<Either<Failure, ClockType>> getClockType({
+  Future<Either<Failure, PunchStatus>> getPunchStatus({
     required String requestId,
     required double latitude,
     required double longitude,
@@ -29,7 +29,7 @@ class TimesheetRepositoryImpl implements TimesheetRepository {
     }
 
     try {
-      final result = await remoteDataSource.getClockType(
+      final result = await remoteDataSource.getPunchStatus(
         requestId,
         latitude,
         longitude,

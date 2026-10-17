@@ -79,6 +79,14 @@ public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWe
     }
 
     [Fact]
+    public async Task ApplyFailsWhenWorkerIsNotApprovedToWork()
+    {
+        var response = await Apply(Data.WorkerRequestNumberId, "unapproved_applybyemail@mail.com");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.False(await GetContext().RequestApplicants.AnyAsync(ra => ra.WorkerProfileId == Data.UnapprovedWorkerProfile.Id));
+    }
+
+    [Fact]
     public async Task ApplyFailsWhenCandidateCityDoesNotMatch()
     {
         var response = await Apply(Data.CandidateRequestNumberId, "mismatch_applybyemail@mail.com");
@@ -130,7 +138,7 @@ public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWe
             context.CompanyProfiles.Add(Data.CompanyProfile);
             context.CompanyProfileJobPositionRates.Add(Data.FakeRate);
             context.Requests.AddRange(Data.WorkerRequest, Data.CandidateRequest, Data.MontrealRequest, Data.PrecedenceRequest);
-            context.WorkerProfiles.Add(Data.WorkerProfile);
+            context.WorkerProfiles.AddRange(Data.WorkerProfile, Data.UnapprovedWorkerProfile);
             context.Candidates.AddRange(Data.MatchingCandidate, Data.AccentCandidate, Data.MismatchCandidate, Data.DnuCandidate, Data.PrecedenceCandidate);
             context.SaveChanges();
         }
@@ -174,6 +182,7 @@ public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWe
         public static readonly Request PrecedenceRequest = CreateRequest(PrecedenceRequestNumberId, "Toronto");
 
         public static readonly WorkerProfile WorkerProfile;
+        public static readonly WorkerProfile UnapprovedWorkerProfile;
 
         public static readonly Candidate MatchingCandidate = CreateCandidate("Jane Candidate", "candidate_applybyemail@mail.com", "25 Bay St, Toronto ON");
         public static readonly Candidate AccentCandidate = CreateCandidate("Marie Candidate", "accent_applybyemail@mail.com", "25 Rue Sainte-Catherine, Montréal QC");
@@ -197,6 +206,14 @@ public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWe
             WorkerProfile.PatchProfileImage(new CovenantFile("profile.png"));
             WorkerProfile.PatchSinInformation(new FakeSinInfo());
             WorkerProfile.PatchDocuments(new FakeDocuments());
+
+            UnapprovedWorkerProfile = new WorkerProfile(new User(CvnEmail.Create("unapproved_applybyemail@mail.com").Value))
+            {
+                Agency = FakeAgency,
+                ApprovedToWork = false,
+                Location = new Location { City = new City { Province = new Province { Country = FakeData.FakeCountry("USA") } } },
+            };
+            UnapprovedWorkerProfile.PatchProfileImage(new CovenantFile("unapproved.png"));
             CompanyProfile.UpdateName("Microsoft Apply By Email Test");
         }
 

@@ -14,7 +14,6 @@ final _tJobDetails = JobDetails(
   jobTitle: 'Warehouse Associate',
   numberId: 42,
   workersQuantity: 5,
-  agencyFullName: 'Test Agency',
   status: 'Open',
   isAsap: false,
   workerRate: 20.0,

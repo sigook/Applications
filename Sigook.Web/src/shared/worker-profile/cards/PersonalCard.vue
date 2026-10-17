@@ -30,7 +30,7 @@
       </div>
       <div v-if="props.showLoginEmail" class="profile-field">
         <dt class="profile-field-label">Login email</dt>
-        <dd>{{ props.worker.email }}</dd>
+        <dd><copy-link kind="email" :value="props.worker.email" /></dd>
       </div>
       <div class="profile-field">
         <dt class="profile-field-label">SIN/SSN</dt>
@@ -70,6 +70,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import { dateMonth, filename, sin } from '@/shared/format';
 import { expiryStatus } from '@/shared/worker-profile/useWorkerProfileStatus';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';

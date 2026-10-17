@@ -16,6 +16,7 @@
         </b-button>
         <span v-else class="detail-header-logo">
           <img v-if="logo && !logoFailed" :src="logo" alt="" @error="logoFailed = true" />
+          <b-icon v-else-if="logoIcon" :icon="logoIcon"></b-icon>
           <span v-else>{{ initials }}</span>
         </span>
         <div class="detail-header-main">
@@ -33,6 +34,8 @@
             <span v-if="statusLabel" class="detail-chip" :class="statusVariant">{{ statusLabel }}</span>
             <span v-for="chip in chips" :key="chip.label" class="detail-chip" :class="chip.variant">{{ chip.label }}</span>
           </div>
+
+          <slot name="subtitle" />
 
           <dl v-if="kpis.length" class="detail-kpis">
             <div v-for="kpi in kpis" :key="kpi.key" class="detail-kpi">
@@ -73,6 +76,7 @@ const props = defineProps<{
   orgName?: string;
   orgLink?: RouteLocationRaw;
   logo?: string | null;
+  logoIcon?: string;
   logoEditable?: boolean;
   statusLabel?: string;
   statusVariant?: DetailChipVariant;

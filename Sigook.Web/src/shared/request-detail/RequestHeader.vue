@@ -1,6 +1,7 @@
 <template>
-  <detail-header :number-id="numberId" :title="title" :meta="subtitle" :org-name="orgName" :org-link="orgLink"
-    :logo="logo" :status-label="statusLabel" :status-variant="statusVariant" :chips="headerChips" :kpis="headerKpis">
+  <detail-header :title="`${numberId} · ${title}`" :meta="subtitle" :org-name="orgName" :org-link="orgLink"
+    :logo="logo" :logo-icon="logoIcon" :status-label="statusLabel" :status-variant="statusVariant" :chips="headerChips"
+    :kpis="headerKpis">
     <template v-for="(_, name) in $slots" #[name]="scope">
       <slot :name="name" v-bind="scope ?? {}" />
     </template>
@@ -24,6 +25,7 @@ const props = defineProps<{
   orgName?: string;
   orgLink?: RouteLocationRaw;
   logo?: string | null;
+  logoIcon?: string;
   statusLabel?: string;
   statusVariant?: RequestChipVariant;
   isAsap?: boolean;

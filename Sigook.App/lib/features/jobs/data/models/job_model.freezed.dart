@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$JobModel {
 
- String get id; String get jobTitle; int get numberId; int get workersQuantity; String? get location; String? get entrance; String? get agencyFullName; String? get agencyLogo; String? get status; bool get isAsap; bool? get workerApprovedToWork; double get workerRate; double? get workerSalary; DateTime get createdAt; DateTime? get finishAt; DateTime get startAt; String? get durationTerm;
+ String get id; String get jobTitle; int get numberId; int get workersQuantity; String? get location; String? get entrance; String? get status; bool get isAsap; bool? get workerApprovedToWork; double get workerRate; double? get workerSalary; DateTime get createdAt; DateTime? get finishAt; DateTime get startAt; String? get durationTerm;
 /// Create a copy of JobModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $JobModelCopyWith<JobModel> get copyWith => _$JobModelCopyWithImpl<JobModel>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as JobModel;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.jobTitle, _this.jobTitle) || other.jobTitle == _this.jobTitle)&&(identical(other.numberId, _this.numberId) || other.numberId == _this.numberId)&&(identical(other.workersQuantity, _this.workersQuantity) || other.workersQuantity == _this.workersQuantity)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.entrance, _this.entrance) || other.entrance == _this.entrance)&&(identical(other.agencyFullName, _this.agencyFullName) || other.agencyFullName == _this.agencyFullName)&&(identical(other.agencyLogo, _this.agencyLogo) || other.agencyLogo == _this.agencyLogo)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.isAsap, _this.isAsap) || other.isAsap == _this.isAsap)&&(identical(other.workerApprovedToWork, _this.workerApprovedToWork) || other.workerApprovedToWork == _this.workerApprovedToWork)&&(identical(other.workerRate, _this.workerRate) || other.workerRate == _this.workerRate)&&(identical(other.workerSalary, _this.workerSalary) || other.workerSalary == _this.workerSalary)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.finishAt, _this.finishAt) || other.finishAt == _this.finishAt)&&(identical(other.startAt, _this.startAt) || other.startAt == _this.startAt)&&(identical(other.durationTerm, _this.durationTerm) || other.durationTerm == _this.durationTerm));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobModel&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.jobTitle, _this.jobTitle) || other.jobTitle == _this.jobTitle)&&(identical(other.numberId, _this.numberId) || other.numberId == _this.numberId)&&(identical(other.workersQuantity, _this.workersQuantity) || other.workersQuantity == _this.workersQuantity)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.entrance, _this.entrance) || other.entrance == _this.entrance)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.isAsap, _this.isAsap) || other.isAsap == _this.isAsap)&&(identical(other.workerApprovedToWork, _this.workerApprovedToWork) || other.workerApprovedToWork == _this.workerApprovedToWork)&&(identical(other.workerRate, _this.workerRate) || other.workerRate == _this.workerRate)&&(identical(other.workerSalary, _this.workerSalary) || other.workerSalary == _this.workerSalary)&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.finishAt, _this.finishAt) || other.finishAt == _this.finishAt)&&(identical(other.startAt, _this.startAt) || other.startAt == _this.startAt)&&(identical(other.durationTerm, _this.durationTerm) || other.durationTerm == _this.durationTerm));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as JobModel;
-  return Object.hash(runtimeType,_this.id,_this.jobTitle,_this.numberId,_this.workersQuantity,_this.location,_this.entrance,_this.agencyFullName,_this.agencyLogo,_this.status,_this.isAsap,_this.workerApprovedToWork,_this.workerRate,_this.workerSalary,_this.createdAt,_this.finishAt,_this.startAt,_this.durationTerm);
+  return Object.hash(runtimeType,_this.id,_this.jobTitle,_this.numberId,_this.workersQuantity,_this.location,_this.entrance,_this.status,_this.isAsap,_this.workerApprovedToWork,_this.workerRate,_this.workerSalary,_this.createdAt,_this.finishAt,_this.startAt,_this.durationTerm);
 }
 
 @override
 String toString() {
   final _this = this as JobModel;
-  return 'JobModel(id: ${_this.id}, jobTitle: ${_this.jobTitle}, numberId: ${_this.numberId}, workersQuantity: ${_this.workersQuantity}, location: ${_this.location}, entrance: ${_this.entrance}, agencyFullName: ${_this.agencyFullName}, agencyLogo: ${_this.agencyLogo}, status: ${_this.status}, isAsap: ${_this.isAsap}, workerApprovedToWork: ${_this.workerApprovedToWork}, workerRate: ${_this.workerRate}, workerSalary: ${_this.workerSalary}, createdAt: ${_this.createdAt}, finishAt: ${_this.finishAt}, startAt: ${_this.startAt}, durationTerm: ${_this.durationTerm})';
+  return 'JobModel(id: ${_this.id}, jobTitle: ${_this.jobTitle}, numberId: ${_this.numberId}, workersQuantity: ${_this.workersQuantity}, location: ${_this.location}, entrance: ${_this.entrance}, status: ${_this.status}, isAsap: ${_this.isAsap}, workerApprovedToWork: ${_this.workerApprovedToWork}, workerRate: ${_this.workerRate}, workerSalary: ${_this.workerSalary}, createdAt: ${_this.createdAt}, finishAt: ${_this.finishAt}, startAt: ${_this.startAt}, durationTerm: ${_this.durationTerm})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $JobModelCopyWith<$Res>  {
   factory $JobModelCopyWith(JobModel value, $Res Function(JobModel) _then) = _$JobModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String? agencyFullName, String? agencyLogo, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
+ String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
 });
 
 
@@ -71,7 +71,7 @@ class _$JobModelCopyWithImpl<$Res>
 
 /// Create a copy of JobModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? agencyFullName = freezed,Object? agencyLogo = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
   return _then(JobModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,jobTitle: null == jobTitle ? _self.jobTitle : jobTitle // ignore: cast_nullable_to_non_nullable
@@ -79,8 +79,6 @@ as String,numberId: null == numberId ? _self.numberId : numberId // ignore: cast
 as int,workersQuantity: null == workersQuantity ? _self.workersQuantity : workersQuantity // ignore: cast_nullable_to_non_nullable
 as int,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,entrance: freezed == entrance ? _self.entrance : entrance // ignore: cast_nullable_to_non_nullable
-as String?,agencyFullName: freezed == agencyFullName ? _self.agencyFullName : agencyFullName // ignore: cast_nullable_to_non_nullable
-as String?,agencyLogo: freezed == agencyLogo ? _self.agencyLogo : agencyLogo // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,isAsap: null == isAsap ? _self.isAsap : isAsap // ignore: cast_nullable_to_non_nullable
 as bool,workerApprovedToWork: freezed == workerApprovedToWork ? _self.workerApprovedToWork : workerApprovedToWork // ignore: cast_nullable_to_non_nullable
@@ -175,10 +173,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _JobModel() when $default != null:
-return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.agencyFullName,_that.agencyLogo,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
+return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
   return orElse();
 
 }
@@ -196,10 +194,10 @@ return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)  $default,) {final _that = this;
 switch (_that) {
 case _JobModel():
-return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.agencyFullName,_that.agencyLogo,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
+return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -216,10 +214,10 @@ return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? agencyFullName,  String? agencyLogo,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String jobTitle,  int numberId,  int workersQuantity,  String? location,  String? entrance,  String? status,  bool isAsap,  bool? workerApprovedToWork,  double workerRate,  double? workerSalary,  DateTime createdAt,  DateTime? finishAt,  DateTime startAt,  String? durationTerm)?  $default,) {final _that = this;
 switch (_that) {
 case _JobModel() when $default != null:
-return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.agencyFullName,_that.agencyLogo,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
+return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_that.location,_that.entrance,_that.status,_that.isAsap,_that.workerApprovedToWork,_that.workerRate,_that.workerSalary,_that.createdAt,_that.finishAt,_that.startAt,_that.durationTerm);case _:
   return null;
 
 }
@@ -231,7 +229,7 @@ return $default(_that.id,_that.jobTitle,_that.numberId,_that.workersQuantity,_th
 @JsonSerializable()
 
 class _JobModel extends JobModel {
-  const _JobModel({required this.id, required this.jobTitle, required this.numberId, required this.workersQuantity, this.location, this.entrance, this.agencyFullName, this.agencyLogo, this.status, required this.isAsap, this.workerApprovedToWork, required this.workerRate, this.workerSalary, required this.createdAt, this.finishAt, required this.startAt, this.durationTerm}): super._();
+  const _JobModel({required this.id, required this.jobTitle, required this.numberId, required this.workersQuantity, this.location, this.entrance, this.status, required this.isAsap, this.workerApprovedToWork, required this.workerRate, this.workerSalary, required this.createdAt, this.finishAt, required this.startAt, this.durationTerm}): super._();
   factory _JobModel.fromJson(Map<String, dynamic> json) => _$JobModelFromJson(json);
 
 @override final  String id;
@@ -240,8 +238,6 @@ class _JobModel extends JobModel {
 @override final  int workersQuantity;
 @override final  String? location;
 @override final  String? entrance;
-@override final  String? agencyFullName;
-@override final  String? agencyLogo;
 @override final  String? status;
 @override final  bool isAsap;
 @override final  bool? workerApprovedToWork;
@@ -265,18 +261,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobModel&&(identical(other.id, id) || other.id == id)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.workersQuantity, workersQuantity) || other.workersQuantity == workersQuantity)&&(identical(other.location, location) || other.location == location)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.agencyFullName, agencyFullName) || other.agencyFullName == agencyFullName)&&(identical(other.agencyLogo, agencyLogo) || other.agencyLogo == agencyLogo)&&(identical(other.status, status) || other.status == status)&&(identical(other.isAsap, isAsap) || other.isAsap == isAsap)&&(identical(other.workerApprovedToWork, workerApprovedToWork) || other.workerApprovedToWork == workerApprovedToWork)&&(identical(other.workerRate, workerRate) || other.workerRate == workerRate)&&(identical(other.workerSalary, workerSalary) || other.workerSalary == workerSalary)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.finishAt, finishAt) || other.finishAt == finishAt)&&(identical(other.startAt, startAt) || other.startAt == startAt)&&(identical(other.durationTerm, durationTerm) || other.durationTerm == durationTerm));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobModel&&(identical(other.id, id) || other.id == id)&&(identical(other.jobTitle, jobTitle) || other.jobTitle == jobTitle)&&(identical(other.numberId, numberId) || other.numberId == numberId)&&(identical(other.workersQuantity, workersQuantity) || other.workersQuantity == workersQuantity)&&(identical(other.location, location) || other.location == location)&&(identical(other.entrance, entrance) || other.entrance == entrance)&&(identical(other.status, status) || other.status == status)&&(identical(other.isAsap, isAsap) || other.isAsap == isAsap)&&(identical(other.workerApprovedToWork, workerApprovedToWork) || other.workerApprovedToWork == workerApprovedToWork)&&(identical(other.workerRate, workerRate) || other.workerRate == workerRate)&&(identical(other.workerSalary, workerSalary) || other.workerSalary == workerSalary)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.finishAt, finishAt) || other.finishAt == finishAt)&&(identical(other.startAt, startAt) || other.startAt == startAt)&&(identical(other.durationTerm, durationTerm) || other.durationTerm == durationTerm));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,jobTitle,numberId,workersQuantity,location,entrance,agencyFullName,agencyLogo,status,isAsap,workerApprovedToWork,workerRate,workerSalary,createdAt,finishAt,startAt,durationTerm);
+    return Object.hash(runtimeType,id,jobTitle,numberId,workersQuantity,location,entrance,status,isAsap,workerApprovedToWork,workerRate,workerSalary,createdAt,finishAt,startAt,durationTerm);
 }
 
 @override
 String toString() {
-    return 'JobModel(id: $id, jobTitle: $jobTitle, numberId: $numberId, workersQuantity: $workersQuantity, location: $location, entrance: $entrance, agencyFullName: $agencyFullName, agencyLogo: $agencyLogo, status: $status, isAsap: $isAsap, workerApprovedToWork: $workerApprovedToWork, workerRate: $workerRate, workerSalary: $workerSalary, createdAt: $createdAt, finishAt: $finishAt, startAt: $startAt, durationTerm: $durationTerm)';
+    return 'JobModel(id: $id, jobTitle: $jobTitle, numberId: $numberId, workersQuantity: $workersQuantity, location: $location, entrance: $entrance, status: $status, isAsap: $isAsap, workerApprovedToWork: $workerApprovedToWork, workerRate: $workerRate, workerSalary: $workerSalary, createdAt: $createdAt, finishAt: $finishAt, startAt: $startAt, durationTerm: $durationTerm)';
 }
 
 
@@ -287,7 +283,7 @@ abstract mixin class _$JobModelCopyWith<$Res> implements $JobModelCopyWith<$Res>
   factory _$JobModelCopyWith(_JobModel value, $Res Function(_JobModel) _then) = __$JobModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String? agencyFullName, String? agencyLogo, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
+ String id, String jobTitle, int numberId, int workersQuantity, String? location, String? entrance, String? status, bool isAsap, bool? workerApprovedToWork, double workerRate, double? workerSalary, DateTime createdAt, DateTime? finishAt, DateTime startAt, String? durationTerm
 });
 
 
@@ -304,7 +300,7 @@ class __$JobModelCopyWithImpl<$Res>
 
 /// Create a copy of JobModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? agencyFullName = freezed,Object? agencyLogo = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? jobTitle = null,Object? numberId = null,Object? workersQuantity = null,Object? location = freezed,Object? entrance = freezed,Object? status = freezed,Object? isAsap = null,Object? workerApprovedToWork = freezed,Object? workerRate = null,Object? workerSalary = freezed,Object? createdAt = null,Object? finishAt = freezed,Object? startAt = null,Object? durationTerm = freezed,}) {
   return _then(_JobModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,jobTitle: null == jobTitle ? _self.jobTitle : jobTitle // ignore: cast_nullable_to_non_nullable
@@ -312,8 +308,6 @@ as String,numberId: null == numberId ? _self.numberId : numberId // ignore: cast
 as int,workersQuantity: null == workersQuantity ? _self.workersQuantity : workersQuantity // ignore: cast_nullable_to_non_nullable
 as int,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,entrance: freezed == entrance ? _self.entrance : entrance // ignore: cast_nullable_to_non_nullable
-as String?,agencyFullName: freezed == agencyFullName ? _self.agencyFullName : agencyFullName // ignore: cast_nullable_to_non_nullable
-as String?,agencyLogo: freezed == agencyLogo ? _self.agencyLogo : agencyLogo // ignore: cast_nullable_to_non_nullable
 as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,isAsap: null == isAsap ? _self.isAsap : isAsap // ignore: cast_nullable_to_non_nullable
 as bool,workerApprovedToWork: freezed == workerApprovedToWork ? _self.workerApprovedToWork : workerApprovedToWork // ignore: cast_nullable_to_non_nullable

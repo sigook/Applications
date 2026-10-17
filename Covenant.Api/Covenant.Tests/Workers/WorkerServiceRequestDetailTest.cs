@@ -17,6 +17,7 @@ using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces.Candidates;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Interfaces.Workers;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Workers;
 using FluentValidation;
@@ -65,7 +66,8 @@ public class WorkerServiceRequestDetailTest
             Mock.Of<ICandidateRepository>(),
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<ICatalogRepository>(),
-            Mock.Of<IRequestApplicantNotificationService>());
+            Mock.Of<IRequestApplicantNotificationService>(),
+            Mock.Of<IWorkerRequirementService>());
     }
 
     private void SetupDetail(double? latitude, double? longitude) =>

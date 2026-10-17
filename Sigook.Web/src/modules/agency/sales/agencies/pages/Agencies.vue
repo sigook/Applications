@@ -31,7 +31,7 @@
             <b-input v-model="serverParams.email" placeholder="Search..." icon="magnify" size="is-small"></b-input>
           </template>
           <template v-slot="props">
-            <span class="is-block">{{ props.row.email }}</span>
+            <copy-link kind="email" :value="props.row.email" />
           </template>
         </b-table-column>
         <b-table-column field="agencyType" label="Type" sortable searchable>
@@ -60,6 +60,7 @@ import type { GridHandle } from '@/shared/types/common';
 import { agencyType } from '@/shared/format';
 import { appGlobals } from '@/app/globals';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 

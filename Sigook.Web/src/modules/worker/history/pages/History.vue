@@ -5,41 +5,7 @@
     <div>
       <SigookGrid :fetch="getWorkerRequestHistory" v-model:params="serverParams" @update:loading="(value) => isLoading = value">
         <template #mobile-card="{ row }">
-          <div class="rcard">
-            <div class="rcard__head">
-              <span class="rcard__title">{{ row.numberId }}</span>
-              <div v-if="row.status && row.status !== 'None'" class="capitailized has-text-weight-bold"
-                :class="row.status">
-                {{ row.status }}
-              </div>
-            </div>
-            <p class="rcard__title">{{ row.jobTitle }}</p>
-            <div class="rcard__rows">
-              <div class="rcard__row">
-                <span class="rcard__label">Location</span>
-                <span>{{ row.location }}<span v-if="row.entrance"> - {{ row.entrance }}</span></span>
-              </div>
-              <div class="rcard__row">
-                <span class="rcard__label">Duration</span>
-                <span>
-                  {{ dateMonth(row.startAt) }}
-                  <span v-if="row.durationTerm !== appGlobals.$longTerm"> - {{ dateMonth(row.finishAt) }}</span>
-                  <span
-                    v-if="(row.status === appGlobals.$statusFilled || row.status === appGlobals.$statusCancelled) && row.durationTerm === appGlobals.$longTerm">
-                    - {{ dateMonth(row.finishAt) }}</span>
-                  <i class="fz-2 block">{{ splitCapital(row.durationTerm) }}</i>
-                </span>
-              </div>
-              <div class="rcard__row">
-                <span class="rcard__label">Rate / Salary</span>
-                <span>{{ currency(row.workerRate || row.workerSalary) }}</span>
-              </div>
-              <div class="rcard__row">
-                <span class="rcard__label">Spots</span>
-                <span>{{ row.workersQuantity }}</span>
-              </div>
-            </div>
-          </div>
+          <JobCard :job="row" />
         </template>
         <b-table-column field="numberId" label="Request ID" v-slot="props">
           {{ props.row.numberId }}
@@ -92,6 +58,7 @@ import type { WorkerRequestFilter } from '@/modules/worker/requests/types';
 import { dateMonth, splitCapital, currency } from '@/shared/format';
 import { appGlobals } from '@/app/globals';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import JobCard from '@/modules/worker/requests/components/JobCard.vue';
 
 const isLoading = ref(false);
 const serverParams = ref<WorkerRequestFilter>({
