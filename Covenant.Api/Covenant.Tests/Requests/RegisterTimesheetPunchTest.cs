@@ -9,6 +9,7 @@ using Covenant.Core.BL.Services.Requests;
 using MediatR;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -42,7 +43,8 @@ public class RegisterTimesheetPunchTest
             Mock.Of<ICatalogRepository>(),
             currentUserService.Object,
             Mock.Of<IMediator>(),
-            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }));
+            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }),
+            Options.Create(new PunchConfiguration()));
     }
 
     [Fact]
@@ -93,6 +95,40 @@ public class RegisterTimesheetPunchTest
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Value.Finish);
+    }
+
+    [Fact]
+    public async Task ClosedToday_IsRejected()
+    {
+        var localNow = new DateTime(2026, 08, 17, 16, 00, 00);
+        SetNow(localNow);
+        SetAssigned();
+        var timeSheet = TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddHours(-8)).Value;
+        timeSheet.AddClockOut(localNow.AddHours(-1));
+        SetLatestTimesheet(timeSheet);
+
+        var result = await _sut.Register(_requestId, AtCheckpoint);
+
+        Assert.True(result.IsFailure);
+        Assert.Contains("already clocked out today", result.StringErrors);
+        _timeSheetRepository.Verify(r => r.Create(It.IsAny<TimeSheet>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ClosedYesterday_StartsNewClockIn()
+    {
+        var localNow = new DateTime(2026, 08, 18, 07, 00, 00);
+        SetNow(localNow);
+        SetAssigned();
+        var yesterday = TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddDays(-1).AddHours(1)).Value;
+        yesterday.AddClockOut(localNow.AddDays(-1).AddHours(9));
+        SetLatestTimesheet(yesterday);
+
+        var result = await _sut.Register(_requestId, AtCheckpoint);
+
+        Assert.True(result.IsSuccess);
+        Assert.False(result.Value.Finish);
+        _timeSheetRepository.Verify(r => r.Create(It.Is<TimeSheet>(t => t.ClockIn == localNow)), Times.Once);
     }
 
     [Fact]

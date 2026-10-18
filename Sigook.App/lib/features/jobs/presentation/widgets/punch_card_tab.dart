@@ -553,6 +553,11 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
+  bool get _isShiftCompleted =>
+      _clockType == ClockType.none &&
+      _punchStatus.clockIn != null &&
+      _punchStatus.clockOut != null;
+
   Widget _buildClockButton() {
     final isBusy = _isSubmitting || _isLoadingClockType;
     final isRetry = !isBusy && _clockTypeError != null;
@@ -581,6 +586,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         disabledBackgroundColor: _isLoadingClockType
             ? AppTheme.primaryBlue.withValues(alpha: 0.6)
+            : _isShiftCompleted
+            ? AppTheme.successGreen.withValues(alpha: 0.55)
             : Colors.grey.shade400,
         disabledForegroundColor: Colors.white,
       ),
@@ -619,6 +626,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                       ? Icons.login
                       : _clockType == ClockType.clockOut
                       ? Icons.logout
+                      : _isShiftCompleted
+                      ? Icons.check_circle
                       : Icons.block,
                   size: 24,
                 ),
@@ -630,6 +639,8 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                       ? 'CLOCK IN'
                       : _clockType == ClockType.clockOut
                       ? 'CLOCK OUT'
+                      : _isShiftCompleted
+                      ? 'SHIFT COMPLETED'
                       : 'UNAVAILABLE',
                   style: const TextStyle(
                     fontSize: 16,

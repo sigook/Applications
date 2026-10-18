@@ -5,6 +5,8 @@ namespace Covenant.Common.Entities.Agency;
 
 public class Agency
 {
+    public const string DefaultImageLogo = "agency.png";
+
     public Agency()
     {
     }

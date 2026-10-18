@@ -575,8 +575,8 @@
       overflow: hidden;
       background: var(--c-glass-fill);
 
-      &::before {
-        filter: invert(1) brightness(2);
+      .update-image__placeholder {
+        color: var(--c-text, #fff);
         opacity: 0.55;
       }
 

@@ -154,7 +154,7 @@
         "tags": [
           "TimeSheets"
         ],
-        "summary": "Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, clock-in otherwise.",
+        "summary": "Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, none once today's punch is closed, clock-in otherwise.",
         "parameters": [
           {
             "name": "requestId",
@@ -2878,56 +2878,6 @@
           },
           "500": {
             "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/file/defaultImage/{id}": {
-      "get": {
-        "tags": [
-          "File"
-        ],
-        "summary": "Returns the default placeholder image.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Image identifier (unused placeholder route value).",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
           }
         }
       }
@@ -32953,9 +32903,6 @@
     },
     {
       "name": "EmailPreferences"
-    },
-    {
-      "name": "File"
     },
     {
       "name": "Location"

@@ -79,7 +79,8 @@ public class WorkerServiceApplyTest
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<ICatalogRepository>(),
             _applicantNotificationService.Object,
-            Mock.Of<IWorkerRequirementService>());
+            Mock.Of<IWorkerRequirementService>(),
+            Options.Create(new PunchConfiguration()));
     }
 
     private RequestEntity SetupRequest(string city = "Toronto", int numberId = 4242)

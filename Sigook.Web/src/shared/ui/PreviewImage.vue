@@ -2,6 +2,7 @@
   <div class="container-image">
     <b-loading v-model="isLoading"></b-loading>
     <div class="update-image" :class="{ 'is-danger': !!fileError }">
+      <b-icon icon="camera" size="is-medium" class="update-image__placeholder"></b-icon>
       <input type="file" id="file" @change="validateImage" accept="image/*" title="logo" name="file"
         ref="fileInput" />
 

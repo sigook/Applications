@@ -1,17 +1,18 @@
 <template>
-    <div ref="root" class="shift-trigger is-inline-block align-text-top" @mouseleave="showDetail = false">
+    <div ref="root" class="shift-trigger is-inline-block align-text-top">
         <span>{{ displayShift }}</span>
         <b-button v-if="displayShift" type="is-ghost" size="is-small" class="shift-toggle"
             :icon-left="showDetail ? 'chevron-up' : 'chevron-down'"
             :aria-label="showDetail ? 'Hide shift detail' : 'Show shift detail'" :aria-expanded="showDetail"
             @click.stop="getRequestShift" />
-        <shift-detail v-if="showDetail" :shift="shift" v-model:is-loading="isLoading" />
+        <shift-detail v-if="showDetail" :shift="shift" v-model:is-loading="isLoading" :anchor="root" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onScopeDispose } from 'vue';
+import { ref } from 'vue';
 import { showAlertError } from "@/shared/utils/toast";
+import { useClickOutside } from '@/shared/composables/useClickOutside';
 import type { RequestShiftModel } from '@/shared/request-detail/types';
 import ShiftDetail from '@/shared/request-detail/ShiftDetail.vue';
 
@@ -26,21 +27,7 @@ const shift = ref<RequestShiftModel | null>(null);
 const showDetail = ref(false);
 const isLoading = ref(false);
 
-function onDocumentClick(event: MouseEvent) {
-    if (root.value && !root.value.contains(event.target as Node)) {
-        showDetail.value = false;
-    }
-}
-
-watch(showDetail, (open) => {
-    if (open) {
-        document.addEventListener('click', onDocumentClick, true);
-    } else {
-        document.removeEventListener('click', onDocumentClick, true);
-    }
-});
-
-onScopeDispose(() => document.removeEventListener('click', onDocumentClick, true));
+useClickOutside(root, showDetail, () => { showDetail.value = false; });
 
 function getRequestShift() {
     if (!showDetail.value) {

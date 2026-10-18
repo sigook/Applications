@@ -26,7 +26,9 @@ Patterns:   Repository, Service Layer, MediatR (document generation)
 Packages:   MediatR 12.4.1, FluentValidation 11.10.0, OpenIddict 7.7.0,
             Microsoft.AspNetCore.OpenApi (document) + Scalar.AspNetCore (UI),
             Azure.Messaging.ServiceBus 7.18.2, Azure.Storage.Blobs 12.24.0,
-            ClosedXML 0.104.2, PdfPig 0.1.15, SixLabors.ImageSharp 3.1.12 (default avatar)
+            ClosedXML 0.104.2, PdfPig 0.1.15 (no image library: default logos are static blobs
+            `company.png` / `agency.png` / `worker.png` in the `files` container, source in
+            `Covenant.Api/wwwroot/assets/images/defaults/`)
 Logging:    Microsoft.Extensions.Logging (Console/Debug) + Application Insights (no Serilog)
 Config:     Azure Key Vault via PrefixKeyVaultSecretManager (prefix `{env}-api`)
 Cloud:      Azure App Service, Azure Service Bus, Azure Blob Storage, Azure Container Registry
@@ -180,7 +182,7 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 | Path | Route prefix | Controllers |
 |---|---|---|
 | `Controllers/Identity/` | `/connect/*`, `/Account`, `/Password`, `/External`, `/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
-| `Controllers/Shared/` | `api/catalog`, `api/location`, `api/file`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint), `EmailPreferencesController`, `WebsiteController` (public marketing endpoints) |
+| `Controllers/Shared/` | `api/catalog`, `api/location`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `EmailPreferencesController`, `WebsiteController` (public marketing endpoints). Files are never served by the API: every environment reads them straight from its blob container through `FilesConfiguration:FilesPath`, and uploads are multipart on each domain endpoint |
 | `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed Sigook.App builds call them), `UserNotificationController` |
 | `Controllers/Shared/Jobs/` | `api/jobs/scheduletasks`, `api/jobs/deductions` | machine-to-machine, called by Sigook.Functions: `ScheduleTasksController`, `DeductionsController` (CRA table import) |
 | `Controllers/Agency/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |

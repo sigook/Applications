@@ -66,8 +66,10 @@ public class WorkerService(
     IUploadedFilesService uploadedFilesService,
     ICatalogRepository catalogRepository,
     IRequestApplicantNotificationService applicantNotificationService,
-    IWorkerRequirementService workerRequirementService) : IWorkerService
+    IWorkerRequirementService workerRequirementService,
+    IOptions<PunchConfiguration> punchOptions) : IWorkerService
 {
+    private readonly PunchConfiguration punchConfiguration = punchOptions.Value;
     private readonly IWorkerRepository workerRepository = workerRepository;
     private readonly IAgencyRepository agencyRepository = agencyRepository;
     private readonly INotificationRepository notificationRepository = notificationRepository;
@@ -549,13 +551,13 @@ public class WorkerService(
         return detail;
     }
 
-    private static PunchCheckpointModel PunchCheckpoint(LocationDetailModel location) =>
+    private PunchCheckpointModel PunchCheckpoint(LocationDetailModel location) =>
         location is { Latitude: double latitude, Longitude: double longitude }
             ? new PunchCheckpointModel
             {
                 Latitude = latitude,
                 Longitude = longitude,
-                RadiusMeters = CovenantConstants.Punch.CheckpointRadiusMeters
+                RadiusMeters = punchConfiguration.CheckpointRadiusMeters
             }
             : null;
 

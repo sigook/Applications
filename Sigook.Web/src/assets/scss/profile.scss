@@ -79,10 +79,6 @@
     select {
       width: calc(100% - 21px);
     }
-    .icon-before:before {
-      position: relative;
-      bottom: -8px;
-    }
   }
   & > div:not(.item),
   div.flex {
@@ -250,13 +246,6 @@
       }
       label {
         font-size: 0;
-      }
-      &:before {
-        width: 80%;
-        height: 80%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
       }
     }
     & > div:nth-child(2) {

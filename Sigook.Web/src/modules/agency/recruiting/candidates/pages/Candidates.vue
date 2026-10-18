@@ -122,8 +122,10 @@
             <div v-else class="op3 is-inline-block valign-middle pr-0">
               Recruiter
             </div>
-            <button type="button" class="btn-icon-sm btn-icon-worker-plus is-inline-block valign-middle"
-              @click="updateCandidateRecruiter(props.row.id)" style="position: relative; top: 2px"></button>
+            <button type="button" class="btn-icon-sm btn-icon-worker-plus valign-middle"
+              @click="updateCandidateRecruiter(props.row.id)" style="position: relative; top: 2px">
+              <b-icon icon="account-plus" size="is-small"></b-icon>
+            </button>
           </template>
         </b-table-column>
         <b-table-column field="notesCount" label="Notes" v-slot="props">

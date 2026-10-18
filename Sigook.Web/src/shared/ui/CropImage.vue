@@ -19,8 +19,8 @@
 
         <div class="options">
             <div class="rotate">
-                <button @click="rotate(90)" type="button" class="rotate-left"></button>
-                <button @click="rotate(-90)" type="button" class="rotate-right"></button>
+                <b-button type="is-light" size="is-small" icon-left="rotate-left" @click="rotate(-90)"></b-button>
+                <b-button type="is-light" size="is-small" icon-left="rotate-right" @click="rotate(90)"></b-button>
             </div>
 
             <div class="actions">
@@ -64,7 +64,7 @@ function closeModal() {
   emit('closeModal');
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 
     .options {
         padding-top: 1rem;
@@ -72,22 +72,7 @@ function closeModal() {
         justify-content: space-between;
         .rotate {
             button {
-                padding: 8px;
-                margin-right:3px;
-                width: 30px;
-                height: 30px;
-                -webkit-border-radius: 3px;
-                -moz-border-radius: 3px;
-                border-radius: 3px;
-                background: no-repeat 50% 50%;
-                background-size: 20px;
-            }
-
-            .rotate-right {
-                background-image: url('@/assets/images/rotate-to-right.png');
-            }
-            .rotate-left {
-                background-image: url('@/assets/images/rotate-to-left.png');
+                margin-right: 3px;
             }
         }
 

@@ -1,3 +1,4 @@
+using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Models.Worker;
@@ -7,6 +8,7 @@ using Covenant.Core.BL.Services.Requests;
 using MediatR;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -43,7 +45,8 @@ public class RegisterTimesheetLocationTest
             Mock.Of<ICatalogRepository>(),
             currentUserService.Object,
             Mock.Of<IMediator>(),
-            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }));
+            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }),
+            Options.Create(new PunchConfiguration { CheckpointRadiusMeters = 100 }));
     }
 
     [Theory]

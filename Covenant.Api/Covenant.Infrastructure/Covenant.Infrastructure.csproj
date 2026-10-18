@@ -26,6 +26,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
 		<PackageReference Include="OpenIddict.EntityFrameworkCore" />
 		<PackageReference Include="PdfPig" />
+		<PackageReference Include="System.Security.Cryptography.Pkcs" />
 	</ItemGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

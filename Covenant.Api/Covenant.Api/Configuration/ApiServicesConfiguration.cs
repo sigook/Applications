@@ -159,9 +159,6 @@ public static class ApiServicesConfiguration
         // CRA deduction tables
         services.AddScoped<ICraPdfParser, CraPdfParser>();
         services.AddScoped<IDeductionImportService, DeductionImportService>();
-
-        //TODO: To Refactor
-        services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
         return services;
     }
 
@@ -195,6 +192,7 @@ public static class ApiServicesConfiguration
         services.Configure<SendGridConfiguration>(configuration.GetSection(nameof(SendGridConfiguration)));
         services.Configure<Microsoft365Configuration>(configuration.GetSection(nameof(Microsoft365Configuration)));
         services.Configure<MobileAppConfiguration>(configuration.GetSection(nameof(MobileAppConfiguration)));
+        services.Configure<PunchConfiguration>(configuration.GetSection(nameof(PunchConfiguration)));
         services.Configure<RequestLocalizationOptions>(options =>
         {
             var supportedCultures = new[] { new CultureInfo(EnUsCulture), new CultureInfo(EsCulture) };

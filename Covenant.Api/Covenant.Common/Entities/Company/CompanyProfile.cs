@@ -152,7 +152,7 @@ namespace Covenant.Common.Entities.Company
                 CompanyId = user.Id,
                 AgencyId = agencyId,
                 FullName = name,
-                Logo = new CovenantFile(logoName),
+                Logo = new CovenantFile(string.IsNullOrEmpty(logoName) ? DefaultImageLogo : logoName),
                 Industry = new CompanyProfileIndustry("Other."),
                 Phone = phone,
                 PhoneExt = phoneExt,

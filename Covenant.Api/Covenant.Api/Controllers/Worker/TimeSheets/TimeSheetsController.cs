@@ -55,7 +55,7 @@ public class TimeSheetsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, clock-in otherwise.
+    /// Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, none once today's punch is closed, clock-in otherwise.
     /// </summary>
     /// <param name="requestId">Identifier of the request.</param>
     /// <param name="latitude">Current latitude of the worker.</param>

@@ -1,5 +1,4 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Constants;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
@@ -67,7 +66,8 @@ public class WorkerServiceRequestDetailTest
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<ICatalogRepository>(),
             Mock.Of<IRequestApplicantNotificationService>(),
-            Mock.Of<IWorkerRequirementService>());
+            Mock.Of<IWorkerRequirementService>(),
+            Options.Create(new PunchConfiguration { CheckpointRadiusMeters = 100 }));
     }
 
     private void SetupDetail(double? latitude, double? longitude) =>
@@ -89,7 +89,7 @@ public class WorkerServiceRequestDetailTest
         Assert.NotNull(detail.PunchCheckpoint);
         Assert.Equal(37.6876, detail.PunchCheckpoint.Latitude);
         Assert.Equal(-77.8964, detail.PunchCheckpoint.Longitude);
-        Assert.Equal(CovenantConstants.Punch.CheckpointRadiusMeters, detail.PunchCheckpoint.RadiusMeters);
+        Assert.Equal(100, detail.PunchCheckpoint.RadiusMeters);
     }
 
     [Fact]

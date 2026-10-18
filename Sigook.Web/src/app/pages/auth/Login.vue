@@ -27,7 +27,7 @@
       </form>
       <div class="auth-card__divider"><span>or</span></div>
       <b-button class="auth-btn auth-btn--ghost" expanded @click="onMicrosoft">
-        <img src="@/assets/images/office.svg" alt="" class="auth-btn__icon" />
+        <b-icon icon="microsoft" class="auth-btn__icon"></b-icon>
         <span>Continue with Microsoft 365</span>
       </b-button>
       <div class="auth-card__links">

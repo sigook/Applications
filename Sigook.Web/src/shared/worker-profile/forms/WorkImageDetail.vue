@@ -3,7 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="worker-profile-image">
       <img v-if="props.data.profileImage" :src="props.data.profileImage.pathFile">
-      <button class="actions btn-icon-sm btn-icon-edit" type="button" @click="showEditModal = true">Edit</button>
+      <button class="actions btn-icon-sm" type="button" @click="showEditModal = true" title="Edit">
+        <b-icon icon="pencil" size="is-small"></b-icon>
+      </button>
     </div>
     <b-modal custom-content-class="card" v-model="showEditModal" width="400px" :destroy-on-hide="true">
       <div class="p-4">
@@ -93,7 +95,7 @@ if (props.data != null) {
     object-fit: cover;
   }
 
-  .btn-icon-edit {
+  .btn-icon-sm {
     margin-right: -10px;
   }
 

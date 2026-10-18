@@ -18,6 +18,7 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Documents.Services;
 using MediatR;
 using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Options;
 using System.Globalization;
 
 namespace Covenant.Core.BL.Services.Requests;
@@ -30,8 +31,10 @@ public class TimesheetService(
     ICatalogRepository catalogRepository,
     ICurrentUserService currentUserService,
     IMediator mediator,
-    TelemetryClient telemetryClient) : ITimesheetService
+    TelemetryClient telemetryClient,
+    IOptions<PunchConfiguration> punchOptions) : ITimesheetService
 {
+    private readonly PunchConfiguration punchConfiguration = punchOptions.Value;
     private readonly TimeProvider timeProvider = timeProvider;
     private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
     private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
@@ -154,7 +157,9 @@ public class TimesheetService(
         {
             ClockType.ClockOut => await ClockOut(now, info, timeSheet),
             ClockType.ClockIn => await ClockIn(now, info),
-            _ => Result.Fail<RegisterTimeSheetResultModel>($"Time for date: {timeSheet.Date:MM/dd/yyyy} was already approved")
+            _ => Result.Fail<RegisterTimeSheetResultModel>(timeSheet.ClockOut.HasValue
+                ? "You already clocked out today."
+                : $"Time for date: {timeSheet.Date:MM/dd/yyyy} was already approved")
         };
     }
 
@@ -190,7 +195,7 @@ public class TimesheetService(
             {
                 ["DistanceMeters"] = distanceBetween
             });
-        if (distanceBetween > CovenantConstants.Punch.CheckpointRadiusMeters)
+        if (distanceBetween > punchConfiguration.CheckpointRadiusMeters)
         {
             var direction = CardinalDirection(
                 info.Latitude.Value, info.Longitude.Value,
@@ -213,13 +218,16 @@ public class TimesheetService(
 
     private static ClockType NextPunch(TimeSheet latestTimesheet, DateTime now)
     {
-        if (latestTimesheet is null || !latestTimesheet.IsClockOutValid(now))
+        if (latestTimesheet is null) return ClockType.ClockIn;
+        if (latestTimesheet.IsClockOutValid(now))
         {
-            return ClockType.ClockIn;
+            return latestTimesheet.TimeInApproved.HasValue || latestTimesheet.TimeOutApproved.HasValue
+                ? ClockType.None
+                : ClockType.ClockOut;
         }
-        return latestTimesheet.TimeInApproved.HasValue || latestTimesheet.TimeOutApproved.HasValue
+        return latestTimesheet.ClockOut.HasValue && latestTimesheet.Date == now.Date
             ? ClockType.None
-            : ClockType.ClockOut;
+            : ClockType.ClockIn;
     }
 
     public async Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter)

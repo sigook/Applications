@@ -10,7 +10,8 @@
 
         <div v-if="agency.locations">
           <h1 class="is-capitalized">{{ lowercase(agency.fullName) }}</h1>
-          <p class="icon-before-location icon-before is-uppercase" v-if="agency.locations[0]">
+          <p class="is-uppercase" v-if="agency.locations[0]">
+            <b-icon icon="map-marker" size="is-small"></b-icon>
             {{ agency.locations[0].address }}
             {{ agency.locations[0].city.value }}
             {{ agency.locations[0].city.province.code }}

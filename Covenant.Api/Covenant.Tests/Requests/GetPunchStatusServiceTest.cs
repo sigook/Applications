@@ -1,3 +1,4 @@
+using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
@@ -8,6 +9,7 @@ using Covenant.Core.BL.Services.Requests;
 using MediatR;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -50,7 +52,8 @@ public class GetPunchStatusServiceTest
             Mock.Of<ICatalogRepository>(),
             currentUserService.Object,
             Mock.Of<IMediator>(),
-            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }));
+            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }),
+            Options.Create(new PunchConfiguration()));
     }
 
     [Fact]
@@ -69,7 +72,7 @@ public class GetPunchStatusServiceTest
     }
 
     [Fact]
-    public async Task ClosedToday_ReturnsClockInWithTodayStamps()
+    public async Task ClosedToday_ReturnsNoneWithTodayStamps()
     {
         var closed = Closed(MondayNow.AddHours(-9), MondayNow.AddHours(-1));
         SetLatest(closed);
@@ -77,7 +80,7 @@ public class GetPunchStatusServiceTest
 
         var status = (await _sut.GetPunchStatus(_requestId, TorontoLatitude, TorontoLongitude)).Value;
 
-        Assert.Equal(ClockType.ClockIn, status.ClockType);
+        Assert.Equal(ClockType.None, status.ClockType);
         Assert.Equal(MondayNow.AddHours(-9), status.ClockIn);
         Assert.Equal(MondayNow.AddHours(-1), status.ClockOut);
         Assert.Equal(8, status.DayHours);

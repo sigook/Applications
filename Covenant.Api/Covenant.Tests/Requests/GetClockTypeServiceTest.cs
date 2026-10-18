@@ -9,6 +9,7 @@ using Covenant.Core.BL.Services.Requests;
 using MediatR;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -44,7 +45,8 @@ public class GetClockTypeServiceTest
             Mock.Of<ICatalogRepository>(),
             _currentUserService.Object,
             Mock.Of<IMediator>(),
-            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }));
+            new TelemetryClient(new TelemetryConfiguration { DisableTelemetry = true }),
+            Options.Create(new PunchConfiguration()));
     }
 
     [Fact]
@@ -113,13 +115,43 @@ public class GetClockTypeServiceTest
     }
 
     [Fact]
-    public async Task LatestTimesheetClosed_ReturnsClockIn()
+    public async Task ClosedToday_ReturnsNone()
     {
         var localNow = new DateTime(2026, 08, 17, 21, 30, 00);
         SetNow(localNow, EasternDaylight);
         SetJobLocation(TorontoLatitude, TorontoLongitude);
         var timeSheet = TimeSheet.WorkerClockIn(_workerRequestId, localNow.AddHours(-8)).Value;
         timeSheet.AddClockOut(localNow.AddHours(-1));
+        SetLatestTimesheet(timeSheet);
+
+        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude);
+
+        Assert.Equal(ClockType.None, result.Value);
+    }
+
+    [Fact]
+    public async Task ClosedYesterday_ReturnsClockIn()
+    {
+        var localNow = new DateTime(2026, 08, 18, 07, 00, 00);
+        SetNow(localNow, EasternDaylight);
+        SetJobLocation(TorontoLatitude, TorontoLongitude);
+        var timeSheet = TimeSheet.WorkerClockIn(_workerRequestId, new DateTime(2026, 08, 17, 08, 00, 00)).Value;
+        timeSheet.AddClockOut(new DateTime(2026, 08, 17, 16, 00, 00));
+        SetLatestTimesheet(timeSheet);
+
+        var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude);
+
+        Assert.Equal(ClockType.ClockIn, result.Value);
+    }
+
+    [Fact]
+    public async Task NightShiftClosedThisMorning_ReturnsClockInTonight()
+    {
+        var localNow = new DateTime(2026, 08, 18, 21, 30, 00);
+        SetNow(localNow, EasternDaylight);
+        SetJobLocation(TorontoLatitude, TorontoLongitude);
+        var timeSheet = TimeSheet.WorkerClockIn(_workerRequestId, new DateTime(2026, 08, 17, 22, 00, 00)).Value;
+        timeSheet.AddClockOut(new DateTime(2026, 08, 18, 06, 00, 00));
         SetLatestTimesheet(timeSheet);
 
         var result = await _sut.GetClockType(_requestId, TorontoLatitude, TorontoLongitude);

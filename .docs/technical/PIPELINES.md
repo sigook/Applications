@@ -45,7 +45,7 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Sigook.App iOS Bootstrap | `sigookapp-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
-| Database Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | Refresh | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) |
+| Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob container `files` of `sigookfilesstaging` |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
@@ -237,21 +237,28 @@ Review the diff under `Sigook.App/ios/` (the app has no macOS target, hence the 
 - Deploy: `AzureWebApp@1` (Linux) to `sigook-cognitive-services`
 - Production: `https://sigook-cognitive-services.azurewebsites.net`
 
-### Database Refresh (Staging)
+### Staging Refresh (databases + files)
 
-**Build naming:** `DatabaseRefresh-YYYY.M.D.r`
+**Build naming:** `StagingRefresh-YYYY.M.D.r`
 
-**Trigger:** Manual only (run from Azure DevOps). Refreshes **both** databases in one run.
+**Trigger:** Manual only (run from Azure DevOps). Two boolean parameters, both `true` by default: `refreshDatabases` and `refreshFiles`. The stages are independent (`dependsOn: []`), so either can run alone.
 
-**Stage 1 - Refresh Staging Databases:**
+**Stage RefreshDatabases - Refresh Staging Databases** (refreshes **both** databases in one run):
 - Fetches secrets from Key Vault `Sigook` via `AzureKeyVault@2` (`SigookPipelines` service connection): `production-api--ConnectionStrings--DefaultConnection` (`CovenantCore`), `production-api--ConnectionStrings--IdentityConnection` (`CovenantSecurity`) and `pipelines--DbRefresh--StagingPasswordHash`
 - Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
 - Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
 - `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
 - Final step restarts `sigook-api-staging` (resource group `SigookStaging`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
 
+**Stage RefreshFiles - Refresh Staging Files:**
+- `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` from `https://sigookfiles.blob.core.windows.net/files` to `https://sigookfilesstaging.blob.core.windows.net/files` with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
+- The copy is server-to-server: the agent orchestrates but the bytes move between the two accounts. Only changed or missing blobs are transferred after the first run
+- `azcopy` authenticates with the task's `az login` (`AZCOPY_AUTO_LOGIN_TYPE=AZCLI`); if the agent lacks the binary the step downloads it into `$(Agent.TempDirectory)`
+- Only the `files` container is mirrored. `cra-tables` is left alone on purpose: the staging Sigook.Functions blob trigger would re-import every CRA table dropped into it. The staging-only `scripts` container is not touched
+- Object replication was rejected for this purpose: an active policy makes the destination container read-only (409 on every write), and the staging Api uploads files
+
 **Requirements:**
-- The `SigookPipelines` service principal has the `Key Vault Secrets User` role on the `Sigook` vault (RBAC model)
+- The `SigookPipelines` service principal has the `Key Vault Secrets User` role on the `Sigook` vault (RBAC model), `Storage Blob Data Reader` on `sigookfiles` and `Storage Blob Data Contributor` on `sigookfilesstaging`
 - The agent (`sigook-build-vm`, Azure VM) reaches the Postgres server through the existing "Allow Azure services" firewall rule
 - No connection data or credentials live in the repo — everything is resolved from Key Vault at runtime
 

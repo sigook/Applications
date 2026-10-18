@@ -31,11 +31,6 @@ public static class CovenantConstants
         public static readonly string[] SuperAdminAssignable = [SuperAdmin, .. AgencyAssignable];
     }
 
-    public static class Punch
-    {
-        public const double CheckpointRadiusMeters = 100;
-    }
-
     public static class Validation
     {
         public const int FirstNameMinLength = 1;
