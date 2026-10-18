@@ -568,10 +568,12 @@ stages:
         restoreKeys: |
           pub | "$(Agent.OS)"
         path: $(HOME)/.pub-cache
+    # Keyed on the inputs of pod install rather than Podfile.lock: pod install
+    # rewrites the lock on the runner, so a lock-based key never matches its own save
     - task: Cache@2
       displayName: 'Cache CocoaPods'
       inputs:
-        key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile.lock'
+        key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile | $(workingDirectory)/pubspec.lock'
         restoreKeys: |
           pods | "$(Agent.OS)"
         path: $(HOME)/Library/Caches/CocoaPods
@@ -681,11 +683,10 @@ stages:
         publishLocation: 'Container'
     # Upload from the same macOS job: a separate deploy job would boot another
     # hosted agent and reinstall fastlane just to upload the IPA built here.
-    # The step never fails the run; its status reaches Notify as an output variable.
+    # A failed upload fails the run; its status also reaches Notify as an output variable.
     - task: CmdLine@2
       name: DeployAppStoreConnect
       displayName: 'Deploy to App Store Connect ($(iosLane))'
-      continueOnError: true
       env:
         APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
         FASTLANE_SKIP_UPDATE_CHECK: "true"
@@ -705,7 +706,8 @@ stages:
           echo "Environment: $(environment) | Lane: $(iosLane) | Version: $(appVersionName) ($(iosBuildNumber))"
           echo "========================================"
           if [ "$STATUS" != "success" ]; then
-            echo "##vso[task.logissue type=warning]App Store Connect upload failed"
+            echo "##vso[task.logissue type=error]App Store Connect upload failed"
+            exit 1
           fi
 # ============================================
 # Stage 5: Deploy Android to Google Play (runs on merged PR to dev/main only)
@@ -740,11 +742,10 @@ stages:
         downloadType: 'single'
         artifactName: 'sigookapp-android-$(environment)'
         downloadPath: '$(System.ArtifactsDirectory)'
-    # The step never fails the run; its status reaches Notify as an output variable
+    # A failed upload fails the run; its status also reaches Notify as an output variable
     - task: CmdLine@2
       name: DeployGooglePlay
       displayName: 'Deploy to Google Play'
-      continueOnError: true
       env:
         GOOGLE_PLAY_JSON_KEY: $(GOOGLE_PLAY_JSON_KEY)
         FASTLANE_SKIP_UPDATE_CHECK: "true"
@@ -766,14 +767,15 @@ stages:
           echo "Environment: $(environment) | Track: $(playTrack)"
           echo "========================================"
           if [ "$STATUS" != "success" ]; then
-            echo "##vso[task.logissue type=warning]Google Play upload failed"
+            echo "##vso[task.logissue type=error]Google Play upload failed"
+            exit 1
           fi
 
 # ============================================
 # Stage 6: Notify Production Deployment
 # ============================================
-# Only when both store uploads reported success: the upload steps never fail
-# the run, so succeeded() alone would also email after a rejected upload
+# Only when both store uploads reported success (the deployStatus outputs
+# double-check what succeeded() already implies)
 - stage: Notify
   displayName: 'Notify Production Deploy'
   dependsOn:

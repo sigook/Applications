@@ -162,16 +162,16 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 **Stage 4 - Build and Deploy iOS** (hosted macOS `macosImage`, parallel with Build Android, `timeoutInMinutes: 60`; a single job, so the upload does not boot a second hosted agent):
 - Variable groups: `SigookApp-Staging` or `SigookApp-Production` + `SigookApp-iOS`
 - `xcode-select` to `xcodeVersion` (fails listing the installed versions when the image no longer ships it)
-- Cache: Flutter SDK (`flutter-setup.yml` with `cacheSdk: true`), Flutter pub (by `pubspec.lock`), CocoaPods (by `Podfile.lock`); `fastlane-setup.yml` (Bundler)
+- Cache: Flutter SDK (`flutter-setup.yml` with `cacheSdk: true`), Flutter pub (by `pubspec.lock`), CocoaPods (by `ios/Podfile` + `pubspec.lock`, not `Podfile.lock`, which `pod install` rewrites on the runner); `fastlane-setup.yml` (Bundler)
 - `pod install` with a retry that only re-runs on transient network errors
 - Same `SCOPES` check, then `bundle exec fastlane ios build entry_point: version: build_number: match_readonly:` (see Fastlane below)
 - Publish artifact `sigookapp-ios-<env>`
-- Upload step `DeployAppStoreConnect` (fastlane uploads through Apple's Transporter, which does not exist on Linux): `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. It never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable
+- Upload step `DeployAppStoreConnect` (fastlane uploads through Apple's Transporter, which does not exist on Linux): `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. A failed upload fails the run; the step also exposes `deployStatus` (`success`/`failed`) as an output variable
 - Pipeline parameter `matchReadonly` (default `true`): set to `false` only on the first run so match creates the certificate and profile
 
-**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. The step `DeployGooglePlay` never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable.
+**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. A failed upload fails the run; the step `DeployGooglePlay` also exposes `deployStatus` (`success`/`failed`) as an output variable.
 
-**Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when both `deployStatus` outputs are `success`: since the upload steps never fail the run, `succeeded()` alone would also email after a rejected upload.
+**Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when the previous stages succeeded and both `deployStatus` outputs are `success`.
 
 **Fastlane** (`Sigook.App/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
 - `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
@@ -191,7 +191,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Apple / Google prerequisites outside the repo:**
 - App Store Connect API key (App Manager); the build service the jobs run as (the organization-level one unless the job authorization scope is limited to the project) needs `Contribute` on the `MATCH_GIT_URL` repo
-- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers)
+- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers). The `beta` lane adds the build to that group without submitting it for beta review (`submit_beta_review: false`): internal groups need no review, and a second `dev` build in the same day's train would otherwise be rejected with "Another build is in review" before being added to the group
 - Google Play closed testing track `Closed Testing - SIGOOK V2` with the tester list (a release on any other track is invisible to them); the service account behind `GOOGLE_PLAY_JSON_KEY` needs "Release to production" and "Manage testing tracks"; Managed publishing off
 - Play serves every user the highest `versionCode` across all tracks they are enrolled in and never downgrades, so an enrolled tester runs the staging build whenever `dev` was released after `main` (and sees the "(Beta)" suffix in the store). Only people who accept that belong in the closed track; anyone who needs the production app must be removed from it and reinstall. Staging and local builds show an orange environment banner, so a phone running the wrong backend is obvious
 - Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
