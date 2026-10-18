@@ -47,8 +47,8 @@ Framework:  Vue 3.5.x + Vite 8 (Node 20+), TypeScript 6.x
 State:      Pinia 3.x (+ pinia-plugin-persistedstate)
 UI:         buefy 3.x (official Buefy for Vue 3, bundles Bulma 1.x)
 Auth:       oidc-client-ts 3.x
-HTTP:       Axios 1.10.0 (API calls live in src/api/*.ts)
-Validation: VeeValidate 4.x + Yup 1.x; i18n: vue-i18n
+HTTP:       Axios 1.x — one api.ts per feature over the `api` wrapper in src/app/security/apiService.ts
+Validation: VeeValidate 4.x + Yup 1.x (no i18n; rules and English messages in src/lang/validator.ts)
 Deploy:     Docker (Node build → Nginx), output in wwwroot/
 Staging:    https://sigook-web-staging.azurewebsites.net
 Prod:       https://sigook.azurewebsites.net
@@ -449,12 +449,9 @@ rather than constructing clients directly.
   deactivation) happens in-process through `IUserAdministrationService`; the API writes the
   identity database directly (`ConnectionStrings:IdentityConnection`) and mirrors the user in its
   own `Users` table.
-- **Roles** (exactly 7, lowercase, defined in `Covenant.Common/Constants/CovenantConstants.cs`):
-  `superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker`. Role groups:
-  `RecruitingAccess` (superadmin/admin/recruiting), `SalesAccess` (superadmin/admin/sales),
-  `AgencyStaff` (recruiting access + sales), `AdminAccess` (superadmin/admin),
-  `AgencyAssignable` (admin/recruiting/sales), `SuperAdminAssignable` (`CovenantConstants.cs`).
-  Always reference via `CovenantConstants.Role.*`. They are seeded at startup.
+- **Roles**: exactly 7, lowercase, seeded at startup and defined in
+  `Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role.*`, never literals).
+  Role list, groups and scoping rules: `.docs/business/ROLES_PERMISSIONS.md`.
 - **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency`, `Recruiting`,
   `Sales`, `Company`, `Worker`, `Admin`, `SuperAdmin`. Every policy requires a role — there is no
   authenticated-only policy, no `Accounting` policy, and no cross-actor policies. An endpoint

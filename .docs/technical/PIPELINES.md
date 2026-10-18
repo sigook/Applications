@@ -293,31 +293,6 @@ Builds solution, authenticates NuGet, and optionally runs tests.
 | `runIntegrationTests` | boolean | `false` | Run integration tests |
 | `integrationTestProjects` | string | `''` | Integration test project pattern |
 
-Automatically handles `NuGetAuthenticate@1` for Azure Artifacts private feeds.
-
-### calculate-docker-tag.yml
-Sets Docker tag and environment name based on branch.
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `tagVariableName` | string | `tag` | Output variable name for the tag |
-| `environmentVariableName` | string | `environment` | Output variable name for env |
-| `stagingTag` | string | `latest_staging` | Tag for dev branch |
-| `productionTag` | string | `latest_production` | Tag for main branch |
-| `stepName` | string | `SetTag` | Step name for cross-job output reference |
-
-Reads `isDev` pipeline variable to determine branch. Sets both job-scoped and output variables. Not referenced by any pipeline (they all use compile-time variables).
-
-### calculate-azure-appname.yml
-Determines Azure App Service name based on branch. Not referenced by any pipeline.
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `appNameVariableName` | string | `azureAppName` | Output variable name |
-| `stagingAppName` | string | required | App Service name for staging |
-| `productionAppName` | string | required | App Service name for production |
-| `stepName` | string | `SetAppName` | Step name for cross-job output reference |
-
 ### cleanup.yml
 Frees disk space on self-hosted agents after builds.
 

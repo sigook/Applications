@@ -1,46 +1,36 @@
 # Covenant.Web
 
-This template should help get you started developing with Vue 3 in Vite.
+Public marketing website of Covenant Group (Vue 3 + Vite + TypeScript + Pinia + Vuetify). Hosted on Azure Static Web Apps; the agency portal is a separate app (`Sigook.Web`).
 
-## Recommended IDE Setup
+## Prerequisites
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Node `^20.19.0 || >=22.12.0`
+- pnpm (pinned in `package.json` → `packageManager`; enable with `corepack enable`)
 
-## Recommended Browser Setup
+## Commands
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-This project uses **pnpm** (pinned via `packageManager` field). Enable via `corepack enable` or install globally: `npm i -g pnpm`.
-
-```sh
+```bash
 pnpm install
+pnpm run dev                 # Vite dev server
+pnpm run type-check          # vue-tsc
+pnpm run lint                # ESLint
+pnpm run build:staging       # dist/ for staging (no type-check)
+pnpm run build:production    # dist/ for production (no type-check)
 ```
 
-### Compile and Hot-Reload for Development
+`build:staging` / `build:production` skip `vue-tsc`; the pipeline runs `type-check` as a separate step.
 
-```sh
-pnpm run dev
+## Layout
+
+```
+src/
+├── components/{feature}/   # feature-based components
+├── views/                  # routed pages
+├── router/                 # Vue Router
+├── stores/                 # Pinia
+├── composables/
+├── services/               # API calls
+└── plugins/                # Vuetify and other plugins
 ```
 
-### Compile and Minify for Production
-
-```sh
-pnpm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm run lint
-```
+Conventions: [`CLAUDE.md`](CLAUDE.md). Pipelines and hosting: [`.docs/technical/PIPELINES.md`](../.docs/technical/PIPELINES.md).

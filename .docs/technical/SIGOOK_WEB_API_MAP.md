@@ -1,6 +1,6 @@
 # Sigook.Web API Map
 
-Maps every API module (one `api.ts` per feature under `src/modules/{portal}/{menu}/{feature}/`, plus the cross-portal ones in `src/shared/api/` and `src/app/security/authApi.ts`) to its backend endpoints. Section numbers keep the historical file names; the arrow points to where the functions live now, request/response types, and Pinia store integrations.
+Maps every API module (one `api.ts` per feature under `src/modules/{portal}/{menu}/{feature}/`, plus the cross-portal ones in `src/shared/api/` and `src/app/security/authApi.ts`) to its backend endpoints, request/response types and Pinia integrations. Section numbers are stable and referenced from other docs. The backend contract itself (every route, schema and status code) is `openapi.json` in this folder; this map adds the frontend side.
 
 **Key Patterns (stated once, apply everywhere):**
 - API functions are plain TypeScript functions — components import and call them directly; there are no store dispatches for HTTP.
@@ -9,11 +9,11 @@ Maps every API module (one `api.ts` per feature under `src/modules/{portal}/{men
 - Pinia stores (`src/app/stores/{app,security}.ts` and one `store.ts` per portal module) hold list **filters** and auth only — never API response data.
 - List endpoints return `PaginatedList<T>`; filters are passed as `params: { ...filter }` (qs-serialized).
 - File uploads use `FormData` + `multipart/form-data`; PDF/Excel downloads use `responseType: 'blob'`.
-- Backend is Covenant.Api (.NET 8). Agency endpoints use lowercase module bases: `/api/agency/recruiting/requests`, `/api/agency/recruiting/clients`, `/api/agency/recruiting/...`, `/api/agency/sales/...`, `/api/agency/accounting/...`.
+- Backend is Covenant.Api (.NET 10). Agency endpoints use lowercase module bases: `/api/agency/recruiting/requests`, `/api/agency/recruiting/clients`, `/api/agency/recruiting/...`, `/api/agency/sales/...`, `/api/agency/accounting/...`.
 
 ---
 
-## 1. accountApi.ts → `src/shared/api/accountApi.ts`
+## 1. Account — `src/shared/api/accountApi.ts`
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `changeEmail(model)` | POST | `/api/account/ChangeEmail` | `ChangeEmailRequest` | `void` | |
@@ -24,7 +24,7 @@ Maps every API module (one `api.ts` per feature under `src/modules/{portal}/{men
 
 ---
 
-## 2. agencyApi.ts → `src/modules/agency/profile/api.ts` (profile, personnel, locations, attendance) + `src/modules/agency/sales/agencies/api.ts` (agencies CRUD)
+## 2. Agency profile & agencies — `src/modules/agency/profile/api.ts` (profile, personnel, locations, attendance) + `src/modules/agency/sales/agencies/api.ts` (agencies CRUD)
 Agency profile, personnel and agency switching.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -34,7 +34,7 @@ Agency profile, personnel and agency switching.
 | `getAgenciesList(filter)` | GET | `/api/agency/sales/agencies` | `AgencyListFilter` (params) | `PaginatedList<AgencyListItem>` | |
 | `createAgency(model)` | POST | `/api/agency/sales/agencies` | `CreateAgencyModel` | `{ id: string }` | |
 | `updateAgency(agency)` | PUT | `/api/agency/sales/agencies` | `AgencyDetail` | `void` | |
-| `getAgencyPersonnel()` | GET | `/api/agency/profile/personnel` | — | `AgencyPersonnelListItem[]` | Back-office users; `role` comes from IdentityServer and is null if that call fails |
+| `getAgencyPersonnel()` | GET | `/api/agency/profile/personnel` | — | `AgencyPersonnelListItem[]` | Back-office users; `role` is read from the identity database and is null if that read fails |
 | `createAgencyPersonnel(model)` | POST | `/api/agency/profile/personnel` | `AgencyPersonnelCreateModel` | `void` | |
 | `updateAgencyPersonnel(id, model)` | PUT | `/api/agency/profile/personnel/{id}` | `AgencyPersonnelCreateModel` | `void` | Name, email and role. Policy `Admin` |
 | `getAssignableRoles()` | GET | `/api/agency/profile/personnel/Roles` | — | `string[]` | Roles current user may assign |
@@ -52,13 +52,13 @@ Agency profile, personnel and agency switching.
 | `downloadAttendanceReport(filter)` | GET | `/api/agency/profile/attendance/report/file` | `UserAttendanceReportFilter` (params) | `Blob` | Excel. Policy `Admin` |
 | `updateAttendance(id, model)` | PUT | `/api/agency/profile/attendance/{id}` | `UpdateUserAttendanceModel` | `void` | Admin punch correction |
 
-**Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `PersonnelAgencyItem`, `AttendanceStatus`, `UserAttendance*`, `UpdateUserAttendanceModel` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes))
+**Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `PersonnelAgencyItem`, `AttendanceStatus`, `UserAttendance*`, `UpdateUserAttendanceModel` (the feature's `types.ts`)
 
 **Pinia:** `useAgencyStore` holds `agency` + `agencyListFilter`; `personnelAgencies` for agency switching.
 
 ---
 
-## 3. agencyCandidateApi.ts → `src/modules/agency/recruiting/candidates/api.ts`
+## 3. Candidates — `src/modules/agency/recruiting/candidates/api.ts`
 Candidate pool (recruitment funnel before conversion to Worker).
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -85,8 +85,8 @@ Candidate pool (recruitment funnel before conversion to Worker).
 
 ---
 
-## 4. agencyCompanyApi.ts → `src/modules/agency/recruiting/clients/api.ts` + `src/modules/agency/sales/clients/api.ts` (deals, interactions)
-**Largest API file.** Agency-side management of client companies. Bases: `companyProfilesUrl = /api/agency/recruiting/clients`, list via `/api/agency/recruiting/clients`.
+## 4. Clients (agency view) — `src/modules/agency/recruiting/clients/api.ts` + `src/modules/agency/sales/clients/api.ts` (deals, interactions)
+Agency-side management of client companies. Bases: `companyProfilesUrl = /api/agency/recruiting/clients`, list via `/api/agency/recruiting/clients`.
 
 ### Company CRUD
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -176,22 +176,22 @@ Policy `Sales` (sales, admin, superadmin). Owner-scoped: a sales user lists, upd
 | `updateDeal(profileId, id, model, file?)` | PUT | `/api/agency/sales/clients/{profileId}/deals/{id}` | `UpdateDealModel` (multipart: `data` + optional document) | `void` | A new file replaces the current document and deletes the previous one |
 | `deleteDeal(profileId, id)` | DELETE | `/api/agency/sales/clients/{profileId}/deals/{id}` | — | `void` | |
 
-Backend: `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{InteractionsController,DealsController}.cs` → `SalesService`; entities in ENTITIES_RELATIONSHIPS.md ("Sales entities"). The dashboard's cross-client "latest 6" lists come from `salesDashboardApi.ts` (§18), not from here.
+Backend: `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs` → `SalesService`; entities in ENTITIES_RELATIONSHIPS.md ("Sales entities"). The dashboard's cross-client "latest 6" lists come from the dashboard api (§18), not from here.
 
-**UI:** the client detail's Interactions / Deals tabs (`components/agency_company/CompanyInteractions.vue` / `CompanyDeals.vue`) — rendered only when the route is the sales view **and** the user has a sales-access role (`useModuleBase().isSalesView` + `useSalesAccess()`); delete is a row action behind a confirm dialog. Create/edit go through one modal per entity — `agency_company/InteractionModal`, `agency_company/DealModal` (and `sales_dashboard/ClientModal` for new clients) — each a plain `b-modal custom-content-class="card"` wrapping its form, emitting `saved` so the host reloads:
+**UI:** the client detail's Interactions / Deals tabs (`sales/clients/components/CompanyInteractions.vue` / `CompanyDeals.vue`) — rendered only when the route is the sales view **and** the user has a sales-access role (`useModuleBase().isSalesView` + `useSalesAccess()`); delete is a row action behind a confirm dialog. Create/edit go through one modal per entity — `sales/clients/components/InteractionModal`, `DealModal` (and `sales/dashboard/components/ClientModal` for new clients) — each a plain `b-modal custom-content-class="card"` wrapping its form, emitting `saved` so the host reloads:
 
 | Form | API functions | Notes |
 |------|---------------|-------|
 | `InteractionForm` | `createCompanyInteraction` / `updateCompanyInteraction` | Client picker via `getAgencyCompaniesList`; read-only when editing (the id comes from the record); preselected (`initialClient`) from a client's tab or `ClientInteractionsModal` |
 | `DealForm` | `createDeal` / `updateDeal` | Same client picker rules; create is `multipart/form-data` with an optional document (`utils/multipart.ts` + `utils/fileNaming.ts`) |
-| `ClientForm` | `createAgencyCompany` | Create-only; catalogs via `getIndustries` / `getCompanyStatus` (catalogApi.ts); ordinary company endpoint, so sales auto-assignment applies |
+| `ClientForm` | `createAgencyCompany` | Create-only; catalogs via `getIndustries` / `getCompanyStatus` (§13); ordinary company endpoint, so sales auto-assignment applies |
 
 ### Cross-Cutting
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `updateIsAsapRequests(model)` | PUT | `/api/agency/recruiting/requests/is-asap` | `UpdateIsAsapRequestsPayload` | `void` | Mark requests as ASAP |
 
-**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes)); `CompanyProfileDetail`, `AgencyCompanyProfileDetail`, `CompanyProfileSummary`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (`src/shared/company-profile/types`, `company/{profile,requests,invoices}/types`, `agency/recruiting/clients/types`, `agency/sales/clients/types`, `src/shared/punch-card/types`)
+**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (the feature's `types.ts`); `CompanyProfileDetail`, `AgencyCompanyProfileDetail`, `CompanyProfileSummary`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (`src/shared/company-profile/types`, `src/shared/punch-card/types` and the feature's `types.ts`)
 
 **Pinia:** `agencyCompanyProfileFilter` in `useAgencyStore`.
 
@@ -201,7 +201,7 @@ Backend: `Covenant.Api/Covenant.Api/Controllers/Sigook/Agency/CompanyProfiles/{I
 
 ---
 
-## 5. agencyInvoiceApi.ts → `src/modules/agency/accounting/invoices/api.ts`
+## 5. Invoices — `src/modules/agency/accounting/invoices/api.ts`
 Agency → company billing.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -216,13 +216,13 @@ Agency → company billing.
 | `changeInvoiceStatus(id, payload)` | PUT | `/api/agency/accounting/invoices/{invoiceId}/status` | `ChangeInvoiceStatusModel` | `void` | Pending/Due → Paid (with optional `paidAt`, ISO instant of the picked day) or Paid → Pending; `Due` is job-only; backend records `UpdatedAt`/`UpdatedBy` |
 | `downloadInvoicesPaymentsReport(filter)` | GET | `/api/agency/accounting/invoices/payments-report` | `AgencyInvoiceFilter` (params) | Blob | Payments follow-up Excel (B4 Tax, Amount, Net, Due Date, Due Days, Payment Date) |
 
-**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse` (rows carry `paymentTermDays`, `dueDate`, `dueDays`, `paidAt`), `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (`accounting/{invoices,paystubs}/types.ts` + `src/shared/types/invoice`)
+**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse` (rows carry `paymentTermDays`, `dueDate`, `dueDays`, `paidAt`), `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (the feature's `types.ts` + `src/shared/types/invoice`)
 
 **Pinia:** `agencyInvoiceFilter` in `useAgencyStore`.
 
 ---
 
-## 6. agencyNoteApi.ts → `src/modules/agency/shared/notes/api.ts`
+## 6. Notes — `src/modules/agency/shared/notes/api.ts`
 Notes attached to Workers, Candidates, Companies, Requests and request workers. Every route hangs off the `/api/agency/...` module bases.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -250,11 +250,11 @@ Notes attached to Workers, Candidates, Companies, Requests and request workers. 
 | `updateAgencyRequestWorkerNote(requestId, workerId, noteId, model)` | PUT | `/api/agency/recruiting/requests/{requestId}/workers/{workerId}/Notes/{noteId}` | `NoteModel` | `void` | |
 | `deleteAgencyRequestWorkerNote(requestId, workerId, noteId)` | DELETE | `/api/agency/recruiting/requests/{requestId}/workers/{workerId}/Notes/{noteId}` | — | `void` | |
 
-**Types:** `NoteModel`, `NoteItem`, `NotePagination`, `CreateNoteResponse` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes))
+**Types:** `NoteModel`, `NoteItem`, `NotePagination`, `CreateNoteResponse` (the feature's `types.ts`)
 
 ---
 
-## 7. agencyPayStubApi.ts → `src/modules/agency/accounting/paystubs/api.ts`
+## 7. Pay stubs — `src/modules/agency/accounting/paystubs/api.ts`
 Pay stub generation and payroll administration.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -273,13 +273,13 @@ Pay stub generation and payroll administration.
 | `getSkipPayrollNumbers(filter)` | GET | `/api/agency/accounting/paystubs/skip-payroll-number` | `{ searchTerm? }` (params) | `SkipPayrollNumberItem[]` | |
 | `addSkipPayrollNumber(payload)` | POST | `/api/agency/accounting/paystubs/skip-payroll-number` | `CreateSkipPayrollNumberPayload` | `void` | |
 
-**Types:** `AgencyPayStubFilter`, `AgencyPayStubListItem`, `CreatePayStubPayload`, `CreateSkipPayrollNumberPayload`, `PayrollSubContractorListItem`, `SkipPayrollNumberItem`, `SubcontractorPayrollFilter`, `WorkerReadyForPayStubModel` (`accounting/{invoices,paystubs}/types.ts` + `src/shared/types/invoice`)
+**Types:** `AgencyPayStubFilter`, `AgencyPayStubListItem`, `CreatePayStubPayload`, `CreateSkipPayrollNumberPayload`, `PayrollSubContractorListItem`, `SkipPayrollNumberItem`, `SubcontractorPayrollFilter`, `WorkerReadyForPayStubModel` (the feature's `types.ts` + `src/shared/types/invoice`)
 
 **Pinia:** `agencyPayStubFilter` in `useAgencyStore`.
 
 ---
 
-## 8. agencyReportApi.ts → `src/shared/api/reportApi.ts` (`downloadAgencyReport` only) + `src/modules/agency/accounting/reports/api.ts` + `src/modules/agency/recruiting/requests/api.ts` (`getWorkersReportDocument`)
+## 8. Reports — `src/shared/api/reportApi.ts` (`downloadAgencyReport` only) + `src/modules/agency/accounting/reports/api.ts` + `src/modules/agency/recruiting/requests/api.ts` (`getWorkersReportDocument`)
 Report generation and blob downloads.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -294,13 +294,13 @@ Report generation and blob downloads.
 | `getPaymentReport(filter)` | GET | `/api/agency/accounting/reports/payments` | `AgencyReportFilter` (params) | `PaginatedList<WeeklyPayrollItem>` | Weekly payroll summary |
 | `downloadWeeklyPayrollReport(weekEnding)` | GET | `/api/agency/accounting/reports/payments/file` | `weekEnding` (param) | Blob | Excel |
 
-**Types:** `ReportQueryParams`, `AgencyReportFilter`, `AgencyCompanyJobPosition`, `HoursWorkedResume`, `WeeklyPayrollItem` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes), `accounting/{invoices,paystubs}/types.ts` + `src/shared/types/invoice`)
+**Types:** `ReportQueryParams`, `AgencyReportFilter`, `AgencyCompanyJobPosition`, `HoursWorkedResume`, `WeeklyPayrollItem` (the feature's `types.ts`)
 
 > Backend-only: `/api/agency/accounting/reports/hours-worked/file` exists in the backend but has no frontend wrapper.
 
 ---
 
-## 9. agencyRequestApi.ts → `src/modules/agency/recruiting/requests/api.ts`
+## 9. Requests — `src/modules/agency/recruiting/requests/api.ts`
 Core job request lifecycle. Bases: `requestsUrl = /api/agency/recruiting/requests`, lists via `recruitingRequestsUrl = /api/agency/recruiting/requests`.
 
 ### Request CRUD
@@ -368,13 +368,13 @@ The lists come inside `getAgencyRequest`; these endpoints only add and remove.
 |----------|------------|----------|--------------|---------------|-------|
 | `setAgencyRequestSources(id, items)` | PUT | `/api/agency/recruiting/requests/{id}/sources` | `SetRequestJobBoardItem[]` | `void` | |
 
-**Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyRequestListItem`, `AgencyRequestDetail`, `CreateAgencyRequestModel`, `RequestShiftModel`, `CancelRequestPayload`, `BulkCancelRequestsPayload`, `BulkCancelRequestsResult`, `AgencyRequestWorkerFilter`, `AgencyRequestWorker`, `BookWorkerModel`, `RejectWorkerModel`, `AgencyRequestApplicantFilter`, `AgencyRequestApplicant`, `AgencyApplicantsFilter`, `AgencyApplicant`, `AgencyRequestApplicants`, `AgencyApplicantsPagedResponse`, `ChangeApplicantsStatusModel`, `SkippedApplicant`, `ChangeApplicantsStatusResult`, `ApplicantSearchResult`, `CreateRequestApplicantModel`, `UpdateApplicantCommentsPayload`, `AgencyRequestSkillModel`, `AgencyRequestPersonItem`, `RequestJobBoard`, `SetRequestJobBoardItem` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes))
+**Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyRequestListItem`, `AgencyRequestDetail`, `CreateAgencyRequestModel`, `RequestShiftModel`, `CancelRequestPayload`, `BulkCancelRequestsPayload`, `BulkCancelRequestsResult`, `AgencyRequestWorkerFilter`, `AgencyRequestWorker`, `BookWorkerModel`, `RejectWorkerModel`, `AgencyRequestApplicantFilter`, `AgencyRequestApplicant`, `AgencyApplicantsFilter`, `AgencyApplicant`, `AgencyRequestApplicants`, `AgencyApplicantsPagedResponse`, `ChangeApplicantsStatusModel`, `SkippedApplicant`, `ChangeApplicantsStatusResult`, `ApplicantSearchResult`, `CreateRequestApplicantModel`, `UpdateApplicantCommentsPayload`, `AgencyRequestSkillModel`, `AgencyRequestPersonItem`, `RequestJobBoard`, `SetRequestJobBoardItem` (the feature's `types.ts`)
 
 **Pinia:** `agencyRequestFilter` in `useAgencyStore`.
 
 ---
 
-## 10. agencyRunnerApi.ts → `src/modules/agency/recruiting/requests/runners/api.ts`
+## 10. Runners — `src/modules/agency/recruiting/requests/runners/api.ts`
 Runners — recruiting pipeline of prospects per request (list, status transitions, interviews). Base: `/api/agency/recruiting/requests/{requestId}/runners`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -388,7 +388,7 @@ Runners — recruiting pipeline of prospects per request (list, status transitio
 | `createRunnerInterview(requestId, id, model)` | POST | `/api/agency/recruiting/requests/{requestId}/runners/{id}/Interview` | `CreateRunnerInterviewModel` | `string` (id) | Schedule interview |
 | `rescheduleRunnerInterview(requestId, id, interviewId, model)` | PUT | `/api/agency/recruiting/requests/{requestId}/runners/{id}/Interview/{interviewId}/Reschedule` | `RescheduleRunnerInterviewModel` | `void` | |
 
-**Types:** `AgencyRunnerFilter`, `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, `CreateRunnerInterviewModel`, `RescheduleRunnerInterviewModel` (`src/modules/agency/recruiting/requests/runners/types`); `ApplicantSearchResult` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes))
+**Types:** `AgencyRunnerFilter`, `RunnerListItem`, `RunnerDetail`, `CreateRunnerModel`, `ChangeRunnerStatusModel`, `CreateRunnerInterviewModel`, `RescheduleRunnerInterviewModel` (`src/modules/agency/recruiting/requests/runners/types`); `ApplicantSearchResult` (the feature's `types.ts`)
 
 **UI:** `recruiting/requests/components/Runners.vue` (the request tab) and `recruiting/runners/pages/Runners.vue` (the cross-request board) both render `recruiting/runners/components/RunnersGrid.vue`, whose detail row is `RunnerDetailPanel` (history timeline + interviews); `requests/runners/*` keeps CreateRunner, RunnerActionsDropdown, RunnerActionModals (status, interview, history = the same panel in a modal, used by the weekly board) and `useRunnerActions`. See WORKFLOWS.md → Runner Pipeline Flow.
 
@@ -407,7 +407,7 @@ Runners of every request of the agency, grouped by request. Base: `/api/agency/r
 
 ---
 
-## 11. agencyTimeSheetApi.ts → `src/modules/agency/recruiting/requests/timeSheetApi.ts`
+## 11. Timesheets (agency) — `src/modules/agency/recruiting/requests/timeSheetApi.ts`
 Timesheets per request/worker. Base: `/api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -418,17 +418,17 @@ Timesheets per request/worker. Base: `/api/agency/recruiting/requests/{requestId
 | `deleteAgencyWorkerTimeSheet(requestId, workerId, id)` | DELETE | `/api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/{id}` | — | `void` | |
 | `getAgencyTimeSheetUsages(requestId, workerId, id)` | GET | `/api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/{id}/Usages` | — | `TimeSheetUsagesModel` | Which invoices/pay stubs use it |
 
-**Types:** `TimeSheetListItem`, `TimeSheetModel`, `TimeSheetUsagesModel` (`src/shared/company-profile/types`, `company/{profile,requests,invoices}/types`, `agency/recruiting/clients/types`, `agency/sales/clients/types`, `src/shared/punch-card/types`)
+**Types:** `TimeSheetListItem`, `TimeSheetModel`, `TimeSheetUsagesModel` (`src/shared/company-profile/types`, `src/shared/punch-card/types` and the feature's `types.ts`)
 
 ---
 
-## 12. agencyWorkerApi.ts → `src/modules/agency/recruiting/workers/api.ts`
+## 12. Workers (agency view) — `src/modules/agency/recruiting/workers/api.ts`
 Worker profile management from the agency's perspective.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getAgencyWorkers(filter)` | GET | `/api/agency/recruiting/workers` | `AgencyWorkerFilter` (params) | `PaginatedList<AgencyWorkerListItem>` | |
-| `getAgencyWorkersDropdown(filter)` | GET | `/api/agency/recruiting/workers/Dropdown` | `{ searchTerm }` (params) | `AgencyWorkerDropdownItem[]` | Autocomplete¹ |
+| `getAgencyWorkersDropdown(filter)` | GET | `/api/agency/recruiting/workers/Dropdown` | `{ searchTerm }` (params) | `AgencyWorkerDropdownItem[]` | Autocomplete |
 | `getAgencyWorker(id)` | GET | `/api/agency/recruiting/workers/{id}` | — | `WorkerProfile` | |
 | `updateApprovedToWork(id)` | PUT | `/api/agency/recruiting/workers/{id}/ApprovedToWork` | — | `void` | Toggle |
 | `updateAgencyWorkerProfileDNU(id)` | PUT | `/api/agency/recruiting/workers/{id}/Dnu` | — | `void` | Toggle Do-Not-Use |
@@ -445,17 +445,15 @@ Worker profile management from the agency's perspective.
 | `addUpdateAgencyWorkerProfileHolidays(id, data)` | POST | `/api/agency/recruiting/workers/{id}/Holidays` | `AgencyWorkerHoliday` | `void` | |
 | `addNewHoliday(id, payload)` | POST | `/api/agency/recruiting/workers/{id}/Holidays/new-holiday` | `AddNewHolidayPayload` | `void` | Bulk holiday add |
 
-**Types:** `AgencyWorkerFilter`, `AgencyWorkerListItem`, `AgencyWorkerDropdownItem`, `AgencyWorkerCommentModel`, `UpdateWorkerEmailModel`, `UpdateWorkerProfileFieldsPayload`, `AgencyWorkerHoliday`, `AddNewHolidayPayload`, `WorkerRequestHistoryFilter`, `WorkerRequestHistoryItem` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes)); `WorkerProfile` (`src/shared/worker-profile/types`, `worker/requests/types`, `agency/recruiting/workers/types`)
+**Types:** `AgencyWorkerFilter`, `AgencyWorkerListItem`, `AgencyWorkerDropdownItem`, `AgencyWorkerCommentModel`, `UpdateWorkerEmailModel`, `UpdateWorkerProfileFieldsPayload`, `AgencyWorkerHoliday`, `AddNewHolidayPayload`, `WorkerRequestHistoryFilter`, `WorkerRequestHistoryItem` (the feature's `types.ts`); `WorkerProfile` (`src/shared/worker-profile/types` and the feature's `types.ts`)
 
 **Pinia:** `agencyWorkerProfileFilter` in `useAgencyStore`.
 
 **Business Logic:** contractor/subcontractor flags affect payroll treatment; tax category/rate drive withholdings; holidays feed holiday pay.
 
-¹ The URL string at `agencyWorkerApi.ts:23` is missing its leading slash (`'api/agency/workers/Dropdown'`) — it only works because axios concatenates it onto the baseURL.
-
 ---
 
-## 13. catalogApi.ts → `src/shared/api/catalogApi.ts`
+## 13. Catalogs — `src/shared/api/catalogApi.ts`
 Reference data (lookup tables).
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -481,7 +479,7 @@ Reference data (lookup tables).
 
 ---
 
-## 14. companyApi.ts → `src/modules/company/profile/api.ts` + `src/modules/company/requests/api.ts` + `src/modules/company/invoices/api.ts`
+## 14. Company portal — `src/modules/company/profile/api.ts` + `src/modules/company/requests/api.ts` + `src/modules/company/invoices/api.ts`
 Company portal (client) view of their profile, requests and workers.
 
 ### Profile & Locations
@@ -540,9 +538,9 @@ Company portal (client) view of their profile, requests and workers.
 | `getCompanyInvoice(filter)` | GET | `/api/company/invoices` | `CompanyInvoiceFilter` (params) | `PaginatedList<CompanyInvoiceListItem>` | |
 | `getCompanyRequestTimeSheetFile(requestId)` | GET | `/api/company/requests/{requestId}/TimeSheets/File` | — | Blob | Excel punch-card export, ownership-checked server-side |
 
-**Types:** from `src/shared/company-profile/types`, `company/{profile,requests,invoices}/types`, `agency/recruiting/clients/types`, `agency/sales/clients/types`, `src/shared/punch-card/types` (+ `InvoiceSummaryModel` from `accounting/{invoices,paystubs}/types.ts` + `src/shared/types/invoice`). The sales deals/interactions enums + models also live in `src/types/company.ts`, but their API calls are in `agencyCompanyApi.ts` (§4).
+**Types:** from `src/shared/company-profile/types`, `src/shared/punch-card/types`, `src/shared/types/invoice` (`InvoiceSummaryModel`) and each feature's `types.ts`. The sales deals/interactions enums + models live in `src/modules/agency/sales/clients/types.ts`; their API calls are in §4.
 
-> **Enum mirror gotcha.** The API serializes enums as **ints** (System.Text.Json, no `JsonStringEnumConverter`), so `DealType`, `DealStatus`, `InteractionType`, `InteractionPurpose` and `InteractionStatus` in `src/types/company.ts` must match `Covenant.Common/Enums/` **numerically** — adding or reordering a member on one side without the other silently mislabels records. Label/color/icon maps (`DEAL_TYPE_LABELS`, `INTERACTION_TYPE_ICONS`, …) live next to the enums; `InteractionType.Mail` is labelled "Email" in the UI. Meaning of each value: `.docs/business/SALES_MODULE.md`.
+> **Enum mirror gotcha.** The API serializes enums as **ints** (System.Text.Json, no `JsonStringEnumConverter`), so `DealType`, `DealStatus`, `InteractionType`, `InteractionPurpose` and `InteractionStatus` in `src/modules/agency/sales/clients/types.ts` must match `Covenant.Common/Enums/` **numerically** — adding or reordering a member on one side without the other silently mislabels records. Label/color/icon maps (`DEAL_TYPE_LABELS`, `INTERACTION_TYPE_ICONS`, …) live next to the enums; `InteractionType.Mail` is labelled "Email" in the UI. Meaning of each value: `.docs/business/SALES_MODULE.md`.
 
 **Pinia:** `companyRequestFilter` in `useCompanyStore`.
 
@@ -550,7 +548,7 @@ Company portal (client) view of their profile, requests and workers.
 
 ---
 
-## 15. locationApi.ts → `src/shared/api/locationApi.ts`
+## 15. Locations — `src/shared/api/locationApi.ts`
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getCountries()` | GET | `/api/location/country` | — | `Country[]` | |
@@ -567,7 +565,7 @@ Province settings (`ProvinceSettingsModal.vue`) persist through `updateProvinceS
 
 ---
 
-## 16. notificationApi.ts → `src/modules/agency/shared/notifications/api.ts`
+## 16. Agency notifications — `src/modules/agency/shared/notifications/api.ts`
 In-app notification bell (agency roles). A single aggregated call returns every notification kind in one payload.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -584,23 +582,23 @@ In-app notification bell (agency roles). A single aggregated call returns every 
 
 ---
 
-## 17. salesApi.ts → `src/modules/agency/sales/api.ts`
-Sales-role-scoped lists (parallel to the recruiting-scoped lists in agencyRequestApi/agencyCompanyApi). Bases: `/api/agency/sales/requests`, `/api/agency/sales/companyprofiles`.
+## 17. Sales-scoped lists — `src/modules/agency/sales/api.ts`
+Sales-role-scoped lists (parallel to the recruiting-scoped lists in §9 and §4). Backend bases: `/api/agency/sales/requests`, `/api/agency/sales/clients` (`Controllers/Agency/Sales/{RequestsController,ClientsController}.cs`).
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getSalesRequests(filter)` | GET | `/api/agency/sales/requests` | `AgencyRequestFilter` (params) | `AgencyRequestsPagedResponse` | |
-| `getSalesCompanies(filter)` | GET | `/api/agency/sales/companyprofiles` | `AgencyCompanyFilter` (params) | `PaginatedList<AgencyCompanyListItem>` | |
+| `getSalesCompanies(filter)` | GET | `/api/agency/sales/clients` | `AgencyCompanyFilter` (params) | `PaginatedList<AgencyCompanyListItem>` | Excel export of the same filter: `/api/agency/sales/clients/File` (used by `recruiting/clients/pages/Clients.vue` in the sales view) |
 
-**Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyCompanyFilter`, `AgencyCompanyListItem` (the feature's `types.ts` (profile, recruiting/*, sales/*, accounting/reports, shared/notes))
+**Types:** `AgencyRequestFilter`, `AgencyRequestsPagedResponse`, `AgencyCompanyFilter`, `AgencyCompanyListItem` (the feature's `types.ts`)
 
-**Usage:** `/sales/requests` and `/sales/companies` pages; shared detail pages resolve their base path via `useModuleBase`. The sales dashboard's interaction/deal client pickers use `getAgencyCompaniesList` (agencyCompanyApi.ts) instead — note that endpoint is **not** sales-scoped, so a sales user picks from every company of the agency.
+**Usage:** `/sales/requests` and `/sales/companies` pages; shared detail pages resolve their base path via `useModuleBase`. The sales dashboard's interaction/deal client pickers use `getAgencyCompaniesList` (§4) instead — note that endpoint is **not** sales-scoped, so a sales user picks from every company of the agency.
 
 ---
 
-## 18. salesDashboardApi.ts → `src/modules/agency/sales/dashboard/api.ts`
-Live sales dashboard aggregates. Base: `/api/agency/sales/dashboard` (backend `DashboardController` in
-`Covenant.Api/Controllers/Sigook/Agency/Sales/`). Owner-scoped exactly like deals and interactions: a
+## 18. Sales dashboard — `src/modules/agency/sales/dashboard/api.ts`
+Live sales dashboard aggregates. Base: `/api/agency/sales/dashboard` (backend
+`Covenant.Api/Covenant.Api/Controllers/Agency/Sales/DashboardController.cs`). Owner-scoped exactly like deals and interactions: a
 sales user always sees only their own rows, admin/superadmin see the whole agency and may pass `ownerId`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -621,7 +619,7 @@ both or none; the current UTC month when omitted; 400 when `dateTo` precedes `da
 `InteractionTypeSummary`, `DealsByStatusFilter`, `DealsByStatusModel`, `SalesDashboardSummary`, `SalesRecentClient`,
 `SalesDashboardModel`, `SalesBarPoint`, `SalesMeter`. Enum fields travel as numeric values.
 
-**UI:** `pages/agency/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions:
+**UI:** `sales/dashboard/pages/Dashboard.vue` (layout in SIGOOK_WEB_STRUCTURE.md). KPI definitions:
 `.docs/business/SALES_MODULE.md`.
 
 ### Response shape
@@ -691,14 +689,14 @@ cannot render a stale deals-by-status block. The five per-card endpoints remain 
 
 ---
 
-## 19. sharedApi.ts → `src/shared/api/sharedApi.ts`
+## 19. Email preferences — `src/shared/api/sharedApi.ts`
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `unsubscribe(model)` | POST | `/api/emailpreferences/Unsubscribe` | `UnsubscribeRequest` (`email` + optional `typeId`) | `void` | No auth required; the backend resolves whether the email belongs to a user or a candidate, and defaults `typeId` to `NewRequestNotifyWorker` (10) when omitted |
 
 ---
 
-## 20. weeklyBoardApi.ts — Recruiting Weekly Board
+## 20. Weekly board — `src/modules/agency/recruiting/weekly-board/api.ts`
 
 Board where the agency assigns orders to recruiters per work day, and each recruiter records the runners they sent. It is the only place recruiters are assigned. Admin board (`getWeeklyBoard`) shows all recruiters with counts; recruiter board (`getRecruiterWeeklyBoard`) is scoped to the recruiter from the token and includes the runners sent. Base: `/api/agency/recruiting/weeklyboard`.
 
@@ -714,11 +712,11 @@ Board where the agency assigns orders to recruiters per work day, and each recru
 
 **Types:** `WeeklyBoard`, `RecruiterWeeklyBoard`, `WeeklyBoardRecruiterRow`, `WeeklyBoardAssignment`, `WeeklyBoardDispatch`, `WeeklyBoardFilter`, `AssignRecruitersPayload`, `UnassignRecruiterPayload`, `MoveAssignmentPayload`, `DispatchWorkersPayload`, `RemoveWorkerPayload` (`src/modules/agency/recruiting/weekly-board/types`)
 
-**UI:** `pages/agency/WeeklyBoard.vue` + `components/weekly_board/*`.
+**UI:** `recruiting/weekly-board/` — `WeeklyBoard.vue` page switching between `AdminWeeklyBoard.vue` and `RecruiterWeeklyBoard.vue`, plus `AssignRecruiterModal.vue`.
 
 ---
 
-## 21. userNotificationApi.ts → `src/shared/api/userNotificationApi.ts`
+## 21. User notifications — `src/shared/api/userNotificationApi.ts`
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getUserNotifications()` | GET | `/api/usernotification` | — | `UserNotificationItem[]` | In-app inbox |
@@ -728,7 +726,7 @@ Board where the agency assigns orders to recruiters per work day, and each recru
 
 ---
 
-## 22. websiteApi.ts → `src/modules/landing/api.ts`
+## 22. Landing site — `src/modules/landing/api.ts`
 Public landing site endpoints (no auth).
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -743,8 +741,8 @@ Public landing site endpoints (no auth).
 
 ---
 
-## 23. workerApi.ts → `src/modules/worker/requests/api.ts` + `src/modules/worker/profile/api.ts` + `src/modules/worker/register/api.ts` + `src/modules/worker/history/api.ts` + `src/shared/worker-profile/api.ts` (profile sections) + `src/modules/agency/recruiting/workers/api.ts` (wage/timesheet history)
-**Large.** Worker portal: profile build, applications, timesheet.
+## 23. Worker portal — `src/modules/worker/{requests,profile,register,history}/api.ts` + `src/shared/worker-profile/api.ts` (profile sections) + `src/modules/agency/recruiting/workers/api.ts` (wage/timesheet history)
+Worker portal: profile build, applications, timesheet.
 
 ### Requests (Job Applications)
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -823,7 +821,7 @@ Public landing site endpoints (no auth).
 | `getWorkerProfileWageHistory(filter)` | GET | `/api/agency/recruiting/workers/{profileId}/WageHistory` | `WorkerPayStubHistoryFilter` (params: payStubNumber, weekEndingFrom/To, sortBy, isDescending, paging) | `PaginatedList<WorkerWageHistoryItem>` — each row carries `accumulated*` running totals (oldest → that row, all-time) |
 | `getWorkerProfileTimeSheetHistory(filter)` | GET | `/api/agency/recruiting/workers/{profileId}/TimeSheetHistory` | `WorkerTimeSheetHistoryFilter` (params: companyName, numberId, dateFrom/To, sortBy, isDescending, paging) | `PaginatedList<WorkerTimeSheetHistoryItem>` — each row carries `accumulated*Hours` running totals (inclusive by date) |
 
-**Types:** from `src/shared/worker-profile/types`, `worker/requests/types`, `agency/recruiting/workers/types`; `ClockType` enum from `src/constants/enums`.
+**Types:** from `src/shared/worker-profile/types` and each feature's `types.ts`; `ClockType` enum from `src/shared/constants/enums`.
 
 **Pinia:** `workerProfile` (partial) in `useWorkerStore`.
 
@@ -831,37 +829,38 @@ Public landing site endpoints (no auth).
 
 ---
 
-## Summary Table: API Files by Entity
+## Index by entity
 
-| Entity | Primary File(s) | Notable Features |
-|--------|----------------|------------------|
-| **Agency** | agencyApi.ts | Multi-location, personnel, agency switching, assignable roles |
-| **Candidate** | agencyCandidateApi.ts | Convert to worker, skills, documents, bulk upload |
-| **Company** (agency view) | agencyCompanyApi.ts | Locations, job positions, contacts, documents, settings, users |
-| **Company** (self) | companyApi.ts | Requests, workers, timesheet validation, users, invoices |
-| **Request** | agencyRequestApi.ts | Workers, applicants, skills, shift, sources, bulk cancel |
-| **Runner** | agencyRunnerApi.ts | Recruiting pipeline per request: status, interviews |
-| **WeeklyBoard** | weeklyBoardApi.ts | Recruiter day assignments + runners sent |
-| **Sales** | salesApi.ts, salesDashboardApi.ts, companyApi.ts (deals/interactions) | Sales-scoped lists + Excel export; live dashboard aggregates (deals by status, quarter summary); deals + interactions CRUD (owner-scoped) |
-| **Worker** (agency view) | agencyWorkerApi.ts | Flags (DNU, contractor), tax, holidays, request history |
-| **Worker** (self) | workerApi.ts | Profile build, applications, timesheet, wage history |
-| **Invoice** | agencyInvoiceApi.ts | Preview, PDF, email, linked pay stubs |
-| **PayStub** | agencyPayStubApi.ts | Generation, bulk email, subcontractor report, skip numbers |
-| **TimeSheet** | agencyTimeSheetApi.ts | Per request/worker, date range, usages |
-| **Note** | agencyNoteApi.ts | Worker notes read+create only; others full CRUD |
-| **Location** | locationApi.ts | Country > province > city, provincial settings, location tax |
-| **Catalog** | catalogApi.ts | Reference data incl. sources and tax categories |
-| **Report** | agencyReportApi.ts | T4, CRA, hours worked, payments, payroll Excel |
-| **Account** | accountApi.ts | Email change, deactivation |
-| **Website** | websiteApi.ts | Public job search, contact form, candidate apply |
-| **Notification** | notificationApi.ts, userNotificationApi.ts | Agency bell (aggregated) / user inbox |
-| **Shared** | sharedApi.ts | Unsubscribe |
+| Entity | Section | Notable Features |
+|--------|---------|------------------|
+| **Agency** | §2 | Multi-location, personnel, attendance, agency switching, assignable roles |
+| **Candidate** | §3 | Convert to worker, skills, documents, bulk upload |
+| **Company** (agency view) | §4 | Locations, job positions, contacts, documents, settings, users, deals, interactions |
+| **Company** (self) | §14 | Requests, workers, timesheet validation, users, invoices |
+| **Request** | §9 | Workers, applicants, skills, shift, sources, bulk cancel |
+| **Runner** | §10 | Recruiting pipeline per request + cross-request board |
+| **WeeklyBoard** | §20 | Recruiter day assignments + runners sent |
+| **Sales** | §17, §18, §4 | Sales-scoped lists; live dashboard aggregates; deals + interactions CRUD (owner-scoped) |
+| **Worker** (agency view) | §12 | Flags (DNU, contractor), tax, holidays, request history |
+| **Worker** (self) | §23 | Profile build, applications, punch card, wage history |
+| **Invoice** | §5 | Preview, PDF, email, status, linked pay stubs |
+| **PayStub** | §7 | Generation, bulk email, subcontractor report, skip numbers |
+| **TimeSheet** | §11 | Per request/worker, date range, usages |
+| **Note** | §6 | Worker notes read+create only; others full CRUD |
+| **Location** | §15 | Country > province > city, provincial settings, location tax |
+| **Catalog** | §13 | Reference data incl. sources and tax categories |
+| **Report** | §8 | T4, CRA, hours worked, payments, payroll Excel |
+| **Account** | §1 | Email change, deactivation |
+| **Website** | §22 | Public job search, contact form, candidate apply |
+| **Notification** | §16, §21 | Agency bell (aggregated) / user inbox |
+| **Email preferences** | §19 | Unsubscribe |
+| **Auth** | §24 | Token, userinfo, password reset, email confirmation |
 
 ---
 
-## 24. authApi.ts — IdentityServer (not Covenant.Api)
+## 24. Auth — `src/app/security/authApi.ts`
 
-The only API file that targets `VUE_APP_SECURITY_SERVER` instead of `VUE_APP_URL_API`. Uses its own bare axios instance (no auth interceptor, no 401 retry). Consumed by `security/securityService.ts` and `pages/auth/*`.
+The only API file that targets `VUE_APP_SECURITY_SERVER` (the Covenant.Api host, which embeds the OpenIddict server) instead of `VUE_APP_URL_API`. Uses its own bare axios instance (no auth interceptor, no 401 retry). Consumed by `security/securityService.ts` and `pages/auth/*`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|

@@ -139,7 +139,7 @@ On the frontend, route guards live in `Sigook.Web/src/modules/agency/routes.ts` 
 
 `DELETE api/agency/recruiting/clients/{id}` and its companion `GET .../{id}/deletion-check` are the
 only endpoints under Policy `SuperAdmin`. Deletion is **blocked** while the company still has
-Requests, Invoices, USA invoices, Deals, Interactions or Worker comments; `deletion-check` returns
+Requests, Invoices, Deals, Interactions or Worker comments; `deletion-check` returns
 that list so the UI can explain the refusal before anything is touched. Invoices are on a cascade FK,
 so they are checked explicitly — relying on the database alone would wipe accounting data silently.
 

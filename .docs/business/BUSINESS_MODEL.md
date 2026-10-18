@@ -52,19 +52,7 @@ Prospect managed by the agency that does NOT yet have a user account (`Covenant.
 
 ## Authorization Model — 7 Roles
 
-Defined in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role`). Role strings are lowercase; always reference the constants, never literals.
-
-| Role constant | String | Who |
-|---------------|--------|-----|
-| `Role.SuperAdmin` | `superadmin` | Platform owner |
-| `Role.Admin` | `admin` | Agency administrator |
-| `Role.Recruiting` | `recruiting` | Agency recruiter |
-| `Role.Sales` | `sales` | Agency sales rep (data scoped to own companies/requests) |
-| `Role.Company` | `company` | Company main account |
-| `Role.CompanyUser` | `company.user` | Company internal user |
-| `Role.Worker` | `worker` | Worker (mobile app) |
-
-Composite groups in the same file: `RecruitingAccess`, `SalesAccess`, `AgencyStaff`, `AdminAccess` (superadmin + admin), `AgencyAssignable`, `SuperAdminAssignable`. There are no `agency` / `agency.personnel` roles and no "Account Manager" role.
+`superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker` — constants in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role`; always reference the constants, never literals). There are no `agency` / `agency.personnel` roles and no "Account Manager" role: agency staff carry `admin`, `recruiting` or `sales`, scoped to their agency through `AgencyPersonnel`. Who sees what, role groups and the sales scoping rule: `.docs/business/ROLES_PERMISSIONS.md`.
 
 ---
 

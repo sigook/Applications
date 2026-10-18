@@ -186,7 +186,7 @@ import PageHeader from '@/shared/ui/PageHeader.vue';
 const router = useRouter();
 const { isSalesView, requestBase, companyBase: companyDetailBase, moduleCrumbs } = useModuleBase();
 const exportUrl = computed(() =>
-  isSalesView.value ? '/api/agency/sales/companyprofiles/File' : '/api/agency/recruiting/clients/File');
+  isSalesView.value ? '/api/agency/sales/clients/File' : '/api/agency/recruiting/clients/File');
 const agencyStore = useAgencyStore();
 const appStore = useAppStore();
 const { isAdmin } = useAdmin();

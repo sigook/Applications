@@ -201,6 +201,8 @@ GET    api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/
 
 A request-wide view exists at `GET api/agency/recruiting/requests/{requestId}/timesheets` (`TimeSheetsController.cs`).
 
+On the agency punch card the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` in `AgencyPunchCardWorkerContainer.vue`); the attendance `0` is entered by whoever may edit.
+
 ### Step 3: Hours breakdown
 
 Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is never computed anywhere; do not add night-shift logic.
@@ -360,10 +362,6 @@ Each request header shows `hired/workersQuantity` and whether it still uses runn
 
 The bulk status change applies the entity rules per runner and never fails as a whole: hired runners, runners of requests without runners and unknown ids are returned in `skipped[]` with the reason, the rest are updated with one history entry each carrying the comments. `InterviewRescheduled` is never a bulk target (it is only set by rescheduling an interview) and `Hired` requires `startDate` for the whole batch.
 
-### Punch card gating
-
-- **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` composable, used in `AgencyPunchCardWorkerContainer.vue` via `v-if="isAdmin"` / `:disabled="!isAdmin || ..."`); the attendance `0` is entered by whoever may edit.
-
 ### 6.1 Compliance checklist (orders without runners)
 
 When `Request.UsesRunners == false`, the order instead carries a **compliance checklist**: the requirements a worker must meet to be placed on it. Each item is a free-text name plus a mandatory/optional flag plus a **document target** (which worker-profile section a document uploaded for it lands in), so the list is fully dynamic — the agency can add anything beyond the defaults.
@@ -420,7 +418,7 @@ In the portal an applicant row expands into its compliance detail row (`Applican
 
 Completing an item can attach a document that lands in the worker-profile section named by the item's `DocumentTarget` (WP/W4/I9/Banking-style items land in *Other Documents* with the item name as description). For **worker** applicants, a **mandatory** item with a document target can **only** be completed by uploading the document — unless the profile already holds a document in that target slot, in which case the check alone completes it and the stored file is left untouched — and mandatory identification/social-insurance items additionally require their number (and type) whenever a file is being uploaded — enforced in the service and mirrored in the modal before it posts. **Optional items require nothing**: neither the document nor the inputs, and an optional identification saved without a number keeps the number/type already on the profile. Numbers are duplicate-checked whenever one is present. Candidates can check items but never upload — convert to worker first. **Confirm** requires all mandatory items completed (optional ones don't block) and a worker applicant.
 
-**SIN/SSN-typed identifications** (identification type with `IdentificationTypeCode.SinSsn`): completing an Identification item with that type validates the number as a SIN (9-15 chars, not another profile's SIN, not different from the profile's existing SIN) and **also fills the worker's `SocialInsurance` + SIN document from the same upload** (one blob, no double attachment), then **auto-completes** any pending checklist item with target *Social insurance* for that applicant. The same auto-fill applies at worker registration (web and app) when a SIN/SSN-typed identification is provided — SIN is never captured directly at registration. SIN duplicate validation runs in every flow that sets it: registration, the worker documents/SIN forms, and both compliance branches.
+**SIN/SSN-typed identifications** (`IdentificationTypeCode.SinSsn`): completing an Identification item with that type also fills the worker's `SocialInsurance` + SIN document from the same upload (one blob) and auto-completes pending *Social insurance* items. The same auto-fill applies at worker registration (web and app) — SIN is never captured directly at registration. Validation, duplicate checks and replacement rules: `REQUEST_STATE_MANAGEMENT.md` → *Per-applicant compliance & document routing*.
 
 Note: `BookWorker` deletes the applicant row; its completions go with it by cascade.
 

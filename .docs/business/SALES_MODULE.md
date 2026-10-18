@@ -64,19 +64,19 @@ A commercial proposal made to a client company (`Deal`): what was offered, for h
 | Permanent | Direct hire — the company hires the worker on a salary (see "Direct Hiring" in `BUSINESS_MODEL.md`) |
 | Temp to Perm | Starts as temporary, converts to a direct hire |
 
-**Status lifecycle** (`DealStatus`):
+**Status** (`DealStatus`, seven values, displayed in this order):
 
-```
-To Send ──► Sent ──► Accepted   (closed-won)
-                └──► Rejected   (closed-lost)
-```
+| Status | Meaning |
+|--------|---------|
+| To Send | Drafted, not yet presented to the client |
+| Sent | Delivered to the client; waiting on an answer |
+| Under Review | The client is evaluating it |
+| Accepted | The client took the deal (closed-won) |
+| Rejected | The client declined (closed-lost) |
+| Closed | Closed without an outcome |
+| Completed | Accepted and delivered |
 
-- **To Send** — drafted, not yet presented to the client.
-- **Sent** — delivered to the client; waiting on an answer.
-- **Accepted** — the client took the deal. Counts as a closed deal.
-- **Rejected** — the client declined.
-
-The status is set by the rep by hand; nothing moves it automatically. A deal does not create an order (`Request`) — orders are created through the recruiting/company flows in `WORKFLOWS.md` §2.
+The status is set by the rep by hand and any value can be chosen at any time: the API enforces no order and attaches no behaviour to a status beyond counting it on the dashboard. A deal does not create an order (`Request`) — orders are created through the recruiting/company flows in `WORKFLOWS.md` §2.
 
 ---
 
@@ -144,5 +144,5 @@ Beyond the dashboard, interactions and deals are managed per client: the client 
 - `BUSINESS_MODEL.md` — company status pipeline, direct hiring
 - `WORKFLOWS.md` — order creation and the recruiting pipeline that follows a won deal
 - `.docs/technical/SIGOOK_WEB_STRUCTURE.md` — routes, dashboard layout, `sales_dashboard/` components
-- `.docs/technical/SIGOOK_WEB_API_MAP.md` — deals / interactions endpoints and modal wiring (§14), static dashboard summary (§18)
+- `.docs/technical/SIGOOK_WEB_API_MAP.md` — deals / interactions endpoints and modal wiring (§4), dashboard aggregates (§18)
 - `.docs/technical/ENTITIES_RELATIONSHIPS.md` — `Deal` / `CompanyInteraction` entities

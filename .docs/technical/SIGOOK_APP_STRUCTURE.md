@@ -138,7 +138,7 @@ Check here before writing a new widget. Everything is re-exported from `core/wid
 | `NetworkInfo` | `network/` | Connectivity check used by every repository |
 | `FilePickerService` | `services/` | Picks a file and validates size and extension |
 | `FileNamingService` | `services/` | UUID-based file names for uploads |
-| `LocationService` | `services/` | GPS position for clock in/out (punch radius check happens on the API) |
+| `LocationService` | `services/` | GPS position for clock in/out (punch radius check happens on the API). The live watch and the punch fix (`watchPosition` / `getFreshPosition`) share one stream configuration (`bestForNavigation`, 1 s interval, no distance filter): the geolocator plugin keeps a single position stream per app and hands it to every later caller ignoring their settings, and a distance filter on the watch starves the punch fix on a stationary phone, making the app wrongly report "enable location services" |
 | `AnalyticsService` / `CrashReportingService` | `services/` | Azure Application Insights page views, events and uncaught errors |
 | `UseCase<T, Params>` | `usecases/` | Base class for single-parameter use cases |
 
