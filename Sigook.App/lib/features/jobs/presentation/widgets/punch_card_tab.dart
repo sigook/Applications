@@ -79,7 +79,6 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       }
     });
     _loadClockType();
-    _syncPositionWatch();
   }
 
   @override
@@ -91,7 +90,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
   }
 
   void _syncPositionWatch() {
-    if (widget.hasCheckpoint) {
+    if (widget.hasCheckpoint && _showsCheckpointStrip) {
       _positionSubscription ??= ref
           .read(locationServiceProvider)
           .watchPosition()
@@ -117,6 +116,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       _punchRejectedMessage = null;
       _punchRejectedReference = null;
     });
+    _syncPositionWatch();
     if (refreshCheckpoint) {
       await widget.onRefreshCheckpoint?.call();
       if (!mounted || requestId != _clockTypeRequestId) return;
@@ -134,6 +134,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         _isLoadingClockType = false;
         _clockTypeError = _locationError;
       });
+      _syncPositionWatch();
       _showErrorSnackBar(
         'Failed to get location. Please enable location services.',
         action: SnackBarAction(
@@ -171,6 +172,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         },
       );
     });
+    _syncPositionWatch();
   }
 
   @override
@@ -269,7 +271,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             ),
           ),
         ),
-        if (widget.hasCheckpoint) ...[
+        if (widget.hasCheckpoint && _showsCheckpointStrip) ...[
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -557,6 +559,11 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       _clockType == ClockType.none &&
       _punchStatus.clockIn != null &&
       _punchStatus.clockOut != null;
+
+  bool get _showsCheckpointStrip =>
+      _clockType != ClockType.none ||
+      _isLoadingClockType ||
+      _clockTypeError != null;
 
   Widget _buildClockButton() {
     final isBusy = _isSubmitting || _isLoadingClockType;

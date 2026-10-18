@@ -24,10 +24,6 @@
         <b-icon icon="currency-usd" size="is-small"></b-icon>
         {{ pay }}
       </span>
-      <span class="job-card__chip is-spots">
-        <b-icon icon="account-group" size="is-small"></b-icon>
-        {{ job.workersQuantity ?? 0 }}
-      </span>
       <span class="job-card__chip is-term">{{ splitCapital(job.durationTerm) }}</span>
     </div>
   </div>
@@ -203,11 +199,6 @@ const pay = computed(() =>
     color: $blue;
     font-size: 1rem;
     font-weight: 700;
-  }
-
-  &.is-spots {
-    background: $gray-bg;
-    color: $grey-font;
   }
 
   &.is-term {

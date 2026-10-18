@@ -20,6 +20,7 @@ using Covenant.Infrastructure.Repositories;
 using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
+using GeoTimeZone;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
@@ -120,8 +121,8 @@ public class TimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
             services.AddSingleton<ITimesheetService, TimesheetService>();
             services.AddSingleton(TimeLimits.DefaultTimeLimits);
             services.AddSingleton(Rates.DefaultRates);
-            var timeProvider = new FakeTimeProvider(new DateTimeOffset(Data.Now));
-            timeProvider.SetLocalTimeZone(TimeZoneInfo.Local);
+            var timeProvider = new FakeTimeProvider(Data.JobNow);
+            timeProvider.SetLocalTimeZone(Data.JobZone);
             services.AddSingleton<TimeProvider>(timeProvider);
             services.AddSingleton<IUserAccountService, UserAccountService>();
         }
@@ -150,7 +151,9 @@ public class TimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
 
     private static class Data
     {
-        public static DateTime Now = DateTime.Now;
+        public static readonly TimeZoneInfo JobZone = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneLookup.GetTimeZone(Location.DefaultLatitude, Location.DefaultLongitude).Result);
+        public static readonly DateTimeOffset JobNow = TimeZoneInfo.ConvertTime(new DateTimeOffset(2026, 10, 14, 16, 0, 0, TimeSpan.Zero), JobZone);
+        public static readonly DateTime Now = JobNow.DateTime;
         internal static readonly Guid AgencyId = Guid.NewGuid();
         public static readonly User FakeUser = new User(CvnEmail.Create("user_user@mail.com").Value);
         internal static readonly WorkerProfile FakeWorker = new WorkerProfile(FakeUser, AgencyId) { Location = FakeData.FakeLocation() };

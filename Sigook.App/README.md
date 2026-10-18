@@ -94,7 +94,7 @@ The environment is chosen by **entry point + `.env` file**. There are no Android
 | Local | `flutter run --dart-define-from-file=.env.local -t lib/main_local.dart` | your `Covenant.Api` (§4) | orange "Local" |
 | Production (build only) | `flutter build apk --release --dart-define-from-file=.env.production -t lib/main_production.dart` | `api.sigook.ca` | none |
 
-`.env.local`, `.env.staging` and `.env.production` are committed. They only hold public values (URLs, client id, scopes) that end up inside the binary anyway. `APP_INSIGHTS_CONNECTION_STRING` stays empty in them; CI injects it from the variable groups.
+`.env.local`, `.env.staging` and `.env.production` are committed. They only hold public values (URLs, client id, scopes) that end up inside the binary anyway. `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` stay empty in them; CI injects them from the variable groups. Without the maps key the job location card shows the address and the "Open in Maps" button but no map image.
 
 ## 4. Running against a local backend
 

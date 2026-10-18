@@ -121,10 +121,6 @@ class _JobsPageState extends ConsumerState<JobsPage> {
           return b.workerRate.compareTo(a.workerRate);
         case SortOption.rateLowest:
           return a.workerRate.compareTo(b.workerRate);
-        case SortOption.workersHighest:
-          return b.workersQuantity.compareTo(a.workersQuantity);
-        case SortOption.workersLowest:
-          return a.workersQuantity.compareTo(b.workersQuantity);
       }
     });
 

@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/string_extensions.dart';
 import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/usecases/apply_to_job.dart';
 import '../providers/jobs_providers.dart';
 import 'job_header_card.dart';
+import 'job_location_card.dart';
 import 'profile_warning_banner.dart';
 
 class JobDetailsTab extends ConsumerStatefulWidget {
@@ -62,7 +64,8 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
                 _buildRequirementsCard(),
                 const SizedBox(height: 12),
               ],
-              _buildLocationCard(),
+              if (jobDetails.hasCoordinates)
+                JobLocationCard(jobDetails: jobDetails),
             ],
           ),
         ),
@@ -105,22 +108,16 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
               const SizedBox(height: 12),
             ],
             _buildInfoRow(
-              Icons.people_outline,
-              'Workers Needed',
-              '${jobDetails.workersQuantity} workers',
-            ),
-            const SizedBox(height: 12),
-            _buildInfoRow(
               Icons.access_time,
-              'Duration',
-              jobDetails.durationTerm ?? 'N/A',
+              'Term',
+              jobDetails.durationTerm?.splitPascalCase() ?? 'N/A',
             ),
-            if (jobDetails.requestStatus != null) ...[
+            if (jobDetails.entrance != null) ...[
               const SizedBox(height: 12),
               _buildInfoRow(
-                Icons.pending_actions,
-                'Request Status',
-                jobDetails.requestStatus!,
+                Icons.door_front_door_outlined,
+                'Entrance',
+                jobDetails.entrance!,
               ),
             ],
             if (jobDetails.workerApprovedToWork != null) ...[
@@ -173,7 +170,7 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
                     child: Column(
                       children: [
                         const Icon(
-                          Icons.attach_money,
+                          Icons.schedule,
                           color: AppTheme.primaryBlue,
                           size: 32,
                         ),
@@ -244,71 +241,6 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
     );
   }
 
-  Widget _buildLocationCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Location',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.location_on,
-                    color: AppTheme.primaryBlue,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        jobDetails.location ?? 'N/A',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
-                      if (jobDetails.entrance != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Entrance: ${jobDetails.entrance}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildDescriptionCard() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -333,7 +265,7 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
             ),
             const SizedBox(height: 12),
             Text(
-              _stripHtmlTags(jobDetails.description!),
+              jobDetails.description!.htmlToPlainText(),
               style: TextStyle(
                 fontSize: 15,
                 color: Colors.grey.shade700,
@@ -370,7 +302,7 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
             ),
             const SizedBox(height: 12),
             Text(
-              _stripHtmlTags(jobDetails.requirements!),
+              jobDetails.requirements!.htmlToPlainText(),
               style: TextStyle(
                 fontSize: 15,
                 color: Colors.grey.shade700,
@@ -413,12 +345,6 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
                 _formatDate(jobDetails.finishAt!),
               ),
             ],
-            const SizedBox(height: 12),
-            _buildInfoRow(
-              Icons.add_circle_outline,
-              'Created',
-              _formatDate(jobDetails.createdAt),
-            ),
           ],
         ),
       ),
@@ -617,10 +543,6 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
               ),
       ),
     );
-  }
-
-  String _stripHtmlTags(String html) {
-    return html.replaceAll(RegExp(r'<[^>]*>'), '').trim();
   }
 
   String _formatDate(DateTime date) {

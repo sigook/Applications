@@ -7,6 +7,7 @@ using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces.Storage;
@@ -243,6 +244,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             services.AddSingleton(invoiceContainer.Object);
             var payStubContainer = new Mock<IPayStubsContainer>();
             services.AddSingleton(payStubContainer.Object);
+            Teams.Setup(t => t.SendNotification(It.IsAny<string>(), It.IsAny<TeamsNotificationModel>())).ReturnsAsync(Result.Ok());
             services.AddSingleton(Teams.Object);
             var currentUserService = new Mock<Covenant.Common.Interfaces.ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);

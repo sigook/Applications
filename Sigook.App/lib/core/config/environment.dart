@@ -26,6 +26,8 @@ class EnvironmentConfig {
       String.fromEnvironment('APP_NAME');
   static const String _appInsightsConnectionString =
       String.fromEnvironment('APP_INSIGHTS_CONNECTION_STRING', defaultValue: '');
+  static const String _googleMapsApiKey =
+      String.fromEnvironment('GOOGLE_MAPS_API_KEY', defaultValue: '');
 
   // Every value is trimmed: CI variable editors silently keep a pasted
   // trailing space or newline, and an untrimmed client_id makes the token
@@ -47,6 +49,8 @@ class EnvironmentConfig {
   static String get appName => _appName;
 
   static String get appInsightsConnectionString => _appInsightsConnectionString;
+
+  static String get googleMapsApiKey => _googleMapsApiKey.trim();
 
   static Environment get current {
     final envString = _environment.toLowerCase();
@@ -117,6 +121,7 @@ class EnvironmentConfig {
     _printConfigLine('SCOPES', scopes.join(','));
     _printConfigLine('APP_NAME', appName);
     debugPrint(' APP_INSIGHTS_CONNECTION_STRING: ${_appInsightsConnectionString.isNotEmpty ? '[set]' : '[not set]'}');
+    debugPrint(' GOOGLE_MAPS_API_KEY: ${googleMapsApiKey.isNotEmpty ? '[set]' : '[not set]'}');
     debugPrint('========================================================');
     debugPrint('');
   }

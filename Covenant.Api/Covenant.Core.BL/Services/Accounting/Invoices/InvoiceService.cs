@@ -22,6 +22,7 @@ using Covenant.Core.BL.Interfaces.Accounting;
 using Covenant.Documents.Services;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
 using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
@@ -50,10 +51,12 @@ public class InvoiceService(
     ITeamsService teamsService,
     IOptions<TeamsWebhookConfiguration> teamsOptions,
     IInvoiceDocumentAdapter invoiceDocumentAdapter,
-    IValidator<ChangeInvoiceStatusModel> changeStatusValidator) : IInvoiceService
+    IValidator<ChangeInvoiceStatusModel> changeStatusValidator,
+    ILogger<InvoiceService> logger) : IInvoiceService
 {
     private const string InvoiceHtmlTemplate = "/Views/Billing/Invoice/Invoice.cshtml";
     private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
+    private const int MaxInvoiceNumbersInNotification = 20;
 
     private readonly TeamsWebhookConfiguration teamsConfiguration = teamsOptions.Value;
 
@@ -83,12 +86,23 @@ public class InvoiceService(
         var invoiceNumbers = await invoiceRepository.MarkPendingInvoicesAsDue(timeProvider.GetLocalNow().DateTime);
         if (invoiceNumbers.Count > 0)
         {
-            string text = invoiceNumbers.Count == 1
-                ? $"Invoice {invoiceNumbers[0]} is Due"
-                : $"Invoices {string.Join(", ", invoiceNumbers)} are Due";
-            await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning("Invoices marked as Due", text));
+            var result = await teamsService.SendNotification(teamsConfiguration.Accounting, TeamsNotificationModel.CreateWarning("Invoices marked as Due", BuildDueNotificationText(invoiceNumbers)));
+            if (result.IsFailure)
+            {
+                logger.LogWarning("Teams notification for {Count} invoices marked as Due failed: {Error}", invoiceNumbers.Count, result.StringErrors);
+            }
         }
         return invoiceNumbers.Count;
+    }
+
+    private static string BuildDueNotificationText(IReadOnlyList<string> invoiceNumbers)
+    {
+        if (invoiceNumbers.Count == 1) return $"Invoice {invoiceNumbers[0]} is Due";
+        string listed = string.Join(", ", invoiceNumbers.Take(MaxInvoiceNumbersInNotification));
+        int remaining = invoiceNumbers.Count - MaxInvoiceNumbersInNotification;
+        return remaining > 0
+            ? $"{invoiceNumbers.Count} invoices are Due: {listed} and {remaining} more"
+            : $"Invoices {listed} are Due";
     }
 
     private async Task<List<InvoiceListModel>> GetAllInvoices(GetInvoicesFilter filter)

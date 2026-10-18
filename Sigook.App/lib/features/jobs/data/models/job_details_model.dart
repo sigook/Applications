@@ -28,12 +28,15 @@ class JobDetailsModel extends JobDetails {
     super.incentiveDescription,
     super.durationBreak,
     super.requestStatus,
+    super.latitude,
+    super.longitude,
     super.checkpointLatitude,
     super.checkpointLongitude,
     super.checkpointRadiusMeters,
   });
 
   factory JobDetailsModel.fromJson(Map<String, dynamic> json) {
+    final jobLocation = json['jobLocation'] as Map<String, dynamic>?;
     final checkpoint = json['punchCheckpoint'] as Map<String, dynamic>?;
     return JobDetailsModel(
       id: json['id'] as String,
@@ -68,6 +71,8 @@ class JobDetailsModel extends JobDetails {
       incentiveDescription: json['incentiveDescription']?.toString(),
       durationBreak: json['durationBreak']?.toString(),
       requestStatus: json['requestStatus'] as String?,
+      latitude: (jobLocation?['latitude'] as num?)?.toDouble(),
+      longitude: (jobLocation?['longitude'] as num?)?.toDouble(),
       checkpointLatitude: (checkpoint?['latitude'] as num?)?.toDouble(),
       checkpointLongitude: (checkpoint?['longitude'] as num?)?.toDouble(),
       checkpointRadiusMeters: (checkpoint?['radiusMeters'] as num?)?.toDouble(),
@@ -102,6 +107,9 @@ class JobDetailsModel extends JobDetails {
       'incentiveDescription': incentiveDescription,
       'durationBreak': durationBreak,
       'requestStatus': requestStatus,
+      'jobLocation': hasCoordinates
+          ? {'latitude': latitude, 'longitude': longitude}
+          : null,
       'punchCheckpoint': hasPunchCheckpoint
           ? {
               'latitude': checkpointLatitude,

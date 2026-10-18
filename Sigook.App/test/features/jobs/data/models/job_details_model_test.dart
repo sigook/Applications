@@ -16,6 +16,30 @@ void main() {
     'radiusMeters': 100,
   };
 
+  test('parses the job location coordinates', () {
+    final json = baseJson()
+      ..['jobLocation'] = {'latitude': 45.4215, 'longitude': -75.6972};
+
+    final model = JobDetailsModel.fromJson(json);
+
+    expect(model.hasCoordinates, isTrue);
+    expect(model.latitude, 45.4215);
+    expect(model.longitude, -75.6972);
+    expect(model.toJson()['jobLocation'], {
+      'latitude': 45.4215,
+      'longitude': -75.6972,
+    });
+  });
+
+  test('has no coordinates when the job location is not geocoded', () {
+    final json = baseJson()..['jobLocation'] = {'address': '1 Main St'};
+
+    final model = JobDetailsModel.fromJson(json);
+
+    expect(model.hasCoordinates, isFalse);
+    expect(model.toJson()['jobLocation'], isNull);
+  });
+
   test('parses the punch checkpoint when the API sends it', () {
     final json = baseJson()..['punchCheckpoint'] = checkpointJson();
 

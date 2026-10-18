@@ -56,9 +56,6 @@
         <b-table-column field="workerRate" label="Rate / Salary" v-slot="props">
           {{ currency(props.row.workerRate) }}
         </b-table-column>
-        <b-table-column field="workersQuantity" label="Spots" v-slot="props">
-          {{ props.row.workersQuantity }}
-        </b-table-column>
         <b-table-column field="status" v-slot="props">
           <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized has-text-weight-bold has-text-centered"
             :class="props.row.status">

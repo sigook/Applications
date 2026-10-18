@@ -152,7 +152,7 @@ The environment is selected by **entry point + `.env` file**, not by flavors (An
 | Staging | `lib/main_staging.dart` | `.env.staging` (`staging.api.sigook.ca`, `staging.accounts.sigook.ca`) | orange "Staging" |
 | Production | `lib/main_production.dart` | `.env.production` | none |
 
-Keys: `ENVIRONMENT`, `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`. The `.env` files are committed and hold public values only; CI passes the same keys as individual `--dart-define` flags from the `SigookApp-Staging` / `SigookApp-Production` variable groups and is the only place `APP_INSIGHTS_CONNECTION_STRING` is set (see `PIPELINES.md`).
+Keys: `ENVIRONMENT`, `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY`. The `.env` files are committed and hold public values only; CI passes the same keys as individual `--dart-define` flags from the `SigookApp-Staging` / `SigookApp-Production` variable groups and is the only place `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` are set (see `PIPELINES.md`). `GOOGLE_MAPS_API_KEY` feeds the Static Maps image of the job location card (`features/jobs/presentation/widgets/job_location_card.dart`); without it the card keeps the address and the "Open in Maps" button but shows no map.
 
 ## Adding a Feature — Walkthrough
 

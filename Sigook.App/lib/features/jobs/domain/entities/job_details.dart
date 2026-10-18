@@ -27,6 +27,8 @@ class JobDetails extends Equatable {
   final String? incentiveDescription;
   final String? durationBreak;
   final String? requestStatus;
+  final double? latitude;
+  final double? longitude;
   final double? checkpointLatitude;
   final double? checkpointLongitude;
   final double? checkpointRadiusMeters;
@@ -58,10 +60,14 @@ class JobDetails extends Equatable {
     this.incentiveDescription,
     this.durationBreak,
     this.requestStatus,
+    this.latitude,
+    this.longitude,
     this.checkpointLatitude,
     this.checkpointLongitude,
     this.checkpointRadiusMeters,
   });
+
+  bool get hasCoordinates => latitude != null && longitude != null;
 
   bool get hasPunchCheckpoint =>
       checkpointLatitude != null &&
@@ -102,6 +108,8 @@ class JobDetails extends Equatable {
     incentiveDescription,
     durationBreak,
     requestStatus,
+    latitude,
+    longitude,
     checkpointLatitude,
     checkpointLongitude,
     checkpointRadiusMeters,

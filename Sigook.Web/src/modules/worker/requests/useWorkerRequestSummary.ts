@@ -20,7 +20,6 @@ export function useWorkerRequestSummary(request: Ref<WorkerRequestDetail | null>
       { label: 'Term', value: r.durationTerm === 'LongTerm' ? 'Long Term' : 'Short Term' },
       { label: 'Break', value: formatBreak(r.durationBreak, r.breakIsPaid) },
       { label: 'Holiday', value: r.holidayIsPaid ? 'Paid' : 'Not paid' },
-      { label: 'Spots', value: String(r.workersQuantity ?? '—') },
     ];
   });
 
