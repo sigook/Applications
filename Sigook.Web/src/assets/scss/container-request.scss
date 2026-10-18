@@ -30,14 +30,6 @@
     font-size: 14px;
     text-transform: capitalize;
     color: $grey-light;
-
-    &.icon-before:before {
-      width: 12px;
-      height: 12px;
-      position: relative;
-      top: 2px;
-      margin: 0;
-    }
   }
 
   .request-logo {

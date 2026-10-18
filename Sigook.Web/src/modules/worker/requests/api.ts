@@ -1,7 +1,6 @@
 import { api } from '@/app/security/apiService';
-import { ClockType } from '@/shared/constants/enums';
 import type { PaginatedList } from '@/shared/types/common';
-import type { WorkerRequestFilter, WorkerRequestApplyModel, WorkerRequestListItem, WorkerRequestDetail, WorkerTimeSheetItem } from '@/modules/worker/requests/types';
+import type { WorkerRequestFilter, WorkerRequestApplyModel, WorkerRequestListItem, WorkerRequestDetail, WorkerTimeSheetItem, PunchStatus } from '@/modules/worker/requests/types';
 
 // Requests
 export function getJobs(filter: WorkerRequestFilter): Promise<PaginatedList<WorkerRequestListItem>> {
@@ -29,13 +28,6 @@ export function workerGetTimeSheet(requestId: string): Promise<PaginatedList<Wor
   return api.get<PaginatedList<WorkerTimeSheetItem>>(`/api/worker/requests/${requestId}/TimeSheet`);
 }
 
-export function getClockType(
-  requestId: string,
-  latitude: number,
-  longitude: number,
-  date: string
-): Promise<ClockType> {
-  return api.get<ClockType>(`/api/worker/requests/${requestId}/TimeSheet/clock-type/${latitude}/${longitude}`, {
-    params: { date }
-  });
+export function getPunchStatus(requestId: string, latitude: number, longitude: number): Promise<PunchStatus> {
+  return api.get<PunchStatus>(`/api/worker/requests/${requestId}/TimeSheet/punch-status/${latitude}/${longitude}`);
 }

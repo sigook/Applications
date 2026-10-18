@@ -33,6 +33,7 @@ using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Interfaces.Workers;
 using Covenant.Documents.Services;
 using FluentValidation;
 using MediatR;
@@ -63,6 +64,7 @@ public class AgencyService : IAgencyService
     private readonly ILogger<AgencyService> logger;
     private readonly IServiceProvider serviceProvider;
     private readonly IValidator<AgencyPersonnelModel> agencyPersonnelValidator;
+    private readonly IWorkerRequirementService workerRequirementService;
 
     public AgencyService(
         IAgencyRepository agencyRepository,
@@ -83,9 +85,11 @@ public class AgencyService : IAgencyService
         IUploadedFilesService uploadedFilesService,
         ILogger<AgencyService> logger,
         IServiceProvider serviceProvider,
-        IValidator<AgencyPersonnelModel> agencyPersonnelValidator)
+        IValidator<AgencyPersonnelModel> agencyPersonnelValidator,
+        IWorkerRequirementService workerRequirementService)
     {
         this.timeProvider = timeProvider;
+        this.workerRequirementService = workerRequirementService;
         this.agencyRepository = agencyRepository;
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
@@ -403,7 +407,7 @@ public class AgencyService : IAgencyService
         if (!isShiftAvailableToBook) return Result.Fail<WorkerProfile>(isShiftAvailableToBook.Errors);
         var workerProfile = await workerRepository.GetProfile(wp => wp.Id == workerProfileId);
         if (workerProfile is null) return Result.Fail<WorkerProfile>(ApiResources.WorkerNotFound);
-        var canBeBook = workerProfile.CanBeBook(timeProvider.GetLocalNow().DateTime);
+        var canBeBook = workerProfile.CanBeBook(workerRequirementService.GetMissing(workerProfile));
         return !canBeBook ? Result.Fail<WorkerProfile>(canBeBook.Errors) : Result.Ok(workerProfile);
     }
 

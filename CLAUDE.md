@@ -27,6 +27,9 @@ Before implementing any feature, read the relevant document from `.docs/`:
 | Architecture & stack | `.docs/technical/ARCHITECTURE.md` |
 | API endpoints | `.docs/technical/openapi.json` (OpenAPI spec, generated on build) |
 | Data model & relationships | `.docs/technical/ENTITIES_RELATIONSHIPS.md` |
+| Sigook.Web layout (routes, modules, shared code) | `.docs/technical/SIGOOK_WEB_STRUCTURE.md` |
+| Sigook.Web `api.ts` → backend endpoint map | `.docs/technical/SIGOOK_WEB_API_MAP.md` |
+| Sigook.App layout (features, widgets, environments) | `.docs/technical/SIGOOK_APP_STRUCTURE.md` |
 | Development commands | `.docs/technical/DEVELOPMENT_COMMANDS.md` |
 | CI/CD pipelines | `.docs/technical/PIPELINES.md` |
 | Full index | `.docs/README.md` |

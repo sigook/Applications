@@ -8,8 +8,6 @@ class JobDetailsModel extends JobDetails {
     required super.workersQuantity,
     super.location,
     super.entrance,
-    required super.agencyFullName,
-    super.agencyLogo,
     required super.status,
     required super.isAsap,
     super.workerApprovedToWork,
@@ -30,9 +28,16 @@ class JobDetailsModel extends JobDetails {
     super.incentiveDescription,
     super.durationBreak,
     super.requestStatus,
+    super.latitude,
+    super.longitude,
+    super.checkpointLatitude,
+    super.checkpointLongitude,
+    super.checkpointRadiusMeters,
   });
 
   factory JobDetailsModel.fromJson(Map<String, dynamic> json) {
+    final jobLocation = json['jobLocation'] as Map<String, dynamic>?;
+    final checkpoint = json['punchCheckpoint'] as Map<String, dynamic>?;
     return JobDetailsModel(
       id: json['id'] as String,
       jobTitle: json['jobTitle'] as String? ?? '',
@@ -40,8 +45,6 @@ class JobDetailsModel extends JobDetails {
       workersQuantity: json['workersQuantity'] as int? ?? 0,
       location: json['location'] as String?,
       entrance: json['entrance'] as String?,
-      agencyFullName: json['agencyFullName'] as String? ?? '',
-      agencyLogo: json['agencyLogo'] as String?,
       status: json['status'] as String? ?? '',
       isAsap: json['isAsap'] as bool? ?? false,
       workerApprovedToWork: json['workerApprovedToWork'] as bool?,
@@ -68,6 +71,11 @@ class JobDetailsModel extends JobDetails {
       incentiveDescription: json['incentiveDescription']?.toString(),
       durationBreak: json['durationBreak']?.toString(),
       requestStatus: json['requestStatus'] as String?,
+      latitude: (jobLocation?['latitude'] as num?)?.toDouble(),
+      longitude: (jobLocation?['longitude'] as num?)?.toDouble(),
+      checkpointLatitude: (checkpoint?['latitude'] as num?)?.toDouble(),
+      checkpointLongitude: (checkpoint?['longitude'] as num?)?.toDouble(),
+      checkpointRadiusMeters: (checkpoint?['radiusMeters'] as num?)?.toDouble(),
     );
   }
 
@@ -79,8 +87,6 @@ class JobDetailsModel extends JobDetails {
       'workersQuantity': workersQuantity,
       'location': location,
       'entrance': entrance,
-      'agencyFullName': agencyFullName,
-      'agencyLogo': agencyLogo,
       'status': status,
       'isAsap': isAsap,
       'workerApprovedToWork': workerApprovedToWork,
@@ -101,6 +107,16 @@ class JobDetailsModel extends JobDetails {
       'incentiveDescription': incentiveDescription,
       'durationBreak': durationBreak,
       'requestStatus': requestStatus,
+      'jobLocation': hasCoordinates
+          ? {'latitude': latitude, 'longitude': longitude}
+          : null,
+      'punchCheckpoint': hasPunchCheckpoint
+          ? {
+              'latitude': checkpointLatitude,
+              'longitude': checkpointLongitude,
+              'radiusMeters': checkpointRadiusMeters,
+            }
+          : null,
     };
   }
 }

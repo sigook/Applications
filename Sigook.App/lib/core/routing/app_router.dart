@@ -8,6 +8,7 @@ import '../../features/auth/presentation/pages/sign_in_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/jobs/presentation/pages/jobs_page.dart';
 import '../../features/jobs/presentation/pages/job_page.dart';
+import '../../features/profile/domain/entities/worker_requirement.dart';
 import '../../features/profile/presentation/pages/user_profile_page.dart';
 import '../../features/about/presentation/pages/about_page.dart';
 import '../../features/legal/presentation/pages/privacy_policy_page.dart';
@@ -242,7 +243,11 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           name: state.name ?? state.matchedLocation,
-          child: const UserProfilePage(),
+          child: UserProfilePage(
+            section: ProfileSection.values
+                .where((s) => s.name == state.uri.queryParameters['section'])
+                .firstOrNull,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },

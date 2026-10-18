@@ -113,6 +113,7 @@ public static class ApiServicesConfiguration
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAgencyService, AgencyService>();
         services.AddScoped<IWorkerService, WorkerService>();
+        services.AddScoped<IWorkerRequirementService, WorkerRequirementService>();
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IRunnerService, RunnerService>();
@@ -136,7 +137,8 @@ public static class ApiServicesConfiguration
         services.AddSingleton<IMicrosoft365AccountService, Microsoft365AccountService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISendGridService, SendGridService>();
-        services.AddScoped<IPushNotifications, PushNotifications>();
+        services.AddScoped<IPushNotifications, PushNotificationPublisher>();
+        services.AddSingleton<IPushNotificationSender, FirebasePushNotificationSender>();
         services.AddScoped<ITeamsService, TeamsService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
@@ -144,7 +146,6 @@ public static class ApiServicesConfiguration
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<CompanyIdFilter>();
         services.AddScoped<AgencyIdFilter>();
-        services.AddScoped<AgencyPersonnelIdFilter>();
         services.AddScoped<CaptchaFilter>();
 
         // Shared calculation services
@@ -158,9 +159,6 @@ public static class ApiServicesConfiguration
         // CRA deduction tables
         services.AddScoped<ICraPdfParser, CraPdfParser>();
         services.AddScoped<IDeductionImportService, DeductionImportService>();
-
-        //TODO: To Refactor
-        services.AddScoped<IDefaultLogoProvider, DefaultLogoProvider>();
         return services;
     }
 
@@ -194,6 +192,7 @@ public static class ApiServicesConfiguration
         services.Configure<SendGridConfiguration>(configuration.GetSection(nameof(SendGridConfiguration)));
         services.Configure<Microsoft365Configuration>(configuration.GetSection(nameof(Microsoft365Configuration)));
         services.Configure<MobileAppConfiguration>(configuration.GetSection(nameof(MobileAppConfiguration)));
+        services.Configure<PunchConfiguration>(configuration.GetSection(nameof(PunchConfiguration)));
         services.Configure<RequestLocalizationOptions>(options =>
         {
             var supportedCultures = new[] { new CultureInfo(EnUsCulture), new CultureInfo(EsCulture) };
@@ -288,6 +287,7 @@ public static class ApiServicesConfiguration
             services.AddSingleton<IAzureServiceBusConsumer, RequestApplicantConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, BulkPayStubEmailConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, InvitationConsumer>();
+            services.AddSingleton<IAzureServiceBusConsumer, PushNotificationConsumer>();
         }
 
         return services;

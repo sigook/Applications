@@ -15,7 +15,6 @@ namespace Covenant.Api.Controllers.Agency.Sales.Clients;
 [Produces("application/json")]
 [Authorize(Policy = PolicyConfiguration.Sales)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-[ServiceFilter(typeof(AgencyPersonnelIdFilter))]
 public class DealsController(ISalesService salesService) : ControllerBase
 {
     public const string RouteName = "api/agency/sales/clients/{profileId}/deals";

@@ -8,8 +8,6 @@ public class WorkerRequestDetailModel
     public Guid Id { get; set; }
     public int NumberId { get; set; }
     public string JobTitle { get; set; }
-    public string AgencyFullName { get; set; }
-    public string AgencyLogo { get; set; }
     public string Description { get; set; }
     public string Requirements { get; set; }
     public string Responsibilities { get; set; }
@@ -32,6 +30,7 @@ public class WorkerRequestDetailModel
     public DateTime? FinishAt { get; set; }
     public string Location { get; set; }
     public LocationDetailModel JobLocation { get; set; }
+    public PunchCheckpointModel PunchCheckpoint { get; set; }
     public bool IsApplicant { get; set; }
     public bool PunchCardOptionEnabled { get; set; }
 }

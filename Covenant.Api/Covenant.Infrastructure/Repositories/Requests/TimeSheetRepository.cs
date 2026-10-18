@@ -561,40 +561,28 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
         return result;
     }
 
-    public async Task<TimeSheet> GetLatestTimesheet(Guid workerId, Guid requestId, DateTime from)
-    {
-        var timeSheet = Context.TimeSheets
-            .Include(ts => ts.WorkerRequest)
-            .ThenInclude(wr => wr.Request)
-            .ThenInclude(r => r.JobLocation)
-            .Where(ts => ts.Date.Date == from.Date);
+    public Task<TimeSheet> GetLatestTimesheet(Guid workerId, Guid requestId) =>
+        Context.TimeSheets
+            .Where(ts => ts.ClockIn.HasValue
+                         && ts.WorkerRequest.RequestId == requestId
+                         && ts.WorkerRequest.WorkerProfile.WorkerId == workerId)
+            .OrderByDescending(ts => ts.ClockIn)
+            .FirstOrDefaultAsync();
 
-        var query = from ts in timeSheet
-                    where ts.WorkerRequest.RequestId == requestId
-                          && ts.WorkerRequest.WorkerProfile.WorkerId == workerId
-                    orderby ts.Date descending
-                    select ts;
-        return await query.FirstOrDefaultAsync();
-    }
+    public Task<List<TimeSheet>> GetTimesheetsSince(Guid workerId, Guid requestId, DateTime since) =>
+        Context.TimeSheets
+            .Where(ts => ts.Date >= since
+                         && ts.WorkerRequest.RequestId == requestId
+                         && ts.WorkerRequest.WorkerProfile.WorkerId == workerId)
+            .OrderByDescending(ts => ts.Date)
+            .ThenByDescending(ts => ts.ClockIn)
+            .ToListAsync();
 
     public Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition) =>
         (from wp in Context.WorkerProfiles.Where(condition)
          join wr in Context.WorkerRequests.Where(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked) on wp.Id equals wr.WorkerProfileId
          from ts in wr.TimeSheets
          select ts).OrderByDescending(c => c.Date).FirstOrDefaultAsync();
-
-    public async Task<TimeSheet> GetTimeSheeFromTheLast14Hours(Guid workerId, Guid requestId, DateTime now)
-    {
-        var last14Hours = now.AddHours(-TimeLimits.DefaultTimeLimits.MaximumHoursDay);
-        var timeSheet = Context.TimeSheets
-            .Where(ts => ts.ClockIn.HasValue && (ts.ClockIn.Value.Date == now.Date || ts.ClockIn.Value.Date == last14Hours.Date));
-        var query = from ts in timeSheet
-                    where ts.WorkerRequest.RequestId == requestId
-                          && ts.WorkerRequest.WorkerProfile.WorkerId == workerId
-                    orderby ts.Date descending
-                    select ts;
-        return await query.FirstOrDefaultAsync();
-    }
 
     public async Task<bool> TimesheetUsedByAccounting(Guid id)
     {

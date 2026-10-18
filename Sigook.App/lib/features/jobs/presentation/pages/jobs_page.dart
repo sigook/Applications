@@ -7,10 +7,12 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/widgets/logout_confirmation_dialog.dart';
+import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 import '../viewmodels/jobs_viewmodel.dart';
 import '../widgets/job_card.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/filter_sort_bottom_sheet.dart';
+import '../widgets/profile_warning_banner.dart';
 import '../../domain/entities/job.dart';
 
 class JobsPage extends ConsumerStatefulWidget {
@@ -59,7 +61,10 @@ class _JobsPageState extends ConsumerState<JobsPage> {
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(jobsViewModelProvider.notifier).refresh();
+    await Future.wait([
+      ref.refresh(cachedWorkerProfileProvider.future),
+      ref.read(jobsViewModelProvider.notifier).refresh(),
+    ]);
   }
 
   void _showFilterModal() {
@@ -75,10 +80,12 @@ class _JobsPageState extends ConsumerState<JobsPage> {
             _currentSort = sort;
             _currentFilter = filter;
           });
-          ref.read(analyticsServiceProvider).logEvent(
-            name: 'jobs_filter_applied',
-            parameters: {'filter': filter.name, 'sort': sort.name},
-          );
+          ref
+              .read(analyticsServiceProvider)
+              .logEvent(
+                name: 'jobs_filter_applied',
+                parameters: {'filter': filter.name, 'sort': sort.name},
+              );
         },
       ),
     );
@@ -114,10 +121,6 @@ class _JobsPageState extends ConsumerState<JobsPage> {
           return b.workerRate.compareTo(a.workerRate);
         case SortOption.rateLowest:
           return a.workerRate.compareTo(b.workerRate);
-        case SortOption.workersHighest:
-          return b.workersQuantity.compareTo(a.workersQuantity);
-        case SortOption.workersLowest:
-          return a.workersQuantity.compareTo(b.workersQuantity);
       }
     });
 
@@ -252,45 +255,69 @@ class _JobsPageState extends ConsumerState<JobsPage> {
               ),
             )
           : filteredJobs.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.work_outline,
-                    size: 64,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    _currentFilter != FilterStatus.all
-                        ? 'No jobs match the filter'
-                        : 'No jobs available',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
+          ? RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: AppTheme.primaryBlue,
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Column(
+                      children: [
+                        const ProfileWarningBanner(),
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.work_outline,
+                                  size: 64,
+                                  color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _currentFilter != FilterStatus.all
+                                      ? 'No jobs match the filter'
+                                      : 'No jobs available',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _currentFilter != FilterStatus.all
+                                      ? 'Try adjusting your filters'
+                                      : 'Check back later for new opportunities',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                if (_currentFilter != FilterStatus.all) ...[
+                                  const SizedBox(height: 16),
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _currentFilter = FilterStatus.all;
+                                      });
+                                    },
+                                    child: const Text('Clear Filter'),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _currentFilter != FilterStatus.all
-                        ? 'Try adjusting your filters'
-                        : 'Check back later for new opportunities',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                  ),
-                  if (_currentFilter != FilterStatus.all) ...[
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _currentFilter = FilterStatus.all;
-                        });
-                      },
-                      child: const Text('Clear Filter'),
-                    ),
-                  ],
-                ],
+                ),
               ),
             )
           : RefreshIndicator(
@@ -298,10 +325,14 @@ class _JobsPageState extends ConsumerState<JobsPage> {
               color: AppTheme.primaryBlue,
               child: ListView.builder(
                 controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 8, bottom: 16),
-                itemCount: filteredJobs.length + (state.isLoadingMore ? 1 : 0),
+                itemCount:
+                    filteredJobs.length + 1 + (state.isLoadingMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == filteredJobs.length) {
+                  if (index == 0) return const ProfileWarningBanner();
+                  final jobIndex = index - 1;
+                  if (jobIndex == filteredJobs.length) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(
@@ -311,7 +342,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                       ),
                     );
                   }
-                  return JobCard(job: filteredJobs[index]);
+                  return JobCard(job: filteredJobs[jobIndex]);
                 },
               ),
             ),

@@ -61,7 +61,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useWorkerStore } from '@/modules/worker/store';
 import { showAlertError } from '@/shared/utils/toast';
 import { getMyComments, getMyProfile } from '@/modules/worker/profile/api';
-import { useActiveWorkerSection, useWorkerProfileStatus, workerSectionAnchor } from '@/shared/worker-profile/useWorkerProfileStatus';
+import { isWorkerProfileSectionId, useActiveWorkerSection, useWorkerProfileStatus, workerSectionAnchor } from '@/shared/worker-profile/useWorkerProfileStatus';
 import type { WorkerCommentList, WorkerProfileDetail } from '@/shared/worker-profile/types';
 import WorkerProfileHeader from '@/shared/worker-profile/cards/WorkerProfileHeader.vue';
 import ProfileIndex from '@/shared/worker-profile/cards/ProfileIndex.vue';
@@ -120,7 +120,13 @@ function loadProfile() {
       worker.value = data;
       workerStore.setWorkerProfile(data);
       isLoading.value = false;
-      nextTick(observeSections);
+      nextTick(() => {
+        observeSections();
+        const section = route.query.section;
+        if (isWorkerProfileSectionId(section)) {
+          selectSection(section);
+        }
+      });
     })
     .catch((error) => {
       isLoading.value = false;

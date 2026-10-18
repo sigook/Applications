@@ -25,6 +25,13 @@ class LocationServiceImpl implements LocationService {
     }
   }
 
+  Stream<Position> _punchPositionStream() => _geolocator.getPositionStream(
+    locationSettings: _settings(
+      accuracy: LocationAccuracy.bestForNavigation,
+      interval: const Duration(seconds: 1),
+    ),
+  );
+
   @override
   Future<bool> ensurePermissions() async {
     if (!await _geolocator.isLocationServiceEnabled()) return false;
@@ -46,6 +53,12 @@ class LocationServiceImpl implements LocationService {
     } catch (_) {
       return null;
     }
+  }
+
+  @override
+  Stream<Position> watchPosition() async* {
+    if (!await ensurePermissions()) return;
+    yield* _punchPositionStream().handleError((_) {});
   }
 
   @override
@@ -94,14 +107,10 @@ class LocationServiceImpl implements LocationService {
     final deadline = DateTime.now().add(overallTimeout);
     Position? best;
     Position? latest;
-    final stream = _geolocator
-        .getPositionStream(
-          locationSettings: _settings(
-            accuracy: LocationAccuracy.bestForNavigation,
-            interval: const Duration(seconds: 1),
-          ),
-        )
-        .timeout(fixDroughtTimeout, onTimeout: (sink) => sink.close());
+    final stream = _punchPositionStream().timeout(
+      fixDroughtTimeout,
+      onTimeout: (sink) => sink.close(),
+    );
     try {
       await for (final position in stream) {
         final age = DateTime.now().difference(position.timestamp);

@@ -1,5 +1,5 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Utils;
+using Covenant.Common.Entities;
 using Covenant.Common.Entities.Agency;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Repositories.Agencies;
@@ -15,7 +15,7 @@ namespace Covenant.Api.Controllers.Agency.Profile;
 [ApiController]
 [Produces("application/json")]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class AgencyProfileController(IAgencyRepository agencyRepository, IDefaultLogoProvider defaultLogoProvider) : ControllerBase
+public class AgencyProfileController(IAgencyRepository agencyRepository) : ControllerBase
 {
     public const string RouteName = "api/agency/profile";
 
@@ -42,11 +42,18 @@ public class AgencyProfileController(IAgencyRepository agencyRepository, IDefaul
         Guid agencyId = User.GetAgencyId();
         var entity = await agencyRepository.GetAgency(agencyId);
         if (entity is null) return BadRequest();
-        if (string.IsNullOrEmpty(model.Logo?.FileName)) model.Logo = await defaultLogoProvider.GetLogo(entity.FullName);
+        if (string.IsNullOrEmpty(model.Logo?.FileName))
+        {
+            entity.Logo ??= new CovenantFile(Common.Entities.Agency.Agency.DefaultImageLogo);
+            entity.LogoId = entity.Logo.Id;
+        }
+        else
+        {
+            entity.LogoId = model.Logo.Id;
+        }
         entity.BusinessNumber = model.BusinessNumber;
         entity.FullName = model.FullName;
         entity.HstNumber = model.HstNumber;
-        entity.LogoId = model.Logo.Id;
         entity.PhonePrincipal = model.PhonePrincipal;
         entity.PhonePrincipalExt = model.PhonePrincipalExt;
         entity.WebPage = model.WebPage;

@@ -22,7 +22,6 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
 [Produces("application/json")]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-[ServiceFilter(typeof(AgencyPersonnelIdFilter))]
 public class ClientsController(
     ICompanyRepository companyRepository,
     IRequestRepository requestRepository,

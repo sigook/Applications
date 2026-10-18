@@ -121,53 +121,25 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
         return agencyLocation?.Location;
     }
 
-    public Task<Guid> GetAgencyIdForUser(Guid userId) =>
-        Context.AgencyPersonnel.Where(w => w.UserId == userId)
-            .OrderByDescending(o => o.IsPrimary)
-            .Select(s => s.AgencyId).FirstOrDefaultAsync();
-
-    public Task<Guid> GetAgencyPersonnelIdForUser(Guid userId) =>
-        Context.AgencyPersonnel.Where(w => w.UserId == userId)
-            .OrderByDescending(o => o.IsPrimary)
-            .Select(s => s.Id).FirstOrDefaultAsync();
-
-    public async Task<List<Guid>> GetAgencyIdsForUser(Guid userId)
+    public async Task<AgencyUserContextModel> GetAgencyContextForUser(Guid userId)
     {
-        // Get the user's primary agency ID
-        var agencyId = await GetAgencyIdForUser(userId);
-
-        if (agencyId == Guid.Empty)
-        {
-            return new List<Guid>();
-        }
-
-        // Get the agency to check its type
-        var agency = await Context.Agencies
-            .Where(a => a.Id == agencyId)
-            .Select(a => new { a.Id, a.AgencyType })
+        var personnel = await Context.AgencyPersonnel.Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.IsPrimary)
+            .Select(p => new { p.Id, p.AgencyId })
             .FirstOrDefaultAsync();
-
-        if (agency == null)
+        if (personnel is null) return null;
+        var agencies = await Context.Agencies
+            .Where(a => a.Id == personnel.AgencyId || a.AgencyParentId == personnel.AgencyId)
+            .Select(a => new { a.Id, a.AgencyType })
+            .ToListAsync();
+        var isMaster = agencies.Any(a => a.Id == personnel.AgencyId && a.AgencyType == AgencyType.Master);
+        var childIds = isMaster ? agencies.Where(a => a.Id != personnel.AgencyId).Select(a => a.Id) : [];
+        return new AgencyUserContextModel
         {
-            return new List<Guid> { agencyId };
-        }
-
-        // If Master agency, include all child agencies
-        if (agency.AgencyType == AgencyType.Master)
-        {
-            var childAgencyIds = await Context.Agencies
-                .Where(a => a.AgencyParentId == agencyId)
-                .Select(a => a.Id)
-                .ToListAsync();
-
-            // Return the master agency ID + all child IDs
-            var allAgencyIds = new List<Guid> { agency.Id };
-            allAgencyIds.AddRange(childAgencyIds);
-            return allAgencyIds;
-        }
-
-        // For Regular/BusinessPartner agencies, return only their own ID
-        return new List<Guid> { agency.Id };
+            AgencyId = personnel.AgencyId,
+            AgencyPersonnelId = personnel.Id,
+            AgencyIds = [personnel.AgencyId, .. childIds]
+        };
     }
 
     public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city)

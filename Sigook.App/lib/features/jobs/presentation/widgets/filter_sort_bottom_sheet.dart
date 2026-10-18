@@ -6,8 +6,6 @@ enum SortOption {
   dateOldest,
   rateHighest,
   rateLowest,
-  workersHighest,
-  workersLowest,
 }
 
 enum FilterStatus { all, open, booked, pending, cancelled }
@@ -122,16 +120,6 @@ class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
                     'Pay Rate: Lowest',
                     Icons.money_off,
                     SortOption.rateLowest,
-                  ),
-                  _buildSortOption(
-                    'Workers: Most Needed',
-                    Icons.people,
-                    SortOption.workersHighest,
-                  ),
-                  _buildSortOption(
-                    'Workers: Least Needed',
-                    Icons.person,
-                    SortOption.workersLowest,
                   ),
                   const SizedBox(height: 24),
                   const Text(

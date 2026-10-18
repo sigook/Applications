@@ -45,7 +45,7 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Sigook.App iOS Bootstrap | `sigookapp-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
-| Database Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | Refresh | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) |
+| Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob container `files` of `sigookfilesstaging` |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
@@ -162,26 +162,26 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 **Stage 4 - Build and Deploy iOS** (hosted macOS `macosImage`, parallel with Build Android, `timeoutInMinutes: 60`; a single job, so the upload does not boot a second hosted agent):
 - Variable groups: `SigookApp-Staging` or `SigookApp-Production` + `SigookApp-iOS`
 - `xcode-select` to `xcodeVersion` (fails listing the installed versions when the image no longer ships it)
-- Cache: Flutter SDK (`flutter-setup.yml` with `cacheSdk: true`), Flutter pub (by `pubspec.lock`), CocoaPods (by `Podfile.lock`); `fastlane-setup.yml` (Bundler)
+- Cache: Flutter SDK (`flutter-setup.yml` with `cacheSdk: true`), Flutter pub (by `pubspec.lock`), CocoaPods (by `ios/Podfile` + `pubspec.lock`, not `Podfile.lock`, which `pod install` rewrites on the runner); `fastlane-setup.yml` (Bundler)
 - `pod install` with a retry that only re-runs on transient network errors
 - Same `SCOPES` check, then `bundle exec fastlane ios build entry_point: version: build_number: match_readonly:` (see Fastlane below)
 - Publish artifact `sigookapp-ios-<env>`
-- Upload step `DeployAppStoreConnect` (fastlane uploads through Apple's Transporter, which does not exist on Linux): `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. It never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable
+- Upload step `DeployAppStoreConnect` (fastlane uploads through Apple's Transporter, which does not exist on Linux): `bundle exec fastlane ios <beta|release> ipa:<path> version:<appVersionName>`. A failed upload fails the run; the step also exposes `deployStatus` (`success`/`failed`) as an output variable
 - Pipeline parameter `matchReadonly` (default `true`): set to `false` only on the first run so match creates the certificate and profile
 
-**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. The step `DeployGooglePlay` never fails the run (`continueOnError`) and exposes `deployStatus` (`success`/`failed`) as an output variable.
+**Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. A failed upload fails the run; the step `DeployGooglePlay` also exposes `deployStatus` (`success`/`failed`) as an output variable.
 
-**Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when both `deployStatus` outputs are `success`: since the upload steps never fail the run, `succeeded()` alone would also email after a rejected upload.
+**Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when the previous stages succeeded and both `deployStatus` outputs are `success`.
 
 **Fastlane** (`Sigook.App/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
 - `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
-- `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`). The lane reads them from `ENV`, and Azure DevOps never exposes a **secret** variable as an environment variable, so every secret the lane needs is mapped explicitly in the `env:` block of the `Build iOS IPA` step (`APP_STORE_CONNECT_API_KEY`, `MATCH_PASSWORD`, `APP_INSIGHTS_CONNECTION_STRING`). `APP_INSIGHTS_CONNECTION_STRING` is optional for the lane, so forgetting the mapping does not fail the build: it silently ships an iOS binary that sends no telemetry (the Android step uses `$(VAR)` macros inside the script, which do expand secrets)
+- `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`). The lane reads them from `ENV`, and Azure DevOps never exposes a **secret** variable as an environment variable, so every secret the lane needs is mapped explicitly in the `env:` block of the `Build iOS IPA` step (`APP_STORE_CONNECT_API_KEY`, `MATCH_PASSWORD`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY`). `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` are optional for the lane, so forgetting the mapping does not fail the build: it silently ships an iOS binary that sends no telemetry (the Android step uses `$(VAR)` macros inside the script, which do expand secrets)
 - `ios beta` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
 - `ios release` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, export compliance = no encryption. Release notes come from `IOS_RELEASE_NOTES` (default text) and are written to every locale the App Store listing already has (`store_locales` private lane, resolved through the App Store Connect API): submission fails with `You must provide a value for the attribute 'whatsNew'` when any locale is left empty
 - iOS plugins are kept on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`) because `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors under SPM
 
 **Required Variable Groups:**
-- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_PLAY_JSON_KEY`
+- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY` (Static Maps API key restricted to the Android package and iOS bundle id; optional, the job location card shows no map image without it), `GOOGLE_PLAY_JSON_KEY`
 - `SigookApp-Production`: Same variables with production values
 - `SigookApp-Android`: `KEYSTORE_FILE`, `KEY_PASSWORD`, `KEY_ALIAS`
 - `SigookApp-iOS`: `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY` (secret, base64 of the `.p8`, App Manager role), `MATCH_GIT_URL` (private Azure Repos git repo holding the encrypted certificate/profile), `MATCH_PASSWORD` (secret, match encryption passphrase), `IOS_RELEASE_NOTES` (optional)
@@ -191,7 +191,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Apple / Google prerequisites outside the repo:**
 - App Store Connect API key (App Manager); the build service the jobs run as (the organization-level one unless the job authorization scope is limited to the project) needs `Contribute` on the `MATCH_GIT_URL` repo
-- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers)
+- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers). The `beta` lane adds the build to that group without submitting it for beta review (`submit_beta_review: false`): internal groups need no review, and a second `dev` build in the same day's train would otherwise be rejected with "Another build is in review" before being added to the group
 - Google Play closed testing track `Closed Testing - SIGOOK V2` with the tester list (a release on any other track is invisible to them); the service account behind `GOOGLE_PLAY_JSON_KEY` needs "Release to production" and "Manage testing tracks"; Managed publishing off
 - Play serves every user the highest `versionCode` across all tracks they are enrolled in and never downgrades, so an enrolled tester runs the staging build whenever `dev` was released after `main` (and sees the "(Beta)" suffix in the store). Only people who accept that belong in the closed track; anyone who needs the production app must be removed from it and reinstall. Staging and local builds show an orange environment banner, so a phone running the wrong backend is obvious
 - Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
@@ -237,21 +237,28 @@ Review the diff under `Sigook.App/ios/` (the app has no macOS target, hence the 
 - Deploy: `AzureWebApp@1` (Linux) to `sigook-cognitive-services`
 - Production: `https://sigook-cognitive-services.azurewebsites.net`
 
-### Database Refresh (Staging)
+### Staging Refresh (databases + files)
 
-**Build naming:** `DatabaseRefresh-YYYY.M.D.r`
+**Build naming:** `StagingRefresh-YYYY.M.D.r`
 
-**Trigger:** Manual only (run from Azure DevOps). Refreshes **both** databases in one run.
+**Trigger:** Manual only (run from Azure DevOps). Two boolean parameters, both `true` by default: `refreshDatabases` and `refreshFiles`. The stages are independent (`dependsOn: []`), so either can run alone.
 
-**Stage 1 - Refresh Staging Databases:**
+**Stage RefreshDatabases - Refresh Staging Databases** (refreshes **both** databases in one run):
 - Fetches secrets from Key Vault `Sigook` via `AzureKeyVault@2` (`SigookPipelines` service connection): `production-api--ConnectionStrings--DefaultConnection` (`CovenantCore`), `production-api--ConnectionStrings--IdentityConnection` (`CovenantSecurity`) and `pipelines--DbRefresh--StagingPasswordHash`
 - Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
 - Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
 - `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
 - Final step restarts `sigook-api-staging` (resource group `SigookStaging`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
 
+**Stage RefreshFiles - Refresh Staging Files:**
+- `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` from `https://sigookfiles.blob.core.windows.net/files` to `https://sigookfilesstaging.blob.core.windows.net/files` with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
+- The copy is server-to-server: the agent orchestrates but the bytes move between the two accounts. Only changed or missing blobs are transferred after the first run
+- `azcopy` authenticates with the task's `az login` (`AZCOPY_AUTO_LOGIN_TYPE=AZCLI`); if the agent lacks the binary the step downloads it into `$(Agent.TempDirectory)`
+- Only the `files` container is mirrored. `cra-tables` is left alone on purpose: the staging Sigook.Functions blob trigger would re-import every CRA table dropped into it. The staging-only `scripts` container is not touched
+- Object replication was rejected for this purpose: an active policy makes the destination container read-only (409 on every write), and the staging Api uploads files
+
 **Requirements:**
-- The `SigookPipelines` service principal has the `Key Vault Secrets User` role on the `Sigook` vault (RBAC model)
+- The `SigookPipelines` service principal has the `Key Vault Secrets User` role on the `Sigook` vault (RBAC model), `Storage Blob Data Reader` on `sigookfiles` and `Storage Blob Data Contributor` on `sigookfilesstaging`
 - The agent (`sigook-build-vm`, Azure VM) reaches the Postgres server through the existing "Allow Azure services" firewall rule
 - No connection data or credentials live in the repo — everything is resolved from Key Vault at runtime
 
@@ -285,31 +292,6 @@ Builds solution, authenticates NuGet, and optionally runs tests.
 | `unitTestProjects` | string | `''` | Unit test project pattern |
 | `runIntegrationTests` | boolean | `false` | Run integration tests |
 | `integrationTestProjects` | string | `''` | Integration test project pattern |
-
-Automatically handles `NuGetAuthenticate@1` for Azure Artifacts private feeds.
-
-### calculate-docker-tag.yml
-Sets Docker tag and environment name based on branch.
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `tagVariableName` | string | `tag` | Output variable name for the tag |
-| `environmentVariableName` | string | `environment` | Output variable name for env |
-| `stagingTag` | string | `latest_staging` | Tag for dev branch |
-| `productionTag` | string | `latest_production` | Tag for main branch |
-| `stepName` | string | `SetTag` | Step name for cross-job output reference |
-
-Reads `isDev` pipeline variable to determine branch. Sets both job-scoped and output variables. Not referenced by any pipeline (they all use compile-time variables).
-
-### calculate-azure-appname.yml
-Determines Azure App Service name based on branch. Not referenced by any pipeline.
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `appNameVariableName` | string | `azureAppName` | Output variable name |
-| `stagingAppName` | string | required | App Service name for staging |
-| `productionAppName` | string | required | App Service name for production |
-| `stepName` | string | `SetAppName` | Step name for cross-job output reference |
 
 ### cleanup.yml
 Frees disk space on self-hosted agents after builds.

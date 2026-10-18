@@ -1,6 +1,7 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Entities.Worker;
+using Covenant.Common.Enums;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Utils.Extensions;
 using Moq;
@@ -27,111 +28,88 @@ public class WorkerProfileTest
         Assert.Equal(expected, masked);
     }
 
-    [Fact]
-    public void DoNotApprovedToWorkIfItDoesNotHaveSinInfo()
-    {
-        var worker = new WorkerProfile 
-        { 
-            ApprovedToWork = false,
-            Location = new Location
-            {
-                City = new City
-                {
-                    Province = new Province
-                    {
-                        Country = new Country
-                        {
-                            Code = "USA"
-                        }
-                    }
-                }
-            }
-        };
-        var now = new DateTime(2021, 01, 01);
-        Result result = worker.UpdateApprovedToWork(now);
-        Assert.False(result);
-
-        var sinInfo = new Mock<ISinInformation<CovenantFile>>();
-        sinInfo.SetupGet(c => c.SocialInsurance).Returns(string.Empty);
-        worker.PatchSinInformation(sinInfo.Object);
-        worker.PatchProfileImage(new CovenantFile("worker.png"));
-        result = worker.UpdateApprovedToWork(now);
-        Assert.False(result);
-
-        sinInfo.SetupGet(c => c.SocialInsurance).Returns("123-456-789");
-        sinInfo.SetupGet(c => c.SocialInsuranceFile).Returns(new CovenantFile("sin.pdf"));
-        worker.PatchSinInformation(sinInfo.Object);
-        result = worker.UpdateApprovedToWork(now);
-        Assert.True(result);
-    }
+    private static readonly WorkerRequirement[] NothingMissing = [];
+    private static readonly WorkerRequirement[] IdentificationMissing = [WorkerRequirement.Identification];
+    private static readonly WorkerRequirement[] SinExpired = [WorkerRequirement.SocialInsuranceExpired];
 
     [Fact]
-    public void DoNotApprovedToWorkIfSinHasExpired()
+    public void DoNotApprovedToWorkWhileRequirementsAreMissing()
     {
-        var worker = new WorkerProfile 
-        { 
-            ApprovedToWork = false,
-            Location = new Location
-            {
-                City = new City
-                {
-                    Province = new Province
-                    {
-                        Country = new Country
-                        {
-                            Code = "USA"
-                        }
-                    }
-                }
-            }
-        };
-        var now = new DateTime(2021, 01, 01);
-
-        var sinInfo = new Mock<ISinInformation<CovenantFile>>();
-        sinInfo.SetupGet(c => c.SocialInsurance).Returns("123-456-789");
-        sinInfo.SetupGet(c => c.SocialInsuranceFile).Returns(new CovenantFile("sin.pdf"));
-        sinInfo.SetupGet(c => c.SocialInsuranceExpire).Returns(true);
-        sinInfo.SetupGet(c => c.DueDate).Returns(now.Subtract(TimeSpan.FromDays(1)));
-        worker.PatchSinInformation(sinInfo.Object);
-        worker.PatchProfileImage(new CovenantFile("worker.png"));
-        Result result = worker.UpdateApprovedToWork(now);
-        Assert.False(result);
-
-        sinInfo.SetupGet(c => c.DueDate).Returns(now.AddDays(1));
-        worker.PatchSinInformation(sinInfo.Object);
-        result = worker.UpdateApprovedToWork(now);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public void IfItIsSubcontractorItCanBeApprovedWithoutSinInfo()
-    {
-        var now = new DateTime(2021, 01, 01);
         var worker = new WorkerProfile { ApprovedToWork = false };
-        worker.UpdateSubcontractor(now, true);
-        Result result = worker.UpdateApprovedToWork(now);
-        Assert.True(result);
+
+        Result result = worker.UpdateApprovedToWork([WorkerRequirement.Identification, WorkerRequirement.ProfileImage]);
+
+        Assert.False(result);
+        Assert.False(worker.ApprovedToWork);
+        Assert.Equal(2, result.Errors.Count());
     }
 
     [Fact]
-    public void IfItIsContractorItCanBeApprovedWithoutSinInfo()
+    public void ApprovedToWorkWhenNothingIsMissing()
     {
-        var now = new DateTime(2021, 01, 01);
         var worker = new WorkerProfile { ApprovedToWork = false };
-        Result result = worker.UpdateApprovedToWork(now);
-        Assert.False(result);
+        Assert.True(worker.UpdateApprovedToWork(NothingMissing));
+        Assert.True(worker.ApprovedToWork);
+    }
 
-        worker.UpdateContractor(now);
-        result = worker.UpdateApprovedToWork(now);
-        Assert.True(result);
+    [Fact]
+    public void ApprovedWorkerCanBeBookedWithoutOptionalDocumentsButNotWithSinIssues()
+    {
+        var worker = new WorkerProfile { ApprovedToWork = true };
+        Assert.True(worker.CanBeBook(IdentificationMissing));
+        Assert.False(worker.CanBeBook(SinExpired));
+        Assert.False(worker.CanBeBook([WorkerRequirement.SocialInsuranceNumber]));
+    }
+
+    [Fact]
+    public void NotApprovedWorkerCannotBeBooked()
+    {
+        var worker = new WorkerProfile { ApprovedToWork = false };
+        Assert.False(worker.CanBeBook(NothingMissing));
+    }
+
+    [Fact]
+    public void SubcontractorAndContractorCanAlwaysBeBooked()
+    {
+        var subcontractor = new WorkerProfile { ApprovedToWork = false, IsSubcontractor = true };
+        var contractor = new WorkerProfile { ApprovedToWork = false, IsContractor = true };
+        Assert.True(subcontractor.CanBeBook(SinExpired));
+        Assert.True(contractor.CanBeBook(SinExpired));
+    }
+
+    [Fact]
+    public void TurningOffContractorRequiresDocuments()
+    {
+        var worker = new WorkerProfile();
+        Assert.True(worker.UpdateContractor(IdentificationMissing));
+        Assert.True(worker.IsContractor);
+
+        Assert.False(worker.UpdateContractor(IdentificationMissing));
+        Assert.True(worker.IsContractor);
+
+        Assert.True(worker.UpdateContractor(NothingMissing));
+        Assert.False(worker.IsContractor);
+    }
+
+    [Fact]
+    public void TurningOffSubcontractorRequiresDocuments()
+    {
+        var worker = new WorkerProfile();
+        Assert.True(worker.UpdateSubcontractor(IdentificationMissing, true));
+        Assert.True(worker.IsSubcontractor);
+
+        Assert.False(worker.UpdateSubcontractor(IdentificationMissing));
+        Assert.True(worker.IsSubcontractor);
+
+        Assert.True(worker.UpdateSubcontractor(NothingMissing));
+        Assert.False(worker.IsSubcontractor);
     }
 
     [Fact]
     public void IfItIsAlreadyApprovedToWorkItMustChangeToNotApproved()
     {
         var worker = new WorkerProfile { ApprovedToWork = true };
-        var now = new DateTime(2021, 01, 01);
-        Result result = worker.UpdateApprovedToWork(now);
+        Result result = worker.UpdateApprovedToWork(IdentificationMissing);
         Assert.True(result);
         Assert.False(worker.ApprovedToWork);
     }

@@ -1,4 +1,5 @@
 using Covenant.Common.Constants;
+using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
@@ -15,7 +16,8 @@ public class WorkerProfile :
     IEmergencyInformation,
     IWorkerDocumentsInformation<IdentificationType, CovenantFile>,
     IWorkerContactInformation<Location, City>,
-    IWorkerProfileOtherInformation<Lift>
+    IWorkerProfileOtherInformation<Lift>,
+    IWorkerRequirementsInformation
 {
     private const int SocialInsuranceMinLength = 9;
     private const int SocialInsuranceMaxLength = 15;
@@ -110,6 +112,13 @@ public class WorkerProfile :
         (string.IsNullOrWhiteSpace(MiddleName) ? string.Empty : $" {MiddleName}") +
         $" {LastName}" +
         (string.IsNullOrWhiteSpace(SecondLastName) ? string.Empty : $" {SecondLastName}");
+
+    public bool IsUsa => Location?.IsUSA ?? false;
+    public bool HasProfileImage => !string.IsNullOrEmpty(ProfileImage?.FileName);
+    public bool HasTaxCategory => WorkerProfileTaxCategory?.FederalCategory != null || WorkerProfileTaxCategory?.ProvincialCategory != null;
+    public bool HasSocialInsuranceFile => !string.IsNullOrEmpty(SocialInsuranceFile?.FileName);
+    public bool HasIdentification1File => !string.IsNullOrEmpty(IdentificationType1File?.FileName);
+    public bool HasIdentification2File => !string.IsNullOrEmpty(IdentificationType2File?.FileName);
 
     public Result PatchContactInformation<TLocation, TCity>(IWorkerContactInformation<TLocation, TCity> contactInformation)
         where TLocation : ILocation<TCity>
@@ -565,15 +574,14 @@ public class WorkerProfile :
         return Result.Ok();
     }
 
-    public Result CanBeBook(DateTime now)
+    public Result CanBeBook(IEnumerable<WorkerRequirement> missingRequirements)
     {
-        if (IsSubcontractor) return Result.Ok(); //Every subcontractor can be book because the partner already validate the documents
-        if (IsContractor) return Result.Ok(); //Every contractor can be book because they don't need to have documents
+        if (IsSubcontractor || IsContractor) return Result.Ok();
         if (!ApprovedToWork) return Result.Fail("Worker is not approved to work");
-        return HasRequiredDocuments(now);
+        return ToResult(missingRequirements.Where(r => r.IsSocialInsuranceIssue()));
     }
 
-    public Result UpdateApprovedToWork(DateTime now)
+    public Result UpdateApprovedToWork(IEnumerable<WorkerRequirement> missingRequirements)
     {
         if (ApprovedToWork)
         {
@@ -581,44 +589,16 @@ public class WorkerProfile :
             return Result.Ok();
         }
 
-        if (IsSubcontractor)
-        {
-            ApprovedToWork = true;
-            return Result.Ok();
-        }
-
-        if (IsContractor)
-        {
-            ApprovedToWork = true;
-            return Result.Ok();
-        }
-        if (string.IsNullOrEmpty(ProfileImage?.FileName)) return Result.Fail("Worker doesn't have profile image");
-        var hasTaxCategory = HasTaxCategory();
-        if (!hasTaxCategory) return hasTaxCategory;
-        Result rHasRequiredDocuments = HasRequiredDocuments(now);
-        if (!rHasRequiredDocuments) return rHasRequiredDocuments;
+        Result requirements = ToResult(missingRequirements);
+        if (!requirements) return requirements;
         ApprovedToWork = true;
         return Result.Ok();
     }
 
-    private Result HasRequiredDocuments(DateTime now)
+    private static Result ToResult(IEnumerable<WorkerRequirement> missing)
     {
-        if (string.IsNullOrEmpty(SocialInsurance)) return Result.Fail("Worker doesn't have social insurance number");
-        if (!SocialInsuranceExpire) return Result.Ok();
-        if (DueDate.GetValueOrDefault().Date < now.Date) return Result.Fail("Social insurance has expired");
-        return Result.Ok();
-    }
-
-    private Result HasTaxCategory()
-    {
-        if (!Location.IsUSA)
-        {
-            if (WorkerProfileTaxCategory?.FederalCategory == null && WorkerProfileTaxCategory?.ProvincialCategory == null)
-            {
-                return Result.Fail("Taxes classes have not been configurated");
-            }
-        }
-        return Result.Ok();
+        var errors = missing.Select(r => (ResultError)r.ToMessage()).ToArray();
+        return errors.Length == 0 ? Result.Ok() : Result.Fail(errors);
     }
 
     private static void IfIsNotInRemove<T>(List<T> list, Func<T, bool> filter)
@@ -633,11 +613,11 @@ public class WorkerProfile :
 
     public void UpdateDnu() => Dnu = !Dnu;
 
-    public Result UpdateContractor(DateTime now)
+    public Result UpdateContractor(IEnumerable<WorkerRequirement> missingDocuments)
     {
         if (IsContractor)
         {
-            Result hasRequiredDocuments = HasRequiredDocuments(now);
+            Result hasRequiredDocuments = ToResult(missingDocuments);
             if (!hasRequiredDocuments) return hasRequiredDocuments;
             IsContractor = false;
             return Result.Ok();
@@ -647,7 +627,7 @@ public class WorkerProfile :
         return Result.Ok();
     }
 
-    public Result UpdateSubcontractor(DateTime now, bool? isSubcontractor = null)
+    public Result UpdateSubcontractor(IEnumerable<WorkerRequirement> missingDocuments, bool? isSubcontractor = null)
     {
         if (!isSubcontractor.HasValue) isSubcontractor = !IsSubcontractor;
         if (isSubcontractor.Value)
@@ -656,7 +636,7 @@ public class WorkerProfile :
             return Result.Ok();
         }
 
-        Result hasRequiredDocuments = HasRequiredDocuments(now);
+        Result hasRequiredDocuments = ToResult(missingDocuments);
         if (!hasRequiredDocuments) return hasRequiredDocuments;
         IsSubcontractor = false;
         return Result.Ok();

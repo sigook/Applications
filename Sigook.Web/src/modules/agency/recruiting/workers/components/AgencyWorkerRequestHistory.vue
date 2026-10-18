@@ -82,8 +82,8 @@
           <div class="has-text-centered">
             <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
               <div class="status-dot-container">
-                <img v-if="props.row.requestStatus === RequestStatus.Filled" src="@/assets/images/check_white.png" alt="check"
-                  class="request-check" />
+                <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
+                  type="is-white" class="request-check"></b-icon>
                 <div class="dot-status" :class="'status-' + RequestStatusLabels[props.row.requestStatus].toLowerCase()"></div>
               </div>
             </b-tooltip>

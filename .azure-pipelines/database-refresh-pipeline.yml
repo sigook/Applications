@@ -1,22 +1,37 @@
-# Azure Pipeline for Staging Database Refresh
-# Dumps CovenantCore and CovenantSecurity from production and restores them
-# into their Staging counterparts on the same Postgres server
+# Azure Pipeline for Staging Refresh
+# Databases: dumps CovenantCore and CovenantSecurity from production and restores
+#            them into their Staging counterparts on the same Postgres server
+# Files:     mirrors the production `files` blob container into staging with
+#            azcopy sync (server-to-server copy, deletes what only exists in staging)
 
-name: DatabaseRefresh-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
+name: StagingRefresh-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
 # Manual trigger only
 trigger: none
 pr: none
+
+parameters:
+  - name: refreshDatabases
+    displayName: 'Refresh databases (CovenantCore + CovenantSecurity)'
+    type: boolean
+    default: true
+  - name: refreshFiles
+    displayName: 'Refresh files (blob container "files")'
+    type: boolean
+    default: true
 
 pool:
   name: 'covenant-build-pool'
 
 variables:
   keyVaultName: 'Sigook'
+  sourceStorageAccount: 'sigookfiles'
+  targetStorageAccount: 'sigookfilesstaging'
 
 stages:
-  - stage: Refresh
+  - stage: RefreshDatabases
     displayName: 'Refresh Staging Databases'
+    condition: eq('${{ parameters.refreshDatabases }}', true)
     jobs:
       - job: Dump_and_Restore
         displayName: 'Dump Production and Restore Staging'
@@ -62,3 +77,41 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 az webapp restart --resource-group SigookStaging --name sigook-api-staging
+
+  - stage: RefreshFiles
+    displayName: 'Refresh Staging Files'
+    dependsOn: []
+    condition: eq('${{ parameters.refreshFiles }}', true)
+    jobs:
+      - job: Sync_Blobs
+        displayName: 'Mirror production files into staging'
+        steps:
+          - checkout: none
+
+          # The SigookPipelines service principal holds Storage Blob Data Reader on
+          # the source account and Storage Blob Data Contributor on the target one;
+          # azcopy reuses the az login of this task (AZCOPY_AUTO_LOGIN_TYPE=AZCLI)
+          - task: AzureCLI@2
+            displayName: 'azcopy sync files container'
+            inputs:
+              azureSubscription: 'SigookPipelines'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                set -euo pipefail
+                if ! command -v azcopy >/dev/null 2>&1; then
+                  echo "Installing azcopy into $(Agent.TempDirectory)..."
+                  curl -sL https://aka.ms/downloadazcopy-v10-linux | tar xz --strip-components=1 -C "$(Agent.TempDirectory)"
+                  export PATH="$(Agent.TempDirectory):$PATH"
+                fi
+                azcopy --version
+                export AZCOPY_AUTO_LOGIN_TYPE=AZCLI
+                export AZCOPY_LOG_LOCATION="$(Agent.TempDirectory)/azcopy-logs"
+                export AZCOPY_JOB_PLAN_LOCATION="$(Agent.TempDirectory)/azcopy-plans"
+                azcopy sync \
+                  "https://$(sourceStorageAccount).blob.core.windows.net/files" \
+                  "https://$(targetStorageAccount).blob.core.windows.net/files" \
+                  --recursive \
+                  --delete-destination=true \
+                  --s2s-preserve-access-tier=false \
+                  --log-level=WARNING

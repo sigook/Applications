@@ -12,17 +12,15 @@
         {{ props.row.position }}
       </b-table-column>
       <b-table-column field="mobileNumber" label="Mobile Number" v-slot="props">
-        {{ props.row.mobileNumber || 'None' }}
+        <copy-link kind="phone" v-if="props.row.mobileNumber" :phone="props.row.mobileNumber" />
+        <span v-else>None</span>
       </b-table-column>
       <b-table-column field="officeNumber" label="Office Number" v-slot="props">
-        <span v-if="props.row.officeNumber">
-          {{ props.row.officeNumber }}
-          <span v-if="props.row.officeNumberExt">Ext. {{ props.row.officeNumberExt }}</span>
-        </span>
+        <copy-link kind="phone" v-if="props.row.officeNumber" :phone="props.row.officeNumber" :ext="props.row.officeNumberExt" />
         <span v-else>None</span>
       </b-table-column>
       <b-table-column field="email" label="Email" v-slot="props">
-        {{ props.row.email }}
+        <copy-link kind="email" :value="props.row.email" />
       </b-table-column>
       <b-table-column field="actions" label="Actions" v-slot="props">
         <b-button type="is-info" outlined rounded icon-right="pencil" class="mr-2"
@@ -48,6 +46,7 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/shared/uti
 import { getAgencyCompanyContactPerson, deleteAgencyCompanyContactPerson } from '@/modules/agency/recruiting/clients/api';
 import ContactForm from "@/modules/agency/recruiting/clients/components/ContactPersonForm.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import type { AgencyCompanyContactPerson } from '@/modules/agency/recruiting/clients/types';
 
 const emit = defineEmits<{ (e: 'changed', count: number): void }>();

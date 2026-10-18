@@ -55,17 +55,31 @@ public class TimeSheetsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the next expected clock type (clock-in or clock-out) for a request.
+    /// Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, none once today's punch is closed, clock-in otherwise.
     /// </summary>
     /// <param name="requestId">Identifier of the request.</param>
     /// <param name="latitude">Current latitude of the worker.</param>
     /// <param name="longitude">Current longitude of the worker.</param>
-    /// <param name="date">Optional date to evaluate the clock type for.</param>
     [HttpGet("clock-type/{latitude:double}/{longitude:double}")]
     [ProducesResponseType(typeof(ClockType), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromRoute] double latitude, [FromRoute] double longitude, [FromQuery] DateTime? date)
+    [Obsolete("Superseded by punch-status, which also returns the punch stamps and the week hours. Kept for mobile builds released before the punch-status endpoint.")]
+    public async Task<IActionResult> GetClockType([FromRoute] Guid requestId, [FromRoute] double latitude, [FromRoute] double longitude)
     {
-        var result = await timesheetService.GetClockType(requestId, latitude, longitude, date);
+        var result = await timesheetService.GetClockType(requestId, latitude, longitude);
+        return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Gets everything the punch card needs in one call: the next expected punch, the clock-in/clock-out of the open or today's punch, and the hours worked since Sunday in the job's time zone.
+    /// </summary>
+    /// <param name="requestId">Identifier of the request.</param>
+    /// <param name="latitude">Current latitude of the worker.</param>
+    /// <param name="longitude">Current longitude of the worker.</param>
+    [HttpGet("punch-status/{latitude:double}/{longitude:double}")]
+    [ProducesResponseType(typeof(PunchStatusModel), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPunchStatus([FromRoute] Guid requestId, [FromRoute] double latitude, [FromRoute] double longitude)
+    {
+        var result = await timesheetService.GetPunchStatus(requestId, latitude, longitude);
         return Ok(result.Value);
     }
 }

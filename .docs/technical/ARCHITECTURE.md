@@ -26,7 +26,9 @@ Patterns:   Repository, Service Layer, MediatR (document generation)
 Packages:   MediatR 12.4.1, FluentValidation 11.10.0, OpenIddict 7.7.0,
             Microsoft.AspNetCore.OpenApi (document) + Scalar.AspNetCore (UI),
             Azure.Messaging.ServiceBus 7.18.2, Azure.Storage.Blobs 12.24.0,
-            ClosedXML 0.104.2, PdfPig 0.1.15, SixLabors.ImageSharp 3.1.12 (default avatar)
+            ClosedXML 0.104.2, PdfPig 0.1.15 (no image library: default logos are static blobs
+            `company.png` / `agency.png` / `worker.png` in the `files` container, source in
+            `Covenant.Api/wwwroot/assets/images/defaults/`)
 Logging:    Microsoft.Extensions.Logging (Console/Debug) + Application Insights (no Serilog)
 Config:     Azure Key Vault via PrefixKeyVaultSecretManager (prefix `{env}-api`)
 Cloud:      Azure App Service, Azure Service Bus, Azure Blob Storage, Azure Container Registry
@@ -45,8 +47,8 @@ Framework:  Vue 3.5.x + Vite 8 (Node 20+), TypeScript 6.x
 State:      Pinia 3.x (+ pinia-plugin-persistedstate)
 UI:         buefy 3.x (official Buefy for Vue 3, bundles Bulma 1.x)
 Auth:       oidc-client-ts 3.x
-HTTP:       Axios 1.10.0 (API calls live in src/api/*.ts)
-Validation: VeeValidate 4.x + Yup 1.x; i18n: vue-i18n
+HTTP:       Axios 1.x — one api.ts per feature over the `api` wrapper in src/app/security/apiService.ts
+Validation: VeeValidate 4.x + Yup 1.x (no i18n; rules and English messages in src/lang/validator.ts)
 Deploy:     Docker (Node build → Nginx), output in wwwroot/
 Staging:    https://sigook-web-staging.azurewebsites.net
 Prod:       https://sigook.azurewebsites.net
@@ -180,7 +182,7 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 | Path | Route prefix | Controllers |
 |---|---|---|
 | `Controllers/Identity/` | `/connect/*`, `/Account`, `/Password`, `/External`, `/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
-| `Controllers/Shared/` | `api/catalog`, `api/location`, `api/file`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `FileController` (only the `defaultImage` placeholder — uploads are multipart on each domain endpoint), `EmailPreferencesController`, `WebsiteController` (public marketing endpoints) |
+| `Controllers/Shared/` | `api/catalog`, `api/location`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `EmailPreferencesController`, `WebsiteController` (public marketing endpoints). Files are never served by the API: every environment reads them straight from its blob container through `FilesConfiguration:FilesPath`, and uploads are multipart on each domain endpoint |
 | `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed Sigook.App builds call them), `UserNotificationController` |
 | `Controllers/Shared/Jobs/` | `api/jobs/scheduletasks`, `api/jobs/deductions` | machine-to-machine, called by Sigook.Functions: `ScheduleTasksController`, `DeductionsController` (CRA table import) |
 | `Controllers/Agency/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |
@@ -296,7 +298,8 @@ Scripts/          raw SQL run at startup by DatabaseScriptRunner (copied to the 
                   staging/production) when added with `git add -f`; the integration test
                   exercises the runner with a temporary script instead of a real one
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
-                  (Google Maps), PushNotifications (Azure Notification Hub), TeamsService
+                  (Google Maps), PushNotificationPublisher (IPushNotifications → `PushNotificationQueue`
+                  on Service Bus) + FirebasePushNotificationSender (IPushNotificationSender, FCM), TeamsService
                   (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
                   UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
                   accountEnabled check), CraPdfParser (PdfPig reader for the CRA
@@ -358,14 +361,16 @@ applies pending EF migrations for `MyKeysContext`, `CovenantContext` and (when
 `Covenant.Infrastructure/Scripts/`, seeds the 7 roles, runs `OpenIddictSeeder` (the
 `api1`/`roles` scopes, the Sigook.Functions confidential client, and the `sigook.com`/`android`
 public clients in Development), creates queues/topics/subscriptions if missing
-(`ValidateCandidateQueue`, `BulkPayStubEmailQueue`, `InvitationQueue`, `CreateApplicantTopic`
-with Teams/Email/RequestApplicant subscriptions), then calls `OnInit()` on every registered
-consumer.
+(`ValidateCandidateQueue`, `BulkPayStubEmailQueue`, `InvitationQueue`, `PushNotificationQueue`,
+`CreateApplicantTopic` with Teams/Email/RequestApplicant subscriptions), then calls `OnInit()` on
+every registered consumer.
 
-Consumers live in `Covenant.Core.BL/Consumers/`; exactly **5** are registered as
+Consumers live in `Covenant.Core.BL/Consumers/`; exactly **6** are registered as
 `IAzureServiceBusConsumer` singletons in `AddAzureServiceBusConsumer`
 (`ApiServicesConfiguration.cs`): `NewCandidateConsumer`, `TeamsConsumer`,
-`RequestApplicantConsumer`, `BulkPayStubEmailConsumer`, `InvitationConsumer`.
+`RequestApplicantConsumer`, `BulkPayStubEmailConsumer`, `InvitationConsumer`,
+`PushNotificationConsumer` (the "Job Alert" FCM push of a new request: `RequestService.CreateRequest`
+only publishes to the queue, so the HTTP response never waits on Firebase).
 
 Local development connects to the **staging** Service Bus — inject `ISigookBusClient` (mockable)
 rather than constructing clients directly.
@@ -444,12 +449,9 @@ rather than constructing clients directly.
   deactivation) happens in-process through `IUserAdministrationService`; the API writes the
   identity database directly (`ConnectionStrings:IdentityConnection`) and mirrors the user in its
   own `Users` table.
-- **Roles** (exactly 7, lowercase, defined in `Covenant.Common/Constants/CovenantConstants.cs`):
-  `superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker`. Role groups:
-  `RecruitingAccess` (superadmin/admin/recruiting), `SalesAccess` (superadmin/admin/sales),
-  `AgencyStaff` (recruiting access + sales), `AdminAccess` (superadmin/admin),
-  `AgencyAssignable` (admin/recruiting/sales), `SuperAdminAssignable` (`CovenantConstants.cs`).
-  Always reference via `CovenantConstants.Role.*`. They are seeded at startup.
+- **Roles**: exactly 7, lowercase, seeded at startup and defined in
+  `Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role.*`, never literals).
+  Role list, groups and scoping rules: `.docs/business/ROLES_PERMISSIONS.md`.
 - **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency`, `Recruiting`,
   `Sales`, `Company`, `Worker`, `Admin`, `SuperAdmin`. Every policy requires a role — there is no
   authenticated-only policy, no `Accounting` policy, and no cross-actor policies. An endpoint
@@ -462,10 +464,11 @@ rather than constructing clients directly.
 
 Claims are injected per-request by action filters in `Covenant.Api/Authorization/`:
 
-- `AgencyIdFilter` — resolves the caller's `agencyId` (and all `agencyIds`) claim for agency
-  staff; repositories filter with it.
-- `AgencyPersonnelIdFilter` — resolves the caller's `agencyPersonnelId` claim (read via
-  `GetAgencyPersonnelId()` in `Covenant.Common/Utils/Extensions/PrincipalExtensions.cs`).
+- `AgencyIdFilter` — resolves the caller's `agencyId`, `agencyIds` (master agency + children) and
+  `agencyPersonnelId` claims for agency staff in one pass (`IAgencyRepository.GetAgencyContextForUser`,
+  two queries), replacing whatever the token carried; repositories filter with them. Read via
+  `GetAgencyId()` / `GetAgencyIds()` / `GetAgencyPersonnelId()` in
+  `Covenant.Common/Utils/Extensions/PrincipalExtensions.cs`.
 - `CompanyIdFilter` — same idea for company users.
 
 Scoping rules:

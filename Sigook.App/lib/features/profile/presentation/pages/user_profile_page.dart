@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback/error_state_widget.dart';
 import '../../../../core/widgets/feedback/loading_indicator.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
+import '../../domain/entities/worker_requirement.dart';
 import '../../profile_image/presentation/viewmodels/profile_image_viewmodel.dart';
 import '../providers/cached_worker_profile_provider.dart';
 import 'profile_header.dart';
@@ -19,7 +20,9 @@ import 'personal_details/personal_details_tab.dart';
 import 'preferences/preferences_tab.dart';
 
 class UserProfilePage extends ConsumerStatefulWidget {
-  const UserProfilePage({super.key});
+  final ProfileSection? section;
+
+  const UserProfilePage({super.key, this.section});
 
   @override
   ConsumerState<UserProfilePage> createState() => _UserProfilePageState();
@@ -83,10 +86,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
     if (source == null || !mounted) return;
 
     final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: source,
-      imageQuality: 90,
-    );
+    final picked = await picker.pickImage(source: source, imageQuality: 90);
     if (picked == null || !mounted) return;
 
     final cropped = await ImageCropper().cropImage(
@@ -130,13 +130,16 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         );
       } else if (next.uploadError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload photo: ${next.uploadError}')),
+          SnackBar(
+            content: Text('Failed to upload photo: ${next.uploadError}'),
+          ),
         );
       }
     });
 
-    final isUploadingPhoto =
-        ref.watch(profileImageViewModelProvider).isUploading;
+    final isUploadingPhoto = ref
+        .watch(profileImageViewModelProvider)
+        .isUploading;
 
     return Scaffold(
       backgroundColor: AppTheme.surfaceGrey,
@@ -154,100 +157,103 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         title: const NavbarLogo(),
       ),
       body: profileAsync.when(
-        data: (profile) => NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            SliverAppBar(
-              expandedHeight: 270.0,
-              toolbarHeight: 1.0,
-              pinned: true,
-              floating: false,
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
-              elevation: 2,
-              shadowColor: Colors.black.withValues(alpha: 0.08),
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin,
-                background: Builder(
-                  builder: (context) {
-                    final settings = context
-                        .dependOnInheritedWidgetOfExactType<
-                          FlexibleSpaceBarSettings
-                        >();
-                    final t = settings != null
-                        ? ((settings.currentExtent - settings.minExtent) /
-                                  (settings.maxExtent - settings.minExtent))
-                              .clamp(0.0, 1.0)
-                        : 1.0;
-                    return ProfileHeader(
-                      name: profile?.fullName ?? 'User',
-                      email: profile?.email ?? '',
-                      photoUrl: profile?.profilePhotoUrl,
-                      collapseRatio: t,
-                      isEditing: true,
-                      isUploading: isUploadingPhoto,
-                      onPhotoTap:
-                          isUploadingPhoto ? null : _handlePhotoTap,
-                    );
-                  },
+        data: (profile) => RefreshIndicator(
+          onRefresh: () => ref.refresh(cachedWorkerProfileProvider.future),
+          color: AppTheme.primaryBlue,
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                expandedHeight: 270.0,
+                toolbarHeight: 1.0,
+                pinned: true,
+                floating: false,
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.white,
+                elevation: 2,
+                shadowColor: Colors.black.withValues(alpha: 0.08),
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: Builder(
+                    builder: (context) {
+                      final settings = context
+                          .dependOnInheritedWidgetOfExactType<
+                            FlexibleSpaceBarSettings
+                          >();
+                      final t = settings != null
+                          ? ((settings.currentExtent - settings.minExtent) /
+                                    (settings.maxExtent - settings.minExtent))
+                                .clamp(0.0, 1.0)
+                          : 1.0;
+                      return ProfileHeader(
+                        name: profile?.fullName ?? 'User',
+                        email: profile?.email ?? '',
+                        photoUrl: profile?.profilePhotoUrl,
+                        collapseRatio: t,
+                        isEditing: true,
+                        isUploading: isUploadingPhoto,
+                        onPhotoTap: isUploadingPhoto ? null : _handlePhotoTap,
+                      );
+                    },
+                  ),
                 ),
-              ),
 
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(74.0),
-                child: Container(
-                  color: Colors.white,
-                  child: TabBar(
-                    controller: _tabController,
-                    labelColor: AppTheme.primaryBlue,
-                    unselectedLabelColor: Colors.grey.shade600,
-                    indicatorColor: AppTheme.primaryBlue,
-                    indicatorWeight: 3,
-                    isScrollable: false,
-                    tabAlignment: TabAlignment.fill,
-                    labelStyle: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(74.0),
+                  child: Container(
+                    color: Colors.white,
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: AppTheme.primaryBlue,
+                      unselectedLabelColor: Colors.grey.shade600,
+                      indicatorColor: AppTheme.primaryBlue,
+                      indicatorWeight: 3,
+                      isScrollable: false,
+                      tabAlignment: TabAlignment.fill,
+                      labelStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      tabs: const [
+                        Tab(
+                          icon: Icon(Icons.person_outline, size: 20),
+                          text: 'Personal',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.work_history_outlined, size: 20),
+                          text: 'Experience',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.tune_outlined, size: 20),
+                          text: 'Preferences',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.rate_review_outlined, size: 20),
+                          text: 'Comments',
+                        ),
+                        Tab(
+                          icon: Icon(Icons.manage_accounts_outlined, size: 20),
+                          text: 'Account',
+                        ),
+                      ],
                     ),
-                    unselectedLabelStyle: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    tabs: const [
-                      Tab(
-                        icon: Icon(Icons.person_outline, size: 20),
-                        text: 'Personal',
-                      ),
-                      Tab(
-                        icon: Icon(Icons.work_history_outlined, size: 20),
-                        text: 'Experience',
-                      ),
-                      Tab(
-                        icon: Icon(Icons.tune_outlined, size: 20),
-                        text: 'Preferences',
-                      ),
-                      Tab(
-                        icon: Icon(Icons.rate_review_outlined, size: 20),
-                        text: 'Comments',
-                      ),
-                      Tab(
-                        icon: Icon(Icons.manage_accounts_outlined, size: 20),
-                        text: 'Account',
-                      ),
-                    ],
                   ),
                 ),
               ),
-            ),
-          ],
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              const PersonalDetailsTab(),
-              const WorkExperienceTab(),
-              PreferencesTab(appVersion: _appVersion),
-              const CommentsTab(),
-              const AccountSettingsTab(),
             ],
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                PersonalDetailsTab(scrollTo: widget.section),
+                const WorkExperienceTab(),
+                PreferencesTab(appVersion: _appVersion),
+                const CommentsTab(),
+                const AccountSettingsTab(),
+              ],
+            ),
           ),
         ),
         loading: () => const LoadingIndicator(message: 'Loading profile...'),

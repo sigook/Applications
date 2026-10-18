@@ -24,6 +24,7 @@
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
 | [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every feature `api.ts` mapped to backend endpoints, types, and Pinia stores; live sales dashboard aggregates (§18) |
 | [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature (incl. sales dashboard layout), Pinia stores, global plumbing |
+| [SIGOOK_APP_STRUCTURE.md](./technical/SIGOOK_APP_STRUCTURE.md) | Sigook.App (Flutter worker app) — folder layout, feature anatomy, error-handling flow, core widget/service catalogue, environments, new-feature walkthrough |
 
 ---
 
@@ -52,7 +53,7 @@
 
 **Modify the sales module / dashboard:**
 1. [SALES_MODULE.md](./business/SALES_MODULE.md) — concepts, deal lifecycle, KPI definitions
-2. [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) (routes, `Dashboard.vue` layout, `sales_dashboard/` components) + [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) §14 (deals/interactions CRUD + modal wiring) and §18 (dashboard aggregate endpoints)
+2. [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) (routes, `Dashboard.vue` layout, `sales_dashboard/` components) + [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) §4 (deals/interactions CRUD + modal wiring) and §18 (dashboard aggregate endpoints)
 3. Code: `Sigook.Web/src/modules/agency/sales/dashboard/`; backend `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/`
 
 ---

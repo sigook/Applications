@@ -31,8 +31,8 @@ class NewDocumentSlot extends StatelessWidget {
   String get _buttonLabel => isReplacement
       ? 'Replace with another document type'
       : docType == 'id1File'
-      ? 'Add Document 1'
-      : 'Add Document 2';
+      ? 'Add identification 1'
+      : 'Add identification 2 (optional)';
 
   Future<void> _showModal(BuildContext context) async {
     final result = await showDialog<Map<String, dynamic>>(

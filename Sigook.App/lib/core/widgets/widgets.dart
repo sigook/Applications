@@ -26,7 +26,6 @@ export 'feedback/network_status_banner.dart';
 export 'display/gradient_icon_container.dart';
 export 'display/info_row.dart';
 export 'display/profile_info_row.dart';
-export 'display/status_badge.dart';
 
 // Layout
 export 'layout/page_scaffold.dart';

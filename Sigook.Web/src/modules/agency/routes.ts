@@ -1,10 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
 import { recruitingAccess, agencyStaff, salesAccess, adminAccess } from "@/app/security/roles";
-import {
-  loadAgencyCompaniesResolver,
-  loadCompanyToUpdateResolver,
-  loadAgencyRequestFormResolver
-} from "@/modules/agency/resolvers";
 
 const AgencyRequests = () => import("@/modules/agency/recruiting/requests/pages/Requests.vue");
 const AgencyWeeklyBoard = () => import("@/modules/agency/recruiting/weekly-board/pages/WeeklyBoard.vue");
@@ -76,7 +71,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: recruitingAccess,
     },
-    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/recruiting/requests/update/:companyProfileId/:requestId",
@@ -86,7 +80,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: recruitingAccess,
     },
-    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/recruiting/requests/duplicate/:companyProfileId/:requestId",
@@ -97,7 +90,6 @@ const routesAgency: RouteRecordRaw[] = [
       role: recruitingAccess,
       isDuplicate: true,
     },
-    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/recruiting/requests/:id",
@@ -126,7 +118,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: salesAccess,
     },
-    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/sales/requests/update/:companyProfileId/:requestId",
@@ -136,7 +127,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: salesAccess,
     },
-    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/sales/requests/duplicate/:companyProfileId/:requestId",
@@ -147,7 +137,6 @@ const routesAgency: RouteRecordRaw[] = [
       role: salesAccess,
       isDuplicate: true,
     },
-    beforeEnter: loadAgencyRequestFormResolver
   },
   {
     path: "/sales/requests/:id",
@@ -195,7 +184,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: recruitingAccess,
     },
-    beforeEnter: loadAgencyCompaniesResolver
   },
   {
     path: "/sales/dashboard",
@@ -214,7 +202,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: salesAccess,
     },
-    beforeEnter: loadAgencyCompaniesResolver
   },
   { path: "/agency-companies", redirect: "/recruiting/companies" },
   {
@@ -232,7 +219,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: recruitingAccess,
     },
-    beforeEnter: loadCompanyToUpdateResolver
   },
   {
     path: "/recruiting/companies/:id",
@@ -257,7 +243,6 @@ const routesAgency: RouteRecordRaw[] = [
       requiresAuth: true,
       role: salesAccess,
     },
-    beforeEnter: loadCompanyToUpdateResolver
   },
   {
     path: "/sales/companies/:id",

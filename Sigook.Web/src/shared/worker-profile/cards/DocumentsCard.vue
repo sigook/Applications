@@ -94,20 +94,20 @@ const rows = computed<WorkerDocumentRow[]>(() => {
 
   if (w.identificationType1 || w.identificationType1File) {
     result.push({
-      key: 'id-1', kind: 'identification', type: 'Identification', name: w.identificationType1?.value ?? 'Identification',
+      key: 'id-1', kind: 'identification', type: 'Identification 1', name: w.identificationType1?.value ?? 'Identification',
       number: w.identificationNumber1, file: w.identificationType1File, expires: null,
       status: w.identificationType1File ? onFile : missing, deletableId: null,
     });
   } else {
     result.push({
-      key: 'id-1', kind: 'identification', type: 'Identification', name: 'Not uploaded',
+      key: 'id-1', kind: 'identification', type: 'Identification 1', name: 'Not uploaded',
       number: null, file: null, expires: null, status: missing, deletableId: null,
     });
   }
 
   if (w.identificationType2 || w.identificationType2File) {
     result.push({
-      key: 'id-2', kind: 'identification', type: 'Identification', name: w.identificationType2?.value ?? 'Identification',
+      key: 'id-2', kind: 'identification', type: 'Identification 2', name: w.identificationType2?.value ?? 'Identification',
       number: w.identificationNumber2, file: w.identificationType2File, expires: null,
       status: w.identificationType2File ? onFile : missing, deletableId: null,
     });

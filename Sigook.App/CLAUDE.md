@@ -21,6 +21,8 @@ lib/
     ├── history/                   Worker assignment history
     ├── jobs/                      Job listing, details, apply, timesheets
     ├── profile/                   Worker profile — split into sub-features (see below)
+    ├── comments/                  Agency comments on the worker (read-only section)
+    ├── legal/                     Terms and privacy policy pages
     ├── registration/              Multi-step worker registration form
     ├── app_update/                Forced-update gate: GET /mobileapp/version, blocks the whole UI (MyApp builder) when the build is below MinimumVersion; re-checks on resume
     ├── about/                     Static info page
@@ -328,7 +330,7 @@ flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
 flutter run --dart-define-from-file=.env.local -t lib/main_local.dart
 ```
 
-`.env.staging` / `.env.local` / `.env.production` are committed and hold only public values; keep `APP_INSIGHTS_CONNECTION_STRING` empty in them (CI injects it from the variable groups). `.env.local` targets the Android emulator over plain HTTP (`http://10.0.2.2:5000`) because the emulator rejects the Kestrel dev certificate; cleartext to `10.0.2.2` is allowed only by the debug manifest. Without `--dart-define-from-file` the app runs with no API or auth URLs.
+`.env.staging` / `.env.local` / `.env.production` are committed and hold only public values; keep `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` empty in them (CI injects them from the variable groups; the maps key is a Static Maps key restricted to the app package/bundle id and only enables the map image of the job location card). `.env.local` targets the Android emulator over plain HTTP (`http://10.0.2.2:5000`) because the emulator rejects the Kestrel dev certificate; cleartext to `10.0.2.2` is allowed only by the debug manifest. Without `--dart-define-from-file` the app runs with no API or auth URLs.
 
 Neither platform has flavors: `android/app/build.gradle.kts` declares no `productFlavors` and iOS has a single scheme (`Runner`). The entry point plus the `--dart-define` values select the environment; staging and local builds show an orange environment banner (`EnvironmentBanner`, wired in the `MaterialApp.router` builder) above every screen so a build pointing at the wrong backend is visible at a glance. CI builds with `flutter build appbundle` and `fastlane ios build` (`flutter build ios --no-codesign` + `build_app`), see `.docs/technical/PIPELINES.md`.
 

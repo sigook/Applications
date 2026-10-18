@@ -27,6 +27,7 @@ public interface ISalesService
     Task<Result> UpdateDeal(Guid companyProfileId, Guid id);
     Task<Result> DeleteDeal(Guid companyProfileId, Guid id);
 
+    Task<Result<SalesDashboardModel>> GetDashboard(GetDealsByStatusFilter filter);
     Task<Result<DealsByStatusModel>> GetDealsByStatus(GetDealsByStatusFilter filter);
     Task<SalesDashboardSummaryModel> GetDashboardSummary(GetSalesDashboardSummaryFilter filter);
     Task<List<RecentClientModel>> GetRecentClients();

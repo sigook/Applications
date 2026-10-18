@@ -27,6 +27,7 @@ public class WorkersController(
     IMediator mediator,
     IWorkerRepository workerRepository,
     IWorkerService workerService,
+    IWorkerRequirementService workerRequirementService,
     IAgencyService agencyService,
     IValidator<UpdateEmailModel> updateEmailValidator) : Controller
 {
@@ -74,7 +75,7 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var detail = await workerRepository.GetWorkerProfileDetail(wp => wp.Id == id);
+        var detail = await workerService.GetProfileDetail(wp => wp.Id == id);
         if (detail is null) return NotFound();
         return Ok(detail);
     }
@@ -103,17 +104,16 @@ public class WorkersController(
     }
 
     /// <summary>Toggles the contractor flag of a worker profile.</summary>
-    /// <param name="timeProvider">Time provider supplying the current date.</param>
     /// <param name="id">Identifier of the worker profile.</param>
     [HttpPut("{id:guid}/IsContractor")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> IsContractor([FromServices] TimeProvider timeProvider, Guid id)
+    public async Task<IActionResult> IsContractor(Guid id)
     {
         Guid agencyId = User.GetAgencyId();
         var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
         if (entity is null) return BadRequest();
-        var result = entity.UpdateContractor(timeProvider.GetLocalNow().DateTime);
+        var result = entity.UpdateContractor(workerRequirementService.GetMissingDocuments(entity));
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
@@ -121,17 +121,16 @@ public class WorkersController(
     }
 
     /// <summary>Toggles the subcontractor flag of a worker profile.</summary>
-    /// <param name="timeProvider">Time provider supplying the current date.</param>
     /// <param name="id">Identifier of the worker profile.</param>
     [HttpPut("{id:guid}/IsSubcontractor")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> IsSubcontractor([FromServices] TimeProvider timeProvider, Guid id)
+    public async Task<IActionResult> IsSubcontractor(Guid id)
     {
         Guid agencyId = User.GetAgencyId();
         var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
         if (entity is null) return BadRequest();
-        var result = entity.UpdateSubcontractor(timeProvider.GetLocalNow().DateTime);
+        var result = entity.UpdateSubcontractor(workerRequirementService.GetMissingDocuments(entity));
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();
@@ -158,17 +157,16 @@ public class WorkersController(
         return Ok();
     }
 
-    /// <summary>Marks a worker profile as approved to work.</summary>
-    /// <param name="timeProvider">Time provider supplying the current date.</param>
+    /// <summary>Toggles the approved-to-work flag of a worker profile. Approval requires every worker requirement to be met.</summary>
     /// <param name="id">Identifier of the worker profile.</param>
     [HttpPut("{id}/ApprovedToWork")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UpdateApprovedToWork([FromServices] TimeProvider timeProvider, Guid id)
+    public async Task<IActionResult> UpdateApprovedToWork(Guid id)
     {
         var entity = await workerRepository.GetProfile(p => p.Id == id);
         if (entity is null || entity.AgencyId != User.GetAgencyId()) return BadRequest();
-        Result result = entity.UpdateApprovedToWork(timeProvider.GetLocalNow().DateTime);
+        Result result = entity.UpdateApprovedToWork(workerRequirementService.GetMissing(entity));
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         workerRepository.Update(entity);
         await workerRepository.SaveChangesAsync();

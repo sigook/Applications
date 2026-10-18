@@ -4,7 +4,7 @@ import type { AgencyRequestFilter, AgencyRequestsPagedResponse } from '@/modules
 import type { AgencyCompanyFilter, AgencyCompanyListItem } from '@/modules/agency/recruiting/clients/types';
 
 const requestsUrl = '/api/agency/sales/requests';
-const companiesUrl = '/api/agency/sales/companyprofiles';
+const companiesUrl = '/api/agency/sales/clients';
 
 export function getSalesRequests(filter: AgencyRequestFilter): Promise<AgencyRequestsPagedResponse> {
   return api.get<AgencyRequestsPagedResponse>(requestsUrl, { params: { ...filter } });

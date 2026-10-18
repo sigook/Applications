@@ -1,9 +1,37 @@
 import { computed, onBeforeUnmount, ref, type Ref } from 'vue';
 import { dateMonth } from '@/shared/format';
-import type { WorkerExpiryStatus, WorkerAttentionItem, WorkerProfileDetail, WorkerProfileSection, WorkerProfileSectionId } from '@/shared/worker-profile/types';
+import type {
+  WorkerExpiryStatus,
+  WorkerAttentionItem,
+  WorkerProfileDetail,
+  WorkerProfileSection,
+  WorkerProfileSectionId,
+  WorkerRequirement,
+} from '@/shared/worker-profile/types';
 
 const EXPIRING_SOON_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+const WORKER_REQUIREMENTS: Record<WorkerRequirement, { label: string; detail: string; sectionId: WorkerProfileSectionId }> = {
+  ProfileImage: { label: 'Profile photo', detail: 'Upload a profile photo', sectionId: 'personal' },
+  TaxCategory: { label: 'Tax category', detail: 'The agency must set the tax category', sectionId: 'personal' },
+  SocialInsuranceNumber: { label: 'Social Insurance number', detail: 'Add the SIN/SSN number', sectionId: 'personal' },
+  SocialInsuranceFile: { label: 'Social Insurance document', detail: 'Upload the SIN/SSN document', sectionId: 'personal' },
+  SocialInsuranceExpired: { label: 'Social Insurance expired', detail: 'Renew the SIN/SSN', sectionId: 'personal' },
+  Identification: { label: 'Identification document', detail: 'Add the ID number and upload the document', sectionId: 'documents' },
+};
+
+export function workerRequirementLabel(requirement: WorkerRequirement): string {
+  return WORKER_REQUIREMENTS[requirement]?.label ?? requirement;
+}
+
+export function workerRequirementSection(requirement: WorkerRequirement): WorkerProfileSectionId {
+  return WORKER_REQUIREMENTS[requirement]?.sectionId ?? 'personal';
+}
+
+export function isWorkerProfileSectionId(value: unknown): value is WorkerProfileSectionId {
+  return typeof value === 'string' && ['personal', 'contact', 'documents', 'preferences', 'skills', 'experience', 'comments'].includes(value);
+}
 
 function daysUntil(value: string): number {
   const today = new Date();
@@ -94,23 +122,16 @@ export function useWorkerProfileStatus(worker: Ref<WorkerProfileDetail | null>) 
     if (!w) {
       return [];
     }
-    const items: WorkerAttentionItem[] = [];
+    const items: WorkerAttentionItem[] = w.missingRequirements.map((requirement) => {
+      const info = WORKER_REQUIREMENTS[requirement];
+      return { key: `requirement-${requirement}`, severity: 'danger', title: `${info.label} missing`, detail: info.detail, sectionId: info.sectionId };
+    });
 
-    if (!w.socialInsurance) {
-      items.push({ key: 'sin-missing', severity: 'danger', title: 'SIN/SSN missing', detail: 'Add the SIN/SSN number', sectionId: 'personal' });
-    } else if (w.socialInsuranceExpire && w.dueDate) {
+    if (w.socialInsurance && w.socialInsuranceExpire && w.dueDate && daysUntil(w.dueDate) >= 0) {
       const sinItem = expiryItem('sin-expiry', 'SIN/SSN', w.dueDate, 'personal');
       if (sinItem) {
         items.push(sinItem);
       }
-    }
-
-    if (!w.identificationType1File) {
-      items.push({ key: 'id-missing', severity: 'danger', title: 'Identification missing', detail: 'Upload an ID document', sectionId: 'documents' });
-    }
-
-    if (!w.resume) {
-      items.push({ key: 'resume-missing', severity: 'danger', title: 'Resume missing', detail: 'Upload a resume', sectionId: 'documents' });
     }
 
     w.licenses.forEach((item, index) => {
@@ -133,10 +154,11 @@ export function useWorkerProfileStatus(worker: Ref<WorkerProfileDetail | null>) 
       return [];
     }
     const pending = (id: WorkerProfileSectionId) => attentionItems.value.filter((i) => i.sectionId === id).length;
+    const requirementsMet = (id: WorkerProfileSectionId) => !w.missingRequirements.some((r) => WORKER_REQUIREMENTS[r].sectionId === id);
     return [
-      { id: 'personal', label: 'Personal', isComplete: !!(w.firstName && w.lastName && w.birthDay && w.socialInsurance), pendingCount: pending('personal') },
+      { id: 'personal', label: 'Personal', isComplete: !!(w.firstName && w.lastName && w.birthDay) && requirementsMet('personal'), pendingCount: pending('personal') },
       { id: 'contact', label: 'Contact & emergency', isComplete: !!(w.mobileNumber && w.location && w.contactEmergencyPhone), pendingCount: pending('contact') },
-      { id: 'documents', label: 'Documents', isComplete: !!(w.identificationType1File && w.resume), pendingCount: pending('documents') },
+      { id: 'documents', label: 'Documents', isComplete: requirementsMet('documents'), pendingCount: pending('documents') },
       { id: 'preferences', label: 'Work preferences', isComplete: w.availabilities.length > 0 && w.availabilityDays.length > 0 && w.locationPreferences.length > 0, pendingCount: pending('preferences') },
       { id: 'skills', label: 'Skills', isComplete: w.skills.length > 0, pendingCount: pending('skills') },
       { id: 'experience', label: 'Experience', isComplete: w.jobExperiences.length > 0, pendingCount: pending('experience') },

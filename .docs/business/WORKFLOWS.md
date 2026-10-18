@@ -41,7 +41,7 @@ GET api/agency/recruiting/workers/{id}                → WorkersController.GetB
 PUT api/agency/recruiting/workers/{id}/ApprovedToWork → WorkersController.UpdateApprovedToWork
 ```
 
-Approval calls the domain method `WorkerProfile.UpdateApprovedToWork(now)`, which enforces that required documents are complete. Related toggles on the same controller:
+Approval calls `WorkerProfile.UpdateApprovedToWork(missingRequirements)` with the list computed by `IWorkerRequirementService.GetMissing(profile)`: profile photo, tax category (Canada only), SIN number + document (not expired), and at least one identification (number + file on the same slot). The resume is not required. Every missing item comes back as an error, so the agency sees the full list at once. Subcontractors and contractors skip the list. Booking (`WorkerProfile.CanBeBook`) only re-checks the SIN items (missing or expired) on top of `ApprovedToWork`, so workers approved before a requirement was added can still be booked. Turning the contractor or subcontractor flag **off** requires the full document list (`GetMissingDocuments`). Related toggles on the same controller:
 
 ```
 PUT api/agency/recruiting/workers/{id}/Dnu             (Do Not Use — WorkerProfile.UpdateDnu)
@@ -59,8 +59,10 @@ Once approved, the worker sees their profile(s) and available jobs:
 
 ```
 GET api/worker/profile/{profileId}   → ProfileController.GetById
-GET api/worker/profile/me            → ProfileController.GetMyProfile
+GET api/worker/profile/me            → ProfileController.GetMyProfile → WorkerService.GetProfileDetail
 ```
+
+`GetProfileDetail` (also behind `GET api/agency/recruiting/workers/{id}`) fills `missingRequirements` with the codes from `IWorkerRequirementService`. Sigook.Web (jobs banner, profile "needs attention" list) and Sigook.App (jobs banner) render that list; neither client recomputes the rule.
 
 ---
 
@@ -113,9 +115,9 @@ POST api/worker/requests/{requestId}/Apply    → RequestsController.Apply → W
 
 There is no `/Available` suffix — the plain `GET api/worker/requests` already returns only requests the authenticated worker can apply to.
 
-Both apply routes share one service method, `WorkerService.Apply(WorkerRequestApplyModel model, Guid? requestId = null)`, and one payload, `WorkerRequestApplyModel { NumberId?, Email, Comments }`. The route decides how the applicant is resolved: with `requestId` the worker comes from the token and any `Email` in the body is ignored; without it the worker is looked up by `Email` within the request's agency. Once resolved, `Apply` branches into `ApplyAsWorker` or `ApplyAsCandidate`, each of which owns its duplicate guard, its `RequestApplicant` factory and its notification. Sending the recruiter email is `IRequestApplicantNotificationService` (`NEW_APPLICANT` SendGrid template, one overload per applicant kind); it only notifies — the row is always created by the caller beforehand.
+Both apply routes share one service method, `WorkerService.Apply(WorkerRequestApplyModel model, Guid? requestId = null)`, and one payload, `WorkerRequestApplyModel { NumberId?, Email, Comments }`. The route decides how the applicant is resolved: with `requestId` the worker comes from the token and any `Email` in the body is ignored; without it the worker is looked up by `Email` within the request's agency. Once resolved, `Apply` branches into `ApplyAsWorker` or `ApplyAsCandidate`, each of which owns its duplicate guard, its `RequestApplicant` factory and its notification. `ApplyAsWorker` rejects workers with `ApprovedToWork = false` (`WorkerNotApprovedToWork`); Sigook.Web hides the Apply button and Sigook.App shows the "not approved" card instead of it, but the API is the gate. Sending the recruiter email is `IRequestApplicantNotificationService` (`NEW_APPLICANT` SendGrid template, one overload per applicant kind); it only notifies — the row is always created by the caller beforehand.
 
-Invitation emails (workers and candidates) carry a unified anonymous link `/worker-apply?n={requestNumberId}&e={email}` handled by `POST api/worker/requests/Apply` (`[AllowAnonymous]`) → `RequestsController.ApplyFromInvitation`: the request is resolved by its public `NumberId`, the email is matched (case/whitespace-insensitive) against workers of the request's agency first, then candidates. Candidates are invited and allowed to apply **only if their free-text address contains the request's city** (accent/case-insensitive containment; a request without a city accepts no candidates), are excluded when DNU, and become `RequestApplicant` rows (`Pending`, created by "Sigook"). The invitation consumer (`InvitationConsumer`) sends one batch to workers of the request's province plus city-matched candidates of the agency, deduplicated by email. Both audiences get the same SendGrid template and the same unsubscribe link shape, built from the single `UnsubscribeUrl` setting: `/email-preferences?email={email}`. `POST api/emailpreferences/Unsubscribe` receives the email address and an optional `TypeId` (the `NotificationType` id; when absent it defaults to `NewRequestNotifyWorker`, the only type these emails opt out of), and resolves the audience itself: if the email matches a `User` the opt-out is a `UserNotificationType` row for that type with every channel off, otherwise it falls back to the candidate with that email and stores `Candidate.EmailUnsubscribed`, which excludes them from later invitation batches.
+Invitation emails (workers and candidates) carry a unified anonymous link `/worker-apply?n={requestNumberId}&e={email}` handled by `POST api/worker/requests/Apply` (`[AllowAnonymous]`) → `RequestsController.ApplyFromInvitation`: the request is resolved by its public `NumberId`, the email is matched (case/whitespace-insensitive) against workers of the request's agency first, then candidates. Candidates are invited and allowed to apply **only if their free-text address contains the request's city** (accent/case-insensitive containment; a request without a city accepts no candidates), are excluded when DNU, and become `RequestApplicant` rows (`Pending`, created by "Sigook"). The invitation consumer (`InvitationConsumer`) sends one batch to workers whose profile location is in the request's city (`Location.CityId`) plus city-matched candidates of the agency (`Candidate.CityId`, free-text address containment only for legacy candidates without a city), deduplicated by email. Both audiences get the same SendGrid template and the same unsubscribe link shape, built from the single `UnsubscribeUrl` setting: `/email-preferences?email={email}`. `POST api/emailpreferences/Unsubscribe` receives the email address and an optional `TypeId` (the `NotificationType` id; when absent it defaults to `NewRequestNotifyWorker`, the only type these emails opt out of), and resolves the audience itself: if the email matches a `User` the opt-out is a `UserNotificationType` row for that type with every channel off, otherwise it falls back to the candidate with that email and stores `Candidate.EmailUnsubscribed`, which excludes them from later invitation batches.
 
 ### Step 2B: Agency tracks applicants
 
@@ -168,13 +170,21 @@ POST api/worker/requests/{requestId}/timesheet
 → TimeSheetsController.Post (Controllers/Worker/TimeSheets/TimeSheetsController.cs)
 → TimesheetService.Register(requestId, WorkerLocationModel)     (payload = GPS location of the punch)
 
+GET api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}
+→ TimesheetService.GetPunchStatus   (everything the punch card shows, in one call)
+  clockType = next expected punch. No date parameter: it depends only on the worker's latest
+  punch for the request (open and under 14 h → clock-out, otherwise clock-in; None when the
+  worker is not booked yet or the open punch was already approved). clockIn/clockOut/dayHours =
+  the open punch, else today's entry. weekHours = entries since Sunday. "Today", "Sunday" and
+  elapsed hours are evaluated in the job site's time zone (Request.JobLocation), falling back
+  to the caller's coordinates. Never in server time.
+
 GET api/worker/requests/{requestId}/timesheet/clock-type/{latitude}/{longitude}
-→ TimesheetService.GetClockType     (next expected punch: clock-in or clock-out)
-  The day boundary is evaluated in the job site's time zone (Request.JobLocation), falling back
-  to the caller's coordinates when the job has no location. Never in server time.
+→ TimesheetService.GetClockType     [Obsolete] clockType only; kept for mobile builds released
+  before punch-status. New clients never call it.
 
 GET api/worker/requests/{requestId}/timesheet
-→ ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list)
+→ ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list, Time Sheet tab only)
 ```
 
 ### Step 2: Agency reviews and edits the punch card
@@ -190,6 +200,8 @@ GET    api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/
 ```
 
 A request-wide view exists at `GET api/agency/recruiting/requests/{requestId}/timesheets` (`TimeSheetsController.cs`).
+
+On the agency punch card the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` in `AgencyPunchCardWorkerContainer.vue`); the attendance `0` is entered by whoever may edit.
 
 ### Step 3: Hours breakdown
 
@@ -350,10 +362,6 @@ Each request header shows `hired/workersQuantity` and whether it still uses runn
 
 The bulk status change applies the entity rules per runner and never fails as a whole: hired runners, runners of requests without runners and unknown ids are returned in `skipped[]` with the reason, the rest are updated with one history entry each carrying the comments. `InterviewRescheduled` is never a bulk target (it is only set by rescheduling an interview) and `Hired` requires `startDate` for the whole batch.
 
-### Punch card gating
-
-- **Punch card gating:** on the agency punch card, the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` composable, used in `AgencyPunchCardWorkerContainer.vue` via `v-if="isAdmin"` / `:disabled="!isAdmin || ..."`); the attendance `0` is entered by whoever may edit.
-
 ### 6.1 Compliance checklist (orders without runners)
 
 When `Request.UsesRunners == false`, the order instead carries a **compliance checklist**: the requirements a worker must meet to be placed on it. Each item is a free-text name plus a mandatory/optional flag plus a **document target** (which worker-profile section a document uploaded for it lands in), so the list is fully dynamic — the agency can add anything beyond the defaults.
@@ -410,7 +418,7 @@ In the portal an applicant row expands into its compliance detail row (`Applican
 
 Completing an item can attach a document that lands in the worker-profile section named by the item's `DocumentTarget` (WP/W4/I9/Banking-style items land in *Other Documents* with the item name as description). For **worker** applicants, a **mandatory** item with a document target can **only** be completed by uploading the document — unless the profile already holds a document in that target slot, in which case the check alone completes it and the stored file is left untouched — and mandatory identification/social-insurance items additionally require their number (and type) whenever a file is being uploaded — enforced in the service and mirrored in the modal before it posts. **Optional items require nothing**: neither the document nor the inputs, and an optional identification saved without a number keeps the number/type already on the profile. Numbers are duplicate-checked whenever one is present. Candidates can check items but never upload — convert to worker first. **Confirm** requires all mandatory items completed (optional ones don't block) and a worker applicant.
 
-**SIN/SSN-typed identifications** (identification type with `IdentificationTypeCode.SinSsn`): completing an Identification item with that type validates the number as a SIN (9-15 chars, not another profile's SIN, not different from the profile's existing SIN) and **also fills the worker's `SocialInsurance` + SIN document from the same upload** (one blob, no double attachment), then **auto-completes** any pending checklist item with target *Social insurance* for that applicant. The same auto-fill applies at worker registration (web and app) when a SIN/SSN-typed identification is provided — SIN is never captured directly at registration. SIN duplicate validation runs in every flow that sets it: registration, the worker documents/SIN forms, and both compliance branches.
+**SIN/SSN-typed identifications** (`IdentificationTypeCode.SinSsn`): completing an Identification item with that type also fills the worker's `SocialInsurance` + SIN document from the same upload (one blob) and auto-completes pending *Social insurance* items. The same auto-fill applies at worker registration (web and app) — SIN is never captured directly at registration. Validation, duplicate checks and replacement rules: `REQUEST_STATE_MANAGEMENT.md` → *Per-applicant compliance & document routing*.
 
 Note: `BookWorker` deletes the applicant row; its completions go with it by cascade.
 

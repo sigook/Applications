@@ -10,7 +10,7 @@
         {{ props.row.name }}
       </b-table-column>
       <b-table-column field="email" label="Email" searchable v-slot="props">
-        {{ props.row.email }}
+        <copy-link kind="email" :value="props.row.email" />
       </b-table-column>
       <b-table-column field="role" label="Role" v-slot="props">
         {{ roleLabels[props.row.role] || props.row.role }}
@@ -49,6 +49,7 @@ import PersonnelForm from "@/modules/agency/profile/components/AgencyPersonnelMo
 import AttendanceReportModal from "@/modules/agency/profile/components/AttendanceReportModal.vue";
 import dayjs from 'dayjs';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const { isAdmin } = useAdmin();
 

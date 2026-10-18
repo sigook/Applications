@@ -1,8 +1,19 @@
 import { api } from '@/app/security/apiService';
-import type { DealsByStatusFilter, DealsByStatusModel, SalesDashboardSummary, SalesRecentClient } from '@/modules/agency/sales/dashboard/types';
+import type {
+  DealsByStatusFilter,
+  DealsByStatusModel,
+  SalesDashboardModel,
+  SalesDashboardSummary,
+  SalesRecentClient,
+} from '@/modules/agency/sales/dashboard/types';
 import type { CompanyInteraction, Deal } from '@/modules/agency/sales/clients/types';
 
 const baseUrl = '/api/agency/sales/dashboard';
+
+// Every dashboard card in one round trip. The filter only drives the deals-by-status block.
+export function getSalesDashboard(filter: DealsByStatusFilter): Promise<SalesDashboardModel> {
+  return api.get<SalesDashboardModel>(baseUrl, { params: { ...filter } });
+}
 
 // Deal count and total value per status for an inclusive date range (current UTC month
 // when omitted). Sales users only see their own deals.

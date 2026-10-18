@@ -1,4 +1,5 @@
 import { LocationDetailModel } from '@/shared/types/common';
+import type { ClockType } from '@/shared/constants/enums';
 
 // Worker Request types
 export interface WorkerRequestFilter {
@@ -20,7 +21,6 @@ export interface WorkerRequestListItem {
   id: string;
   numberId?: number;
   jobTitle?: string;
-  agencyFullName?: string;
   location?: string;
   entrance?: string;
   workersQuantity?: number;
@@ -35,8 +35,13 @@ export interface WorkerRequestListItem {
   durationTerm?: string;
 }
 
+export interface PunchCheckpoint {
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+}
+
 export interface WorkerRequestDetail extends WorkerRequestListItem {
-  agencyLogo?: string;
   description?: string;
   requirements?: string;
   responsibilities?: string;
@@ -52,8 +57,18 @@ export interface WorkerRequestDetail extends WorkerRequestListItem {
   incentiveDescription?: string;
   requestStatus?: string;
   jobLocation?: LocationDetailModel | null;
+  punchCheckpoint?: PunchCheckpoint | null;
   isApplicant?: boolean;
   punchCardOptionEnabled?: boolean;
+}
+
+// Matches API PunchStatusModel.
+export interface PunchStatus {
+  clockType: ClockType;
+  clockIn?: string | null;
+  clockOut?: string | null;
+  dayHours: number;
+  weekHours: number;
 }
 
 // Matches API TimeSheetListModel.

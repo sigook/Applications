@@ -4,24 +4,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:permission_handler/permission_handler.dart'
     as permission_handler;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/enums.dart';
+import '../../../../core/utils/geo.dart';
 import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/providers/location_provider.dart';
 import '../../../../core/services/location_service.dart';
-import '../../domain/usecases/get_clock_type.dart';
+import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
+import '../../domain/entities/job_details.dart';
+import '../../domain/entities/punch_status.dart';
+import '../../domain/usecases/get_punch_status.dart';
 import '../../domain/usecases/submit_timesheet.dart';
 import '../providers/timesheet_providers.dart';
+import 'job_header_card.dart';
 
 enum _PrecisionAction { cancel, continueAnyway, retry }
 
 class PunchCardTab extends ConsumerStatefulWidget {
-  final String jobId;
+  final JobDetails jobDetails;
+  final Future<void> Function()? onRefreshCheckpoint;
 
-  const PunchCardTab({super.key, required this.jobId});
+  const PunchCardTab({
+    super.key,
+    required this.jobDetails,
+    this.onRefreshCheckpoint,
+  });
+
+  String get jobId => jobDetails.id;
+  int get jobNumberId => jobDetails.numberId;
+  double? get checkpointLatitude => jobDetails.checkpointLatitude;
+  double? get checkpointLongitude => jobDetails.checkpointLongitude;
+  double? get checkpointRadiusMeters => jobDetails.checkpointRadiusMeters;
+
+  bool get hasCheckpoint =>
+      checkpointLatitude != null &&
+      checkpointLongitude != null &&
+      checkpointRadiusMeters != null;
 
   @override
   ConsumerState<PunchCardTab> createState() => _PunchCardTabState();
@@ -32,14 +52,21 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
   static const double _maxUsableAccuracyMeters = 50;
   static const Duration _refreshFixAfter = Duration(seconds: 10);
   static const Duration _maxSubmitFixAge = Duration(seconds: 60);
+  static const String _locationError =
+      'Could not get your location. Tap to retry.';
 
-  DateTime _focusedDay = DateTime.now();
-  DateTime _selectedDay = DateTime.now();
   DateTime _currentTime = DateTime.now();
   Timer? _timer;
   ClockType _clockType = ClockType.none;
+  bool _isLoadingClockType = true;
+  String? _clockTypeError;
   bool _isSubmitting = false;
   int _clockTypeRequestId = 0;
+  StreamSubscription<Position>? _positionSubscription;
+  Position? _livePosition;
+  String? _punchRejectedMessage;
+  String? _punchRejectedReference;
+  PunchStatus _punchStatus = PunchStatus.none;
 
   @override
   void initState() {
@@ -54,9 +81,47 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     _loadClockType();
   }
 
-  Future<void> _loadClockType() async {
+  @override
+  void didUpdateWidget(covariant PunchCardTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.hasCheckpoint != widget.hasCheckpoint) {
+      _syncPositionWatch();
+    }
+  }
+
+  void _syncPositionWatch() {
+    if (widget.hasCheckpoint && _showsCheckpointStrip) {
+      _positionSubscription ??= ref
+          .read(locationServiceProvider)
+          .watchPosition()
+          .listen(_onLivePosition);
+    } else {
+      _positionSubscription?.cancel();
+      _positionSubscription = null;
+    }
+  }
+
+  void _onLivePosition(Position position) {
+    if (!mounted) return;
+    setState(() {
+      _livePosition = position;
+    });
+  }
+
+  Future<void> _loadClockType({bool refreshCheckpoint = false}) async {
     final requestId = ++_clockTypeRequestId;
-    final useCase = ref.read(getClockTypeUseCaseProvider);
+    setState(() {
+      _isLoadingClockType = true;
+      _clockTypeError = null;
+      _punchRejectedMessage = null;
+      _punchRejectedReference = null;
+    });
+    _syncPositionWatch();
+    if (refreshCheckpoint) {
+      await widget.onRefreshCheckpoint?.call();
+      if (!mounted || requestId != _clockTypeRequestId) return;
+    }
+    final useCase = ref.read(getPunchStatusUseCaseProvider);
     final position = await ref
         .read(locationServiceProvider)
         .getCurrentPosition();
@@ -66,7 +131,10 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     if (position == null) {
       setState(() {
         _clockType = ClockType.none;
+        _isLoadingClockType = false;
+        _clockTypeError = _locationError;
       });
+      _syncPositionWatch();
       _showErrorSnackBar(
         'Failed to get location. Please enable location services.',
         action: SnackBarAction(
@@ -78,9 +146,10 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       return;
     }
 
+    _livePosition ??= position;
+
     final result = await useCase(
-      GetClockTypeParams(
-        date: _selectedDay,
+      GetPunchStatusParams(
         requestId: widget.jobId,
         latitude: position.latitude,
         longitude: position.longitude,
@@ -89,130 +158,44 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
 
     if (!mounted || requestId != _clockTypeRequestId) return;
 
-    result.fold(
-      (failure) {
-        setState(() {
+    setState(() {
+      _isLoadingClockType = false;
+      result.fold(
+        (failure) {
           _clockType = ClockType.none;
-        });
-      },
-      (clockType) {
-        setState(() {
-          _clockType = clockType;
-        });
-      },
-    );
+          _clockTypeError = 'Could not check your shift status. Tap to retry.';
+        },
+        (status) {
+          _punchStatus = status;
+          _clockType = status.clockType;
+          _clockTypeError = null;
+        },
+      );
+    });
+    _syncPositionWatch();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _positionSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.only(bottom: 100),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 12),
-                _buildCalendarCard(),
-                const SizedBox(height: 12),
-                _buildClockCard(),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCalendarCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Select Date',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TableCalendar(
-              firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                });
-                _loadClockType();
-              },
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: const BoxDecoration(
-                  color: AppTheme.primaryBlue,
-                  shape: BoxShape.circle,
-                ),
-                selectedTextStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                todayTextStyle: const TextStyle(
-                  color: AppTheme.primaryBlue,
-                  fontWeight: FontWeight.bold,
-                ),
-                weekendTextStyle: TextStyle(
-                  color: AppTheme.errorRed.withValues(alpha: 0.7),
-                ),
-              ),
-              headerStyle: const HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              daysOfWeekStyle: DaysOfWeekStyle(
-                weekdayStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade700,
-                ),
-                weekendStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.errorRed.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(top: 12, bottom: 24),
+      child: _buildClockCard(),
     );
   }
 
   Widget _buildClockCard() {
     return Column(
       children: [
+        JobHeaderCard(jobDetails: widget.jobDetails),
+        const SizedBox(height: 12),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           child: Padding(
@@ -275,7 +258,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      DateFormat('EEEE, MMMM dd, yyyy').format(_selectedDay),
+                      DateFormat('EEEE, MMMM dd, yyyy').format(_currentTime),
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -288,65 +271,53 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             ),
           ),
         ),
+        if (widget.hasCheckpoint && _showsCheckpointStrip) ...[
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildCheckpointStrip(),
+          ),
+        ],
         const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: SizedBox(
             width: double.infinity,
             height: 56,
-            child: ElevatedButton(
-              onPressed: _clockType == ClockType.none || _isSubmitting
-                  ? null
-                  : _onClockTapped,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _clockType == ClockType.clockIn
-                    ? AppTheme.successGreen
-                    : _clockType == ClockType.clockOut
-                    ? AppTheme.errorRed
-                    : Colors.grey,
-                foregroundColor: Colors.white,
-                elevation: 4,
-                shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                disabledBackgroundColor: Colors.grey.shade400,
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _clockType == ClockType.clockIn
-                              ? Icons.login
-                              : _clockType == ClockType.clockOut
-                              ? Icons.logout
-                              : Icons.block,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          _clockType == ClockType.clockIn
-                              ? 'CLOCK IN'
-                              : _clockType == ClockType.clockOut
-                              ? 'CLOCK OUT'
-                              : 'UNAVAILABLE',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ],
-                    ),
+            child: _buildClockButton(),
+          ),
+        ),
+        if (_clockTypeError != null) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              _clockTypeError!,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            ),
+          ),
+        ],
+        if (_punchRejectedMessage != null) ...[
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildPunchRejectedCard(),
+          ),
+        ],
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _buildTodayStamps(),
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'This week: ${_formatHours(_punchStatus.weekHours)} h',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ),
         ),
@@ -354,9 +325,346 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
+  Widget _buildTodayStamps() {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Expanded(child: _buildStamp('CLOCK IN', _punchStatus.clockIn)),
+              VerticalDivider(
+                width: 1,
+                thickness: 1,
+                color: Colors.grey.shade300,
+              ),
+              Expanded(
+                child: _buildStamp('CLOCK OUT', _punchStatus.clockOut),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStamp(String label, DateTime? value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.6,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value != null ? DateFormat('h:mm a').format(value) : '--:--',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: value != null ? AppTheme.textDark : Colors.grey.shade400,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatHours(double hours) {
+    if (hours == hours.roundToDouble()) return hours.round().toString();
+    return hours.toStringAsFixed(2);
+  }
+
+  Widget _buildPunchRejectedCard() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.errorRed.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.errorRed.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.location_off, size: 20, color: AppTheme.errorRed),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Too far from workplace',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.errorRed,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _punchRejectedMessage!,
+                  style: const TextStyle(fontSize: 13, color: AppTheme.textDark),
+                ),
+                if (_punchRejectedReference != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _punchRejectedReference!,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: Icon(Icons.close, size: 18, color: Colors.grey.shade600),
+            onPressed: _clearPunchRejected,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _clearPunchRejected() {
+    if (_punchRejectedMessage == null) return;
+    setState(() {
+      _punchRejectedMessage = null;
+      _punchRejectedReference = null;
+    });
+  }
+
+  Widget _buildCheckpointStrip() {
+    final position = _livePosition;
+    final Color color;
+    final IconData icon;
+    final String title;
+    String? subtitle;
+    final String? coordinates = position == null
+        ? null
+        : '${position.latitude.toStringAsFixed(6)}, '
+              '${position.longitude.toStringAsFixed(6)} '
+              '(±${position.accuracy.round()} m)';
+
+    if (position == null) {
+      color = Colors.grey.shade600;
+      if (_clockTypeError == _locationError) {
+        icon = Icons.location_disabled;
+        title = 'Turn on location to see your distance to the check point.';
+      } else {
+        icon = Icons.location_searching;
+        title = 'Checking your distance to the check point...';
+      }
+    } else {
+      final meters = distanceInMeters(
+        widget.checkpointLatitude!,
+        widget.checkpointLongitude!,
+        position.latitude,
+        position.longitude,
+      );
+      final accuracy = position.accuracy;
+      final radius = widget.checkpointRadiusMeters!;
+      if (meters + accuracy <= radius) {
+        color = AppTheme.successGreen;
+        icon = Icons.check_circle;
+        title = 'At the check point';
+      } else if (meters <= radius) {
+        color = AppTheme.warningOrange;
+        icon = Icons.location_searching;
+        title =
+            'About ${meters.round()} m from the check point (GPS ±${accuracy.round()} m)';
+        subtitle = 'Move a bit closer to be safe.';
+      } else {
+        final direction = cardinalDirection(
+          widget.checkpointLatitude!,
+          widget.checkpointLongitude!,
+          position.latitude,
+          position.longitude,
+        );
+        color = AppTheme.errorRed;
+        icon = Icons.location_off;
+        title = 'About ${formatDistance(meters)} $direction of the check point';
+        subtitle = 'Get closer before you clock in.';
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  ),
+                ],
+                if (coordinates != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.gps_fixed,
+                        size: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          coordinates,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool get _isShiftCompleted =>
+      _clockType == ClockType.none &&
+      _punchStatus.clockIn != null &&
+      _punchStatus.clockOut != null;
+
+  bool get _showsCheckpointStrip =>
+      _clockType != ClockType.none ||
+      _isLoadingClockType ||
+      _clockTypeError != null;
+
+  Widget _buildClockButton() {
+    final isBusy = _isSubmitting || _isLoadingClockType;
+    final isRetry = !isBusy && _clockTypeError != null;
+    final backgroundColor = isRetry
+        ? AppTheme.warningOrange
+        : _clockType == ClockType.clockIn
+        ? AppTheme.successGreen
+        : _clockType == ClockType.clockOut
+        ? AppTheme.errorRed
+        : Colors.grey;
+    final onPressed = isBusy
+        ? null
+        : isRetry
+        ? () => _loadClockType(refreshCheckpoint: true)
+        : _clockType == ClockType.none
+        ? null
+        : _onClockTapped;
+
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shadowColor: AppTheme.primaryBlue.withValues(alpha: 0.4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        disabledBackgroundColor: _isLoadingClockType
+            ? AppTheme.primaryBlue.withValues(alpha: 0.6)
+            : _isShiftCompleted
+            ? AppTheme.successGreen.withValues(alpha: 0.55)
+            : Colors.grey.shade400,
+        disabledForegroundColor: Colors.white,
+      ),
+      child: isBusy
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                if (_isLoadingClockType && !_isSubmitting) ...[
+                  const SizedBox(width: 12),
+                  const Text(
+                    'CHECKING...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isRetry
+                      ? Icons.refresh
+                      : _clockType == ClockType.clockIn
+                      ? Icons.login
+                      : _clockType == ClockType.clockOut
+                      ? Icons.logout
+                      : _isShiftCompleted
+                      ? Icons.check_circle
+                      : Icons.block,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  isRetry
+                      ? 'RETRY'
+                      : _clockType == ClockType.clockIn
+                      ? 'CLOCK IN'
+                      : _clockType == ClockType.clockOut
+                      ? 'CLOCK OUT'
+                      : _isShiftCompleted
+                      ? 'SHIFT COMPLETED'
+                      : 'UNAVAILABLE',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
   Future<void> _onClockTapped() async {
     setState(() {
       _isSubmitting = true;
+      _punchRejectedMessage = null;
+      _punchRejectedReference = null;
     });
 
     try {
@@ -459,6 +767,9 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       }
 
       if (!mounted) return;
+      setState(() {
+        _livePosition = submitPosition;
+      });
       if (_fixAge(submitPosition) > _maxSubmitFixAge ||
           submitPosition.accuracy > _maxUsableAccuracyMeters) {
         setState(() {
@@ -530,7 +841,10 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                     'is_mocked': submitPosition.isMocked,
                   },
                 );
-            _showTooFarFromCheckpointError();
+            setState(() {
+              _punchRejectedMessage = failure.message;
+              _punchRejectedReference = _punchReference();
+            });
           } else if (is3MinuteRestriction) {
             // Track 3-minute restriction hit for monitoring
             ref
@@ -563,7 +877,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                 },
               );
           _showSuccessSnackBar(response.workerFullName, response.finish);
-          await _loadClockType();
+          await _loadClockType(refreshCheckpoint: true);
           if (!mounted) return;
           setState(() {
             _isSubmitting = false;
@@ -695,118 +1009,13 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
     );
   }
 
-  void _showTooFarFromCheckpointError() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.location_off, color: AppTheme.errorRed, size: 28),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Too Far From Workplace',
-                style: TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'You are too far from the designated checkpoint to clock in/out.',
-              style: TextStyle(fontSize: 15),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
-                ),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Please make sure you are:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        size: 16,
-                        color: AppTheme.primaryBlue,
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'At or near your assigned workplace',
-                          style: TextStyle(fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        size: 16,
-                        color: AppTheme.primaryBlue,
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Within the allowed distance from the checkpoint',
-                          style: TextStyle(fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        size: 16,
-                        color: AppTheme.primaryBlue,
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'GPS is enabled with good signal',
-                          style: TextStyle(fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'OK',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
+  String _punchReference() {
+    final profile = ref.read(cachedWorkerProfileProvider).value;
+    final worker = profile == null
+        ? 'Worker: unknown'
+        : 'Worker #${profile.numberId ?? '-'} · ${profile.fullName}';
+    final when = DateFormat('MMM dd, yyyy hh:mm a').format(DateTime.now());
+    return '$worker\nRequest #${widget.jobNumberId} · $when';
   }
 
   Future<bool?> _showConfirmationDialog(

@@ -27,7 +27,7 @@
               </b-tooltip>
             </span>
             <i class="fz-2 ellipsis-150 is-lowercase">
-              <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
+              <copy-link kind="email" :value="props.row.email" />
             </i>
           </template>
         </b-table-column>
@@ -57,7 +57,7 @@
           </template>
           <template v-slot="props">
             <div v-if="props.row.phoneNumber">
-              {{ props.row.phoneNumber }}
+              <copy-link kind="phone" :value="props.row.phoneNumber" />
             </div>
             <div v-else class="op3">Phone</div>
           </template>
@@ -167,6 +167,7 @@ import SelectRunnerTypeModal from '@/modules/agency/recruiting/requests/runners/
 import EditTextarea from '@/shared/ui/EditTextarea.vue';
 import DetailCandidate from '@/modules/agency/recruiting/candidates/components/DetailCandidate.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 defineProps<{ request?: AgencyRequestDetail | null }>();
 

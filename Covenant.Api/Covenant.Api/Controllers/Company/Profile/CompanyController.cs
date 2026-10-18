@@ -1,5 +1,4 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Utils;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Api.Validators.Locations;
 using Covenant.Common.Functionals;
@@ -20,7 +19,6 @@ namespace Covenant.Api.Controllers.Company.Profile;
 [ServiceFilter(typeof(CompanyIdFilter))]
 public class CompanyController(
     ICompanyRepository companyRepository,
-    IDefaultLogoProvider defaultLogoProvider,
     ICompanyService companyService) : ControllerBase
 {
     public const string RouteName = "api/company/profile";
@@ -51,8 +49,6 @@ public class CompanyController(
             }
             return BadRequest(ModelState);
         }
-
-        if (string.IsNullOrEmpty(model.Logo?.FileName)) model.Logo = await defaultLogoProvider.GetLogo(model.Name);
 
         Result<Guid> result = await companyService.CreateCompanyProfile(model);
         if (result) return CreatedAtAction(nameof(GetById), new { profileId = result.Value }, new { });

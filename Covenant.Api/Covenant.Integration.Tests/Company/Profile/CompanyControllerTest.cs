@@ -2,6 +2,7 @@ using Covenant.Api.Controllers.Company.Profile;
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils;
 using Covenant.Common.Entities;
+using Covenant.Common.Entities.Company;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Identity;
@@ -50,6 +51,7 @@ public class CompanyControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
         Assert.Equal(model.Name, detail.FullName);
         Assert.Equal(model.Email, detail.Email);
         Assert.NotNull(detail.Logo);
+        Assert.Equal(CompanyProfile.DefaultImageLogo, detail.Logo.FileName);
     }
 
     public class Startup
@@ -69,9 +71,6 @@ public class CompanyControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
             });
             services.AddTestDatabase();
             services.AddSingleton<ICompanyRepository, CompanyRepository>();
-            var defaultLogoProvider = new Mock<IDefaultLogoProvider>();
-            defaultLogoProvider.Setup(p => p.GetLogo(It.IsAny<string>())).ReturnsAsync(new CovenantFileModel("logo.png", "Logo"));
-            services.AddSingleton(defaultLogoProvider.Object);
             services.AddSingleton<ICompanyService, CompanyService>();
             var agencyRepositoryMock = new Mock<IAgencyRepository>();
             agencyRepositoryMock.Setup(ar => ar.GetAgencyMasterByLocation(It.IsAny<CityModel>())).ReturnsAsync(MasterAgency);

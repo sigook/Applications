@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/widgets/display/status_badge.dart';
 import '../../domain/entities/job_details.dart';
 
 class JobHeaderCard extends StatelessWidget {
@@ -27,7 +26,7 @@ class JobHeaderCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        jobDetails.jobTitle,
+                        '${jobDetails.numberId} · ${jobDetails.jobTitle}',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -56,13 +55,37 @@ class JobHeaderCard extends StatelessWidget {
                           ],
                         ),
                       ],
+                      if (jobDetails.hasPunchCheckpoint) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.gps_fixed,
+                              size: 16,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                '${jobDetails.checkpointLatitude!.toStringAsFixed(6)}, '
+                                '${jobDetails.checkpointLongitude!.toStringAsFixed(6)}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            StatusBadge(status: jobDetails.status, isAsap: jobDetails.isAsap),
           ],
         ),
       ),

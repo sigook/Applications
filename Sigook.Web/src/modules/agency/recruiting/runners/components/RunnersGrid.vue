@@ -15,7 +15,7 @@
         </template>
         <template v-slot="props">
           <span class="is-block">{{ props.row.name }}</span>
-          <i class="fz-2 ellipsis-150 is-lowercase">{{ props.row.email }}</i>
+          <i class="fz-2 ellipsis-150 is-lowercase"><copy-link kind="email" :value="props.row.email" /></i>
         </template>
       </b-table-column>
 
@@ -102,6 +102,7 @@ import type { AgencyRunnerFilter, RunnerType } from '@/modules/agency/recruiting
 import type { RunnerRow } from '@/modules/agency/recruiting/runners/types';
 import type { CatalogItem, GridHandle, PaginatedList, TableColumnRef } from '@/shared/types/common';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import RunnerActionsDropdown from '@/modules/agency/recruiting/requests/runners/RunnerActionsDropdown.vue';
 import RunnerActionModals from '@/modules/agency/recruiting/requests/runners/RunnerActionModals.vue';
 import RunnerDetailPanel from '@/modules/agency/recruiting/runners/components/RunnerDetailPanel.vue';

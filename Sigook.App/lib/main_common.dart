@@ -145,6 +145,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
+    if (_isSessionActive()) ref.invalidate(cachedWorkerProfileProvider);
     final now = DateTime.now();
     final last = _lastUpdateRecheck;
     if (last != null && now.difference(last) < _updateRecheckInterval) return;

@@ -91,9 +91,9 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         var rateValue = request.WorkerRate ?? request.WorkerSalary.Value;
         var rate = request.JobLocation.IsUSA ? rateValue.ToUsMoney() : rateValue.ToCaMoney();
         var agencyId = request.CompanyProfile.AgencyId;
-        var provinceId = request.JobLocation.City.ProvinceId;
+        var cityId = request.JobLocation.CityId;
 
-        var workers = await workerRepository.GetWorkersAvailableToInvite(agencyId, provinceId);
+        var workers = await workerRepository.GetWorkersAvailableToInvite(agencyId, cityId);
         var recipients = new List<TemplateRecipient>(workers.Count);
         var invitedEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var worker in workers)
@@ -121,7 +121,7 @@ public class InvitationConsumer : IAzureServiceBusConsumer
         foreach (var candidate in candidates)
         {
             var sameCity = candidate.CityId.HasValue
-                ? candidate.CityId == request.JobLocation.CityId
+                ? candidate.CityId == cityId
                 : candidate.Address.ContainsNormalized(city);
             if (!sameCity) continue;
             if (!invitedEmails.Add(candidate.Email)) continue;

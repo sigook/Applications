@@ -154,7 +154,7 @@
         "tags": [
           "TimeSheets"
         ],
-        "summary": "Gets the next expected clock type (clock-in or clock-out) for a request.",
+        "summary": "Gets the next expected punch (clock-in or clock-out) for a request: clock-out while the latest punch is open and under 14 hours, none once today's punch is closed, clock-in otherwise.",
         "parameters": [
           {
             "name": "requestId",
@@ -182,14 +182,6 @@
             "schema": {
               "$ref": "#/components/schemas/System.Double"
             }
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "description": "Optional date to evaluate the clock type for.",
-            "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-            }
           }
         ],
         "responses": {
@@ -199,6 +191,64 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Covenant.Common.Enums.ClockType"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}": {
+      "get": {
+        "tags": [
+          "TimeSheets"
+        ],
+        "summary": "Gets everything the punch card needs in one call: the next expected punch, the clock-in/clock-out of the open or today's punch, and the hours worked since Sunday in the job's time zone.",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "description": "Identifier of the request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "latitude",
+            "in": "path",
+            "description": "Current latitude of the worker.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Double"
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "path",
+            "description": "Current longitude of the worker.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Request.TimeSheet.PunchStatusModel"
                 }
               }
             }
@@ -707,7 +757,7 @@
         "tags": [
           "Profile"
         ],
-        "summary": "Gets the detail of the authenticated worker's own profile.",
+        "summary": "Gets the detail of the authenticated worker's own profile, including the requirements still missing to be approved to work.",
         "responses": {
           "200": {
             "description": "OK",
@@ -2828,56 +2878,6 @@
           },
           "500": {
             "description": "Internal Server Error"
-          }
-        }
-      }
-    },
-    "/api/file/defaultImage/{id}": {
-      "get": {
-        "tags": [
-          "File"
-        ],
-        "summary": "Returns the default placeholder image.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Image identifier (unused placeholder route value).",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
           }
         }
       }
@@ -6814,6 +6814,75 @@
         }
       }
     },
+    "/api/agency/sales/dashboard": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "summary": "Gets the whole dashboard in one call: quarter/week summary, deals per status for the date range, and the recent clients, interactions and deals. Sales users only see what they own.",
+        "parameters": [
+          {
+            "name": "DateFrom",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "DateTo",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "Statuses",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.DealStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+            }
+          },
+          {
+            "name": "OwnerId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Sales.Dashboard.SalesDashboardModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/sales/dashboard/deals-by-status": {
       "get": {
         "tags": [
@@ -9506,7 +9575,7 @@
         "tags": [
           "Workers"
         ],
-        "summary": "Marks a worker profile as approved to work.",
+        "summary": "Toggles the approved-to-work flag of a worker profile. Approval requires every worker requirement to be met.",
         "parameters": [
           {
             "name": "id",
@@ -25100,6 +25169,16 @@
       "Covenant.Common.Enums.WorkerRequestStatus": {
         "type": "integer"
       },
+      "Covenant.Common.Enums.WorkerRequirement": {
+        "enum": [
+          "ProfileImage",
+          "TaxCategory",
+          "SocialInsuranceNumber",
+          "SocialInsuranceFile",
+          "SocialInsuranceExpired",
+          "Identification"
+        ]
+      },
       "Covenant.Common.Models.Accounting.Deductions.ImportCraTableFromBlobModel": {
         "type": "object",
         "properties": {
@@ -30118,6 +30197,40 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.TimeSheet.PunchStatusModel": {
+        "type": "object",
+        "properties": {
+          "clockType": {
+            "$ref": "#/components/schemas/Covenant.Common.Enums.ClockType"
+          },
+          "clockIn": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "clockOut": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "dayHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "weekHours": {
+            "$ref": "#/components/schemas/System.Double"
+          }
+        }
+      },
       "Covenant.Common.Models.Request.TimeSheet.RegisterTimeSheetResultModel": {
         "type": "object",
         "properties": {
@@ -30380,6 +30493,20 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.Worker.PunchCheckpointModel": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "longitude": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "radiusMeters": {
+            "$ref": "#/components/schemas/System.Double"
+          }
+        }
+      },
       "Covenant.Common.Models.Request.Worker.WorkerRequestApplyModel": {
         "type": "object",
         "properties": {
@@ -30411,12 +30538,6 @@
             "$ref": "#/components/schemas/System.Int32"
           },
           "jobTitle": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "agencyFullName": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "agencyLogo": {
             "$ref": "#/components/schemas/System.String"
           },
           "description": {
@@ -30520,6 +30641,9 @@
           "jobLocation": {
             "$ref": "#/components/schemas/Covenant.Common.Models.Location.LocationDetailModel"
           },
+          "punchCheckpoint": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.PunchCheckpointModel"
+          },
           "isApplicant": {
             "$ref": "#/components/schemas/System.Boolean"
           },
@@ -30547,9 +30671,6 @@
             "$ref": "#/components/schemas/System.String"
           },
           "entrance": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "agencyFullName": {
             "$ref": "#/components/schemas/System.String"
           },
           "status": {
@@ -30720,6 +30841,26 @@
           },
           "lastInteractionAt": {
             "$ref": "#/components/schemas/System.DateTime"
+          }
+        }
+      },
+      "Covenant.Common.Models.Sales.Dashboard.SalesDashboardModel": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Sales.Dashboard.SalesDashboardSummaryModel"
+          },
+          "dealsByStatus": {
+            "$ref": "#/components/schemas/Covenant.Common.Models.Sales.Dashboard.DealsByStatusModel"
+          },
+          "recentClients": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Sales.Dashboard.RecentClientModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "recentInteractions": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Sales.CompanyInteractionListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "recentDeals": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Sales.DealListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
           }
         }
       },
@@ -31656,6 +31797,9 @@
           },
           "wcCode": {
             "$ref": "#/components/schemas/System.String"
+          },
+          "missingRequirements": {
+            "$ref": "#/components/schemas/System.Collections.Generic.IReadOnlyList`1[[Covenant.Common.Enums.WorkerRequirement, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
           }
         }
       },
@@ -32162,6 +32306,12 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/System.String"
+        }
+      },
+      "System.Collections.Generic.IReadOnlyList`1[[Covenant.Common.Enums.WorkerRequirement, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Enums.WorkerRequirement"
         }
       },
       "System.Collections.Generic.List`1[[Covenant.Common.Enums.DealStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
@@ -32753,9 +32903,6 @@
     },
     {
       "name": "EmailPreferences"
-    },
-    {
-      "name": "File"
     },
     {
       "name": "Location"

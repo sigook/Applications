@@ -6,6 +6,10 @@
       <span>{{ address }}</span>
       <span v-if="location.mainIntersection" class="request-location-muted">{{ location.mainIntersection }}</span>
       <span v-if="location.entrance" class="request-location-muted">{{ location.entrance }}</span>
+      <span v-if="coordinates" class="request-location-muted request-location-coords">
+        <b-icon icon="crosshairs-gps" size="is-small"></b-icon>
+        {{ coordinates }}
+      </span>
     </div>
     <b-button v-if="link" tag="a" :href="link" target="_blank" rel="noopener noreferrer" type="is-ghost"
       size="is-small" icon-right="open-in-new" class="request-location-link">Open in maps</b-button>
@@ -23,6 +27,11 @@ const props = defineProps<{ location?: LocationDetailModel | null }>();
 const address = computed(() => formatLocation(props.location));
 const link = computed(() => mapsUrl(props.location));
 const embedUrl = computed(() => mapsEmbedUrl(props.location));
+const coordinates = computed(() => {
+  const { latitude, longitude } = props.location ?? {};
+  if (latitude == null || longitude == null) return '';
+  return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+});
 </script>
 
 <style lang="scss" scoped>
@@ -46,6 +55,13 @@ const embedUrl = computed(() => mapsEmbedUrl(props.location));
 .request-location-muted {
   font-size: 0.8rem;
   color: $grey-font;
+}
+
+.request-location-coords {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
 }
 
 .button.request-location-link {

@@ -1,7 +1,6 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
@@ -45,15 +44,14 @@ public class ProfileController : ControllerBase
     }
 
     /// <summary>
-    /// Gets the detail of the authenticated worker's own profile.
+    /// Gets the detail of the authenticated worker's own profile, including the requirements still missing to be approved to work.
     /// </summary>
-    /// <param name="repository">Worker repository service.</param>
     [HttpGet("me")]
     [ProducesResponseType(typeof(WorkerProfileDetailModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> GetMyProfile([FromServices] IWorkerRepository repository)
+    public async Task<ActionResult> GetMyProfile()
     {
-        var model = await repository.GetWorkerProfileDetail(wp => wp.WorkerId == User.GetUserId());
+        var model = await workerService.GetProfileDetail(wp => wp.WorkerId == User.GetUserId());
         if (model is null) return NotFound();
         return Ok(model);
     }

@@ -3,10 +3,11 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <RequestHeader v-if="request" :number-id="request.numberId ?? 0" :title="request.jobTitle ?? ''"
-      :subtitle="request.jobPosition" :org-name="request.agencyFullName" :logo="request.agencyLogo"
-      :status-label="statusLabel" :status-variant="statusVariant" :is-asap="request.isAsap" :chips="chips"
-      :workers-total="request.workersQuantity" :kpis="kpis">
-      <template v-if="!currentUser?.approvedToWork" #alert>You are not approved to work</template>
+      logo-icon="briefcase-outline" :kpis="[]">
+      <template #subtitle>
+        <JobHeaderLocation :request="request" />
+      </template>
+      <template v-if="currentUser?.id && !currentUser.approvedToWork" #alert>You are not approved to work</template>
       <template v-if="currentUser?.approvedToWork && canApply" #actions>
         <b-button type="is-primary" @click="modalMessage = true">Apply</b-button>
       </template>
@@ -46,6 +47,7 @@ import EditTextarea from '@/shared/ui/EditTextarea.vue';
 import RequestHeader from '@/shared/request-detail/RequestHeader.vue';
 import RequestDetailTab from '@/shared/request-detail/RequestDetailTab.vue';
 import RequestLocationCard from '@/shared/request-detail/RequestLocationCard.vue';
+import JobHeaderLocation from '@/modules/worker/requests/components/JobHeaderLocation.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -56,7 +58,7 @@ const request = ref<WorkerRequestDetail | null>(null);
 const modalMessage = ref(false);
 
 const currentUser = computed(() => workerStore.workerProfile);
-const { statusLabel, statusVariant, kpis, fields, chips } = useWorkerRequestSummary(request);
+const { fields } = useWorkerRequestSummary(request);
 
 const canApply = computed(() => {
   if (!request.value) return false;

@@ -23,6 +23,7 @@ using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces.Candidates;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Interfaces.Workers;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Workers;
 using Covenant.Core.BL.Services;
@@ -77,7 +78,9 @@ public class WorkerServiceApplyTest
             _candidateRepository.Object,
             Mock.Of<IUploadedFilesService>(),
             Mock.Of<ICatalogRepository>(),
-            _applicantNotificationService.Object);
+            _applicantNotificationService.Object,
+            Mock.Of<IWorkerRequirementService>(),
+            Options.Create(new PunchConfiguration()));
     }
 
     private RequestEntity SetupRequest(string city = "Toronto", int numberId = 4242)
@@ -93,9 +96,9 @@ public class WorkerServiceApplyTest
         return request;
     }
 
-    private WorkerProfile SetupWorker(string email)
+    private WorkerProfile SetupWorker(string email, bool approvedToWork = true)
     {
-        var profile = new WorkerProfile(new User(CvnEmail.Create(email).Value)) { AgencyId = _agencyId };
+        var profile = new WorkerProfile(new User(CvnEmail.Create(email).Value)) { AgencyId = _agencyId, ApprovedToWork = approvedToWork };
         _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>()))
             .ReturnsAsync((Expression<Func<WorkerProfile, bool>> e) => new[] { profile }.AsQueryable().FirstOrDefault(e));
         return profile;
@@ -163,6 +166,27 @@ public class WorkerServiceApplyTest
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(request, profile), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(It.IsAny<RequestEntity>(), It.IsAny<Candidate>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task WorkerFailsWhenNotApprovedToWork()
+    {
+        SetupRequest();
+        SetupWorker("worker@mail.com", approvedToWork: false);
+        var result = await Apply(4242, "worker@mail.com");
+        Assert.False(result);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SelfApplyFailsWhenNotApprovedToWork()
+    {
+        var request = SetupRequest();
+        var profile = SetupWorker("worker@mail.com", approvedToWork: false);
+        _currentUserService.Setup(s => s.GetUserId()).Returns(profile.WorkerId);
+        var result = await ApplyAsSelf(request.Id);
+        Assert.False(result);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestApplicant>()), Times.Never);
     }
 
     [Fact]

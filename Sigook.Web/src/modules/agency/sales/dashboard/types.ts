@@ -1,4 +1,4 @@
-import type { DealStatus, InteractionType } from '@/modules/agency/sales/clients/types';
+import type { CompanyInteraction, Deal, DealStatus, InteractionType } from '@/modules/agency/sales/clients/types';
 
 // Mirrors backend SalesPeriodRangeModel. `from`/`to` are UTC calendar dates,
 // serialized without an offset so the browser renders them verbatim; `to` is inclusive.
@@ -53,6 +53,15 @@ export interface SalesClientReference {
 export interface SalesRecentClient extends SalesClientReference {
   readonly email: string | null;
   readonly lastInteractionAt: string;
+}
+
+// GET /api/agency/sales/dashboard — every card in one response. Takes DealsByStatusFilter.
+export interface SalesDashboardModel {
+  readonly summary: SalesDashboardSummary;
+  readonly dealsByStatus: DealsByStatusModel;
+  readonly recentClients: readonly SalesRecentClient[];
+  readonly recentInteractions: readonly CompanyInteraction[];
+  readonly recentDeals: readonly Deal[];
 }
 
 export interface SalesBarPoint {

@@ -1,3 +1,4 @@
+using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -13,7 +14,7 @@ using Covenant.Core.BL.Services;
 using MediatR;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -58,10 +59,10 @@ public class CreateTimeSheetTest
             _timeSheetRepository.Object,
             Mock.Of<IRequestRepository>(),
             catalogRepository.Object,
-            Mock.Of<IConfiguration>(),
             currentUserService.Object,
             Mock.Of<IMediator>(),
-            new TelemetryClient(new TelemetryConfiguration()));
+            new TelemetryClient(new TelemetryConfiguration()),
+            Options.Create(new PunchConfiguration()));
         workerRequestRepository.Setup(r => r.GetWorkerRequestByWorkerProfileId(_workerRequest.WorkerProfileId, _workerRequest.RequestId)).ReturnsAsync(_workerRequest);
         currentUserService.Setup(iss => iss.GetNickname()).Returns(createdBy);
     }

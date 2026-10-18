@@ -1,6 +1,7 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Models.Identity;
 using Covenant.Common.Models.Location;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Worker
 {
@@ -9,7 +10,8 @@ namespace Covenant.Common.Models.Worker
         IWorkerContactInformation<LocationDetailModel, CityModel>,
         IJobExperienceInformation<WorkerProfileJobExperienceDetailModel>,
         IEmailInformation,
-        IWorkerProfileStatusInformation
+        IWorkerProfileStatusInformation,
+        IWorkerRequirementsInformation
     {
         public Guid Id { get; set; }
         public long NumberId { get; set; }
@@ -69,5 +71,19 @@ namespace Covenant.Common.Models.Worker
         public string PunchCardId { get; set; }
         public string ExternalId { get; set; }
         public string WcCode { get; set; }
+        public IReadOnlyList<WorkerRequirement> MissingRequirements { get; set; } = [];
+
+        [JsonIgnore]
+        public bool IsUsa => Location?.City?.Province?.Country?.Code == "USA";
+        [JsonIgnore]
+        public bool HasProfileImage => ProfileImage is not null && ProfileImage.Id != Guid.Empty;
+        [JsonIgnore]
+        public bool HasTaxCategory => FederalTaxCategory != null || ProvincialTaxCategory != null;
+        [JsonIgnore]
+        public bool HasSocialInsuranceFile => !string.IsNullOrEmpty(SocialInsuranceFile?.FileName);
+        [JsonIgnore]
+        public bool HasIdentification1File => !string.IsNullOrEmpty(IdentificationType1File?.FileName);
+        [JsonIgnore]
+        public bool HasIdentification2File => !string.IsNullOrEmpty(IdentificationType2File?.FileName);
     }
 }

@@ -61,7 +61,6 @@ public class AgencyIdFilterTest : ControllerBase, IClassFixture<CustomWebApplica
             services.AddTestDatabase();
             services.AddSingleton<TimeProvider>(new FakeTimeProvider());
             services.AddSingleton<AgencyIdFilter>();
-            services.AddSingleton(new Mock<IDefaultLogoProvider>().Object);
         }
 
         public void Configure(IApplicationBuilder app, CovenantContext context)

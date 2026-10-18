@@ -8,57 +8,44 @@ using System.Security.Claims;
 namespace Covenant.Api.Authorization;
 
 /// <summary>
-/// Add the claim agencyId to users that belong to a specific agency
+/// Adds the agencyId, agencyIds and agencyPersonnelId claims to agency staff, replacing whatever the token carried.
 /// </summary>
-public class AgencyIdFilter : IAsyncActionFilter
+public class AgencyIdFilter(IAgencyRepository repository) : IAsyncActionFilter
 {
-    private readonly IAgencyRepository _repository;
-
-    public AgencyIdFilter(IAgencyRepository repository) => _repository = repository;
+    private static readonly string[] AgencyClaimTypes =
+    [
+        CovenantConstants.AgencyId,
+        CovenantConstants.AgencyIds,
+        CovenantConstants.AgencyPersonnelId
+    ];
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        await AddAgencyId(context);
+        await AddAgencyClaims(context);
         await next();
     }
 
-    private async Task AddAgencyId(ActionExecutingContext context)
+    private async Task AddAgencyClaims(ActionExecutingContext context)
     {
-        if (context.Controller is ControllerBase controller)
+        if (context.Controller is not ControllerBase controller || !controller.User.IsAgencyStaff()) return;
+        if (!controller.User.TryGetUserId(out Guid userId)) return;
+
+        var agencyContext = await repository.GetAgencyContextForUser(userId);
+
+        foreach (var identity in controller.User.Identities)
         {
-            if (controller.User.IsAgencyStaff())
+            foreach (var claim in identity.Claims.Where(c => AgencyClaimTypes.Contains(c.Type)).ToList())
             {
-                string sub = controller.User.GetSubject();
-                if (Guid.TryParse(sub, out Guid userId))
-                {
-                    Guid agencyId = await _repository.GetAgencyIdForUser(userId);
-                    List<Guid> agencyIds = await _repository.GetAgencyIdsForUser(userId);
-
-                    foreach (var identity in controller.User.Identities)
-                    {
-                        foreach (var claim in identity.Claims
-                            .Where(c => c.Type is CovenantConstants.AgencyId or CovenantConstants.AgencyIds)
-                            .ToList())
-                        {
-                            identity.TryRemoveClaim(claim);
-                        }
-                    }
-
-                    var claims = new List<Claim>
-                    {
-                        new Claim(CovenantConstants.AgencyId, agencyId.ToString())
-                    };
-
-                    // Add all agency IDs as a comma-separated claim
-                    if (agencyIds.Any())
-                    {
-                        string agencyIdsString = string.Join(",", agencyIds);
-                        claims.Add(new Claim(CovenantConstants.AgencyIds, agencyIdsString));
-                    }
-
-                    controller.User.AddIdentity(new ClaimsIdentity(claims));
-                }
+                identity.TryRemoveClaim(claim);
             }
         }
+
+        var claims = new List<Claim> { new(CovenantConstants.AgencyId, (agencyContext?.AgencyId ?? Guid.Empty).ToString()) };
+        if (agencyContext is not null)
+        {
+            claims.Add(new Claim(CovenantConstants.AgencyIds, string.Join(",", agencyContext.AgencyIds)));
+            claims.Add(new Claim(CovenantConstants.AgencyPersonnelId, agencyContext.AgencyPersonnelId.ToString()));
+        }
+        controller.User.AddIdentity(new ClaimsIdentity(claims));
     }
 }

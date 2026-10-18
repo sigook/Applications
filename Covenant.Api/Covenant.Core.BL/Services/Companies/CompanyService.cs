@@ -147,7 +147,7 @@ public class CompanyService : ICompanyService
             rLocation.Value,
             location.IsBilling,
             model.JobPositionRates.Select(j => j.JobPosition).ToList(),
-            model.Logo.FileName);
+            model.Logo?.FileName);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         var data = await notificationDataRepository.GetAgencyData(entity.AgencyId);

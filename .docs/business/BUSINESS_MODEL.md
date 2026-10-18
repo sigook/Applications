@@ -38,7 +38,7 @@ Job seeker using the Flutter mobile app. Entity: `Covenant.Common/Entities/Worke
 A worker **User** has exactly **one** `WorkerProfile`, bound to exactly one agency (`WorkerProfile.AgencyId` is non-nullable, and `WorkerId` has a single-column unique index); companies follow the same pattern (`CompanyProfile.CompanyId` unique). Only agency staff genuinely span agencies, via multiple `AgencyPersonnel` rows (the `agencyIds` claim).
 
 Key flags on `WorkerProfile`:
-- `ApprovedToWork` — set by the agency after reviewing documents; gates applying/booking.
+- `ApprovedToWork` — set by the agency after reviewing documents; gates applying/booking. The single source of the requirements is `WorkerRequirementService` (`Covenant.Core.BL/Services/Workers/`): profile photo, tax category (Canada only), SIN number + document (not expired when it expires), and at least one identification (number + file on the same slot, 1 or 2). The resume is optional. Subcontractors and contractors have no requirements. The same list is exposed as `missingRequirements` on `WorkerProfileDetailModel`, so Sigook.Web and Sigook.App only render it.
 - `Dnu` (Do Not Use) — blacklisted by the agency.
 - `IsSubcontractor` / `IsContractor` — different tax treatment (subcontractor tax-category overrides zero out deductions).
 
@@ -52,19 +52,7 @@ Prospect managed by the agency that does NOT yet have a user account (`Covenant.
 
 ## Authorization Model — 7 Roles
 
-Defined in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role`). Role strings are lowercase; always reference the constants, never literals.
-
-| Role constant | String | Who |
-|---------------|--------|-----|
-| `Role.SuperAdmin` | `superadmin` | Platform owner |
-| `Role.Admin` | `admin` | Agency administrator |
-| `Role.Recruiting` | `recruiting` | Agency recruiter |
-| `Role.Sales` | `sales` | Agency sales rep (data scoped to own companies/requests) |
-| `Role.Company` | `company` | Company main account |
-| `Role.CompanyUser` | `company.user` | Company internal user |
-| `Role.Worker` | `worker` | Worker (mobile app) |
-
-Composite groups in the same file: `RecruitingAccess`, `SalesAccess`, `AgencyStaff`, `AdminAccess` (superadmin + admin), `AgencyAssignable`, `SuperAdminAssignable`. There are no `agency` / `agency.personnel` roles and no "Account Manager" role.
+`superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker` — constants in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role`; always reference the constants, never literals). There are no `agency` / `agency.personnel` roles and no "Account Manager" role: agency staff carry `admin`, `recruiting` or `sales`, scoped to their agency through `AgencyPersonnel`. Who sees what, role groups and the sales scoping rule: `.docs/business/ROLES_PERMISSIONS.md`.
 
 ---
 

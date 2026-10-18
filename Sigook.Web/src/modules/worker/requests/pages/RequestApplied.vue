@@ -3,9 +3,10 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <RequestHeader v-if="request" :number-id="request.numberId ?? 0" :title="request.jobTitle ?? ''"
-      :subtitle="request.jobPosition" :org-name="request.agencyFullName" :logo="request.agencyLogo"
-      :status-label="statusLabel" :status-variant="statusVariant" :is-asap="request.isAsap" :chips="chips"
-      :workers-total="request.workersQuantity" :kpis="kpis">
+      logo-icon="briefcase-outline" :kpis="[]">
+    <template #subtitle>
+      <JobHeaderLocation :request="request" />
+    </template>
     <b-tabs v-model="currentTab" @update:modelValue="changeTab">
       <b-tab-item label="Detail" value="Summary Request">
         <RequestDetailTab v-if="visitedTabs.includes('Summary Request')" :fields="fields"
@@ -18,11 +19,11 @@
         </RequestDetailTab>
       </b-tab-item>
       <b-tab-item v-if="request.punchCardOptionEnabled" label="Punch Card" value="Punch Card">
-        <PunchCard v-if="visitedTabs.includes('Punch Card') && timesheet" :requestId="request.id" :timesheet="timesheet"
-          :request="request" @refreshTimeSheet="getTimeSheet" />
+        <PunchCard v-if="visitedTabs.includes('Punch Card')" :requestId="request.id" :request="request"
+          @refreshTimeSheet="refreshTimeSheet" @refreshRequest="refreshRequest" />
       </b-tab-item>
       <b-tab-item v-if="request.punchCardOptionEnabled" label="Time Sheet" value="Time Sheet">
-        <TimeSheet v-if="visitedTabs.includes('Time Sheet')" :data="timesheet" />
+        <TimeSheet v-if="visitedTabs.includes('Time Sheet') && timesheet" :data="timesheet" />
       </b-tab-item>
     </b-tabs>
     </RequestHeader>
@@ -39,6 +40,7 @@ import type { PaginatedList } from '@/shared/types/common';
 import RequestHeader from '@/shared/request-detail/RequestHeader.vue';
 import RequestDetailTab from '@/shared/request-detail/RequestDetailTab.vue';
 import RequestLocationCard from '@/shared/request-detail/RequestLocationCard.vue';
+import JobHeaderLocation from '@/modules/worker/requests/components/JobHeaderLocation.vue';
 import PunchCard from '@/modules/worker/requests/components/PunchCard.vue';
 import TimeSheet from '@/modules/worker/requests/pages/TimeSheet.vue';
 
@@ -46,7 +48,7 @@ const route = useRoute();
 
 const isLoading = ref(true);
 const request = ref<WorkerRequestDetail | null>(null);
-const { statusLabel, statusVariant, kpis, fields, chips } = useWorkerRequestSummary(request);
+const { fields } = useWorkerRequestSummary(request);
 const currentTab = ref<string>('Summary Request');
 const visitedTabs = ref<string[]>(['Summary Request']);
 const timesheet = ref<PaginatedList<WorkerTimeSheetItem> | null>(null);
@@ -55,10 +57,18 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
+  if (tab === 'Time Sheet' && !timesheet.value) {
+    getTimeSheet();
+  }
+}
+
+function refreshTimeSheet() {
+  if (timesheet.value) getTimeSheet();
 }
 
 function getTimeSheet() {
   if (!request.value) return;
+  isLoading.value = true;
   workerGetTimeSheet(request.value.id)
     .then((response) => {
       isLoading.value = false;
@@ -69,12 +79,19 @@ function getTimeSheet() {
     });
 }
 
+function refreshRequest() {
+  getWorkerRequest(route.params.id as string)
+    .then((response) => {
+      request.value = response;
+    })
+    .catch(() => undefined);
+}
+
 function getWorkerRequestFn() {
   getWorkerRequest(route.params.id as string)
     .then((response) => {
       isLoading.value = false;
       request.value = response;
-      getTimeSheet();
     })
     .catch(() => {
       isLoading.value = false;

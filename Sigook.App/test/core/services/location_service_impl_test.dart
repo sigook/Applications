@@ -203,6 +203,45 @@ void main() {
     });
   });
 
+  group('watchPosition', () {
+    test('requests the same stream settings as getFreshPosition', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      stubPermissionsGranted();
+      final fix = makePosition(accuracy: 10);
+      stubPositionStream(Stream.fromIterable([fix]));
+
+      final watched = await service.watchPosition().toList();
+      final fresh = await service.getFreshPosition();
+
+      expect(watched, [fix]);
+      expect(fresh, fix);
+      final captured = verify(
+        () => geolocator.getPositionStream(
+          locationSettings: captureAny(named: 'locationSettings'),
+        ),
+      ).captured.cast<AndroidSettings>();
+      expect(captured, hasLength(2));
+      expect(captured[1].toJson(), equals(captured[0].toJson()));
+      expect(captured.first.distanceFilter, 0);
+      expect(captured.first.accuracy, LocationAccuracy.bestForNavigation);
+    });
+
+    test('emits nothing when permissions are not granted', () async {
+      when(
+        () => geolocator.isLocationServiceEnabled(),
+      ).thenAnswer((_) async => false);
+
+      final result = await service.watchPosition().toList();
+
+      expect(result, isEmpty);
+      verifyNever(
+        () => geolocator.getPositionStream(
+          locationSettings: any(named: 'locationSettings'),
+        ),
+      );
+    });
+  });
+
   group('resolveLocationPrecision', () {
     test('returns precise without requesting full accuracy', () async {
       when(

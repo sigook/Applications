@@ -1,4 +1,5 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
@@ -17,7 +18,8 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Documents.Services;
 using MediatR;
 using Microsoft.ApplicationInsights;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using System.Globalization;
 
 namespace Covenant.Core.BL.Services.Requests;
 
@@ -27,17 +29,17 @@ public class TimesheetService(
     ITimesheetRepository timeSheetRepository,
     IRequestRepository requestRepository,
     ICatalogRepository catalogRepository,
-    IConfiguration configuration,
     ICurrentUserService currentUserService,
     IMediator mediator,
-    TelemetryClient telemetryClient) : ITimesheetService
+    TelemetryClient telemetryClient,
+    IOptions<PunchConfiguration> punchOptions) : ITimesheetService
 {
+    private readonly PunchConfiguration punchConfiguration = punchOptions.Value;
     private readonly TimeProvider timeProvider = timeProvider;
     private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
     private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
     private readonly IRequestRepository requestRepository = requestRepository;
     private readonly ICatalogRepository catalogRepository = catalogRepository;
-    private readonly IConfiguration configuration = configuration;
     private readonly ICurrentUserService currentUserService = currentUserService;
     private readonly IMediator mediator = mediator;
     private readonly TelemetryClient telemetryClient = telemetryClient;
@@ -141,71 +143,91 @@ public class TimesheetService(
 
     public async Task<Result<RegisterTimeSheetResultModel>> Register(Guid requestId, WorkerLocationModel workerLocationModel)
     {
-        var now = timeProvider.GetLocalNow();
         var workerId = currentUserService.GetUserId();
-        var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, now.DateTime);
-        Result<RegisterTimeSheetResultModel> result;
-        if (configuration.GetValue<bool>("ValidateLocation"))
+        var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, timeProvider.GetLocalNow().DateTime);
+        if (info is null)
         {
-            if (workerLocationModel.Latitude.HasValue && workerLocationModel.Longitude.HasValue)
+            return Result.Fail<RegisterTimeSheetResultModel>("You are not assigned to this request yet.");
+        }
+        var location = ValidateDistance(requestId, workerId, info, workerLocationModel);
+        if (location.IsFailure) return Result.Fail<RegisterTimeSheetResultModel>(location.Errors);
+        var now = GetJobNow(info, workerLocationModel.Latitude, workerLocationModel.Longitude);
+        var timeSheet = await timeSheetRepository.GetLatestTimesheet(workerId, requestId);
+        return NextPunch(timeSheet, now.DateTime) switch
+        {
+            ClockType.ClockOut => await ClockOut(now, info, timeSheet),
+            ClockType.ClockIn => await ClockIn(now, info),
+            _ => Result.Fail<RegisterTimeSheetResultModel>(timeSheet.ClockOut.HasValue
+                ? "You already clocked out today."
+                : $"Time for date: {timeSheet.Date:MM/dd/yyyy} was already approved")
+        };
+    }
+
+    private Result ValidateDistance(Guid requestId, Guid workerId, WorkerRequestInfoModel info, WorkerLocationModel workerLocationModel)
+    {
+        if (!workerLocationModel.Latitude.HasValue || !workerLocationModel.Longitude.HasValue)
+        {
+            return Result.Fail("Your location is invalid. Allow app to get your location.");
+        }
+        if (!info.Latitude.HasValue || !info.Longitude.HasValue)
+        {
+            return Result.Fail("Request doesn't have location to compare to.");
+        }
+        var distanceBetween = DistanceInMeters(
+            info.Latitude.Value, info.Longitude.Value,
+            workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
+        telemetryClient.TrackEvent(
+            "TimesheetLocationDistanceCheck",
+            new Dictionary<string, string>
             {
-                if (info != null && info.Latitude.HasValue && info.Longitude.HasValue)
-                {
-                    now = timeProvider.GetLocalNow(info.Latitude.Value, info.Longitude.Value);
-                    var distanceBetween = DistanceInMeters(
-                        info.Latitude.Value, info.Longitude.Value,
-                        workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
-                    telemetryClient.TrackEvent(
-                        "TimesheetLocationDistanceCheck",
-                        new Dictionary<string, string>
-                        {
-                            ["RequestId"] = requestId.ToString(),
-                            ["WorkerId"] = workerId.ToString(),
-                            ["RequestLatitude"] = info.Latitude.Value.ToString(),
-                            ["RequestLongitude"] = info.Longitude.Value.ToString(),
-                            ["WorkerLatitude"] = workerLocationModel.Latitude.Value.ToString(),
-                            ["WorkerLongitude"] = workerLocationModel.Longitude.Value.ToString()
-                        },
-                        new Dictionary<string, double>
-                        {
-                            ["DistanceMeters"] = distanceBetween
-                        });
-                    if (distanceBetween >= 101)
-                    {
-                        result = Result.Fail<RegisterTimeSheetResultModel>("You are too far from check point. Please get closer.");
-                        return result;
-                    }
-                }
-                else
-                {
-                    result = Result.Fail<RegisterTimeSheetResultModel>("Request doesn't have location to compare to.");
-                    return result;
-                }
-            }
-            else
+                ["RequestId"] = requestId.ToString(),
+                ["RequestNumberId"] = info.RequestNumberId.ToString(),
+                ["WorkerId"] = workerId.ToString(),
+                ["WorkerNumberId"] = info.WorkerNumberId.ToString(),
+                ["WorkerFullName"] = info.WorkerFullName,
+                ["WorkerEmail"] = info.WorkerEmail,
+                ["RequestLatitude"] = info.Latitude.Value.ToString(),
+                ["RequestLongitude"] = info.Longitude.Value.ToString(),
+                ["WorkerLatitude"] = workerLocationModel.Latitude.Value.ToString(),
+                ["WorkerLongitude"] = workerLocationModel.Longitude.Value.ToString()
+            },
+            new Dictionary<string, double>
             {
-                result = Result.Fail<RegisterTimeSheetResultModel>("Your location is invalid. Allow app to get your location.");
-                return result;
-            }
-        }
-        var timeSheet = await timeSheetRepository.GetTimeSheeFromTheLast14Hours(workerId, requestId, now.DateTime);
-        if (timeSheet == null)
+                ["DistanceMeters"] = distanceBetween
+            });
+        if (distanceBetween > punchConfiguration.CheckpointRadiusMeters)
         {
-            result = await ClockIn(now, info);
+            var direction = CardinalDirection(
+                info.Latitude.Value, info.Longitude.Value,
+                workerLocationModel.Latitude.Value, workerLocationModel.Longitude.Value);
+            return Result.Fail($"You are too far from check point: {FormatDistance(distanceBetween)} to the {direction}. Please get closer.");
         }
-        else if (timeSheet.TimeInApproved.HasValue || timeSheet.TimeOutApproved.HasValue)
+        return Result.Ok();
+    }
+
+    private DateTimeOffset GetJobNow(WorkerRequestInfoModel info, double? latitude, double? longitude)
+    {
+        if (info.Latitude.HasValue && info.Longitude.HasValue)
         {
-            result = Result.Fail<RegisterTimeSheetResultModel>($"Time for date: {timeSheet.Date:MM/dd/yyyy} was already approved");
+            return timeProvider.GetLocalNow(info.Latitude.Value, info.Longitude.Value);
         }
-        else if (timeSheet.IsClockOutValid(now.DateTime))
+        return latitude.HasValue && longitude.HasValue
+            ? timeProvider.GetLocalNow(latitude.Value, longitude.Value)
+            : timeProvider.GetLocalNow();
+    }
+
+    private static ClockType NextPunch(TimeSheet latestTimesheet, DateTime now)
+    {
+        if (latestTimesheet is null) return ClockType.ClockIn;
+        if (latestTimesheet.IsClockOutValid(now))
         {
-            result = await ClockOut(now, info, timeSheet);
+            return latestTimesheet.TimeInApproved.HasValue || latestTimesheet.TimeOutApproved.HasValue
+                ? ClockType.None
+                : ClockType.ClockOut;
         }
-        else
-        {
-            result = await ClockIn(now, info);
-        }
-        return result;
+        return latestTimesheet.ClockOut.HasValue && latestTimesheet.Date == now.Date
+            ? ClockType.None
+            : ClockType.ClockIn;
     }
 
     public async Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter)
@@ -268,40 +290,44 @@ public class TimesheetService(
         return result;
     }
 
-    public async Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude, DateTime? date)
+    public async Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude)
     {
-        if (!date.HasValue)
-        {
-            return Result.Ok(ClockType.None);
-        }
+        var punch = await ResolvePunch(requestId, latitude, longitude);
+        return Result.Ok(punch.ClockType);
+    }
+
+    public async Task<Result<PunchStatusModel>> GetPunchStatus(Guid requestId, double latitude, double longitude)
+    {
+        var punch = await ResolvePunch(requestId, latitude, longitude);
+        var status = new PunchStatusModel { ClockType = punch.ClockType };
+        if (punch.Info is null) return Result.Ok(status);
+
+        var weekStart = punch.Now.Date.AddDays(-(int)punch.Now.DayOfWeek);
+        var week = await timeSheetRepository.GetTimesheetsSince(punch.WorkerId, requestId, weekStart);
+        var active = punch.ClockType == ClockType.ClockOut
+            ? punch.Latest
+            : week.FirstOrDefault(ts => ts.Date == punch.Now.Date);
+        status.ClockIn = active?.ClockIn;
+        status.ClockOut = active?.ClockOut;
+        status.DayHours = active?.TotalHours ?? 0;
+        status.WeekHours = week.Sum(ts => ts.TotalHours);
+        return Result.Ok(status);
+    }
+
+    private sealed record PunchResolution(Guid WorkerId, WorkerRequestInfoModel Info, DateTime Now, TimeSheet Latest, ClockType ClockType);
+
+    private async Task<PunchResolution> ResolvePunch(Guid requestId, double latitude, double longitude)
+    {
         var workerId = currentUserService.GetUserId();
         var workerNow = timeProvider.GetLocalNow(latitude, longitude).DateTime;
         var info = await workerRequestRepository.GetWorkerRequestInfo(workerId, requestId, workerNow);
-        var now = info is not null && info.Latitude.HasValue && info.Longitude.HasValue
-            ? timeProvider.GetLocalNow(info.Latitude.Value, info.Longitude.Value).DateTime
-            : workerNow;
-        var timeSheet = await timeSheetRepository.GetLatestTimesheet(workerId, requestId, date.Value);
-        if (date.Value.Date != now.Date && timeSheet == null)
+        if (info is null)
         {
-            return Result.Ok(ClockType.None);
+            return new PunchResolution(workerId, null, workerNow, null, ClockType.None);
         }
-        else if (timeSheet == null)
-        {
-            return Result.Ok(ClockType.ClockIn);
-        }
-        else if (timeSheet.ClockIn.HasValue && timeSheet.ClockOut.HasValue)
-        {
-            return Result.Ok(ClockType.None);
-        }
-        var totalHours = now - timeSheet.ClockIn.GetValueOrDefault();
-        if (totalHours.TotalHours <= TimeLimits.DefaultTimeLimits.MaximumHoursDay)
-        {
-            return Result.Ok(ClockType.ClockOut);
-        }
-        else
-        {
-            return Result.Ok(ClockType.None);
-        }
+        var now = GetJobNow(info, latitude, longitude).DateTime;
+        var latest = await timeSheetRepository.GetLatestTimesheet(workerId, requestId);
+        return new PunchResolution(workerId, info, now, latest, NextPunch(latest, now));
     }
 
     public async Task<Result> RemoveTimeSheet(Guid id)
@@ -346,5 +372,24 @@ public class TimesheetService(
         var a = Math.Pow(Math.Sin((lat2 - lat1) / 2.0), 2.0)
                 + Math.Cos(lat1) * Math.Cos(lat2) * Math.Pow(Math.Sin(deltaLon / 2.0), 2.0);
         return earthRadiusMeters * (2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a)));
+    }
+
+    private static string FormatDistance(double meters) => meters switch
+    {
+        < 1000 => $"{Math.Round(meters)} m",
+        < 10000 => $"{(meters / 1000).ToString("0.0", CultureInfo.InvariantCulture)} km",
+        _ => $"{Math.Round(meters / 1000)} km"
+    };
+
+    private static string CardinalDirection(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude)
+    {
+        string[] directions = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+        var lat1 = fromLatitude * (Math.PI / 180.0);
+        var lat2 = toLatitude * (Math.PI / 180.0);
+        var deltaLon = (toLongitude - fromLongitude) * (Math.PI / 180.0);
+        var y = Math.Sin(deltaLon) * Math.Cos(lat2);
+        var x = Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(deltaLon);
+        var bearing = (Math.Atan2(y, x) * (180.0 / Math.PI) + 360.0) % 360.0;
+        return directions[(int)Math.Round(bearing / 45.0) % 8];
     }
 }

@@ -615,12 +615,12 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
         }
     }
 
-    public Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid provinceId)
+    public Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid cityId)
     {
         var eligibleProfiles = Context.WorkerProfiles
             .Where(wp => !wp.Dnu)
             .Where(wp => wp.AgencyId == agencyId)
-            .Where(wp => wp.Location.City.ProvinceId == provinceId)
+            .Where(wp => wp.Location.CityId == cityId)
             .Where(wp => !string.IsNullOrEmpty(wp.FirstName));
 
         var contactableUsers = Context.Users

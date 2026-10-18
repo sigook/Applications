@@ -34,8 +34,8 @@ An **agency owner** gets `admin`. There is no `agency` role: what resolves a use
 | `SalesAccess` | superadmin, admin, sales | Sales module |
 | `AdminAccess` | superadmin, admin | Invoices, pay stubs, reports, and user management (policy name: `Admin`) |
 
-`AgencyStaff` is also the **identity** group: those are the users for whom `AgencyIdFilter` and
-`AgencyPersonnelIdFilter` inject the `agencyId` / `agencyPersonnelId` claims.
+`AgencyStaff` is also the **identity** group: those are the users for whom `AgencyIdFilter` injects
+the `agencyId` / `agencyIds` / `agencyPersonnelId` claims.
 
 ## Core rule: sales is scoped by the list, not by the detail
 
@@ -72,8 +72,8 @@ The sales module's deals and company interactions live under the client
 and do **not** follow the list-is-the-boundary rule: a sales user lists, updates and deletes only the
 records they own, and `OwnerId` is overwritten server-side on create. Update and delete also require
 the record to belong to the client in the route. The dashboard endpoints
-(`api/agency/sales/dashboard/deals-by-status`, `summary`, `recent-clients`, `recent-interactions`,
-`recent-deals`) count or list only those same owned rows. Admin and superadmin hit every one of these
+(`api/agency/sales/dashboard` and its per-card `deals-by-status`, `summary`, `recent-clients`,
+`recent-interactions`, `recent-deals`) count or list only those same owned rows. Admin and superadmin hit every one of these
 endpoints unscoped. Controllers (Policy `Sales` — sales, admin, superadmin):
 `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs`
 and `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/DashboardController.cs`. In Sigook.Web the
@@ -139,7 +139,7 @@ On the frontend, route guards live in `Sigook.Web/src/modules/agency/routes.ts` 
 
 `DELETE api/agency/recruiting/clients/{id}` and its companion `GET .../{id}/deletion-check` are the
 only endpoints under Policy `SuperAdmin`. Deletion is **blocked** while the company still has
-Requests, Invoices, USA invoices, Deals, Interactions or Worker comments; `deletion-check` returns
+Requests, Invoices, Deals, Interactions or Worker comments; `deletion-check` returns
 that list so the UI can explain the refusal before anything is touched. Invoices are on a cascade FK,
 so they are checked explicitly — relying on the database alone would wipe accounting data silently.
 

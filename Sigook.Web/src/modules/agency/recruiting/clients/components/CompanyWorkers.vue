@@ -28,7 +28,7 @@
             </span>
             <p>
               <i class="fz-2 is-lowercase block">
-                <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
+                <copy-link kind="email" :value="props.row.email" />
               </i>
             </p>
           </template>
@@ -38,7 +38,7 @@
             <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
               @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
           </template>
-          <template v-slot="props">{{ props.row.mobileNumber }}</template>
+          <template v-slot="props"><copy-link kind="phone" :value="props.row.mobileNumber" /></template>
         </b-table-column>
         <b-table-column field="requestsNumberId" label="Request ID" sortable searchable>
           <template v-slot:searchable>
@@ -107,6 +107,7 @@ import { getAgencyWorkers } from '@/modules/agency/recruiting/workers/api';
 import type { AgencyWorkerFilter, AgencyWorkerListItem } from '@/modules/agency/recruiting/workers/types';
 import type { GridHandle } from '@/shared/types/common';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const props = defineProps<{ company: { id: string } }>();
 const router = useRouter();

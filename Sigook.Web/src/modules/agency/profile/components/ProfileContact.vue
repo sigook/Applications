@@ -12,14 +12,11 @@
         {{ props.row.position }}
       </b-table-column>
       <b-table-column field="officeNumber" label="Phone Number" v-slot="props">
-        <p>{{ props.row.mobileNumber }}</p>
-        <p>
-          <span>{{ props.row.officeNumber }}</span>
-          <span v-if="props.row.officeNumberExt">Ext. {{ props.row.officeNumberExt }}</span>
-        </p>
+        <p><copy-link kind="phone" :value="props.row.mobileNumber" /></p>
+        <p><copy-link kind="phone" :value="props.row.officeNumber" :ext="props.row.officeNumberExt" /></p>
       </b-table-column>
       <b-table-column field="email" label="Email" v-slot="props">
-        <p>{{ props.row.email }}</p>
+        <copy-link kind="email" :value="props.row.email" />
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-button type="is-danger" outlined rounded icon-right="delete"
@@ -98,6 +95,7 @@ import { showAlertSuccess } from "@/shared/utils/toast";
 import { updateAgency } from '@/modules/agency/sales/agencies/api';
 import phoneInput from "@/shared/ui/PhoneInput.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import type { AgencyContactInformation, AgencyDetail } from '@/modules/agency/profile/types';
 
 const numericExt = yup

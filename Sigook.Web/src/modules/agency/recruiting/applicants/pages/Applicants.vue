@@ -49,7 +49,7 @@
             </b-tooltip>
           </span>
           <i class="fz-2 is-lowercase">
-            <a :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
+            <copy-link kind="email" :value="props.row.email" />
           </i>
         </b-table-column>
         <b-table-column field="status" label="Status" width="140" v-slot="props">
@@ -163,6 +163,7 @@ import { useAgencyStore } from '@/modules/agency/store';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import RequestGroup from '@/modules/agency/shared/request-groups/RequestGroup.vue';
 import RequestGroupFilters from '@/modules/agency/shared/request-groups/RequestGroupFilters.vue';
 import RequestGroupsToolbar from '@/modules/agency/shared/request-groups/RequestGroupsToolbar.vue';

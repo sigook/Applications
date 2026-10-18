@@ -66,6 +66,9 @@ public class WorkerRequestRepository(CovenantContext context) : BaseRepository<C
                     select new WorkerRequestInfoModel
                     {
                         WorkerFullName = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
+                        WorkerEmail = wr.WorkerProfile.Worker.Email,
+                        WorkerNumberId = wr.WorkerProfile.NumberId,
+                        RequestNumberId = wr.Request.NumberId,
                         WorkerRequestId = wr.Id,
                         Shift = wr.Request.Shift,
                         StartWorking = wr.StartWorking,

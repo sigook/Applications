@@ -45,7 +45,7 @@
             <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
               @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
           </template>
-          <template v-slot="props">{{ props.row.mobileNumber }}</template>
+          <template v-slot="props"><copy-link kind="phone" :value="props.row.mobileNumber" /></template>
         </b-table-column>
         <b-table-column field="socialInsurance" label="SIN/SSN" searchable>
           <template v-slot:searchable>
@@ -180,6 +180,7 @@ import NotesPopover from "@/modules/agency/shared/notes/NotesPopover.vue";
 import EditTextarea from "@/shared/ui/EditTextarea.vue";
 import DatepickerModal from "@/modules/agency/recruiting/requests/components/DatepickerModal.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const props = defineProps<{
   id?: string;

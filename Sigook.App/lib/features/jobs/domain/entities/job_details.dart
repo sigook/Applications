@@ -7,8 +7,6 @@ class JobDetails extends Equatable {
   final int workersQuantity;
   final String? location;
   final String? entrance;
-  final String agencyFullName;
-  final String? agencyLogo;
   final String status;
   final bool isAsap;
   final bool? workerApprovedToWork;
@@ -29,6 +27,11 @@ class JobDetails extends Equatable {
   final String? incentiveDescription;
   final String? durationBreak;
   final String? requestStatus;
+  final double? latitude;
+  final double? longitude;
+  final double? checkpointLatitude;
+  final double? checkpointLongitude;
+  final double? checkpointRadiusMeters;
 
   const JobDetails({
     required this.id,
@@ -37,8 +40,6 @@ class JobDetails extends Equatable {
     required this.workersQuantity,
     this.location,
     this.entrance,
-    required this.agencyFullName,
-    this.agencyLogo,
     required this.status,
     required this.isAsap,
     this.workerApprovedToWork,
@@ -59,7 +60,19 @@ class JobDetails extends Equatable {
     this.incentiveDescription,
     this.durationBreak,
     this.requestStatus,
+    this.latitude,
+    this.longitude,
+    this.checkpointLatitude,
+    this.checkpointLongitude,
+    this.checkpointRadiusMeters,
   });
+
+  bool get hasCoordinates => latitude != null && longitude != null;
+
+  bool get hasPunchCheckpoint =>
+      checkpointLatitude != null &&
+      checkpointLongitude != null &&
+      checkpointRadiusMeters != null;
 
   bool get shouldShowApplyButton =>
       status.toLowerCase() != 'booked' && !isApplicant;
@@ -75,8 +88,6 @@ class JobDetails extends Equatable {
     workersQuantity,
     location,
     entrance,
-    agencyFullName,
-    agencyLogo,
     status,
     isAsap,
     workerApprovedToWork,
@@ -97,5 +108,10 @@ class JobDetails extends Equatable {
     incentiveDescription,
     durationBreak,
     requestStatus,
+    latitude,
+    longitude,
+    checkpointLatitude,
+    checkpointLongitude,
+    checkpointRadiusMeters,
   ];
 }

@@ -21,13 +21,12 @@
           </div>
           <div class="profile-field">
             <dt class="profile-field-label">Mobile</dt>
-            <dd :class="{ 'profile-empty': !props.worker.mobileNumber }">{{ props.worker.mobileNumber || '—' }}</dd>
+            <dd v-if="props.worker.mobileNumber"><copy-link kind="phone" :value="props.worker.mobileNumber" /></dd>
+            <dd v-else class="profile-empty">—</dd>
           </div>
           <div v-if="props.worker.phone" class="profile-field">
             <dt class="profile-field-label">Phone</dt>
-            <dd>
-              {{ props.worker.phone }}<template v-if="props.worker.phoneExt"> · Ext. {{ props.worker.phoneExt }}</template>
-            </dd>
+            <dd><copy-link kind="phone" :value="props.worker.phone" :ext="props.worker.phoneExt" /></dd>
           </div>
         </dl>
       </div>
@@ -41,7 +40,8 @@
           </div>
           <div class="profile-field">
             <dt class="profile-field-label">Phone</dt>
-            <dd :class="{ 'profile-empty': !props.worker.contactEmergencyPhone }">{{ props.worker.contactEmergencyPhone || '—' }}</dd>
+            <dd v-if="props.worker.contactEmergencyPhone"><copy-link kind="phone" :value="props.worker.contactEmergencyPhone" /></dd>
+            <dd v-else class="profile-empty">—</dd>
           </div>
           <div class="profile-field">
             <dt class="profile-field-label">Health problems / allergies</dt>
@@ -65,6 +65,7 @@
 import { computed, ref } from 'vue';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import ProfileCard from '@/shared/worker-profile/cards/ProfileCard.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import ContactInformationForm from '@/shared/worker-profile/forms/WorkContactInformationForm.vue';
 import EmergencyInformationForm from '@/shared/worker-profile/forms/WorkEmergencyInformationForm.vue';
 

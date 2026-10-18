@@ -123,7 +123,7 @@ Join/child tables: `AgencyLocation` links Agency↔Location with `IsBilling`;
 ### AgencyPersonnel (`AgencyPersonnel.cs`)
 
 Staff member of an agency: `Id`, `AgencyId`, `UserId` → User, `Name`, `IsPrimary`. **There is no
-`PersonnelType` field** — what a person can do is determined by their IdentityServer role
+`PersonnelType` field** — what a person can do is determined by their identity role
 (recruiting/sales/admin). Referenced by `CompanyProfile.SalesRepresentativeId` (sales portfolio)
 and `RequestRecruiter.RecruiterId` (weekly board). Unique index `(AgencyId, UserId)`.
 
@@ -181,11 +181,11 @@ invoice/pay-stub time.
 
 ### Sales entities (`Entities/Sales/Deal.cs`, `Entities/Sales/CompanyInteraction.cs`)
 
-Both live in the `Sales` domain (entities, models under `Models/Sales/`, `SalesService`, `Configurations/Sales/`) and hang off `CompanyProfile` and carry the owning sales user; added by migration `20260811133554_AddDealsAndInteractions`. Enums in `Covenant.Common/Enums/`, serialized as ints (see the enum mirror gotcha in SIGOOK_WEB_API_MAP.md §14). Business meaning: `.docs/business/SALES_MODULE.md`.
+Both live in the `Sales` domain (entities, models under `Models/Sales/`, `SalesService`, `Configurations/Sales/`), hang off `CompanyProfile` and carry the owning sales user. Enums in `Covenant.Common/Enums/`, serialized as ints (see the enum mirror gotcha in SIGOOK_WEB_API_MAP.md §14). Business meaning: `.docs/business/SALES_MODULE.md`.
 
 | Entity | Key fields |
 |---|---|
-| `Deal` | `Title`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; exposed as `OwnerId` in `DealListModel` / `GetDealsFilter`), `Date` (business date), `Value` (decimal), `Type` (`DealType`: Temporal 0, Permanent 1, TempToPerm 2), `Status` (`DealStatus`: ToSend 0, Sent 1, Rejected 2, Accepted 3), `DocumentId?` → CovenantFile, `CreatedAt` / `UpdatedAt`. `Update()` never touches `CompanyProfileId` or `UserId` |
+| `Deal` | `Title`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; exposed as `OwnerId` in `DealListModel` / `GetDealsFilter`), `Date` (business date), `Value` (decimal), `Type` (`DealType`: Temporal 0, Permanent 1, TempToPerm 2), `Status` (`DealStatus`: ToSend 0, Sent 1, Rejected 2, Accepted 3, UnderReview 4, Closed 5, Completed 6), `DocumentId?` → CovenantFile, `CreatedAt` / `UpdatedAt`. `Update()` never touches `CompanyProfileId` or `UserId` |
 | `CompanyInteraction` | `Description`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; `OwnerId` in list/filter models), `InteractionPurpose` (Intro 0 … Closing 4), `InteractionType` (Call 0, Mail 1, Sms 2, LinkedIn 3), `InteractionStatus` (NotStarted 0 default, InProgress 1, Completed 2), `CreatedAt` / `UpdatedAt`. Same immutable `CompanyProfileId` / `UserId` on update |
 
 Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `SalesService`, behind `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs` (routes `api/agency/sales/clients/{profileId}/deals|interactions`; the client comes from the route) — rule in `.docs/business/ROLES_PERMISSIONS.md`.

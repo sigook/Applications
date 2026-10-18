@@ -181,7 +181,7 @@ import { usePubSub } from '@/shared/composables/usePubSub';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/shared/api/catalogApi';
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
-import { createAgencyCompany, updateAgencyCompany, updateAgencyCompanyProfileLogo } from '@/modules/agency/recruiting/clients/api';
+import { createAgencyCompany, getAgencyCompany, updateAgencyCompany, updateAgencyCompanyProfileLogo } from '@/modules/agency/recruiting/clients/api';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import type { CatalogItem, Industry, PageBreadcrumb } from '@/shared/types/common';
@@ -285,13 +285,23 @@ const filteredSalesRepresentative = computed(() => {
 });
 
 async function init() {
-  const meta = route.meta as Record<string, unknown>;
-  const existing = meta.company as AgencyCompanyProfileDetail | undefined;
+  const companyProfileId = route.params.companyProfileId as string | undefined;
+  let existing: AgencyCompanyProfileDetail | undefined;
+  try {
+    [existing, statuses.value, industryOptions.value, salesRepresentatives.value] = await Promise.all([
+      companyProfileId ? getAgencyCompany(companyProfileId) : Promise.resolve(undefined),
+      getCompanyStatus(),
+      getIndustries(),
+      getAgencyPersonnel(),
+    ]);
+  } catch (error) {
+    showAlertError(error);
+    return;
+  } finally {
+    isLoading.value = false;
+  }
   if (existing) {
     company.value = { ...existing, companyProfileId: existing.id };
-    statuses.value = meta.companyStatuses as CatalogItem<number>[];
-    industryOptions.value = meta.industryList as Industry[];
-    salesRepresentatives.value = meta.agencyPersonnel as AgencyPersonnelListItem[];
     isUpdate.value = true;
 
     const rawIndustry = existing.industry?.industry;
@@ -312,12 +322,7 @@ async function init() {
       faxExt: existing.faxExt != null ? String(existing.faxExt) : '',
       website: existing.website || '',
     });
-  } else {
-    industryOptions.value = await getIndustries();
-    statuses.value = await getCompanyStatus();
-    salesRepresentatives.value = await getAgencyPersonnel();
   }
-  isLoading.value = false;
 }
 init();
 

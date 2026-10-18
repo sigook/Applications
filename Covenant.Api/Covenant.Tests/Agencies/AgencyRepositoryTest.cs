@@ -28,169 +28,69 @@ public class AgencyRepositoryTest
         _sut = new AgencyRepository(_context, mockFilesConfiguration.Object);
     }
 
-    [Fact]
-    public async Task GetAgencyIdsForUser_MasterAgency_ReturnsAllChildAgencies()
+    private static AgencyEntity Agency(string name, string phone, AgencyType type, Guid? parentId = null) =>
+        new(name, phone) { Id = Guid.NewGuid(), AgencyType = type, AgencyParentId = parentId };
+
+    private async Task<AgencyPersonnelEntity> SeedPersonnel(Guid agencyId, string email, params AgencyEntity[] agencies)
     {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var user = new User(CvnEmail.Create("master@test.com").Value, userId);
-
-        var masterAgencyId = Guid.NewGuid();
-        var masterAgency = new AgencyEntity("Master Agency", "1234567890")
-        {
-            Id = masterAgencyId,
-            AgencyType = AgencyType.Master
-        };
-
-        var childAgency1Id = Guid.NewGuid();
-        var childAgency1 = new AgencyEntity("Child Agency 1", "1234567891")
-        {
-            Id = childAgency1Id,
-            AgencyType = AgencyType.Regular,
-            AgencyParentId = masterAgencyId
-        };
-
-        var childAgency2Id = Guid.NewGuid();
-        var childAgency2 = new AgencyEntity("Child Agency 2", "1234567892")
-        {
-            Id = childAgency2Id,
-            AgencyType = AgencyType.BusinessPartner,
-            AgencyParentId = masterAgencyId
-        };
-
-        var agencyPersonnel = AgencyPersonnelEntity.CreatePrimary(masterAgencyId, user);
-
-        await _context.Agencies.AddRangeAsync(masterAgency, childAgency1, childAgency2);
-        await _context.AgencyPersonnel.AddAsync(agencyPersonnel);
+        var user = new User(CvnEmail.Create(email).Value, Guid.NewGuid());
+        var personnel = AgencyPersonnelEntity.CreatePrimary(agencyId, user);
+        await _context.Agencies.AddRangeAsync(agencies);
+        await _context.AgencyPersonnel.AddAsync(personnel);
         await _context.SaveChangesAsync();
-
-        // Act
-        var result = await _sut.GetAgencyIdsForUser(userId);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(3, result.Count);
-        Assert.Contains(masterAgencyId, result);
-        Assert.Contains(childAgency1Id, result);
-        Assert.Contains(childAgency2Id, result);
+        return personnel;
     }
 
     [Fact]
-    public async Task GetAgencyIdsForUser_RegularAgency_ReturnsOnlyOwnAgency()
+    public async Task GetAgencyContextForUser_MasterAgency_ReturnsAllChildAgencies()
     {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var user = new User(CvnEmail.Create("regular@test.com").Value, userId);
+        var master = Agency("Master Agency", "1234567890", AgencyType.Master);
+        var child1 = Agency("Child Agency 1", "1234567891", AgencyType.Regular, master.Id);
+        var child2 = Agency("Child Agency 2", "1234567892", AgencyType.BusinessPartner, master.Id);
+        var personnel = await SeedPersonnel(master.Id, "master@test.com", master, child1, child2);
 
-        var masterAgencyId = Guid.NewGuid();
-        var masterAgency = new AgencyEntity("Master Agency", "1234567890")
-        {
-            Id = masterAgencyId,
-            AgencyType = AgencyType.Master
-        };
+        var result = await _sut.GetAgencyContextForUser(personnel.UserId);
 
-        var regularAgencyId = Guid.NewGuid();
-        var regularAgency = new AgencyEntity("Regular Agency", "1234567891")
-        {
-            Id = regularAgencyId,
-            AgencyType = AgencyType.Regular,
-            AgencyParentId = masterAgencyId
-        };
+        Assert.Equal(master.Id, result.AgencyId);
+        Assert.Equal(personnel.Id, result.AgencyPersonnelId);
+        Assert.Equal(3, result.AgencyIds.Count);
+        Assert.Equal(master.Id, result.AgencyIds[0]);
+        Assert.Contains(child1.Id, result.AgencyIds);
+        Assert.Contains(child2.Id, result.AgencyIds);
+    }
 
-        var agencyPersonnel = AgencyPersonnelEntity.CreatePrimary(regularAgencyId, user);
+    [Theory]
+    [InlineData(AgencyType.Regular)]
+    [InlineData(AgencyType.BusinessPartner)]
+    public async Task GetAgencyContextForUser_ChildAgency_ReturnsOnlyOwnAgency(AgencyType type)
+    {
+        var master = Agency("Master Agency", "1234567890", AgencyType.Master);
+        var child = Agency("Child Agency", "1234567891", type, master.Id);
+        var personnel = await SeedPersonnel(child.Id, "child@test.com", master, child);
 
-        await _context.Agencies.AddRangeAsync(masterAgency, regularAgency);
-        await _context.AgencyPersonnel.AddAsync(agencyPersonnel);
-        await _context.SaveChangesAsync();
+        var result = await _sut.GetAgencyContextForUser(personnel.UserId);
 
-        // Act
-        var result = await _sut.GetAgencyIdsForUser(userId);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-        Assert.Contains(regularAgencyId, result);
-        Assert.DoesNotContain(masterAgencyId, result);
+        Assert.Equal(child.Id, result.AgencyId);
+        Assert.Equal(personnel.Id, result.AgencyPersonnelId);
+        Assert.Equal([child.Id], result.AgencyIds);
     }
 
     [Fact]
-    public async Task GetAgencyIdsForUser_BusinessPartnerAgency_ReturnsOnlyOwnAgency()
+    public async Task GetAgencyContextForUser_UserWithNoAgency_ReturnsNull()
     {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var user = new User(CvnEmail.Create("partner@test.com").Value, userId);
+        var result = await _sut.GetAgencyContextForUser(Guid.NewGuid());
 
-        var masterAgencyId = Guid.NewGuid();
-        var masterAgency = new AgencyEntity("Master Agency", "1234567890")
-        {
-            Id = masterAgencyId,
-            AgencyType = AgencyType.Master
-        };
-
-        var partnerAgencyId = Guid.NewGuid();
-        var partnerAgency = new AgencyEntity("Partner Agency", "1234567891")
-        {
-            Id = partnerAgencyId,
-            AgencyType = AgencyType.BusinessPartner,
-            AgencyParentId = masterAgencyId
-        };
-
-        var agencyPersonnel = AgencyPersonnelEntity.CreatePrimary(partnerAgencyId, user);
-
-        await _context.Agencies.AddRangeAsync(masterAgency, partnerAgency);
-        await _context.AgencyPersonnel.AddAsync(agencyPersonnel);
-        await _context.SaveChangesAsync();
-
-        // Act
-        var result = await _sut.GetAgencyIdsForUser(userId);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-        Assert.Contains(partnerAgencyId, result);
-        Assert.DoesNotContain(masterAgencyId, result);
+        Assert.Null(result);
     }
 
     [Fact]
-    public async Task GetAgencyIdsForUser_UserWithNoAgency_ReturnsEmptyList()
+    public async Task GetAgencyContextForUser_MasterAgencyWithNoChildren_ReturnsOnlyMasterAgency()
     {
-        // Arrange
-        var userId = Guid.NewGuid();
+        var master = Agency("Master Agency", "1234567890", AgencyType.Master);
+        var personnel = await SeedPersonnel(master.Id, "master@test.com", master);
 
-        // Act
-        var result = await _sut.GetAgencyIdsForUser(userId);
+        var result = await _sut.GetAgencyContextForUser(personnel.UserId);
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.Empty(result);
-    }
-
-    [Fact]
-    public async Task GetAgencyIdsForUser_MasterAgencyWithNoChildren_ReturnsOnlyMasterAgency()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var user = new User(CvnEmail.Create("master@test.com").Value, userId);
-
-        var masterAgencyId = Guid.NewGuid();
-        var masterAgency = new AgencyEntity("Master Agency", "1234567890")
-        {
-            Id = masterAgencyId,
-            AgencyType = AgencyType.Master
-        };
-
-        var agencyPersonnel = AgencyPersonnelEntity.CreatePrimary(masterAgencyId, user);
-
-        await _context.Agencies.AddAsync(masterAgency);
-        await _context.AgencyPersonnel.AddAsync(agencyPersonnel);
-        await _context.SaveChangesAsync();
-
-        // Act
-        var result = await _sut.GetAgencyIdsForUser(userId);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Single(result);
-        Assert.Contains(masterAgencyId, result);
+        Assert.Equal([master.Id], result.AgencyIds);
     }
 }

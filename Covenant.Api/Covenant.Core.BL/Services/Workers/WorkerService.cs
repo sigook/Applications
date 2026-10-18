@@ -1,5 +1,6 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;
@@ -64,8 +65,11 @@ public class WorkerService(
     ICandidateRepository candidateRepository,
     IUploadedFilesService uploadedFilesService,
     ICatalogRepository catalogRepository,
-    IRequestApplicantNotificationService applicantNotificationService) : IWorkerService
+    IRequestApplicantNotificationService applicantNotificationService,
+    IWorkerRequirementService workerRequirementService,
+    IOptions<PunchConfiguration> punchOptions) : IWorkerService
 {
+    private readonly PunchConfiguration punchConfiguration = punchOptions.Value;
     private readonly IWorkerRepository workerRepository = workerRepository;
     private readonly IAgencyRepository agencyRepository = agencyRepository;
     private readonly INotificationRepository notificationRepository = notificationRepository;
@@ -166,6 +170,14 @@ public class WorkerService(
     public Task<Result> DeleteWorker(Guid workerProfileId)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<WorkerProfileDetailModel> GetProfileDetail(Expression<Func<WorkerProfile, bool>> condition)
+    {
+        var model = await workerRepository.GetWorkerProfileDetail(condition);
+        if (model is null) return null;
+        model.MissingRequirements = workerRequirementService.GetMissing(model);
+        return model;
     }
 
     public async Task<Result<RequestApplicantDetailModel>> Apply(WorkerRequestApplyModel model, Guid? requestId = null)
@@ -493,6 +505,7 @@ public class WorkerService(
 
     private async Task<Result<RequestApplicantDetailModel>> ApplyAsWorker(Request request, WorkerProfile workerProfile, string comments)
     {
+        if (!workerProfile.ApprovedToWork) return Result.Fail<RequestApplicantDetailModel>(ApiResources.WorkerNotApprovedToWork);
         if (await workerRequestRepository.WorkerRequestExists(workerProfile.Id, request.Id)) return AlreadyApplied();
         if (await requestRepository.GetRequestApplicant(ra => ra.RequestId == request.Id && ra.WorkerProfileId == workerProfile.Id) is not null) return AlreadyApplied();
 
@@ -529,6 +542,24 @@ public class WorkerService(
             CandidateId = candidate.Id
         });
     }
+
+    public async Task<WorkerRequestDetailModel> GetRequestDetail(Guid requestId)
+    {
+        var detail = await requestRepository.GetRequestDetailForWorker(currentUserService.GetUserId(), requestId);
+        if (detail is null) return null;
+        detail.PunchCheckpoint = PunchCheckpoint(detail.JobLocation);
+        return detail;
+    }
+
+    private PunchCheckpointModel PunchCheckpoint(LocationDetailModel location) =>
+        location is { Latitude: double latitude, Longitude: double longitude }
+            ? new PunchCheckpointModel
+            {
+                Latitude = latitude,
+                Longitude = longitude,
+                RadiusMeters = punchConfiguration.CheckpointRadiusMeters
+            }
+            : null;
 
     private static Result<RequestApplicantDetailModel> AlreadyApplied() =>
         Result.Fail<RequestApplicantDetailModel>("You already apply to this request");

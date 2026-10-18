@@ -7,6 +7,8 @@ abstract class LocationService {
 
   Future<Position?> getCurrentPosition();
 
+  Stream<Position> watchPosition();
+
   Future<LocationPrecision> resolveLocationPrecision({
     String purposeKey = 'TimesheetPunch',
   });

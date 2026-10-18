@@ -16,7 +16,6 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
 [Produces("application/json")]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-[ServiceFilter(typeof(AgencyPersonnelIdFilter))]
 public class RequestsController(IRequestService requestService, IAgencyService agencyService) : ControllerBase
 {
     public const string RouteName = "api/agency/recruiting/requests";

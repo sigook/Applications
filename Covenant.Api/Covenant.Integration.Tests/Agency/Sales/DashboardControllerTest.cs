@@ -143,6 +143,29 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
     }
 
     [Fact]
+    public async Task DashboardReturnsEveryBlockInOneResponse()
+    {
+        HttpResponseMessage response = await AsSales().GetAsync($"{DashboardController.RouteName}?dateFrom=2026-09-06&dateTo=2026-09-12");
+        response.EnsureSuccessStatusCode();
+        var model = await response.Content.ReadFromJsonAsync<SalesDashboardModel>();
+
+        Assert.Equal("Q3 2026", model.Summary.Quarter.Label);
+        Assert.Equal(4, model.Summary.Pipeline.Sum(p => p.Count));
+        Assert.Equal(3, model.DealsByStatus.TotalCount);
+        Assert.Equal("Sep 6 - Sep 12, 2026", model.DealsByStatus.Period.Label);
+        Assert.Equal(Data.FakeCompany.Id, Assert.Single(model.RecentClients).Id);
+        Assert.Equal(4, model.RecentInteractions.Count);
+        Assert.All(model.RecentInteractions, i => Assert.Equal(Data.SalesUser.Id, i.OwnerId));
+        Assert.Equal(5, model.RecentDeals.Count);
+        Assert.All(model.RecentDeals, d => Assert.Equal(Data.SalesUser.Id, d.OwnerId));
+    }
+
+    [Fact]
+    public async Task DashboardRejectsADateRangeEndingBeforeItStarts() =>
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await AsSales().GetAsync($"{DashboardController.RouteName}?dateFrom=2026-09-12&dateTo=2026-09-06")).StatusCode);
+
+    [Fact]
     public async Task RecruitingCannotReachTheDashboard() =>
         Assert.Equal(HttpStatusCode.Forbidden, (await AsRecruiting().GetAsync(SummaryUri)).StatusCode);
 

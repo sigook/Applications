@@ -285,6 +285,61 @@ public class SalesServiceDashboardTest
         Assert.Equal(_userId, capturedInteractionsOwner);
     }
 
+    [Fact]
+    public async Task GetDashboardComposesEveryBlockWithTheSameOwnerScope()
+    {
+        _currentUserService.Setup(i => i.IsAdmin()).Returns(false);
+        var dealsOwners = new List<Guid?>();
+        Guid? interactionsOwner = Guid.NewGuid();
+        Guid? clientsOwner = Guid.NewGuid();
+        _companyRepository
+            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => dealsOwners.Add(owner))
+            .ReturnsAsync([new DealStatusSummaryModel { Status = DealStatus.Sent, Count = 2, TotalValue = 500m }]);
+        _companyRepository
+            .Setup(r => r.GetInteractionsByType(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Callback<Guid, Guid?, DateTime, DateTime>((_, owner, _, _) => interactionsOwner = owner)
+            .ReturnsAsync([]);
+        _companyRepository
+            .Setup(r => r.GetRecentInteractionClients(_agencyId, It.IsAny<Guid?>(), 10))
+            .Callback<Guid, Guid?, int>((_, owner, _) => clientsOwner = owner)
+            .ReturnsAsync([new RecentClientModel { Id = Guid.NewGuid(), FullName = "Acme" }]);
+        _companyRepository
+            .Setup(r => r.GetInteractions(_agencyId, null, It.IsAny<GetCompanyInteractionsFilter>()))
+            .ReturnsAsync(new PaginatedList<CompanyInteractionListModel> { Items = [new CompanyInteractionListModel()] });
+        _companyRepository
+            .Setup(r => r.GetDeals(_agencyId, null, It.IsAny<GetDealsFilter>()))
+            .ReturnsAsync(new PaginatedList<DealListModel> { Items = [new DealListModel(), new DealListModel()] });
+
+        var result = await _sut.GetDashboard(new GetDealsByStatusFilter { OwnerId = Guid.NewGuid() });
+
+        Assert.True(result);
+        Assert.Equal(2, result.Value.DealsByStatus.TotalCount);
+        Assert.Equal("Q3 2026", result.Value.Summary.Quarter.Label);
+        Assert.Single(result.Value.RecentClients);
+        Assert.Single(result.Value.RecentInteractions);
+        Assert.Equal(2, result.Value.RecentDeals.Count);
+        Assert.Equal([_userId, _userId], dealsOwners);
+        Assert.Equal(_userId, interactionsOwner);
+        Assert.Equal(_userId, clientsOwner);
+    }
+
+    [Fact]
+    public async Task GetDashboardRejectsAnInvalidDateRangeWithoutQuerying()
+    {
+        var result = await _sut.GetDashboard(new GetDealsByStatusFilter
+        {
+            DateFrom = new DateTime(2026, 9, 12),
+            DateTo = new DateTime(2026, 9, 6)
+        });
+
+        Assert.False(result);
+        _companyRepository.Verify(
+            r => r.GetDealsByStatus(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
+            Times.Never);
+        _companyRepository.Verify(r => r.GetRecentInteractionClients(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<int>()), Times.Never);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

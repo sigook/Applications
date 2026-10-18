@@ -2,15 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sigook_app_flutter/core/error/exceptions.dart';
 import 'package:sigook_app_flutter/core/network/api_client.dart';
-import 'package:sigook_app_flutter/core/constants/enums.dart';
-import 'package:sigook_app_flutter/core/utils/enum_converters.dart';
+import 'package:sigook_app_flutter/features/jobs/data/models/punch_status_model.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/timesheet_response_model.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/paginated_timesheet_model.dart';
 import 'dart:convert';
 
 abstract class TimesheetRemoteDatasource {
-  Future<ClockType> getClockType(
-    DateTime date,
+  Future<PunchStatusModel> getPunchStatus(
     String requestId,
     double latitude,
     double longitude,
@@ -33,21 +31,20 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
   TimesheetRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<ClockType> getClockType(
-    DateTime date,
+  Future<PunchStatusModel> getPunchStatus(
     String requestId,
     double latitude,
     double longitude,
   ) async {
     try {
       final response = await apiClient.dio.get(
-        '/worker/requests/$requestId/TimeSheet/clock-type/$latitude/$longitude?date=${date.toIso8601String()}',
+        '/worker/requests/$requestId/TimeSheet/punch-status/$latitude/$longitude',
       );
       if (response.statusCode == 200) {
-        return clockTypeFromInt(response.data);
+        return PunchStatusModel.fromJson(response.data as Map<String, dynamic>);
       } else {
         throw ServerException(
-          message: 'Failed to load clock type: ${response.statusCode}',
+          message: 'Failed to load punch status: ${response.statusCode}',
         );
       }
     } on DioException catch (e) {
@@ -64,7 +61,7 @@ class TimesheetRemoteDataSourceImpl implements TimesheetRemoteDatasource {
         throw NetworkException('Network error: ${e.message}');
       }
     } catch (e) {
-      throw ServerException(message: 'Failed to load clock type: $e');
+      throw ServerException(message: 'Failed to load punch status: $e');
     }
   }
 

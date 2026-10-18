@@ -17,9 +17,9 @@
           class="list-item-border-bottom content-flex-between is-align-items-center mb-0">
           <div>
             <b>{{ item.title }} {{ item.firstName }} {{ item.lastName }}</b> <span> | {{ item.position }}</span>
-            <span class="is-block fz-1">{{ item.mobileNumber }}</span>
-            <span class="is-block fz-1">{{ item.officeNumber }} {{ item.officeNumberExt }}</span>
-            <span class="is-block fz-1">{{ item.email }}</span>
+            <span class="is-block fz-1"><copy-link kind="phone" :value="item.mobileNumber" /></span>
+            <span class="is-block fz-1"><copy-link kind="phone" :value="item.officeNumber" :ext="item.officeNumberExt" /></span>
+            <span class="is-block fz-1"><copy-link kind="email" :value="item.email" /></span>
           </div>
           <div>
             <b-button v-if="isActive(item)" type="is-danger" size="is-small" outlined rounded
@@ -34,6 +34,7 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import { showAlertError } from "@/shared/utils/toast";
 import { getAgencyCompanyContactPerson } from '@/modules/agency/recruiting/clients/api';
 import ContactPersonForm from '@/modules/agency/recruiting/clients/components/ContactPersonForm.vue';

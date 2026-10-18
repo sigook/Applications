@@ -20,7 +20,7 @@
         action-label="Log interaction"
         @action="startCreateInteraction"
       >
-        <interaction-list :items="interactions" :as-of="nowIso" @edit="startEditInteraction" />
+        <interaction-list :items="interactions" :as-of="nowIso" :loading="isRefreshing" @edit="startEditInteraction" />
       </dashboard-card>
 
       <dashboard-card
@@ -33,7 +33,7 @@
         action-label="Create client"
         @action="isNewClientModalOpen = true"
       >
-        <client-list :items="clients" :as-of="nowIso" @select="openClientInteractions" />
+        <client-list :items="clients" :as-of="nowIso" :loading="isRefreshing" @select="openClientInteractions" />
       </dashboard-card>
 
       <dashboard-card
@@ -45,7 +45,7 @@
         action-label="Create deal"
         @action="startCreateDeal"
       >
-        <deal-list :items="deals" @edit="startEditDeal" />
+        <deal-list :items="deals" :loading="isRefreshing" @edit="startEditDeal" />
       </dashboard-card>
     </div>
 
@@ -118,13 +118,7 @@ import InteractionModal from '@/modules/agency/sales/clients/components/Interact
 import DealModal from '@/modules/agency/sales/clients/components/DealModal.vue';
 import ClientModal from '@/modules/agency/sales/dashboard/components/ClientModal.vue';
 import ClientInteractionsModal from '@/modules/agency/sales/dashboard/components/ClientInteractionsModal.vue';
-import {
-  getDealsByStatus,
-  getRecentClients,
-  getRecentDeals,
-  getRecentInteractions,
-  getSalesDashboardSummary,
-} from '@/modules/agency/sales/dashboard/api';
+import { getDealsByStatus, getSalesDashboard } from '@/modules/agency/sales/dashboard/api';
 import { useCurrentAgent } from '@/modules/agency/sales/dashboard/useCurrentAgent';
 import { calendarDate, compactMoney, currentMonthRange, shortDate } from '@/modules/agency/sales/dashboard/format';
 import { showAlertError } from '@/shared/utils/toast';
@@ -132,6 +126,7 @@ import { DEAL_STATUSES, DEAL_STATUS_COLORS, DEAL_STATUS_LABELS, INTERACTION_TYPE
 import type { Deal, CompanyInteraction, DealStatus } from '@/modules/agency/sales/clients/types';
 import type { CatalogItem } from '@/shared/types/common';
 import type {
+  DealsByStatusFilter,
   DealsByStatusModel,
   SalesBarPoint,
   SalesDashboardSummary,
@@ -142,6 +137,7 @@ import type {
 const { agentName, loadAgentName } = useCurrentAgent();
 
 const isLoading = ref(false);
+const isRefreshing = ref(false);
 const summary = ref<SalesDashboardSummary | null>(null);
 const dealsByStatus = ref<DealsByStatusModel | null>(null);
 const interactions = ref<CompanyInteraction[]>([]);
@@ -227,70 +223,48 @@ function startEditDeal(deal: Deal): void {
   isDealModalOpen.value = true;
 }
 
-function loadDealsByStatus(): void {
-  const request = ++dealsByStatusRequest;
-  getDealsByStatus({
+function dealsByStatusFilter(): DealsByStatusFilter {
+  return {
     dateFrom: calendarDate(dateRange.value[0]),
     dateTo: calendarDate(dateRange.value[1]),
     statuses: statusesSelected.value.length ? statusesSelected.value.map((status) => status.id) : undefined,
-  })
+  };
+}
+
+function loadDealsByStatus(): void {
+  const request = ++dealsByStatusRequest;
+  getDealsByStatus(dealsByStatusFilter())
     .then((result) => {
       if (request === dealsByStatusRequest) dealsByStatus.value = result;
     })
     .catch((error) => showAlertError(error));
 }
 
-function loadSummary(): void {
-  getSalesDashboardSummary()
+function loadDashboard(): Promise<void> {
+  const request = ++dealsByStatusRequest;
+  return getSalesDashboard(dealsByStatusFilter())
     .then((result) => {
-      summary.value = result;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-    });
-}
-
-function loadInteractions(): void {
-  getRecentInteractions()
-    .then((result) => {
-      interactions.value = result;
-    })
-    .catch((error) => showAlertError(error));
-}
-
-function loadClients(): void {
-  getRecentClients()
-    .then((result) => {
-      clients.value = result;
-    })
-    .catch((error) => showAlertError(error));
-}
-
-function loadDeals(): void {
-  getRecentDeals()
-    .then((result) => {
-      deals.value = result;
+      summary.value = result.summary;
+      interactions.value = [...result.recentInteractions];
+      clients.value = [...result.recentClients];
+      deals.value = [...result.recentDeals];
+      if (request === dealsByStatusRequest) dealsByStatus.value = result.dealsByStatus;
     })
     .catch((error) => showAlertError(error));
 }
 
 function onSaved(): void {
-  loadInteractions();
-  loadClients();
-  loadDeals();
-  loadDealsByStatus();
-  loadSummary();
+  isRefreshing.value = true;
+  loadDashboard().finally(() => {
+    isRefreshing.value = false;
+  });
 }
 
 onMounted(() => {
   isLoading.value = true;
-  loadSummary();
-  loadDealsByStatus();
-  loadInteractions();
-  loadClients();
-  loadDeals();
-  loadAgentName();
+  Promise.allSettled([loadDashboard(), loadAgentName()]).finally(() => {
+    isLoading.value = false;
+  });
 });
 </script>
 
