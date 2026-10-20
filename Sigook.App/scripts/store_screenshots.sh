@@ -10,6 +10,8 @@
 #      SCREENSHOT_GEO  "lat,lon" the device reports (the punch card needs a fix; use the first job's address)
 #      GOOGLE_MAPS_API_KEY  optional; without it the job detail capture shows no map image
 #      ENV_FILE        default .env.staging
+#      SCREENSHOT_SKIP_BUILD  "true" reuses the binary of a previous call (same
+#                      platform, same dart-defines), e.g. iPad after iPhone
 #
 # The app is built and installed before `flutter drive` so the location
 # permission can be granted up front: the punch card tab requests it, and the
@@ -38,12 +40,21 @@ DART_DEFINES=(
   --dart-define=GOOGLE_MAPS_API_KEY="${GOOGLE_MAPS_API_KEY:-}"
 )
 TARGET=integration_test/store_screenshots_test.dart
+SKIP_BUILD="${SCREENSHOT_SKIP_BUILD:-false}"
+
+build() {
+  if [ "$SKIP_BUILD" = "true" ] && [ -e "$BINARY" ]; then
+    echo "Reusing $BINARY"
+  else
+    "$@"
+  fi
+}
 
 case "$PLATFORM" in
   android)
     PACKAGE=com.sigook.sigook
     BINARY=build/app/outputs/flutter-apk/app-debug.apk
-    flutter build apk --debug -t "$TARGET" "${DART_DEFINES[@]}"
+    build flutter build apk --debug -t "$TARGET" "${DART_DEFINES[@]}"
     adb -s "$DEVICE" install -r "$BINARY"
     adb -s "$DEVICE" shell pm clear "$PACKAGE"
     adb -s "$DEVICE" shell pm grant "$PACKAGE" android.permission.ACCESS_FINE_LOCATION
@@ -57,7 +68,7 @@ case "$PLATFORM" in
   ios)
     BUNDLE=com.all2job.all2job
     BINARY=build/ios/iphonesimulator/Runner.app
-    flutter build ios --simulator --debug -t "$TARGET" "${DART_DEFINES[@]}"
+    build flutter build ios --simulator --debug -t "$TARGET" "${DART_DEFINES[@]}"
     xcrun simctl uninstall "$DEVICE" "$BUNDLE" >/dev/null 2>&1 || true
     xcrun simctl install "$DEVICE" "$BINARY"
     xcrun simctl privacy "$DEVICE" grant location "$BUNDLE"
