@@ -35,6 +35,7 @@ steps:
 
   - task: FlutterInstall@0
     displayName: 'Install Flutter ${{ parameters.flutterVersion }}'
+    retryCountOnTaskFailure: 2
     inputs:
       mode: 'auto'
       channel: 'stable'

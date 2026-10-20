@@ -45,7 +45,7 @@ parameters:
 - name: androidImage
   displayName: 'Hosted image for the Android emulator job (needs /dev/kvm)'
   type: string
-  default: 'ubuntu-latest'
+  default: 'ubuntu-24.04'
 - name: androidSystemImage
   displayName: 'Android system image for the emulator (arch is appended)'
   type: string
@@ -204,6 +204,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
+          mkdir -p "$(outputRoot)"
           find "$(outputRoot)" -type f -name '*.png' | sort | while read -r f; do
             echo "${f#$(outputRoot)/}: $(file -b "$f" | grep -oE '[0-9]+ x [0-9]+')"
           done
@@ -256,6 +257,8 @@ stages:
 
             setsid nohup "$ANDROID_HOME/emulator/emulator" -avd screenshots -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$(Build.ArtifactStagingDirectory)/emulator.log" 2>&1 &
             echo "emulator pid $!"
+            echo "##vso[task.prependpath]$ANDROID_HOME/platform-tools"
+            echo "##vso[task.prependpath]$ANDROID_HOME/emulator"
       - task: Cache@2
         displayName: 'Cache Flutter Packages'
         inputs:
