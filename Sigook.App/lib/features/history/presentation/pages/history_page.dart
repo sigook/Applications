@@ -62,6 +62,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             notifyLogoFlash();
@@ -71,6 +72,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
         title: const NavbarLogo(),
         actions: [
           IconButton(
+            tooltip: 'Menu',
             icon: const Icon(Icons.menu),
             onPressed: () {
               notifyLogoFlash();

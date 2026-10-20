@@ -80,10 +80,7 @@ class AppDrawer extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 24, top: 8),
                 child: Text(
                   'v${info.version} (${info.buildNumber})',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                   textAlign: TextAlign.center,
                 ),
               );
@@ -110,74 +107,78 @@ class AppDrawer extends ConsumerWidget {
           colors: [AppTheme.primaryBlue, AppTheme.tertiaryBlue],
         ),
       ),
-      child: InkWell(
-        onTap: () {
-          notifyLogoFlash();
-          _navigateToProfile(context);
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.white,
-                  backgroundImage: profilePhoto != null
-                      ? NetworkImage(profilePhoto)
-                      : null,
-                  child: profilePhoto == null
-                      ? Text(
-                          _getInitials(displayName),
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryBlue,
-                          ),
-                        )
-                      : null,
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryBlue,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.edit,
-                      size: 14,
-                      color: Colors.white,
+      child: Semantics(
+        button: true,
+        label: 'My profile',
+        child: InkWell(
+          onTap: () {
+            notifyLogoFlash();
+            _navigateToProfile(context);
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.white,
+                    backgroundImage: profilePhoto != null
+                        ? NetworkImage(profilePhoto)
+                        : null,
+                    child: profilePhoto == null
+                        ? Text(
+                            _getInitials(displayName),
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.primaryBlue,
+                            ),
+                          )
+                        : null,
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 14,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                displayName ?? 'User',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              if (email != null && email.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              displayName ?? 'User',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            if (email != null && email.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                email,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -198,83 +199,86 @@ class AppDrawer extends ConsumerWidget {
         ? AppTheme.secondaryRed
         : AppTheme.primaryBlue;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Material(
         color: isSelected
             ? AppTheme.primaryBlue.withValues(alpha: 0.1)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isLogout
-                  ? [AppTheme.secondaryRed, AppTheme.errorRed]
-                  : isSelected
-                  ? [AppTheme.primaryBlue, AppTheme.tertiaryBlue]
-                  : [
-                      iconColor.withValues(alpha: 0.1),
-                      iconColor.withValues(alpha: 0.05),
-                    ],
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isLogout
+                    ? [AppTheme.secondaryRed, AppTheme.errorRed]
+                    : isSelected
+                    ? [AppTheme.primaryBlue, AppTheme.tertiaryBlue]
+                    : [
+                        iconColor.withValues(alpha: 0.1),
+                        iconColor.withValues(alpha: 0.05),
+                      ],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: isSelected || isLogout
+                  ? [
+                      BoxShadow(
+                        color:
+                            (isLogout
+                                    ? AppTheme.secondaryRed
+                                    : AppTheme.primaryBlue)
+                                .withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected || isLogout
-                ? [
-                    BoxShadow(
-                      color:
-                          (isLogout
-                                  ? AppTheme.secondaryRed
-                                  : AppTheme.primaryBlue)
-                              .withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            child: Icon(
+              icon,
+              color: isSelected || isLogout ? Colors.white : iconColor,
+              size: 22,
+            ),
           ),
-          child: Icon(
-            icon,
-            color: isSelected || isLogout ? Colors.white : iconColor,
-            size: 22,
+          title: Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected
+                  ? AppTheme.primaryBlue
+                  : isLogout
+                  ? AppTheme.secondaryRed
+                  : AppTheme.textDark,
+            ),
           ),
+          trailing: isSelected
+              ? Container(
+                  width: 4,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                )
+              : null,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          onTap:
+              onTap ??
+              () {
+                notifyLogoFlash();
+                Navigator.of(context).pop();
+                if (route != null && !isSelected) {
+                  context.go(route);
+                }
+              },
         ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            color: isSelected
-                ? AppTheme.primaryBlue
-                : isLogout
-                ? AppTheme.secondaryRed
-                : AppTheme.textDark,
-          ),
-        ),
-        trailing: isSelected
-            ? Container(
-                width: 4,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              )
-            : null,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onTap:
-            onTap ??
-            () {
-              notifyLogoFlash();
-              Navigator.of(context).pop();
-              if (route != null && !isSelected) {
-                context.go(route);
-              }
-            },
       ),
     );
   }

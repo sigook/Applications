@@ -125,6 +125,7 @@ class _SearchableDropdownFieldState extends State<SearchableDropdownField> {
                     prefixIcon: Icon(widget.icon),
                     suffixIcon: fieldTextEditingController.text.isNotEmpty
                         ? IconButton(
+                            tooltip: 'Clear',
                             icon: const Icon(Icons.clear),
                             onPressed: () {
                               fieldTextEditingController.clear();

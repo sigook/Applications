@@ -48,7 +48,10 @@ class LicenseCard extends StatelessWidget {
                 ),
                 if (isExpired)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red.shade100,
                       borderRadius: BorderRadius.circular(8),
@@ -64,22 +67,36 @@ class LicenseCard extends StatelessWidget {
                   ),
                 if (license.fileUrl != null) ...[
                   const SizedBox(width: 4),
-                  InkWell(
-                    onTap: onPreview,
-                    borderRadius: BorderRadius.circular(4),
-                    child: Icon(
-                      Icons.visibility_outlined,
-                      size: 18,
-                      color: isExpired ? Colors.red.shade400 : Colors.green.shade400,
+                  Semantics(
+                    button: true,
+                    label: 'Preview license',
+                    child: InkWell(
+                      onTap: onPreview,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Icon(
+                        Icons.visibility_outlined,
+                        size: 18,
+                        color: isExpired
+                            ? Colors.red.shade400
+                            : Colors.green.shade400,
+                      ),
                     ),
                   ),
                 ],
                 if (onDelete != null) ...[
                   const SizedBox(width: 8),
-                  InkWell(
-                    onTap: onDelete,
-                    borderRadius: BorderRadius.circular(4),
-                    child: Icon(Icons.delete_outline, size: 18, color: Colors.red.shade400),
+                  Semantics(
+                    button: true,
+                    label: 'Delete license',
+                    child: InkWell(
+                      onTap: onDelete,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                        color: Colors.red.shade400,
+                      ),
+                    ),
                   ),
                 ],
               ],
@@ -88,7 +105,11 @@ class LicenseCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.numbers_outlined, size: 16, color: Colors.grey.shade600),
+                  Icon(
+                    Icons.numbers_outlined,
+                    size: 16,
+                    color: Colors.grey.shade600,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'No. ${license.number}',
@@ -100,7 +121,11 @@ class LicenseCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 16,
+                  color: Colors.grey.shade600,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(

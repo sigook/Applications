@@ -40,10 +40,13 @@ class CustomCard extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
-        child: card,
+      return Semantics(
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+          child: card,
+        ),
       );
     }
 

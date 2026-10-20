@@ -141,6 +141,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Filter jobs',
           icon: const Icon(Icons.filter_list),
           onPressed: () {
             notifyLogoFlash();
@@ -150,6 +151,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
         title: const NavbarLogo(),
         actions: [
           IconButton(
+            tooltip: 'Menu',
             icon: const Icon(Icons.menu),
             onPressed: () {
               notifyLogoFlash();
@@ -261,10 +263,8 @@ class _JobsPageState extends ConsumerState<JobsPage> {
               child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
+                  child: SizedBox(
+                    height: constraints.maxHeight,
                     child: Column(
                       children: [
                         const ProfileWarningBanner(),

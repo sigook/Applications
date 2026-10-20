@@ -163,6 +163,7 @@ class _LanguageAutocompleteFieldState
                         prefixIcon: const Icon(Icons.language),
                         suffixIcon: fieldTextEditingController.text.isNotEmpty
                             ? IconButton(
+                                tooltip: 'Clear',
                                 icon: const Icon(Icons.clear),
                                 onPressed: () {
                                   fieldTextEditingController.clear();

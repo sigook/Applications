@@ -62,6 +62,10 @@ parameters:
   displayName: 'match readonly (false only on the first run so match creates the certificate and profile)'
   type: boolean
   default: true
+- name: uploadStoreScreenshots
+  displayName: 'Upload the committed store screenshots (Play: any branch; App Store: main only, attached to the version being submitted)'
+  type: boolean
+  default: false
 
 variables:
 - name: workingDirectory
@@ -681,6 +685,19 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/ios'
         ArtifactName: 'sigookapp-ios-$(environment)'
         publishLocation: 'Container'
+    # Screenshots must be on the version before `ios release` submits it, and
+    # App Store Connect only lets them change on a version that is not live
+    - ${{ if eq(parameters.uploadStoreScreenshots, true) }}:
+      - task: CmdLine@2
+        displayName: 'Upload App Store screenshots (fastlane ios screenshots)'
+        condition: and(succeeded(), eq(variables.isMain, true))
+        env:
+          APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
+          FASTLANE_SKIP_UPDATE_CHECK: "true"
+        inputs:
+          script: |
+            cd $(workingDirectory)
+            bundle exec fastlane ios screenshots version:"$(appVersionName)"
     # Upload from the same macOS job: a separate deploy job would boot another
     # hosted agent and reinstall fastlane just to upload the IPA built here.
     # A failed upload fails the run; its status also reaches Notify as an output variable.
@@ -770,6 +787,20 @@ stages:
             echo "##vso[task.logissue type=error]Google Play upload failed"
             exit 1
           fi
+    # The Play listing is shared by every track, so the screenshots can be
+    # refreshed from a dev run without shipping a production release
+    - ${{ if eq(parameters.uploadStoreScreenshots, true) }}:
+      - task: CmdLine@2
+        displayName: 'Upload Play screenshots (fastlane android screenshots)'
+        env:
+          GOOGLE_PLAY_JSON_KEY: $(GOOGLE_PLAY_JSON_KEY)
+          FASTLANE_SKIP_UPDATE_CHECK: "true"
+        inputs:
+          script: |
+            cd $(workingDirectory)
+            export GEM_HOME="/home/azureuser/gems"
+            export PATH="$GEM_HOME/bin:$PATH"
+            fastlane android screenshots
 
 # ============================================
 # Stage 6: Notify Production Deployment

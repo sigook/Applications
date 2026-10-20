@@ -41,8 +41,8 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test+Publish+Docker → Deploy → Notify | `sigook-api-staging` / `sigook-api` |
 | Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check+Build+Docker → Deploy → Notify | `sigook-web-staging` / `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
-| Sigook.App | `sigookapp-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
-| Sigook.App iOS Bootstrap | `sigookapp-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
+| Sigook.App | `sigook-app-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
+| Sigook.App iOS Bootstrap | `sigook-app-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
 | Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob container `files` of `sigookfilesstaging` |
@@ -171,17 +171,21 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. A failed upload fails the run; the step `DeployGooglePlay` also exposes `deployStatus` (`success`/`failed`) as an output variable.
 
+**Store screenshots** (pipeline parameter `uploadStoreScreenshots`, default `false`): when set, the run also pushes the screenshots committed under `Sigook.App/fastlane/` to the store listings. Android (`fastlane android screenshots`, after the Play deploy) runs on any branch because the Play listing is shared by every track. iOS (`fastlane ios screenshots version:`) runs only on `main`, right before `ios release`: App Store Connect only accepts new screenshots on a version that is not live yet, so they are attached to the version the run is about to submit. Capturing the screenshots is a separate manual pipeline (see *Sigook.App Store Screenshots* below).
+
 **Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when the previous stages succeeded and both `deployStatus` outputs are `success`.
 
 **Fastlane** (`Sigook.App/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
 - `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
+- `android screenshots` — `upload_to_play_store` with every upload skipped except screenshots: replaces the phone screenshots of the listing with `fastlane/metadata/android/<locale>/images/phoneScreenshots/*.png` (2-8 files, 1080x1920). Fails when the folder is empty
+- `ios screenshots version:` — `upload_to_app_store` with `skip_binary_upload`, `skip_metadata`, `overwrite_screenshots`, `submit_for_review: false`: replaces the screenshots of that App Store version (creating it when it does not exist yet) with `fastlane/screenshots/<locale>/*.png`. deliver infers the device from the image size (1320x2868 = iPhone 6.9", 2064x2752 = iPad 13"; both are mandatory because the app targets iPad). The lane first resolves the listing locales (`store_locales`) and fails when a folder names a locale the listing does not have
 - `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`). The lane reads them from `ENV`, and Azure DevOps never exposes a **secret** variable as an environment variable, so every secret the lane needs is mapped explicitly in the `env:` block of the `Build iOS IPA` step (`APP_STORE_CONNECT_API_KEY`, `MATCH_PASSWORD`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY`). `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` are optional for the lane, so forgetting the mapping does not fail the build: it silently ships an iOS binary that sends no telemetry (the Android step uses `$(VAR)` macros inside the script, which do expand secrets)
 - `ios beta` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
 - `ios release` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, export compliance = no encryption. Release notes come from `IOS_RELEASE_NOTES` (default text) and are written to every locale the App Store listing already has (`store_locales` private lane, resolved through the App Store Connect API): submission fails with `You must provide a value for the attribute 'whatsNew'` when any locale is left empty
 - iOS plugins are kept on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`) because `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors under SPM
 
 **Required Variable Groups:**
-- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY` (Static Maps API key restricted to the Android package and iOS bundle id; optional, the job location card shows no map image without it), `GOOGLE_PLAY_JSON_KEY`
+- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY` (the "Sigook App - Maps Static" key, shared by Android and iOS; optional, the job location card shows no map image without it), `GOOGLE_PLAY_JSON_KEY`, `SCREENSHOT_USER` / `SCREENSHOT_PASSWORD` (secret; the staging worker account the screenshots pipeline signs in with — a worker with presentable data, never the store review account)
 - `SigookApp-Production`: Same variables with production values
 - `SigookApp-Android`: `KEYSTORE_FILE`, `KEY_PASSWORD`, `KEY_ALIAS`
 - `SigookApp-iOS`: `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY` (secret, base64 of the `.p8`, App Manager role), `MATCH_GIT_URL` (private Azure Repos git repo holding the encrypted certificate/profile), `MATCH_PASSWORD` (secret, match encryption passphrase), `IOS_RELEASE_NOTES` (optional)
@@ -198,7 +202,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 ### Sigook.App iOS Bootstrap (manual)
 
-`sigookapp-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever `flutterVersion` changes (nobody on the team has a Mac), so CI never mutates an unreviewed checkout and the lockfiles stay reproducible. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion` (keep them equal to `sigookapp-pipeline.yml`).
+`sigook-app-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever `flutterVersion` changes (nobody on the team has a Mac), so CI never mutates an unreviewed checkout and the lockfiles stay reproducible. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion` (keep them equal to `sigook-app-pipeline.yml`).
 
 Applying the artifact from the repo root (Git Bash):
 
@@ -210,6 +214,23 @@ git diff --stat
 ```
 
 Review the diff under `Sigook.App/ios/` (the app has no macOS target, hence the exclude), then commit and push.
+
+### Sigook.App Store Screenshots (manual)
+
+`sigook-app-screenshots-pipeline.yml` captures the store screenshots on a hosted macOS agent and publishes them as the artifact `store-screenshots`, already in the folder layout fastlane reads. Uploading is done by the main pipeline from the committed files (`uploadStoreScreenshots`), so the images are reviewed in a PR like any other change.
+
+What runs (`Sigook.App/scripts/store_screenshots.sh`, one call per device): the script builds the debug binary with `integration_test/store_screenshots_test.dart` as entry point against `.env.staging` plus `--dart-define=SCREENSHOT_MODE=true` (hides the environment banner), `SCREENSHOT_USER`, `SCREENSHOT_PASSWORD` and `GOOGLE_MAPS_API_KEY` (from the variable group; without it the job detail capture shows no map); installs it, resets the app data, grants the location permission and sets the device position to `SCREENSHOT_GEO` (`lat,lon`, pipeline parameter `screenshotLocation`); on Android sets the display to `1080x1920` (Play wants 9:16; the Flutter surface follows the window); then runs `flutter drive --use-application-binary`. The install-and-grant step has to happen before the drive: the punch card tab requests location, and the native permission dialog pauses the app, which stalls the test for good; without a position the punch card stays on "Checking your distance...", so the position should be the address of the first job of the screenshot account. The test signs in, waits for real data and takes `binding.takeScreenshot` of: welcome, jobs, job detail, punch card, filter sheet, menu, history, profile (8 = the Play maximum per device type). `test_driver/integration_test.dart` writes `<SCREENSHOT_PREFIX><name>.png` into `SCREENSHOT_DIR`. The captures are the Flutter surface only: the status bar strip is blank (no clock or battery), which is what `frameit`-style store images expect.
+
+Devices (parameters): iPhone 6.9" simulator (`iPhone 17 Pro Max`, 1320x2868) and iPad 13" (`iPad Pro 13-inch (M4)`, 2064x2752, files prefixed `ipad_`) into `fastlane/screenshots/en-US/`; Android emulator (`captureAndroid`, system image parameter + host ABI) into `fastlane/metadata/android/en-US/images/phoneScreenshots/`. The simulator names must exist on the image; the step lists the available ones when they do not.
+
+Applying the artifact from the repo root:
+
+```bash
+rm -rf Sigook.App/fastlane/screenshots Sigook.App/fastlane/metadata/android/en-US/images
+cp -r ~/Downloads/store-screenshots/fastlane/. Sigook.App/fastlane/
+```
+
+Review the PNGs (staging data is visible: pick an account with presentable jobs and profile), commit, then run the main pipeline with `uploadStoreScreenshots` on. The Android captures can also be produced locally on an emulator: `SCREENSHOT_USER=... SCREENSHOT_PASSWORD=... SCREENSHOT_GEO=lat,lon GOOGLE_MAPS_API_KEY=... bash scripts/store_screenshots.sh android emulator-5554 fastlane/metadata/android/en-US/images/phoneScreenshots` from `Sigook.App/` (Git Bash). Locale folders are `en-US`; rename them if the listings use another locale (the iOS lane lists the real ones when they differ).
 
 ### Sigook.Functions (.NET 10 Azure Functions, isolated worker)
 

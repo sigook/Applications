@@ -421,6 +421,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             ),
           ),
           IconButton(
+            tooltip: 'Dismiss',
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             icon: Icon(Icons.close, size: 18, color: Colors.grey.shade600),

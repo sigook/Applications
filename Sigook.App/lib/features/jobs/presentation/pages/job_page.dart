@@ -147,6 +147,7 @@ class _JobPageState extends ConsumerState<JobPage>
           title: const NavbarLogo(),
           backgroundColor: AppTheme.secondaryRed,
           leading: IconButton(
+            tooltip: 'Back',
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               notifyLogoFlash();
@@ -156,6 +157,7 @@ class _JobPageState extends ConsumerState<JobPage>
           actions: [
             Builder(
               builder: (context) => IconButton(
+                tooltip: 'Menu',
                 icon: const Icon(Icons.menu, color: Colors.white),
                 onPressed: () {
                   notifyLogoFlash();

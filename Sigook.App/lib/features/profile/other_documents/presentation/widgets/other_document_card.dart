@@ -26,7 +26,11 @@ class OtherDocumentCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.health_and_safety_outlined, size: 18, color: Colors.teal.shade700),
+            Icon(
+              Icons.health_and_safety_outlined,
+              size: 18,
+              color: Colors.teal.shade700,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -41,18 +45,34 @@ class OtherDocumentCard extends StatelessWidget {
               ),
             ),
             if (document.fileUrl != null) ...[
-              InkWell(
-                onTap: onPreview,
-                borderRadius: BorderRadius.circular(4),
-                child: Icon(Icons.visibility_outlined, size: 18, color: Colors.teal.shade400),
+              Semantics(
+                button: true,
+                label: 'Preview document',
+                child: InkWell(
+                  onTap: onPreview,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Icon(
+                    Icons.visibility_outlined,
+                    size: 18,
+                    color: Colors.teal.shade400,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
             ],
             if (onDelete != null)
-              InkWell(
-                onTap: onDelete,
-                borderRadius: BorderRadius.circular(4),
-                child: Icon(Icons.delete_outline, size: 18, color: Colors.red.shade400),
+              Semantics(
+                button: true,
+                label: 'Delete document',
+                child: InkWell(
+                  onTap: onDelete,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: Colors.red.shade400,
+                  ),
+                ),
               ),
           ],
         ),

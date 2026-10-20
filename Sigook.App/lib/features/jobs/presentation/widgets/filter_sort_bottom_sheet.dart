@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
-enum SortOption {
-  dateNewest,
-  dateOldest,
-  rateHighest,
-  rateLowest,
-}
+enum SortOption { dateNewest, dateOldest, rateHighest, rateLowest }
 
 enum FilterStatus { all, open, booked, pending, cancelled }
 
@@ -209,51 +204,57 @@ class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
 
   Widget _buildSortOption(String title, IconData icon, SortOption option) {
     final isSelected = _selectedSort == option;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedSort = option;
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryBlue.withValues(alpha: 0.1)
-              : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade200,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppTheme.primaryBlue : AppTheme.textLight,
-              size: 20,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedSort = option;
+          });
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryBlue.withValues(alpha: 0.1)
+                : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade200,
+              width: isSelected ? 2 : 1,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? AppTheme.primaryBlue : AppTheme.textLight,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected
+                        ? AppTheme.primaryBlue
+                        : AppTheme.textDark,
+                  ),
                 ),
               ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: AppTheme.primaryBlue,
-                size: 22,
-              ),
-          ],
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle,
+                  color: AppTheme.primaryBlue,
+                  size: 22,
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -33,6 +33,7 @@ class _AboutPageState extends State<AboutPage> {
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             notifyLogoFlash();
@@ -46,6 +47,7 @@ class _AboutPageState extends State<AboutPage> {
         title: const NavbarLogo(),
         actions: [
           IconButton(
+            tooltip: 'Menu',
             icon: const Icon(Icons.menu),
             onPressed: () {
               notifyLogoFlash();

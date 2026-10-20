@@ -498,6 +498,19 @@ Azure DevOps pipelines with path-based triggers and reusable templates
 `sigook.azurecr.io/api`) and Sigook.Web, zip deploy for the Functions, static build for
 Covenant.Web. Full details: [PIPELINES.md](PIPELINES.md).
 
+### Google Cloud
+
+Everything Google lives in the single project `sigookapps` (number 475603730166, "Covenant Billing Account"):
+
+| Resource | Used by | Where the credential lives |
+|---|---|---|
+| Firebase / FCM (service account `firebase-adminsdk-2ynl5`) | `FirebasePushNotificationSender` in the API; Android/iOS apps `com.sigook.sigook` / `com.all2job.all2job` | Key Vault `*-api--PushNotificationConfiguration--*` |
+| Google Play publishing (service accounts `playstore-ci`, `prod-playstore-ci`) | fastlane `android deploy` | Variable groups `SigookApp-Staging` / `SigookApp-Production` (`GOOGLE_PLAY_JSON_KEY`) |
+| Geocoding API key "Sigook Api - Geocoding" | `GeocodeService` (company locations) | Key Vault `*-api--GeocodeGoogleConfiguration--Key` |
+| Maps Embed API key "Sigook Web - Maps Embed" (referrers: sigook.com, sigook.ca, azurewebsites, localhost) | `mapsEmbedUrl` in `Sigook.Web/src/shared/request-detail/requestDetail.ts` | Hardcoded (public browser key, referrer-restricted) |
+| Maps Static API key "Sigook App - Maps Static" (one key for Android and iOS: Google does not enforce Android/iOS app restrictions on Maps Static requests, only the API restriction holds, so the key is limited to the Maps Static API and baked into the binaries) | `JobLocationCard` in Sigook.App | Variable groups `SigookApp-Staging` / `SigookApp-Production` (`GOOGLE_MAPS_API_KEY`) |
+| Cloud Run `pdfgenerator` (us-central1) | `PdfGeneratorUrl` in the API | — |
+
 ---
 
 ## Database
