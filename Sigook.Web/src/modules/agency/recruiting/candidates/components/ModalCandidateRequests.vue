@@ -6,7 +6,7 @@
         <b-field label="RequestID, Position">
           <b-autocomplete :data="rows" placeholder="RequestID, Position" :loading="isLoadingList"
             :custom-formatter="(option: AgencyRequestListItem) => `${option.numberId} | ${option.jobTitle} | ${option.companyFullName}`"
-            @typing="onInputEntered" @select="(option: AgencyRequestListItem | null) => optionSelected = option" append-to-body>
+            @typing="searchRequests" @select="(option: AgencyRequestListItem | null) => optionSelected = option" append-to-body>
             <template v-slot="props">
               <small>
                 {{ props.option.numberId }} |
@@ -24,39 +24,20 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref } from 'vue';
 import { showAlertError } from "@/shared/utils/toast";
 import { getAllAgencyRequests, postAgencyRequestApplicant } from "@/modules/agency/recruiting/requests/api";
-import type { AgencyRequestFilter, AgencyRequestListItem } from '@/modules/agency/recruiting/requests/types';
+import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
+import type { AgencyRequestListItem } from '@/modules/agency/recruiting/requests/types';
 
 const props = defineProps<{ candidateId: number | string }>();
 const emit = defineEmits<{ (e: 'onSelectRequest'): void }>();
 
 const isLoading = ref(false);
-const isLoadingList = ref(false);
-const rows = ref<AgencyRequestListItem[]>([]);
-const serverParams = reactive<AgencyRequestFilter>({
-  statuses: [0, 1, 4],
-});
+const { results: rows, isSearching: isLoadingList, search: searchRequests } = useDebouncedSearch(
+  (term) => getAllAgencyRequests({ filter: term, statuses: [0, 1, 4] }),
+  { minLength: 1 });
 const optionSelected = ref<AgencyRequestListItem | null>(null);
-
-function onInputEntered(value: string) {
-  serverParams.filter = value;
-  loadRequests();
-}
-
-function loadRequests() {
-  isLoadingList.value = true;
-  getAllAgencyRequests(serverParams)
-    .then((response) => {
-      isLoadingList.value = false;
-      rows.value = response;
-    })
-    .catch(error => {
-      isLoadingList.value = false;
-      showAlertError(error);
-    });
-}
 
 function saveRequestApplicant() {
   isLoading.value = true;

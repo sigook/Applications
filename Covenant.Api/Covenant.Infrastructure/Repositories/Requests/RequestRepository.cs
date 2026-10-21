@@ -19,6 +19,7 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using Covenant.Infrastructure.Mappers;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
@@ -50,18 +51,17 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             requests = requests.Where(r => r.RequestComission != null
                                            && r.RequestComission.AgencyPersonnelId == filter.SalesPersonnelId.Value);
         }
-        if (!string.IsNullOrWhiteSpace(filter.DisplayRecruiters))
+        if (SearchExtensions.HasSearchTokens(filter.DisplayRecruiters))
         {
-            var recruiterTerm = filter.DisplayRecruiters.ToLower();
-            requests = requests.Where(r => Context.RequestRecruiters
-                .Any(rr => rr.RequestId == r.Id && rr.Recruiter.Name.ToLower().Contains(recruiterTerm)));
+            var recruiterMatches = SearchExtensions.SearchPredicate<RequestRecruiter>(filter.DisplayRecruiters, rr => rr.Recruiter.Name);
+            requests = requests.Where(r => Context.RequestRecruiters.Where(rr => rr.RequestId == r.Id).Any(recruiterMatches));
         }
-        if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
+        if (SearchExtensions.HasSearchTokens(filter.CompanyFullName))
         {
-            var clientTerm = filter.CompanyFullName.ToLower();
-            requests = requests.Where(r => r.CompanyProfile.FullName.ToLower().Contains(clientTerm)
-                || Context.RequestReportTos.Any(rt => rt.RequestId == r.Id
-                    && (rt.ContactPerson.FirstName + " " + rt.ContactPerson.LastName).ToLower().Contains(clientTerm)));
+            var companyMatches = SearchExtensions.SearchPredicate<Request>(filter.CompanyFullName, r => r.CompanyProfile.FullName);
+            var contactMatches = SearchExtensions.SearchPredicate<RequestReportTo>(filter.CompanyFullName,
+                rt => rt.ContactPerson.FirstName, rt => rt.ContactPerson.LastName);
+            requests = requests.Where(companyMatches.Or(r => Context.RequestReportTos.Where(rt => rt.RequestId == r.Id).Any(contactMatches)));
         }
         var query = from r in requests
                     select new AgencyRequestListModel
@@ -163,28 +163,15 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private static Expression<Func<AgencyRequestListModel, bool>> ApplyFilterForAgency(GetRequestForAgencyFilter filter)
     {
-        var predicate = PredicateBuilder.New<AgencyRequestListModel>(true);
+        Expression<Func<AgencyRequestListModel, bool>> predicate = PredicateBuilder.New<AgencyRequestListModel>(true);
         if (!filter.HasPermissionToSeeInternalRequests)
             predicate = predicate.And(p => p.HasPermissionToSeeInternalRequests == false);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.Location))
-        {
-            var locationCriteria = filter.Location.ToLower();
-            predicate = predicate.And(r =>
-                r.Address.ToLower().Contains(locationCriteria) ||
-                r.City.ToLower().Contains(locationCriteria) ||
-                r.ProvinceName.ToLower().Contains(locationCriteria) ||
-                r.PostalCode.ToLower().Contains(locationCriteria));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-        {
-            var jobTitle = filter.JobTitle.ToLower();
-            predicate = predicate.And(r => r.JobTitle.ToLower().Contains(jobTitle)
-                || (r.BillingTitle != null && r.BillingTitle.ToLower().Contains(jobTitle)));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.SalesRepresentative))
-            predicate = predicate.And(r => r.SalesRepresentative.ToLower().Contains(filter.SalesRepresentative.ToLower()));
+        predicate = predicate
+            .AndSearch(filter.Location, r => r.Address, r => r.City, r => r.ProvinceName, r => r.PostalCode)
+            .AndSearch(filter.JobTitle, r => r.JobTitle, r => r.BillingTitle)
+            .AndSearch(filter.SalesRepresentative, r => r.SalesRepresentative);
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(r => r.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && r.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
         if (filter.RateFrom.HasValue && filter.RateTo.HasValue)
@@ -197,13 +184,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         {
             predicate = predicate.And(r => r.JobBoards.Any(jb => filter.JobBoardIds.Contains(jb.SourceId)));
         }
-        if (!string.IsNullOrWhiteSpace(filter.Filter))
-            predicate = predicate.And(r =>
-            r.NumberId.ToString().Contains(filter.Filter) ||
-            r.JobTitle.ToLower().Contains(filter.Filter) ||
-            (r.BillingTitle != null && r.BillingTitle.ToLower().Contains(filter.Filter)) ||
-            r.CompanyFullName.ToLower().Contains(filter.Filter));
-        return predicate;
+        return predicate.AndSearch(filter.Filter, r => r.NumberId.ToString(), r => r.JobTitle, r => r.BillingTitle, r => r.CompanyFullName);
     }
 
     private static IQueryable<AgencyRequestListModel> ApplySortForAgency(IQueryable<AgencyRequestListModel> query, GetRequestForAgencyFilter filter)
@@ -387,12 +368,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var requests = Context.Requests.Where(r => r.CompanyProfile.CompanyId == companyId);
         if (filter.CompanyUserId.HasValue)
             requests = requests.Where(r => r.RequestCompanyUser.Any(rcu => rcu.CompanyUserId == filter.CompanyUserId));
-        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-        {
-            var jobTitle = filter.JobTitle.ToLower();
-            requests = requests.Where(r => r.JobTitle.ToLower().Contains(jobTitle)
-                || (r.BillingTitle != null && r.BillingTitle.ToLower().Contains(jobTitle)));
-        }
+        requests = requests.WhereSearch(filter.JobTitle, r => r.JobTitle, r => r.BillingTitle);
         var query = from request in requests
                     select new RequestListModel
                     {
@@ -424,14 +400,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         Expression<Func<RequestListModel, bool>> predicate = r => statusToVisualize.Contains(r.RequestStatus);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.Location))
-        {
-            var location = filter.Location.ToLower();
-            predicate = predicate.And(r =>
-                r.Location.ToLower().Contains(location) ||
-                r.Entrance.ToLower().Contains(location));
-        }
-        return predicate;
+        return predicate.AndSearch(filter.Location, r => r.Location, r => r.Entrance);
     }
 
     private IQueryable<RequestListModel> ApplySortForCompany(IQueryable<RequestListModel> query, GetRequestForCompanyFilter filter)
@@ -527,7 +496,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<PaginatedList<AgencyWorkerRequestModel>> GetWorkersRequestByRequestId(Guid requestId, GetWorkersRequestFilter filter)
     {
-        var query = from wr in Context.WorkerRequests
+        var workerRequests = Context.WorkerRequests.WhereSearch(filter.Name,
+            wr => wr.WorkerProfile.FirstName, wr => wr.WorkerProfile.MiddleName, wr => wr.WorkerProfile.LastName,
+            wr => wr.WorkerProfile.SecondLastName, wr => wr.WorkerProfile.Worker.Email);
+        var query = from wr in workerRequests
                     select new AgencyWorkerRequestModel
                     {
                         Id = wr.Id,
@@ -570,11 +542,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         Expression<Func<AgencyWorkerRequestModel, bool>> predicate = wr => wr.RequestId == requestId;
         if (filter.NumberId.HasValue)
             predicate = predicate.And(wr => wr.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.Name))
-        {
-            var name = filter.Name.ToLower();
-            predicate = predicate.And(wr => EF.Functions.Like(wr.Name.ToLower(), $"%{name}%"));
-        }
         if (filter.Statuses != null && filter.Statuses.Any())
             predicate = predicate.And(wr => filter.Statuses.Contains(wr.WorkerRequestStatus));
         if (!string.IsNullOrWhiteSpace(filter.Phone))
@@ -589,20 +556,14 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             predicate = predicate.And(wr => wr.SocialInsurance.Contains(filter.SocialInsurance));
         if (filter.StartWorkingFrom.HasValue && filter.StartWorkingTo.HasValue)
             predicate = predicate.And(r => r.StartWorking.Value.Date >= filter.StartWorkingFrom.Value.Date && r.StartWorking.Value.Date <= filter.StartWorkingTo.Value.Date);
-        if (!string.IsNullOrWhiteSpace(filter.CreatedBy))
-            predicate = predicate.And(c => c.CreatedBy.ToLower().Contains(filter.CreatedBy.ToLower()));
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(c => c.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && c.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
-        if (!string.IsNullOrWhiteSpace(filter.RejectedBy))
-            predicate = predicate.And(c => c.RejectedBy.ToLower().Contains(filter.RejectedBy.ToLower()));
         if (filter.RejectedAtFrom.HasValue && filter.RejectedAtTo.HasValue)
             predicate = predicate.And(c => c.RejectedAt.Value.Date >= filter.RejectedAtFrom.Value.Date && c.RejectedAt.Value.Date <= filter.RejectedAtTo.Value.Date);
-        if (!string.IsNullOrWhiteSpace(filter.ExternalId))
-        {
-            var externalId = filter.ExternalId.ToLower();
-            predicate = predicate.And(wr => EF.Functions.Like(wr.ExternalId.ToLower(), $"%{externalId}%"));
-        }
-        return predicate;
+        return predicate
+            .AndSearch(filter.CreatedBy, c => c.CreatedBy)
+            .AndSearch(filter.RejectedBy, c => c.RejectedBy)
+            .AndSearch(filter.ExternalId, wr => wr.ExternalId);
     }
 
     private IQueryable<AgencyWorkerRequestModel> ApplySortWorkersRequest(IQueryable<AgencyWorkerRequestModel> query, GetWorkersRequestFilter filter)
@@ -652,7 +613,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                                                          Id = wr.Id,
                                                          WorkerId = wr.WorkerProfile.WorkerId,
                                                          WorkerProfileId = wr.WorkerProfileId,
-                                                         Name = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
+                                                         Name = wr.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.MiddleName) ? string.Empty : " " + wr.WorkerProfile.MiddleName) + " " + wr.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.SecondLastName) ? string.Empty : " " + wr.WorkerProfile.SecondLastName),
                                                          WorkerRequestStatus = wr.WorkerRequestStatus,
                                                          RejectComments = wr.RejectComments,
                                                          RejectedAt = wr.RejectedAt,
@@ -706,11 +667,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var requests = Context.Requests.Where(r => r.CompanyProfile.AgencyId == agencyId);
         if (filter.NumberId.HasValue)
             requests = requests.Where(r => r.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-        {
-            var jobTitle = filter.JobTitle.Trim().ToLower();
-            requests = requests.Where(r => r.JobTitle.ToLower().Contains(jobTitle));
-        }
+        requests = requests.WhereSearch(filter.JobTitle, r => r.JobTitle);
 
         var projected = requests
             .Select(r => new
@@ -848,28 +805,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private static Expression<Func<WorkerRequestHistoryModel, bool>> ApplyFilterWorkerRequestHistory(GetWorkerRequestHistoryFilter filter)
     {
-        var predicate = PredicateBuilder.New<WorkerRequestHistoryModel>(true);
+        Expression<Func<WorkerRequestHistoryModel, bool>> predicate = PredicateBuilder.New<WorkerRequestHistoryModel>(true);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
-        {
-            var client = filter.CompanyFullName.ToLower();
-            predicate = predicate.And(r => r.CompanyFullName.ToLower().Contains(client));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-        {
-            var jobTitle = filter.JobTitle.ToLower();
-            predicate = predicate.And(r => r.JobTitle.ToLower().Contains(jobTitle));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.Location))
-        {
-            var location = filter.Location.ToLower();
-            predicate = predicate.And(r =>
-                r.Address.ToLower().Contains(location) ||
-                r.City.ToLower().Contains(location) ||
-                r.ProvinceName.ToLower().Contains(location) ||
-                r.PostalCode.ToLower().Contains(location));
-        }
+        predicate = predicate
+            .AndSearch(filter.CompanyFullName, r => r.CompanyFullName)
+            .AndSearch(filter.JobTitle, r => r.JobTitle)
+            .AndSearch(filter.Location, r => r.Address, r => r.City, r => r.ProvinceName, r => r.PostalCode);
         if (filter.Statuses != null && filter.Statuses.Any())
             predicate = predicate.And(r => filter.Statuses.Contains(r.RequestStatus));
         if (filter.WorkerRequestStatuses != null && filter.WorkerRequestStatuses.Any())
@@ -909,7 +851,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                          Id = wr.Id,
                          WorkerId = wr.WorkerProfile.WorkerId,
                          WorkerProfileId = wr.WorkerProfileId,
-                         Name = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
+                         Name = wr.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.MiddleName) ? string.Empty : " " + wr.WorkerProfile.MiddleName) + " " + wr.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.SecondLastName) ? string.Empty : " " + wr.WorkerProfile.SecondLastName),
                          WorkerRequestStatus = wr.WorkerRequestStatus,
                          ProfileImage = wr.WorkerProfile.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wr.WorkerProfile.ProfileImage.FileName}",
                          NumberId = wr.WorkerProfile.NumberId,
@@ -1165,7 +1107,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<PaginatedList<RequestApplicantDetailModel>> GetRequestApplicants(Guid requestId, GetRequestApplicantFilter filter)
     {
-        var query = from rc in Context.RequestApplicants.Where(c => c.RequestId == requestId)
+        var applicants = Context.RequestApplicants
+            .Where(c => c.RequestId == requestId)
+            .WhereSearch(filter.Name, ApplicantSearchFields);
+        var query = from rc in applicants
                     select new RequestApplicantDetailModel
                     {
                         Id = rc.Id,
@@ -1177,7 +1122,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         CreatedAt = rc.CreatedAt,
                         Name = rc.Candidate != null
                             ? rc.Candidate.Name
-                            : rc.WorkerProfile.FirstName + " " + rc.WorkerProfile.MiddleName + " " + rc.WorkerProfile.LastName + " " + rc.WorkerProfile.SecondLastName,
+                            : rc.WorkerProfile.FirstName +
+                                (string.IsNullOrWhiteSpace(rc.WorkerProfile.MiddleName) ? string.Empty : " " + rc.WorkerProfile.MiddleName) +
+                                " " + rc.WorkerProfile.LastName +
+                                (string.IsNullOrWhiteSpace(rc.WorkerProfile.SecondLastName) ? string.Empty : " " + rc.WorkerProfile.SecondLastName),
                         PhoneNumber = rc.Candidate != null
                             ? rc.Candidate.PhoneNumbers.FirstOrDefault().PhoneNumber
                             : rc.WorkerProfile.MobileNumber != null ? rc.WorkerProfile.MobileNumber : rc.WorkerProfile.Phone,
@@ -1207,7 +1155,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         WorkerId = ra.Candidate != null ? null : ra.WorkerProfile.WorkerId,
                         Name = ra.Candidate != null
                             ? ra.Candidate.Name
-                            : ra.WorkerProfile.FirstName + " " + ra.WorkerProfile.MiddleName + " " + ra.WorkerProfile.LastName + " " + ra.WorkerProfile.SecondLastName,
+                            : ra.WorkerProfile.FirstName +
+                                (string.IsNullOrWhiteSpace(ra.WorkerProfile.MiddleName) ? string.Empty : " " + ra.WorkerProfile.MiddleName) +
+                                " " + ra.WorkerProfile.LastName +
+                                (string.IsNullOrWhiteSpace(ra.WorkerProfile.SecondLastName) ? string.Empty : " " + ra.WorkerProfile.SecondLastName),
                         Email = ra.Candidate != null ? ra.Candidate.Email : ra.WorkerProfile.Worker.Email,
                         PhoneNumber = ra.Candidate != null
                             ? ra.Candidate.PhoneNumbers.FirstOrDefault().PhoneNumber
@@ -1295,12 +1246,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             applicants = applicants.Where(ra => ra.Request.CompanyProfileId == filter.CompanyProfileId.Value);
         if (filter.NumberId.HasValue)
             applicants = applicants.Where(ra => ra.Request.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-        {
-            var jobTitle = filter.JobTitle.ToLower();
-            applicants = applicants.Where(ra => ra.Request.JobTitle.ToLower().Contains(jobTitle)
-                || (ra.Request.BillingTitle != null && ra.Request.BillingTitle.ToLower().Contains(jobTitle)));
-        }
+        applicants = applicants
+            .WhereSearch(filter.JobTitle, ra => ra.Request.JobTitle, ra => ra.Request.BillingTitle)
+            .WhereSearch(filter.Name, ApplicantSearchFields);
         if (!string.IsNullOrWhiteSpace(filter.Recruiter))
         {
             var recruiter = filter.Recruiter.ToLower();
@@ -1315,14 +1263,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private Expression<Func<AgencyApplicantListModel, bool>> ApplyFilterAgencyApplicants(GetAgencyApplicantsFilter filter)
     {
-        var predicate = PredicateBuilder.New<AgencyApplicantListModel>(true);
-        if (!string.IsNullOrWhiteSpace(filter.Name))
-        {
-            var name = filter.Name.ToLower();
-            predicate = predicate.And(ra => ra.Name.ToLower().Contains(name) || ra.Email.ToLower().Contains(name));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.CreatedBy))
-            predicate = predicate.And(ra => ra.CreatedBy.ToLower().Contains(filter.CreatedBy.ToLower()));
+        Expression<Func<AgencyApplicantListModel, bool>> predicate = PredicateBuilder.New<AgencyApplicantListModel>(true);
+        predicate = predicate.AndSearch(filter.CreatedBy, ra => ra.CreatedBy);
         if (filter.Statuses is { Count: > 0 })
             predicate = predicate.And(ra => filter.Statuses.Contains(ra.Status));
         return predicate;
@@ -1339,14 +1281,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private Expression<Func<RequestApplicantDetailModel, bool>> ApplyFilterRequestApplicants(GetRequestApplicantFilter filter)
     {
-        var predicate = PredicateBuilder.New<RequestApplicantDetailModel>(true);
-        if (!string.IsNullOrWhiteSpace(filter.Name))
-        {
-            var fullName = filter.Name.ToLower();
-            predicate = predicate.And(ra =>
-                ra.Name.ToLower().Contains(fullName) ||
-                ra.Email.ToLower().Contains(fullName));
-        }
+        Expression<Func<RequestApplicantDetailModel, bool>> predicate = PredicateBuilder.New<RequestApplicantDetailModel>(true);
         if (!string.IsNullOrWhiteSpace(filter.Phone))
         {
             var expression = new Regex(@"\s+");
@@ -1355,13 +1290,11 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 ra.PhoneNumber.Replace("(", string.Empty).Replace(")", string.Empty).Contains(filter.Phone) ||
                 ra.PhoneNumber.Contains(phoneWithoutBlankSpaces));
         }
-        if (!string.IsNullOrWhiteSpace(filter.CreatedBy))
-            predicate = predicate.And(ra => ra.CreatedBy.ToLower().Contains(filter.CreatedBy.ToLower()));
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(ra => ra.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && ra.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
         if (filter.Statuses is { Count: > 0 })
             predicate = predicate.And(ra => filter.Statuses.Contains(ra.Status));
-        return predicate;
+        return predicate.AndSearch(filter.CreatedBy, ra => ra.CreatedBy);
     }
 
     private IQueryable<RequestApplicantDetailModel> ApplySortRequestApplicants(IQueryable<RequestApplicantDetailModel> query, GetRequestApplicantFilter filter)
@@ -1381,35 +1314,56 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return query;
     }
 
-    private static Expression<Func<WorkerProfile, bool>> BuildWorkerSearchPredicate(
-        Guid agencyId, string searchLower, bool isNumericSearch, long numberId,
-        Expression<Func<WorkerProfile, bool>> exclusion)
-    {
-        var predicate = PredicateBuilder.New<WorkerProfile>(wp => wp.AgencyId == agencyId);
-        predicate = predicate.And(exclusion);
+    private const double SimilarityThreshold = 0.4;
 
-        var search = PredicateBuilder.New<WorkerProfile>(false);
-        search = search.Or(wp => (wp.FirstName + " " + wp.LastName).ToLower().Contains(searchLower));
-        if (isNumericSearch)
+    private static readonly Expression<Func<RequestApplicant, string>>[] ApplicantSearchFields =
+    [
+        ra => ra.Candidate.Name,
+        ra => ra.Candidate.Email,
+        ra => ra.WorkerProfile.FirstName,
+        ra => ra.WorkerProfile.MiddleName,
+        ra => ra.WorkerProfile.LastName,
+        ra => ra.WorkerProfile.SecondLastName,
+        ra => ra.WorkerProfile.Worker.Email
+    ];
+
+    private static Expression<Func<WorkerProfile, bool>> BuildWorkerSearchPredicate(
+        Guid agencyId, string searchTerm, Expression<Func<WorkerProfile, bool>> exclusion)
+    {
+        var search = SearchExtensions.SearchPredicate<WorkerProfile>(searchTerm,
+            wp => wp.FirstName, wp => wp.MiddleName, wp => wp.LastName, wp => wp.SecondLastName, wp => wp.Worker.Email);
+        if (long.TryParse(searchTerm.Trim(), out var numberId))
             search = search.Or(wp => wp.NumberId == numberId);
 
-        return predicate.And(search);
+        Expression<Func<WorkerProfile, bool>> predicate = wp => wp.AgencyId == agencyId;
+        return predicate.And(exclusion).And(search);
     }
 
     private static Expression<Func<CandidateEntity, bool>> BuildCandidateSearchPredicate(
-        Guid agencyId, string searchLower, bool isNumericSearch, long numberId,
-        Expression<Func<CandidateEntity, bool>> exclusion)
+        Guid agencyId, string searchTerm, Expression<Func<CandidateEntity, bool>> exclusion)
     {
-        var predicate = PredicateBuilder.New<CandidateEntity>(c => c.AgencyId == agencyId);
-        predicate = predicate.And(exclusion);
-
-        var search = PredicateBuilder.New<CandidateEntity>(false);
-        search = search.Or(c => c.Name.ToLower().Contains(searchLower));
-        search = search.Or(c => c.Email != null && c.Email.ToLower().Contains(searchLower));
-        if (isNumericSearch)
+        var search = SearchExtensions.SearchPredicate<CandidateEntity>(searchTerm, c => c.Name, c => c.Email);
+        if (long.TryParse(searchTerm.Trim(), out var numberId))
             search = search.Or(c => c.NumberId == numberId);
 
-        return predicate.And(search);
+        Expression<Func<CandidateEntity, bool>> predicate = c => c.AgencyId == agencyId;
+        return predicate.And(exclusion).And(search);
+    }
+
+    private static Expression<Func<WorkerProfile, bool>> BuildWorkerSimilarityPredicate(
+        Guid agencyId, string searchTerm, Expression<Func<WorkerProfile, bool>> exclusion)
+    {
+        Expression<Func<WorkerProfile, bool>> predicate = wp => wp.AgencyId == agencyId;
+        return predicate.And(exclusion)
+            .And(SearchExtensions.SimilarityPredicate<WorkerProfile>(searchTerm, SimilarityThreshold, wp => wp.FirstName + " " + wp.LastName));
+    }
+
+    private static Expression<Func<CandidateEntity, bool>> BuildCandidateSimilarityPredicate(
+        Guid agencyId, string searchTerm, Expression<Func<CandidateEntity, bool>> exclusion)
+    {
+        Expression<Func<CandidateEntity, bool>> predicate = c => c.AgencyId == agencyId;
+        return predicate.And(exclusion)
+            .And(SearchExtensions.SimilarityPredicate<CandidateEntity>(searchTerm, SimilarityThreshold, c => c.Name));
     }
 
     private IQueryable<ApplicantSearchResultModel> BuildWorkerSearchQuery(Expression<Func<WorkerProfile, bool>> workerPredicate) =>
@@ -1460,33 +1414,37 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .ToListAsync();
     }
 
-    public Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm)
+    public async Task<List<ApplicantSearchResultModel>> SearchApplicants(Guid agencyId, Guid requestId, string searchTerm)
     {
-        var searchLower = searchTerm.ToLower();
-        var isNumericSearch = long.TryParse(searchTerm, out var numberId);
+        if (!SearchExtensions.HasSearchTokens(searchTerm)) return [];
 
         var existingApplicants = Context.RequestApplicants.Where(ra => ra.RequestId == requestId);
         var bookedWorkers = Context.WorkerRequests.Where(wr => wr.RequestId == requestId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
+        Expression<Func<WorkerProfile, bool>> workerExclusion = wp =>
+            !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id) && !bookedWorkers.Any(wr => wr.WorkerProfileId == wp.Id);
+        Expression<Func<CandidateEntity, bool>> candidateExclusion = c => !existingApplicants.Any(ra => ra.CandidateId == c.Id);
 
-        var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
-            wp => !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id) && !bookedWorkers.Any(wr => wr.WorkerProfileId == wp.Id));
-        var candidatePredicate = BuildCandidateSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
-            c => !existingApplicants.Any(ra => ra.CandidateId == c.Id));
+        var results = await SearchWorkersAndCandidates(
+            BuildWorkerSearchPredicate(agencyId, searchTerm, workerExclusion),
+            BuildCandidateSearchPredicate(agencyId, searchTerm, candidateExclusion));
+        if (results.Count > 0) return results;
 
-        return SearchWorkersAndCandidates(workerPredicate, candidatePredicate);
+        return await SearchWorkersAndCandidates(
+            BuildWorkerSimilarityPredicate(agencyId, searchTerm, workerExclusion),
+            BuildCandidateSimilarityPredicate(agencyId, searchTerm, candidateExclusion));
     }
 
-    public Task<List<ApplicantSearchResultModel>> SearchRunnerProspects(Guid agencyId, Guid requestId, string searchTerm)
+    public async Task<List<ApplicantSearchResultModel>> SearchRunnerProspects(Guid agencyId, Guid requestId, string searchTerm)
     {
-        var searchLower = searchTerm.ToLower();
-        var isNumericSearch = long.TryParse(searchTerm, out var numberId);
+        if (!SearchExtensions.HasSearchTokens(searchTerm)) return [];
 
         var existingRunners = Context.Runners.Where(r => r.RequestId == requestId);
+        Expression<Func<WorkerProfile, bool>> workerExclusion = wp => !existingRunners.Any(r => r.WorkerProfileId == wp.Id);
 
-        var workerPredicate = BuildWorkerSearchPredicate(agencyId, searchLower, isNumericSearch, numberId,
-            wp => !existingRunners.Any(r => r.WorkerProfileId == wp.Id));
+        var results = await SearchWorkers(BuildWorkerSearchPredicate(agencyId, searchTerm, workerExclusion));
+        if (results.Count > 0) return results;
 
-        return SearchWorkers(workerPredicate);
+        return await SearchWorkers(BuildWorkerSimilarityPredicate(agencyId, searchTerm, workerExclusion));
     }
 
     public async Task<RequestComission> GetRequestComission(Guid requestId) => await Context.RequestComissions.FirstOrDefaultAsync(rc => rc.RequestId == requestId);

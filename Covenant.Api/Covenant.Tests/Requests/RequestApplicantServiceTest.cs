@@ -55,7 +55,8 @@ public class RequestApplicantServiceTest
             filesOptions.Object,
             new ChangeRequestApplicantStatusModelValidator(),
             new ChangeApplicantsStatusModelValidator(),
-            new CompleteApplicantComplianceItemModelValidator());
+            new CompleteApplicantComplianceItemModelValidator(),
+            Mock.Of<ISkillService>());
     }
 
     private RequestApplicant SetupApplicant(RequestApplicantStatus status, Guid? workerProfileId = null, Guid? candidateId = null)

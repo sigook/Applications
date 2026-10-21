@@ -8,6 +8,7 @@ using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using Covenant.Infrastructure.Mappers;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
@@ -222,17 +223,10 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
 
     private Expression<Func<AgencyModel, bool>> ApplyFilterAgencies(Guid agencyId, GetAgenciesFilter filter)
     {
-        var predicate = PredicateBuilder.New<AgencyModel>(true);
-        if (!string.IsNullOrWhiteSpace(filter.FullName))
-        {
-            var fullName = filter.FullName.ToLower();
-            predicate = predicate.And(a => a.FullName.ToLower().Contains(fullName));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.Email))
-        {
-            var email = filter.Email.ToLower();
-            predicate = predicate.And(a => a.Email.ToLower().Contains(email));
-        }
+        Expression<Func<AgencyModel, bool>> predicate = PredicateBuilder.New<AgencyModel>(true);
+        predicate = predicate
+            .AndSearch(filter.FullName, a => a.FullName)
+            .AndSearch(filter.Email, a => a.Email);
         if (filter.AgencyTypes?.Any() == true)
         {
             predicate = predicate.And(a => filter.AgencyTypes.Contains(a.AgencyType));

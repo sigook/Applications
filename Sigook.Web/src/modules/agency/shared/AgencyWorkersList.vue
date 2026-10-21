@@ -5,7 +5,7 @@
       <div class="column is-12">
         <b-field label="Worker" :message="'Type at least 3 characters to search'">
           <b-autocomplete v-model="workerSelected" :data="workers" placeholder="Worker" name="worker" append-to-body
-            :loading="isLoadingList" @typing="onWorkerInput" @select="selectWorker"
+            :loading="isLoadingList" @typing="searchWorkers" @select="selectWorker"
             :custom-formatter="(option) => `${option.fullName} | ${option.approvedToWork ? 'Approved' : 'Not Approved'}`">
           </b-autocomplete>
         </b-field>
@@ -24,6 +24,7 @@ import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { getAgencyWorkersDropdown } from '@/modules/agency/recruiting/workers/api';
 import { bookAgencyRequestWorker } from "@/modules/agency/recruiting/requests/api";
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
+import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { AgencyWorkerDropdownItem } from '@/modules/agency/recruiting/workers/types';
 
 const emit = defineEmits<{ (e: 'workerBooked'): void }>();
@@ -31,31 +32,10 @@ const route = useRoute();
 
 const isLoading = ref(false);
 const requestId = ref<string>(route.params.id as string);
-const isLoadingList = ref(false);
-const workers = ref<AgencyWorkerDropdownItem[]>([]);
+const { results: workers, isSearching: isLoadingList, search: searchWorkers } =
+  useDebouncedSearch((term) => getAgencyWorkersDropdown({ searchTerm: term }));
 const workerSelected = ref<string | null>(null);
 const workerProfileId = ref<string | null>(null);
-
-function onWorkerInput(text: string) {
-  if (text.length >= 3) {
-    searchWorkers(text);
-  } else {
-    workers.value = [];
-  }
-}
-
-function searchWorkers(text: string) {
-  isLoadingList.value = true;
-  getAgencyWorkersDropdown({ searchTerm: text })
-    .then(response => {
-      isLoadingList.value = false;
-      workers.value = response;
-    })
-    .catch(error => {
-      isLoadingList.value = false;
-      showAlertError(error);
-    });
-}
 
 function selectWorker(worker: AgencyWorkerDropdownItem | null) {
   if (worker) {

@@ -14,6 +14,7 @@ public static class DatabaseScriptRunner
         "Tables",
         "Views",
         "Functions",
+        "Indexes",
         "StoredProcedures",
         "Types",
     ];

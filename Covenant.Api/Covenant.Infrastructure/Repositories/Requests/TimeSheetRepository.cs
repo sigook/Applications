@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Configuration;
+using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
@@ -12,6 +12,7 @@ using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -142,12 +143,8 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
 
     private static Expression<Func<TimeSheetHistoryModel, bool>> ApplyFilterTimeSheetHistory(GetWorkerTimeSheetHistoryFilter filter)
     {
-        var predicate = PredicateBuilder.New<TimeSheetHistoryModel>(true);
-        if (!string.IsNullOrWhiteSpace(filter.CompanyName))
-        {
-            var companyName = filter.CompanyName.ToLower();
-            predicate = predicate.And(t => t.BusinessName.ToLower().Contains(companyName));
-        }
+        Expression<Func<TimeSheetHistoryModel, bool>> predicate = PredicateBuilder.New<TimeSheetHistoryModel>(true);
+        predicate = predicate.AndSearch(filter.CompanyName, t => t.BusinessName);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(t => t.NumberId == filter.NumberId.Value);
         if (filter.DateFrom.HasValue && filter.DateTo.HasValue)
@@ -610,7 +607,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                     {
                         CompanyFullName = ts.WorkerRequest.Request.CompanyProfile.FullName,
                         AgencyFullName = ts.WorkerRequest.Request.CompanyProfile.Agency.FullName,
-                        WorkerFullName = ts.WorkerRequest.WorkerProfile.FirstName + " " + ts.WorkerRequest.WorkerProfile.MiddleName + " " + ts.WorkerRequest.WorkerProfile.LastName + " " + ts.WorkerRequest.WorkerProfile.SecondLastName,
+                        WorkerFullName = ts.WorkerRequest.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(ts.WorkerRequest.WorkerProfile.MiddleName) ? string.Empty : " " + ts.WorkerRequest.WorkerProfile.MiddleName) + " " + ts.WorkerRequest.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(ts.WorkerRequest.WorkerProfile.SecondLastName) ? string.Empty : " " + ts.WorkerRequest.WorkerProfile.SecondLastName),
                         Date = ts.Date,
                         TimeInApproved = ts.TimeInApproved,
                         TimeOutApproved = ts.TimeOutApproved,

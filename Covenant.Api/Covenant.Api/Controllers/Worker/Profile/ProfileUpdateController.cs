@@ -7,6 +7,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Resources;
+using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,12 +24,14 @@ public class ProfileUpdateController : ControllerBase
     private readonly IWorkerRepository _workerRepository;
     private readonly IDocumentService documentService;
     private readonly IWorkerService _workerService;
+    private readonly ISkillService skillService;
 
-    public ProfileUpdateController(IWorkerRepository workerRepository, IDocumentService documentService, IWorkerService workerService)
+    public ProfileUpdateController(IWorkerRepository workerRepository, IDocumentService documentService, IWorkerService workerService, ISkillService skillService)
     {
         _workerRepository = workerRepository;
         this.documentService = documentService;
         _workerService = workerService;
+        this.skillService = skillService;
     }
 
     private async Task<IActionResult> CommonFunctionUpdate<T>(T model, Guid profileId, Func<Covenant.Common.Entities.Worker.WorkerProfile, Task<Result>> update) where T : class
@@ -257,7 +260,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Skills(Guid profileId, [FromBody] List<string> model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchSkills(model)));
+        await CommonFunctionUpdate(model, profileId, async entity => entity.PatchSkills(await skillService.Canonicalize(model)));
 
     /// <summary>
     /// Uploads identification documents for a worker profile.

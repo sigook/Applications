@@ -18,7 +18,7 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
                     JobTitle = wr.Request.JobTitle,
                     AgencyEmail = wr.Request.CompanyProfile.Agency.User.Email,
                     CompanyFullName = wr.Request.CompanyProfile.FullName,
-                    WorkerFullName = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
+                    WorkerFullName = wr.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.MiddleName) ? string.Empty : " " + wr.WorkerProfile.MiddleName) + " " + wr.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.SecondLastName) ? string.Empty : " " + wr.WorkerProfile.SecondLastName),
                     EmailNotification = unt != null && unt.EmailNotification
                 }).SingleOrDefaultAsync();
     }
@@ -71,7 +71,7 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
                     JobTitle = wr.Request.JobTitle,
                     CompanyEmail = wr.Request.CompanyProfile.Company.Email,
                     AgencyFullName = wr.Request.CompanyProfile.Agency.FullName,
-                    WorkerFullName = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
+                    WorkerFullName = wr.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.MiddleName) ? string.Empty : " " + wr.WorkerProfile.MiddleName) + " " + wr.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.SecondLastName) ? string.Empty : " " + wr.WorkerProfile.SecondLastName),
                     EmailNotification = unt != null && unt.EmailNotification
                 }).SingleOrDefaultAsync();
     }

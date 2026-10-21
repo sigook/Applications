@@ -87,7 +87,7 @@ builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddAdapters();
 builder.Services.AddConfigurations(builder.Configuration);
-builder.Services.AddClients(builder.Configuration);
+builder.Services.AddClients();
 builder.Services.AddContainers(builder);
 builder.Services.AddAzureServiceBusConsumer(builder);
 builder.Services.AddLocalization();

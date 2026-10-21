@@ -252,7 +252,7 @@ Children:
 | Entity | Shape |
 |---|---|
 | `CandidatePhone` | `Id`, `CandidateId`, `PhoneNumber` |
-| `CandidateSkill` | `Id`, `CandidateId`, `Skill` (created via `CandidateSkill.Create`) |
+| `CandidateSkill` | `Id`, `CandidateId`, `Skill` (created via `CandidateSkill.Create`, value canonicalized against the `Skill` catalog) |
 | `CandidateDocument` | join Candidate↔`CovenantFile` (`CandidateId`, `DocumentId`) |
 | `CandidateNote` | join Candidate↔`CovenantNote` (`CandidateId`, `NoteId`) |
 
@@ -472,6 +472,7 @@ formulas**; EI is the only computed one. Non-unique lookup indexes: `CppDeductio
 | `CovenantFile.cs` | file metadata for blobs (referenced by all `*Document` join entities) |
 | `CovenantNote.cs` | shared note entity with author/soft-delete (used by Candidate/Company/Request notes) |
 | `Source.cs` | catalog of candidate/job-board sources; `IsAvailableForRequests` gates job-board use; `Value` unique |
+| `Skill.cs` | skills catalog served by `GET api/catalog/skills`; `Value` unique, `Aliases` (`text[]`) holds lowercase, accent-free synonyms ("gl", "general labor" → "General Labour"). `WorkerProfileSkill`, `CandidateSkill` and `RequestSkill` keep the skill as free text (no FK): every write goes through `SkillService.Canonicalize`, which trims, maps a value or alias to the catalog `Value`, keeps unknown skills as typed, drops empty/one-letter/"n/a" values and removes duplicates. Rows are maintained by `Scripts/Data/` scripts |
 | `Shift.cs` | shift definition attached to job position rates and requests |
 | `IdentificationType.cs` | identification-type catalog; `Code` (`IdentificationTypeCode` enum, stored as string, default `None`) gives each row a typed identity — `SinSsn` drives the SIN auto-fill on identification uploads. Rows added by hand default to `None` (feature off for them) |
 | `Gender.cs`, `Language.cs`, `Lift.cs`, `Day.cs`, `Availability*` | catalogs |

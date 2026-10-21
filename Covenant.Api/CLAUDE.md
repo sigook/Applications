@@ -31,7 +31,7 @@ Controllers:     Covenant.Api/Controllers/{Portal}/{Menu}/{Feature}/     folder 
 Identity config: Covenant.Api/Configuration/OpenIddictConfiguration.cs  (server + local validation, certificates)
                  Covenant.Api/Configuration/Microsoft365OpenIdConnect.cs (scheme "oidc")
                  Covenant.Api/Configuration/OpenIddictSeeder.cs         (scopes, Functions client, dev clients)
-Razor views:     Covenant.Api/Views/Notifications/Identity/            (account emails) + Billing/, Notifications/, Website/ — email/PDF templates only, no pages
+Razor views:     Covenant.Api/Views/Notifications/Identity/            (account emails) + Billing/, Notifications/, Website/ — email templates only, no pages (invoice/pay stub PDFs are QuestPDF handlers in Covenant.Documents)
 Static assets:   Covenant.Api/wwwroot/assets/images/                    (images referenced by the email templates; `defaults/` = source of the default logo blobs `company.png`/`agency.png`/`worker.png` uploaded to the `files` container — the API never generates images)
 OpenAPI:         Covenant.Api/Configuration/OpenApi/                    (document/operation transformers; UI = Scalar at /scalar)
 Services:        Covenant.Core.BL/Services/{Domain}/                    by domain, PLURAL folders (Agencies/, Candidates/, Companies/, Locations/, Notifications/, Requests/, Sales/, Workers/, Shared/) so the namespace never shadows the entity; Covenant.Core.BL/Interfaces/ mirrors the tree

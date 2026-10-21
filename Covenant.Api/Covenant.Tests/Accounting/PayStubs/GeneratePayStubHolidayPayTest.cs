@@ -65,7 +65,6 @@ public class GeneratePayStubHolidayPayTest
             _catalogRepository.Object,
             Mock.Of<IPayStubsContainer>(),
             Mock.Of<IRazorViewToStringRenderer>(),
-            Mock.Of<IPdfGeneratorService>(),
             Mock.Of<IEmailService>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<ISkipPayrollNumberRepository>(),

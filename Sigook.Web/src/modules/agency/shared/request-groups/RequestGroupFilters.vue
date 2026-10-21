@@ -10,7 +10,8 @@
     </b-field>
     <b-field>
       <b-autocomplete v-model="companyTerm" :data="companies" field="value" placeholder="Client" icon="domain"
-        size="is-small" open-on-focus clearable append-to-body @typing="searchCompanies" @select="onCompanySelected">
+        size="is-small" open-on-focus clearable append-to-body :loading="isSearchingCompanies" @typing="searchCompanies"
+        @select="onCompanySelected">
       </b-autocomplete>
     </b-field>
     <b-field>
@@ -32,8 +33,8 @@
 
 <script setup lang="ts" generic="F extends RequestGroupFilter">
 import { computed, ref } from 'vue';
-import { showAlertError } from '@/shared/utils/toast';
 import { getAgencyCompaniesList } from '@/modules/agency/recruiting/clients/api';
+import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { CatalogItem } from '@/shared/types/common';
 import type { RequestGroupFilter } from '@/modules/agency/shared/request-groups/types';
 
@@ -41,7 +42,8 @@ const props = defineProps<{ statusOptions: CatalogItem<number>[] }>();
 const filter = defineModel<F>('filter', { required: true });
 const emit = defineEmits<{ (e: 'search'): void }>();
 
-const companies = ref<CatalogItem[]>([]);
+const { results: companies, isSearching: isSearchingCompanies, search: searchCompanies } =
+  useDebouncedSearch((term) => getAgencyCompaniesList(term));
 const companyTerm = ref('');
 
 function patch(changes: Partial<RequestGroupFilter>) {
@@ -74,18 +76,6 @@ function onInputEntered(event: KeyboardEvent) {
 
 function onNumberIdChanged(value: string | number) {
   patch({ numberId: value === '' || value === null ? null : Number(value) });
-}
-
-function searchCompanies(term: string) {
-  if (term.length < 3) {
-    companies.value = [];
-    return;
-  }
-  getAgencyCompaniesList(term)
-    .then((response) => {
-      companies.value = response;
-    })
-    .catch((error) => showAlertError(error));
 }
 
 function onCompanySelected(company: CatalogItem | null) {

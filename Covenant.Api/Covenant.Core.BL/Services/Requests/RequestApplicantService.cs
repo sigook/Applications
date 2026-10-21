@@ -32,7 +32,8 @@ public class RequestApplicantService(
     IOptions<FilesConfiguration> filesOptions,
     IValidator<ChangeRequestApplicantStatusModel> changeStatusValidator,
     IValidator<ChangeApplicantsStatusModel> changeApplicantsStatusValidator,
-    IValidator<CompleteApplicantComplianceItemModel> completeComplianceItemValidator) : IRequestApplicantService
+    IValidator<CompleteApplicantComplianceItemModel> completeComplianceItemValidator,
+    ISkillService skillService) : IRequestApplicantService
 {
     private const string ApplicantNotFound = "Applicant not found";
     private readonly FilesConfiguration filesConfiguration = filesOptions.Value;
@@ -47,9 +48,9 @@ public class RequestApplicantService(
         {
             var request = await requestRepository.GetRequest(r => r.Id == requestId);
             var candidate = await candidateRepository.GetCandidate(c => c.Id == model.CandidateId.Value);
-            if (!candidate.Skills.Any(s => s.Equals(request.JobTitle)))
+            foreach (var skill in await skillService.Canonicalize([request.JobTitle]))
             {
-                candidate.AddSkill(request.JobTitle);
+                candidate.AddSkill(skill);
             }
             var result = RequestApplicant.CreateWithCandidate(requestId, model.CandidateId.Value, createdBy, model.Comments, RequestApplicantStatus.InProgress);
             if (!result) return Result.Fail<RequestApplicantDetailModel>(result.Errors);

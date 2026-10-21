@@ -693,6 +693,7 @@ local.properties
 # Logs and databases
 *.log
 *.sql
+!Covenant.Api/Covenant.Infrastructure/Scripts/**/*.sql
 *.sqlite
 *.sqlite3
 

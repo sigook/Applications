@@ -80,6 +80,7 @@ public class CovenantContext : DbContext
     public DbSet<WsibGroup> WsibGroups { get; set; }
     public DbSet<Industry> Industries { get; set; }
     public DbSet<Source> Sources { get; set; }
+    public DbSet<Skill> Skills { get; set; }
     public DbSet<ReasonCancellationRequest> ReasonCancellationRequests { get; set; }
     public DbSet<Holiday> Holidays { get; set; }
     public DbSet<CovenantFile> CovenantFiles { get; set; }

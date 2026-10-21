@@ -77,15 +77,9 @@ public class WebsiteController(
         {
             value = value.Where(r => r.NumberId == model.JobId);
         }
-        if (!string.IsNullOrEmpty(model.JobTitle))
-        {
-            value = value.Where(r => r.Title.Contains(model.JobTitle, StringComparison.OrdinalIgnoreCase)
-                || r.NumberId.Contains(model.JobTitle));
-        }
-        if (!string.IsNullOrEmpty(model.Location))
-        {
-            value = value.Where(r => r.Location.Contains(model.Location, StringComparison.OrdinalIgnoreCase));
-        }
+        value = value
+            .Where(r => model.JobTitle.MatchesSearch(r.Title, r.NumberId))
+            .Where(r => model.Location.MatchesSearch(r.Location));
         return Ok(value);
     }
 

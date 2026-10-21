@@ -7,6 +7,7 @@ using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -51,7 +52,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
                     AgencyLogoFileName = ps.WorkerProfile.Agency.Logo == null ? null : ps.WorkerProfile.Agency.Logo.FileName,
                     AgencyLocation = (from al in ps.WorkerProfile.Agency.Locations
                                       select $"{al.Location.Address} {al.Location.City.Value} {al.Location.City.Province.Code} {al.Location.PostalCode}").FirstOrDefault(),
-                    WorkerFullName = ps.WorkerProfile.FirstName + " " + ps.WorkerProfile.MiddleName + " " + ps.WorkerProfile.LastName + " " + ps.WorkerProfile.SecondLastName,
+                    WorkerFullName = ps.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(ps.WorkerProfile.MiddleName) ? string.Empty : " " + ps.WorkerProfile.MiddleName) + " " + ps.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(ps.WorkerProfile.SecondLastName) ? string.Empty : " " + ps.WorkerProfile.SecondLastName),
                     SinNumber = ps.WorkerProfile.SocialInsurance,
                     EmployeeId = ps.WorkerProfile.NumberId,
                     WorkerEmail = ps.WorkerProfile.Worker.Email,
@@ -166,7 +167,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
                 {
                     PayStubNumber = ps.PayStubNumber,
                     Email = ps.WorkerProfile.Worker.Email,
-                    FullName = ps.WorkerProfile.FirstName + " " + ps.WorkerProfile.MiddleName + " " + ps.WorkerProfile.LastName + " " + ps.WorkerProfile.SecondLastName,
+                    FullName = ps.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(ps.WorkerProfile.MiddleName) ? string.Empty : " " + ps.WorkerProfile.MiddleName) + " " + ps.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(ps.WorkerProfile.SecondLastName) ? string.Empty : " " + ps.WorkerProfile.SecondLastName),
                     NumberId = ps.WorkerProfile.NumberId,
                     GrossPayment = ps.GrossPayment,
                     Vacations = ps.Vacations,
@@ -305,16 +306,12 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
 
     private static Expression<Func<PayStubListModel, bool>> ApplyFilterPayStubs(GetPayStubsFilter filter)
     {
-        var predicate = PredicateBuilder.New<PayStubListModel>(true);
-        if (!string.IsNullOrWhiteSpace(filter.PayStubNumber))
-            predicate = predicate.And(p => p.PayStubNumber.Contains(filter.PayStubNumber));
+        Expression<Func<PayStubListModel, bool>> predicate = PredicateBuilder.New<PayStubListModel>(true);
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(i => i.CreatedAt >= filter.CreatedAtFrom.Value && i.CreatedAt <= filter.CreatedAtTo.Value);
-        if (!string.IsNullOrWhiteSpace(filter.WorkerFullName))
-        {
-            var fullName = filter.WorkerFullName.ToLower();
-            predicate = predicate.And(p => EF.Functions.Like(p.WorkerFullName.ToLower(), $"%{fullName}%"));
-        }
+        predicate = predicate
+            .AndSearch(filter.PayStubNumber, p => p.PayStubNumber)
+            .AndSearch(filter.WorkerFullName, p => p.WorkerFullName);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(p => p.NumberId == filter.NumberId.Value);
         return predicate;

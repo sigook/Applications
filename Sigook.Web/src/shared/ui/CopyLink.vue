@@ -14,8 +14,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { showAlertError } from '@/shared/utils/toast';
-
-type CopyLinkKind = 'email' | 'phone';
+import type { CopyLinkKind } from '@/shared/types/common';
 
 const KIND: Record<CopyLinkKind, { scheme: string; icon: string; copyLabel: string }> = {
   email: { scheme: 'mailto', icon: 'email-outline', copyLabel: 'Copy email' },

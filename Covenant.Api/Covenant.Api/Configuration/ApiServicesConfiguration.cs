@@ -127,6 +127,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IPayStubService, PayStubService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IUploadedFilesService, UploadedFilesService>();
+        services.AddScoped<ISkillService, SkillService>();
         services.AddScoped<IGeocodeService, GeocodeService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IUserAccountService, UserAccountService>();
@@ -141,7 +142,6 @@ public static class ApiServicesConfiguration
         services.AddSingleton<IPushNotificationSender, FirebasePushNotificationSender>();
         services.AddScoped<ITeamsService, TeamsService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-        services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
         services.AddScoped<IAccountingService, AccountingService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<CompanyIdFilter>();
@@ -216,9 +216,9 @@ public static class ApiServicesConfiguration
         return services;
     }
 
-    public static IServiceCollection AddClients(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddClients(this IServiceCollection services)
     {
-        services.AddHttpClient(PdfGeneratorService.PdfGeneratorClient, c => c.BaseAddress = new Uri(configuration["PdfGeneratorUrl"]));
+        services.AddHttpClient();
         return services;
     }
 

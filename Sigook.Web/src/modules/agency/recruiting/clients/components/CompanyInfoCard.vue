@@ -48,10 +48,18 @@ function withExt(value?: string | null, ext?: number | null) {
 }
 
 const fields = computed<DetailFact[]>(() => [
-  { label: 'Phone', value: withExt(props.company.phone, props.company.phoneExt) },
+  {
+    label: 'Phone',
+    value: withExt(props.company.phone, props.company.phoneExt),
+    copy: { kind: 'phone', value: props.company.phone, ext: props.company.phoneExt },
+  },
   { label: 'Fax', value: withExt(props.company.fax, props.company.faxExt) },
   { label: 'Website', value: props.company.website || '—', href: companyWebsiteUrl(props.company.website) || undefined },
-  { label: 'Email', value: props.company.email || '—', linkLabel: 'Change', onAction: () => { showEmailModal.value = true; } },
+  {
+    label: 'Email',
+    value: props.company.email || '—',
+    copy: { kind: 'email', value: props.company.email },
+    linkLabel: 'Change', onAction: () => { showEmailModal.value = true; } },
   { label: 'Industry', value: companyIndustryLabel(props.company) || '—' },
   {
     label: 'Vaccination',

@@ -138,56 +138,10 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [HttpGet("skills")]
     [ResponseCache(Duration = 43200)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult Skills()
+    public async Task<IActionResult> Skills()
     {
-        var skills = new[]
-        {
-            new {Skill = "Packing"},
-            new {Skill = "Shipping/Receiving"},
-            new {Skill = "Machine operator"},
-            new {Skill = "Assembly"},
-            new {Skill = "Order picking"},
-            new {Skill = "Ticketing"},
-            new {Skill = "Soldering"},
-            new {Skill = "Inventory"},
-            new {Skill = "RF Scanning"},
-            new {Skill = "Computer"},
-            new {Skill = "Accounting"},
-            new {Skill = "Reception"},
-            new {Skill = "Administration Assistant"},
-            new {Skill = "Data Entry"},
-            new {Skill = "Administration"},
-            new {Skill = "Administrative"},
-            new {Skill = "Az Driver"},
-            new {Skill = "Truck Driver"},
-            new {Skill = "Bakery"},
-            new {Skill = "Cleaning"},
-            new {Skill = "Food Service"},
-            new {Skill = "Clerical"},
-            new {Skill = "Construction"},
-            new {Skill = "Counter Balance"},
-            new {Skill = "Customer Service"},
-            new {Skill = "Data Analytics"},
-            new {Skill = "Database"},
-            new {Skill = "Delivery"},
-            new {Skill = "Dispatcher"},
-            new {Skill = "Driver"},
-            new {Skill = "Electrician"},
-            new {Skill = "Forklift"},
-            new {Skill = "General Labour"},
-            new {Skill = "General Packer"},
-            new {Skill = "Heavy Lifting"},
-            new {Skill = "Logistics"},
-            new {Skill = "Lumper"},
-            new {Skill = "Machine Builder"},
-            new {Skill = "Mixer"},
-            new {Skill = "Plumbing"},
-            new {Skill = "Recruiting"},
-            new {Skill = "Sanitation"},
-            new {Skill = "Welding"},
-            new {Skill = "Training"},
-        };
-        return Ok(skills.OrderBy(s => s.Skill));
+        var skills = await _repository.GetSkillCatalog();
+        return Ok(skills.Select(s => new SkillModel(s.Value)));
     }
 
     /// <summary>Gets the list of candidate sources.</summary>

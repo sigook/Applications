@@ -11,6 +11,7 @@ using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using Covenant.Infrastructure.Mappers;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
@@ -44,14 +45,9 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter)
     {
-        var predicate = PredicateBuilder.New<CompanyProfileJobPositionRate>(cpjpr =>
-            cpjpr.CompanyProfileId == companyProfileId && !cpjpr.IsDeleted);
-        if (!string.IsNullOrWhiteSpace(filter.Role))
-        {
-            var role = filter.Role.ToLower();
-            predicate = predicate.And(cpjpr => cpjpr.JobPosition.ToLower().Contains(role));
-        }
-        return GetJobPositions(predicate);
+        Expression<Func<CompanyProfileJobPositionRate, bool>> predicate = cpjpr =>
+            cpjpr.CompanyProfileId == companyProfileId && !cpjpr.IsDeleted;
+        return GetJobPositions(predicate.AndSearch(filter.Role, cpjpr => cpjpr.JobPosition));
     }
 
     public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression)
@@ -192,7 +188,9 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
                             .Select(c => c.Location.Address + " " + c.Location.City.Value + " " + c.Location.City.Province.Code + " " + c.Location.PostalCode),
                         Industry = cp.Industry.IndustryId.HasValue ? cp.Industry.Industry.Value : cp.Industry.OtherIndustry,
                         CompanyStatus = cp.CompanyStatus,
-                        ContactName = cpcp == null ? null : cpcp.FirstName + " " + cpcp.MiddleName + " " + cpcp.LastName,
+                        ContactName = cpcp == null
+                            ? null
+                            : cpcp.FirstName + (string.IsNullOrWhiteSpace(cpcp.MiddleName) ? string.Empty : " " + cpcp.MiddleName) + " " + cpcp.LastName,
                         ContactRole = cpcp == null ? null : cpcp.Position,
                         Phone = cp.Phone,
                         Email = cp.Company.Email,
@@ -275,38 +273,26 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
     private Expression<Func<CompanyProfileListModel, bool>> ApplyFilterCompanyProfiles(Guid agencyId, GetCompanyForAgencyFilter filter)
     {
         Expression<Func<CompanyProfileListModel, bool>> predicate = c => c.AgencyId == agencyId;
-        if (!string.IsNullOrWhiteSpace(filter.BusinessInfo))
+        if (SearchExtensions.HasSearchTokens(filter.BusinessInfo))
         {
-            var businessInfo = filter.BusinessInfo.ToLower();
-            predicate = predicate.And(c =>
-                c.FullName.ToLower().Contains(businessInfo) ||
-                c.Locations.Any(l => l.Replace(" ", string.Empty).ToLower().Contains(businessInfo)));
+            var nameMatches = SearchExtensions.SearchPredicate<CompanyProfileListModel>(filter.BusinessInfo, c => c.FullName);
+            var locationMatches = SearchExtensions.SearchPredicate<string>(filter.BusinessInfo, l => l, l => l.Replace(" ", string.Empty));
+            predicate = predicate.And(nameMatches.Or(c => c.Locations.AsQueryable().Any(locationMatches)));
         }
-        if (!string.IsNullOrWhiteSpace(filter.ContactInfo))
-        {
-            var contactInfo = filter.ContactInfo.ToLower();
-            predicate = predicate.And(c =>
-                c.Email.ToLower().Contains(contactInfo) ||
-                c.ContactName.ToLower().Contains(contactInfo) ||
-                c.ContactRole.ToLower().Contains(contactInfo) ||
-                c.Website.ToLower().Contains(contactInfo));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.Industry))
-            predicate = predicate.And(c => c.Industry.ToLower().Contains(filter.Industry.ToLower()));
-        if (!string.IsNullOrWhiteSpace(filter.CreatedBy))
-            predicate = predicate.And(c => c.CreatedBy.ToLower().Contains(filter.CreatedBy.ToLower()));
+        predicate = predicate
+            .AndSearch(filter.ContactInfo, c => c.Email, c => c.ContactName, c => c.ContactRole, c => c.Website)
+            .AndSearch(filter.Industry, c => c.Industry)
+            .AndSearch(filter.CreatedBy, c => c.CreatedBy)
+            .AndSearch(filter.UpdatedBy, c => c.UpdatedBy)
+            .AndSearch(filter.SalesRepresentative, c => c.SalesRepresentative);
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(c => c.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && c.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
-        if (!string.IsNullOrWhiteSpace(filter.UpdatedBy))
-            predicate = predicate.And(c => c.UpdatedBy.ToLower().Contains(filter.UpdatedBy.ToLower()));
         if (filter.UpdatedAtFrom.HasValue && filter.UpdatedAtTo.HasValue)
             predicate = predicate.And(c =>
                 (c.UpdatedAt.HasValue ? c.UpdatedAt.Value.Date : c.UpdatedAt) >= filter.UpdatedAtFrom.Value.Date &&
                 (c.UpdatedAt.HasValue ? c.UpdatedAt.Value.Date : c.UpdatedAt) <= filter.UpdatedAtTo.Value.Date);
         if (filter.CompanyStatuses != null && filter.CompanyStatuses.Any())
             predicate = predicate.And(c => filter.CompanyStatuses.Contains(c.CompanyStatus));
-        if (!string.IsNullOrWhiteSpace(filter.SalesRepresentative))
-            predicate = predicate.And(c => c.SalesRepresentative.ToLower().Contains(filter.SalesRepresentative.ToLower()));
         return predicate;
     }
 
@@ -780,20 +766,14 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
 
     public async Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm)
     {
-        var companyProfiles = Context.CompanyProfiles.Where(cp => cp.AgencyId == agencyId);
-        var query = companyProfiles
+        var query = Context.CompanyProfiles
+            .Where(cp => cp.AgencyId == agencyId)
+            .WhereSearch(searchTerm, cp => cp.FullName)
             .Select(cp => new BaseModel<Guid>
             {
                 Id = cp.Id,
                 Value = cp.FullName
             });
-        var predicate = PredicateBuilder.New<BaseModel<Guid>>(true);
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            searchTerm = searchTerm.ToLower();
-            predicate = predicate.And(p => EF.Functions.Like(p.Value.ToLower(), $"%{searchTerm}%"));
-        }
-        query = query.Where(predicate);
         var result = await query.OrderBy(c => c.Value).ToListAsync();
         return result;
     }

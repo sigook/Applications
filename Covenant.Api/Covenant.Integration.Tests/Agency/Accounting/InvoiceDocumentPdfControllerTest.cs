@@ -3,12 +3,9 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
-using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models;
 using Covenant.Infrastructure.Contexts;
-using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +25,8 @@ public class InvoiceDocumentPdfControllerTest : BaseTestOrder, IClassFixture<Cus
     {
         HttpResponseMessage response = await _client.GetAsync($"{InvoicesController.RouteName}/{Data.Invoice.Id}/pdf");
         response.EnsureSuccessStatusCode();
+        byte[] content = await response.Content.ReadAsByteArrayAsync();
+        Assert.StartsWith("%PDF", Encoding.ASCII.GetString(content, 0, 4));
     }
 }
 
@@ -45,10 +44,6 @@ public class Startup
         currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.Agency.Id);
         currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.Agency.Id });
         services.AddSingleton(currentUserService.Object);
-        var pdfService = new Mock<IPdfGeneratorService>();
-        pdfService.Setup(s => s.GeneratePdfFromHtml(It.IsAny<PdfParams>()))
-            .ReturnsAsync(() => Result.Ok(Encoding.UTF8.GetBytes("%PDF-1.4 fake invoice")));
-        services.AddSingleton(pdfService.Object);
 
     }
 

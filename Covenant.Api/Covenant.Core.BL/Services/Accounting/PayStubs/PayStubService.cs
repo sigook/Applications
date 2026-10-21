@@ -25,7 +25,6 @@ namespace Covenant.Core.BL.Services.Accounting.PayStubs;
 
 public class PayStubService : IPayStubService
 {
-    private const string PayStubTemplatePath = "/Views/Billing/Payroll/Payroll.cshtml";
     private const string PayStubEmailTemplatePath = "/Views/Billing/Payroll/PayrollEmail.cshtml";
 
     private readonly IPayStubRepository payStubRepository;
@@ -34,7 +33,6 @@ public class PayStubService : IPayStubService
     private readonly ICatalogRepository catalogRepository;
     private readonly IPayStubsContainer payStubsContainer;
     private readonly IRazorViewToStringRenderer renderer;
-    private readonly IPdfGeneratorService pdfGenerator;
     private readonly IEmailService emailService;
     private readonly ICurrentUserService currentUserService;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
@@ -50,7 +48,6 @@ public class PayStubService : IPayStubService
         ICatalogRepository catalogRepository,
         IPayStubsContainer payStubsContainer,
         IRazorViewToStringRenderer renderer,
-        IPdfGeneratorService pdfGenerator,
         IEmailService emailService,
         ICurrentUserService currentUserService,
         ISkipPayrollNumberRepository skipPayrollNumberRepository,
@@ -65,7 +62,6 @@ public class PayStubService : IPayStubService
         this.catalogRepository = catalogRepository;
         this.payStubsContainer = payStubsContainer;
         this.renderer = renderer;
-        this.pdfGenerator = pdfGenerator;
         this.emailService = emailService;
         this.currentUserService = currentUserService;
         this.skipPayrollNumberRepository = skipPayrollNumberRepository;
@@ -537,12 +533,10 @@ public class PayStubService : IPayStubService
     private async Task<byte[]> UploadPdf(PayStubDetailModel model)
     {
         var fileName = model.Id.ToPayStubBlobName();
-        var html = await renderer.RenderViewToStringAsync(PayStubTemplatePath, payrollDocumentAdapter.MapToPayrollViewModel(model));
-        var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
-        if (!pdf) return null;
+        var pdf = await mediator.Send(new GeneratePayStubPdf(payrollDocumentAdapter.MapToPayrollViewModel(model)));
         try
         {
-            await payStubsContainer.UploadAsync(pdf.Value, fileName, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
+            await payStubsContainer.UploadAsync(pdf, fileName, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
             {
                 { nameof(model.PayrollNumberId), model.PayrollNumberId.ToString() }
             });
@@ -551,7 +545,7 @@ public class PayStubService : IPayStubService
         {
             Console.WriteLine(e);
         }
-        return pdf.Value;
+        return pdf;
     }
 
     private void GetReport(IEnumerable<PayStubT4Model> result, XLWorkbook workbook)

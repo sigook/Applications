@@ -11,6 +11,7 @@ using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -288,7 +289,11 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
 
     public async Task<List<AgencyWorkerDropdownModel>> GetWorkerProfilesDropdown(IEnumerable<Guid> agencyIds, string searchTerm)
     {
-        var workerProfiles = Context.WorkerProfiles.Where(wp => agencyIds.Contains(wp.AgencyId));
+        var workerProfiles = Context.WorkerProfiles
+            .Where(wp => agencyIds.Contains(wp.AgencyId))
+            .WhereSearch(searchTerm,
+                wp => wp.FirstName, wp => wp.MiddleName, wp => wp.LastName, wp => wp.SecondLastName,
+                wp => wp.Worker.Email, wp => wp.SocialInsurance);
         var query = workerProfiles
             .Select(wp => new AgencyWorkerDropdownModel
             {
@@ -302,15 +307,6 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
                 Email = wp.Worker.Email,
                 ApprovedToWork = wp.ApprovedToWork
             });
-        var predicate = PredicateBuilder.New<AgencyWorkerDropdownModel>(true);
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            searchTerm = searchTerm.ToLower();
-            predicate = predicate.And(p => 
-                EF.Functions.Like(p.FullName.ToLower(), $"%{searchTerm}%") ||
-                EF.Functions.Like(p.SocialInsurance, $"%{searchTerm}%"));
-        }
-        query = query.Where(predicate);
         var result = await query.ToListAsync();
         return result;
     }
@@ -335,8 +331,13 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
                 wr.Request.Status != RequestStatus.Cancelled &&
                 wr.Request.CompanyProfileId == filter.CompanyProfileId));
         }
-        if (!string.IsNullOrWhiteSpace(filter.Skills))
-            workers = workers.Where(w => w.Skills.Any(s => s.Skill.ToLower().Contains(filter.Skills.ToLower())));
+        if (SearchExtensions.HasSearchTokens(filter.Skills))
+        {
+            var skillMatches = Context.SkillSearchPredicate<WorkerProfileSkill>(filter.Skills, s => s.Skill);
+            workers = workers.Where(w => w.Skills.AsQueryable().Any(skillMatches));
+        }
+        workers = workers.WhereSearch(filter.FullName,
+            wp => wp.FirstName, wp => wp.MiddleName, wp => wp.LastName, wp => wp.SecondLastName, wp => wp.Worker.Email);
         var query = from wp in workers
                     select new WorkerProfileListModel
                     {
@@ -383,13 +384,6 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
             predicate = predicate.And(wp => wp.IsSubcontractor == filter.IsSubcontractor);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(wp => wp.NumberId == filter.NumberId);
-        if (!string.IsNullOrWhiteSpace(filter.FullName))
-        {
-            var fullName = filter.FullName.ToLower();
-            predicate = predicate.And(wp =>
-                EF.Functions.Like(wp.FullName.ToLower(), $"%{fullName}%") ||
-                EF.Functions.Like(wp.Email.ToLower(), $"%{fullName}%"));
-        }
         if (!string.IsNullOrWhiteSpace(filter.Phone))
         {
             var expression = new Regex(@"\s+");
@@ -400,16 +394,9 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
         }
         if (!string.IsNullOrWhiteSpace(filter.RequestId))
             predicate = predicate.And(wp => wp.Requests.Any(r => r.Value == filter.RequestId));
-        if (!string.IsNullOrWhiteSpace(filter.ExternalId))
-        {
-            var externalId = filter.ExternalId.ToLower();
-            predicate = predicate.And(wp => EF.Functions.Like(wp.ExternalId.ToLower(), $"%{externalId}%"));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.Location))
-        {
-            var location = filter.Location.ToLower();
-            predicate = predicate.And(wp => EF.Functions.Like(wp.Address.ToLower(), $"%{location}%"));
-        }
+        predicate = predicate
+            .AndSearch(filter.ExternalId, wp => wp.ExternalId)
+            .AndSearch(filter.Location, wp => wp.Address);
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(wp => wp.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && wp.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
         if (filter.Features != null && filter.Features.Any())
@@ -684,7 +671,7 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
                     select new WorkerLicenseExpiredModel
                     {
                         NumberId = wpl.WorkerProfile.NumberId,
-                        WorkerFullName = wpl.WorkerProfile.FirstName + " " + wpl.WorkerProfile.MiddleName + " " + wpl.WorkerProfile.LastName + " " + wpl.WorkerProfile.SecondLastName,
+                        WorkerFullName = wpl.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(wpl.WorkerProfile.MiddleName) ? string.Empty : " " + wpl.WorkerProfile.MiddleName) + " " + wpl.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(wpl.WorkerProfile.SecondLastName) ? string.Empty : " " + wpl.WorkerProfile.SecondLastName),
                         WorkerEmail = wpl.WorkerProfile.Worker.Email,
                         MobileNumber = wpl.WorkerProfile.MobileNumber,
                         LicenseDescription = wpl.License.Description,

@@ -33,14 +33,15 @@ public class SkillsControllerTest : IClassFixture<CustomWebApplicationFactory<Sk
     [Fact]
     public async Task Post()
     {
-        var model = new SkillModel("AZ Driver");
+        var model = new SkillModel("  az   TRUCK driver ");
         HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<SkillModel>();
         var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.CandidateSkills.SingleAsync(c => c.Id == detail.Id);
         Assert.Equal(detail.Id, entity.Id);
-        Assert.Equal(model.Skill, entity.Skill);
+        Assert.Equal("Az Driver", detail.Skill);
+        Assert.Equal("Az Driver", entity.Skill);
     }
 
     [Fact]

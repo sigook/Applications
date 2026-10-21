@@ -2,6 +2,8 @@
 
 import type { RouteLocationRaw } from 'vue-router';
 
+export type CopyLinkKind = 'email' | 'phone';
+
 export interface TableColumnRef {
   field?: string;
 }

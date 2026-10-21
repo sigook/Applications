@@ -3,10 +3,15 @@
     <ItemGroup>
       <PackageReference Include="ClosedXML" />
       <PackageReference Include="MediatR" />
+      <PackageReference Include="QuestPDF" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Covenant.Common\Covenant.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Pdf\Fonts\*.ttf" />
     </ItemGroup>
 
 </Project>

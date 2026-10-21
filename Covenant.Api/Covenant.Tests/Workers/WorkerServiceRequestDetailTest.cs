@@ -67,7 +67,8 @@ public class WorkerServiceRequestDetailTest
             Mock.Of<ICatalogRepository>(),
             Mock.Of<IRequestApplicantNotificationService>(),
             Mock.Of<IWorkerRequirementService>(),
-            Options.Create(new PunchConfiguration { CheckpointRadiusMeters = 100 }));
+            Options.Create(new PunchConfiguration { CheckpointRadiusMeters = 100 }),
+            Mock.Of<ISkillService>());
     }
 
     private void SetupDetail(double? latitude, double? longitude) =>

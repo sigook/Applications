@@ -61,8 +61,12 @@ const fields = computed<DetailFact[]>(() => [
   { label: 'Company name', value: props.company.fullName || '—' },
   { label: 'Industry', value: companyIndustryLabel(props.company) || '—' },
   { label: 'Website', value: props.company.website || '—', href: companyWebsiteUrl(props.company.website) || undefined },
-  { label: 'Phone', value: withExt(props.company.phone, props.company.phoneExt) },
+  {
+    label: 'Phone',
+    value: withExt(props.company.phone, props.company.phoneExt),
+    copy: { kind: 'phone', value: props.company.phone, ext: props.company.phoneExt },
+  },
   { label: 'Fax', value: withExt(props.company.fax, props.company.faxExt) },
-  { label: 'Email', value: props.company.email || '—' },
+  { label: 'Email', value: props.company.email || '—', copy: { kind: 'email', value: props.company.email } },
 ]);
 </script>

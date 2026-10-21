@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidates;
+using Covenant.Core.BL.Interfaces.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class SkillsController(ICandidateRepository candidateRepository) : Controller
+public class SkillsController(ICandidateRepository candidateRepository, ISkillService skillService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/candidates/{candidateId}/skills";
 
@@ -27,6 +28,7 @@ public class SkillsController(ICandidateRepository candidateRepository) : Contro
         if (string.IsNullOrEmpty(model?.Skill)) return BadRequest();
         var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
         if (candidate is null) return BadRequest();
+        model.Skill = (await skillService.Canonicalize([model.Skill])).FirstOrDefault();
         var result = candidate.AddSkill(model.Skill);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         candidateRepository.Update(candidate);
