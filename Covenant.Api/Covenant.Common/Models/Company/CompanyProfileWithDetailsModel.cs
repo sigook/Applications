@@ -8,4 +8,5 @@ public class CompanyProfileWithDetailsModel
     public IEnumerable<CompanyUserModel> Users { get; set; }
     public IEnumerable<CompanyProfileContactPersonModel> Contacts { get; set; }
     public IEnumerable<CompanyProfileJobPositionRateModel> JobPositions { get; set; }
+    public IEnumerable<CompanyProfileLocationListModel> Locations { get; set; }
 }

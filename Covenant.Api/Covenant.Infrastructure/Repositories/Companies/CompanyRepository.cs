@@ -260,12 +260,31 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
                 CreatedAt = cu.CreatedAt
             }).ToListAsync();
 
+        var locations = await Context.CompanyProfileLocations
+            .Where(l => profileIds.Contains(l.CompanyProfileId))
+            .OrderByDescending(l => l.IsBilling)
+            .ThenBy(l => l.Location.Address)
+            .Select(l => new CompanyProfileLocationListModel
+            {
+                CompanyProfileId = l.CompanyProfileId,
+                Address = l.Location.Address,
+                City = l.Location.City.Value,
+                Province = l.Location.City.Province.Value,
+                ProvinceCode = l.Location.City.Province.Code,
+                Country = l.Location.City.Province.Country.Value,
+                PostalCode = l.Location.PostalCode,
+                Entrance = l.Location.Entrance,
+                MainIntersection = l.Location.MainIntersection,
+                IsBilling = l.IsBilling
+            }).ToListAsync();
+
         var result = companyList.Select(c => new CompanyProfileWithDetailsModel
         {
             Company = c,
             Contacts = contacts.Where(cp => cp.CompanyProfileId == c.Id),
             JobPositions = jobPositions.Where(jp => jp.CompanyProfileId == c.Id),
-            Users = users.Where(u => u.CompanyProfileId == c.Id)
+            Users = users.Where(u => u.CompanyProfileId == c.Id),
+            Locations = locations.Where(l => l.CompanyProfileId == c.Id)
         }).ToList();
         return result;
     }
