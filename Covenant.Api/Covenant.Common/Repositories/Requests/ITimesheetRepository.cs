@@ -6,13 +6,14 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Request.Worker;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
 public interface ITimesheetRepository : IBaseRepository
 {
-    Task<PaginatedList<TimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination);
+    Task<PaginatedList<WorkerTimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination);
     Task<TimeSheet> GetTimeSheet(Guid id);
     Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerId, Guid requestId, Expression<Func<Common.Entities.Request.Request, bool>> requestCondition);
     Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerId, Guid requestId, DateTime? startDate, DateTime? endDate);

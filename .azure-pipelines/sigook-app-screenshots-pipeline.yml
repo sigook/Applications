@@ -127,7 +127,7 @@ stages:
           fi
           echo "Screenshot account: $SCREENSHOT_USER"
     - task: Bash@3
-      displayName: 'Boot simulators in the background'
+      displayName: 'Resolve simulators and boot the iPhone'
       inputs:
         targetType: 'inline'
         script: |
@@ -158,7 +158,6 @@ stages:
           IPHONE=$(resolve_simulator "${{ parameters.iphoneSimulator }}")
           IPAD=$(resolve_simulator "${{ parameters.ipadSimulator }}")
           xcrun simctl boot "$IPHONE" || true
-          xcrun simctl boot "$IPAD" || true
           echo "iPhone: $IPHONE"
           echo "iPad:   $IPAD"
           echo "##vso[task.setvariable variable=IPHONE_UDID]$IPHONE"
@@ -195,6 +194,7 @@ stages:
         script: |
           set -euo pipefail
           OUT="$(outputRoot)/fastlane/screenshots/en-US"
+          xcrun simctl boot "$(IPAD_UDID)" || true
           xcrun simctl bootstatus "$(IPAD_UDID)" -b
           echo "=== iPad ${{ parameters.ipadSimulator }} ($(IPAD_UDID)) ==="
           bash scripts/store_screenshots.sh ios "$(IPAD_UDID)" "$OUT" "ipad_"

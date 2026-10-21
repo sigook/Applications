@@ -122,6 +122,7 @@ class WorkerProfile extends Equatable {
   final String? province;
   final String? provinceId;
   final String? country;
+  final String? countryId;
   final String? countryCode;
   final String? postalCode;
   final bool hasVehicle;
@@ -192,6 +193,7 @@ class WorkerProfile extends Equatable {
     this.province,
     this.provinceId,
     this.country,
+    this.countryId,
     this.countryCode,
     this.postalCode,
     this.hasVehicle = false,
@@ -295,7 +297,7 @@ class WorkerProfile extends Equatable {
     identificationType2FileName, identificationType2FileUrl,
     havePoliceCheckBackground, policeCheckBackgroundFileName,
     mobileNumber, phone, email, address, city, cityId, province, provinceId,
-    country, countryCode, postalCode, hasVehicle,
+    country, countryId, countryCode, postalCode, hasVehicle,
     availabilities, availabilityIds,
     availabilityTimes, availabilityTimeIds,
     availabilityDays, availabilityDayIds,

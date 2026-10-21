@@ -5,6 +5,7 @@ import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/job_model.dart';
 import 'package:sigook_app_flutter/features/jobs/data/models/paginated_jobs_model.dart';
 import 'package:sigook_app_flutter/features/jobs/data/repositories/jobs_repository_impl.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/entities/jobs_filter.dart';
 
 import '../../../../helpers/mocks.dart';
 
@@ -31,8 +32,7 @@ final _tPaginatedModel = PaginatedJobsModel(
 );
 
 const _defaultParams = (
-  sortBy: 0,
-  isDescending: false,
+  filter: JobsFilter.defaults,
   pageIndex: 1,
   pageSize: 30,
 );
@@ -42,6 +42,10 @@ void main() {
   late MockJobsLocalDataSource mockLocal;
   late MockNetworkInfo mockNetwork;
   late JobsRepositoryImpl repository;
+
+  setUpAll(() {
+    registerFallbackValue(JobsFilter.defaults);
+  });
 
   setUp(() {
     mockRemote = MockJobsRemoteDataSource();
@@ -61,15 +65,13 @@ void main() {
       when(() => mockNetwork.isConnected).thenAnswer((_) async => false);
   void whenRemoteReturns(PaginatedJobsModel model) =>
       when(() => mockRemote.getJobs(
-            sortBy: any(named: 'sortBy'),
-            isDescending: any(named: 'isDescending'),
+            filter: any(named: 'filter'),
             pageIndex: any(named: 'pageIndex'),
             pageSize: any(named: 'pageSize'),
           )).thenAnswer((_) async => model);
   void whenRemoteThrows(Exception e) =>
       when(() => mockRemote.getJobs(
-            sortBy: any(named: 'sortBy'),
-            isDescending: any(named: 'isDescending'),
+            filter: any(named: 'filter'),
             pageIndex: any(named: 'pageIndex'),
             pageSize: any(named: 'pageSize'),
           )).thenThrow(e);
@@ -89,8 +91,7 @@ void main() {
       stubCacheJobs();
 
       final result = await repository.getJobs(
-        sortBy: _defaultParams.sortBy,
-        isDescending: _defaultParams.isDescending,
+        filter: _defaultParams.filter,
         pageIndex: _defaultParams.pageIndex,
         pageSize: _defaultParams.pageSize,
       );
@@ -102,45 +103,45 @@ void main() {
       });
     });
 
-    test('caches jobs when pageIndex == 0 and items are non-empty', () async {
+    test('caches the first page when the filter is the default', () async {
       whenOnline();
-      final page0Model = PaginatedJobsModel(
-        items: _tJobModels,
-        pageIndex: 0,
-        totalPages: 1,
-        totalItems: 2,
-      );
-      when(() => mockRemote.getJobs(
-            sortBy: any(named: 'sortBy'),
-            isDescending: any(named: 'isDescending'),
-            pageIndex: 0,
-            pageSize: any(named: 'pageSize'),
-          )).thenAnswer((_) async => page0Model);
+      whenRemoteReturns(_tPaginatedModel);
       stubCacheJobs();
 
       await repository.getJobs(
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 0,
+        filter: JobsFilter.defaults,
+        pageIndex: 1,
         pageSize: 30,
       );
 
       verify(() => mockLocal.cacheJobs(_tJobModels)).called(1);
     });
 
-    test('does NOT cache when pageIndex > 0', () async {
+    test('does NOT cache when pageIndex > 1', () async {
       whenOnline();
-      whenRemoteReturns(_tPaginatedModel); // pageIndex == 1 in model
+      whenRemoteReturns(_tPaginatedModel);
       stubCacheJobs();
 
       await repository.getJobs(
-        sortBy: _defaultParams.sortBy,
-        isDescending: _defaultParams.isDescending,
+        filter: _defaultParams.filter,
+        pageIndex: 2,
+        pageSize: _defaultParams.pageSize,
+      );
+
+      verifyNever(() => mockLocal.cacheJobs(any()));
+    });
+
+    test('does NOT cache when a non-default sort is applied', () async {
+      whenOnline();
+      whenRemoteReturns(_tPaginatedModel);
+      stubCacheJobs();
+
+      await repository.getJobs(
+        filter: const JobsFilter(sortBy: JobSortBy.oldest),
         pageIndex: 1,
         pageSize: _defaultParams.pageSize,
       );
 
-      // pageIndex in the model is 1 (not 0), so no caching
       verifyNever(() => mockLocal.cacheJobs(any()));
     });
   });
@@ -153,8 +154,7 @@ void main() {
       whenCacheReturns(_tJobModels);
 
       final result = await repository.getJobs(
-        sortBy: _defaultParams.sortBy,
-        isDescending: _defaultParams.isDescending,
+        filter: _defaultParams.filter,
         pageIndex: _defaultParams.pageIndex,
         pageSize: _defaultParams.pageSize,
       );
@@ -164,8 +164,7 @@ void main() {
         expect(pj.items.length, 2);
       });
       verifyNever(() => mockRemote.getJobs(
-            sortBy: any(named: 'sortBy'),
-            isDescending: any(named: 'isDescending'),
+            filter: any(named: 'filter'),
             pageIndex: any(named: 'pageIndex'),
             pageSize: any(named: 'pageSize'),
           ));
@@ -176,8 +175,7 @@ void main() {
       whenCacheEmpty();
 
       final result = await repository.getJobs(
-        sortBy: _defaultParams.sortBy,
-        isDescending: _defaultParams.isDescending,
+        filter: _defaultParams.filter,
         pageIndex: _defaultParams.pageIndex,
         pageSize: _defaultParams.pageSize,
       );
@@ -197,8 +195,7 @@ void main() {
       whenCacheReturns(_tJobModels);
 
       final result = await repository.getJobs(
-        sortBy: _defaultParams.sortBy,
-        isDescending: _defaultParams.isDescending,
+        filter: _defaultParams.filter,
         pageIndex: _defaultParams.pageIndex,
         pageSize: _defaultParams.pageSize,
       );
@@ -216,8 +213,7 @@ void main() {
       whenCacheEmpty();
 
       final result = await repository.getJobs(
-        sortBy: _defaultParams.sortBy,
-        isDescending: _defaultParams.isDescending,
+        filter: _defaultParams.filter,
         pageIndex: _defaultParams.pageIndex,
         pageSize: _defaultParams.pageSize,
       );

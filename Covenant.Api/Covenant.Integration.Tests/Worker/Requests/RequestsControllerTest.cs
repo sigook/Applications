@@ -55,6 +55,78 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     }
 
     [Fact]
+    public async Task Get_DefaultSort_NewestFirst()
+    {
+        HttpResponseMessage response = await _client.GetAsync(RequestUri());
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        var numberIds = list.Items.Select(r => r.NumberId).ToList();
+        Assert.Equal(numberIds.OrderByDescending(n => n), numberIds);
+        Assert.Contains(list.Items, r => r.Id == Data.FakeRequest.Id);
+        Assert.Contains(list.Items, r => r.Id == Data.SecondBookedRequest.Id);
+    }
+
+    [Fact]
+    public async Task Get_SortByOldest()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}?sortBy={GetWorkerRequestsSortBy.NumberId}&isDescending=false");
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        var numberIds = list.Items.Select(r => r.NumberId).ToList();
+        Assert.Equal(numberIds.OrderBy(n => n), numberIds);
+    }
+
+    [Fact]
+    public async Task Get_SortByRate()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}?sortBy={GetWorkerRequestsSortBy.Rate}&isDescending=true");
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        Assert.Equal(Data.SecondBookedRequest.Id, list.Items.First().Id);
+        Assert.Equal(Data.FakeRequest.Id, list.Items.Last().Id);
+
+        response = await _client.GetAsync($"{RequestUri()}?sortBy={GetWorkerRequestsSortBy.Rate}&isDescending=false");
+        response.EnsureSuccessStatusCode();
+        list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        Assert.Equal(Data.FakeRequest.Id, list.Items.First().Id);
+        Assert.Equal(Data.SecondBookedRequest.Id, list.Items.Last().Id);
+    }
+
+    [Fact]
+    public async Task Get_SearchByNumberId()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}?numberId={Data.SecondBookedRequest.NumberId}");
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        Assert.Equal(Data.SecondBookedRequest.Id, Assert.Single(list.Items).Id);
+    }
+
+    [Fact]
+    public async Task Get_SearchByJobTitle()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}?jobTitle=driv");
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        Assert.Equal(Data.FakeRequest.Id, Assert.Single(list.Items).Id);
+
+        response = await _client.GetAsync($"{RequestUri()}?jobTitle=nothing");
+        response.EnsureSuccessStatusCode();
+        list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        Assert.Empty(list.Items);
+    }
+
+    [Fact]
+    public async Task Get_BookedWorker_SeesOnlyBookedRequests()
+    {
+        HttpResponseMessage response = await _client.GetAsync(RequestUri());
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerRequestListModel>>();
+        Assert.Equal(2, list.TotalItems);
+        Assert.All(list.Items, r => Assert.Equal(WorkerRequestStatus.Booked.ToString(), r.Status));
+        Assert.DoesNotContain(list.Items, r => r.Id == Data.OpenRequest.Id);
+    }
+
+    [Fact]
     public async Task GetById()
     {
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{Data.FakeRequest.Id}");
@@ -128,11 +200,11 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            context.Requests.AddRange(Data.FakeRequest, Data.OpenRequest);
+            context.Requests.AddRange(Data.FakeRequest, Data.OpenRequest, Data.SecondBookedRequest);
             context.CompanyProfiles.Add(Data.CompanyProfile);
             context.CompanyProfileJobPositionRates.Add(Data.FakeRate);
             context.WorkerProfiles.Add(Data.WorkerProfile);
-            context.WorkerRequests.Add(Data.FakeWorkerRequest);
+            context.WorkerRequests.AddRange(Data.FakeWorkerRequest, Data.SecondWorkerRequest);
             context.SaveChanges();
         }
     }
@@ -170,12 +242,16 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             }
         }, Now, FakeRate.Id).Value;
         public static readonly Request OpenRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
+        public static readonly Request SecondBookedRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
         public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest;
+        public static readonly Covenant.Common.Entities.Request.WorkerRequest SecondWorkerRequest;
 
         static Data()
         {
             FakeRequest.WorkerRate = 15;
             FakeRequest.UpdateJobTitle("Driver");
+            SecondBookedRequest.WorkerRate = 25;
+            SecondBookedRequest.UpdateJobTitle("Cook");
             WorkerProfile = new WorkerProfile(new User(CvnEmail.Create("worker_profile@mail.com").Value))
             {
                 Agency = FakeAgency,
@@ -191,6 +267,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             WorkerProfile.PatchDocuments(new FakeDocuments());
             CompanyProfile.UpdateName("Microsoft");
             FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);
+            SecondWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, SecondBookedRequest.Id);
         }
 
         private class FakeSinInfo : ISinInformation<CovenantFile>

@@ -9,7 +9,6 @@ class TimesheetEntry extends Equatable {
   final DateTime? clockOutRounded;
   final DateTime? timeIn;
   final DateTime? timeOut;
-  final int numberId;
   final String? comment;
   final DateTime? timeInApproved;
   final DateTime? timeOutApproved;
@@ -18,9 +17,7 @@ class TimesheetEntry extends Equatable {
   final String? missingHours;
   final String? missingHoursOvertime;
   final double missingRateWorker;
-  final double missingRateAgency;
   final double deductionsOthers;
-  final int week;
   final double bonusOrOthers;
   final String? deductionsOthersDescription;
   final String? bonusOrOthersDescription;
@@ -38,7 +35,6 @@ class TimesheetEntry extends Equatable {
     this.clockOutRounded,
     this.timeIn,
     this.timeOut,
-    required this.numberId,
     this.comment,
     this.timeInApproved,
     this.timeOutApproved,
@@ -47,9 +43,7 @@ class TimesheetEntry extends Equatable {
     this.missingHours,
     this.missingHoursOvertime,
     required this.missingRateWorker,
-    required this.missingRateAgency,
     required this.deductionsOthers,
-    required this.week,
     required this.bonusOrOthers,
     this.deductionsOthersDescription,
     this.bonusOrOthersDescription,
@@ -69,7 +63,6 @@ class TimesheetEntry extends Equatable {
     clockOutRounded,
     timeIn,
     timeOut,
-    numberId,
     comment,
     timeInApproved,
     timeOutApproved,
@@ -78,9 +71,7 @@ class TimesheetEntry extends Equatable {
     missingHours,
     missingHoursOvertime,
     missingRateWorker,
-    missingRateAgency,
     deductionsOthers,
-    week,
     bonusOrOthers,
     deductionsOthersDescription,
     bonusOrOthersDescription,

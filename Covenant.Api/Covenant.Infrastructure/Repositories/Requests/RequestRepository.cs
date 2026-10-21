@@ -691,63 +691,61 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
              DurationTerm = r.DurationTerm.ToString()
          }).AsNoTracking().ToPaginatedList(pagination);
 
-    public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination)
+    public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, GetWorkerRequestsFilter filter)
     {
-        var workerProfile = await Context.WorkerProfiles.FirstOrDefaultAsync(wp => wp.WorkerId == workerId);
-        var workerRequests = Context.WorkerRequests.Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
-        var openStatus = new RequestStatus[] { RequestStatus.Open };
-        var requests = Enumerable.Empty<WorkerRequestListModel>();
-        var ownRequest = Context.Requests.Include(wr => wr.CompanyProfile).ThenInclude(cp => cp.Agency)
-            .Join(workerRequests, r => r.Id, wr => wr.RequestId, (r, wr) => new { r, wr })
-            .Select(lj => new WorkerRequestListModel
+        var agencyId = await Context.WorkerProfiles
+            .Where(wp => wp.WorkerId == workerId)
+            .Select(wp => wp.AgencyId)
+            .FirstOrDefaultAsync();
+        var bookedRequests = Context.WorkerRequests
+            .Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
+        var rejectedRequests = Context.WorkerRequests
+            .Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
+        var hasBooked = await bookedRequests.AnyAsync();
+
+        var requests = Context.Requests.Where(r => r.CompanyProfile.AgencyId == agencyId);
+        if (filter.NumberId.HasValue)
+            requests = requests.Where(r => r.NumberId == filter.NumberId.Value);
+        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
+        {
+            var jobTitle = filter.JobTitle.Trim().ToLower();
+            requests = requests.Where(r => r.JobTitle.ToLower().Contains(jobTitle));
+        }
+
+        var projected = requests
+            .Select(r => new
             {
-                Id = lj.r.Id,
-                NumberId = lj.r.NumberId,
-                IsAsap = lj.r.IsAsap,
-                CreatedAt = lj.r.CreatedAt,
-                JobTitle = lj.r.JobTitle,
-                WorkerRate = lj.r.WorkerRate.HasValue ? lj.r.WorkerRate : lj.r.WorkerSalary,
-                Location = lj.r.JobLocation.Address + " " + lj.r.JobLocation.City.Value + " " + lj.r.JobLocation.City.Province.Value + " " + lj.r.JobLocation.PostalCode,
-                Entrance = lj.r.JobLocation.Entrance,
-                Status = lj.wr.WorkerRequestStatus.ToString(),
-                WorkersQuantity = lj.r.WorkersQuantity,
-                StartAt = lj.r.StartAt,
-                FinishAt = lj.r.FinishAt,
-                DurationTerm = lj.r.DurationTerm.ToString()
-            }).AsEnumerable();
-        if (!ownRequest.Any())
+                Request = r,
+                IsBooked = bookedRequests.Any(wr => wr.RequestId == r.Id),
+                IsRejected = rejectedRequests.Any(wr => wr.RequestId == r.Id)
+            })
+            .Where(x => x.IsBooked || (!hasBooked && x.Request.Status == RequestStatus.Open && !x.IsRejected))
+            .Select(x => new WorkerRequestListModel
         {
-            var requestToExclude = Context.WorkerRequests.Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
-            var availableRequest = Context.Requests.Include(r => r.CompanyProfile).ThenInclude(cp => cp.Agency)
-                .Where(r => openStatus.Contains(r.Status))
-                .Where(r => r.CompanyProfile.AgencyId == workerProfile.AgencyId)
-                .Where(r => !requestToExclude.Any(rte => rte.RequestId == r.Id))
-                .Where(r => !ownRequest.Any(or => or.Id == r.Id))
-                .Select(r => new WorkerRequestListModel
-                {
-                    Id = r.Id,
-                    NumberId = r.NumberId,
-                    IsAsap = r.IsAsap,
-                    CreatedAt = r.CreatedAt,
-                    JobTitle = r.JobTitle,
-                    WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : r.WorkerRate,
-                    Location = $"{r.JobLocation.City.Value} {r.JobLocation.City.Province.Value}",
-                    Entrance = r.JobLocation.Entrance,
-                    Status = null,
-                    WorkersQuantity = r.WorkersQuantity,
-                    StartAt = r.StartAt,
-                    FinishAt = r.FinishAt,
-                    DurationTerm = r.DurationTerm.ToString()
-                }).AsEnumerable();
-            requests = availableRequest.Union(ownRequest);
-        }
-        else
+            Id = x.Request.Id,
+            NumberId = x.Request.NumberId,
+            IsAsap = x.Request.IsAsap,
+            CreatedAt = x.Request.CreatedAt,
+            JobTitle = x.Request.JobTitle,
+            WorkerRate = x.IsBooked ? (x.Request.WorkerRate ?? x.Request.WorkerSalary) : (x.Request.WorkerSalary ?? x.Request.WorkerRate),
+            Location = x.IsBooked
+                ? x.Request.JobLocation.Address + " " + x.Request.JobLocation.City.Value + " " + x.Request.JobLocation.City.Province.Value + " " + x.Request.JobLocation.PostalCode
+                : x.Request.JobLocation.City.Value + " " + x.Request.JobLocation.City.Province.Value,
+            Entrance = x.Request.JobLocation.Entrance,
+            Status = x.IsBooked ? WorkerRequestStatus.Booked.ToString() : null,
+            WorkersQuantity = x.Request.WorkersQuantity,
+            StartAt = x.Request.StartAt,
+            FinishAt = x.Request.FinishAt,
+            DurationTerm = x.Request.DurationTerm.ToString()
+        });
+
+        var ordered = filter.SortBy switch
         {
-            requests = ownRequest;
-        }
-        requests = requests.OrderByDescending(r => r.NumberId);
-        var response = await requests.ToPaginatedList(pagination);
-        return response;
+            GetWorkerRequestsSortBy.Rate => projected.AddOrderBy(filter, r => r.WorkerRate).ThenByDescending(r => r.NumberId),
+            _ => projected.AddOrderBy(filter, r => r.NumberId)
+        };
+
+        return await ordered.ThenBy(r => r.Id).AsNoTracking().ToPaginatedList(filter);
     }
 
     public Task<WorkerRequestDetailModel> GetRequestDetailForWorker(Guid workerId, Guid requestId)

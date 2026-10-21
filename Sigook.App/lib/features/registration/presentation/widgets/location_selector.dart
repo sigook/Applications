@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/display/profile_info_row.dart';
+import '../../../catalog/domain/entities/catalog_item.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/province.dart';
 import '../../domain/entities/city.dart';
 import 'searchable_dropdown_field.dart';
 
-class LocationSelector extends ConsumerStatefulWidget {
+enum LocationField { country, province, city }
+
+/// Country → Province → City cascade. By default each field renders its own
+/// header label (registration look). When [rowBuilder] is given the fields
+/// render dense and the caller decides how to frame each one.
+class LocationSelector extends ConsumerWidget {
   final Country? selectedCountry;
   final Province? selectedProvince;
   final City? selectedCity;
@@ -17,6 +24,7 @@ class LocationSelector extends ConsumerStatefulWidget {
   final String? countryError;
   final String? provinceError;
   final String? cityError;
+  final Widget Function(LocationField field, Widget control)? rowBuilder;
 
   const LocationSelector({
     super.key,
@@ -29,219 +37,196 @@ class LocationSelector extends ConsumerStatefulWidget {
     this.countryError,
     this.provinceError,
     this.cityError,
+    this.rowBuilder,
   });
 
-  @override
-  ConsumerState<LocationSelector> createState() => _LocationSelectorState();
-}
+  bool get _dense => rowBuilder != null;
 
-class _LocationSelectorState extends ConsumerState<LocationSelector> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final countriesAsync = ref.watch(countriesListProvider);
-    final countries = countriesAsync.value ?? [];
-
-    final provincesAsync = widget.selectedCountry != null
-        ? ref.watch(provincesProvider(widget.selectedCountry!.id ?? ''))
+    final provincesAsync = selectedCountry != null
+        ? ref.watch(provincesProvider(selectedCountry!.id ?? ''))
         : null;
-    final provinces = provincesAsync?.value ?? [];
-
-    final citiesAsync = widget.selectedProvince != null
-        ? ref.watch(citiesProvider(widget.selectedProvince!.id ?? ''))
+    final citiesAsync = selectedProvince != null
+        ? ref.watch(citiesProvider(selectedProvince!.id ?? ''))
         : null;
-    final cities = citiesAsync?.value ?? [];
+
+    final country = _buildDropdown(
+      field: LocationField.country,
+      label: 'Country',
+      selectedLabel: selectedCountry?.value,
+      items: countriesAsync.value ?? [],
+      onChanged: (item) {
+        onCountryChanged(
+          item != null ? Country(id: item.id, value: item.value) : null,
+        );
+        onProvinceChanged(null);
+        onCityChanged(null);
+      },
+      errorText: countryError,
+      isLoading: countriesAsync.isLoading,
+      enabled: true,
+    );
+
+    final province = _buildDropdown(
+      field: LocationField.province,
+      label: 'Province/State',
+      selectedLabel: selectedProvince?.value,
+      items: provincesAsync?.value ?? [],
+      onChanged: (item) {
+        onProvinceChanged(
+          item != null && selectedCountry != null
+              ? Province(
+                  id: item.id,
+                  value: item.value,
+                  country: selectedCountry!,
+                )
+              : null,
+        );
+        onCityChanged(null);
+      },
+      errorText: provinceError,
+      isLoading: provincesAsync?.isLoading ?? false,
+      enabled: selectedCountry != null,
+    );
+
+    final city = _buildDropdown(
+      field: LocationField.city,
+      label: 'City',
+      selectedLabel: selectedCity?.value,
+      items: citiesAsync?.value ?? [],
+      onChanged: (item) {
+        onCityChanged(
+          item != null && selectedProvince != null
+              ? City(id: item.id, value: item.value, province: selectedProvince!)
+              : null,
+        );
+      },
+      errorText: cityError,
+      isLoading: citiesAsync?.isLoading ?? false,
+      enabled: selectedProvince != null,
+    );
+
+    if (rowBuilder != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          rowBuilder!(LocationField.country, country),
+          rowBuilder!(LocationField.province, province),
+          rowBuilder!(LocationField.city, city),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDropdown(
-          label: 'Country',
-          value: widget.selectedCountry,
-          items: countries,
-          isRequired: true,
-          onChanged: (catalogItem) {
-            if (catalogItem != null) {
-              final country = Country(
-                id: catalogItem.id,
-                value: catalogItem.value,
-              );
-              widget.onCountryChanged(country);
-              widget.onProvinceChanged(null);
-              widget.onCityChanged(null);
-            } else {
-              widget.onCountryChanged(null);
-              widget.onProvinceChanged(null);
-              widget.onCityChanged(null);
-            }
-          },
-          errorText: widget.countryError,
-          isLoading: countriesAsync.isLoading,
-          enabled: true,
-        ),
+        country,
         const SizedBox(height: 16),
-        _buildDropdown(
-          label: 'Province/State',
-          value: widget.selectedProvince,
-          items: provinces,
-          isRequired: true,
-          onChanged: (catalogItem) {
-            if (catalogItem != null && widget.selectedCountry != null) {
-              final province = Province(
-                id: catalogItem.id,
-                value: catalogItem.value,
-                code: null,
-                country: widget.selectedCountry!,
-              );
-              widget.onProvinceChanged(province);
-              widget.onCityChanged(null);
-            } else {
-              widget.onProvinceChanged(null);
-              widget.onCityChanged(null);
-            }
-          },
-          errorText: widget.provinceError,
-          isLoading: provincesAsync?.isLoading ?? false,
-          enabled: widget.selectedCountry != null,
-        ),
+        province,
         const SizedBox(height: 16),
-
-        _buildDropdown(
-          label: 'City',
-          value: widget.selectedCity,
-          items: cities,
-          isRequired: true,
-          onChanged: (catalogItem) {
-            if (catalogItem != null && widget.selectedProvince != null) {
-              final city = City(
-                id: catalogItem.id,
-                value: catalogItem.value,
-                code: null,
-                province: widget.selectedProvince!,
-              );
-              widget.onCityChanged(city);
-            } else {
-              widget.onCityChanged(null);
-            }
-          },
-          errorText: widget.cityError,
-          isLoading: citiesAsync?.isLoading ?? false,
-          enabled: widget.selectedProvince != null,
-        ),
+        city,
       ],
     );
   }
 
   Widget _buildDropdown({
+    required LocationField field,
     required String label,
-    required dynamic value,
-    required List items,
-    required Function(dynamic) onChanged,
+    required String? selectedLabel,
+    required List<CatalogItem> items,
+    required ValueChanged<CatalogItem?> onChanged,
     String? errorText,
     bool isLoading = false,
     bool enabled = true,
-    bool isRequired = false,
   }) {
-    String? selectedLabel;
-    if (value != null) {
-      if (value is Country) {
-        selectedLabel = value.value;
-      } else if (value is Province) {
-        selectedLabel = value.value;
-      } else if (value is City) {
-        selectedLabel = value.value;
-      }
-    }
-
-    if (!enabled) {
-      String dependencyLabel;
-      if (label == 'Province/State') {
-        dependencyLabel = 'country';
-      } else if (label == 'City') {
-        dependencyLabel = 'province';
-      } else {
-        dependencyLabel = label.toLowerCase();
-      }
-
-      final hintText = 'Select $dependencyLabel first';
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              if (isRequired)
-                const Text(
-                  ' *',
-                  style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            enabled: false,
-            decoration: InputDecoration(
-              hintText: hintText,
-              prefixIcon: const Icon(Icons.place),
-              filled: true,
-              fillColor: Colors.grey.shade100,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    final optionLabels = items.map((item) => item.value as String).toList();
+    if (!enabled) return _buildDisabled(field, label);
 
     return SearchableDropdownField(
       label: label,
       hint: 'Select or search $label...',
       selectedValue: selectedLabel,
-      options: optionLabels,
-      isRequired: isRequired,
+      options: items.map((item) => item.value).toList(),
+      isRequired: true,
+      dense: _dense,
       onChanged: (selectedText) {
         if (selectedText == null) {
           onChanged(null);
           return;
         }
-
-        dynamic selectedItem;
-        for (final item in items) {
-          if (item.value == selectedText) {
-            selectedItem = item;
-            break;
-          }
-        }
-
-        if (selectedItem != null) {
-          onChanged(selectedItem);
-        }
+        final selectedItem =
+            items.where((item) => item.value == selectedText).firstOrNull;
+        if (selectedItem != null) onChanged(selectedItem);
       },
       errorText: errorText,
       icon: Icons.place,
       isLoading: isLoading,
+    );
+  }
+
+  Widget _buildDisabled(LocationField field, String label) {
+    final dependency = switch (field) {
+      LocationField.province => 'country',
+      LocationField.city => 'province',
+      LocationField.country => label.toLowerCase(),
+    };
+    final hintText = 'Select $dependency first';
+
+    if (_dense) {
+      return TextField(
+        enabled: false,
+        decoration: ProfileInfoRow.decoration(hintText: hintText),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textDark,
+              ),
+            ),
+            const Text(
+              ' *',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          enabled: false,
+          decoration: InputDecoration(
+            hintText: hintText,
+            prefixIcon: const Icon(Icons.place),
+            filled: true,
+            fillColor: Colors.grey.shade100,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

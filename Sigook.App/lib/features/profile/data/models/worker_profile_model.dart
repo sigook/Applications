@@ -229,6 +229,7 @@ abstract class WorkerProfileModel with _$WorkerProfileModel {
       province: location?.city?.province?.value,
       provinceId: location?.city?.province?.id,
       country: location?.city?.province?.country?.value,
+      countryId: location?.city?.province?.country?.id,
       countryCode: location?.city?.province?.country?.code,
       postalCode: location?.postalCode,
       hasVehicle: hasVehicle,

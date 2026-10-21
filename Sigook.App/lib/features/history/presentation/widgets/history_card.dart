@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/utils/string_extensions.dart';
 import '../../../jobs/domain/entities/job.dart';
 
 class HistoryCard extends StatelessWidget {
@@ -172,7 +173,7 @@ class HistoryCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          job.durationTerm!,
+                          job.durationTerm!.splitPascalCase(),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,

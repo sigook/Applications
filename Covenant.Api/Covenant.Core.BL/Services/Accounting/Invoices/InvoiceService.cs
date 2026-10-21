@@ -354,7 +354,7 @@ public class InvoiceService(
             item.TimeInApproved.Value,
             item.TimeOutApproved.Value,
             item.DurationBreak,
-            breakIsPaid: false,
+            item.BreakIsPaid,
             isHoliday: isHoliday,
             holidayIsPaid: true,
             ref accumulatedRegularHours,

@@ -637,7 +637,6 @@ class TimesheetTab extends ConsumerWidget {
 
                     // Financial Section
                     if (entry.missingRateWorker > 0 ||
-                        entry.missingRateAgency > 0 ||
                         entry.bonusOrOthers > 0 ||
                         entry.deductionsOthers > 0 ||
                         entry.reimbursements > 0) ...[
@@ -652,13 +651,6 @@ class TimesheetTab extends ConsumerWidget {
                               'Worker Rate',
                               currencyFormat.format(entry.missingRateWorker),
                               Icons.person,
-                              Colors.blue,
-                            ),
-                          if (entry.missingRateAgency > 0)
-                            _buildDetailRow(
-                              'Agency Rate',
-                              currencyFormat.format(entry.missingRateAgency),
-                              Icons.business,
                               Colors.blue,
                             ),
                           if (entry.bonusOrOthers > 0)

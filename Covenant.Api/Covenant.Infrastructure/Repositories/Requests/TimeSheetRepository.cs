@@ -8,6 +8,7 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -171,12 +172,12 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
         }
     }
 
-    public async Task<PaginatedList<TimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination)
+    public async Task<PaginatedList<WorkerTimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination)
     {
         var query = (from workerRequest in Context.WorkerRequests
                      from timeSheet in workerRequest.TimeSheets
                      where workerRequest.WorkerProfile.WorkerId == workerId && workerRequest.RequestId == requestId
-                     select new TimeSheetListModel
+                     select new WorkerTimeSheetListModel
                      {
                          Id = timeSheet.Id,
                          Day = timeSheet.Date,
@@ -189,9 +190,20 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                          TimeInApproved = timeSheet.TimeInApproved,
                          TimeOutApproved = timeSheet.TimeOutApproved,
                          Comment = timeSheet.Comment,
+                         CanUpdate = timeSheet.TimeSheetTotal == null && timeSheet.TimeSheetTotalPayroll == null,
+                         WasApproved = timeSheet.TimeInApproved != null && timeSheet.TimeOutApproved != null,
+                         MissingHours = timeSheet.MissingHours,
+                         MissingHoursOvertime = timeSheet.MissingHoursOvertime,
+                         MissingRateWorker = timeSheet.MissingRateWorker,
+                         DeductionsOthers = timeSheet.DeductionsOthers,
+                         DeductionsOthersDescription = timeSheet.DeductionsOthersDescription,
+                         BonusOrOthers = timeSheet.BonusOrOthers,
+                         BonusOrOthersDescription = timeSheet.BonusOrOthersDescription,
+                         Reimbursements = timeSheet.Reimbursements,
+                         ReimbursementsDescription = timeSheet.ReimbursementsDescription,
                          TotalHours = timeSheet.TotalHours,
                          TotalHoursApproved = timeSheet.TotalHoursApproved,
-                     }).OrderByDescending(c => c.Day);
+                     }).OrderByDescending(c => c.Day).ThenByDescending(c => c.Id);
         return await query.ToPaginatedList(pagination);
     }
 

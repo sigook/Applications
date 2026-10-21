@@ -1,12 +1,12 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../entities/jobs_filter.dart';
 import '../entities/paginated_jobs.dart';
 import '../entities/job_details.dart';
 
 abstract class JobsRepository {
   Future<Either<Failure, PaginatedJobs>> getJobs({
-    required int sortBy,
-    required bool isDescending,
+    required JobsFilter filter,
     required int pageIndex,
     required int pageSize,
   });

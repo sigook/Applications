@@ -223,16 +223,9 @@ class JobCard extends StatelessWidget {
   }
 
   Color _getStatusColor(String? status) {
-    switch (status?.toLowerCase() ?? '') {
-      case 'booked':
-        return AppTheme.successGreen;
-      case 'pending':
-        return Colors.orange;
-      case 'cancelled':
-        return AppTheme.errorRed;
-      default:
-        return Colors.grey;
-    }
+    return status?.toLowerCase() == 'booked'
+        ? AppTheme.successGreen
+        : Colors.grey;
   }
 
   String _formatDate(DateTime date) {

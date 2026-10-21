@@ -63,7 +63,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Accounting.TimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                  "$ref": "#/components/schemas/Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Worker.WorkerTimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
                 }
               }
             }
@@ -277,6 +277,27 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Boolean"
+            }
+          },
+          {
+            "name": "SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.GetWorkerRequestsSortBy"
+            }
+          },
+          {
+            "name": "NumberId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+            }
+          },
+          {
+            "name": "JobTitle",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
             }
           },
           {
@@ -27816,23 +27837,6 @@
           }
         }
       },
-      "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Accounting.TimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Accounting.TimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-          },
-          "pageIndex": {
-            "$ref": "#/components/schemas/System.Int32"
-          },
-          "totalPages": {
-            "$ref": "#/components/schemas/System.Int32"
-          },
-          "totalItems": {
-            "$ref": "#/components/schemas/System.Int32"
-          }
-        }
-      },
       "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Agency.AgencyModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "object",
         "properties": {
@@ -28042,6 +28046,23 @@
         "properties": {
           "items": {
             "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Worker.WorkerRequestListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "pageIndex": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalPages": {
+            "$ref": "#/components/schemas/System.Int32"
+          },
+          "totalItems": {
+            "$ref": "#/components/schemas/System.Int32"
+          }
+        }
+      },
+      "Covenant.Common.Models.PaginatedList`1[[Covenant.Common.Models.Request.Worker.WorkerTimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Worker.WorkerTimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
           },
           "pageIndex": {
             "$ref": "#/components/schemas/System.Int32"
@@ -30493,6 +30514,9 @@
           }
         }
       },
+      "Covenant.Common.Models.Request.Worker.GetWorkerRequestsSortBy": {
+        "type": "integer"
+      },
       "Covenant.Common.Models.Request.Worker.PunchCheckpointModel": {
         "type": "object",
         "properties": {
@@ -30727,6 +30751,132 @@
           },
           "durationTerm": {
             "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
+      "Covenant.Common.Models.Request.Worker.WorkerTimeSheetListModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "day": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "clockIn": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "clockOut": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "clockInRounded": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "clockOutRounded": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "timeIn": {
+            "$ref": "#/components/schemas/System.DateTime"
+          },
+          "timeOut": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "comment": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "timeInApproved": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "timeOutApproved": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "canUpdate": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "wasApproved": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
+          "missingHours": {
+            "$ref": "#/components/schemas/System.TimeSpan"
+          },
+          "missingHoursOvertime": {
+            "$ref": "#/components/schemas/System.TimeSpan"
+          },
+          "missingRateWorker": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "deductionsOthers": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "deductionsOthersDescription": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "bonusOrOthers": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "bonusOrOthersDescription": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "reimbursements": {
+            "$ref": "#/components/schemas/System.Decimal"
+          },
+          "reimbursementsDescription": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "totalHours": {
+            "$ref": "#/components/schemas/System.Double"
+          },
+          "totalHoursApproved": {
+            "$ref": "#/components/schemas/System.Double"
           }
         }
       },
@@ -32410,12 +32560,6 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.Subcontractor.PayrollSubContractorListModel"
         }
       },
-      "System.Collections.Generic.List`1[[Covenant.Common.Models.Accounting.TimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Covenant.Common.Models.Accounting.TimeSheetListModel"
-        }
-      },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Agency.AgencyModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
@@ -32636,6 +32780,12 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerRequestListModel"
+        }
+      },
+      "System.Collections.Generic.List`1[[Covenant.Common.Models.Request.Worker.WorkerTimeSheetListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Request.Worker.WorkerTimeSheetListModel"
         }
       },
       "System.Collections.Generic.List`1[[Covenant.Common.Models.Sales.CompanyInteractionListModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {

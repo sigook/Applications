@@ -9,6 +9,7 @@ import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../domain/validators/profile_validators.dart';
 import '../../../../emergency/presentation/viewmodels/emergency_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
+import '../../../widgets/profile_switch_row.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class EmergencySectionCard extends ConsumerStatefulWidget {
@@ -126,19 +127,11 @@ class _EmergencySectionCardState extends ConsumerState<EmergencySectionCard> {
       ),
       children: [
         if (vm.isEditing)
-          SwitchListTile(
+          ProfileSwitchRow(
+            label: 'Do you have any health problems / allergies?',
+            icon: Icons.health_and_safety_outlined,
             value: _haveAllergies,
             onChanged: (val) => setState(() => _haveAllergies = val),
-            title: const Text(
-              'Do you have any health problems / allergies?',
-              style: TextStyle(fontSize: 14),
-            ),
-            secondary: Icon(
-              Icons.health_and_safety_outlined,
-              color: AppTheme.primaryBlue,
-            ),
-            activeThumbColor: AppTheme.primaryBlue,
-            contentPadding: EdgeInsets.zero,
           )
         else
           ProfileInfoRow(

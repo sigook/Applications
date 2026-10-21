@@ -101,10 +101,13 @@ Single implementation for payroll, invoicing and holiday-pay base: `TimesheetCal
 ### 1. Total hours and breaks
 
 ```csharp
-var totalHours = (timeOut - timeIn).Subtract(breakIsPaid ? durationBreak : TimeSpan.Zero);
+var totalHours = (timeOut - timeIn).Subtract(breakIsPaid ? TimeSpan.Zero : durationBreak);
+if (totalHours < TimeSpan.Zero) totalHours = TimeSpan.Zero;
 ```
 
-`DurationBreak` is subtracted **when `BreakIsPaid` is `true`** (TimesheetCalculatorService.cs:96). The flag name reads inverted relative to its effect — treat `BreakIsPaid = true` as "deduct the break from paid hours" when reasoning about this code.
+`DurationBreak` is subtracted only when the break is **not** paid (`BreakIsPaid = false`). A paid break stays inside the paid hours, which is what the request form ("Duration break is paid") promises. A day whose span is shorter than the break (for example an unworked holiday recorded as 00:00–00:00) yields zero hours, never a negative value.
+
+Pay stubs, invoices, subcontractor reports and the holiday-pay base all pass the request's `BreakIsPaid`, so billed hours and paid hours always agree.
 
 ### 2. Holiday gate
 

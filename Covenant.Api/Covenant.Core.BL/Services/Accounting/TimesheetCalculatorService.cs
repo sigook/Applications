@@ -92,7 +92,8 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
         var breakdown = new TimeSheetHoursBreakdown();
 
         // Step 1: Calculate total hours (TimeOut - TimeIn - Break if applicable)
-        var totalHours = (timeOut - timeIn).Subtract(breakIsPaid ? durationBreak : TimeSpan.Zero);
+        var totalHours = (timeOut - timeIn).Subtract(breakIsPaid ? TimeSpan.Zero : durationBreak);
+        if (totalHours < TimeSpan.Zero) totalHours = TimeSpan.Zero;
 
         // Step 2: If holiday and paid, all hours go to holiday (don't accumulate)
         if (isHoliday && holidayIsPaid)

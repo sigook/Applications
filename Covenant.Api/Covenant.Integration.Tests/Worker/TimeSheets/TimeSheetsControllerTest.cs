@@ -6,8 +6,8 @@ using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
@@ -61,8 +61,8 @@ public class TimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
     {
         HttpResponseMessage response = await _client.GetAsync(_url);
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadFromJsonAsync<PaginatedList<TimeSheetListModel>>();
-        TimeSheetListModel model = list.Items.Single(s => s.Id == Data.Day1.Id);
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerTimeSheetListModel>>();
+        WorkerTimeSheetListModel model = list.Items.Single(s => s.Id == Data.Day1.Id);
 
         Assert.Equal(model.Id, Data.Day1.Id);
         Assert.Equal(model.Day, Data.Day1.Date);
@@ -84,8 +84,8 @@ public class TimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
     {
         HttpResponseMessage response = await _client.GetAsync(_url);
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadFromJsonAsync<PaginatedList<TimeSheetListModel>>();
-        TimeSheetListModel model = list.Items.Single(s => s.Id == Data.Day2.Id);
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<WorkerTimeSheetListModel>>();
+        WorkerTimeSheetListModel model = list.Items.Single(s => s.Id == Data.Day2.Id);
 
         Assert.Equal(model.Id, Data.Day2.Id);
         Assert.Equal(model.Day, Data.Day2.Date);

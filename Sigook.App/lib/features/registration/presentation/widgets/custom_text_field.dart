@@ -67,6 +67,7 @@ class CustomTextField extends StatelessWidget {
         Semantics(
           label: isRequired ? '$label (required)' : label,
           child: Focus(
+            skipTraversal: true,
             onFocusChange: onFocusChanged,
             child: TextFormField(
               controller: controller,

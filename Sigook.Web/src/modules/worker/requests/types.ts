@@ -2,10 +2,32 @@ import { LocationDetailModel } from '@/shared/types/common';
 import type { ClockType } from '@/shared/constants/enums';
 
 // Worker Request types
+export enum WorkerRequestSortBy {
+  NumberId = 0,
+  Rate = 1,
+}
+
+export interface WorkerRequestSortOption {
+  key: string;
+  label: string;
+  sortBy: WorkerRequestSortBy;
+  isDescending: boolean;
+}
+
+export const WorkerRequestSortOptions: WorkerRequestSortOption[] = [
+  { key: 'newest', label: 'Date: Newest first', sortBy: WorkerRequestSortBy.NumberId, isDescending: true },
+  { key: 'oldest', label: 'Date: Oldest first', sortBy: WorkerRequestSortBy.NumberId, isDescending: false },
+  { key: 'highestRate', label: 'Pay rate: Highest', sortBy: WorkerRequestSortBy.Rate, isDescending: true },
+  { key: 'lowestRate', label: 'Pay rate: Lowest', sortBy: WorkerRequestSortBy.Rate, isDescending: false },
+];
+
 export interface WorkerRequestFilter {
   pageIndex?: number;
   pageSize?: number;
+  sortBy?: WorkerRequestSortBy;
   isDescending?: boolean;
+  numberId?: number;
+  jobTitle?: string;
 }
 
 export interface WorkerRequestApplyModel {
@@ -71,16 +93,47 @@ export interface PunchStatus {
   weekHours: number;
 }
 
-// Matches API TimeSheetListModel.
+// Matches API WorkerTimeSheetListModel.
 export interface WorkerTimeSheetItem {
   id: string;
   day: string;
   clockIn?: string | null;
   clockOut?: string | null;
+  clockInRounded?: string | null;
+  clockOutRounded?: string | null;
   timeIn: string;
   timeOut?: string | null;
+  comment?: string | null;
+  timeInApproved?: string | null;
+  timeOutApproved?: string | null;
+  canUpdate: boolean;
+  wasApproved: boolean;
+  missingHours: string;
+  missingHoursOvertime: string;
+  missingRateWorker: number;
+  deductionsOthers: number;
+  bonusOrOthers: number;
+  deductionsOthersDescription?: string | null;
+  bonusOrOthersDescription?: string | null;
+  reimbursements: number;
+  reimbursementsDescription?: string | null;
   totalHours: number;
   totalHoursApproved: number;
-  wasApproved: boolean;
-  canUpdate: boolean;
+}
+
+export type TimeSheetDetailTone = 'blue' | 'green' | 'danger' | 'accent' | 'purple' | 'grey';
+
+export interface TimeSheetDetailRow {
+  label: string;
+  value: string;
+  icon: string;
+  tone?: TimeSheetDetailTone;
+  subtitle?: string | null;
+}
+
+export interface TimeSheetDetailSection {
+  title: string;
+  icon: string;
+  tone: TimeSheetDetailTone;
+  rows: TimeSheetDetailRow[];
 }

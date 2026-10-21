@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/job.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/entities/jobs_filter.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/paginated_jobs.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/usecases/get_jobs.dart';
 
@@ -32,6 +33,10 @@ void main() {
     totalItems: 90,
   );
 
+  setUpAll(() {
+    registerFallbackValue(JobsFilter.defaults);
+  });
+
   setUp(() {
     mockRepo = MockJobsRepository();
     usecase = GetJobs(mockRepo);
@@ -39,8 +44,7 @@ void main() {
 
   test('returns PaginatedJobs on success', () async {
     when(() => mockRepo.getJobs(
-          sortBy: any(named: 'sortBy'),
-          isDescending: any(named: 'isDescending'),
+          filter: any(named: 'filter'),
           pageIndex: any(named: 'pageIndex'),
           pageSize: any(named: 'pageSize'),
         )).thenAnswer((_) async => Right(tPaginatedJobs));
@@ -51,23 +55,21 @@ void main() {
   });
 
   test('passes all params to repository', () async {
+    const filter = JobsFilter(sortBy: JobSortBy.highestRate);
     when(() => mockRepo.getJobs(
-          sortBy: 1,
-          isDescending: true,
+          filter: filter,
           pageIndex: 2,
           pageSize: 10,
         )).thenAnswer((_) async => Right(tPaginatedJobs));
 
     await usecase(const GetJobsParams(
-      sortBy: 1,
-      isDescending: true,
+      filter: filter,
       pageIndex: 2,
       pageSize: 10,
     ));
 
     verify(() => mockRepo.getJobs(
-          sortBy: 1,
-          isDescending: true,
+          filter: filter,
           pageIndex: 2,
           pageSize: 10,
         )).called(1);
@@ -76,8 +78,7 @@ void main() {
   test('returns NetworkFailure when repository fails', () async {
     const failure = NetworkFailure(message: 'offline');
     when(() => mockRepo.getJobs(
-          sortBy: any(named: 'sortBy'),
-          isDescending: any(named: 'isDescending'),
+          filter: any(named: 'filter'),
           pageIndex: any(named: 'pageIndex'),
           pageSize: any(named: 'pageSize'),
         )).thenAnswer((_) async => const Left(failure));

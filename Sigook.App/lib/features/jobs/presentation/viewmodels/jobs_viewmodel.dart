@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/constants/error_messages.dart';
+import '../../domain/entities/jobs_filter.dart';
 import '../../domain/usecases/get_jobs.dart';
 import '../providers/jobs_providers.dart';
 import 'jobs_state.dart';
@@ -8,6 +9,8 @@ part 'jobs_viewmodel.g.dart';
 
 @riverpod
 class JobsViewModel extends _$JobsViewModel {
+  static const int _pageSize = 30;
+
   @override
   JobsState build() {
     return const JobsState();
@@ -20,12 +23,7 @@ class JobsViewModel extends _$JobsViewModel {
 
     final getJobs = ref.read(getJobsUseCaseProvider);
     final result = await getJobs(
-      const GetJobsParams(
-        sortBy: 0,
-        isDescending: false,
-        pageIndex: 1,
-        pageSize: 30,
-      ),
+      GetJobsParams(filter: state.filter, pageIndex: 1, pageSize: _pageSize),
     );
 
     if (!ref.mounted) return;
@@ -63,10 +61,9 @@ class JobsViewModel extends _$JobsViewModel {
     final getJobs = ref.read(getJobsUseCaseProvider);
     final result = await getJobs(
       GetJobsParams(
-        sortBy: 0,
-        isDescending: false,
+        filter: state.filter,
         pageIndex: state.currentPage + 1,
-        pageSize: 30,
+        pageSize: _pageSize,
       ),
     );
 
@@ -83,6 +80,14 @@ class JobsViewModel extends _$JobsViewModel {
       ),
     );
   }
+
+  Future<void> applyFilter(JobsFilter filter) async {
+    if (filter == state.filter) return;
+    state = state.copyWith(filter: filter);
+    await refresh();
+  }
+
+  Future<void> clearSearch() => applyFilter(state.filter.copyWith(search: ''));
 
   Future<void> refresh() async {
     state = state.copyWith(

@@ -1,27 +1,8 @@
 <template>
   <div>
-    <SigookGrid :data="data.items || []" :paginated="false">
+    <SigookGrid :data="data.items || []" :paginated="false" empty-text="No timesheet records. Your completed shifts will appear here.">
       <template #mobile-card="{ row }">
-        <div class="rcard">
-          <div class="rcard__rows">
-            <div class="rcard__row">
-              <span class="rcard__label">Day</span>
-              <span v-if="row.day">{{ date(row.day) }}</span>
-            </div>
-            <div class="rcard__row">
-              <span class="rcard__label">Clock In</span>
-              <span v-if="row.timeIn">{{ time(row.clockIn) }}</span>
-            </div>
-            <div class="rcard__row">
-              <span class="rcard__label">Clock Out</span>
-              <span v-if="row.clockOut !== null">{{ time(row.clockOut) }}</span>
-            </div>
-            <div class="rcard__row">
-              <span class="rcard__label">Worked hours</span>
-              <span>{{ row.totalHours.toFixed(2) }}</span>
-            </div>
-          </div>
-        </div>
+        <TimeSheetCard :entry="row" @select="openDetail" />
       </template>
       <b-table-column field="day" :label="'Day'" v-slot="props">
         <span v-if="props.row.day">{{ date(props.row.day) }}</span>
@@ -36,15 +17,28 @@
         {{ props.row.totalHours.toFixed(2) }}
       </b-table-column>
     </SigookGrid>
+
+    <TimeSheetDetailSheet v-model="showDetail" :entry="selected" />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { date, time } from '@/shared/format';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import TimeSheetCard from '@/modules/worker/requests/components/TimeSheetCard.vue';
+import TimeSheetDetailSheet from '@/modules/worker/requests/components/TimeSheetDetailSheet.vue';
 import type { WorkerTimeSheetItem } from '@/modules/worker/requests/types';
 
 defineProps<{
   data: { items?: WorkerTimeSheetItem[] };
 }>();
+
+const selected = ref<WorkerTimeSheetItem | null>(null);
+const showDetail = ref(false);
+
+function openDetail(entry: WorkerTimeSheetItem) {
+  selected.value = entry;
+  showDetail.value = true;
+}
 </script>

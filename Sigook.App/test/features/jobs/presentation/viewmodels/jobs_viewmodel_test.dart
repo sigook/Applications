@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/job.dart';
+import 'package:sigook_app_flutter/features/jobs/domain/entities/jobs_filter.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/paginated_jobs.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/usecases/get_jobs.dart';
 import 'package:sigook_app_flutter/features/jobs/presentation/providers/jobs_providers.dart';
@@ -148,6 +149,77 @@ void main() {
       expect(state.jobs.length, 3); // 2 + 1
       expect(state.currentPage, 2);
       expect(state.isLoadingMore, false);
+    });
+  });
+
+  // ── applyFilter ────────────────────────────────────────────────────────────
+
+  group('applyFilter', () {
+    test('stores the filter and reloads from page 1 with it', () async {
+      final container = _makeContainer(mockGetJobs);
+      stubPage(_makePage(
+        items: [_makeJob('a'), _makeJob('b')],
+        pageIndex: 1,
+        totalPages: 2,
+      ));
+      await container.read(jobsViewModelProvider.notifier).loadJobs();
+      clearInteractions(mockGetJobs);
+
+      const filter = JobsFilter(sortBy: JobSortBy.highestRate);
+      stubPage(_makePage(items: [_makeJob('x')], pageIndex: 1, totalPages: 1));
+      await container.read(jobsViewModelProvider.notifier).applyFilter(filter);
+
+      final state = container.read(jobsViewModelProvider);
+      expect(state.filter, filter);
+      expect(state.jobs.map((j) => j.id), ['x']);
+      final params = verify(() => mockGetJobs.call(captureAny())).captured;
+      expect(params.length, 1);
+      expect((params.single as GetJobsParams).filter, filter);
+      expect((params.single as GetJobsParams).pageIndex, 1);
+    });
+
+    test('is a no-op when the filter does not change', () async {
+      final container = _makeContainer(mockGetJobs);
+      stubPage(_makePage(items: [_makeJob('a')], pageIndex: 1, totalPages: 1));
+      await container.read(jobsViewModelProvider.notifier).loadJobs();
+      clearInteractions(mockGetJobs);
+
+      await container
+          .read(jobsViewModelProvider.notifier)
+          .applyFilter(JobsFilter.defaults);
+
+      verifyNever(() => mockGetJobs.call(any()));
+    });
+
+    test('loadMore keeps the active filter', () async {
+      final container = _makeContainer(mockGetJobs);
+      const filter = JobsFilter(sortBy: JobSortBy.lowestRate);
+      stubPage(_makePage(items: [_makeJob('a')], pageIndex: 1, totalPages: 2));
+      await container.read(jobsViewModelProvider.notifier).applyFilter(filter);
+      clearInteractions(mockGetJobs);
+
+      stubPage(_makePage(items: [_makeJob('b')], pageIndex: 2, totalPages: 2));
+      await container.read(jobsViewModelProvider.notifier).loadMore();
+
+      final params =
+          verify(() => mockGetJobs.call(captureAny())).captured.single
+              as GetJobsParams;
+      expect(params.filter, filter);
+      expect(params.pageIndex, 2);
+    });
+
+    test('clearSearch keeps the sort and drops the search text', () async {
+      final container = _makeContainer(mockGetJobs);
+      const filter = JobsFilter(sortBy: JobSortBy.oldest, search: 'driver');
+      stubPage(_makePage(items: [_makeJob('a')], pageIndex: 1, totalPages: 1));
+      await container.read(jobsViewModelProvider.notifier).applyFilter(filter);
+
+      await container.read(jobsViewModelProvider.notifier).clearSearch();
+
+      expect(
+        container.read(jobsViewModelProvider).filter,
+        const JobsFilter(sortBy: JobSortBy.oldest),
+      );
     });
   });
 
