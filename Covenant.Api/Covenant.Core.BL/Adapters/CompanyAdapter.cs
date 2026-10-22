@@ -11,8 +11,6 @@ using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Resources;
-using Covenant.Infrastructure.Repositories;
-using Covenant.Infrastructure.Services;
 using System;
 
 namespace Covenant.Core.BL.Adapters;
@@ -70,18 +68,8 @@ public class CompanyAdapter(IUserAccountService userAccountService, ICurrentUser
     private CompanyProfileContactPerson ConvertCompanyCsvToContactPerson(CompanyCsvModel model, Guid companyProfileId)
     {
             var rEmail = CvnEmail.Create(model.ContactEmail);
-            var entity = new CompanyProfileContactPerson(companyProfileId)
-            {
-                Title = model.Title,
-                FirstName = model.ContactName,
-                MiddleName = string.Empty,
-                LastName = string.Empty,
-                Position = model.Title,
-                MobileNumber = model.CompanyHQPhone,
-                OfficeNumber = string.Empty,
-                Email = rEmail.Value
-            };
-
-            return entity;  
+            var entity = new CompanyProfileContactPerson(companyProfileId);
+            entity.Update(model.Title, model.ContactName, string.Empty, string.Empty, model.Title, model.CompanyHQPhone, string.Empty, null, rEmail.Value);
+            return entity;
     }
 }

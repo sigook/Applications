@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Models.Company.Agency;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
+using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class InvoiceNotesController(ICompanyRepository companyRepository) : Controller
+public class InvoiceNotesController(ICompanyRepository companyRepository, ICompanyService companyService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/clients/{profileId}/invoicenotes";
 
@@ -34,7 +35,7 @@ public class InvoiceNotesController(ICompanyRepository companyRepository) : Cont
     public async Task<IActionResult> Put(Guid profileId, [FromBody] CompanyProfileInvoiceNotesModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        await companyRepository.UpdateCompanyProfileInvoiceNotes(profileId, model?.HtmlNotes);
+        await companyService.UpdateInvoiceNotes(profileId, model?.HtmlNotes);
         return Ok();
     }
 }

@@ -6,6 +6,7 @@
         public bool IsFailure => !IsSuccess;
         public IEnumerable<ResultError> Errors { get; }
         public string StringErrors => Errors is null ? string.Empty : string.Join(" ", Errors.Select(e => e.Message));
+        public bool IsNotFound => Errors?.Any(e => e.Key == ResultError.NotFoundKey) ?? false;
         private Result()
         {
             if (IsSuccess && Errors != null && Errors.Any())
@@ -50,6 +51,8 @@
 
     public class ResultError
     {
+        public const string NotFoundKey = "NotFound";
+
         private ResultError(string message)
         {
             Key = string.Empty;
@@ -66,6 +69,7 @@
         public string Message { get; }
 
         public static ResultError Create(string key, string message) => new ResultError(key, message);
+        public static ResultError NotFound(string message) => new ResultError(NotFoundKey, message);
         public static implicit operator ResultError(string error) => new ResultError(error);
     }
 }

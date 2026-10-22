@@ -1,8 +1,9 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Entities.Request;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Request.Agency;
 using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class ReportToController(IRequestRepository repository) : ControllerBase
+public class ReportToController(IRequestRepository repository, IRequestDetailsService requestDetailsService) : ControllerBase
 {
     public const string RouteName = "api/agency/recruiting/requests/{requestId}/reportto";
 
@@ -25,11 +26,8 @@ public class ReportToController(IRequestRepository repository) : ControllerBase
     public async Task<IActionResult> Post(Guid requestId, Guid contactPersonId)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var entity = await repository.GetReportTo(requestId, contactPersonId);
-        if (entity != null) return BadRequest();
-        entity = new RequestReportTo(requestId, contactPersonId);
-        await repository.Create(entity);
-        await repository.SaveChangesAsync();
+        var result = await requestDetailsService.AddReportTo(requestId, contactPersonId);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return CreatedAtAction(nameof(GetById), new { requestId, contactPersonId }, new { });
     }
 
@@ -54,10 +52,8 @@ public class ReportToController(IRequestRepository repository) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete(Guid requestId, Guid contactPersonId)
     {
-        RequestReportTo entity = await repository.GetReportTo(requestId, contactPersonId);
-        if (entity is null) return BadRequest();
-        repository.Delete(entity);
-        await repository.SaveChangesAsync();
+        var result = await requestDetailsService.DeleteReportTo(requestId, contactPersonId);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

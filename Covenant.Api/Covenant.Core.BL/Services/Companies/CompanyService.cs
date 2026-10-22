@@ -11,7 +11,6 @@ using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Covenant.Core.BL.Interfaces.Companies;
-using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Documents.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
@@ -35,13 +34,15 @@ using CsvHelper.Configuration;
 using CsvHelper;
 using FluentValidation.Results;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System.Globalization;
 
 namespace Covenant.Core.BL.Services.Companies;
 
 public class CompanyService : ICompanyService
 {
+    private const string CompanyProfileNotFound = "Company profile not found";
+    private const string NoteNotFound = "Note not found";
     private readonly ICompanyRepository companyRepository;
     private readonly IUserRepository userRepository;
     private readonly IAgencyRepository agencyRepository;
@@ -57,9 +58,10 @@ public class CompanyService : ICompanyService
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IValidator<CompanyCsvModel> bulkCompanyValidator;
     private readonly ICompanyAdapter companyAdapter;
-    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IUploadedFilesService uploadedFilesService;
     private readonly IDocumentService documentService;
+    private readonly IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator;
+    private readonly IConfiguration configuration;
     public CompanyService(
         ICompanyRepository companyRepository,
         IUserRepository userRepository,
@@ -76,9 +78,10 @@ public class CompanyService : ICompanyService
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IValidator<CompanyCsvModel> bulkCompanyValidator,
         ICompanyAdapter companyAdapter,
-        IHttpContextAccessor httpContextAccessor,
         IUploadedFilesService uploadedFilesService,
-        IDocumentService documentService)
+        IDocumentService documentService,
+        IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator,
+        IConfiguration configuration)
     {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
@@ -95,23 +98,203 @@ public class CompanyService : ICompanyService
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.bulkCompanyValidator = bulkCompanyValidator;
         this.companyAdapter = companyAdapter;
-        this.httpContextAccessor = httpContextAccessor;
         this.uploadedFilesService = uploadedFilesService;
         this.documentService = documentService;
+        this.paymentTermsValidator = paymentTermsValidator;
+        this.configuration = configuration;
+    }
+
+    public async Task<Result> UpdateContactInformation(Guid profileId, CompanyProfileDetailModel model)
+    {
+        var webPage = CvnWebPage.Create(model.Website);
+        if (!webPage) return webPage;
+        var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
+        if (entity is null) return Result.Fail(CompanyProfileNotFound);
+        entity.UpdatePhones(model.Phone, model.PhoneExt, model.Fax, model.FaxExt);
+        entity.UpdateWebsite(model.Website);
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateVaccinationInfo(Guid profileId, VaccinationRequiredModel model)
+    {
+        var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
+        if (entity is null) return Result.Fail(CompanyProfileNotFound);
+        var result = entity.UpdateVaccinationInfo(model.Required, model.Comments);
+        if (!result) return result;
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateRequiresPermissionToSeeRequests(Guid profileId, bool requiresPermission)
+    {
+        var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
+        if (entity is null) return Result.Fail(ResultError.NotFound(CompanyProfileNotFound));
+        entity.UpdatePermissionToSeeRequests(requiresPermission);
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdatePaidHolidays(Guid profileId, bool paidHolidays)
+    {
+        var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
+        if (entity is null) return Result.Fail(ResultError.NotFound(CompanyProfileNotFound));
+        entity.UpdatePaidHolidays(paidHolidays);
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateOvertime(Guid profileId, double overtimeStartsAfterHours)
+    {
+        var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
+        if (entity is null) return Result.Fail(ResultError.NotFound(CompanyProfileNotFound));
+        var result = entity.UpdateOvertimeStartsAfter(TimeSpan.FromHours(overtimeStartsAfterHours));
+        if (!result) return result;
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdatePaymentTerms(Guid profileId, CompanyProfilePaymentTermsUpdateModel model)
+    {
+        var validation = await paymentTermsValidator.ValidateAsync(model);
+        if (!validation.IsValid) return validation.ToResultFailure();
+        var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
+        if (entity is null) return Result.Fail(ResultError.NotFound(CompanyProfileNotFound));
+        entity.UpdatePaymentTermDays(model.PaymentTermDays);
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteContactPerson(Guid id)
+    {
+        var contact = await companyRepository.GetContactPerson(id);
+        if (contact is null) return Result.Fail("Contact person not found");
+        companyRepository.Delete(contact);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateCompanyUser(Guid id, CompanyUserModel model)
+    {
+        var entity = await companyRepository.GetCompanyUser(id);
+        if (entity is null) return Result.Fail("Company user not found");
+        entity.UpdateDetails(model.Name, model.Lastname, model.Position, model.MobileNumber);
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteCompanyLocation(Guid id)
+    {
+        var location = await companyRepository.GetLocation(id);
+        if (location is null) return Result.Fail("Location not found");
+        companyRepository.Delete(location);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Guid> CreateInvoiceRecipient(Guid profileId, CompanyProfileInvoiceRecipientModel model)
+    {
+        var id = await companyRepository.CreateInvoiceRecipient(profileId, model);
+        await companyRepository.SaveChangesAsync();
+        return id;
+    }
+
+    public async Task UpdateInvoiceRecipient(Guid id, CompanyProfileInvoiceRecipientModel model)
+    {
+        await companyRepository.UpdateInvoiceRecipient(id, model);
+        await companyRepository.SaveChangesAsync();
+    }
+
+    public Task UpdateInvoiceNotes(Guid profileId, string htmlNotes) =>
+        companyRepository.UpdateCompanyProfileInvoiceNotes(profileId, htmlNotes);
+
+    public async Task<Result> DeleteInvoiceRecipient(Guid id)
+    {
+        var invoiceRecipient = await companyRepository.GetInvoiceRecipient(id);
+        if (invoiceRecipient is null) return Result.Fail("Invoice recipient not found");
+        companyRepository.Delete(invoiceRecipient);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result<NoteModel>> CreateNote(Guid profileId, NoteModel model)
+    {
+        var note = CovenantNote.Create(model.Note, model.Color, currentUserService.GetNickname());
+        if (!note) return Result.Fail<NoteModel>(note.Errors);
+        var entity = new CompanyProfileNote(profileId, note.Value);
+        await companyRepository.Create(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok(new NoteModel
+        {
+            Id = entity.NoteId,
+            CreatedBy = entity.Note.CreatedBy,
+            CreatedAt = entity.Note.CreatedAt,
+            Color = entity.Note.Color
+        });
+    }
+
+    public async Task<Result> UpdateNote(Guid profileId, Guid noteId, NoteModel model)
+    {
+        var nickname = currentUserService.GetNickname();
+        var note = CovenantNote.Create(model.Note, model.Color, nickname);
+        if (!note) return note;
+        var entity = await companyRepository.GetNote(profileId, noteId);
+        if (entity is null) return Result.Fail(NoteNotFound);
+        entity.Update(note.Value, nickname);
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteNote(Guid profileId, Guid noteId)
+    {
+        var entity = await companyRepository.GetNote(profileId, noteId);
+        if (entity is null) return Result.Fail(NoteNotFound);
+        entity.Delete(currentUserService.GetNickname());
+        companyRepository.Update(entity);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> PetitionJobPosition(Guid profileId, JobPositionPetitionModel model)
+    {
+        var emailsString = configuration.GetValue<string>("EmailsPetitionNewJobPosition");
+        if (string.IsNullOrEmpty(emailsString)) return Result.Fail("Petition not available");
+        if (string.IsNullOrEmpty(model?.JobPosition)) return Result.Fail(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
+        var profile = await companyRepository.GetCompanyProfileDetail(cp => cp.Id == profileId);
+        if (profile is null) return Result.Fail("Invalid company");
+        var nickname = currentUserService.GetNickname();
+        var subject = $"Rol {model.JobPosition} requested by {nickname}";
+        foreach (var email in emailsString.Split(","))
+        {
+            await emailService.SendEmail(new EmailParams(email, subject,
+                $"Client:{profile.NumberId} {profile.FullName} <br/> {model.Message} <br/> Please notify {nickname} after create the role")
+            {
+                EmailSettingName = EmailSettingName.Notification
+            });
+        }
+        return Result.Ok();
     }
 
     public async Task<Result> UpdateLogo(Guid profileId)
     {
-        var logoFile = httpContextAccessor.HttpContext.Request.Form.Files.FirstOrDefault();
-        if (logoFile is null) return Result.Fail("Logo file is required");
+        var logoFileName = uploadedFilesService.GetFileNames().FirstOrDefault();
+        if (logoFileName is null) return Result.Fail("Logo file is required");
         var filesValidation = uploadedFilesService.Validate();
         if (!filesValidation) return filesValidation;
         var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
         if (entity is null) return Result.Fail("Company profile not found");
         var oldLogoId = entity.LogoId;
-        var logo = new CovenantFile(logoFile.FileName);
+        var logo = new CovenantFile(logoFileName);
         await companyRepository.Create(logo);
-        entity.LogoId = logo.Id;
+        entity.ReplaceLogo(logo.Id);
         companyRepository.Update(entity);
         await companyRepository.SaveChangesAsync();
         await uploadedFilesService.Upload([logo.FileName]);
@@ -165,11 +348,8 @@ public class CompanyService : ICompanyService
         var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
         if (entity is null) return Result.Fail();
         entity.FullName = model.FullName;
-        entity.Phone = model.Phone;
-        entity.PhoneExt = model.PhoneExt;
-        entity.Fax = model.Fax;
-        entity.FaxExt = model.FaxExt;
-        entity.Website = model.Website;
+        entity.UpdatePhones(model.Phone, model.PhoneExt, model.Fax, model.FaxExt);
+        entity.UpdateWebsite(model.Website);
         entity.Industry.IndustryId = model.Industry.Industry.Id;
         companyRepository.Update(entity);
         await companyRepository.SaveChangesAsync();
@@ -298,13 +478,8 @@ public class CompanyService : ICompanyService
                 var newUser = await userAccountService.CreateUser(userModel);
                 if (newUser)
                 {
-                    var entity = new CompanyUser(profile.Id, newUser.Value)
-                    {
-                        Name = model.Name,
-                        Lastname = model.Lastname,
-                        Position = model.Position,
-                        MobileNumber = model.MobileNumber,
-                    };
+                    var entity = new CompanyUser(profile.Id, newUser.Value);
+                    entity.UpdateDetails(model.Name, model.Lastname, model.Position, model.MobileNumber);
                     await companyRepository.Create(entity);
                     await companyRepository.SaveChangesAsync();
                     return Result.Ok();
@@ -365,7 +540,7 @@ public class CompanyService : ICompanyService
             ? companyRepository.GetCompanyProfileId(p => p.Id == companyProfileId.Value)
             : companyRepository.GetCompanyProfileId(p => p.CompanyId == currentUserService.GetCompanyId());
 
-    public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCompany(Guid agencyId, IFormFile file)
+    public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCompany(Guid agencyId, Stream file)
     {
         try
         {
@@ -443,18 +618,8 @@ public class CompanyService : ICompanyService
     public async Task<Result> CreateContact(CompanyProfileContactPersonModel model)
     {
         var profile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == currentUserService.GetCompanyId());
-        var entity = new CompanyProfileContactPerson(profile.Id)
-        {
-            Title = model.Title,
-            FirstName = model.FirstName,
-            MiddleName = model.MiddleName,
-            LastName = model.LastName,
-            Position = model.Position,
-            Email = model.Email,
-            MobileNumber = model.MobileNumber,
-            OfficeNumber = model.OfficeNumber,
-            OfficeNumberExt = model.OfficeNumberExt,
-        };
+        var entity = new CompanyProfileContactPerson(profile.Id);
+        entity.Update(model.Title, model.FirstName, model.MiddleName, model.LastName, model.Position, model.MobileNumber, model.OfficeNumber, model.OfficeNumberExt, model.Email);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         return Result.Ok();

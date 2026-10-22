@@ -1,24 +1,28 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Resources;
-using Covenant.Core.BL.Extensions;
-using Covenant.Core.BL.Interfaces.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
-namespace Covenant.Core.BL.Services.Shared;
+namespace Covenant.Infrastructure.Services;
 
 public class UploadedFilesService(
     IHttpContextAccessor httpContextAccessor,
     IFilesContainer filesContainer,
     IOptions<FilesConfiguration> options) : IUploadedFilesService
 {
+    private const string DataKey = "data";
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly FilesConfiguration filesConfiguration = options.Value;
 
     private IFormCollection Form => httpContextAccessor.HttpContext.Request.Form;
 
-    public T GetModel<T>() => Form.DeserializeData<T>();
+    public T GetModel<T>() => JsonSerializer.Deserialize<T>(Form[DataKey], JsonOptions);
+
+    public IReadOnlyList<string> GetFileNames() => Form.Files.Select(f => f.FileName).ToList();
 
     public Result Validate()
     {

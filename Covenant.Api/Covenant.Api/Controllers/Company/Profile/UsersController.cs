@@ -48,14 +48,8 @@ public class UsersController(
     public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] CompanyUserModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var entity = await companyRepository.GetCompanyUser(id);
-        if (entity is null) return BadRequest();
-        entity.Name = model.Name;
-        entity.Lastname = model.Lastname;
-        entity.Position = model.Position;
-        entity.MobileNumber = model.MobileNumber;
-        companyRepository.Update(entity);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.UpdateCompanyUser(id, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 

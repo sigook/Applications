@@ -6,7 +6,6 @@ using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Core.BL.Services.Requests;
 using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -41,11 +40,10 @@ public class AgencyRejectWorkerServiceTest
             new FakeTimeProvider(),
             requestRepository.Object,
             Mock.Of<INotificationDataRepository>(),
-            Mock.Of<IPushNotifications>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<ISigookBusClient>(),
+            Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
             Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),
@@ -74,11 +72,10 @@ public class AgencyRejectWorkerServiceTest
             new FakeTimeProvider(),
             requestRepository.Object,
             Mock.Of<INotificationDataRepository>(),
-            Mock.Of<IPushNotifications>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<ISigookBusClient>(),
+            Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
             Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),

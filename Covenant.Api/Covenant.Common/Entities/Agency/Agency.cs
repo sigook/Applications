@@ -21,24 +21,69 @@ public class Agency
     public int NumberId { get; set; }
     public User User { get; set; }
     public Guid UserId { get; set; }
-    public string FullName { get; set; }
-    public string HstNumber { get; set; }
-    public string BusinessNumber { get; set; }
-    public Guid? LogoId { get; set; }
-    public CovenantFile Logo { get; set; }
-    public string WebPage { get; set; }
-    public string PhonePrincipal { get; set; }
-    public int? PhonePrincipalExt { get; set; }
+    public string FullName { get; private set; }
+    public string HstNumber { get; private set; }
+    public string BusinessNumber { get; private set; }
+    public Guid? LogoId { get; private set; }
+    public CovenantFile Logo { get; private set; }
+    public string WebPage { get; private set; }
+    public string PhonePrincipal { get; private set; }
+    public int? PhonePrincipalExt { get; private set; }
     public string RecruitmentEmail { get; set; }
     public AgencyType AgencyType { get; set; }
     public Guid? AgencyParentId { get; set; }
     public Agency AgencyParent { get; set; }
-    public ICollection<AgencyWsibGroup> WsibGroup { get; set; } = new List<AgencyWsibGroup>();
+    public ICollection<AgencyWsibGroup> WsibGroup { get; private set; } = new List<AgencyWsibGroup>();
     public ICollection<AgencyLocation> Locations { get; set; } = new List<AgencyLocation>();
-    public ICollection<AgencyContactInformation> ContactInformation { get; set; } = new List<AgencyContactInformation>();
+    public ICollection<AgencyContactInformation> ContactInformation { get; private set; } = new List<AgencyContactInformation>();
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public Location BillingAddress => Locations.FirstOrDefault(l => l.IsBilling)?.Location ?? Locations.FirstOrDefault()?.Location;
     public string FormattedPhone => $"{PhonePrincipal} {(PhonePrincipalExt.HasValue ? $"Ext:{PhonePrincipalExt.Value}" : string.Empty)}";
+
+    public void UpdateProfile(string fullName, string businessNumber, string hstNumber, string phonePrincipal, int? phonePrincipalExt, string webPage)
+    {
+        FullName = fullName;
+        BusinessNumber = businessNumber;
+        HstNumber = hstNumber;
+        PhonePrincipal = phonePrincipal;
+        PhonePrincipalExt = phonePrincipalExt;
+        WebPage = webPage;
+    }
+
+    public void ChangeLogo(CovenantFile logo)
+    {
+        Logo = logo;
+        LogoId = logo?.Id;
+    }
+
+    public void UpdateLogo(Guid? logoId)
+    {
+        if (logoId.HasValue)
+        {
+            LogoId = logoId;
+            return;
+        }
+        Logo ??= new CovenantFile(DefaultImageLogo);
+        LogoId = Logo.Id;
+    }
+
+    public void ReplaceWsibGroups(IEnumerable<Guid> wsibGroupIds)
+    {
+        WsibGroup.Clear();
+        foreach (var wsibGroupId in wsibGroupIds)
+        {
+            WsibGroup.Add(new AgencyWsibGroup(Id, wsibGroupId));
+        }
+    }
+
+    public void ReplaceContactInformation(IEnumerable<AgencyContactInformation> contactInformation)
+    {
+        ContactInformation.Clear();
+        foreach (var item in contactInformation)
+        {
+            ContactInformation.Add(item);
+        }
+    }
 
     public void AddLocation(Location location, bool isBilling = false)
     {

@@ -78,8 +78,8 @@ public class WorkerProfile :
     public bool IsSubcontractor { get; set; }
     public string PunchCardId { get; set; }
     public bool IsContractor { get; set; } = false;
-    public string ExternalId { get; set; }
-    public string WcCode { get; set; }
+    public string ExternalId { get; private set; }
+    public string WcCode { get; private set; }
     public WorkerProfileTaxCategory WorkerProfileTaxCategory { get; set; }
     public Gender Gender { get; set; }
     public User Worker { get; set; }
@@ -245,6 +245,10 @@ public class WorkerProfile :
 
         return Result.Ok();
     }
+
+    public void UpdateExternalId(string externalId) => ExternalId = externalId;
+
+    public void UpdateWcCode(string wcCode) => WcCode = wcCode;
 
     public Result PatchProfileImage(ICovenantFile profileImage)
     {

@@ -25,7 +25,7 @@ namespace Covenant.Common.Entities.Request
         public DateTime? TimeOut { get; set; }
         public DateTime? TimeInApproved { get; set; }
         public DateTime? TimeOutApproved { get; set; }
-        public string Comment { get; set; }
+        public string Comment { get; private set; }
         public TimeSpan MissingHours { get; set; }
         public TimeSpan MissingHoursOvertime { get; set; }
         public decimal MissingRateWorker { get; set; }
@@ -118,6 +118,8 @@ namespace Covenant.Common.Entities.Request
             DeductionsOthersDescription = description;
             return Result.Ok();
         }
+
+        public void UpdateComment(string comment) => Comment = comment;
 
         public void AddReimbursements(decimal value, string description)
         {

@@ -1,15 +1,11 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Enums;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Notification;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
-using Covenant.Common.Resources;
-using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
+using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -80,11 +76,8 @@ public class JobPositionsController(ICompanyRepository repository, IAgencyServic
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] Guid profileId, [FromRoute] Guid id)
     {
-        var entity = await repository.GetJobPosition(id);
-        if (entity is null) return BadRequest();
-        entity.Delete(User.GetNickname());
-        repository.Update(entity);
-        await repository.SaveChangesAsync();
+        var result = await agencyService.DeleteCompanyJobPosition(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -97,28 +90,12 @@ public class JobPositionsController(ICompanyRepository repository, IAgencyServic
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Petition(
-        [FromServices] IEmailService emailService,
-        [FromServices] IConfiguration configuration,
+        [FromServices] ICompanyService companyService,
         [FromRoute] Guid profileId,
         [FromBody] JobPositionPetitionModel model)
     {
-        var emailsString = configuration.GetValue<string>("EmailsPetitionNewJobPosition");
-        if (string.IsNullOrEmpty(emailsString)) return BadRequest(ModelState.AddError("Petition not available"));
-        string[] emails = emailsString.Split(",");
-        if (string.IsNullOrEmpty(model?.JobPosition))
-            return BadRequest(ModelState.AddError(ValidationMessages.RequiredMsg(ApiResources.JobPosition)));
-        var profile = await repository.GetCompanyProfileDetail(cp => cp.Id == profileId);
-        if (profile is null) return BadRequest(ModelState.AddError("Invalid company"));
-        string nickname = User.GetNickname();
-        var subject = $"Rol {model.JobPosition} requested by {nickname}";
-        foreach (string email in emails)
-        {
-            await emailService.SendEmail(new EmailParams(email, subject,
-                $"Client:{profile.NumberId} {profile.FullName} <br/> {model.Message} <br/> Please notify {nickname} after create the role")
-            {
-                EmailSettingName = EmailSettingName.Notification
-            });
-        }
+        var result = await companyService.PetitionJobPosition(profileId, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

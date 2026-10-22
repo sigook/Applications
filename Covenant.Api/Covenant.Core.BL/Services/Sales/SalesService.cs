@@ -16,7 +16,6 @@ using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces.Sales;
-using Covenant.Core.BL.Interfaces.Shared;
 using FluentValidation;
 using System.Globalization;
 

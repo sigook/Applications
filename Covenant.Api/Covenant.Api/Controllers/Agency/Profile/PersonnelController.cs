@@ -15,7 +15,7 @@ namespace Covenant.Api.Controllers.Agency.Profile;
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class PersonnelController(IAgencyService agencyService, IAgencyRepository agencyRepository) : ControllerBase
+public class PersonnelController(IAgencyService agencyService) : ControllerBase
 {
     public const string RouteName = "api/agency/profile/personnel";
 
@@ -81,20 +81,10 @@ public class PersonnelController(IAgencyService agencyService, IAgencyRepository
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(
-        [FromServices] IUserAccountService service,
         [FromRoute] Guid id)
     {
-        Guid agencyId = User.GetAgencyId();
-        var entity = await agencyRepository.GetPersonnel(id);
-        if (entity is null || entity.AgencyId != agencyId) return NotFound();
-        if (await agencyRepository.PersonnelHasRequests(entity.Id))
-            return BadRequest(ModelState.AddError("This user cannot be deleted because they are still assigned as a recruiter on one or more orders. Please reassign those orders first."));
-        if (await agencyRepository.PersonnelHasCompanies(entity.Id))
-            return BadRequest(ModelState.AddError("This user cannot be deleted because they are still set as the sales representative for one or more clients. Please reassign those clients first."));
-        agencyRepository.Delete(entity);
-        await agencyRepository.SaveChangesAsync();
-        var result = await service.DeleteUserOrClaim(entity.UserId, new IdModel(agencyId));
-        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        var result = await agencyService.DeleteAgencyPersonnel(User.GetAgencyId(), id);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

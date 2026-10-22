@@ -1,11 +1,11 @@
 using Covenant.Api.Authorization;
+using Covenant.Common.Interfaces;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Request.Agency;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
 using Covenant.Core.BL.Interfaces.Requests;
-using Covenant.Core.BL.Interfaces.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

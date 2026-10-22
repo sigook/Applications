@@ -155,9 +155,8 @@ public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWe
 
         public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency
         {
-            User = new User(CvnEmail.Create("agency_applybyemail@mail.com").Value),
-            Logo = new CovenantFile("logo.png")
-        };
+            User = new User(CvnEmail.Create("agency_applybyemail@mail.com").Value)
+        }.With(a => a.ChangeLogo(new CovenantFile("logo.png")));
 
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile
         {

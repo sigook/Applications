@@ -1,11 +1,9 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Functionals;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,16 +30,12 @@ public class LocationsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(LocationDetailModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromServices] IAgencyRepository repository, [FromBody] LocationModel model)
+    public async Task<IActionResult> Post([FromServices] IAgencyService agencyService, [FromBody] LocationModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        Result<Location> rLocation = Location.Create(model.City?.Id, model.Address, model.PostalCode);
-        if (!rLocation) return BadRequest(ModelState.AddErrors(rLocation.Errors));
-        var agency = await repository.GetAgency(User.GetAgencyId());
-        if (agency is null) return BadRequest();
-        await repository.Create(new AgencyLocation(rLocation.Value, agency.Id, model.IsBilling));
-        await repository.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = rLocation.Value.Id }, new LocationDetailModel { Id = rLocation.Value.Id });
+        var result = await agencyService.CreateAgencyLocation(User.GetAgencyId(), model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return CreatedAtAction(nameof(GetById), new { id = result.Value }, new LocationDetailModel { Id = result.Value });
     }
 
     /// <summary>Gets the detail of a specific agency location by id.</summary>
@@ -64,18 +58,12 @@ public class LocationsController : ControllerBase
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Put([FromServices] IAgencyRepository repository,
+    public async Task<IActionResult> Put([FromServices] IAgencyService agencyService,
         Guid id, [FromBody] LocationModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        Result<Location> rLocation = Location.Create(model.City?.Id, model.Address, model.PostalCode);
-        if (!rLocation) return BadRequest(ModelState.AddErrors(rLocation.Errors));
-        var agency = await repository.GetAgency(User.GetAgencyId());
-        if (agency is null) return BadRequest();
-        Result result = agency.UpdateLocation(id, rLocation.Value, model.IsBilling);
+        var result = await agencyService.UpdateAgencyLocation(User.GetAgencyId(), id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        repository.Update(agency);
-        await repository.SaveChangesAsync();
         return Ok();
     }
 
@@ -85,13 +73,10 @@ public class LocationsController : ControllerBase
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Delete([FromServices] IAgencyRepository repository, Guid id)
+    public async Task<IActionResult> Delete([FromServices] IAgencyService agencyService, Guid id)
     {
-        var agency = await repository.GetAgency(User.GetAgencyId());
-        if (agency is null) return BadRequest();
-        agency.DeleteLocation(id);
-        repository.Update(agency);
-        await repository.SaveChangesAsync();
+        var result = await agencyService.DeleteAgencyLocation(User.GetAgencyId(), id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

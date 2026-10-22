@@ -83,9 +83,8 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
         private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency(
             "XYZ USA", "98765432109")
         {
-            PhonePrincipalExt = 404,
             User = FakeData.FakeUser()
-        };
+        }.With(a => a.UpdateProfile("XYZ USA", null, null, "98765432109", 404, null));
 
         private static readonly CompanyProfile FakeCompany = CompanyProfile.AgencyCreateCompany(
             new User(CvnEmail.Create("c@c.us").Value),

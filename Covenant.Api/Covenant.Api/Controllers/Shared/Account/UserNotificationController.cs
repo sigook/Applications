@@ -11,7 +11,7 @@ namespace Covenant.Api.Controllers.Shared.Account;
 [ApiController]
 [Route(RouteName)]
 [Authorize]
-public class UserNotificationController(INotificationRepository notificationRepository) : ControllerBase
+public class UserNotificationController(INotificationRepository notificationRepository, Covenant.Core.BL.Interfaces.Notifications.INotificationService notificationService) : ControllerBase
 {
     public const string RouteName = "api/usernotification";
 
@@ -39,8 +39,7 @@ public class UserNotificationController(INotificationRepository notificationRepo
     public async Task<IActionResult> Put([FromBody] UserNotificationUpdateModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        await notificationRepository.CreateUpdate(User.GetUserId(), model);
-        await notificationRepository.SaveChangesAsync();
+        await notificationService.UpdateUserNotification(User.GetUserId(), model);
         return Ok();
     }
 }

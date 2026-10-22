@@ -23,7 +23,7 @@ using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Identity;
 using Covenant.Core.BL.Adapters;
-using Covenant.Core.BL.Consumers;
+using Covenant.Api.Consumers;
 using Covenant.Core.BL.Interfaces.Accounting.Deductions;
 using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Covenant.Core.BL.Interfaces.Accounting.PayStubs;
@@ -113,21 +113,27 @@ public static class ApiServicesConfiguration
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAgencyService, AgencyService>();
         services.AddScoped<IWorkerService, WorkerService>();
+        services.AddScoped<IWorkerProfileUpdateService, WorkerProfileUpdateService>();
         services.AddScoped<IWorkerRequirementService, WorkerRequirementService>();
         services.AddScoped<IRequestService, RequestService>();
+        services.AddScoped<IRequestDetailsService, RequestDetailsService>();
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IRunnerService, RunnerService>();
         services.AddScoped<IRequestApplicantService, RequestApplicantService>();
+        services.AddScoped<IRequestInvitationService, RequestInvitationService>();
         services.AddScoped<IRequestApplicantNotificationService, RequestApplicantNotificationService>();
         services.AddScoped<IWeeklyBoardService, WeeklyBoardService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ICandidateService, CandidateService>();
+        services.AddScoped<ICandidateApplicationService, CandidateApplicationService>();
         services.AddScoped<ICompanyService, CompanyService>();
         services.AddScoped<ITimesheetService, TimesheetService>();
         services.AddScoped<IPayStubService, PayStubService>();
+        services.AddScoped<IBulkPayStubEmailService, BulkPayStubEmailService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IUploadedFilesService, UploadedFilesService>();
         services.AddScoped<ISkillService, SkillService>();
+        services.AddScoped<ICatalogService, CatalogService>();
         services.AddScoped<IGeocodeService, GeocodeService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IUserAccountService, UserAccountService>();
@@ -138,8 +144,6 @@ public static class ApiServicesConfiguration
         services.AddSingleton<IMicrosoft365AccountService, Microsoft365AccountService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ISendGridService, SendGridService>();
-        services.AddScoped<IPushNotifications, PushNotificationPublisher>();
-        services.AddSingleton<IPushNotificationSender, FirebasePushNotificationSender>();
         services.AddScoped<ITeamsService, TeamsService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
         services.AddScoped<IAccountingService, AccountingService>();
@@ -188,7 +192,6 @@ public static class ApiServicesConfiguration
         services.Configure<ServiceBusConfiguration>(configuration.GetSection(nameof(ServiceBusConfiguration)));
         services.Configure<TeamsWebhookConfiguration>(configuration.GetSection(nameof(TeamsWebhookConfiguration)));
         services.Configure<GeocodeGoogleConfiguration>(configuration.GetSection(nameof(GeocodeGoogleConfiguration)));
-        services.Configure<PushNotificationConfiguration>(configuration.GetSection(nameof(PushNotificationConfiguration)));
         services.Configure<SendGridConfiguration>(configuration.GetSection(nameof(SendGridConfiguration)));
         services.Configure<Microsoft365Configuration>(configuration.GetSection(nameof(Microsoft365Configuration)));
         services.Configure<MobileAppConfiguration>(configuration.GetSection(nameof(MobileAppConfiguration)));
@@ -278,12 +281,12 @@ public static class ApiServicesConfiguration
             services.AddSingleton(sp => new SigookBusAdministrationClient(serviceBusConnection));
             services.AddSingleton(sp => new SigookBusClient(serviceBusConnection, sp.GetRequiredService<SigookBusAdministrationClient>(), sp.GetRequiredService<ILogger<SigookBusClient>>()));
             services.AddSingleton<ISigookBusClient>(sp => sp.GetRequiredService<SigookBusClient>());
+            services.AddSingleton<IMessagePublisher>(sp => sp.GetRequiredService<SigookBusClient>());
             services.AddSingleton<IAzureServiceBusConsumer, NewCandidateConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, TeamsConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, RequestApplicantConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, BulkPayStubEmailConsumer>();
             services.AddSingleton<IAzureServiceBusConsumer, InvitationConsumer>();
-            services.AddSingleton<IAzureServiceBusConsumer, PushNotificationConsumer>();
         }
 
         return services;

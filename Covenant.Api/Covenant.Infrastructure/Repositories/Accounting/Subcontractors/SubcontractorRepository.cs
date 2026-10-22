@@ -1,4 +1,5 @@
 using Covenant.Common.Models;
+using Covenant.Infrastructure.Extensions;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Accounting.Subcontractor;
 using Covenant.Common.Repositories.Accounting.Subcontractors;

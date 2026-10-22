@@ -1,6 +1,7 @@
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Entities.Request
 {
@@ -20,7 +21,8 @@ namespace Covenant.Common.Entities.Request
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string CreatedBy { get; set; }
         public string Comments { get; set; }
-        public RequestApplicantStatus Status { get; set; } = RequestApplicantStatus.Pending;
+        [JsonInclude]
+        public RequestApplicantStatus Status { get; private set; } = RequestApplicantStatus.Pending;
         public ICollection<RequestApplicantComplianceItem> ComplianceItems { get; set; } = new List<RequestApplicantComplianceItem>();
 
         public static Result<RequestApplicant> CreateWithWorker(Guid requestId, Guid workerProfileId, string createdBy, string comments, RequestApplicantStatus status) =>

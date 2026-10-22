@@ -1,5 +1,6 @@
 ﻿using Covenant.Common.Constants;
 using Covenant.Common.Entities;
+using Covenant.Tests.Utils;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -16,10 +17,13 @@ public class TestGetInvoiceSummary
     private static readonly CompanyProfile FakeProfile = new CompanyProfile
     {
         Company = new User(CvnEmail.Create("abc@mail.com").Value),
-        Phone = "6478888888",
-        Agency = new Covenant.Common.Entities.Agency.Agency { HstNumber = "TS123", Logo = new CovenantFile("logo.png") },
+        Agency = new Covenant.Common.Entities.Agency.Agency().With(a =>
+        {
+            a.UpdateProfile(null, null, "TS123", null, null, null);
+            a.ChangeLogo(new CovenantFile("logo.png"));
+        }),
         Locations = new List<CompanyProfileLocation> { new CompanyProfileLocation { IsBilling = true, Location = new Location { Address = "4917", City = new City { Province = new Province { Country = new Country() } } } } }
-    };
+    }.With(p => p.UpdatePhones("6478888888", null, null, null));
 
     private static readonly CompanyProfileInvoiceNotes InvoiceNotes = new CompanyProfileInvoiceNotes(FakeProfile.Id, "Pay before Saturday");
     private readonly List<Covenant.Common.Entities.Request.TimeSheetTotal> _fakeTimeSheetTotal;

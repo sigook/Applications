@@ -1,7 +1,7 @@
 using Covenant.Common.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Covenant.Common.Utils.Extensions;
+namespace Covenant.Infrastructure.Extensions;
 
 public static class PaginatedListExtensions
 {

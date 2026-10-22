@@ -1,10 +1,8 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
-using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +12,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class WorkerNotesController(IWorkerRequestRepository repository) : Controller
+public class WorkerNotesController(IWorkerRequestRepository repository, IRequestDetailsService requestDetailsService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/requests/{requestId}/workers/{workerRequestId}/notes";
 
@@ -28,18 +26,9 @@ public class WorkerNotesController(IWorkerRequestRepository repository) : Contro
     public async Task<IActionResult> Post(Guid requestId, Guid workerRequestId, [FromBody] NoteModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
+        var result = await requestDetailsService.CreateWorkerNote(workerRequestId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        var entity = new WorkerRequestNote(workerRequestId, result.Value);
-        await repository.Create(entity);
-        await repository.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = entity.NoteId }, new NoteModel
-        {
-            Id = entity.NoteId,
-            CreatedBy = entity.Note.CreatedBy,
-            CreatedAt = entity.Note.CreatedAt,
-            Color = entity.Note.Color
-        });
+        return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
     }
 
     /// <summary>Gets a paginated list of notes for the specified worker request.</summary>
@@ -70,13 +59,8 @@ public class WorkerNotesController(IWorkerRequestRepository repository) : Contro
     public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] NoteModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
+        var result = await requestDetailsService.UpdateWorkerNote(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        var entity = await repository.GetNote(id);
-        if (entity is null) return BadRequest();
-        entity.Update(result.Value, User.GetNickname());
-        repository.Update(entity);
-        await repository.SaveChangesAsync();
         return Ok();
     }
 
@@ -87,11 +71,8 @@ public class WorkerNotesController(IWorkerRequestRepository repository) : Contro
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var entity = await repository.GetNote(id);
-        if (entity is null) return BadRequest();
-        entity.Delete(User.GetNickname());
-        repository.Update(entity);
-        await repository.SaveChangesAsync();
+        var result = await requestDetailsService.DeleteWorkerNote(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

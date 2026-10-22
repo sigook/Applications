@@ -7,7 +7,6 @@ using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces.Sales;
-using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Services.Sales;
 using Moq;
 using System.Globalization;

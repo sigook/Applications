@@ -22,7 +22,6 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Documents.Services;
-using Covenant.Infrastructure.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -39,11 +38,10 @@ public class RequestService : IRequestService
     private readonly TimeProvider timeProvider;
     private readonly IRequestRepository requestRepository;
     private readonly INotificationDataRepository notificationDataRepository;
-    private readonly IPushNotifications pushNotifications;
     private readonly ICurrentUserService currentUserService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
-    private readonly ISigookBusClient busClient;
+    private readonly IMessagePublisher busClient;
     private readonly ServiceBusConfiguration serviceBusConfiguration;
     private readonly ILogger<RequestService> logger;
     private readonly IValidator<RequestCreateModel> requestCreateValidator;
@@ -58,11 +56,10 @@ public class RequestService : IRequestService
         TimeProvider timeProvider,
         IRequestRepository requestRepository,
         INotificationDataRepository notificationDataRepository,
-        IPushNotifications pushNotifications,
         ICurrentUserService currentUserService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
-        ISigookBusClient busClient,
+        IMessagePublisher busClient,
         IOptions<ServiceBusConfiguration> serviceBusOptions,
         ILogger<RequestService> logger,
         IValidator<RequestCreateModel> requestCreateValidator,
@@ -80,7 +77,6 @@ public class RequestService : IRequestService
         this.timeProvider = timeProvider;
         this.requestRepository = requestRepository;
         this.notificationDataRepository = notificationDataRepository;
-        this.pushNotifications = pushNotifications;
         this.currentUserService = currentUserService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
@@ -124,11 +120,6 @@ public class RequestService : IRequestService
         if (!complianceItems) return Result.Fail<Guid>(complianceItems.Errors);
         await requestRepository.CreateRange(complianceItems.Value);
         await requestRepository.SaveChangesAsync();
-        var location = await locationRepository.GetLocationById(model.LocationId.Value);
-        var currency = location.IsUSA ? "USD" : "CAD";
-        var salary = request.WorkerRate.HasValue ? $"{request.WorkerRate}/h" : $"{request.WorkerSalary} anually";
-        var notificationModel = NotificationModel.NewRequestNotification("Job Alert", $"{request.JobTitle} {currency} ${salary}", request.Id);
-        await pushNotifications.SendNotification(notificationModel);
         return Result.Ok(request.Id);
     }
 

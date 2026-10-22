@@ -1,4 +1,5 @@
 using Covenant.Api.Authorization;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
@@ -38,11 +39,11 @@ public class ContactPeopleController(ICompanyRepository companyRepository, IComp
     /// <param name="id">Contact person identifier.</param>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteContactPerson(Guid id)
     {
-        var contact = await companyRepository.GetContactPerson(id);
-        companyRepository.Delete(contact);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.DeleteContactPerson(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return NoContent();
     }
 }

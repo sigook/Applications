@@ -102,7 +102,7 @@ public class TimesheetService(
         }
         timeSheet.AddBonusOrOthers(timeSheetModel.BonusOrOthers, timeSheetModel.BonusOrOthersDescription);
         timeSheet.AddReimbursements(timeSheetModel.Reimbursements, timeSheetModel.ReimbursementsDescription);
-        if (!string.IsNullOrWhiteSpace(timeSheetModel.Comments)) timeSheet.Comment = timeSheetModel.Comments;
+        if (!string.IsNullOrWhiteSpace(timeSheetModel.Comments)) timeSheet.UpdateComment(timeSheetModel.Comments);
         await timeSheetRepository.Create(timeSheet);
         await timeSheetRepository.SaveChangesAsync();
         return Result.Ok(timeSheet.Id);
@@ -134,9 +134,9 @@ public class TimesheetService(
         }
         timeSheet.AddBonusOrOthers(timeSheetModel.BonusOrOthers, timeSheetModel.BonusOrOthersDescription);
         timeSheet.AddReimbursements(timeSheetModel.Reimbursements, timeSheetModel.ReimbursementsDescription);
-        timeSheet.Comment = string.IsNullOrWhiteSpace(timeSheetModel.Comments)
+        timeSheet.UpdateComment(string.IsNullOrWhiteSpace(timeSheetModel.Comments)
             ? $"Updated and approved by {updatedBy}"
-            : timeSheetModel.Comments;
+            : timeSheetModel.Comments);
         await timeSheetRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -328,6 +328,20 @@ public class TimesheetService(
         var now = GetJobNow(info, latitude, longitude).DateTime;
         var latest = await timeSheetRepository.GetLatestTimesheet(workerId, requestId);
         return new PunchResolution(workerId, info, now, latest, NextPunch(latest, now));
+    }
+
+    public async Task<Result> ApproveCompanyTimesheets(Guid requestId, Guid workerProfileId, Guid companyId)
+    {
+        var timeSheets = await timeSheetRepository.GetTimeSheets(workerProfileId, requestId, r => r.CompanyProfile.CompanyId == companyId);
+        var now = timeProvider.GetLocalNow().DateTime;
+        foreach (var timeSheet in timeSheets.Where(t => t.TimeOut.HasValue))
+        {
+            var result = timeSheet.AddApprovedTime(timeSheet.TimeIn, timeSheet.TimeOut.GetValueOrDefault());
+            if (!result) return result;
+            timeSheet.UpdateComment($"Approved on {now:D}");
+        }
+        await timeSheetRepository.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<Result> RemoveTimeSheet(Guid id)

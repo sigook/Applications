@@ -11,7 +11,6 @@ using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Accounting.PayStubs;
-using Covenant.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -27,7 +26,7 @@ public class PayStubsController(
     ITimesheetRepository timeSheetRepository,
     ISkipPayrollNumberRepository skipPayrollNumberRepository,
     IPayStubService payStubService,
-    ISigookBusClient busClient,
+    IMessagePublisher busClient,
     IOptions<ServiceBusConfiguration> serviceBusOptions) : ControllerBase
 {
     public const string RouteName = "api/agency/accounting/paystubs";
@@ -35,7 +34,7 @@ public class PayStubsController(
     private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
     private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository = skipPayrollNumberRepository;
     private readonly IPayStubService payStubService = payStubService;
-    private readonly ISigookBusClient busClient = busClient;
+    private readonly IMessagePublisher busClient = busClient;
     private readonly ServiceBusConfiguration serviceBusConfiguration = serviceBusOptions.Value;
 
     /// <summary>Gets a paginated list of pay stubs matching the given filter.</summary>

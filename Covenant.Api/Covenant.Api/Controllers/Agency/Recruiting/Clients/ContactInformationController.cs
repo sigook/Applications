@@ -1,10 +1,7 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities;
-using Covenant.Common.Functionals;
 using Covenant.Common.Models.Company;
-using Covenant.Common.Repositories.Companies;
-using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,22 +23,13 @@ public class ContactInformationController : Controller
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Put(
-        [FromServices] ICompanyRepository repository,
+        [FromServices] ICompanyService companyService,
         Guid profileId,
         [FromBody] CompanyProfileDetailModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        Result<CvnWebPage> rWebPage = CvnWebPage.Create(model.Website);
-        if (!rWebPage) return BadRequest(ModelState.AddErrors(rWebPage.Errors));
-        var entity = await repository.GetCompanyProfile(cp => cp.Id == profileId);
-        if (entity is null) return BadRequest();
-        entity.Phone = model.Phone;
-        entity.PhoneExt = model.PhoneExt;
-        entity.Fax = model.Fax;
-        entity.FaxExt = model.FaxExt;
-        entity.Website = model.Website;
-        repository.Update(entity);
-        await repository.SaveChangesAsync();
+        var result = await companyService.UpdateContactInformation(profileId, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

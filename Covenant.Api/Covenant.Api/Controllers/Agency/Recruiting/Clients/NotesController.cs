@@ -1,11 +1,8 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Companies;
-using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +12,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class NotesController(ICompanyRepository repository) : Controller
+public class NotesController(ICompanyRepository repository, ICompanyService companyService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/clients/{profileId}/notes";
 
@@ -28,18 +25,9 @@ public class NotesController(ICompanyRepository repository) : Controller
     public async Task<IActionResult> Post(Guid profileId, [FromBody] NoteModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        Result<CovenantNote> result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
+        var result = await companyService.CreateNote(profileId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        var entity = new CompanyProfileNote(profileId, result.Value);
-        await repository.Create(entity);
-        await repository.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { profileId, id = entity.NoteId }, new NoteModel
-        {
-            Id = entity.NoteId,
-            CreatedBy = entity.Note.CreatedBy,
-            CreatedAt = entity.Note.CreatedAt,
-            Color = entity.Note.Color
-        });
+        return CreatedAtAction(nameof(GetById), new { profileId, id = result.Value.Id }, result.Value);
     }
 
     /// <summary>Gets a paginated list of notes for the specified company profile.</summary>
@@ -72,13 +60,8 @@ public class NotesController(ICompanyRepository repository) : Controller
     public async Task<IActionResult> Put(Guid profileId, Guid id, [FromBody] NoteModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        Result<CovenantNote> result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
+        var result = await companyService.UpdateNote(profileId, id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        var entity = await repository.GetNote(profileId, id);
-        if (entity is null) return BadRequest();
-        entity.Update(result.Value, User.GetNickname());
-        repository.Update(entity);
-        await repository.SaveChangesAsync();
         return Ok();
     }
 
@@ -90,11 +73,8 @@ public class NotesController(ICompanyRepository repository) : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete(Guid profileId, Guid id)
     {
-        var entity = await repository.GetNote(profileId, id);
-        if (entity is null) return BadRequest();
-        entity.Delete(User.GetNickname());
-        repository.Update(entity);
-        await repository.SaveChangesAsync();
+        var result = await companyService.DeleteNote(profileId, id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

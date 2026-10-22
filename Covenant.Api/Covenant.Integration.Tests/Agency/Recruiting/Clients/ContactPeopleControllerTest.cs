@@ -155,18 +155,7 @@ public class ContactPeopleControllerTest : IClassFixture<CustomWebApplicationFac
         public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
             "", "", new CompanyProfileIndustry("Company Industry"));
 
-        public static readonly CompanyProfileContactPerson FakeContactPerson = new CompanyProfileContactPerson(FakeCompanyProfile.Id)
-        {
-            Title = "Sr",
-            FirstName = "Bob",
-            MiddleName = "BobM",
-            LastName = "BobL",
-            Position = "Supervisor",
-            Email = "bob@mail.com",
-            MobileNumber = "456780943",
-            OfficeNumber = "2345789654",
-            OfficeNumberExt = 999
-        };
+        public static readonly CompanyProfileContactPerson FakeContactPerson = FakeData.FakeContactPerson(FakeCompanyProfile.Id, title: "Sr", firstName: "Bob", middleName: "BobM", lastName: "BobL", position: "Supervisor", mobileNumber: "456780943", officeNumber: "2345789654", officeNumberExt: 999, email: "bob@mail.com");
 
         public static readonly CompanyProfileContactPerson FakeUpdateContactPerson = new CompanyProfileContactPerson(FakeCompanyProfile.Id);
         public static readonly CompanyProfileContactPerson FakeDeleteContactPerson = new CompanyProfileContactPerson(FakeCompanyProfile.Id);

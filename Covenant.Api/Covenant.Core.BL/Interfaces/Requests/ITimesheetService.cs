@@ -21,6 +21,7 @@ public interface ITimesheetService
     Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude);
     Task<Result<PunchStatusModel>> GetPunchStatus(Guid requestId, double latitude, double longitude);
     Task<Result> RemoveTimeSheet(Guid id);
+    Task<Result> ApproveCompanyTimesheets(Guid requestId, Guid workerProfileId, Guid companyId);
     Task<ResultGenerateDocument<MemoryStream>> GetRequestTimesheetFile(Guid requestId);
     Task<Result<ResultGenerateDocument<MemoryStream>>> GetCompanyRequestTimesheetFile(Guid requestId, Guid companyId);
 }

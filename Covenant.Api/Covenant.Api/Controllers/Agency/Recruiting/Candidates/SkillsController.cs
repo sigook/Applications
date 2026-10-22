@@ -2,7 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidates;
-using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Interfaces.Candidates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +12,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class SkillsController(ICandidateRepository candidateRepository, ISkillService skillService) : Controller
+public class SkillsController(ICandidateRepository candidateRepository, ICandidateService candidateService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/candidates/{candidateId}/skills";
 
@@ -26,15 +26,9 @@ public class SkillsController(ICandidateRepository candidateRepository, ISkillSe
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         if (string.IsNullOrEmpty(model?.Skill)) return BadRequest();
-        var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
-        if (candidate is null) return BadRequest();
-        model.Skill = (await skillService.Canonicalize([model.Skill])).FirstOrDefault();
-        var result = candidate.AddSkill(model.Skill);
+        var result = await candidateService.AddSkill(candidateId, model.Skill);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        candidateRepository.Update(candidate);
-        await candidateRepository.SaveChangesAsync();
-        model.Id = result.Value.Id;
-        return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+        return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
     }
 
     /// <summary>Gets the detail of a candidate skill by its identifier.</summary>
@@ -58,12 +52,8 @@ public class SkillsController(ICandidateRepository candidateRepository, ISkillSe
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> Delete(Guid candidateId, Guid id)
     {
-        var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
-        if (candidate is null) return BadRequest();
-        var result = candidate.DeleteSkill(id);
+        var result = await candidateService.DeleteSkill(candidateId, id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        candidateRepository.Update(candidate);
-        await candidateRepository.SaveChangesAsync();
         return Ok();
     }
 }

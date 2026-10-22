@@ -1,49 +1,29 @@
-using Azure.Messaging.ServiceBus;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Models.Notification;
 using Covenant.Core.BL.Interfaces.Accounting.PayStubs;
-using Covenant.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Covenant.Core.BL.Consumers;
+namespace Covenant.Core.BL.Services.Accounting.PayStubs;
 
-public class BulkPayStubEmailConsumer : IAzureServiceBusConsumer
+public class BulkPayStubEmailService(
+    IServiceScopeFactory serviceScopeFactory,
+    ITeamsService teamsService,
+    IOptions<TeamsWebhookConfiguration> teamsWebhookOptions,
+    ILogger<BulkPayStubEmailService> logger) : IBulkPayStubEmailService
 {
     private const int MaxConcurrency = 5;
-    private readonly ISigookBusClient client;
-    private readonly IServiceScopeFactory serviceScopeFactory;
-    private readonly ServiceBusConfiguration serviceBusConfiguration;
-    private readonly ILogger<BulkPayStubEmailConsumer> logger;
+    private readonly string webhook = teamsWebhookOptions.Value.Accounting;
 
-    public BulkPayStubEmailConsumer(
-        ISigookBusClient client,
-        IServiceScopeFactory serviceScopeFactory,
-        IOptions<ServiceBusConfiguration> options,
-        ILogger<BulkPayStubEmailConsumer> logger)
+    public async Task Send(BulkPayStubEmailJob job, CancellationToken cancellationToken)
     {
-        this.client = client;
-        this.serviceScopeFactory = serviceScopeFactory;
-        serviceBusConfiguration = options.Value;
-        this.logger = logger;
-    }
-
-    public async Task OnInit()
-    {
-        await client.CreateProcessorAsync(serviceBusConfiguration.BulkPayStubEmailQueue, ProcessAsync);
-    }
-
-    private async Task ProcessAsync(ProcessMessageEventArgs args)
-    {
-        var job = args.Message.Body.ToObjectFromJson<BulkPayStubEmailJob>();
         using var throttler = new SemaphoreSlim(MaxConcurrency);
-        var tasks = job.PayStubIds.Select(payStubId => SendPayStubEmail(payStubId, throttler, args.CancellationToken));
+        var tasks = job.PayStubIds.Select(payStubId => SendPayStubEmail(payStubId, throttler, cancellationToken));
         var results = await Task.WhenAll(tasks);
         await NotifyTeams(job, results);
-        await args.CompleteMessageAsync(args.Message);
     }
 
     private async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId, SemaphoreSlim throttler, CancellationToken cancellationToken)
@@ -68,10 +48,6 @@ public class BulkPayStubEmailConsumer : IAzureServiceBusConsumer
 
     private async Task NotifyTeams(BulkPayStubEmailJob job, IReadOnlyCollection<PayStubEmailResult> results)
     {
-        await using var scope = serviceScopeFactory.CreateAsyncScope();
-        var teamsService = scope.ServiceProvider.GetRequiredService<ITeamsService>();
-        var webhook = scope.ServiceProvider.GetRequiredService<IOptions<TeamsWebhookConfiguration>>().Value.Accounting;
-
         var failed = results.Where(r => !r.Success).ToList();
         int sentCount = results.Count - failed.Count;
         string text = $"Sent {sentCount} of {results.Count}";

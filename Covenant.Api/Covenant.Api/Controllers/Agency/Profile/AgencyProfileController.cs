@@ -1,9 +1,9 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +15,7 @@ namespace Covenant.Api.Controllers.Agency.Profile;
 [ApiController]
 [Produces("application/json")]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class AgencyProfileController(IAgencyRepository agencyRepository) : ControllerBase
+public class AgencyProfileController(IAgencyRepository agencyRepository, IAgencyService agencyService) : ControllerBase
 {
     public const string RouteName = "api/agency/profile";
 
@@ -39,49 +39,8 @@ public class AgencyProfileController(IAgencyRepository agencyRepository) : Contr
     public async Task<IActionResult> Put([FromBody] AgencyModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        Guid agencyId = User.GetAgencyId();
-        var entity = await agencyRepository.GetAgency(agencyId);
-        if (entity is null) return BadRequest();
-        if (string.IsNullOrEmpty(model.Logo?.FileName))
-        {
-            entity.Logo ??= new CovenantFile(Common.Entities.Agency.Agency.DefaultImageLogo);
-            entity.LogoId = entity.Logo.Id;
-        }
-        else
-        {
-            entity.LogoId = model.Logo.Id;
-        }
-        entity.BusinessNumber = model.BusinessNumber;
-        entity.FullName = model.FullName;
-        entity.HstNumber = model.HstNumber;
-        entity.PhonePrincipal = model.PhonePrincipal;
-        entity.PhonePrincipalExt = model.PhonePrincipalExt;
-        entity.WebPage = model.WebPage;
-        entity.WsibGroup.Clear();
-        foreach (var wsibGroup in model.WsibGroup)
-        {
-            var item = new AgencyWsibGroup(entity.Id, wsibGroup.Id);
-            entity.WsibGroup.Add(item);
-        }
-        entity.ContactInformation.Clear();
-        foreach (var contactInformation in model.ContactInformation)
-        {
-            var item = new AgencyContactInformation
-            {
-                Title = contactInformation.Title,
-                FirstName = contactInformation.FirstName,
-                MiddleName = contactInformation.MiddleName,
-                LastName = contactInformation.LastName,
-                MobileNumber = contactInformation.MobileNumber,
-                OfficeNumber = contactInformation.OfficeNumber,
-                OfficeNumberExt = contactInformation.OfficeNumberExt,
-                Email = contactInformation.Email,
-                Position = contactInformation.Position
-            };
-            entity.ContactInformation.Add(item);
-        }
-        agencyRepository.Update(entity);
-        await agencyRepository.SaveChangesAsync();
+        var result = await agencyService.UpdateAgencyProfile(User.GetAgencyId(), model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

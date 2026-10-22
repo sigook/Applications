@@ -457,7 +457,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         };
         public static readonly CompanyProfileJobPositionRate FakeCompanyProfileJobPositionRate = CompanyProfileJobPositionRate.Create(FakeCompany.Id, "Forklift", 20, 15).Value;
 
-        public static readonly CompanyProfileContactPerson FakeContactPerson = new(FakeCompany.Id) { Title = "Sr.", FirstName = "Jhon", MiddleName = "Arvy", LastName = "Mun" };
+        public static readonly CompanyProfileContactPerson FakeContactPerson = FakeData.FakeContactPerson(FakeCompany.Id, title: "Sr.", firstName: "Jhon", middleName: "Arvy", lastName: "Mun");
 
         public static readonly Request FakeRequest;
         public static readonly RequestSkill FakeSkill;
@@ -485,7 +485,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             FakeRequest.NumberId = 99;
             FakeRequest.CreatedAt = new DateTime(2021, 01, 01);
             FakeRequest.CreatedBy = "recruiter@mail.com";
-            FakeRequest.InvitationSentItAt = new DateTime(2021, 01, 01);
+            FakeRequest.MarkInvitationSent(new DateTime(2021, 01, 01));
             FakeRequest.WorkerSalary = 50_000m;
             FakeRequest.UpdateIsAsap(true);
             FakeRequest.AddRecruiter(FakeRecruiter, FakeRequest.CreatedAt);
@@ -507,7 +507,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             FakeRequestToSendInvitation.WorkerSalary = 50_000m;
             FakeRequestWithRecentInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
             FakeRequestWithRecentInvitation.WorkerSalary = 50_000m;
-            FakeRequestWithRecentInvitation.InvitationSentItAt = DateTime.Now;
+            FakeRequestWithRecentInvitation.MarkInvitationSent(DateTime.Now);
             var sinInfo = new Mock<ISinInformation<CovenantFile>>();
             sinInfo.SetupGet(g => g.SocialInsurance).Returns("989-987-678");
             sinInfo.SetupGet(g => g.SocialInsuranceExpire).Returns(true);

@@ -1,4 +1,5 @@
 using Covenant.Common.Entities.Request;
+using Covenant.Infrastructure.Extensions;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Models;

@@ -58,11 +58,11 @@ public class LocationsController(ICompanyService companyService) : ControllerBas
     /// <param name="id">Location identifier.</param>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> Delete([FromServices] ICompanyRepository repository, [FromRoute] Guid id)
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var location = await repository.GetLocation(id);
-        repository.Delete(location);
-        await repository.SaveChangesAsync();
+        var result = await companyService.DeleteCompanyLocation(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

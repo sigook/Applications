@@ -1,7 +1,6 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Models.Worker;
@@ -20,7 +19,6 @@ using Covenant.Core.BL.Interfaces.Workers;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Workers;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -58,8 +56,6 @@ public class WorkerServiceRequestDetailTest
             Mock.Of<IValidator<WorkerProfileCreateModel>>(),
             Mock.Of<IValidator<WorkerProfileLicenseModel>>(),
             Mock.Of<IValidator<CovenantFileModel>>(),
-            Mock.Of<IHttpContextAccessor>(),
-            Mock.Of<IFilesContainer>(),
             Mock.Of<IDocumentService>(),
             Mock.Of<ICandidateService>(),
             Mock.Of<ICandidateRepository>(),

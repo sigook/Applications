@@ -53,15 +53,11 @@ public class WorkersController(IAgencyService agencyService, IRequestService req
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Put([FromServices] IWorkerRequestRepository repository, Guid requestId, Guid id, [FromBody] AgencyBookWorkerModel model)
+    public async Task<ActionResult> Put([FromServices] IRequestDetailsService requestDetailsService, Guid requestId, Guid id, [FromBody] AgencyBookWorkerModel model)
     {
         if (!ModelState.IsValid || model?.StartWorking is null) return BadRequest();
-        var entity = await repository.GetWorkerRequest(id);
-        if (entity is null || entity.RequestId != requestId) return BadRequest();
-        Result result = entity.UpdateStartWorking(model.StartWorking.GetValueOrDefault());
+        var result = await requestDetailsService.UpdateWorkerStartWorking(requestId, id, model.StartWorking.GetValueOrDefault());
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        repository.Update(entity);
-        await repository.SaveChangesAsync();
         return Ok();
     }
 

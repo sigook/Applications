@@ -1,6 +1,6 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities.Worker;
+using Covenant.Core.BL.Interfaces.Workers;
 using Covenant.Common.Models.Worker.Agency;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
@@ -26,13 +26,10 @@ public class NotesController : Controller
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromServices] IWorkerRepository repository, [FromRoute] Guid workerProfileId, [FromBody] WorkerProfileNoteCreateModel model)
+    public async Task<IActionResult> Post([FromServices] IWorkerService workerService, [FromRoute] Guid workerProfileId, [FromBody] WorkerProfileNoteCreateModel model)
     {
-        string createdBy = User.GetNickname();
-        var result = WorkerProfileNote.Create(workerProfileId, model?.Note, createdBy);
+        var result = await workerService.AddNote(workerProfileId, model?.Note);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await repository.Create(result.Value);
-        await repository.SaveChangesAsync();
         return Ok();
     }
 

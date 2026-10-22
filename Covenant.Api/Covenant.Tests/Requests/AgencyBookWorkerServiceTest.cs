@@ -15,7 +15,6 @@ using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
-using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Agencies;
 using Covenant.Core.BL.Services.Workers;

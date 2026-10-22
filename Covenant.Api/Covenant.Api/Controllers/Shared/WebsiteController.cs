@@ -2,13 +2,11 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Models.Notification;
 using Covenant.Common.Models.Website;
 using Covenant.Common.Repositories.Requests;
-using Covenant.Core.BL.Extensions;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models;
 using Covenant.Common.Utils.Extensions;
-using Covenant.Infrastructure.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -19,17 +17,18 @@ namespace Covenant.Api.Controllers.Shared;
 [Route(RouteName)]
 [ApiController]
 public class WebsiteController(
-    ISigookBusClient client,
+    IMessagePublisher client,
     IRazorViewToStringRenderer razorViewToStringRenderer,
     IEmailService emailService,
     IRequestRepository requestRepository,
     IMemoryCache memoryCache,
     IOptions<ServiceBusConfiguration> options,
-    IFilesContainer filesContainer) : ControllerBase
+    IFilesContainer filesContainer,
+    IUploadedFilesService uploadedFilesService) : ControllerBase
 {
     public const string RouteName = "api/website";
 
-    private readonly ISigookBusClient client = client;
+    private readonly IMessagePublisher client = client;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
     private readonly IEmailService emailService = emailService;
     private readonly IRequestRepository requestRepository = requestRepository;
@@ -89,7 +88,7 @@ public class WebsiteController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateCandidate()
     {
-        var candidate = HttpContext.Request.Form.DeserializeData<CandidateViewModel>();
+        var candidate = uploadedFilesService.GetModel<CandidateViewModel>();
         if (HttpContext.Request.Form.Files.Count > 0)
         {
             var resumeFile = HttpContext.Request.Form.Files[0];

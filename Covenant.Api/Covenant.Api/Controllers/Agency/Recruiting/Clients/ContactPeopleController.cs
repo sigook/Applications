@@ -3,6 +3,7 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Core.BL.Interfaces.Agencies;
+using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class ContactPeopleController(ICompanyRepository companyRepository, IAgencyService agencyService) : Controller
+public class ContactPeopleController(ICompanyRepository companyRepository, IAgencyService agencyService, ICompanyService companyService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/clients/{profileId}/contactpeople";
 
@@ -68,11 +69,11 @@ public class ContactPeopleController(ICompanyRepository companyRepository, IAgen
     /// <param name="id">Identifier of the contact person to delete.</param>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var contact = await companyRepository.GetContactPerson(id);
-        companyRepository.Delete(contact);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.DeleteContactPerson(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

@@ -36,20 +36,20 @@ namespace Covenant.Common.Entities.Company
         public Agency.Agency Agency { get; set; }
         public Guid AgencyId { get; set; }
         public int NumberId { get; private set; }
-        public Guid? LogoId { get; set; }
+        public Guid? LogoId { get; private set; }
         public CovenantFile Logo { get; set; } = new CovenantFile(DefaultImageLogo);
         public string FullName { get; set; }
-        public string Phone { get; set; }
-        public int? PhoneExt { get; set; }
-        public string Fax { get; set; }
-        public int? FaxExt { get; set; }
-        public string Website { get; set; }
+        public string Phone { get; private set; }
+        public int? PhoneExt { get; private set; }
+        public string Fax { get; private set; }
+        public int? FaxExt { get; private set; }
+        public string Website { get; private set; }
         public string About { get; set; }
         public string InternalInfo { get; set; }
         public string ContactRole { get; set; }
         public string ContactName { get; set; }
         public CompanyStatus CompanyStatus { get; set; }
-        public bool RequiresPermissionToSeeRequests { get; set; }
+        public bool RequiresPermissionToSeeRequests { get; private set; }
         public ICollection<CompanyProfileLocation> Locations { get; set; } = new List<CompanyProfileLocation>();
         public ICollection<CompanyProfileContactPerson> ContactPeople { get; set; } = new List<CompanyProfileContactPerson>();
         public ICollection<CompanyProfileJobPositionRate> JobPositionRates { get; set; } = new List<CompanyProfileJobPositionRate>();
@@ -64,12 +64,12 @@ namespace Covenant.Common.Entities.Company
         public string UpdatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public bool Active { get; set; }
-        public bool PaidHolidays { get; set; }
+        public bool PaidHolidays { get; private set; }
         public bool RequiredPaymentMethod { get; set; }
-        public bool? VaccinationRequired { get; set; }
-        public string VaccinationRequiredComments { get; set; }
-        public TimeSpan OvertimeStartsAfter { get; set; } = DefaultOvertimeStarts;
-        public int PaymentTermDays { get; set; } = DefaultPaymentTermDays;
+        public bool? VaccinationRequired { get; private set; }
+        public string VaccinationRequiredComments { get; private set; }
+        public TimeSpan OvertimeStartsAfter { get; private set; } = DefaultOvertimeStarts;
+        public int PaymentTermDays { get; private set; } = DefaultPaymentTermDays;
         public Location BillingAddress => Locations
             .FirstOrDefault(l => l.IsBilling)?.Location ?? Locations.FirstOrDefault()?.Location;
         public string FormattedPhone => $"{Phone} {(PhoneExt.HasValue ? $"Ext:{PhoneExt.Value}" : string.Empty)}";
@@ -133,6 +133,22 @@ namespace Covenant.Common.Entities.Company
         {
             RequiresPermissionToSeeRequests = value;
         }
+
+        public void UpdatePhones(string phone, int? phoneExt, string fax, int? faxExt)
+        {
+            Phone = phone;
+            PhoneExt = phoneExt;
+            Fax = fax;
+            FaxExt = faxExt;
+        }
+
+        public void UpdateWebsite(string website) => Website = website;
+
+        public void ReplaceLogo(Guid logoId) => LogoId = logoId;
+
+        public void UpdatePaidHolidays(bool paidHolidays) => PaidHolidays = paidHolidays;
+
+        public void UpdatePaymentTermDays(int paymentTermDays) => PaymentTermDays = paymentTermDays;
 
         public static CompanyProfile CompanyRegisterByItself(
             User user,

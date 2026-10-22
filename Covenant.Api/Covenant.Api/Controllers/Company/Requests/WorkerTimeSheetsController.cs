@@ -57,17 +57,8 @@ public class WorkerTimeSheetsController(ITimesheetService timeSheetService, ITim
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Put([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId)
     {
-        var timeSheets = await timeSheetRepository.GetTimeSheets(workerProfileId, requestId, r => r.CompanyProfile.CompanyId == User.GetCompanyId());
-        foreach (var timeSheet in timeSheets)
-        {
-            if (timeSheet.TimeOut.HasValue)
-            {
-                var result = timeSheet.AddApprovedTime(timeSheet.TimeIn, timeSheet.TimeOut.GetValueOrDefault());
-                if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-                timeSheet.Comment = $"Approved on {DateTime.Now:D}";
-            }
-        }
-        await timeSheetRepository.SaveChangesAsync();
+        var result = await timeSheetService.ApproveCompanyTimesheets(requestId, workerProfileId, User.GetCompanyId());
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 

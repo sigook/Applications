@@ -139,15 +139,14 @@ public class UsersControllerTest : BaseTestOrder, IClassFixture<CustomWebApplica
         private static readonly CompanyProfile CompanyProfile = FakeData.FakeCompanyProfile(companyEmail: "company@company.com");
         public static readonly CvnEmail NewUserEmail = CvnEmail.Create("pepe.supervisor@company.com").Value;
         public static readonly Guid NewUserId = Guid.NewGuid();
-        public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUser = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("get@mail.com").Value))
+        public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUser = CreateFakeCompanyUser();
+
+        private static Covenant.Common.Entities.Company.CompanyUser CreateFakeCompanyUser()
         {
-            Name = "George",
-            Lastname = "Perez",
-            MobileNumber = "6574568970",
-            Position = "Manager",
-            CreatedAt = new DateTime(2019, 01, 01),
-            CreatedBy = "abc@mail.com"
-        };
+            var companyUser = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("get@mail.com").Value));
+            companyUser.UpdateDetails("George", "Perez", "Manager", "6574568970");
+            return companyUser;
+        }
         public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUserToUpdate = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("update@sigook.com").Value));
         public static readonly Covenant.Common.Entities.Company.CompanyUser FakeCompanyUserToDelete = new Covenant.Common.Entities.Company.CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("delete@sigook.com").Value));
 

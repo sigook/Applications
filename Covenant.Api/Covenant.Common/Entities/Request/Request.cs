@@ -65,7 +65,7 @@ namespace Covenant.Common.Entities.Request
         public DateTime? StartAt { get; set; }
         public DateTime? FinishAt { get; set; }
         public DateTime? UpdatedAt { get; set; } = DateTime.Now;
-        public DateTime? InvitationSentItAt { get; set; }
+        public DateTime? InvitationSentItAt { get; private set; }
         public string CreatedBy { get; set; }
         public RequestComission RequestComission { get; set; }
         public IEnumerable<RequestCompanyUser> RequestCompanyUser { get; set; }
@@ -369,6 +369,8 @@ namespace Covenant.Common.Entities.Request
             UpdatedAt = now;
             return Result.Ok();
         }
+
+        public void MarkInvitationSent(DateTime sentAt) => InvitationSentItAt = sentAt;
 
         public Result CanInvitationBeSendIt(DateTime now)
         {

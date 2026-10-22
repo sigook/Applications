@@ -9,7 +9,6 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Requests;
 using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Services;
 using Covenant.Common.Entities;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Entities.Request;
@@ -79,11 +78,10 @@ public class CreateRequestServiceTest
             timeProvider,
             _requestRepository.Object,
             Mock.Of<INotificationDataRepository>(),
-            Mock.Of<IPushNotifications>(),
             currentUserService.Object,
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<ISigookBusClient>(),
+            Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
             Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),

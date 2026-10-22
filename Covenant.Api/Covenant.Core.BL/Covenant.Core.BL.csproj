@@ -1,11 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="Azure.Messaging.ServiceBus" />
 	  <PackageReference Include="ClosedXML" />
 	  <PackageReference Include="CsvHelper" />
 	  <PackageReference Include="FluentValidation" />
@@ -14,7 +9,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Covenant.Infrastructure\Covenant.Infrastructure.csproj" />
+	  <ProjectReference Include="..\Covenant.Documents\Covenant.Documents.csproj" />
 	</ItemGroup>
 
 </Project>

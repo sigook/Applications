@@ -32,13 +32,13 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
-using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Interfaces.Workers;
 using Covenant.Documents.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Covenant.Common.Models.Location;
 
 namespace Covenant.Core.BL.Services.Agencies;
 
@@ -187,7 +187,7 @@ public class AgencyService : IAgencyService
         {
             var website = CvnWebPage.Create(model.Website);
             if (!website) return Result.Fail<Guid>(website.Errors);
-            company.Website = website.Value;
+            company.UpdateWebsite(website.Value);
         }
         if (!string.IsNullOrEmpty(model.Logo?.FileName))
         {
@@ -197,7 +197,7 @@ public class AgencyService : IAgencyService
             }
             var logo = new CovenantFile(model.Logo.FileName, model.Logo.Description);
             await companyRepository.Create(logo);
-            company.LogoId = logo.Id;
+            company.ReplaceLogo(logo.Id);
         }
         company.FullName = model.FullName;
         if (model.Industry.Industry != null)
@@ -219,10 +219,7 @@ public class AgencyService : IAgencyService
         company.SalesRepresentativeId = model.SalesRepresentativeId;
         company.About = model.About;
         company.InternalInfo = model.InternalInfo;
-        company.Phone = model.Phone;
-        company.PhoneExt = model.PhoneExt;
-        company.Fax = model.Fax;
-        company.FaxExt = model.FaxExt;
+        company.UpdatePhones(model.Phone, model.PhoneExt, model.Fax, model.FaxExt);
 
         companyRepository.Update(company);
         await companyRepository.SaveChangesAsync();
@@ -233,18 +230,8 @@ public class AgencyService : IAgencyService
     {
         var rEmail = CvnEmail.CreateOptional(model.Email);
         if (!rEmail) return Result.Fail<Guid>(rEmail.Errors);
-        var entity = new CompanyProfileContactPerson(profileId)
-        {
-            Title = model.Title,
-            FirstName = model.FirstName,
-            MiddleName = model.MiddleName,
-            LastName = model.LastName,
-            Position = model.Position,
-            MobileNumber = model.MobileNumber,
-            OfficeNumber = model.OfficeNumber,
-            OfficeNumberExt = model.OfficeNumberExt,
-            Email = rEmail.Value
-        };
+        var entity = new CompanyProfileContactPerson(profileId);
+        entity.Update(model.Title, model.FirstName, model.MiddleName, model.LastName, model.Position, model.MobileNumber, model.OfficeNumber, model.OfficeNumberExt, rEmail.Value);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         return Result.Ok(entity.Id);
@@ -259,15 +246,17 @@ public class AgencyService : IAgencyService
         {
             return Result.Fail();
         }
-        entity.Title = model.Title;
-        entity.FirstName = model.FirstName;
-        entity.MiddleName = model.MiddleName;
-        entity.LastName = model.LastName;
-        entity.Position = model.Position;
-        entity.MobileNumber = model.MobileNumber;
-        entity.OfficeNumber = model.OfficeNumber;
-        entity.OfficeNumberExt = model.OfficeNumberExt;
-        entity.Email = rEmail.Value;
+        entity.Update(model.Title, model.FirstName, model.MiddleName, model.LastName, model.Position, model.MobileNumber, model.OfficeNumber, model.OfficeNumberExt, rEmail.Value);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteCompanyJobPosition(Guid id)
+    {
+        var entity = await companyRepository.GetJobPosition(id);
+        if (entity is null) return Result.Fail("Job position not found");
+        entity.Delete(currentUserService.GetNickname());
+        companyRepository.Update(entity);
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -640,6 +629,94 @@ public class AgencyService : IAgencyService
         {
             if (rolesByUser.TryGetValue(item.UserId, out var role)) item.Role = role;
         }
+    }
+
+    public async Task<Result> DeleteAgencyPersonnel(Guid agencyId, Guid id)
+    {
+        var entity = await agencyRepository.GetPersonnel(id);
+        if (entity is null || entity.AgencyId != agencyId) return Result.Fail(ResultError.NotFound("Personnel not found"));
+        if (await agencyRepository.PersonnelHasRequests(entity.Id))
+            return Result.Fail("This user cannot be deleted because they are still assigned as a recruiter on one or more orders. Please reassign those orders first.");
+        if (await agencyRepository.PersonnelHasCompanies(entity.Id))
+            return Result.Fail("This user cannot be deleted because they are still set as the sales representative for one or more clients. Please reassign those clients first.");
+        agencyRepository.Delete(entity);
+        await agencyRepository.SaveChangesAsync();
+        return await userAccountService.DeleteUserOrClaim(entity.UserId, new IdModel(agencyId));
+    }
+
+    public async Task SetPrimaryPersonnelAgency(Guid userId, Guid personnelId)
+    {
+        foreach (var personnel in await agencyRepository.GetPersonnelByUserId(userId))
+        {
+            if (personnel.IsPrimary)
+            {
+                personnel.SetToNotPrimary();
+                agencyRepository.Update(personnel);
+            }
+
+            if (personnel.Id != personnelId) continue;
+            personnel.SetToPrimary();
+            agencyRepository.Update(personnel);
+        }
+        await agencyRepository.SaveChangesAsync();
+    }
+
+    public async Task<Result> UpdateAgencyProfile(Guid agencyId, AgencyModel model)
+    {
+        var entity = await agencyRepository.GetAgency(agencyId);
+        if (entity is null) return Result.Fail(ApiResources.AgencyNotFound);
+        entity.UpdateLogo(string.IsNullOrEmpty(model.Logo?.FileName) ? null : model.Logo.Id);
+        entity.UpdateProfile(model.FullName, model.BusinessNumber, model.HstNumber, model.PhonePrincipal, model.PhonePrincipalExt, model.WebPage);
+        entity.ReplaceWsibGroups(model.WsibGroup.Select(w => w.Id));
+        entity.ReplaceContactInformation(model.ContactInformation.Select(c => new AgencyContactInformation
+        {
+            Title = c.Title,
+            FirstName = c.FirstName,
+            MiddleName = c.MiddleName,
+            LastName = c.LastName,
+            MobileNumber = c.MobileNumber,
+            OfficeNumber = c.OfficeNumber,
+            OfficeNumberExt = c.OfficeNumberExt,
+            Email = c.Email,
+            Position = c.Position
+        }));
+        agencyRepository.Update(entity);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result<Guid>> CreateAgencyLocation(Guid agencyId, LocationModel model)
+    {
+        var location = Location.Create(model.City?.Id, model.Address, model.PostalCode);
+        if (!location) return Result.Fail<Guid>(location.Errors);
+        var agency = await agencyRepository.GetAgency(agencyId);
+        if (agency is null) return Result.Fail<Guid>(ApiResources.AgencyNotFound);
+        await agencyRepository.Create(new AgencyLocation(location.Value, agency.Id, model.IsBilling));
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok(location.Value.Id);
+    }
+
+    public async Task<Result> UpdateAgencyLocation(Guid agencyId, Guid id, LocationModel model)
+    {
+        var location = Location.Create(model.City?.Id, model.Address, model.PostalCode);
+        if (!location) return location;
+        var agency = await agencyRepository.GetAgency(agencyId);
+        if (agency is null) return Result.Fail(ApiResources.AgencyNotFound);
+        var result = agency.UpdateLocation(id, location.Value, model.IsBilling);
+        if (!result) return result;
+        agencyRepository.Update(agency);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteAgencyLocation(Guid agencyId, Guid id)
+    {
+        var agency = await agencyRepository.GetAgency(agencyId);
+        if (agency is null) return Result.Fail(ApiResources.AgencyNotFound);
+        agency.DeleteLocation(id);
+        agencyRepository.Update(agency);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<Result> UpdateAgencyPersonnel(Guid id, AgencyPersonnelModel model)

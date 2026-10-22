@@ -1,9 +1,7 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Models;
-using Covenant.Common.Repositories.Requests;
-using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +11,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class SkillsController(IRequestRepository repository, ISkillService skillService) : Controller
+public class SkillsController(IRequestDetailsService requestDetailsService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/requests/{requestId}/skills";
 
@@ -26,13 +24,9 @@ public class SkillsController(IRequestRepository repository, ISkillService skill
     public async Task<ActionResult> Post(Guid requestId, [FromBody] SkillModel model)
     {
         if (!ModelState.IsValid || string.IsNullOrEmpty(model?.Skill)) return BadRequest(ModelState);
-        model.Skill = (await skillService.Canonicalize([model.Skill])).FirstOrDefault();
-        var result = RequestSkill.Create(requestId, model.Skill);
+        var result = await requestDetailsService.AddSkill(requestId, model.Skill);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        await repository.Create(result.Value);
-        await repository.SaveChangesAsync();
-        model.Id = result.Value.Id;
-        return Ok(model);
+        return Ok(result.Value);
     }
 
     /// <summary>Removes a skill from the specified request.</summary>
@@ -43,10 +37,8 @@ public class SkillsController(IRequestRepository repository, ISkillService skill
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> Delete(Guid requestId, Guid id)
     {
-        var entity = await repository.GetSkill(requestId, id);
-        if (entity is null) return BadRequest();
-        repository.Delete(entity);
-        await repository.SaveChangesAsync();
+        var result = await requestDetailsService.DeleteSkill(requestId, id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

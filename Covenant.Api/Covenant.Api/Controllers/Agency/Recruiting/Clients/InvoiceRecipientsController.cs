@@ -1,7 +1,9 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Models.Company.Agency;
 using Covenant.Common.Models.Company;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Repositories.Companies;
+using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +13,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class InvoiceRecipientsController(ICompanyRepository companyRepository) : ControllerBase
+public class InvoiceRecipientsController(ICompanyRepository companyRepository, ICompanyService companyService) : ControllerBase
 {
     public const string RouteName = "api/agency/recruiting/clients/{profileId}/invoicerecipients";
 
@@ -24,8 +26,7 @@ public class InvoiceRecipientsController(ICompanyRepository companyRepository) :
     public async Task<IActionResult> Post([FromRoute] Guid profileId, [FromBody] CompanyProfileInvoiceRecipientModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        Guid id = await companyRepository.CreateInvoiceRecipient(profileId, model);
-        await companyRepository.SaveChangesAsync();
+        var id = await companyService.CreateInvoiceRecipient(profileId, model);
         return CreatedAtAction(nameof(Get), new { profileId, id }, new { Id = id });
     }
 
@@ -42,8 +43,7 @@ public class InvoiceRecipientsController(ICompanyRepository companyRepository) :
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] CompanyProfileInvoiceRecipientModel model)
     {
-        await companyRepository.UpdateInvoiceRecipient(id, model);
-        await companyRepository.SaveChangesAsync();
+        await companyService.UpdateInvoiceRecipient(id, model);
         return Ok();
     }
 
@@ -51,11 +51,11 @@ public class InvoiceRecipientsController(ICompanyRepository companyRepository) :
     /// <param name="id">Identifier of the invoice recipient to delete.</param>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var invoiceRecipient = await companyRepository.GetInvoiceRecipient(id);
-        companyRepository.Delete(invoiceRecipient);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.DeleteInvoiceRecipient(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

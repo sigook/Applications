@@ -312,7 +312,7 @@ Installs .NET SDK via `UseDotNet@2` task.
 | `includePreviewVersions` | boolean | `false` | Include preview SDK versions |
 
 ### node-setup.yml
-Installs Node.js via the official `NodeTool@0` task (no NVM dependency) and verifies the installation. Used by the Sigook.Web and Covenant.Web pipelines.
+Installs Node.js via the official `UseNode@1` task (no NVM dependency) and verifies the installation. Used by the Sigook.Web and Covenant.Web pipelines.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|

@@ -1,10 +1,8 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidates;
-using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Candidates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +12,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class NotesController(ICandidateRepository candidateRepository) : Controller
+public class NotesController(ICandidateRepository candidateRepository, ICandidateService candidateService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/candidates/{candidateId}/notes";
 
@@ -27,18 +25,9 @@ public class NotesController(ICandidateRepository candidateRepository) : Control
     public async Task<ActionResult> Post(Guid candidateId, [FromBody] NoteModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
+        var result = await candidateService.CreateNote(candidateId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        var entity = new CandidateNote(candidateId, result.Value);
-        await candidateRepository.Create(entity);
-        await candidateRepository.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = entity.NoteId }, new NoteModel
-        {
-            Id = entity.NoteId,
-            CreatedBy = entity.Note.CreatedBy,
-            CreatedAt = entity.Note.CreatedAt,
-            Color = entity.Note.Color
-        });
+        return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
     }
 
     /// <summary>Gets the detail of a candidate note by its identifier.</summary>
@@ -71,13 +60,8 @@ public class NotesController(ICandidateRepository candidateRepository) : Control
     public async Task<IActionResult> Put(Guid candidateId, Guid id, [FromBody] NoteModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = CovenantNote.Create(model.Note, model.Color, User.GetNickname());
+        var result = await candidateService.UpdateNote(candidateId, id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        var entity = await candidateRepository.GetNote(candidateId, id);
-        if (entity is null) return BadRequest();
-        entity.Update(result.Value, User.GetNickname());
-        candidateRepository.Update(entity);
-        await candidateRepository.SaveChangesAsync();
         return Ok();
     }
 
@@ -89,11 +73,8 @@ public class NotesController(ICandidateRepository candidateRepository) : Control
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> DeleteNote(Guid candidateId, Guid id)
     {
-        var entity = await candidateRepository.GetNote(candidateId, id);
-        if (entity is null) return BadRequest();
-        entity.Delete(User.GetNickname());
-        candidateRepository.Update(entity);
-        await candidateRepository.SaveChangesAsync();
+        var result = await candidateService.DeleteNote(candidateId, id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidates;
+using Covenant.Core.BL.Interfaces.Candidates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class PhoneNumbersController(ICandidateRepository candidateRepository) : Controller
+public class PhoneNumbersController(ICandidateRepository candidateRepository, ICandidateService candidateService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/candidates/{candidateId}/phonenumbers";
 
@@ -24,13 +25,9 @@ public class PhoneNumbersController(ICandidateRepository candidateRepository) : 
     public async Task<ActionResult> Post(Guid candidateId, [FromBody] PhoneNumberModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var entity = await candidateRepository.GetCandidate(c => c.Id == candidateId);
-        if (entity is null) return BadRequest();
-        var result = entity.AddPhone(model.PhoneNumber);
+        var result = await candidateService.AddPhoneNumber(candidateId, model.PhoneNumber);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        candidateRepository.Update(entity);
-        await candidateRepository.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, new PhoneNumberModel { Id = result.Value.Id });
+        return CreatedAtAction(nameof(GetById), new { id = result.Value }, new PhoneNumberModel { Id = result.Value });
     }
 
     /// <summary>Gets the detail of a candidate phone number by its identifier.</summary>
@@ -54,12 +51,8 @@ public class PhoneNumbersController(ICandidateRepository candidateRepository) : 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> Delete(Guid candidateId, Guid id)
     {
-        var entity = await candidateRepository.GetCandidate(c => c.Id == candidateId);
-        if (entity is null) return BadRequest();
-        var result = entity.DeletePhone(id);
+        var result = await candidateService.DeletePhoneNumber(candidateId, id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        candidateRepository.Update(entity);
-        await candidateRepository.SaveChangesAsync();
         return Ok();
     }
 }

@@ -8,7 +8,6 @@ using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Request;
@@ -29,7 +28,6 @@ using Covenant.Core.BL.Services.Workers;
 using Covenant.Core.BL.Services;
 using Covenant.Tests.Utils;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -71,8 +69,6 @@ public class WorkerServiceApplyTest
             Mock.Of<IValidator<WorkerProfileCreateModel>>(),
             Mock.Of<IValidator<WorkerProfileLicenseModel>>(),
             Mock.Of<IValidator<CovenantFileModel>>(),
-            Mock.Of<IHttpContextAccessor>(),
-            Mock.Of<IFilesContainer>(),
             Mock.Of<IDocumentService>(),
             Mock.Of<ICandidateService>(),
             _candidateRepository.Object,

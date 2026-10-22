@@ -140,7 +140,7 @@ Runs on an F1 App Service plan (intentional — do not suggest upgrading).
 Covenant.Api/                       # Covenant.Api.slnx, Directory.Build.props (net10.0), Directory.Packages.props, global.json, nuget.config
 ├── Covenant.Api/                   # Web API + identity host: controllers, auth filters, Razor views, background service, DI
 ├── Covenant.Common/                # Entities (incl. Entities/Identity), enums, models/DTOs, repository+service interfaces, constants
-├── Covenant.Core.BL/               # Services (business logic, incl. Services/Identity) + Service Bus consumers
+├── Covenant.Core.BL/               # Services (business logic, incl. Services/Identity) and adapters
 ├── Covenant.Infrastructure/        # EF Core (CovenantContext, IdentityContext), repositories, integrations, deductions
 ├── Covenant.Documents/             # MediatR handlers: Excel reports (ClosedXML) + invoice/pay stub PDFs (QuestPDF, Community license, DejaVu Sans embedded in Pdf/Fonts)
 ├── Sigook.Functions/               # Azure Functions (timers + blob trigger), references Covenant.Common only
@@ -148,6 +148,25 @@ Covenant.Api/                       # Covenant.Api.slnx, Directory.Build.props (
 ├── Covenant.Integration.Tests/     # API integration tests (Testcontainers Postgres)
 └── Sigook.Functions.Tests/         # Functions unit tests
 ```
+
+Layer dependencies (`ProjectReference`):
+
+```
+Covenant.Api ──► Covenant.Core.BL ──► Covenant.Documents ──► Covenant.Common
+     └─────────► Covenant.Infrastructure ─────────────────────────┘
+```
+
+`Covenant.Core.BL` never references `Covenant.Infrastructure`: it talks to persistence and
+integrations only through interfaces in `Covenant.Common` (`Repositories/`, `Interfaces/`), and
+`Covenant.Api` wires the implementations in `ApiServicesConfiguration`. An interface that
+`Covenant.Core.BL` needs and `Covenant.Infrastructure` implements goes in `Covenant.Common`, never
+in `Covenant.Infrastructure`.
+
+These rules are tests, not conventions: `Covenant.Tests/Architecture/LayerDependencyTest.cs`
+(NetArchTest + Mono.Cecil) fails the build pipeline when `Covenant.Core.BL` depends on
+Infrastructure, the Api, ASP.NET HTTP/MVC, EF Core or Service Bus; when `Covenant.Common` depends on
+any outer project or EF Core; or when a type under `Covenant.Api.Controllers`/`Covenant.Api.Consumers`
+calls an `IBaseRepository` write method.
 
 `Directory.Build.props` sets `TargetFramework=net10.0`, `ImplicitUsings`, `LangVersion=latest` and
 `IsPackable=false` for every project; individual csproj files only carry what differs.
@@ -166,8 +185,11 @@ Covenant.Api/                       # Covenant.Api.slnx, Directory.Build.props (
   (`ManagePackageVersionsCentrally`). `PackageReference` entries carry no `Version` — add or bump
   the `PackageVersion` in that file so every project resolves the same version.
 - Keep infrastructure concerns out of `Covenant.Common`: Excel helpers live in `Covenant.Documents`,
-  ASP.NET-bound helpers (`IFormFile`, `IConfiguration`, Razor helpers) in `Covenant.Api`/
-  `Covenant.Core.BL`, and test-only helpers inside each test project. For that reason
+  ASP.NET-bound helpers (`IFormFile`, `HttpContext`, Razor helpers) in `Covenant.Api`/
+  `Covenant.Infrastructure`, and test-only helpers inside each test project. `Covenant.Core.BL`
+  has no ASP.NET framework reference: it reads the current request only through `ICurrentUserService`
+  (claims) and `IUploadedFilesService` (multipart `data` JSON + files), and bulk imports take a
+  `Stream`. For that reason
   `PrefixKeyVaultSecretManager` exists twice on purpose (Api and Sigook.Functions), so the worker
   does not have to reference `Covenant.Infrastructure`.
 
@@ -218,18 +240,18 @@ same tree.
 | Folder | Services |
 |---|---|
 | `Services/Agencies/` | `AgencyService` |
-| `Services/Candidates/` | `CandidateService` |
+| `Services/Candidates/` | `CandidateService`, `CandidateApplicationService` (website applications from the Service Bus: validate, create candidate or applicant, Teams notice) |
 | `Services/Companies/` | `CompanyService` |
 | `Services/Locations/` | `LocationService` |
 | `Services/Notifications/` | `NotificationService` |
-| `Services/Requests/` | `RequestService`, `RequestApplicantService`, `RequestApplicantNotificationService`, `RunnerService`, `WeeklyBoardService`, `TimesheetService` |
+| `Services/Requests/` | `RequestService`, `RequestApplicantService`, `RequestApplicantNotificationService`, `RequestInvitationService` (bulk SendGrid invitations), `RequestDetailsService` (request sub-resources: shift, report-to, requested-by, skills, notes, worker notes, start date), `RunnerService`, `WeeklyBoardService`, `TimesheetService` |
 | `Services/Sales/` | `SalesService` (deals, interactions, dashboard) |
-| `Services/Workers/` | `WorkerService` |
-| `Services/Shared/` | `UploadedFilesService` |
+| `Services/Workers/` | `WorkerService`, `WorkerProfileUpdateService` (worker profile sections, job experience, certificate/license/document deletes) |
+| `Services/Shared/` | `SkillService`, `CatalogService` (catalog writes) |
 | `Services/Accounting/` | `AccountingService`, `TimesheetCalculatorService` (hours breakdown + payroll deductions, shared by payroll and invoicing) |
 | `Services/Accounting/Deductions/` | `DeductionImportService` (CRA PDF import) |
 | `Services/Accounting/Invoices/` | `InvoiceService` (single concrete `IInvoiceService`), `CanadaInvoiceStrategy` / `UsaInvoiceStrategy` (`IInvoiceCountryStrategy`: prefix, tax, unworked holidays, PDF decoration), `InvoiceCountryStrategyResolver` (picks the strategy from the agency billing location) |
-| `Services/Accounting/PayStubs/` | `PayStubService` |
+| `Services/Accounting/PayStubs/` | `PayStubService`, `BulkPayStubEmailService` (throttled bulk send + Teams summary) |
 | `Services/Identity/` | see below |
 
 Identity lives under `Services/Identity/` (interfaces in `Covenant.Common/Interfaces/Identity/`):
@@ -250,12 +272,15 @@ Identity lives under `Services/Identity/` (interfaces in `Covenant.Common/Interf
 - `PasswordResetService` — code-based forgot password.
 
 Also in `Covenant.Core.BL/`: `Adapters/` (entity→model adapters for candidate, company, worker,
-interfaces in `Covenant.Common/Interfaces/Adapters/`), `Extensions/` (`FormCollectionExtensions`)
-and `Consumers/` (Service Bus).
+interfaces in `Covenant.Common/Interfaces/Adapters/`).
 
 Services depend only on repository interfaces from `Covenant.Common/Repositories/` (plus ASP.NET
 Identity's `UserManager`/`RoleManager` for the identity services); controllers only delegate to
-services. DI registration (services/repositories/adapters/containers `AddScoped`; Service Bus
+services. **Controllers never write**: every Create/Update/Delete/`SaveChangesAsync` goes through a
+Core.BL service. Controllers may still call repository query methods that return DTOs (lists,
+details), which keeps reads free of pass-through service methods. A service signals "not found"
+with `Result.Fail(ResultError.NotFound(message))`; the controller maps it with
+`result.IsNotFound ? NotFound() : BadRequest(...)` only where the endpoint answers 404. DI registration (services/repositories/adapters/containers `AddScoped`; Service Bus
 clients + consumers and config option objects (`Rates`, `TimeLimits`, `AzureStorageConfiguration`)
 `AddSingleton`; `AddCovenantIdentity` for `IdentityContext`, ASP.NET Identity core and the
 OpenIddict core stores) lives in `Covenant.Api/Configuration/ApiServicesConfiguration.cs`.
@@ -300,10 +325,9 @@ Scripts/          raw SQL run at startup by DatabaseScriptRunner (copied to the 
                   .gitignore ignores *.sql except under this folder; the integration test
                   exercises the runner with a temporary script instead of a real one
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
-                  (Google Maps), PushNotificationPublisher (IPushNotifications → `PushNotificationQueue`
-                  on Service Bus) + FirebasePushNotificationSender (IPushNotificationSender, FCM), TeamsService
-                  (webhooks), DocumentService, RazorViewToStringRenderer,
-                  UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
+                  (Google Maps), TeamsService (webhooks), DocumentService, RazorViewToStringRenderer,
+                  UserAccountService, CurrentUserService, UploadedFilesService (multipart
+                  form of the current request), Microsoft365AccountService (Graph
                   accountEnabled check), CraPdfParser (PdfPig reader for the CRA
                   deduction tables), SigookBusClient / SigookBusAdministrationClient (Service Bus)
 Services/Storage/ Azure Blob containers, one class per container (see below)
@@ -377,7 +401,7 @@ Custom implementation on `Azure.Messaging.ServiceBus` — **there is no MassTran
 
 | Piece | File |
 |---|---|
-| Client (send + create processors) | `Covenant.Infrastructure/Services/SigookBusClient.cs` (+ `ISigookBusClient.cs`) |
+| Client | `Covenant.Infrastructure/Services/SigookBusClient.cs`: implements `IMessagePublisher` (`Covenant.Common/Interfaces/`, send a JSON message with optional application properties, no Azure types) and `ISigookBusClient` (`Covenant.Infrastructure/Services/`, create processors, used only by the consumers) |
 | Admin client (create queues/topics/subscriptions/rules) | `Covenant.Infrastructure/Services/SigookBusAdministrationClient.cs` |
 | Consumer contract | `Covenant.Common/Interfaces/IAzureServiceBusConsumer.cs` (`Task OnInit()`) |
 | Bootstrap | `Covenant.Api/BackgroundServices/SigookBackgroundService.cs` |
@@ -389,19 +413,27 @@ applies pending EF migrations for `MyKeysContext`, `CovenantContext` and (when
 `Covenant.Infrastructure/Scripts/`, seeds the 7 roles, runs `OpenIddictSeeder` (the
 `api1`/`roles` scopes, the Sigook.Functions confidential client, and the `sigook.com`/`android`
 public clients in Development), creates queues/topics/subscriptions if missing
-(`ValidateCandidateQueue`, `BulkPayStubEmailQueue`, `InvitationQueue`, `PushNotificationQueue`,
+(`ValidateCandidateQueue`, `BulkPayStubEmailQueue`, `InvitationQueue`,
 `CreateApplicantTopic` with Teams/Email/RequestApplicant subscriptions), then calls `OnInit()` on
 every registered consumer.
 
-Consumers live in `Covenant.Core.BL/Consumers/`; exactly **6** are registered as
+Consumers live in `Covenant.Api/Consumers/`; exactly **5** are registered as
 `IAzureServiceBusConsumer` singletons in `AddAzureServiceBusConsumer`
-(`ApiServicesConfiguration.cs`): `NewCandidateConsumer`, `TeamsConsumer`,
-`RequestApplicantConsumer`, `BulkPayStubEmailConsumer`, `InvitationConsumer`,
-`PushNotificationConsumer` (the "Job Alert" FCM push of a new request: `RequestService.CreateRequest`
-only publishes to the queue, so the HTTP response never waits on Firebase).
+(`ApiServicesConfiguration.cs`). They are the message counterpart of controllers: deserialize the
+body, open a scope, call one Core.BL service, complete the message. No business logic in them.
 
-Local development connects to the **staging** Service Bus — inject `ISigookBusClient` (mockable)
-rather than constructing clients directly.
+| Consumer | Source | Service |
+|---|---|---|
+| `NewCandidateConsumer` | `ValidateCandidateQueue` | `ICandidateApplicationService.ProcessApplication` |
+| `TeamsConsumer` | `CreateApplicantTopic` / Teams | `ICandidateApplicationService.NotifyFailure/NotifyApplication/NotifyCreation` |
+| `RequestApplicantConsumer` | `CreateApplicantTopic` / RequestApplicant | `ICandidateApplicationService.RegisterApplicant` |
+| `InvitationConsumer` | `InvitationQueue` | `IRequestInvitationService.Send` |
+| `BulkPayStubEmailConsumer` | `BulkPayStubEmailQueue` | `IBulkPayStubEmailService.Send` |
+
+There are no push notifications: the API does not talk to Firebase/FCM.
+
+Local development connects to the **staging** Service Bus — services and controllers inject
+`IMessagePublisher` (mockable) to send, never a concrete client.
 
 ---
 
@@ -532,7 +564,6 @@ Everything Google lives in the single project `sigookapps` (number 475603730166,
 
 | Resource | Used by | Where the credential lives |
 |---|---|---|
-| Firebase / FCM (service account `firebase-adminsdk-2ynl5`) | `FirebasePushNotificationSender` in the API; Android/iOS apps `com.sigook.sigook` / `com.all2job.all2job` | Key Vault `*-api--PushNotificationConfiguration--*` |
 | Google Play publishing (service accounts `playstore-ci`, `prod-playstore-ci`) | fastlane `android deploy` | Variable groups `SigookApp-Staging` / `SigookApp-Production` (`GOOGLE_PLAY_JSON_KEY`) |
 | Geocoding API key "Sigook Api - Geocoding" | `GeocodeService` (company locations) | Key Vault `*-api--GeocodeGoogleConfiguration--Key` |
 | Maps Embed API key "Sigook Web - Maps Embed" (referrers: sigook.com, sigook.ca, azurewebsites, localhost) | `mapsEmbedUrl` in `Sigook.Web/src/shared/request-detail/requestDetail.ts` | Hardcoded (public browser key, referrer-restricted) |

@@ -2,12 +2,8 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Workers;
-using Covenant.Common.Resources;
-using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,33 +14,21 @@ namespace Covenant.Api.Controllers.Worker.Profile;
 [ApiController]
 [Authorize]
 [Route(RouteName)]
-public class ProfileUpdateController : ControllerBase
+public class ProfileUpdateController(IWorkerService workerService, IWorkerProfileUpdateService workerProfileUpdateService) : ControllerBase
 {
     public const string RouteName = "api/worker/profile/{profileId}";
-    private readonly IWorkerRepository _workerRepository;
-    private readonly IDocumentService documentService;
-    private readonly IWorkerService _workerService;
-    private readonly ISkillService skillService;
+    private readonly IWorkerService _workerService = workerService;
 
-    public ProfileUpdateController(IWorkerRepository workerRepository, IDocumentService documentService, IWorkerService workerService, ISkillService skillService)
-    {
-        _workerRepository = workerRepository;
-        this.documentService = documentService;
-        _workerService = workerService;
-        this.skillService = skillService;
-    }
-
-    private async Task<IActionResult> CommonFunctionUpdate<T>(T model, Guid profileId, Func<Covenant.Common.Entities.Worker.WorkerProfile, Task<Result>> update) where T : class
+    private async Task<IActionResult> Update<T>(T model, Func<Task<Result>> update) where T : class
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var entity = await _workerRepository.GetProfile(p => p.Id == profileId);
-        if (entity is null) return BadRequest();
-        Result result = await update(entity);
+        var result = await update();
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        _workerRepository.Update(entity);
-        await _workerRepository.SaveChangesAsync();
         return Ok();
     }
+
+    private IActionResult ToActionResult(Result result) =>
+        result ? Ok() : BadRequest(ModelState.AddErrors(result.Errors));
 
     /// <summary>
     /// Updates the availabilities of a worker profile.
@@ -56,7 +40,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Availabilities(Guid profileId, [FromBody] List<BaseModel<Guid>> model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchAvailabilities(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateAvailabilities(profileId, model));
 
     /// <summary>
     /// Updates the availability days of a worker profile.
@@ -68,7 +52,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AvailabilityDays(Guid profileId, [FromBody] List<BaseModel<Guid>> model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchAvailabilityDays(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateAvailabilityDays(profileId, model));
 
     /// <summary>
     /// Updates the availability times of a worker profile.
@@ -80,7 +64,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AvailabilityTimes(Guid profileId, [FromBody] List<BaseModel<Guid>> model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchAvailabilityTimes(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateAvailabilityTimes(profileId, model));
 
     /// <summary>
     /// Updates the basic information of a worker profile.
@@ -92,7 +76,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> BasicInformation(Guid profileId, [FromBody] WorkerProfileBasicInformationModel model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchBasicInformation(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateBasicInformation(profileId, model));
 
     /// <summary>
     /// Uploads certificate documents for a worker profile.
@@ -117,14 +101,9 @@ public class ProfileUpdateController : ControllerBase
     [HttpDelete]
     [Route("Certificates/{certificateId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> DeleteCertificate([FromRoute] Guid certificateId)
-    {
-        var certificate = await _workerRepository.GetCertificate(certificateId);
-        _workerRepository.Delete(certificate);
-        await _workerRepository.SaveChangesAsync();
-        await documentService.DeleteFile(certificate.CertificateId);
-        return Ok();
-    }
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteCertificate([FromRoute] Guid certificateId) =>
+        ToActionResult(await workerProfileUpdateService.DeleteCertificate(certificateId));
 
     /// <summary>
     /// Updates the contact information of a worker profile.
@@ -136,7 +115,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ContactInformation(Guid profileId, [FromBody] WorkerProfileContactInformation model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchContactInformation(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateContactInformation(profileId, model));
 
     /// <summary>
     /// Updates the emergency information of a worker profile.
@@ -148,7 +127,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> EmergencyInformation(Guid profileId, [FromBody] EmergencyInformationModel model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchEmergencyInformation(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateEmergencyInformation(profileId, model));
 
     /// <summary>
     /// Updates the languages of a worker profile.
@@ -160,7 +139,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Languages(Guid profileId, [FromBody] List<BaseModel<Guid>> model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchLanguages(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateLanguages(profileId, model));
 
     /// <summary>
     /// Uploads license documents for a worker profile.
@@ -185,14 +164,9 @@ public class ProfileUpdateController : ControllerBase
     [HttpDelete]
     [Route("Licenses/{licenseId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> DeleteLicenses([FromRoute] Guid licenseId)
-    {
-        var license = await _workerRepository.GetLicense(licenseId);
-        _workerRepository.Delete(license);
-        await _workerRepository.SaveChangesAsync();
-        await documentService.DeleteFile(license.LicenseId);
-        return Ok();
-    }
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteLicenses([FromRoute] Guid licenseId) =>
+        ToActionResult(await workerProfileUpdateService.DeleteLicense(licenseId));
 
     /// <summary>
     /// Updates the location preferences of a worker profile.
@@ -204,7 +178,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> LocationPreferences(Guid profileId, [FromBody] List<BaseModel<Guid>> model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchLocationPreferences(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateLocationPreferences(profileId, model));
 
     /// <summary>
     /// Updates other information of a worker profile.
@@ -216,7 +190,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> OtherInformation(Guid profileId, [FromBody] WorkerProfileOtherInformationModel model) =>
-        await CommonFunctionUpdate(model, profileId, entity => Task.FromResult(entity.PatchOtherInformation(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateOtherInformation(profileId, model));
 
     /// <summary>
     /// Uploads or updates the profile image of a worker profile.
@@ -260,7 +234,7 @@ public class ProfileUpdateController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Skills(Guid profileId, [FromBody] List<string> model) =>
-        await CommonFunctionUpdate(model, profileId, async entity => entity.PatchSkills(await skillService.Canonicalize(model)));
+        await Update(model, () => workerProfileUpdateService.UpdateSkills(profileId, model));
 
     /// <summary>
     /// Uploads identification documents for a worker profile.
@@ -317,12 +291,7 @@ public class ProfileUpdateController : ControllerBase
     [HttpDelete]
     [Route("OtherDocument/{otherDocumentId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> DeleteOtherDocument([FromRoute] Guid otherDocumentId)
-    {
-        var otherDocument = await _workerRepository.GetOtherDocument(otherDocumentId);
-        _workerRepository.Delete(otherDocument);
-        await _workerRepository.SaveChangesAsync();
-        await documentService.DeleteFile(otherDocument.DocumentId);
-        return Ok();
-    }
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteOtherDocument([FromRoute] Guid otherDocumentId) =>
+        ToActionResult(await workerProfileUpdateService.DeleteOtherDocument(otherDocumentId));
 }

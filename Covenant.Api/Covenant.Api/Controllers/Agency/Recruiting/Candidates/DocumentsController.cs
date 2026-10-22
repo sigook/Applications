@@ -1,6 +1,5 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Core.BL.Interfaces.Candidates;
@@ -15,8 +14,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 [ServiceFilter(typeof(AgencyIdFilter))]
 public class DocumentsController(
     ICandidateRepository candidateRepository,
-    ICandidateService candidateService,
-    IDocumentService documentService) : Controller
+    ICandidateService candidateService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/candidates/{candidateId}/documents";
 
@@ -49,12 +47,11 @@ public class DocumentsController(
     /// <param name="id">Identifier of the document to delete.</param>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> DeleteDocument(Guid candidateId, Guid id)
     {
-        var entity = await candidateRepository.GetDocument(candidateId, id);
-        candidateRepository.Delete(entity);
-        await candidateRepository.SaveChangesAsync();
-        await documentService.DeleteFile(entity.DocumentId);
+        var result = await candidateService.DeleteCandidateDocument(candidateId, id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 }

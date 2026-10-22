@@ -54,7 +54,7 @@ public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     public class Startup
     {
-        private static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency { FullName = "Covenant" , User = FakeData.FakeUser() };
+        private static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency("Covenant", null) { User = FakeData.FakeUser() };
         public static readonly CompanyProfile FakeCompany = new CompanyProfile { Company = new User(CvnEmail.Create("company@company.com").Value), Agency = Agency , Industry = new CompanyProfileIndustry("Test") };
         public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("w@s.com").Value), Agency.Id) { Location = FakeData.FakeLocation() };
 

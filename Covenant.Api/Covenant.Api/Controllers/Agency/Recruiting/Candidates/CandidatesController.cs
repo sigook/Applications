@@ -131,7 +131,7 @@ public class CandidatesController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> BulkCandidates([FromRoute] Guid agencyId, IFormFile file)
     {
-        var result = await candidateService.BulkCandidates(agencyId, file);
+        var result = await candidateService.BulkCandidates(agencyId, file.OpenReadStream());
         if (result)
         {
             var value = result.Value;

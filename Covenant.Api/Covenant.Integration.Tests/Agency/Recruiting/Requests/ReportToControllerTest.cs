@@ -115,20 +115,9 @@ public class ReportToControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         private static readonly CompanyProfileJobPositionRate JobPositionRate = FakeData.FakeJobPositionRate(FakeCompany);
         private static readonly Guid JobPositionRateId = JobPositionRate.Id;
         public static readonly Request FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, JobPositionRateId);
-        public static readonly CompanyProfileContactPerson FakeContactPersonPost = new CompanyProfileContactPerson(FakeCompany.Id) { Title = "Sr.", FirstName = "Post" };
-        public static readonly CompanyProfileContactPerson FakeContactPersonDelete = new CompanyProfileContactPerson(FakeCompany.Id) { Title = "Sr.", FirstName = "Delete" };
-        public static readonly CompanyProfileContactPerson FakeContactPerson = new CompanyProfileContactPerson(FakeCompany.Id)
-        {
-            Title = "Sr.",
-            FirstName = "Jhon",
-            MiddleName = "Arvy",
-            LastName = "Mun",
-            Email = "con@mail.com",
-            MobileNumber = "647897654",
-            OfficeNumber = "89765432",
-            OfficeNumberExt = 777,
-            Position = "Supervisor"
-        };
+        public static readonly CompanyProfileContactPerson FakeContactPersonPost = FakeData.FakeContactPerson(FakeCompany.Id, title: "Sr.", firstName: "Post");
+        public static readonly CompanyProfileContactPerson FakeContactPersonDelete = FakeData.FakeContactPerson(FakeCompany.Id, title: "Sr.", firstName: "Delete");
+        public static readonly CompanyProfileContactPerson FakeContactPerson = FakeData.FakeContactPerson(FakeCompany.Id, title: "Sr.", firstName: "Jhon", middleName: "Arvy", lastName: "Mun", position: "Supervisor", mobileNumber: "647897654", officeNumber: "89765432", officeNumberExt: 777, email: "con@mail.com");
 
         public void Configure(IApplicationBuilder app, CovenantContext context)
         {

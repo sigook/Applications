@@ -27,8 +27,7 @@ public class ClientsController(
     IRequestRepository requestRepository,
     IAgencyService agencyService,
     ICompanyService companyService,
-    IValidator<UpdateEmailModel> updateEmailValidator,
-    IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator) : ControllerBase
+    IValidator<UpdateEmailModel> updateEmailValidator) : ControllerBase
 {
     public const string RouteName = "api/agency/recruiting/clients";
 
@@ -95,12 +94,8 @@ public class ClientsController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> VaccinationRequired([FromRoute] Guid id, [FromBody] VaccinationRequiredModel model)
     {
-        var profile = await companyRepository.GetCompanyProfile(cp => cp.Id == id);
-        if (profile is null) return BadRequest();
-        Result result = profile.UpdateVaccinationInfo(model.Required, model.Comments);
+        var result = await companyService.UpdateVaccinationInfo(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        companyRepository.Update(profile);
-        await companyRepository.SaveChangesAsync();
         return Ok();
     }
 
@@ -112,11 +107,8 @@ public class ClientsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateRequiresPermissionToSeeRequests([FromRoute] Guid id, [FromBody] CompanyProfileSettingsUpdateModel settingsUpdateModel)
     {
-        var profile = await companyRepository.GetCompanyProfile(cp => cp.Id == id);
-        if (profile is null) return NotFound();
-        profile.UpdatePermissionToSeeRequests(settingsUpdateModel.RequiresPermissionToSeeRequests);
-        companyRepository.Update(profile);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.UpdateRequiresPermissionToSeeRequests(id, settingsUpdateModel.RequiresPermissionToSeeRequests);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -128,11 +120,8 @@ public class ClientsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdatePaidHolidays([FromRoute] Guid id, [FromBody] CompanyProfileSettingsUpdateModel settingsUpdateModel)
     {
-        var profile = await companyRepository.GetCompanyProfile(cp => cp.Id == id);
-        if (profile is null) return NotFound();
-        profile.PaidHolidays = settingsUpdateModel.PaidHolidays;
-        companyRepository.Update(profile);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.UpdatePaidHolidays(id, settingsUpdateModel.PaidHolidays);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -145,12 +134,8 @@ public class ClientsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateOvertime([FromRoute] Guid id, [FromBody] CompanyProfileSettingsUpdateModel settingsUpdateModel)
     {
-        var profile = await companyRepository.GetCompanyProfile(cp => cp.Id == id);
-        if (profile is null) return NotFound();
-        var result = profile.UpdateOvertimeStartsAfter(TimeSpan.FromHours(settingsUpdateModel.OvertimeStartsAfter));
-        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        companyRepository.Update(profile);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.UpdateOvertime(id, settingsUpdateModel.OvertimeStartsAfter);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -163,14 +148,8 @@ public class ClientsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdatePaymentTerms([FromRoute] Guid id, [FromBody] CompanyProfilePaymentTermsUpdateModel model)
     {
-        var validation = await paymentTermsValidator.ValidateAsync(model);
-        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
-
-        var profile = await companyRepository.GetCompanyProfile(cp => cp.Id == id);
-        if (profile is null) return NotFound();
-        profile.PaymentTermDays = model.PaymentTermDays;
-        companyRepository.Update(profile);
-        await companyRepository.SaveChangesAsync();
+        var result = await companyService.UpdatePaymentTerms(id, model);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -223,7 +202,7 @@ public class ClientsController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> BulkCompanyData([FromRoute] Guid agencyId, IFormFile file)
     {
-        var result = await companyService.BulkCompany(agencyId, file);
+        var result = await companyService.BulkCompany(agencyId, file.OpenReadStream());
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         var value = result.Value;
         if (value.Document.Length > 0)

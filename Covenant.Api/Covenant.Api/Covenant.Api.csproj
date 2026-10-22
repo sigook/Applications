@@ -57,5 +57,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Covenant.Core.BL\Covenant.Core.BL.csproj" />
+		<ProjectReference Include="..\Covenant.Infrastructure\Covenant.Infrastructure.csproj" />
 	</ItemGroup>
 </Project>

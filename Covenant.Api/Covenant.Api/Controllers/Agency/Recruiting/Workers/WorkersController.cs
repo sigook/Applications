@@ -27,7 +27,6 @@ public class WorkersController(
     IMediator mediator,
     IWorkerRepository workerRepository,
     IWorkerService workerService,
-    IWorkerRequirementService workerRequirementService,
     IAgencyService agencyService,
     IValidator<UpdateEmailModel> updateEmailValidator) : Controller
 {
@@ -94,12 +93,8 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Dnu(Guid id)
     {
-        Guid agencyId = User.GetAgencyId();
-        var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
-        if (entity is null) return BadRequest();
-        entity.UpdateDnu();
-        workerRepository.Update(entity);
-        await workerRepository.SaveChangesAsync();
+        var result = await workerService.UpdateDnu(User.GetAgencyId(), id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -110,13 +105,8 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> IsContractor(Guid id)
     {
-        Guid agencyId = User.GetAgencyId();
-        var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
-        if (entity is null) return BadRequest();
-        var result = entity.UpdateContractor(workerRequirementService.GetMissingDocuments(entity));
+        var result = await workerService.UpdateContractor(User.GetAgencyId(), id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        workerRepository.Update(entity);
-        await workerRepository.SaveChangesAsync();
         return Ok();
     }
 
@@ -127,13 +117,8 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> IsSubcontractor(Guid id)
     {
-        Guid agencyId = User.GetAgencyId();
-        var entity = await workerRepository.GetProfile(w => w.Id == id && w.AgencyId == agencyId);
-        if (entity is null) return BadRequest();
-        var result = entity.UpdateSubcontractor(workerRequirementService.GetMissingDocuments(entity));
+        var result = await workerService.UpdateSubcontractor(User.GetAgencyId(), id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        workerRepository.Update(entity);
-        await workerRepository.SaveChangesAsync();
         return Ok();
     }
 
@@ -144,16 +129,13 @@ public class WorkersController(
     [HttpPut("{workerProfileId:guid}/Email")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Email([FromServices] IUserAccountService service, [FromRoute] Guid workerProfileId, [FromBody] UpdateEmailModel model)
+    public async Task<IActionResult> Email([FromRoute] Guid workerProfileId, [FromBody] UpdateEmailModel model)
     {
         var validation = await updateEmailValidator.ValidateAsync(model);
         if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
 
-        Guid agencyId = User.GetAgencyId();
-        var profile = await workerRepository.GetProfile(c => c.Id == workerProfileId && c.AgencyId == agencyId);
-        if (profile is null) return BadRequest();
-        var rUpdate = await service.UpdateUserEmail(new UpdateEmailModel(profile.WorkerId) { NewEmail = model?.NewEmail });
-        if (!rUpdate) return BadRequest(ModelState.AddErrors(rUpdate.Errors));
+        var result = await workerService.UpdateEmail(User.GetAgencyId(), workerProfileId, model?.NewEmail);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -164,12 +146,8 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateApprovedToWork(Guid id)
     {
-        var entity = await workerRepository.GetProfile(p => p.Id == id);
-        if (entity is null || entity.AgencyId != User.GetAgencyId()) return BadRequest();
-        Result result = entity.UpdateApprovedToWork(workerRequirementService.GetMissing(entity));
+        var result = await workerService.UpdateApprovedToWork(User.GetAgencyId(), id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        workerRepository.Update(entity);
-        await workerRepository.SaveChangesAsync();
         return Ok();
     }
 
@@ -181,11 +159,8 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateExternalId(Guid id, [FromBody] WorkerProfileDetailModel model)
     {
-        var entity = await workerRepository.GetProfile(w => w.Id == id);
-        if (entity is null) return NotFound();
-        entity.ExternalId = model?.ExternalId;
-        workerRepository.Update(entity);
-        await workerRepository.SaveChangesAsync();
+        var result = await workerService.UpdateExternalId(id, model?.ExternalId);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 
@@ -197,11 +172,8 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateWcCode(Guid id, [FromBody] WorkerProfileDetailModel model)
     {
-        var entity = await workerRepository.GetProfile(w => w.Id == id);
-        if (entity is null) return NotFound();
-        entity.WcCode = model?.WcCode;
-        workerRepository.Update(entity);
-        await workerRepository.SaveChangesAsync();
+        var result = await workerService.UpdateWcCode(id, model?.WcCode);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
 

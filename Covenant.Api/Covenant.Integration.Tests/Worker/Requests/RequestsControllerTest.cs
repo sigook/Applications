@@ -214,9 +214,8 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
         public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency
         {
-            User = new User(CvnEmail.Create("agency@mail.com").Value),
-            Logo = new CovenantFile("logo.png")
-        };
+            User = new User(CvnEmail.Create("agency@mail.com").Value)
+        }.With(a => a.ChangeLogo(new CovenantFile("logo.png")));
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("company@mail.com").Value), Agency = FakeAgency, Logo = new CovenantFile() , Industry = new CompanyProfileIndustry("Test") };
         public static readonly WorkerProfile WorkerProfile;
         public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;

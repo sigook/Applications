@@ -50,7 +50,6 @@ public static class TestStartupExtensions
         services.AddHttpContextAccessor();
         services.AddHttpClient();
         services.AddSingleton(Mock.Of<IDocumentService>());
-        services.AddSingleton(Mock.Of<IPushNotifications>());
         services.AddSingleton(new AzureStorageConfiguration([]));
         services.AddSingleton(Mock.Of<Rates>());
         services.AddSingleton(Mock.Of<TimeLimits>());
@@ -64,7 +63,7 @@ public static class TestStartupExtensions
         mockSendGridService.Setup(ss => ss.SendEmail(It.IsAny<SendGridModel>())).ReturnsAsync(Result.Ok());
         mockSendGridService.Setup(ss => ss.SendTemplateBatch(It.IsAny<string>(), It.IsAny<IReadOnlyCollection<TemplateRecipient>>())).ReturnsAsync(Result.Ok());
         services.AddSingleton(mockSendGridService.Object);
-        services.AddSingleton(Mock.Of<ISigookBusClient>());
+        services.AddSingleton(Mock.Of<IMessagePublisher>());
         services.AddSingleton(UserAdministrationMock.Create().Object);
         var mockServiceBusConfiguration = new Mock<IOptions<ServiceBusConfiguration>>();
         mockServiceBusConfiguration.Setup(m => m.Value).Returns(new ServiceBusConfiguration());

@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Common.Models.Agency;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,22 +28,9 @@ public class PersonnelAgenciesController : ControllerBase
     /// <param name="repository">Agency repository.</param>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> Put(Guid id, [FromServices] IAgencyRepository repository)
+    public async Task<IActionResult> Put(Guid id, [FromServices] IAgencyService agencyService)
     {
-        foreach (var personnel in await repository.GetPersonnelByUserId(User.GetUserId()))
-        {
-            if (personnel.IsPrimary)
-            {
-                personnel.SetToNotPrimary();
-                repository.Update(personnel);
-            }
-
-            if (personnel.Id != id) continue;
-            personnel.SetToPrimary();
-            repository.Update(personnel);
-        }
-
-        await repository.SaveChangesAsync();
+        await agencyService.SetPrimaryPersonnelAgency(User.GetUserId(), id);
         return Ok();
     }
 }

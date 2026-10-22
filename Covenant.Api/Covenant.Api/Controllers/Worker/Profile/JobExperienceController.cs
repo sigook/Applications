@@ -1,7 +1,6 @@
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Functionals;
 using Covenant.Common.Models.Worker;
-using Covenant.Common.Repositories.Workers;
+using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +10,9 @@ namespace Covenant.Api.Controllers.Worker.Profile;
 [ApiController]
 [Authorize]
 [Route(RouteName)]
-public class JobExperienceController : ControllerBase
+public class JobExperienceController(IWorkerProfileUpdateService workerProfileUpdateService) : ControllerBase
 {
     public const string RouteName = "api/worker/profile/{profileId}/jobexperience";
-
-    private readonly IWorkerRepository _workerRepository;
-    public JobExperienceController(IWorkerRepository workerRepository) => _workerRepository = workerRepository;
 
     /// <summary>
     /// Adds a job experience entry to a worker profile.
@@ -29,12 +25,8 @@ public class JobExperienceController : ControllerBase
     public async Task<IActionResult> Post(Guid profileId, [FromBody] WorkerProfileJobExperienceModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var entity = await _workerRepository.GetProfile(p => p.Id == profileId);
-        if (entity is null) return BadRequest();
-        var result = entity.AddJobExperience(model);
+        var result = await workerProfileUpdateService.AddJobExperience(profileId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        _workerRepository.Update(entity);
-        await _workerRepository.SaveChangesAsync();
         return Ok();
     }
 
@@ -50,12 +42,8 @@ public class JobExperienceController : ControllerBase
     public async Task<IActionResult> Put(Guid profileId, Guid id, [FromBody] WorkerProfileJobExperienceModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var entity = await _workerRepository.GetProfile(p => p.Id == profileId);
-        if (entity is null) return BadRequest();
-        Result result = entity.UpdateJobExperience(id, model);
+        var result = await workerProfileUpdateService.UpdateJobExperience(profileId, id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        _workerRepository.Update(entity);
-        await _workerRepository.SaveChangesAsync();
         return Ok();
     }
 
@@ -69,12 +57,8 @@ public class JobExperienceController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete(Guid profileId, Guid id)
     {
-        var entity = await _workerRepository.GetProfile(p => p.Id == profileId);
-        if (entity is null) return BadRequest();
-        Result result = entity.DeleteJobExperience(id);
+        var result = await workerProfileUpdateService.DeleteJobExperience(profileId, id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        _workerRepository.Update(entity);
-        await _workerRepository.SaveChangesAsync();
         return Ok();
     }
 }
