@@ -34,78 +34,213 @@ public class WorkerProfile :
 
     public WorkerProfile(User user, Guid agencyId) : this(user) => AgencyId = agencyId;
 
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public int NumberId { get; set; }
-    public Guid WorkerId { get; set; }
-    public Guid AgencyId { get; set; }
-    public Guid? ProfileImageId { get; set; }
-    public string FirstName { get; set; }
-    public string MiddleName { get; set; }
-    public string LastName { get; set; }
-    public string SecondLastName { get; set; }
-    public DateTime BirthDay { get; set; }
-    public Guid? GenderId { get; set; }
-    public bool HasVehicle { get; set; }
-    public string SocialInsurance { get; set; }
+    public static WorkerProfile Register(WorkerProfileCreateModel model, Agency.Agency agency, User user)
+    {
+        var entity = new WorkerProfile
+        {
+            AgencyId = agency.Id,
+            Agency = agency,
+            Worker = user,
+            WorkerId = user.Id,
+            ApprovedToWork = false,
+            FirstName = model.FirstName,
+            MiddleName = model.MiddleName,
+            LastName = model.LastName,
+            SecondLastName = model.SecondLastName,
+            BirthDay = model.BirthDay,
+            GenderId = model.Gender?.Id == Guid.Empty ? null : model.Gender?.Id,
+            HasVehicle = model.HasVehicle,
+            MobileNumber = model.MobileNumber,
+            Phone = model.Phone,
+            PhoneExt = model.PhoneExt,
+            Location = new Location
+            {
+                CityId = model.Location.City.Id,
+                Address = model.Location.Address,
+                PostalCode = model.Location.PostalCode
+            },
+            LiftId = model.Lift?.Id,
+            IdentificationNumber1 = model.IdentificationNumber1,
+            IdentificationType1Id = model.IdentificationType1?.Id,
+            IdentificationNumber2 = model.IdentificationNumber2,
+            IdentificationType2Id = model.IdentificationType2?.Id,
+            HaveAnyHealthProblem = model.HaveAnyHealthProblem,
+            HealthProblem = model.HealthProblem,
+            OtherHealthProblem = model.OtherHealthProblem,
+            ContactEmergencyName = model.ContactEmergencyName,
+            ContactEmergencyLastName = model.ContactEmergencyLastName,
+            ContactEmergencyPhone = model.ContactEmergencyPhone
+        };
+        entity.LocationId = entity.Location.Id;
+
+        if (!string.IsNullOrEmpty(model.ProfileImage?.FileName))
+        {
+            entity.ProfileImage = new CovenantFile(model.ProfileImage.FileName, model.ProfileImage.Description);
+            entity.ProfileImageId = entity.ProfileImage.Id;
+        }
+
+        if (!string.IsNullOrEmpty(model.IdentificationType1File?.FileName))
+        {
+            entity.IdentificationType1File = new CovenantFile(model.IdentificationType1File.FileName, model.IdentificationType1File.Description);
+            entity.IdentificationType1FileId = entity.IdentificationType1File.Id;
+        }
+
+        if (!string.IsNullOrEmpty(model.IdentificationType2File?.FileName))
+        {
+            entity.IdentificationType2File = new CovenantFile(model.IdentificationType2File.FileName, model.IdentificationType2File.Description);
+            entity.IdentificationType2FileId = entity.IdentificationType2File.Id;
+        }
+
+        if (!string.IsNullOrEmpty(model.PoliceCheckBackGround?.FileName))
+        {
+            entity.PoliceCheckBackGround = new CovenantFile(model.PoliceCheckBackGround.FileName, model.PoliceCheckBackGround.Description);
+            entity.PoliceCheckBackGroundId = entity.PoliceCheckBackGround.Id;
+        }
+
+        if (!string.IsNullOrEmpty(model.Resume?.FileName))
+        {
+            entity.Resume = new CovenantFile(model.Resume.FileName, model.Resume.Description);
+            entity.ResumeId = entity.Resume.Id;
+        }
+
+        entity.Availabilities = [.. model.Availabilities
+            .Where(a => a.Id != Guid.Empty)
+            .Select(a => new WorkerProfileAvailability { AvailabilityId = a.Id, WorkerProfile = entity })];
+
+        entity.AvailabilityTimes = [.. model.AvailabilityTimes
+            .Where(t => t.Id != Guid.Empty)
+            .Select(t => new WorkerProfileAvailabilityTime { AvailabilityTimeId = t.Id, WorkerProfile = entity })];
+
+        entity.AvailabilityDays = [.. model.AvailabilityDays
+            .Where(d => d.Id != Guid.Empty)
+            .Select(d => new WorkerProfileAvailabilityDay { DayId = d.Id, WorkerProfile = entity })];
+
+        entity.LocationPreferences = [.. model.LocationPreferences
+            .Where(c => c.Id != Guid.Empty)
+            .Select(c => new WorkerProfileLocationPreference { CityId = c.Id, WorkerProfile = entity })];
+
+        entity.Languages = [.. model.Languages
+            .Where(l => l.Id != Guid.Empty)
+            .Select(l => new WorkerProfileLanguage { LanguageId = l.Id, WorkerProfile = entity })];
+
+        entity.Skills = [.. model.Skills.Select(s => new WorkerProfileSkill { Skill = s.Skill, WorkerProfile = entity })];
+
+        entity.Licenses = [.. model.Licenses
+            .Select(l =>
+            {
+                var file = new CovenantFile(l.License.FileName, l.License.Description);
+                return new WorkerProfileLicense
+                {
+                    License = file,
+                    LicenseId = file.Id,
+                    Number = l.Number,
+                    Issued = l.Issued,
+                    Expires = l.Expires,
+                    WorkerProfile = entity
+                };
+            })];
+
+        entity.Certificates = [.. model.Certificates
+            .Select(c =>
+            {
+                var file = new CovenantFile(c.FileName, c.Description);
+                return new WorkerProfileCertificate
+                {
+                    Certificate = file,
+                    CertificateId = file.Id,
+                    WorkerProfile = entity
+                };
+            })];
+
+        foreach (var document in model.OtherDocuments)
+        {
+            if (string.IsNullOrEmpty(document?.FileName)) continue;
+            var file = new CovenantFile(document.FileName, document.Description);
+            entity.OtherDocuments.Add(WorkerProfileOtherDocument.Create(entity.Id, file).Value);
+        }
+
+        return entity;
+    }
+
+    public void AssignTo(User worker, Guid agencyId)
+    {
+        Worker = worker;
+        WorkerId = worker.Id;
+        AgencyId = agencyId;
+    }
+
+    public Guid Id { get; internal set; } = Guid.NewGuid();
+    public int NumberId { get; internal set; }
+    public Guid WorkerId { get; private set; }
+    public Guid AgencyId { get; internal set; }
+    public Guid? ProfileImageId { get; private set; }
+    public string FirstName { get; internal set; }
+    public string MiddleName { get; internal set; }
+    public string LastName { get; internal set; }
+    public string SecondLastName { get; private set; }
+    public DateTime BirthDay { get; private set; }
+    public Guid? GenderId { get; private set; }
+    public bool HasVehicle { get; private set; }
+    public string SocialInsurance { get; internal set; }
     public string MaskedSocialInsurance => SocialInsurance.MaskSIN();
-    public bool SocialInsuranceExpire { get; set; }
-    public DateTime? DueDate { get; set; }
-    public Guid? SocialInsuranceFileId { get; set; }
-    public string IdentificationNumber1 { get; set; }
-    public Guid? IdentificationType1Id { get; set; }
-    public Guid? IdentificationType1FileId { get; set; }
-    public string IdentificationNumber2 { get; set; }
-    public Guid? IdentificationType2Id { get; set; }
-    public Guid? IdentificationType2FileId { get; set; }
-    public bool HavePoliceCheckBackground { get; set; }
-    public Guid? PoliceCheckBackGroundId { get; set; }
-    public Guid? ResumeId { get; set; }
-    public Guid LocationId { get; set; }
-    public string MobileNumber { get; set; }
-    public string Phone { get; set; }
-    public int? PhoneExt { get; set; }
-    public Guid? LiftId { get; set; }
-    public bool HaveAnyHealthProblem { get; set; }
-    public string HealthProblem { get; set; }
-    public string ContactEmergencyPhone { get; set; }
-    public string OtherHealthProblem { get; set; }
-    public string ContactEmergencyName { get; set; }
-    public string ContactEmergencyLastName { get; set; }
-    public bool ApprovedToWork { get; set; }
-    public bool Dnu { get; set; } = false;
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-    public string CreatedBy { get; set; }
-    public bool IsSubcontractor { get; set; }
-    public string PunchCardId { get; set; }
-    public bool IsContractor { get; set; } = false;
+    public bool SocialInsuranceExpire { get; internal set; }
+    public DateTime? DueDate { get; internal set; }
+    public Guid? SocialInsuranceFileId { get; private set; }
+    public string IdentificationNumber1 { get; internal set; }
+    public Guid? IdentificationType1Id { get; internal set; }
+    public Guid? IdentificationType1FileId { get; private set; }
+    public string IdentificationNumber2 { get; private set; }
+    public Guid? IdentificationType2Id { get; private set; }
+    public Guid? IdentificationType2FileId { get; private set; }
+    public bool HavePoliceCheckBackground { get; internal set; }
+    public Guid? PoliceCheckBackGroundId { get; private set; }
+    public Guid? ResumeId { get; private set; }
+    public Guid LocationId { get; private set; }
+    public string MobileNumber { get; private set; }
+    public string Phone { get; private set; }
+    public int? PhoneExt { get; private set; }
+    public Guid? LiftId { get; private set; }
+    public bool HaveAnyHealthProblem { get; private set; }
+    public string HealthProblem { get; private set; }
+    public string ContactEmergencyPhone { get; private set; }
+    public string OtherHealthProblem { get; private set; }
+    public string ContactEmergencyName { get; private set; }
+    public string ContactEmergencyLastName { get; private set; }
+    public bool ApprovedToWork { get; internal set; }
+    public bool Dnu { get; private set; } = false;
+    public DateTime CreatedAt { get; private set; } = DateTime.Now;
+    public string CreatedBy { get; internal set; }
+    public bool IsSubcontractor { get; internal set; }
+    public string PunchCardId { get; internal set; }
+    public bool IsContractor { get; internal set; } = false;
     public string ExternalId { get; private set; }
     public string WcCode { get; private set; }
-    public WorkerProfileTaxCategory WorkerProfileTaxCategory { get; set; }
-    public Gender Gender { get; set; }
-    public User Worker { get; set; }
-    public Agency.Agency Agency { get; set; }
-    public CovenantFile ProfileImage { get; set; }
-    public CovenantFile SocialInsuranceFile { get; set; }
-    public IdentificationType IdentificationType1 { get; set; }
-    public CovenantFile IdentificationType1File { get; set; }
-    public CovenantFile IdentificationType2File { get; set; }
-    public IdentificationType IdentificationType2 { get; set; }
-    public CovenantFile PoliceCheckBackGround { get; set; }
-    public CovenantFile Resume { get; set; }
-    public Location Location { get; set; }
-    public Lift Lift { get; set; }
-    public List<WorkerProfileOtherDocument> OtherDocuments { get; set; } = [];
-    public List<WorkerProfileNote> Notes { get; set; } = [];
-    public List<WorkerProfileAvailability> Availabilities { get; set; } = [];
-    public List<WorkerProfileAvailabilityTime> AvailabilityTimes { get; set; } = [];
-    public List<WorkerProfileAvailabilityDay> AvailabilityDays { get; set; } = [];
-    public List<WorkerProfileLocationPreference> LocationPreferences { get; set; } = [];
-    public List<WorkerProfileLanguage> Languages { get; set; } = [];
-    public List<WorkerProfileSkill> Skills { get; set; } = [];
-    public List<WorkerProfileLicense> Licenses { get; set; } = [];
-    public List<WorkerProfileCertificate> Certificates { get; set; } = [];
-    public List<WorkerProfileJobExperience> JobExperiences { get; set; } = [];
-    public List<Request.WorkerRequest> WorkerRequests { get; set; } = [];
+    public WorkerProfileTaxCategory WorkerProfileTaxCategory { get; internal set; }
+    public Gender Gender { get; private set; }
+    public User Worker { get; private set; }
+    public Agency.Agency Agency { get; internal set; }
+    public CovenantFile ProfileImage { get; private set; }
+    public CovenantFile SocialInsuranceFile { get; private set; }
+    public IdentificationType IdentificationType1 { get; internal set; }
+    public CovenantFile IdentificationType1File { get; internal set; }
+    public CovenantFile IdentificationType2File { get; internal set; }
+    public IdentificationType IdentificationType2 { get; internal set; }
+    public CovenantFile PoliceCheckBackGround { get; internal set; }
+    public CovenantFile Resume { get; internal set; }
+    public Location Location { get; internal set; }
+    public Lift Lift { get; private set; }
+    public List<WorkerProfileOtherDocument> OtherDocuments { get; private set; } = [];
+    public List<WorkerProfileNote> Notes { get; private set; } = [];
+    public List<WorkerProfileAvailability> Availabilities { get; private set; } = [];
+    public List<WorkerProfileAvailabilityTime> AvailabilityTimes { get; internal set; } = [];
+    public List<WorkerProfileAvailabilityDay> AvailabilityDays { get; internal set; } = [];
+    public List<WorkerProfileLocationPreference> LocationPreferences { get; internal set; } = [];
+    public List<WorkerProfileLanguage> Languages { get; internal set; } = [];
+    public List<WorkerProfileSkill> Skills { get; internal set; } = [];
+    public List<WorkerProfileLicense> Licenses { get; internal set; } = [];
+    public List<WorkerProfileCertificate> Certificates { get; internal set; } = [];
+    public List<WorkerProfileJobExperience> JobExperiences { get; internal set; } = [];
+    public List<Request.WorkerRequest> WorkerRequests { get; private set; } = [];
 
     public string FullName =>
         FirstName +

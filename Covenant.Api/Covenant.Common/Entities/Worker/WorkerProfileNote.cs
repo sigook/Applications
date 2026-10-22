@@ -9,14 +9,14 @@ namespace Covenant.Common.Entities.Worker
         {
         }
 
-        public Guid Id { get; set; }
-        public string Note { get; set; }
-        public string CreatedBy { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public WorkerProfile WorkerProfile { get; set; }
-        public Guid WorkerProfileId { get; set; }
+        public Guid Id { get; private set; }
+        public string Note { get; private set; }
+        public string CreatedBy { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public WorkerProfile WorkerProfile { get; private set; }
+        public Guid WorkerProfileId { get; private set; }
 
-        public static Result<WorkerProfileNote> Create(Guid workerProfileId, string note, string createdBy)
+        public static Result<WorkerProfileNote> Create(Guid workerProfileId, string note, string createdBy, DateTime? createdAt = null)
         {
             if (string.IsNullOrWhiteSpace(note))
                 return Result.Fail<WorkerProfileNote>(ValidationMessages.RequiredMsg(nameof(note)));
@@ -25,7 +25,7 @@ namespace Covenant.Common.Entities.Worker
             return Result.Ok(new WorkerProfileNote
             {
                 Id = Guid.NewGuid(),
-                CreatedAt = DateTime.Now,
+                CreatedAt = createdAt ?? DateTime.Now,
                 WorkerProfileId = workerProfileId,
                 Note = note,
                 CreatedBy = createdBy

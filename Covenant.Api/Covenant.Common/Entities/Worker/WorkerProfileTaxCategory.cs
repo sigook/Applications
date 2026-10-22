@@ -4,10 +4,28 @@ namespace Covenant.Common.Entities.Worker;
 
 public class WorkerProfileTaxCategory
 {
-    public Guid WorkerProfileId { get; set; }
-    public TaxCategory? FederalCategory { get; set; }
-    public TaxCategory? ProvincialCategory { get; set; }
-    public decimal? Cpp { get; set; }
-    public decimal? Ei { get; set; }
-    public WorkerProfile WorkerProfile { get; set; }
+    private WorkerProfileTaxCategory()
+    {
+    }
+
+    public WorkerProfileTaxCategory(Guid workerProfileId) => WorkerProfileId = workerProfileId;
+
+    public Guid WorkerProfileId { get; private set; }
+    public TaxCategory? FederalCategory { get; internal set; }
+    public TaxCategory? ProvincialCategory { get; private set; }
+    public decimal? Cpp { get; private set; }
+    public decimal? Ei { get; private set; }
+    public WorkerProfile WorkerProfile { get; private set; }
+
+    public void UpdateCategories(TaxCategory? federalCategory, TaxCategory? provincialCategory)
+    {
+        FederalCategory = federalCategory;
+        ProvincialCategory = provincialCategory;
+    }
+
+    public void UpdateRates(decimal? cpp, decimal? ei)
+    {
+        Cpp = cpp;
+        Ei = ei;
+    }
 }

@@ -2,9 +2,9 @@
 {
     public class WorkerProfileSkill
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public WorkerProfile WorkerProfile { get; set; }
-        public Guid WorkerProfileId { get; set; }
-        public string Skill { get; set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public WorkerProfile WorkerProfile { get; internal set; }
+        public Guid WorkerProfileId { get; private set; }
+        public string Skill { get; internal set; }
     }
 }

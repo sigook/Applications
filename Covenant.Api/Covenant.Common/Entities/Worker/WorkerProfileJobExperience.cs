@@ -13,15 +13,15 @@ namespace Covenant.Common.Entities.Worker
         private const int DutiesMinLength = 2;
         private const int DutiesMaxLength = 5000;
 
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; private set; } = Guid.NewGuid();
         public string Company { get; private set; }
         public string Supervisor { get; private set; }
-        public string Duties { get; set; }
+        public string Duties { get; internal set; }
         public DateTime StartDate { get; private set; }
         public DateTime? EndDate { get; private set; }
         public bool IsCurrentJobPosition { get; private set; }
-        public Guid WorkerProfileId { get; set; }
-        public WorkerProfile WorkerProfile { get; set; }
+        public Guid WorkerProfileId { get; internal set; }
+        public WorkerProfile WorkerProfile { get; internal set; }
 
         public static Result<WorkerProfileJobExperience> Create(string company, string supervisor, string duties, DateTime startDate, DateTime? endDate, bool isCurrentPosition)
         {

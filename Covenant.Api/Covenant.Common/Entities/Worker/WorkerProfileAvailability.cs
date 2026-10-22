@@ -12,10 +12,10 @@
             AvailabilityId = availabilityId;
         }
 
-        public Guid WorkerProfileId { get; set; }
-        public WorkerProfile WorkerProfile { get; set; }
-        public Guid AvailabilityId { get; set; }
-        public Availability Availability { get; set; }
+        public Guid WorkerProfileId { get; private set; }
+        public WorkerProfile WorkerProfile { get; internal set; }
+        public Guid AvailabilityId { get; internal set; }
+        public Availability Availability { get; private set; }
 
         public bool Equals(WorkerProfileAvailability other)
         {

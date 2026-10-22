@@ -2,10 +2,10 @@
 {
     public class WorkerProfileCertificate
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public Guid WorkerProfileId { get; set; }
-        public WorkerProfile WorkerProfile { get; set; }
-        public Guid CertificateId { get; set; }
-        public CovenantFile Certificate { get; set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public Guid WorkerProfileId { get; private set; }
+        public WorkerProfile WorkerProfile { get; internal set; }
+        public Guid CertificateId { get; internal set; }
+        public CovenantFile Certificate { get; internal set; }
     }
 }

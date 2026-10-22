@@ -15,7 +15,7 @@ public class WorkerComment
         Rate = ValidateRateValues(rate);
     }
 
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public string Comment { get; private set; }
     public decimal Rate { get; private set; }
     public WorkerProfile WorkerProfile { get; private set; }
@@ -23,7 +23,7 @@ public class WorkerComment
     public CompanyProfile CompanyProfile { get; private set; }
     public Guid? CompanyProfileId { get; private set; }
     public int NumberId { get; private set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; private set; } = DateTime.Now;
 
     public static WorkerComment CommentPostByAgency(Guid workerProfileId, string comment, decimal rate) =>
         new(workerProfileId, comment, rate) { CompanyProfileId = null };

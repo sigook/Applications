@@ -182,8 +182,7 @@ public class CandidateService : ICandidateService
         });
         if (!user) return Result.Fail(user.Errors);
 
-        profile.Worker = user.Value;
-        profile.AgencyId = agency.Id;
+        profile.AssignTo(user.Value, agency.Id);
 
         candidateRepository.DeleteRange(candidate.Documents);
 
@@ -194,10 +193,9 @@ public class CandidateService : ICandidateService
         {
             foreach (var note in candidate.Notes)
             {
-                var workerProfileNote = WorkerProfileNote.Create(profile.Id, note.Note.Note, note.Note.CreatedBy);
+                var workerProfileNote = WorkerProfileNote.Create(profile.Id, note.Note.Note, note.Note.CreatedBy, note.Note.CreatedAt);
                 if (workerProfileNote)
                 {
-                    workerProfileNote.Value.CreatedAt = note.Note.CreatedAt;
                     await workerRepository.Create(workerProfileNote.Value);
                 }
             }

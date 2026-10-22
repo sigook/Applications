@@ -1,4 +1,5 @@
 using Covenant.Common.Entities;
+using Covenant.Tests.Utils;
 using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
@@ -76,7 +77,7 @@ public class WorkerRequirementServiceTest
         var worker = new WorkerProfile
         {
             Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "CA" } } } },
-            WorkerProfileTaxCategory = new WorkerProfileTaxCategory { FederalCategory = TaxCategory.Cc0 }
+            WorkerProfileTaxCategory = new WorkerProfileTaxCategory(Guid.Empty).With(t => t.UpdateCategories(TaxCategory.Cc0, null))
         };
         Assert.DoesNotContain(WorkerRequirement.TaxCategory, _sut.GetMissing(worker));
     }

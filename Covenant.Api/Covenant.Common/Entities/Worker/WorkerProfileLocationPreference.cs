@@ -2,9 +2,9 @@
 {
     public class WorkerProfileLocationPreference
     {
-        public WorkerProfile WorkerProfile { get; set; }
-        public Guid WorkerProfileId { get; set; }
-        public City City { get; set; }
-        public Guid CityId { get; set; }
+        public WorkerProfile WorkerProfile { get; internal set; }
+        public Guid WorkerProfileId { get; private set; }
+        public City City { get; internal set; }
+        public Guid CityId { get; internal set; }
     }
 }

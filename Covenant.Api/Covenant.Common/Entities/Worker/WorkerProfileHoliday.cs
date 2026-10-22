@@ -17,9 +17,9 @@ namespace Covenant.Common.Entities.Worker
         }
 
         public Guid Id { get; private set; }
-        public WorkerProfile WorkerProfile { get; set; }
+        public WorkerProfile WorkerProfile { get; private set; }
         public Guid WorkerProfileId { get; private set; }
-        public Holiday Holiday { get; set; }
+        public Holiday Holiday { get; private set; }
         public Guid HolidayId { get; private set; }
         public decimal StatPaidWorker
         {

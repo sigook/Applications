@@ -9,6 +9,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="Covenant.Tests" />
+		<InternalsVisibleTo Include="Covenant.Integration.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Update="Resources\ApiResources.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>

@@ -444,17 +444,12 @@ public class AgencyService : IAgencyService
             var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
             if (workerProfileTaxCategory != null)
             {
-                workerProfileTaxCategory.FederalCategory = model.FederalTaxCategory;
-                workerProfileTaxCategory.ProvincialCategory = model.ProvincialTaxCategory;
+                workerProfileTaxCategory.UpdateCategories(model.FederalTaxCategory, model.ProvincialTaxCategory);
             }
             else
             {
-                var newTaxCategory = new WorkerProfileTaxCategory
-                {
-                    WorkerProfileId = workerProfileId,
-                    FederalCategory = model.FederalTaxCategory,
-                    ProvincialCategory = model.ProvincialTaxCategory
-                };
+                var newTaxCategory = new WorkerProfileTaxCategory(workerProfileId);
+                newTaxCategory.UpdateCategories(model.FederalTaxCategory, model.ProvincialTaxCategory);
                 await workerRepository.Create(newTaxCategory);
             }
             await workerRepository.SaveChangesAsync();
@@ -466,17 +461,12 @@ public class AgencyService : IAgencyService
         var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
         if (workerProfileTaxCategory != null)
         {
-            workerProfileTaxCategory.Cpp = model.Cpp;
-            workerProfileTaxCategory.Ei = model.Ei;
+            workerProfileTaxCategory.UpdateRates(model.Cpp, model.Ei);
         }
         else
         {
-            var newTaxCategory = new WorkerProfileTaxCategory
-            {
-                WorkerProfileId = workerProfileId,
-                Cpp = model.Cpp,
-                Ei = model.Ei
-            };
+            var newTaxCategory = new WorkerProfileTaxCategory(workerProfileId);
+            newTaxCategory.UpdateRates(model.Cpp, model.Ei);
             await workerRepository.Create(newTaxCategory);
         }
         await workerRepository.SaveChangesAsync();

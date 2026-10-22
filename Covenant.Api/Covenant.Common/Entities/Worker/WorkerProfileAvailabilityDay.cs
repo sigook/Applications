@@ -2,9 +2,9 @@
 {
     public class WorkerProfileAvailabilityDay
     {
-        public WorkerProfile WorkerProfile { get; set; }
-        public Guid WorkerProfileId { get; set; }
-        public Day Day { get; set; }
-        public Guid DayId { get; set; }
+        public WorkerProfile WorkerProfile { get; internal set; }
+        public Guid WorkerProfileId { get; private set; }
+        public Day Day { get; internal set; }
+        public Guid DayId { get; internal set; }
     }
 }
