@@ -20,20 +20,20 @@ public class Deal
         DocumentId = documentId;
     }
 
-    public Guid Id { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public Guid UserId { get; set; }
-    public User User { get; set; }
-    public Guid CompanyProfileId { get; set; }
-    public CompanyProfile CompanyProfile { get; set; }
-    public DateTime Date { get; set; }
-    public decimal Value { get; set; }
-    public DealType Type { get; set; }
-    public DealStatus Status { get; set; }
-    public Guid? DocumentId { get; set; }
-    public CovenantFile Document { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public Guid Id { get; private set; }
+    public string Title { get; private set; } = string.Empty;
+    public Guid UserId { get; private set; }
+    public User User { get; private set; }
+    public Guid CompanyProfileId { get; private set; }
+    public CompanyProfile CompanyProfile { get; private set; }
+    public DateTime Date { get; private set; }
+    public decimal Value { get; private set; }
+    public DealType Type { get; private set; }
+    public DealStatus Status { get; private set; }
+    public Guid? DocumentId { get; internal set; }
+    public CovenantFile Document { get; private set; }
+    public DateTime CreatedAt { get; private set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; private set; } = DateTime.Now;
 
     public void Update(string title, DateTime date, decimal value, DealType type, DealStatus status, Guid? documentId)
     {
@@ -45,4 +45,6 @@ public class Deal
         DocumentId = documentId;
         UpdatedAt = DateTime.Now;
     }
+
+    public void AttachDocument(CovenantFile document) => Document = document;
 }

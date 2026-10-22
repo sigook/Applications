@@ -15,9 +15,9 @@ public class ReportSubcontractorPublicHoliday
     public Guid Id { get; private set; } = Guid.NewGuid();
     public ReportSubcontractor ReportSubcontractor { get; private set; }
     public Guid ReportSubcontractorId { get; private set; }
-    public DateTime Holiday { get; set; }
-    public decimal Amount { get; set; }
-    public string Description { get; set; }
+    public DateTime Holiday { get; private set; }
+    public decimal Amount { get; private set; }
+    public string Description { get; private set; }
 
     public void AssignTo(ReportSubcontractor reportSubcontractor)
     {

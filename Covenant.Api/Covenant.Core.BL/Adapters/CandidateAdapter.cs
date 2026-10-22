@@ -35,14 +35,8 @@ public class CandidateAdapter(
         var source = sources.FirstOrDefault(s => s.Value.Equals(model.Source, StringComparison.OrdinalIgnoreCase))
             ?? sources.FirstOrDefault(s => s.Value.Equals("Other", StringComparison.OrdinalIgnoreCase));
         var bulkCandidate = new BulkCandidate();
-        var candidate = new Candidate(agencyId, model.FullName)
-        {
-            Address = model.Address,
-            GenderId = gender?.Id,
-            HasVehicle = false,
-            SourceId = source?.Id,
-            ResidencyStatus = model.Status
-        };
+        var candidate = new Candidate(agencyId, model.FullName);
+        candidate.UpdateProfile(model.FullName, model.Address, null, model.Status, gender?.Id, false, source?.Id);
         bulkCandidate.Candidate = candidate;
         bulkCandidate.CandidatesPhone = new CandidatePhone(candidate.Id, model.Phone);
         var skills = await skillService.Canonicalize([.. (model.Skills ?? string.Empty).Split(','), request?.JobTitle]);
@@ -68,16 +62,9 @@ public class CandidateAdapter(
     public Result<Candidate> ConvertCandidateModelToCandidate(CandidateCreateModel model, Guid agencyId)
     {
         var recruiter = currentUserService.GetNickname();
-        var candidate = new Candidate(agencyId, model.Name)
-        {
-            Address = model.Address,
-            CityId = model.City?.Id,
-            GenderId = model.Gender?.Id,
-            HasVehicle = model.HasVehicle,
-            SourceId = model.SourceId,
-            Recruiter = recruiter,
-            ResidencyStatus = model.ResidencyStatus,
-        };
+        var candidate = new Candidate(agencyId, model.Name);
+        candidate.UpdateProfile(model.Name, model.Address, model.City?.Id, model.ResidencyStatus, model.Gender?.Id, model.HasVehicle, model.SourceId);
+        candidate.AssignRecruiter(recruiter);
         if (!string.IsNullOrEmpty(model.PostalCode))
         {
             var rPostalCode = CvnPostalCode.Create(model.PostalCode);

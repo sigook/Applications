@@ -4,9 +4,19 @@ namespace Covenant.Common.Entities.Request
 {
     public class RequestCompanyUser
     {
-        public Guid RequestId { get; set; }
-        public Request Request { get; set; }
-        public Guid CompanyUserId { get; set; }
-        public CompanyUser CompanyUser { get; set; }
+        internal RequestCompanyUser()
+        {
+        }
+
+        public RequestCompanyUser(Guid requestId, Guid companyUserId)
+        {
+            RequestId = requestId;
+            CompanyUserId = companyUserId;
+        }
+
+        public Guid RequestId { get; private set; }
+        public Request Request { get; private set; }
+        public Guid CompanyUserId { get; private set; }
+        public CompanyUser CompanyUser { get; private set; }
     }
 }

@@ -17,10 +17,10 @@ public class Agency
         PhonePrincipal = phonePrincipal;
     }
 
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public int NumberId { get; set; }
-    public User User { get; set; }
-    public Guid UserId { get; set; }
+    public Guid Id { get; internal set; } = Guid.NewGuid();
+    public int NumberId { get; private set; }
+    public User User { get; internal set; }
+    public Guid UserId { get; private set; }
     public string FullName { get; private set; }
     public string HstNumber { get; private set; }
     public string BusinessNumber { get; private set; }
@@ -29,14 +29,14 @@ public class Agency
     public string WebPage { get; private set; }
     public string PhonePrincipal { get; private set; }
     public int? PhonePrincipalExt { get; private set; }
-    public string RecruitmentEmail { get; set; }
-    public AgencyType AgencyType { get; set; }
-    public Guid? AgencyParentId { get; set; }
-    public Agency AgencyParent { get; set; }
+    public string RecruitmentEmail { get; internal set; }
+    public AgencyType AgencyType { get; internal set; }
+    public Guid? AgencyParentId { get; internal set; }
+    public Agency AgencyParent { get; private set; }
     public ICollection<AgencyWsibGroup> WsibGroup { get; private set; } = new List<AgencyWsibGroup>();
-    public ICollection<AgencyLocation> Locations { get; set; } = new List<AgencyLocation>();
+    public ICollection<AgencyLocation> Locations { get; private set; } = new List<AgencyLocation>();
     public ICollection<AgencyContactInformation> ContactInformation { get; private set; } = new List<AgencyContactInformation>();
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; private set; } = DateTime.Now;
     public Location BillingAddress => Locations.FirstOrDefault(l => l.IsBilling)?.Location ?? Locations.FirstOrDefault()?.Location;
     public string FormattedPhone => $"{PhonePrincipal} {(PhonePrincipalExt.HasValue ? $"Ext:{PhonePrincipalExt.Value}" : string.Empty)}";
 
@@ -104,5 +104,12 @@ public class Agency
         if (toDelete is null) return Result.Fail("Location not found");
         Locations.Remove(toDelete);
         return Result.Ok();
+    }
+
+    public void AssignOwner(AgencyType agencyType, Guid userId, Guid? agencyParentId)
+    {
+        AgencyType = agencyType;
+        UserId = userId;
+        AgencyParentId = agencyParentId;
     }
 }

@@ -21,7 +21,7 @@ public class InvoiceAdditionalItem
     public decimal UnitPrice { get; private set; }
     public string Description { get; private set; }
     public Guid InvoiceId { get; private set; }
-    public Invoice Invoice { get; set; }
+    public Invoice Invoice { get; private set; }
     public decimal Total => ((decimal)Quantity * UnitPrice).DefaultMoneyRound();
 
     public void AssignTo(Invoice invoice)

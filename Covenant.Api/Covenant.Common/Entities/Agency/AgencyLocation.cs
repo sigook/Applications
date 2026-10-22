@@ -14,10 +14,10 @@
             IsBilling = isBilling;
         }
 
-        public Guid LocationId { get; set; }
-        public Location Location { get; set; }
-        public Guid AgencyId { get; set; }
-        public Agency Agency { get; set; }
-        public bool IsBilling { get; set; }
+        public Guid LocationId { get; private set; }
+        public Location Location { get; private set; }
+        public Guid AgencyId { get; private set; }
+        public Agency Agency { get; private set; }
+        public bool IsBilling { get; internal set; }
     }
 }

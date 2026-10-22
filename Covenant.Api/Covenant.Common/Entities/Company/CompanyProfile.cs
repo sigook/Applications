@@ -30,42 +30,42 @@ namespace Covenant.Common.Entities.Company
             Industry = industry;
         }
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public User Company { get; set; }
-        public Guid CompanyId { get; set; }
-        public Agency.Agency Agency { get; set; }
-        public Guid AgencyId { get; set; }
+        public Guid Id { get; internal set; } = Guid.NewGuid();
+        public User Company { get; internal set; }
+        public Guid CompanyId { get; private set; }
+        public Agency.Agency Agency { get; internal set; }
+        public Guid AgencyId { get; internal set; }
         public int NumberId { get; private set; }
         public Guid? LogoId { get; private set; }
-        public CovenantFile Logo { get; set; } = new CovenantFile(DefaultImageLogo);
-        public string FullName { get; set; }
+        public CovenantFile Logo { get; internal set; } = new CovenantFile(DefaultImageLogo);
+        public string FullName { get; internal set; }
         public string Phone { get; private set; }
         public int? PhoneExt { get; private set; }
         public string Fax { get; private set; }
         public int? FaxExt { get; private set; }
         public string Website { get; private set; }
-        public string About { get; set; }
-        public string InternalInfo { get; set; }
-        public string ContactRole { get; set; }
-        public string ContactName { get; set; }
-        public CompanyStatus CompanyStatus { get; set; }
+        public string About { get; private set; }
+        public string InternalInfo { get; private set; }
+        public string ContactRole { get; private set; }
+        public string ContactName { get; private set; }
+        public CompanyStatus CompanyStatus { get; private set; }
         public bool RequiresPermissionToSeeRequests { get; private set; }
-        public ICollection<CompanyProfileLocation> Locations { get; set; } = new List<CompanyProfileLocation>();
-        public ICollection<CompanyProfileContactPerson> ContactPeople { get; set; } = new List<CompanyProfileContactPerson>();
-        public ICollection<CompanyProfileJobPositionRate> JobPositionRates { get; set; } = new List<CompanyProfileJobPositionRate>();
-        public ICollection<CompanyProfileDocument> Documents { get; set; } = new List<CompanyProfileDocument>();
-        public ICollection<CompanyProfileNote> Notes { get; set; } = new List<CompanyProfileNote>();
-        public CompanyProfileIndustry Industry { get; set; }
-        public Guid? SalesRepresentativeId { get; set; }
-        public AgencyPersonnel SalesRepresentative { get; set; }
-        public Guid IndustryId { get; set; }
-        public string CreatedBy { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string UpdatedBy { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public bool Active { get; set; }
+        public ICollection<CompanyProfileLocation> Locations { get; internal set; } = new List<CompanyProfileLocation>();
+        public ICollection<CompanyProfileContactPerson> ContactPeople { get; private set; } = new List<CompanyProfileContactPerson>();
+        public ICollection<CompanyProfileJobPositionRate> JobPositionRates { get; private set; } = new List<CompanyProfileJobPositionRate>();
+        public ICollection<CompanyProfileDocument> Documents { get; private set; } = new List<CompanyProfileDocument>();
+        public ICollection<CompanyProfileNote> Notes { get; private set; } = new List<CompanyProfileNote>();
+        public CompanyProfileIndustry Industry { get; internal set; }
+        public Guid? SalesRepresentativeId { get; private set; }
+        public AgencyPersonnel SalesRepresentative { get; private set; }
+        public Guid IndustryId { get; private set; }
+        public string CreatedBy { get; private set; }
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
+        public string UpdatedBy { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
+        public bool Active { get; internal set; }
         public bool PaidHolidays { get; private set; }
-        public bool RequiredPaymentMethod { get; set; }
+        public bool RequiredPaymentMethod { get; private set; }
         public bool? VaccinationRequired { get; private set; }
         public string VaccinationRequiredComments { get; private set; }
         public TimeSpan OvertimeStartsAfter { get; private set; } = DefaultOvertimeStarts;
@@ -227,5 +227,23 @@ namespace Covenant.Common.Entities.Company
             profile.LogoId = logo.Id;
             return Result.Ok(profile);
         }
+
+        public void ChangeFullName(string fullName) => FullName = fullName;
+
+        public void UpdateDetails(string about, string internalInfo, Guid? salesRepresentativeId)
+        {
+            About = about;
+            InternalInfo = internalInfo;
+            SalesRepresentativeId = salesRepresentativeId;
+        }
+
+        public void UpdateStatus(CompanyStatus companyStatus, string updatedBy, DateTime updatedAt)
+        {
+            CompanyStatus = companyStatus;
+            UpdatedBy = updatedBy;
+            UpdatedAt = updatedAt;
+        }
+
+        public void ReplaceJobPositionRates(ICollection<CompanyProfileJobPositionRate> jobPositionRates) => JobPositionRates = jobPositionRates;
     }
 }

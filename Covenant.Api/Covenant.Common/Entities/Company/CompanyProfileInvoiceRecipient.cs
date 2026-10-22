@@ -15,10 +15,12 @@ namespace Covenant.Common.Entities.Company
 
         public Guid Id { get; private set; }
         public string Email { get; private set; }
-        public string Name { get; set; }
-        public CompanyProfile CompanyProfile { get; set; }
+        public string Name { get; private set; }
+        public CompanyProfile CompanyProfile { get; private set; }
         public Guid CompanyProfileId { get; private set; }
 
         public void UpdateEmail(string email) => this.Email = email;
+
+        public void UpdateName(string name) => Name = name;
     }
 }

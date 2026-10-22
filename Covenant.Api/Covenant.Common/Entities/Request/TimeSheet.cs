@@ -18,32 +18,32 @@ namespace Covenant.Common.Entities.Request
         {
         }
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public DateTime Date { get; set; }
-        public bool IsHoliday { get; set; }
-        public DateTime TimeIn { get; set; }
-        public DateTime? TimeOut { get; set; }
-        public DateTime? TimeInApproved { get; set; }
-        public DateTime? TimeOutApproved { get; set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public DateTime Date { get; private set; }
+        public bool IsHoliday { get; private set; }
+        public DateTime TimeIn { get; private set; }
+        public DateTime? TimeOut { get; private set; }
+        public DateTime? TimeInApproved { get; private set; }
+        public DateTime? TimeOutApproved { get; private set; }
         public string Comment { get; private set; }
-        public TimeSpan MissingHours { get; set; }
-        public TimeSpan MissingHoursOvertime { get; set; }
-        public decimal MissingRateWorker { get; set; }
-        public decimal MissingRateAgency { get; set; }
-        public decimal DeductionsOthers { get; set; }
-        public string DeductionsOthersDescription { get; set; }
-        public decimal BonusOrOthers { get; set; }
-        public string BonusOrOthersDescription { get; set; }
-        public decimal Reimbursements { get; set; }
-        public string ReimbursementsDescription { get; set; }
-        public Guid WorkerRequestId { get; set; }
-        public DateTime? ClockIn { get; set; }
-        public DateTime? ClockOut { get; set; }
-        public DateTime? ClockInRounded { get; set; }
-        public DateTime? ClockOutRounded { get; set; }
-        public TimeSheetTotal TimeSheetTotal { get; set; }
-        public TimeSheetTotalPayroll TimeSheetTotalPayroll { get; set; }
-        public WorkerRequest WorkerRequest { get; set; }
+        public TimeSpan MissingHours { get; internal set; }
+        public TimeSpan MissingHoursOvertime { get; internal set; }
+        public decimal MissingRateWorker { get; private set; }
+        public decimal MissingRateAgency { get; internal set; }
+        public decimal DeductionsOthers { get; private set; }
+        public string DeductionsOthersDescription { get; private set; }
+        public decimal BonusOrOthers { get; private set; }
+        public string BonusOrOthersDescription { get; private set; }
+        public decimal Reimbursements { get; private set; }
+        public string ReimbursementsDescription { get; private set; }
+        public Guid WorkerRequestId { get; private set; }
+        public DateTime? ClockIn { get; private set; }
+        public DateTime? ClockOut { get; private set; }
+        public DateTime? ClockInRounded { get; private set; }
+        public DateTime? ClockOutRounded { get; private set; }
+        public TimeSheetTotal TimeSheetTotal { get; private set; }
+        public TimeSheetTotalPayroll TimeSheetTotalPayroll { get; private set; }
+        public WorkerRequest WorkerRequest { get; private set; }
         public double TotalHours => TimeOut.HasValue ? (TimeOut - TimeIn).GetValueOrDefault().TotalHours : 0;
         public double TotalHoursApproved => TimeInApproved.HasValue && TimeOutApproved.HasValue ? (TimeOutApproved - TimeInApproved).GetValueOrDefault().TotalHours : 0;
 
@@ -120,6 +120,14 @@ namespace Covenant.Common.Entities.Request
         }
 
         public void UpdateComment(string comment) => Comment = comment;
+
+        public void UpdateMissing(TimeSpan missingHours, TimeSpan missingHoursOvertime, decimal missingRateWorker, decimal missingRateAgency)
+        {
+            MissingHours = missingHours;
+            MissingHoursOvertime = missingHoursOvertime;
+            MissingRateWorker = missingRateWorker;
+            MissingRateAgency = missingRateAgency;
+        }
 
         public void AddReimbursements(decimal value, string description)
         {

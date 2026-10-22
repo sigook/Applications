@@ -18,17 +18,17 @@ public class CompanyInteraction
         InteractionStatus = status;
     }
 
-    public Guid Id { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public Guid UserId { get; set; }
-    public User User { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-    public DateTime UpdatedAt { get; set; } = DateTime.Now;
-    public Guid CompanyProfileId { get; set; }
-    public CompanyProfile CompanyProfile { get; set; }
-    public InteractionPurpose InteractionPurpose { get; set; }
-    public InteractionType InteractionType { get; set; }
-    public InteractionStatus InteractionStatus { get; set; } = InteractionStatus.NotStarted;
+    public Guid Id { get; private set; }
+    public string Description { get; private set; } = string.Empty;
+    public Guid UserId { get; private set; }
+    public User User { get; private set; }
+    public DateTime CreatedAt { get; internal set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; private set; } = DateTime.Now;
+    public Guid CompanyProfileId { get; private set; }
+    public CompanyProfile CompanyProfile { get; private set; }
+    public InteractionPurpose InteractionPurpose { get; private set; }
+    public InteractionType InteractionType { get; private set; }
+    public InteractionStatus InteractionStatus { get; private set; } = InteractionStatus.NotStarted;
 
     public void Update(string description, InteractionPurpose purpose, InteractionType type, InteractionStatus status)
     {

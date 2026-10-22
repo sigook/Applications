@@ -11,19 +11,26 @@ namespace Covenant.Common.Entities.Request
         {
         }
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public Request Request { get; set; }
-        public Guid RequestId { get; set; }
-        public WorkerProfile WorkerProfile { get; set; }
-        public Guid? WorkerProfileId { get; set; }
-        public Candidate.Candidate Candidate { get; set; }
-        public Guid? CandidateId { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string CreatedBy { get; set; }
-        public string Comments { get; set; }
+        [JsonInclude]
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public Request Request { get; private set; }
+                [JsonInclude]
+                public Guid RequestId { get; private set; }
+        public WorkerProfile WorkerProfile { get; private set; }
+        [JsonInclude]
+        public Guid? WorkerProfileId { get; private set; }
+        public Candidate.Candidate Candidate { get; private set; }
+        [JsonInclude]
+        public Guid? CandidateId { get; private set; }
+        [JsonInclude]
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
+        [JsonInclude]
+        public string CreatedBy { get; private set; }
+        [JsonInclude]
+        public string Comments { get; private set; }
         [JsonInclude]
         public RequestApplicantStatus Status { get; private set; } = RequestApplicantStatus.Pending;
-        public ICollection<RequestApplicantComplianceItem> ComplianceItems { get; set; } = new List<RequestApplicantComplianceItem>();
+        public ICollection<RequestApplicantComplianceItem> ComplianceItems { get; private set; } = new List<RequestApplicantComplianceItem>();
 
         public static Result<RequestApplicant> CreateWithWorker(Guid requestId, Guid workerProfileId, string createdBy, string comments, RequestApplicantStatus status) =>
             Result.Ok(new RequestApplicant
@@ -46,6 +53,12 @@ namespace Covenant.Common.Entities.Request
                 Comments = comments,
                 Status = status
             });
+
+        public void MoveToWorker(Guid workerProfileId)
+        {
+            CandidateId = null;
+            WorkerProfileId = workerProfileId;
+        }
 
         public Result UpdateComments(string comments)
         {

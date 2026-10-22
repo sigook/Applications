@@ -207,8 +207,7 @@ public class CandidateService : ICandidateService
         {
             foreach (var requestApplicant in requestApplicants)
             {
-                requestApplicant.CandidateId = null;
-                requestApplicant.WorkerProfileId = profile.Id;
+                requestApplicant.MoveToWorker(profile.Id);
             }
             await workerRepository.SaveChangesAsync();
         }
@@ -411,14 +410,8 @@ public class CandidateService : ICandidateService
         var result = CvnEmail.Create(model.Email);
         if (!result) return result;
         candidate.AddEmail(result.Value);
-        candidate.Name = model.Name;
-        candidate.Address = model.Address;
-        candidate.CityId = model.City?.Id;
-        candidate.ResidencyStatus = model.ResidencyStatus;
-        candidate.GenderId = model.Gender?.Id;
-        candidate.HasVehicle = model.HasVehicle;
-        candidate.SourceId = model.SourceId;
-        candidate.Dnu = model.Dnu;
+        candidate.UpdateProfile(model.Name, model.Address, model.City?.Id, model.ResidencyStatus, model.Gender?.Id, model.HasVehicle, model.SourceId);
+        candidate.UpdateDnu(model.Dnu);
         if (!string.IsNullOrEmpty(model.PostalCode))
         {
             var rPostalCode = CvnPostalCode.Create(model.PostalCode);
@@ -441,7 +434,7 @@ public class CandidateService : ICandidateService
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
         if (candidate == null) return Result.Fail();
-        candidate.Recruiter = currentUserService.GetNickname();
+        candidate.AssignRecruiter(currentUserService.GetNickname());
         candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();

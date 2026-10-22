@@ -10,7 +10,7 @@ public class InvoiceHoliday
     {
     }
 
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public DateTime Holiday { get; private set; }
     public double Hours { get; private set; }
     public decimal Amount { get; private set; }

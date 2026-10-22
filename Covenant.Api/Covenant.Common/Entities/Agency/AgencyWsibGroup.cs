@@ -12,10 +12,10 @@
             WsibGroupId = wsibGroupId;
         }
 
-        public Guid AgencyId { get; set; }
-        public Agency Agency { get; set; }
+        public Guid AgencyId { get; private set; }
+        public Agency Agency { get; private set; }
 
-        public Guid WsibGroupId { get; set; }
-        public WsibGroup WsibGroup { get; set; }
+        public Guid WsibGroupId { get; private set; }
+        public WsibGroup WsibGroup { get; private set; }
     }
 }

@@ -16,12 +16,14 @@ namespace Covenant.Common.Entities.Company
             CreatedBy = createdBy;
         }
 
-        public Guid DocumentId { get; set; }
-        public CovenantFile Document { get; set; }
-        public Guid CompanyProfileId { get; set; }
+        public Guid DocumentId { get; private set; }
+        public CovenantFile Document { get; private set; }
+        public Guid CompanyProfileId { get; private set; }
         public CompanyProfile CompanyProfile { get; internal set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public string CreatedBy { get; set; }
-        public CompanyProfileDocumentType DocumentType { get; set; } = CompanyProfileDocumentType.None;
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
+        public string CreatedBy { get; private set; }
+        public CompanyProfileDocumentType DocumentType { get; private set; } = CompanyProfileDocumentType.None;
+
+        public void UpdateDocumentType(CompanyProfileDocumentType documentType) => DocumentType = documentType;
     }
 }

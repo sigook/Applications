@@ -30,51 +30,51 @@ namespace Covenant.Common.Entities.Request
             WorkersQuantity = workersQuantity;
         }
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public int NumberId { get; set; }
-        public string JobTitle { get; set; }
-        public string BillingTitle { get; set; }
-        public string JobCosting { get; set; }
-        public Guid? JobPositionRateId { get; set; }
-        public CompanyProfileJobPositionRate JobPositionRate { get; set; }
-        public string Description { get; set; }
-        public string Requirements { get; set; }
-        public string InternalRequirements { get; set; }
-        public string Responsibilities { get; set; }
-        public TimeSpan DurationBreak { get; set; }
-        public bool BreakIsPaid { get; set; }
-        public bool JobIsOnBranchOffice { get; set; }
-        public Guid JobLocationId { get; set; }
-        public Location JobLocation { get; set; }
-        public decimal? Incentive { get; set; }
-        public string IncentiveDescription { get; set; }
-        public decimal? AgencyRate { get; set; }
-        public decimal? WorkerRate { get; set; }
-        public decimal? WorkerSalary { get; set; }
-        public bool PunchCardOptionEnabled { get; set; }
-        public bool HolidayIsPaid { get; set; } = true;
-        public CompanyProfile CompanyProfile { get; set; }
-        public Guid CompanyProfileId { get; set; }
-        public bool IsAsap { get; set; }
-        public bool UsesRunners { get; set; } = true;
-        public DurationTerm DurationTerm { get; set; } = DurationTerm.LongTerm;
-        public EmploymentType EmploymentType { get; set; } = EmploymentType.FullTime;
-        public Shift Shift { get; set; }
-        public Guid? ShiftId { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime? StartAt { get; set; }
-        public DateTime? FinishAt { get; set; }
-        public DateTime? UpdatedAt { get; set; } = DateTime.Now;
+        public Guid Id { get; internal set; } = Guid.NewGuid();
+        public int NumberId { get; internal set; }
+        public string JobTitle { get; private set; }
+        public string BillingTitle { get; private set; }
+        public string JobCosting { get; private set; }
+        public Guid? JobPositionRateId { get; private set; }
+        public CompanyProfileJobPositionRate JobPositionRate { get; internal set; }
+        public string Description { get; private set; }
+        public string Requirements { get; private set; }
+        public string InternalRequirements { get; private set; }
+        public string Responsibilities { get; private set; }
+        public TimeSpan DurationBreak { get; private set; }
+        public bool BreakIsPaid { get; private set; }
+        public bool JobIsOnBranchOffice { get; private set; }
+        public Guid JobLocationId { get; internal set; }
+        public Location JobLocation { get; private set; }
+        public decimal? Incentive { get; private set; }
+        public string IncentiveDescription { get; private set; }
+        public decimal? AgencyRate { get; internal set; }
+        public decimal? WorkerRate { get; internal set; }
+        public decimal? WorkerSalary { get; internal set; }
+        public bool PunchCardOptionEnabled { get; private set; }
+        public bool HolidayIsPaid { get; private set; } = true;
+        public CompanyProfile CompanyProfile { get; internal set; }
+        public Guid CompanyProfileId { get; private set; }
+        public bool IsAsap { get; private set; }
+        public bool UsesRunners { get; internal set; } = true;
+        public DurationTerm DurationTerm { get; private set; } = DurationTerm.LongTerm;
+        public EmploymentType EmploymentType { get; internal set; } = EmploymentType.FullTime;
+        public Shift Shift { get; private set; }
+        public Guid? ShiftId { get; private set; }
+        public DateTime CreatedAt { get; internal set; } = DateTime.Now;
+        public DateTime? StartAt { get; private set; }
+        public DateTime? FinishAt { get; private set; }
+        public DateTime? UpdatedAt { get; private set; } = DateTime.Now;
         public DateTime? InvitationSentItAt { get; private set; }
-        public string CreatedBy { get; set; }
-        public RequestComission RequestComission { get; set; }
-        public IEnumerable<RequestCompanyUser> RequestCompanyUser { get; set; }
-        public IEnumerable<RequestComplianceItem> ComplianceItems { get; set; }
-        public IEnumerable<RequestSkill> Skills { get; set; } = new List<RequestSkill>();
-        public IEnumerable<RequestRequestedBy> RequestedBy { get; set; } = new List<RequestRequestedBy>();
-        public IEnumerable<RequestReportTo> ReportTo { get; set; } = new List<RequestReportTo>();
-        public IEnumerable<RequestNote> Notes { get; set; } = new List<RequestNote>();
-        public ICollection<RequestSource> Sources { get; set; } = new List<RequestSource>();
+        public string CreatedBy { get; internal set; }
+        public RequestComission RequestComission { get; private set; }
+        public IEnumerable<RequestCompanyUser> RequestCompanyUser { get; private set; }
+        public IEnumerable<RequestComplianceItem> ComplianceItems { get; private set; }
+        public IEnumerable<RequestSkill> Skills { get; private set; } = new List<RequestSkill>();
+        public IEnumerable<RequestRequestedBy> RequestedBy { get; private set; } = new List<RequestRequestedBy>();
+        public IEnumerable<RequestReportTo> ReportTo { get; private set; } = new List<RequestReportTo>();
+        public IEnumerable<RequestNote> Notes { get; private set; } = new List<RequestNote>();
+        public ICollection<RequestSource> Sources { get; private set; } = new List<RequestSource>();
         public IReadOnlyCollection<RequestRecruiter> Recruiters => _recruiters;
         public IReadOnlyCollection<WorkerRequest> Workers => _workers;
         private string TheRequestCanNotBeChanged => $"The request can't be changed because is: {Status}";
@@ -85,7 +85,7 @@ namespace Covenant.Common.Entities.Request
         public int WorkersQuantity
         {
             get => _workersQuantity;
-            set => _workersQuantity = value < MinimumWorkersQuantity ? MinimumWorkersQuantity : value;
+            private set => _workersQuantity = value < MinimumWorkersQuantity ? MinimumWorkersQuantity : value;
         }
         public int WorkersQuantityWorking
         {
@@ -243,6 +243,34 @@ namespace Covenant.Common.Entities.Request
             UpdatedAt = DateTime.Now;
             return Result.Ok();
         }
+
+        public void UpdateRates(decimal? workerSalary, decimal? agencyRate, decimal? workerRate, Guid? jobPositionRateId)
+        {
+            WorkerSalary = workerSalary;
+            AgencyRate = agencyRate;
+            WorkerRate = workerRate;
+            JobPositionRateId = jobPositionRateId;
+        }
+
+        public void UpdateInternalRequirements(string internalRequirements) => InternalRequirements = internalRequirements;
+
+        public void UpdateResponsibilities(string responsibilities) => Responsibilities = responsibilities;
+
+        public void UpdateBreakIsPaid(bool breakIsPaid) => BreakIsPaid = breakIsPaid;
+
+        public void UpdateWorkersQuantity(int workersQuantity) => WorkersQuantity = workersQuantity;
+
+        public void UpdateTerm(DurationTerm durationTerm, EmploymentType employmentType, DateTime? startAt, DateTime? finishAt)
+        {
+            DurationTerm = durationTerm;
+            EmploymentType = employmentType;
+            StartAt = startAt;
+            FinishAt = finishAt;
+        }
+
+        public void UpdateCreatedBy(string createdBy) => CreatedBy = createdBy;
+
+        public void OverrideIsAsap(bool isAsap) => IsAsap = isAsap;
 
         public Result UpdateIsAsap(bool? isAsap = null)
         {

@@ -180,31 +180,28 @@ public class PayStubService : IPayStubService
             .Sum(i => i.Total)
             .DefaultMoneyRound();
 
-        var payStub = new PayStub
-        {
-            Id = Guid.NewGuid(),
-            WorkerProfileId = model.WorkerProfileId,
-            PayStubNumber = GeneratePayStubNumber(payStubNumber, DateTime.Now),
-            PayStubNumberId = payStubNumber,
-            Position = model.Position,
-            DateWorkBegins = dateWorkBegins,
-            DateWorkEnd = dateWorkEnd,
-            PaymentDate = dateWorkEnd.GetPaymentDateForInternalWorkers(),
-            RegularWage = regularWage,
-            GrossPayment = grossPayment,
-            Vacations = vacations,
-            TotalEarnings = totalEarnings,
-            Cpp = deductions.Cpp,
-            Ei = deductions.Ei,
-            FederalTax = deductions.FederalTax,
-            ProvincialTax = deductions.ProvincialTax,
-            TotalDeductions = totalDeductions,
-            TotalPaid = totalPaid,
-            CreatedAt = DateTime.Now,
-            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek(),
-            Items = payStubItems,
-            OtherDeductions = [.. otherDeductions],
-        };
+        var payStub = PayStub.Create(
+            workerProfileId: model.WorkerProfileId,
+            payStubNumberId: payStubNumber,
+            payStubNumber: GeneratePayStubNumber(payStubNumber, DateTime.Now),
+            position: model.Position,
+            dateWorkBegins: dateWorkBegins,
+            dateWorkEnd: dateWorkEnd,
+            paymentDate: dateWorkEnd.GetPaymentDateForInternalWorkers(),
+            weekEnding: dateWorkEnd.GetWeekEndingCurrentWeek(),
+            createdAt: DateTime.Now,
+            regularWage: regularWage,
+            grossPayment: grossPayment,
+            vacations: vacations,
+            totalEarnings: totalEarnings,
+            cpp: deductions.Cpp,
+            ei: deductions.Ei,
+            federalTax: deductions.FederalTax,
+            provincialTax: deductions.ProvincialTax,
+            totalDeductions: totalDeductions,
+            totalPaid: totalPaid,
+            items: payStubItems,
+            otherDeductions: [.. otherDeductions]);
 
         // Step 10: Save
         await payStubRepository.Create(payStub);
@@ -337,10 +334,7 @@ public class PayStubService : IPayStubService
                         nightShift: 0,
                         holiday: holidayAmount,
                         overtime: overtimeAmount,
-                        timeSheetTotalId: timeSheetTotal.Id)
-                    {
-                        TimeSheetTotal = timeSheetTotal
-                    });
+                        timeSheetTotalId: timeSheetTotal.Id).AttachTimeSheetTotal(timeSheetTotal));
                 }
             }
 
@@ -433,32 +427,30 @@ public class PayStubService : IPayStubService
             .Sum(i => i.Total)
             .DefaultMoneyRound();
 
-        var payStub = new PayStub
-        {
-            WorkerProfileId = workerProfileId,
-            PayStubNumber = GeneratePayStubNumber(payStubNumber, DateTime.Now),
-            PayStubNumberId = payStubNumber,
-            Position = typeOfWork,
-            DateWorkBegins = dateWorkBegins,
-            DateWorkEnd = dateWorkEnd,
-            PaymentDate = paymentDate,
-            RegularWage = regularWage,
-            GrossPayment = grossPayment,
-            Vacations = vacations,
-            TotalEarnings = totalEarnings,
-            Cpp = deductions.Cpp,
-            Ei = deductions.Ei,
-            FederalTax = deductions.FederalTax,
-            ProvincialTax = deductions.ProvincialTax,
-            TotalDeductions = totalDeductions,
-            TotalPaid = totalPaid,
-            CreatedAt = DateTime.Now,
-            WeekEnding = dateWorkEnd.GetWeekEndingCurrentWeek(),
-            Items = payStubItems,
-            WageDetails = allWageDetails,
-            Holidays = publicHolidays,
-            OtherDeductions = otherDeductions
-        };
+        var payStub = PayStub.Create(
+            workerProfileId: workerProfileId,
+            payStubNumberId: payStubNumber,
+            payStubNumber: GeneratePayStubNumber(payStubNumber, DateTime.Now),
+            position: typeOfWork,
+            dateWorkBegins: dateWorkBegins,
+            dateWorkEnd: dateWorkEnd,
+            paymentDate: paymentDate,
+            weekEnding: dateWorkEnd.GetWeekEndingCurrentWeek(),
+            createdAt: DateTime.Now,
+            regularWage: regularWage,
+            grossPayment: grossPayment,
+            vacations: vacations,
+            totalEarnings: totalEarnings,
+            cpp: deductions.Cpp,
+            ei: deductions.Ei,
+            federalTax: deductions.FederalTax,
+            provincialTax: deductions.ProvincialTax,
+            totalDeductions: totalDeductions,
+            totalPaid: totalPaid,
+            items: payStubItems,
+            otherDeductions: otherDeductions,
+            wageDetails: allWageDetails,
+            holidays: publicHolidays);
 
         // Step 10: Save
         await payStubRepository.Create(payStub);

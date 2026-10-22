@@ -63,11 +63,7 @@ public class LocationService : ILocationService
                 return Result.Fail<Guid>("Province is required");
             }
 
-            var city = new City
-            {
-                Value = model.Value.ToUpper(),
-                ProvinceId = model.Province.Id
-            };
+            var city = new City(model.Value.ToUpper(), model.Province.Id);
 
             await _catalogRepository.Create(city);
             await _catalogRepository.SaveChangesAsync();
@@ -95,14 +91,10 @@ public class LocationService : ILocationService
                 return Result.Fail("Province settings model cannot be null");
             }
 
-            var settings = new ProvinceSetting
-            {
-                ProvinceId = provinceId,
-                PaidHolidays = model.PaidHolidays,
-                OvertimeStartsAfter = model.OvertimeStartsAfter.HasValue
-                    ? TimeSpan.FromHours(model.OvertimeStartsAfter.Value)
-                    : null
-            };
+            var settings = new ProvinceSetting(
+                provinceId,
+                model.PaidHolidays,
+                model.OvertimeStartsAfter.HasValue ? TimeSpan.FromHours(model.OvertimeStartsAfter.Value) : null);
 
             await _catalogRepository.UpsertProvinceSettings(settings);
             await _catalogRepository.SaveChangesAsync();

@@ -13,10 +13,12 @@
             LocationId = location.Id;
         }
 
-        public Guid LocationId { get; set; }
-        public Location Location { get; set; }
-        public Guid CompanyProfileId { get; set; }
+        public Guid LocationId { get; internal set; }
+        public Location Location { get; internal set; }
+        public Guid CompanyProfileId { get; internal set; }
         public CompanyProfile CompanyProfile { get; internal set; }
-        public bool IsBilling { get; set; }
+        public bool IsBilling { get; internal set; }
+
+        public void UpdateIsBilling(bool isBilling) => IsBilling = isBilling;
     }
 }

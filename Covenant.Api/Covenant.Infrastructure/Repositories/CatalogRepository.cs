@@ -183,10 +183,7 @@ namespace Covenant.Infrastructure.Repositories
             var holiday = await Context.Holidays.FirstOrDefaultAsync(h => h.Date == date && h.CountryCode == countryCode);
             if (holiday == null)
             {
-                holiday = new Holiday(date)
-                {
-                    CountryCode = countryCode
-                };
+                holiday = new Holiday(date, countryCode);
                 await Context.Holidays.AddAsync(holiday);
             }
         }
@@ -200,8 +197,7 @@ namespace Covenant.Infrastructure.Repositories
             }
             else
             {
-                existing.PaidHolidays = settings.PaidHolidays;
-                existing.OvertimeStartsAfter = settings.OvertimeStartsAfter;
+                existing.Update(settings.PaidHolidays, settings.OvertimeStartsAfter);
                 Context.ProvinceSettings.Update(existing);
             }
         }

@@ -9,7 +9,7 @@ namespace Covenant.Common.Entities.Agency
         public Guid AgencyId { get; private set; }
         public User User { get; private set; }
         public Guid UserId { get; private set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
         public bool IsPrimary { get; private set; }
 
         public void UpdateName(string name) => Name = name;

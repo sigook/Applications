@@ -91,10 +91,7 @@ public class TimesheetService(
         {
             return Result.Fail<Guid>($"TimeSheet for the date {timeSheet.Date:D} was already created");
         }
-        timeSheet.MissingHours = timeSheetModel.MissingHours;
-        timeSheet.MissingHoursOvertime = timeSheetModel.MissingHoursOvertime;
-        timeSheet.MissingRateWorker = timeSheetModel.MissingRateWorker;
-        timeSheet.MissingRateAgency = timeSheetModel.MissingRateAgency;
+        timeSheet.UpdateMissing(timeSheetModel.MissingHours, timeSheetModel.MissingHoursOvertime, timeSheetModel.MissingRateWorker, timeSheetModel.MissingRateAgency);
         var rDeductions = timeSheet.AddDeductionsOthers(timeSheetModel.DeductionsOthers, timeSheetModel.DeductionsOthersDescription);
         if (!rDeductions)
         {
@@ -123,10 +120,7 @@ public class TimesheetService(
         {
             return result;
         }
-        timeSheet.MissingHours = timeSheetModel.MissingHours;
-        timeSheet.MissingHoursOvertime = timeSheetModel.MissingHoursOvertime;
-        timeSheet.MissingRateAgency = timeSheetModel.MissingRateAgency;
-        timeSheet.MissingRateWorker = timeSheetModel.MissingRateWorker;
+        timeSheet.UpdateMissing(timeSheetModel.MissingHours, timeSheetModel.MissingHoursOvertime, timeSheetModel.MissingRateWorker, timeSheetModel.MissingRateAgency);
         result = timeSheet.AddDeductionsOthers(timeSheetModel.DeductionsOthers, timeSheetModel.DeductionsOthersDescription);
         if (!result)
         {

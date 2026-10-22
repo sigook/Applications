@@ -61,16 +61,10 @@ public class PasswordResetService(
             return;
         }
 
-        previousCodes.ForEach(prc => prc.Consumed = true);
+        previousCodes.ForEach(prc => prc.Consume());
 
         var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
-        await identityRepository.Create(new PasswordResetCode
-        {
-            UserId = user.Id,
-            CodeHash = passwordHasher.HashPassword(user, code),
-            CreatedAt = now,
-            ExpiresAt = now.AddMinutes(CodeLifetimeMinutes)
-        });
+        await identityRepository.Create(new PasswordResetCode(user.Id, passwordHasher.HashPassword(user, code), now, now.AddMinutes(CodeLifetimeMinutes)));
         await identityRepository.SaveChangesAsync();
 
         await notifications.SendPasswordResetCode(user, code, CodeLifetimeMinutes);
@@ -87,14 +81,14 @@ public class PasswordResetService(
 
         if (resetCode.Attempts >= MaxAttempts)
         {
-            resetCode.Consumed = true;
+            resetCode.Consume();
             await identityRepository.SaveChangesAsync();
             return PasswordResetResult.Fail(TooManyAttempts);
         }
 
         if (passwordHasher.VerifyHashedPassword(user, resetCode.CodeHash, code) == PasswordVerificationResult.Failed)
         {
-            resetCode.Attempts++;
+            resetCode.RegisterFailedAttempt();
             await identityRepository.SaveChangesAsync();
             logger.LogWarning("Invalid password reset code attempt {Attempts}/{MaxAttempts}. UserId={UserId}",
                 resetCode.Attempts, MaxAttempts, user.Id);
@@ -106,7 +100,7 @@ public class PasswordResetService(
         if (!result.Succeeded)
             return PasswordResetResult.Fail(PasswordPolicy, result.Errors.Select(e => e.Description).ToList());
 
-        resetCode.Consumed = true;
+        resetCode.Consume();
         await identityRepository.SaveChangesAsync();
 
         await CompleteReset(user);

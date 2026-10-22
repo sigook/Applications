@@ -2,9 +2,9 @@
 {
     public class Country
     {
-        public Guid Id { get; set; }
-        public string Value { get; set; }
-        public string Code { get; set; }
+        public Guid Id { get; internal set; }
+        public string Value { get; internal set; }
+        public string Code { get; internal set; }
 
         public static Country Canada => new Country
         {

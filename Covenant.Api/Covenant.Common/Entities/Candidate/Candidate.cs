@@ -18,31 +18,31 @@ namespace Covenant.Common.Entities.Candidate
 
         public Candidate(Guid agencyId, string name, CvnEmail email) : this(agencyId, name) => Email = email.Email;
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public long NumberId { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Address { get; set; }
-        public string PostalCode { get; set; }
-        public Guid? CityId { get; set; }
-        public City City { get; set; }
-        public Guid? GenderId { get; set; }
-        public Gender Gender { get; set; }
-        public bool HasVehicle { get; set; }
-        public Guid? SourceId { get; set; }
-        public Source Source { get; set; }
-        public string Recruiter { get; set; }
-        public string ResidencyStatus { get; set; }
-        public IList<CandidatePhone> PhoneNumbers { get; set; } = new List<CandidatePhone>();
-        public IList<CandidateSkill> Skills { get; set; } = new List<CandidateSkill>();
-        public IList<CandidateDocument> Documents { get; set; } = new List<CandidateDocument>();
-        public IList<CandidateNote> Notes { get; set; } = new List<CandidateNote>();
-        public IList<RequestApplicant> RequestApplicants { get; set; } = new List<RequestApplicant>();
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public Agency.Agency Agency { get; set; }
-        public Guid AgencyId { get; set; }
-        public bool Dnu { get; set; } = false;
-        public bool EmailUnsubscribed { get; set; } = false;
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public long NumberId { get; private set; }
+        public string Name { get; private set; }
+        public string Email { get; private set; }
+        public string Address { get; internal set; }
+        public string PostalCode { get; private set; }
+        public Guid? CityId { get; internal set; }
+        public City City { get; private set; }
+        public Guid? GenderId { get; private set; }
+        public Gender Gender { get; internal set; }
+        public bool HasVehicle { get; internal set; }
+        public Guid? SourceId { get; internal set; }
+        public Source Source { get; private set; }
+        public string Recruiter { get; internal set; }
+        public string ResidencyStatus { get; internal set; }
+        public IList<CandidatePhone> PhoneNumbers { get; private set; } = new List<CandidatePhone>();
+        public IList<CandidateSkill> Skills { get; private set; } = new List<CandidateSkill>();
+        public IList<CandidateDocument> Documents { get; internal set; } = new List<CandidateDocument>();
+        public IList<CandidateNote> Notes { get; private set; } = new List<CandidateNote>();
+        public IList<RequestApplicant> RequestApplicants { get; private set; } = new List<RequestApplicant>();
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
+        public Agency.Agency Agency { get; internal set; }
+        public Guid AgencyId { get; internal set; }
+        public bool Dnu { get; internal set; } = false;
+        public bool EmailUnsubscribed { get; private set; } = false;
 
         public void AddEmail(CvnEmail email) => Email = email.Email;
 
@@ -95,5 +95,20 @@ namespace Covenant.Common.Entities.Candidate
             PhoneNumbers.Remove(entity);
             return Result.Ok();
         }
+
+        public void UpdateProfile(string name, string address, Guid? cityId, string residencyStatus, Guid? genderId, bool hasVehicle, Guid? sourceId)
+        {
+            Name = name;
+            Address = address;
+            CityId = cityId;
+            ResidencyStatus = residencyStatus;
+            GenderId = genderId;
+            HasVehicle = hasVehicle;
+            SourceId = sourceId;
+        }
+
+        public void AssignRecruiter(string recruiter) => Recruiter = recruiter;
+
+        public void UpdateDnu(bool dnu) => Dnu = dnu;
     }
 }

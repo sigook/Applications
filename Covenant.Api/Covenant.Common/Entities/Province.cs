@@ -2,11 +2,11 @@
 {
     public class Province
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Value { get; set; }
-        public string Code { get; set; }
-        public Guid CountryId { get; set; }
-        public Country Country { get; set; }
-        public ProvinceSetting ProvinceSetting { get; set; }
+        public Guid Id { get; internal set; } = Guid.NewGuid();
+        public string Value { get; internal set; }
+        public string Code { get; internal set; }
+        public Guid CountryId { get; private set; }
+        public Country Country { get; internal set; }
+        public ProvinceSetting ProvinceSetting { get; private set; }
     }
 }

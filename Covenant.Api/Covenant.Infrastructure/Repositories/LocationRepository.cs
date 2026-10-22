@@ -44,15 +44,11 @@ public class LocationRepository(CovenantContext context) : BaseRepository<Covena
             .FirstOrDefaultAsync(lt => lt.LocationId == locationId);
         if (locationTax is null)
         {
-            Context.LocationTaxes.Add(new LocationTax
-            {
-                LocationId = locationId,
-                Tax1 = tax1
-            });
+            Context.LocationTaxes.Add(new LocationTax(locationId, tax1));
         }
         else
         {
-            locationTax.Tax1 = tax1;
+            locationTax.UpdateTax(tax1);
         }
     }
 }

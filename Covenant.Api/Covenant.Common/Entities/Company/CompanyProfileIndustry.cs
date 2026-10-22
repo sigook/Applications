@@ -13,10 +13,10 @@ public class CompanyProfileIndustry
     public CompanyProfileIndustry(string otherIndustry) => OtherIndustry = otherIndustry;
     public CompanyProfileIndustry(Guid industryId) => IndustryId = industryId;
 
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid? IndustryId { get; set; }
-    public Industry Industry { get; set; }
-    public string OtherIndustry { get; set; }
+    public Guid Id { get; private set; } = Guid.NewGuid();
+    public Guid? IndustryId { get; private set; }
+    public Industry Industry { get; private set; }
+    public string OtherIndustry { get; private set; }
 
     public static Result<CompanyProfileIndustry> Create(BaseModel<Guid> industry, string otherIndustry = null)
     {
@@ -36,4 +36,10 @@ public class CompanyProfileIndustry
     public static Result<CompanyProfileIndustry> Create(string otherIndustry) => !string.IsNullOrEmpty(otherIndustry)
             ? Result.Ok(new CompanyProfileIndustry(otherIndustry))
             : Result.Fail<CompanyProfileIndustry>(ValidationMessages.RequiredMsg(ApiResources.Industry));
+
+    public void Update(Guid? industryId, string otherIndustry)
+    {
+        IndustryId = industryId;
+        OtherIndustry = otherIndustry;
+    }
 }

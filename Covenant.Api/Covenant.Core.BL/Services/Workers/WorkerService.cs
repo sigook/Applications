@@ -389,9 +389,7 @@ public class WorkerService(
         }
         else
         {
-            entity.EmailNotification = false;
-            entity.PushNotification = false;
-            entity.SMSNotification = false;
+            entity.UpdateChannels(false, false, false);
             notificationRepository.Update(entity);
         }
 

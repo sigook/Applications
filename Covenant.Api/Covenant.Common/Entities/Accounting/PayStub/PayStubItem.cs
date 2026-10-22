@@ -28,7 +28,7 @@ public class PayStubItem
         Type = type;
     }
 
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public string Description { get; protected set; }
     public double Quantity { get; protected set; }
     public decimal UnitPrice { get; protected set; }

@@ -166,7 +166,10 @@ These rules are tests, not conventions: `Covenant.Tests/Architecture/LayerDepend
 (NetArchTest + Mono.Cecil) fails the build pipeline when `Covenant.Core.BL` depends on
 Infrastructure, the Api, ASP.NET HTTP/MVC, EF Core or Service Bus; when `Covenant.Common` depends on
 any outer project or EF Core; or when a type under `Covenant.Api.Controllers`/`Covenant.Api.Consumers`
-calls an `IBaseRepository` write method.
+calls an `IBaseRepository` write method. `EntityEncapsulationTest` fails when any class under
+`Covenant.Common.Entities` exposes a public setter: entities change state only through their own
+methods and factories (`private set`, or `internal set` for aggregate children and test seeding —
+`Covenant.Common` grants `InternalsVisibleTo` only to the two test projects).
 
 `Directory.Build.props` sets `TargetFramework=net10.0`, `ImplicitUsings`, `LangVersion=latest` and
 `IsPackable=false` for every project; individual csproj files only carry what differs.

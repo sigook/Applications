@@ -151,13 +151,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         if (sources == null) return;
         foreach (var model in sources)
         {
-            await set.AddAsync(new RequestSource
-            {
-                RequestId = requestId,
-                SourceId = model.SourceId,
-                PublishedAt = model.PublishedAt,
-                ExternalUrl = model.ExternalUrl
-            });
+            await set.AddAsync(new RequestSource(requestId, model.SourceId, model.PublishedAt, model.ExternalUrl));
         }
     }
 

@@ -9,21 +9,21 @@ public class ReportSubcontractor
     }
 
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public Guid WorkerProfileId { get; set; }
+    public Guid WorkerProfileId { get; internal set; }
     public WorkerProfile WorkerProfile { get; private set; }
-    public decimal RegularWage { get; set; }
-    public decimal PublicHolidayPay { get; set; }
-    public decimal Gross { get; set; }
-    public decimal Earnings { get; set; }
-    public decimal TotalNet { get; set; }
+    public decimal RegularWage { get; internal set; }
+    public decimal PublicHolidayPay { get; private set; }
+    public decimal Gross { get; internal set; }
+    public decimal Earnings { get; internal set; }
+    public decimal TotalNet { get; internal set; }
     public decimal DeductionOthers { get; private set; }
-    public DateTime DateWorkBegins { get; set; }
-    public DateTime DateWorkEnd { get; set; }
-    public DateTime WeekEnding { get; set; }
-    public long NumberId { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-    public IEnumerable<ReportSubcontractorWageDetail> WageDetails { get; set; } = new List<ReportSubcontractorWageDetail>();
-    public IEnumerable<ReportSubcontractorPublicHoliday> Holidays { get; set; } = new List<ReportSubcontractorPublicHoliday>();
+    public DateTime DateWorkBegins { get; internal set; }
+    public DateTime DateWorkEnd { get; internal set; }
+    public DateTime WeekEnding { get; internal set; }
+    public long NumberId { get; internal set; }
+    public DateTime CreatedAt { get; private set; } = DateTime.Now;
+    public IEnumerable<ReportSubcontractorWageDetail> WageDetails { get; private set; } = new List<ReportSubcontractorWageDetail>();
+    public IEnumerable<ReportSubcontractorPublicHoliday> Holidays { get; private set; } = new List<ReportSubcontractorPublicHoliday>();
     public IEnumerable<ReportSubContractorOtherDeduction> OtherDeductionsDetail { get; private set; } = new List<ReportSubContractorOtherDeduction>();
     public decimal TotalOvertime => WageDetails.Sum(c => c.Overtime);
     public decimal TotalRegular => WageDetails.Sum(c => c.Regular);
@@ -54,4 +54,18 @@ public class ReportSubcontractor
         OtherDeductionsDetail = new List<ReportSubContractorOtherDeduction>(list);
         DeductionOthers = totalOtherDeductions;
     }
+
+    public static ReportSubcontractor Create(Guid workerProfileId, decimal regularWage, decimal gross, DateTime dateWorkBegins, DateTime dateWorkEnd, DateTime weekEnding) =>
+        new()
+        {
+            WorkerProfileId = workerProfileId,
+            RegularWage = regularWage,
+            Gross = gross,
+            PublicHolidayPay = 0,
+            Earnings = gross,
+            TotalNet = gross,
+            DateWorkBegins = dateWorkBegins,
+            DateWorkEnd = dateWorkEnd,
+            WeekEnding = weekEnding
+        };
 }

@@ -347,10 +347,10 @@ public class CompanyService : ICompanyService
     {
         var entity = await companyRepository.GetCompanyProfile(cp => cp.Id == profileId);
         if (entity is null) return Result.Fail();
-        entity.FullName = model.FullName;
+        entity.ChangeFullName(model.FullName);
         entity.UpdatePhones(model.Phone, model.PhoneExt, model.Fax, model.FaxExt);
         entity.UpdateWebsite(model.Website);
-        entity.Industry.IndustryId = model.Industry.Industry.Id;
+        entity.Industry.Update(model.Industry.Industry.Id, entity.Industry.OtherIndustry);
         companyRepository.Update(entity);
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
@@ -369,10 +369,8 @@ public class CompanyService : ICompanyService
         {
             return Result.Fail<Guid>(location.Errors);
         }
-        var entity = new CompanyProfileLocation(profileId.Value, location.Value)
-        {
-            IsBilling = model.IsBilling
-        };
+        var entity = new CompanyProfileLocation(profileId.Value, location.Value);
+        entity.UpdateIsBilling(model.IsBilling);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
 
@@ -392,7 +390,7 @@ public class CompanyService : ICompanyService
             return Result.Fail<Guid>(location.Errors);
         }
         entity.Location.Update(location.Value);
-        entity.IsBilling = model.IsBilling;
+        entity.UpdateIsBilling(model.IsBilling);
         companyRepository.Update(entity);
         await companyRepository.SaveChangesAsync();
 
@@ -411,8 +409,7 @@ public class CompanyService : ICompanyService
             var city = await catalogRepository.GetCity(model.City.Id);
             var address = $"{model.Address} {city.Value} {city.Province.Code} {model.PostalCode}";
             var geocodeLocation = await geocodeService.GetLocationGeocode(address);
-            location.Value.Latitude = geocodeLocation.Lat;
-            location.Value.Longitude = geocodeLocation.Lng;
+            location.Value.UpdateCoordinates(geocodeLocation.Lat, geocodeLocation.Lng);
         }
         return location;
     }

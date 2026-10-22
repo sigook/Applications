@@ -10,28 +10,28 @@ namespace Covenant.Common.Entities.Company
         public const decimal MinWorkerRate = 0.01M;
         public const decimal MaxWorkerRate = 1000M;
 
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; private set; } = Guid.NewGuid();
 
-        public string JobPosition { get; set; }
+        public string JobPosition { get; internal set; }
 
-        public Guid CompanyProfileId { get; set; }
-        public CompanyProfile CompanyProfile { get; set; }
+        public Guid CompanyProfileId { get; internal set; }
+        public CompanyProfile CompanyProfile { get; internal set; }
 
         public Guid? ShiftId { get; private set; }
         public Shift Shift { get; private set; }
 
-        public decimal Rate { get; set; } //AgencyRate
-        public decimal WorkerRate { get; set; }
+        public decimal Rate { get; internal set; } //AgencyRate
+        public decimal WorkerRate { get; internal set; }
         public decimal? WorkerRateMin { get; private set; }
         public decimal? WorkerRateMax { get; private set; }
-        public TimeSpan? OvertimeStartsAfter { get; set; }
-        public string Description { get; set; }
+        public TimeSpan? OvertimeStartsAfter { get; private set; }
+        public string Description { get; private set; }
 
         public bool IsDeleted { get; private set; }
-        public string CreatedBy { get; set; }
-        public string UpdatedBy { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+        public string CreatedBy { get; private set; }
+        public string UpdatedBy { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
 
         public event EventHandler<Shift> OnShiftUpdated;
 
@@ -150,5 +150,7 @@ namespace Covenant.Common.Entities.Company
             UpdatedBy = deletedBy;
             UpdatedAt = DateTime.Now;
         }
+
+        public void UpdateOvertimeStartsAfter(TimeSpan? overtimeStartsAfter) => OvertimeStartsAfter = overtimeStartsAfter;
     }
 }

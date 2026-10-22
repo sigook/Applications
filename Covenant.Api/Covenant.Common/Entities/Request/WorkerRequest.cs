@@ -15,7 +15,7 @@ public class WorkerRequest
     public WorkerProfile WorkerProfile { get; private set; }
 
     public Guid RequestId { get; private set; }
-    public Request Request { get; set; }
+    public Request Request { get; internal set; }
 
     public WorkerRequestStatus WorkerRequestStatus { get; private set; }
     public ICollection<TimeSheet> TimeSheets { get; private set; } = new List<TimeSheet>();

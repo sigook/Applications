@@ -16,10 +16,10 @@ public class ReportSubContractorOtherDeduction
     }
 
     public Guid Id { get; private set; }
-    public double Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
-    public decimal Total { get; set; }
-    public string Description { get; set; }
+    public double Quantity { get; private set; }
+    public decimal UnitPrice { get; private set; }
+    public decimal Total { get; private set; }
+    public string Description { get; private set; }
 
     public Guid ReportSubcontractorId { get; private set; }
     public ReportSubcontractor ReportSubcontractor { get; private set; }

@@ -4,9 +4,9 @@ namespace Covenant.Common.Entities
 {
     public class IdentificationType : ICatalog<Guid>
     {
-        public Guid Id { get; set; }
-        public string Value { get; set; }
-        public IdentificationTypeCode Code { get; set; }
+        public Guid Id { get; private set; }
+        public string Value { get; internal set; }
+        public IdentificationTypeCode Code { get; internal set; }
         public IdentificationType()
         {
         }

@@ -29,17 +29,17 @@ public class ReportSubcontractorWageDetail
     }
 
     public Guid Id { get; private set; } = Guid.NewGuid();
-    public decimal WorkerRate { get; set; }
-    public decimal Regular { get; set; }
-    public decimal OtherRegular { get; set; }
-    public decimal Missing { get; set; }
-    public decimal NightShift { get; set; }
-    public decimal Holiday { get; set; }
-    public decimal Overtime { get; set; }
-    public decimal MissingOvertime { get; set; }
+    public decimal WorkerRate { get; private set; }
+    public decimal Regular { get; private set; }
+    public decimal OtherRegular { get; private set; }
+    public decimal Missing { get; private set; }
+    public decimal NightShift { get; private set; }
+    public decimal Holiday { get; private set; }
+    public decimal Overtime { get; private set; }
+    public decimal MissingOvertime { get; private set; }
     public decimal Gross => Regular + OtherRegular + Missing + MissingOvertime + NightShift + Holiday + Overtime;
-    public Guid TimeSheetTotalId { get; set; }
-    public TimeSheetTotalPayroll TimeSheetTotal { get; set; }
+    public Guid TimeSheetTotalId { get; private set; }
+    public TimeSheetTotalPayroll TimeSheetTotal { get; internal set; }
     public ReportSubcontractor ReportSubcontractor { get; private set; }
     public Guid ReportSubcontractorId { get; private set; }
 
@@ -47,5 +47,11 @@ public class ReportSubcontractorWageDetail
     {
         ReportSubcontractor = reportSubcontractor ?? throw new ArgumentNullException();
         ReportSubcontractorId = reportSubcontractor.Id;
+    }
+
+    public ReportSubcontractorWageDetail AttachTimeSheetTotal(TimeSheetTotalPayroll timeSheetTotal)
+    {
+        TimeSheetTotal = timeSheetTotal;
+        return this;
     }
 }

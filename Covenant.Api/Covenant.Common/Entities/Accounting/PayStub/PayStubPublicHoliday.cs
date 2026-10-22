@@ -19,7 +19,7 @@ public class PayStubPublicHoliday
     public Guid PayStubId { get; private set; }
     public DateTime Holiday { get; private set; }
     public decimal Amount { get; private set; }
-    public string Description { get; set; }
+    public string Description { get; private set; }
     public PayStub PayStub { get; private set; }
 
     public static Result<PayStubPublicHoliday> Create(DateTime holiday, decimal amount, string description = default, Guid id = default)

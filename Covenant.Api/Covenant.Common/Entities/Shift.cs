@@ -36,7 +36,7 @@ namespace Covenant.Common.Entities
         public TimeSpan? SaturdayStart { get; private set; }
         public TimeSpan? SaturdayFinish { get; private set; }
 
-        public string Comments { get; set; }
+        public string Comments { get; internal set; }
 
         public string DisplayShift { get; private set; }
 

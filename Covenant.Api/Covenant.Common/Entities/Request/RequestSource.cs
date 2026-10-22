@@ -2,12 +2,24 @@ namespace Covenant.Common.Entities.Request
 {
     public class RequestSource
     {
-        public Guid RequestId { get; set; }
-        public Request Request { get; set; }
-        public Guid SourceId { get; set; }
-        public Source Source { get; set; }
-        public DateTime? PublishedAt { get; set; }
-        public string ExternalUrl { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        internal RequestSource()
+        {
+        }
+
+        public RequestSource(Guid requestId, Guid sourceId, DateTime? publishedAt, string externalUrl)
+        {
+            RequestId = requestId;
+            SourceId = sourceId;
+            PublishedAt = publishedAt;
+            ExternalUrl = externalUrl;
+        }
+
+        public Guid RequestId { get; private set; }
+        public Request Request { get; private set; }
+        public Guid SourceId { get; internal set; }
+        public Source Source { get; private set; }
+        public DateTime? PublishedAt { get; internal set; }
+        public string ExternalUrl { get; internal set; }
+        public DateTime CreatedAt { get; private set; } = DateTime.Now;
     }
 }

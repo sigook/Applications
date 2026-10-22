@@ -129,7 +129,7 @@ public class SalesService(
             var file = CovenantFile.Create(model.FileName);
             if (!file) return Result.Fail<Guid>(file.Errors);
             await companyRepository.Create(file.Value);
-            deal.Document = file.Value;
+            deal.AttachDocument(file.Value);
         }
         await companyRepository.Create(deal);
         await companyRepository.SaveChangesAsync();

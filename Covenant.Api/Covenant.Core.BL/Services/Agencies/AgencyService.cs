@@ -199,26 +199,20 @@ public class AgencyService : IAgencyService
             await companyRepository.Create(logo);
             company.ReplaceLogo(logo.Id);
         }
-        company.FullName = model.FullName;
+        company.ChangeFullName(model.FullName);
         if (model.Industry.Industry != null)
         {
-            company.Industry.IndustryId = model.Industry.Industry.Id;
-            company.Industry.OtherIndustry = null;
+            company.Industry.Update(model.Industry.Industry.Id, null);
         }
         else
         {
-            company.Industry.IndustryId = null;
-            company.Industry.OtherIndustry = model.Industry.OtherIndustry;
+            company.Industry.Update(null, model.Industry.OtherIndustry);
         }
         if (company.CompanyStatus != model.CompanyStatus)
         {
-            company.CompanyStatus = model.CompanyStatus;
-            company.UpdatedBy = currentUserService.GetNickname();
-            company.UpdatedAt = DateTime.Now;
+            company.UpdateStatus(model.CompanyStatus, currentUserService.GetNickname(), DateTime.Now);
         }
-        company.SalesRepresentativeId = model.SalesRepresentativeId;
-        company.About = model.About;
-        company.InternalInfo = model.InternalInfo;
+        company.UpdateDetails(model.About, model.InternalInfo, model.SalesRepresentativeId);
         company.UpdatePhones(model.Phone, model.PhoneExt, model.Fax, model.FaxExt);
 
         companyRepository.Update(company);
@@ -384,9 +378,9 @@ public class AgencyService : IAgencyService
         if (!rMax) return Result.Fail<CompanyProfileJobPositionRate>(rMax.Errors);
 
         if (model.Shift != null) result.Value.AddShift(model.Shift.ToShift());
-        result.Value.OvertimeStartsAfter = model.OvertimeStartsAfter.HasValue
+        result.Value.UpdateOvertimeStartsAfter(model.OvertimeStartsAfter.HasValue
             ? TimeSpan.FromHours(model.OvertimeStartsAfter.Value)
-            : null;
+            : null);
         return result;
     }
 
@@ -483,7 +477,7 @@ public class AgencyService : IAgencyService
             return Result.Fail<CompanyProfileDocument>(covenantFile.Errors);
         }
         var entity = new CompanyProfileDocument(companyProfileId, covenantFile.Value, currentUserService.GetNickname());
-        entity.DocumentType = model.DocumentType;
+        entity.UpdateDocumentType(model.DocumentType);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         await uploadedFilesService.Upload([model.FileName]);
@@ -658,18 +652,8 @@ public class AgencyService : IAgencyService
         entity.UpdateLogo(string.IsNullOrEmpty(model.Logo?.FileName) ? null : model.Logo.Id);
         entity.UpdateProfile(model.FullName, model.BusinessNumber, model.HstNumber, model.PhonePrincipal, model.PhonePrincipalExt, model.WebPage);
         entity.ReplaceWsibGroups(model.WsibGroup.Select(w => w.Id));
-        entity.ReplaceContactInformation(model.ContactInformation.Select(c => new AgencyContactInformation
-        {
-            Title = c.Title,
-            FirstName = c.FirstName,
-            MiddleName = c.MiddleName,
-            LastName = c.LastName,
-            MobileNumber = c.MobileNumber,
-            OfficeNumber = c.OfficeNumber,
-            OfficeNumberExt = c.OfficeNumberExt,
-            Email = c.Email,
-            Position = c.Position
-        }));
+        entity.ReplaceContactInformation(model.ContactInformation.Select(c => new AgencyContactInformation(
+            c.Title, c.FirstName, c.MiddleName, c.LastName, c.Position, c.MobileNumber, c.OfficeNumber, c.OfficeNumberExt, c.Email)));
         agencyRepository.Update(entity);
         await agencyRepository.SaveChangesAsync();
         return Result.Ok();
@@ -817,9 +801,7 @@ public class AgencyService : IAgencyService
             });
             if (user)
             {
-                agency.AgencyType = model.AgencyType;
-                agency.UserId = user.Value.Id;
-                agency.AgencyParentId = agencyParentId;
+                agency.AssignOwner(model.AgencyType, user.Value.Id, agencyParentId);
                 var personnel = AgencyPersonnel.CreatePrimary(agency.Id, user.Value, model.FullName);
                 await agencyRepository.Create(agency);
                 await agencyRepository.Create(personnel);

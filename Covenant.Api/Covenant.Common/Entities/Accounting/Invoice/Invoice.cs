@@ -6,28 +6,28 @@ namespace Covenant.Common.Entities.Accounting.Invoice;
 
 public class Invoice
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public long NumberId { get; set; }
-    public long InvoiceNumberId { get; set; }
-    public string InvoiceNumber { get; set; }
-    public Guid CompanyProfileId { get; set; }
-    public CompanyProfile CompanyProfile { get; set; }
-    public string Email { get; set; }
-    public decimal SubTotal { get; set; }
-    public decimal Tax { get; set; }
-    public decimal TotalNet { get; set; }
-    public IEnumerable<InvoiceTotal> InvoiceTotals { get; set; } = new List<InvoiceTotal>();
-    public IEnumerable<InvoiceDiscount> Discounts { get; set; } = new List<InvoiceDiscount>();
-    public IEnumerable<InvoiceHoliday> Holidays { get; set; } = new List<InvoiceHoliday>();
-    public IEnumerable<InvoiceAdditionalItem> AdditionalItems { get; set; } = new List<InvoiceAdditionalItem>();
-    public InvoiceAdditionalDetail AdditionalDetail { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-    public DateTime? WeekEnding { get; set; }
-    public InvoiceStatus Status { get; set; } = InvoiceStatus.Pending;
-    public DateTime? PaidAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public Guid? UpdatedBy { get; set; }
-    public User UpdatedByUser { get; set; }
+    public Guid Id { get; private set; } = Guid.NewGuid();
+    public long NumberId { get; private set; }
+    public long InvoiceNumberId { get; internal set; }
+    public string InvoiceNumber { get; internal set; }
+    public Guid CompanyProfileId { get; internal set; }
+    public CompanyProfile CompanyProfile { get; private set; }
+    public string Email { get; internal set; }
+    public decimal SubTotal { get; internal set; }
+    public decimal Tax { get; internal set; }
+    public decimal TotalNet { get; internal set; }
+    public IEnumerable<InvoiceTotal> InvoiceTotals { get; private set; } = new List<InvoiceTotal>();
+    public IEnumerable<InvoiceDiscount> Discounts { get; private set; } = new List<InvoiceDiscount>();
+    public IEnumerable<InvoiceHoliday> Holidays { get; private set; } = new List<InvoiceHoliday>();
+    public IEnumerable<InvoiceAdditionalItem> AdditionalItems { get; private set; } = new List<InvoiceAdditionalItem>();
+    public InvoiceAdditionalDetail AdditionalDetail { get; private set; }
+    public DateTime CreatedAt { get; internal set; } = DateTime.Now;
+    public DateTime? WeekEnding { get; internal set; }
+    public InvoiceStatus Status { get; private set; } = InvoiceStatus.Pending;
+    public DateTime? PaidAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
+    public User UpdatedByUser { get; private set; }
 
     public decimal TotalOvertime => InvoiceTotals.Sum(c => c.Overtime);
     public decimal TotalRegular => InvoiceTotals.Sum(c => c.Regular);
@@ -76,4 +76,18 @@ public class Invoice
             Invoice = this
         };
     }
+
+    public static Invoice Create(Guid companyProfileId, long invoiceNumberId, string invoiceNumber, string email, decimal subTotal, decimal tax, DateTime createdAt, DateTime? weekEnding) =>
+        new()
+        {
+            CompanyProfileId = companyProfileId,
+            InvoiceNumberId = invoiceNumberId,
+            InvoiceNumber = invoiceNumber,
+            Email = email,
+            SubTotal = subTotal,
+            Tax = tax,
+            TotalNet = subTotal + tax,
+            CreatedAt = createdAt,
+            WeekEnding = weekEnding
+        };
 }
