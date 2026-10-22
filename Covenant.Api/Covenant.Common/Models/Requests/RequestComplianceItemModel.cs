@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Request;
+namespace Covenant.Common.Models.Requests;
 
 public class RequestComplianceItemModel
 {

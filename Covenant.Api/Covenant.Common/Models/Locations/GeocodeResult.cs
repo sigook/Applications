@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Covenant.Common.Models.Location
+namespace Covenant.Common.Models.Locations
 {
     public class GeocodeResult
     {

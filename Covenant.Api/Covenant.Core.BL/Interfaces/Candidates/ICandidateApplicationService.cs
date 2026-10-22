@@ -1,5 +1,5 @@
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Models.Candidate;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Models.Candidates;
 using Covenant.Common.Models.Website;
 
 namespace Covenant.Core.BL.Interfaces.Candidates;

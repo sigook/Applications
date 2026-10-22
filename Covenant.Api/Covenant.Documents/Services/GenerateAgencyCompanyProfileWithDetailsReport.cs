@@ -1,8 +1,8 @@
 using ClosedXML.Excel;
-using Covenant.Documents.Extensions;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Documents.Extensions;
 using MediatR;
 
 namespace Covenant.Documents.Services;

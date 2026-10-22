@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Accounting.Subcontractor;
+namespace Covenant.Common.Models.Accounting.Subcontractors;
 
 public class ReportSubcontractorItemModel
 {

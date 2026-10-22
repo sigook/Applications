@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.TimeSheet;
+namespace Covenant.Common.Models.Requests.TimeSheets;
 
 /// <summary>
 /// Helper class to store hours breakdown for a timesheet item

@@ -1,3 +1,4 @@
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -5,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Configurations.Requests;
 
-public class RequestConfiguration : IEntityTypeConfiguration<Covenant.Common.Entities.Request.Request>
+public class RequestConfiguration : IEntityTypeConfiguration<Request>
 {
-    public void Configure(EntityTypeBuilder<Covenant.Common.Entities.Request.Request> builder)
+    public void Configure(EntityTypeBuilder<Request> builder)
     {
         builder.ToTable("Requests");
         builder.Property(e => e.NumberId).ValueGeneratedOnAdd();

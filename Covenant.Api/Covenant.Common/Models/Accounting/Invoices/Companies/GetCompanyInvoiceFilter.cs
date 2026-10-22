@@ -1,5 +1,5 @@
-using Covenant.Common.Models.Company;
-namespace Covenant.Common.Models.Accounting.Invoice.Company;
+using Covenant.Common.Models.Companies;
+namespace Covenant.Common.Models.Accounting.Invoices.Companies;
 
 public class GetCompanyInvoiceFilter : Pagination
 {

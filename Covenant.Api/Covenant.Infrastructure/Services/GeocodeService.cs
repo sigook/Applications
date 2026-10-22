@@ -1,7 +1,7 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;

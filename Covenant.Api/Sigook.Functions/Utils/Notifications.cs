@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;

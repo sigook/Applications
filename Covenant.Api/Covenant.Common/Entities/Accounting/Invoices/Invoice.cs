@@ -1,8 +1,8 @@
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 
-namespace Covenant.Common.Entities.Accounting.Invoice;
+namespace Covenant.Common.Entities.Accounting.Invoices;
 
 public class Invoice
 {

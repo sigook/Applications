@@ -1,7 +1,7 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Models.Notifications;
 using Covenant.Core.BL.Interfaces.Accounting.PayStubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

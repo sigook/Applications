@@ -1,4 +1,4 @@
-﻿namespace Covenant.Common.Entities.Agency
+﻿namespace Covenant.Common.Entities.Agencies
 {
     public class AgencyContactInformation
     {

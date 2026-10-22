@@ -1,6 +1,6 @@
 ﻿using Covenant.Common.Entities;
 
-namespace Covenant.Common.Models.Worker
+namespace Covenant.Common.Models.Workers
 {
     public interface IWorkerContactInformation<out TLocation, TCity>
         where TLocation : ILocation<TCity>

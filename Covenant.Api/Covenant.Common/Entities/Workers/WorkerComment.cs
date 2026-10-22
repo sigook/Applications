@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Companies;
 
-namespace Covenant.Common.Entities.Worker;
+namespace Covenant.Common.Entities.Workers;
 
 public class WorkerComment
 {

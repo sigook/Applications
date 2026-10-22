@@ -1,7 +1,7 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Candidate
+namespace Covenant.Common.Entities.Candidates
 {
     public class CandidateSkill
     {

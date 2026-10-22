@@ -1,8 +1,8 @@
 ﻿using Covenant.Common.Functionals;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Worker
+namespace Covenant.Common.Entities.Workers
 {
     public class WorkerProfileJobExperience : IWorkerProfileJobExperience
     {

@@ -1,4 +1,4 @@
-namespace Covenant.Common.Entities.Accounting.Subcontractor;
+namespace Covenant.Common.Entities.Accounting.Subcontractors;
 
 public class ReportSubcontractorPublicHoliday
 {

@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 

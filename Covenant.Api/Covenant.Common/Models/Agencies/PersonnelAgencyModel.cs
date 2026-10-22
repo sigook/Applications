@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Agency
+namespace Covenant.Common.Models.Agencies
 {
 	public class PersonnelAgencyModel : AgencyPersonnelModel
 	{

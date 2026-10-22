@@ -1,13 +1,13 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Clients;
 
 [ApiController]
 [Route(RouteName)]

@@ -1,6 +1,6 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Requests;
 using Covenant.Api.Authorization;
-using Covenant.Common.Entities.Request;
+using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public class SkillsControllerTest : IClassFixture<CustomWebApplicationFactory<SkillsControllerTest.Startup>>
 {

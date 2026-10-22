@@ -1,10 +1,11 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Company.Workers;
-using Covenant.Common.Models.Worker;
+using Covenant.Api.Controllers.Companies.Workers;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -23,7 +24,7 @@ using System.Net;
 using Xunit.Abstractions;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Workers;
+namespace Covenant.Integration.Tests.Companies.Workers;
 
 public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
 {
@@ -54,7 +55,7 @@ public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     public class Startup
     {
-        private static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency("Covenant", null) { User = FakeData.FakeUser() };
+        private static readonly Agency Agency = new Agency("Covenant", null) { User = FakeData.FakeUser() };
         public static readonly CompanyProfile FakeCompany = new CompanyProfile { Company = new User(CvnEmail.Create("company@company.com").Value), Agency = Agency , Industry = new CompanyProfileIndustry("Test") };
         public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("w@s.com").Value), Agency.Id) { Location = FakeData.FakeLocation() };
 

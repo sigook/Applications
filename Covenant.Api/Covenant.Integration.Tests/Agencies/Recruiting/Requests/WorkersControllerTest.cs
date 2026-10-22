@@ -1,11 +1,11 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Requests;
 using Covenant.Api.Authorization;
-using Covenant.Common.Entities.Worker;
+using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
@@ -15,7 +15,7 @@ using Microsoft.Extensions.Time.Testing;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<WorkersControllerTest.Startup, WorkersControllerTest.Data>>
 {

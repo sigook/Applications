@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 
-namespace Covenant.Common.Entities.Company;
+namespace Covenant.Common.Entities.Companies;
 
 public class CompanyUser
 {

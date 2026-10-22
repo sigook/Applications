@@ -1,6 +1,6 @@
 using ClosedXML.Excel;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 
 namespace Covenant.Documents.Services;
 

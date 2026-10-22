@@ -2,10 +2,10 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Identity;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
@@ -15,7 +15,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Clients;
 
 [Route(RouteName)]
 [ApiController]

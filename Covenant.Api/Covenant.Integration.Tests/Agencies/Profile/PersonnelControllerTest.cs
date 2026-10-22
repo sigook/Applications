@@ -1,11 +1,11 @@
-using Covenant.Api.Controllers.Agency.Profile;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Profile;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Agency;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Agencies;
 using Covenant.Common.Models.Identity;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -19,7 +19,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Profile;
+namespace Covenant.Integration.Tests.Agencies.Profile;
 
 public class PersonnelControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<PersonnelControllerTest.Startup, PersonnelControllerTest.Data>>
 {

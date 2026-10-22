@@ -1,6 +1,5 @@
-using System.Net.Http.Json;
 using Covenant.Api.Controllers.Shared;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Website;
@@ -8,6 +7,7 @@ using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Moq;
+using System.Net.Http.Json;
 using Xunit;
 
 namespace Covenant.Integration.Tests.Shared;

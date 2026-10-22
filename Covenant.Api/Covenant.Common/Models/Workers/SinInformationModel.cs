@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Workers;
 
-namespace Covenant.Common.Models.Worker
+namespace Covenant.Common.Models.Workers
 {
     public class SinInformationModel : ISinInformation<CovenantFileModel>
     {

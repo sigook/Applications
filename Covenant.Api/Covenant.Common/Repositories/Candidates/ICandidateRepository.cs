@@ -1,13 +1,13 @@
-using Covenant.Common.Entities.Candidate;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Models.Candidates;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Candidate;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Candidates;
 
 public interface ICandidateRepository : IBaseRepository
 {
-    Task<Common.Entities.Candidate.Candidate> GetCandidate(Expression<Func<Common.Entities.Candidate.Candidate, bool>> expression);
+    Task<Candidate> GetCandidate(Expression<Func<Candidate, bool>> expression);
     Task<List<CandidateContactInfoModel>> GetCandidatesAvailableToInvite(Guid agencyId, Guid requestId);
     Task<bool> CandidateExists(string email);
     Task<PaginatedList<CandidateListModel>> GetCandidates(Guid agencyId, GetCandidatesFilter filter);

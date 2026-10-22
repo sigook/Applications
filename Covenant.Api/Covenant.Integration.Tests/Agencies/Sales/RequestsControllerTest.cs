@@ -1,15 +1,15 @@
-using Covenant.Api.Controllers.Agency.Profile;
-using RecruitingRequestsController = Covenant.Api.Controllers.Agency.Recruiting.Requests.RequestsListController;
-using SalesRequestsController = Covenant.Api.Controllers.Agency.Sales.RequestsController;
+using Covenant.Api.Controllers.Agencies.Profile;
+using RecruitingRequestsController = Covenant.Api.Controllers.Agencies.Recruiting.Requests.RequestsListController;
+using SalesRequestsController = Covenant.Api.Controllers.Agencies.Sales.RequestsController;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Models.Requests.Agencies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
@@ -18,7 +18,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Sales;
+namespace Covenant.Integration.Tests.Agencies.Sales;
 
 public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
@@ -125,7 +125,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     private static class Data
     {
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Sales Agency", "4160000000") { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency = new Agency("Sales Agency", "4160000000") { User = FakeData.FakeUser() };
         public static readonly Guid AgencyId = FakeAgency.Id;
 
         public static readonly User SalesUser = new User(CvnEmail.Create("sales@mail.com").Value);

@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Company.Agency;
+namespace Covenant.Common.Models.Companies.Agencies;
 
 public class CompanyDeletionCheckModel
 {

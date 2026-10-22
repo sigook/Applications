@@ -1,9 +1,9 @@
-using Covenant.Api.Controllers.Agency.Profile;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Profile;
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Models.Agency;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Profile;
+namespace Covenant.Integration.Tests.Agencies.Profile;
 
 public class PersonnelAgenciesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<PersonnelAgenciesControllerTest.Startup>>
 {
@@ -67,9 +67,9 @@ public class PersonnelAgenciesControllerTest : BaseTestOrder, IClassFixture<Cust
             services.AddSingleton<AgencyIdFilter>();
         }
 
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency1 = new Covenant.Common.Entities.Agency.Agency(default, default) { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency1 = new Agency(default, default) { User = FakeData.FakeUser() };
 
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency2 = new Covenant.Common.Entities.Agency.Agency(default, default) { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency2 = new Agency(default, default) { User = FakeData.FakeUser() };
 
         public static readonly User FakePersonnel = new User(CvnEmail.Create("recruiter@sigook.com").Value);
 

@@ -1,6 +1,6 @@
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
 
-namespace Covenant.Common.Models.Company;
+namespace Covenant.Common.Models.Companies;
 
 public class CompanyProfileWithDetailsModel
 {

@@ -1,12 +1,13 @@
-using Covenant.Api.Controllers.Agency.Accounting;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Accounting;
+using Covenant.Common.Entities.Accounting.Subcontractors;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Subcontractor;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Interfaces;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
@@ -15,7 +16,7 @@ using Moq;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Accounting;
+namespace Covenant.Integration.Tests.Agencies.Accounting;
 
 public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<DeleteSubcontractorReportControllerTest.Startup, DeleteSubcontractorReportControllerTest.Data>>
 {
@@ -134,7 +135,7 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
 
         private readonly City city;
         private readonly Request request;
-        private readonly Covenant.Common.Entities.Agency.Agency otherAgency;
+        private readonly Agency otherAgency;
 
         public CompanyProfile CompanyProfile { get; }
         public WorkerProfile Worker { get; }

@@ -1,9 +1,10 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using System.Text.Json.Serialization;
 
-namespace Covenant.Common.Entities.Request
+namespace Covenant.Common.Entities.Requests
 {
     public class RequestApplicant
     {
@@ -19,7 +20,7 @@ namespace Covenant.Common.Entities.Request
         public WorkerProfile WorkerProfile { get; private set; }
         [JsonInclude]
         public Guid? WorkerProfileId { get; private set; }
-        public Candidate.Candidate Candidate { get; private set; }
+        public Candidate Candidate { get; private set; }
         [JsonInclude]
         public Guid? CandidateId { get; private set; }
         [JsonInclude]

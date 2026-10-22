@@ -1,11 +1,11 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies;
 using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Clients;
 
 [ApiController]
 [Route(RouteName)]
@@ -16,7 +16,7 @@ public class ContactInformationController : Controller
     public const string RouteName = "api/agency/recruiting/clients/{profileId}/contactinformation";
 
     /// <summary>Updates the contact information of a company profile.</summary>
-    /// <param name="repository">Company repository.</param>
+    /// <param name="companyService">Company service.</param>
     /// <param name="profileId">Identifier of the company profile.</param>
     /// <param name="model">Updated contact information.</param>
     [HttpPut]

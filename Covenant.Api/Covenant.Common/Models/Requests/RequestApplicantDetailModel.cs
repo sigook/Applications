@@ -1,7 +1,7 @@
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Models.Requests.Agencies;
 
-namespace Covenant.Common.Models.Request
+namespace Covenant.Common.Models.Requests
 {
     public class RequestApplicantDetailModel : RequestApplicantModel
     {

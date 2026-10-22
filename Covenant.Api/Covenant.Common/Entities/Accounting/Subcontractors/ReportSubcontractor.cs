@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Workers;
 
-namespace Covenant.Common.Entities.Accounting.Subcontractor;
+namespace Covenant.Common.Entities.Accounting.Subcontractors;
 
 public class ReportSubcontractor
 {

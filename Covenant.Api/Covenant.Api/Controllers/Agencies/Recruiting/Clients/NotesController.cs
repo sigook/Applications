@@ -6,7 +6,7 @@ using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Clients;
 
 [ApiController]
 [Route(RouteName)]

@@ -1,18 +1,18 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
-using Covenant.Common.Models;
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Models.Accounting.Subcontractors;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Accounting.Subcontractor;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models;
 using Covenant.Core.BL.Interfaces.Accounting.PayStubs;
 using Covenant.Core.BL.Interfaces.Accounting;
 using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Accounting;
+namespace Covenant.Api.Controllers.Agencies.Accounting;
 
 [Route(RouteName)]
 [ApiController]

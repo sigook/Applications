@@ -3,10 +3,10 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.TimeSheet.Agency;
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Models.Requests.TimeSheets.Agencies;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Request.TimeSheet;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
 
-namespace Covenant.Api.Controllers.Agency.Accounting;
+namespace Covenant.Api.Controllers.Agencies.Accounting;
 
 [Route(RouteName)]
 [ApiController]

@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Companies;
 
-namespace Covenant.Common.Entities.Request
+namespace Covenant.Common.Entities.Requests
 {
     public class RequestReportTo
     {

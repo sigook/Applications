@@ -1,4 +1,4 @@
-﻿namespace Covenant.Common.Entities.Worker
+﻿namespace Covenant.Common.Entities.Workers
 {
     public class WorkerProfileSkill
     {

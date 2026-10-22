@@ -1,4 +1,4 @@
-namespace Covenant.Common.Entities.Worker
+namespace Covenant.Common.Entities.Workers
 {
     public interface ISinInformation<out TFile> where TFile : ICovenantFile
     {

@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.Agency;
+namespace Covenant.Common.Models.Requests.Agencies;
 
 public class RequestSourceDetailModel
 {

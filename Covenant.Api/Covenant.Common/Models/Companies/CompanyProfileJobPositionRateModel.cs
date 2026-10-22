@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Company
+namespace Covenant.Common.Models.Companies
 {
     public class CompanyProfileJobPositionRateModel
     {

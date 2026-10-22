@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Infrastructure.Repositories;

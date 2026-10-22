@@ -2,7 +2,7 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Request
+namespace Covenant.Common.Entities.Requests
 {
     /// <summary>
     /// When TimeOut date is different from TimeIn date, the date must be changed it

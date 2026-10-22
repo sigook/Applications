@@ -1,7 +1,7 @@
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 
-namespace Covenant.Common.Models.Request
+namespace Covenant.Common.Models.Requests
 {
     public class RequestCreateModel
     {

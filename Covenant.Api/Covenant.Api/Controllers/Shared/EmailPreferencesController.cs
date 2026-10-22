@@ -1,5 +1,5 @@
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,17 +1,17 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Interfaces;
-using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Companies;
@@ -33,7 +33,6 @@ using Microsoft.Extensions.Options;
 using Moq;
 using System.Linq.Expressions;
 using Xunit;
-using RequestEntity = Covenant.Common.Entities.Request.Request;
 
 namespace Covenant.Tests.Workers;
 
@@ -80,7 +79,7 @@ public class WorkerServiceApplyTest
             Mock.Of<ISkillService>());
     }
 
-    private RequestEntity SetupRequest(string city = "Toronto", int numberId = 4242)
+    private Request SetupRequest(string city = "Toronto", int numberId = 4242)
     {
         var request = FakeData.FakeRequest(location: new Location
         {
@@ -88,8 +87,8 @@ public class WorkerServiceApplyTest
         });
         request.NumberId = numberId;
         request.CompanyProfile = new CompanyProfile { AgencyId = _agencyId };
-        _requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<RequestEntity, bool>>>()))
-            .ReturnsAsync((Expression<Func<RequestEntity, bool>> e) => new[] { request }.AsQueryable().FirstOrDefault(e));
+        _requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>()))
+            .ReturnsAsync((Expression<Func<Request, bool>> e) => new[] { request }.AsQueryable().FirstOrDefault(e));
         return request;
     }
 
@@ -139,7 +138,7 @@ public class WorkerServiceApplyTest
         SetupRequest();
         var result = await Apply(4242, "not-an-email");
         Assert.False(result);
-        _requestRepository.Verify(r => r.GetRequest(It.IsAny<Expression<Func<RequestEntity, bool>>>()), Times.Never);
+        _requestRepository.Verify(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>()), Times.Never);
     }
 
     [Fact]
@@ -162,7 +161,7 @@ public class WorkerServiceApplyTest
             e.WorkerProfileId == profile.Id && e.CandidateId == null)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(request, profile), Times.Once);
-        _applicantNotificationService.Verify(s => s.Notify(It.IsAny<RequestEntity>(), It.IsAny<Candidate>()), Times.Never);
+        _applicantNotificationService.Verify(s => s.Notify(It.IsAny<Request>(), It.IsAny<Candidate>()), Times.Never);
     }
 
     [Fact]
@@ -222,7 +221,7 @@ public class WorkerServiceApplyTest
             && e.Status == RequestApplicantStatus.Pending)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         _applicantNotificationService.Verify(s => s.Notify(request, candidate), Times.Once);
-        _applicantNotificationService.Verify(s => s.Notify(It.IsAny<RequestEntity>(), It.IsAny<WorkerProfile>()), Times.Never);
+        _applicantNotificationService.Verify(s => s.Notify(It.IsAny<Request>(), It.IsAny<WorkerProfile>()), Times.Never);
     }
 
     [Fact]

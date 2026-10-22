@@ -1,11 +1,11 @@
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models.Sales.Dashboard;
 using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Request;
 
 namespace Covenant.Core.BL.Interfaces.Sales;
 

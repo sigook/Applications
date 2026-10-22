@@ -1,7 +1,8 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Clients;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Clients;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Companies;
@@ -15,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Clients;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
 public class NotesControllerTest : IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
 {
@@ -127,7 +128,7 @@ public class NotesControllerTest : IClassFixture<CustomWebApplicationFactory<Not
         private static readonly Province Ontario = new Province { Value = "Ontario" , Country = FakeData.FakeCountry() };
         private static readonly City York = new City { Value = "York", Province = Ontario };
 
-        private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+        private static readonly Agency FakeAgency = new Agency() { User = FakeData.FakeUser() };
         public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
             "", "", new CompanyProfileIndustry("Company Industry"));
 

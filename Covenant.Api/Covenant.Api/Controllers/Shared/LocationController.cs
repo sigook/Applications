@@ -1,5 +1,5 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Covenant.Core.BL.Interfaces.Locations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

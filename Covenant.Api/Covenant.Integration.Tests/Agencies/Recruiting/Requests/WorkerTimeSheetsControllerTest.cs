@@ -1,14 +1,14 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Requests;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
 using Covenant.Common.Utils.Extensions;
@@ -25,7 +25,7 @@ using Microsoft.Extensions.Time.Testing;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public class WorkerTimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup>>
 {
@@ -161,7 +161,7 @@ public class WorkerTimeSheetsControllerTest : BaseTestOrder, IClassFixture<Custo
         public static readonly Request Request = FakeData.FakeRequest(AgencyId, startAt: FakeNow);
         public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
         public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = AgencyId , Location = FakeData.FakeLocation(),};
-        private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
+        private static readonly WorkerRequest FakeWorkerRequest = WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
         public static readonly TimeSheet FakeTimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
         public static readonly TimeSheet TimeSheetReportedByWorker = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id,
             FakeNow.AddDays(1), false, FakeNow.AddDays(1)).Value;

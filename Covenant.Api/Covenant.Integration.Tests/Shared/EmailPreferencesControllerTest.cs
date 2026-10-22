@@ -1,7 +1,7 @@
 using Covenant.Api.Controllers.Shared;
+using Covenant.Common.Entities.Notifications;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Notification;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;

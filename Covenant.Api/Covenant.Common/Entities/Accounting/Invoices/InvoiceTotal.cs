@@ -1,4 +1,5 @@
-﻿namespace Covenant.Common.Entities.Accounting.Invoice;
+﻿using Covenant.Common.Entities.Requests;
+namespace Covenant.Common.Entities.Accounting.Invoices;
 
 public class InvoiceTotal
 {
@@ -19,7 +20,7 @@ public class InvoiceTotal
     public decimal TotalGross { get; private set; }
     public decimal TotalNet { get; private set; }
     public decimal Total { get; internal set; }
-    public Request.TimeSheetTotal TimeSheetTotal { get; private set; }
+    public TimeSheetTotal TimeSheetTotal { get; private set; }
     public Invoice Invoice { get; private set; }
 
     public void AssignTo(Invoice invoice)
@@ -30,7 +31,7 @@ public class InvoiceTotal
 
     public decimal RegularPlusOtherRegular => Regular + OtherRegular;
 
-    public static InvoiceTotal Create(Request.TimeSheetTotal timeSheetTotal, double quantity, decimal unitPrice, string description, decimal agencyRate, decimal amount) =>
+    public static InvoiceTotal Create(TimeSheetTotal timeSheetTotal, double quantity, decimal unitPrice, string description, decimal agencyRate, decimal amount) =>
         new()
         {
             TimeSheetTotalId = timeSheetTotal.Id,

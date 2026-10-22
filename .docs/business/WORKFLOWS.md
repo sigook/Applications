@@ -18,7 +18,7 @@ Worker registers from the Flutter app → Agency reviews → Agency approves →
 
 ```
 POST api/worker/profile              (multipart/form-data, [AllowAnonymous])
-→ ProfileController.Post      (Controllers/Worker/Profile/ProfileController.cs)
+→ ProfileController.Post      (Controllers/Workers/Profile/ProfileController.cs)
 → WorkerService.CreateWorker(requestId?)
 ```
 
@@ -73,18 +73,18 @@ GET api/worker/profile/me            → ProfileController.GetMyProfile → Work
 By the agency:
 
 ```
-POST api/agency/recruiting/requests            → RequestsController.Post (Controllers/Agency/Recruiting/Requests/RequestsController.cs)
+POST api/agency/recruiting/requests            → RequestsController.Post (Controllers/Agencies/Recruiting/Requests/RequestsController.cs)
 → RequestService.CreateRequest(RequestCreateModel)
 ```
 
 By the company:
 
 ```
-POST api/company/requests             → RequestsController.Post (Controllers/Company/Requests/RequestsController.cs)
+POST api/company/requests             → RequestsController.Post (Controllers/Companies/Requests/RequestsController.cs)
 → RequestService (company-side create)
 ```
 
-Key facts about the `Request` entity (`Covenant.Common/Entities/Request/Request.cs`):
+Key facts about the `Request` entity (`Covenant.Common/Entities/Requests/Request.cs`):
 
 - Rates (`AgencyRate`, `WorkerRate`) come from the selected `CompanyProfileJobPositionRate`.
 - A new request starts as `RequestStatus.Open`. The enum has exactly three values: `Open = 1`, `Filled = 3`, `Cancelled = 4` (value 2 intentionally skipped).
@@ -107,7 +107,7 @@ Role-scoped listings: `GET api/agency/recruiting/requests` (recruiting) and `GET
 ### Step 2A: Worker browses and applies (reactive)
 
 ```
-GET  api/worker/requests                      → RequestsController.Get (Controllers/Worker/Requests/RequestsController.cs)
+GET  api/worker/requests                      → RequestsController.Get (Controllers/Workers/Requests/RequestsController.cs)
                                               → IRequestRepository.GetRequestsForWorker
 GET  api/worker/requests/{id}                 → RequestsController.GetById
 POST api/worker/requests/{requestId}/Apply    → RequestsController.Apply → WorkerService.Apply(model, requestId)
@@ -138,7 +138,7 @@ DELETE api/agency/recruiting/requests/{requestId}/applicants/{id}
 
 ```
 POST api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Book
-→ WorkersController.Post (Controllers/Agency/Recruiting/Requests/WorkersController.cs)
+→ WorkersController.Post (Controllers/Agencies/Recruiting/Requests/WorkersController.cs)
 → AgencyService.BookWorker(requestId, workerProfileId, AgencyBookWorkerModel)
 ```
 
@@ -155,7 +155,7 @@ PUT api/agency/recruiting/requests/{requestId}/workers/{id}                   �
 PUT api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Reject → RequestService.RejectWorker (may reopen a Filled request)
 ```
 
-The company sees its assigned workers via `api/company/requests/{requestId}/workers` (`Controllers/Company/Requests/WorkersController.cs`).
+The company sees its assigned workers via `api/company/requests/{requestId}/workers` (`Controllers/Companies/Requests/WorkersController.cs`).
 
 ---
 
@@ -167,7 +167,7 @@ A single punch endpoint; the service decides whether the punch is a clock-in or 
 
 ```
 POST api/worker/requests/{requestId}/timesheet
-→ TimeSheetsController.Post (Controllers/Worker/TimeSheets/TimeSheetsController.cs)
+→ TimeSheetsController.Post (Controllers/Workers/TimeSheets/TimeSheetsController.cs)
 → TimesheetService.Register(requestId, WorkerLocationModel)     (payload = GPS location of the punch)
 
 GET api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}
@@ -191,7 +191,7 @@ GET api/worker/requests/{requestId}/timesheet
 
 ```
 GET    api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets
-→ WorkerTimeSheetsController.Get (Controllers/Agency/Recruiting/Requests/WorkerTimeSheetsController.cs)
+→ WorkerTimeSheetsController.Get (Controllers/Agencies/Recruiting/Requests/WorkerTimeSheetsController.cs)
 
 POST   api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets        → TimesheetService.CreateTimesheet   (manual entry, e.g. attendance "0")
 PUT    api/agency/recruiting/requests/{requestId}/workers/{workerId}/TimeSheets/{id}   → TimesheetService.UpdateTimesheet
@@ -217,7 +217,7 @@ Both run from the agency accounting screens. Calculation detail is NOT duplicate
 
 ```
 GET  api/agency/accounting/paystubs/WorkersReadyForPayStub
-→ PayStubsController (Controllers/Agency/Accounting/PayStubsController.cs)
+→ PayStubsController (Controllers/Agencies/Accounting/PayStubsController.cs)
 → ITimesheetRepository.GetWorkersReadyForPayStub   (workers with unpaid approved timesheets)
 
 POST api/agency/accounting/paystubs/generate        (body: worker profile ids)
@@ -249,7 +249,7 @@ hours-worked, timesheets).
 ```
 POST api/agency/accounting/invoices/Preview   → IInvoiceService.PreviewInvoice   (no persistence)
 POST api/agency/accounting/invoices           → IInvoiceService.CreateInvoice
-→ InvoicesController (Controllers/Agency/Accounting/InvoicesController.cs)
+→ InvoicesController (Controllers/Agencies/Accounting/InvoicesController.cs)
 ```
 
 The controller injects `IInvoiceService` (one `InvoiceService` in `Covenant.Core.BL/Services/Accounting/Invoices/`). Per invoice, the service resolves an `IInvoiceCountryStrategy` (`CanadaInvoiceStrategy` or `UsaInvoiceStrategy`) through `InvoiceCountryStrategyResolver` from the billed company's agency billing location; the strategy decides the number prefix (`AI`/`US`), the tax (`HST` global rate vs per-location tax) and whether unworked statutory holidays are charged.
@@ -287,7 +287,7 @@ A **Runner** is a Worker actively submitted to a specific order (Request). Candi
 
 Orders **without** runners instead configure a **compliance checklist** — see [§6.1](#61-compliance-checklist-orders-without-runners).
 
-Controller: `Controllers/Agency/Recruiting/Requests/RunnersController.cs` (`[Authorize(Policy = Recruiting)]`) → `RunnerService`. Domain rules live in the `Runner` entity.
+Controller: `Controllers/Agencies/Recruiting/Requests/RunnersController.cs` (`[Authorize(Policy = Recruiting)]`) → `RunnerService`. Domain rules live in the `Runner` entity.
 
 ### Step 1: Recruiter adds a runner to the order
 
@@ -350,7 +350,7 @@ All of these rules are enforced in the `Runner` domain entity (`CanAddInterview`
 
 ### Step 5: Work every request's runners from one board
 
-**Recruiting → Runners** (`/recruiting/runners`, `Controllers/Agency/Recruiting/Runners/RunnersController.cs`) lists the runners of every open request of the agency, grouped by request, with the same shell as the Applicants board: filters (request #, name/email, client, position, type, status, start date), *Assigned to me* (requests the caller is recruiter of), expand/collapse, Excel export and a selection bar.
+**Recruiting → Runners** (`/recruiting/runners`, `Controllers/Agencies/Recruiting/Runners/RunnersController.cs`) lists the runners of every open request of the agency, grouped by request, with the same shell as the Applicants board: filters (request #, name/email, client, position, type, status, start date), *Assigned to me* (requests the caller is recruiter of), expand/collapse, Excel export and a selection bar.
 
 ```
 GET api/agency/recruiting/runners            → RunnerService.GetAgencyRunners      (page of REQUESTS; a request never splits across pages; only requests with runners appear)

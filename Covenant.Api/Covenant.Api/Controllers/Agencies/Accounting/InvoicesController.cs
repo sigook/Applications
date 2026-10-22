@@ -2,15 +2,15 @@
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Accounting.Invoices;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 
-namespace Covenant.Api.Controllers.Agency.Accounting;
+namespace Covenant.Api.Controllers.Agencies.Accounting;
 
 [Route(RouteName)]
 [ApiController]

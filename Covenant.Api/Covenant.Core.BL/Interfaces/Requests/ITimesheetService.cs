@@ -1,10 +1,10 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Request.TimeSheet;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models.Workers;
+using Covenant.Common.Models;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 

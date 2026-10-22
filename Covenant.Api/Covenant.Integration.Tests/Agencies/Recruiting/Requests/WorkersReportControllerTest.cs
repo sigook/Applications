@@ -1,7 +1,8 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Requests;
+using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Workers;
 using Covenant.Documents;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public class WorkersReportControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
@@ -100,7 +101,7 @@ public static class Data
         var request = FakeData.FakeRequest();
         request.Id = Guid.Parse("057d28b0-7d09-4e8e-aca4-a22a97943770");
         context.Add(request);
-        var workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(workerProfile.Id, request.Id);
+        var workerRequest = WorkerRequest.AgencyBook(workerProfile.Id, request.Id);
         workerRequest.UpdateStartWorking(DateTime.Now);
         context.Add(workerProfile);
         context.Add(workerRequest);

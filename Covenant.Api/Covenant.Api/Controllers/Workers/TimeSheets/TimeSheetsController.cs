@@ -1,18 +1,18 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Utils;
 using Covenant.Api.Utils.Extensions;
+using Covenant.Api.Utils;
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request.TimeSheet;
-using Covenant.Common.Models.Request.Worker;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Worker.TimeSheets;
+namespace Covenant.Api.Controllers.Workers.TimeSheets;
 [Route(RouteName)]
 [ApiController]
 [Produces("application/json")]

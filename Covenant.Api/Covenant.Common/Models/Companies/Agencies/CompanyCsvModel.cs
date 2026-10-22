@@ -1,6 +1,7 @@
+using Covenant.Common.Entities.Companies;
 using CsvHelper.Configuration.Attributes;
 
-namespace Covenant.Common.Models.Company.Agency;
+namespace Covenant.Common.Models.Companies.Agencies;
 
 public class CompanyCsvModel
 {
@@ -46,7 +47,7 @@ public class CompanyCsvModel
 
 public class BulkCompany
 {
-    public Entities.Company.CompanyProfile CompanyProfile { get; set; }
-    public Entities.Company.CompanyProfileContactPerson ContactPerson { get; set; }
-    public Entities.Company.CompanyProfileLocation CompanyLocation { get; set; }
+    public CompanyProfile CompanyProfile { get; set; }
+    public CompanyProfileContactPerson ContactPerson { get; set; }
+    public CompanyProfileLocation CompanyLocation { get; set; }
 }

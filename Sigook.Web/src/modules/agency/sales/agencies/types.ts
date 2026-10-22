@@ -23,7 +23,7 @@ export interface AgencyListItem {
 }
 
 // Body for POST /api/agency/sales/agencies. Mirrors backend AgencyModel
-// (Covenant.Common.Models.Agency.AgencyModel).
+// (Covenant.Common.Models.Agencies.AgencyModel).
 export interface CreateAgencyModel {
   id?: string;
   fullName: string;

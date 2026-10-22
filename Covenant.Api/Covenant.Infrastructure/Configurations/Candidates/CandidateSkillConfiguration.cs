@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Candidate;
+using Covenant.Common.Entities.Candidates;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 

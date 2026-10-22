@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Covenant.Common.Models.Notification
+namespace Covenant.Common.Models.Notifications
 {
     public class TeamsAdaptiveMessage
     {

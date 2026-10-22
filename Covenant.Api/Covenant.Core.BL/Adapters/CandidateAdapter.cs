@@ -1,15 +1,15 @@
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Candidates;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Candidate;
-using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces.Shared;
 

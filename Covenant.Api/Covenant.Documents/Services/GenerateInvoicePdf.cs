@@ -1,11 +1,11 @@
-using System.Globalization;
 using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Documents.Pdf;
 using MediatR;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.Globalization;
 using static Covenant.Documents.Pdf.PdfLayout;
 
 namespace Covenant.Documents.Services;

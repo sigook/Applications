@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Request.WeeklyBoard;
+using Covenant.Common.Models.Requests.WeeklyBoard;
 using FluentValidation;
 
 namespace Covenant.Api.Validators.Requests;

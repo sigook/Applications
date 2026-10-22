@@ -1,4 +1,4 @@
-﻿namespace Covenant.Common.Models.Worker
+﻿namespace Covenant.Common.Models.Workers
 {
     public class WorkerSINExpiredModel
     {

@@ -1,15 +1,16 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Company.Requests;
+using Covenant.Api.Controllers.Companies.Requests;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
@@ -31,7 +32,7 @@ using Moq;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Requests;
+namespace Covenant.Integration.Tests.Companies.Requests;
 
 public class WorkersControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerTest.Startup>>
 {
@@ -144,7 +145,7 @@ public class WorkersControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
     private static class Data
     {
         public static readonly DateTime Now = new DateTime(2019, 01, 01);
-        private static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency { User = new User(CvnEmail.Create("agency@agency.com").Value) };
+        private static readonly Agency Agency = new Agency { User = new User(CvnEmail.Create("agency@agency.com").Value) };
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile
         {
             Company = new User(CvnEmail.Create("com_profile@mail.com").Value),
@@ -184,9 +185,9 @@ public class WorkersControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
             Location = new Location { City = new City { Province = new Province() { Country = FakeData.FakeCountry() } } }
         };
 
-        public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);
+        public static readonly WorkerRequest FakeWorkerRequest = WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);
 
-        public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequestReject =
-            Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorkerReject.Id, FakeRequest.Id, "recruiter@mail.com");
+        public static readonly WorkerRequest FakeWorkerRequestReject =
+            WorkerRequest.AgencyBook(FakeWorkerReject.Id, FakeRequest.Id, "recruiter@mail.com");
     }
 }

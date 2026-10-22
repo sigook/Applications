@@ -1,8 +1,8 @@
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
 
-namespace Covenant.Common.Models.Request.Agency;
+namespace Covenant.Common.Models.Requests.Agencies;
 
 public class RequestLookupModel
 {

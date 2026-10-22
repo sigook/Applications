@@ -1,9 +1,9 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Models.Identity;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using System.Text.Json.Serialization;
 
-namespace Covenant.Common.Models.Worker
+namespace Covenant.Common.Models.Workers
 {
     public class WorkerProfileDetailModel :
         IWorkerBasicInformation<BaseModel<Guid>>,

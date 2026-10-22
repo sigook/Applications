@@ -1,7 +1,7 @@
 ﻿using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 
-namespace Covenant.Common.Entities.Agency;
+namespace Covenant.Common.Entities.Agencies;
 
 public class Agency
 {

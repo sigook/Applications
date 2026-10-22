@@ -1,5 +1,5 @@
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Request.WeeklyBoard;
+using Covenant.Common.Models.Requests.WeeklyBoard;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 

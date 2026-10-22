@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Request.Agency;
+namespace Covenant.Common.Models.Requests.Agencies;
 
 // Requests are always listed by their number (IsDescending decides the
 // direction, as in the requests grid); this only sorts the applicants inside.

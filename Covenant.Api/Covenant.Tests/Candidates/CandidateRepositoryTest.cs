@@ -1,7 +1,7 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Enums;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Candidates;

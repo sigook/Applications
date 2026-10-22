@@ -1,9 +1,9 @@
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Worker.Agency;
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Models.Workers.Agencies;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Workers;

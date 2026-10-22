@@ -1,5 +1,5 @@
 using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Core.BL.Adapters;

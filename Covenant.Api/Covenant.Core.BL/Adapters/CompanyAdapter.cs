@@ -1,15 +1,15 @@
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
 using Covenant.Common.Resources;
 using System;
 

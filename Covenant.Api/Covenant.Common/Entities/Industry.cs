@@ -1,4 +1,4 @@
-﻿using Covenant.Common.Entities.Company;
+﻿using Covenant.Common.Entities.Companies;
 using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
 

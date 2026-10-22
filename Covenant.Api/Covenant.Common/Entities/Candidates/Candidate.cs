@@ -1,8 +1,9 @@
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Candidate
+namespace Covenant.Common.Entities.Candidates
 {
     public class Candidate
     {
@@ -39,7 +40,7 @@ namespace Covenant.Common.Entities.Candidate
         public IList<CandidateNote> Notes { get; private set; } = new List<CandidateNote>();
         public IList<RequestApplicant> RequestApplicants { get; private set; } = new List<RequestApplicant>();
         public DateTime CreatedAt { get; private set; } = DateTime.Now;
-        public Agency.Agency Agency { get; internal set; }
+        public Agency Agency { get; internal set; }
         public Guid AgencyId { get; internal set; }
         public bool Dnu { get; internal set; } = false;
         public bool EmailUnsubscribed { get; private set; } = false;

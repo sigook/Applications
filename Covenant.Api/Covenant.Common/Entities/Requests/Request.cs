@@ -1,10 +1,10 @@
-﻿using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Company;
+﻿using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Request
+namespace Covenant.Common.Entities.Requests
 {
     public class Request
     {

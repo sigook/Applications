@@ -1,7 +1,7 @@
 ﻿using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 
 namespace Covenant.Common.Repositories;
 

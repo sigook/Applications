@@ -1,11 +1,11 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Workers;
 using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Company.Workers;
+namespace Covenant.Api.Controllers.Companies.Workers;
 
 [Route(RouteName)]
 [ApiController]

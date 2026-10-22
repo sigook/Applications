@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Worker.Agency;
+namespace Covenant.Common.Models.Workers.Agencies;
 
 public class WorkerProfileHolidayModel
 {

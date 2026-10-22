@@ -1,9 +1,10 @@
-using Covenant.Api.Controllers.Company.Profile;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Companies.Profile;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -14,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Profile;
+namespace Covenant.Integration.Tests.Companies.Profile;
 
 public class JobPositionsControllerTest : IClassFixture<CustomWebApplicationFactory<JobPositionsControllerTest.Startup>>
 {
@@ -95,7 +96,7 @@ public class JobPositionsControllerTest : IClassFixture<CustomWebApplicationFact
             services.AddSingleton<CompanyIdFilter>();
         }
 
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency = new Agency() { User = FakeData.FakeUser() };
 
         private static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
             "", "", new CompanyProfileIndustry("Company Industry"));

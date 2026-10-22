@@ -1,8 +1,8 @@
-using Covenant.Api.Controllers.Company.Profile;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Companies.Profile;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Profile;
+namespace Covenant.Integration.Tests.Companies.Profile;
 
 public class LocationsControllerTest : ControllerBase, IClassFixture<CustomWebApplicationFactory<LocationsControllerTest.Startup>>
 {

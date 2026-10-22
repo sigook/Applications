@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.TimeSheet.Agency;
+namespace Covenant.Common.Models.Requests.TimeSheets.Agencies;
 
 public class WorkerReadyForPayStubModel
 {

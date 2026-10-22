@@ -1,12 +1,12 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Accounting.Invoice.Company;
+using Covenant.Common.Models.Accounting.Invoices.Companies;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Company.Invoices;
+namespace Covenant.Api.Controllers.Companies.Invoices;
 
 [Route(RouteName)]
 [ApiController]

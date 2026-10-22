@@ -1,4 +1,4 @@
-﻿namespace Covenant.Common.Models.Candidate
+﻿namespace Covenant.Common.Models.Candidates
 {
     public enum GetCandidatesSortBy
     {

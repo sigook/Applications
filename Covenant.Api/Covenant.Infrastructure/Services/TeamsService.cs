@@ -2,7 +2,7 @@ using Azure.Identity;
 using Covenant.Common.Configuration;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using System.Net.Http.Headers;

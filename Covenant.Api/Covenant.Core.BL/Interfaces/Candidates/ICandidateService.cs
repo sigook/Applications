@@ -1,6 +1,6 @@
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Candidates;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Candidate;
 
 namespace Covenant.Core.BL.Interfaces.Candidates;
 

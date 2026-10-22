@@ -1,8 +1,8 @@
-﻿using Covenant.Api.Controllers.Agency.Accounting;
+﻿using Covenant.Api.Controllers.Agencies.Accounting;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Infrastructure.Contexts;
@@ -12,8 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Text;
 using Xunit;
+using Covenant.Common.Entities.Agencies;
 
-namespace Covenant.Integration.Tests.Agency.Accounting;
+namespace Covenant.Integration.Tests.Agencies.Accounting;
 
 public class InvoiceDocumentPdfControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
@@ -65,7 +66,7 @@ public class Startup
 
 public static class Data
 {
-    public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+    public static readonly Agency Agency = new Agency() { User = FakeData.FakeUser() };
     public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("companyProfile@mail.com").Value), Agency = Agency , Industry = new CompanyProfileIndustry("Test") };
     public static readonly Invoice Invoice = new Invoice
     {

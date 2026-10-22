@@ -1,9 +1,9 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Api.Utils;
-using Covenant.Common.Entities.Agency;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Models.Agencies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Sales;
+namespace Covenant.Api.Controllers.Agencies.Sales;
 
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]

@@ -2,14 +2,14 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Worker.Profile;
+namespace Covenant.Api.Controllers.Workers.Profile;
 
 [ApiController]
 [Authorize]

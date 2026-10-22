@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Request.Runners;
+using Covenant.Common.Entities.Requests.Runners;
+using Covenant.Common.Models.Requests.Runners;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request.Runners;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;

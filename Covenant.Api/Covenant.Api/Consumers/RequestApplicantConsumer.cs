@@ -1,6 +1,6 @@
 using Azure.Messaging.ServiceBus;
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Interfaces;
 using Covenant.Core.BL.Interfaces.Candidates;
 using Covenant.Infrastructure.Services;

@@ -1,7 +1,7 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
 
-namespace Covenant.Common.Models.Request
+namespace Covenant.Common.Models.Requests
 {
     public enum GetWorkersRequestSortBy
     {

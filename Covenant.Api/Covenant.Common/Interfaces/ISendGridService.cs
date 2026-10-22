@@ -1,5 +1,5 @@
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models;
 
 namespace Covenant.Common.Interfaces;

@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Xunit;
 
 namespace Covenant.Tests.Accounting;
@@ -14,7 +14,7 @@ public class TestTimeSheetTotal
         TimeSpan overtimeHours = TimeSpan.FromHours(3);
         TimeSpan nightShiftHours = TimeSpan.FromHours(4);
         TimeSpan accumulatedHours = TimeSpan.FromHours(5);
-        var sub = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(timeSheetId, totalHours,
+        var sub = TimeSheetTotal.CreateTotal(timeSheetId, totalHours,
             regularHours, overtimeHours, nightShiftHours, accumulatedHours);
 
         Assert.Equal(timeSheetId, sub.TimeSheetId);
@@ -39,7 +39,7 @@ public class TestTimeSheetTotal
         TimeSpan overtimeHours = TimeSpan.FromHours(4);
         TimeSpan nightShiftHours = TimeSpan.FromHours(5);
         TimeSpan accumulatedHours = TimeSpan.FromHours(6);
-        var sub = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotalWithOtherRegular(timeSheetId, totalHours,
+        var sub = TimeSheetTotal.CreateTotalWithOtherRegular(timeSheetId, totalHours,
             regularHours, otherRegularHours, overtimeHours, nightShiftHours, accumulatedHours);
 
         Assert.Equal(timeSheetId, sub.TimeSheetId);
@@ -61,7 +61,7 @@ public class TestTimeSheetTotal
         var timeSheetId = Guid.NewGuid();
         TimeSpan totalHours = TimeSpan.FromHours(1);
         TimeSpan accumulatedHours = TimeSpan.FromHours(6);
-        var sub = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotalForHoliday(timeSheetId, totalHours, accumulatedHours);
+        var sub = TimeSheetTotal.CreateTotalForHoliday(timeSheetId, totalHours, accumulatedHours);
 
         Assert.Equal(timeSheetId, sub.TimeSheetId);
         Assert.Equal(totalHours, sub.TotalHours);
@@ -80,7 +80,7 @@ public class TestTimeSheetTotal
     public void CreateFromITimeSheetTotal()
     {
         var tst = new FakeTimeSheetTotal();
-        var sut = new Covenant.Common.Entities.Request.TimeSheetTotal(tst);
+        var sut = new TimeSheetTotal(tst);
         Assert.Equal(tst.Id, sut.Id);
         Assert.Equal(tst.TotalHours, sut.TotalHours);
         Assert.Equal(tst.RegularHours, sut.RegularHours);

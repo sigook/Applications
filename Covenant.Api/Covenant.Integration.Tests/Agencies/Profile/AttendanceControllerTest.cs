@@ -1,9 +1,9 @@
-using Covenant.Api.Controllers.Agency.Profile;
+using Covenant.Api.Controllers.Agencies.Profile;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Agency;
+using Covenant.Common.Models.Agencies;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
@@ -11,7 +11,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Profile;
+namespace Covenant.Integration.Tests.Agencies.Profile;
 
 public class AttendanceControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AttendanceControllerTest.Startup>>
 {
@@ -259,8 +259,8 @@ public class AttendanceControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
 
         public static void SetNow(DateTime bogotaNow) => Clock.Set(new DateTimeOffset(bogotaNow, TimeSpan.FromHours(-5)));
 
-        public static readonly Covenant.Common.Entities.Agency.Agency Agency = FakeData.FakeAgency();
-        public static readonly Covenant.Common.Entities.Agency.Agency OtherAgency = FakeData.FakeAgency();
+        public static readonly Agency Agency = FakeData.FakeAgency();
+        public static readonly Agency OtherAgency = FakeData.FakeAgency();
 
         public static readonly User AdminUser = new(CvnEmail.Create("admin@attendance.com").Value);
         public static readonly User PunchUser = new(CvnEmail.Create("punch@attendance.com").Value);

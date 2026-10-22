@@ -1,9 +1,9 @@
 using Azure.Messaging.ServiceBus;
 using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Candidate;
+using Covenant.Common.Models.Candidates;
 using Covenant.Core.BL.Interfaces.Candidates;
 using Covenant.Infrastructure.Services;
 using Microsoft.Extensions.Options;

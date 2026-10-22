@@ -1,9 +1,9 @@
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request.Company;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests.Companies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Request;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 

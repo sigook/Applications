@@ -1,9 +1,10 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Agency.Profile;
+using Covenant.Api.Controllers.Agencies.Profile;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
@@ -14,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Profile;
+namespace Covenant.Integration.Tests.Agencies.Profile;
 
 public class LocationsControllerTest
 {
@@ -24,10 +25,10 @@ public class LocationsControllerTest
     private readonly City Toronto;
     private readonly City York;
     private readonly City Brampton;
-    private readonly Covenant.Common.Entities.Agency.Agency FakeAgency;
-    private readonly Covenant.Common.Entities.Agency.AgencyLocation FakeLocation;
-    private readonly Covenant.Common.Entities.Agency.AgencyLocation FakeUpdateLocation;
-    private readonly Covenant.Common.Entities.Agency.AgencyLocation FakeDeleteLocation;
+    private readonly Agency FakeAgency;
+    private readonly AgencyLocation FakeLocation;
+    private readonly AgencyLocation FakeUpdateLocation;
+    private readonly AgencyLocation FakeDeleteLocation;
 
     public LocationsControllerTest()
     {
@@ -50,10 +51,10 @@ public class LocationsControllerTest
         Toronto = new City { Value = "Toronto", Province = Ontario };
         York = new City { Value = "York", Province = Ontario };
         Brampton = new City { Value = "Brampton", Province = Ontario };
-        FakeAgency = new Covenant.Common.Entities.Agency.Agency { User = new User(CvnEmail.Create("agency@agency.com").Value) };
-        FakeLocation = new Covenant.Common.Entities.Agency.AgencyLocation(Location.Create(York.Id, "567 Dundas", "A2A2A2").Value, FakeAgency.Id, true);
-        FakeUpdateLocation = new Covenant.Common.Entities.Agency.AgencyLocation(Location.Create(York.Id, "543 Dundas update", "B3B3B3").Value, FakeAgency.Id);
-        FakeDeleteLocation = new Covenant.Common.Entities.Agency.AgencyLocation(Location.Create(York.Id, "345 Dundas Delete", "C3C3C3").Value, FakeAgency.Id);
+        FakeAgency = new Agency { User = new User(CvnEmail.Create("agency@agency.com").Value) };
+        FakeLocation = new AgencyLocation(Location.Create(York.Id, "567 Dundas", "A2A2A2").Value, FakeAgency.Id, true);
+        FakeUpdateLocation = new AgencyLocation(Location.Create(York.Id, "543 Dundas update", "B3B3B3").Value, FakeAgency.Id);
+        FakeDeleteLocation = new AgencyLocation(Location.Create(York.Id, "345 Dundas Delete", "C3C3C3").Value, FakeAgency.Id);
         _client = _factory.CreateClient();
         Seed(_factory.Services.GetService<CovenantContext>());
     }
@@ -74,7 +75,7 @@ public class LocationsControllerTest
         response.EnsureSuccessStatusCode();
         var detail = await response.Content.ReadFromJsonAsync<LocationDetailModel>();
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        Covenant.Common.Entities.Agency.AgencyLocation entity = await context.Set<Covenant.Common.Entities.Agency.AgencyLocation>().SingleAsync(c => c.LocationId == detail.Id);
+        AgencyLocation entity = await context.Set<AgencyLocation>().SingleAsync(c => c.LocationId == detail.Id);
         Assert.Equal(model.Address, entity.Location.Address);
         Assert.Equal(model.PostalCode, entity.Location.PostalCode);
         Assert.Equal(model.City.Id, entity.Location.City.Id);
@@ -95,7 +96,7 @@ public class LocationsControllerTest
         HttpResponseMessage response = await HttpClientJsonExtensions.PutAsJsonAsync(_client, $"{RequestUri()}/{id}", model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        var entity = await context.Set<Covenant.Common.Entities.Agency.AgencyLocation>().SingleAsync(c => c.LocationId == id);
+        var entity = await context.Set<AgencyLocation>().SingleAsync(c => c.LocationId == id);
         Assert.Equal(model.Address, entity.Location.Address);
         Assert.Equal(model.PostalCode, entity.Location.PostalCode);
         Assert.Equal(model.City.Id, entity.Location.City.Id);

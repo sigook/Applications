@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Location
+namespace Covenant.Common.Models.Locations
 {
     public class GeocodeResponse
     {

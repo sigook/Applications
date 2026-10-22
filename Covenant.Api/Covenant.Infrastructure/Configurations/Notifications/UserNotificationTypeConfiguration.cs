@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Notification;
+using Covenant.Common.Entities.Notifications;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 

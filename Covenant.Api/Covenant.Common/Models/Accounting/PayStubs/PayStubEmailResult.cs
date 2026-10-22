@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Accounting.PayStub;
+namespace Covenant.Common.Models.Accounting.PayStubs;
 
 public record PayStubEmailResult(Guid PayStubId, bool Success, string WorkerFullName, string PayrollNumber)
 {

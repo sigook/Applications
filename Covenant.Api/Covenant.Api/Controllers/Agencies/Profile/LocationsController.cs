@@ -1,13 +1,13 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Profile;
+namespace Covenant.Api.Controllers.Agencies.Profile;
 
 [Route(RouteName)]
 [ApiController]
@@ -25,7 +25,7 @@ public class LocationsController : ControllerBase
         Ok(await repository.GetLocations(User.GetAgencyId()));
 
     /// <summary>Creates a new location for the current agency.</summary>
-    /// <param name="repository">Agency repository service.</param>
+    /// <param name="agencyService">Agency service.</param>
     /// <param name="model">Location data to create.</param>
     [HttpPost]
     [ProducesResponseType(typeof(LocationDetailModel), StatusCodes.Status201Created)]
@@ -52,7 +52,7 @@ public class LocationsController : ControllerBase
     }
 
     /// <summary>Updates an existing agency location.</summary>
-    /// <param name="repository">Agency repository service.</param>
+    /// <param name="agencyService">Agency service.</param>
     /// <param name="id">Location identifier.</param>
     /// <param name="model">Updated location data.</param>
     [HttpPut("{id:guid}")]
@@ -68,7 +68,7 @@ public class LocationsController : ControllerBase
     }
 
     /// <summary>Deletes an agency location by id.</summary>
-    /// <param name="repository">Agency repository service.</param>
+    /// <param name="agencyService">Agency service.</param>
     /// <param name="id">Location identifier.</param>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]

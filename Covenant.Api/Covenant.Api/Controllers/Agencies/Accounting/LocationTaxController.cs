@@ -1,12 +1,12 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Validators.Locations;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
 using Covenant.Core.BL.Interfaces.Locations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Accounting;
+namespace Covenant.Api.Controllers.Agencies.Accounting;
 
 [Route(RouteName)]
 [ApiController]

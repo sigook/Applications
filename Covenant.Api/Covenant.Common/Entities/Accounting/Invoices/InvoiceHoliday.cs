@@ -1,8 +1,8 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Functionals;
 using Covenant.Common.Utils.Extensions;
 
-namespace Covenant.Common.Entities.Accounting.Invoice;
+namespace Covenant.Common.Entities.Accounting.Invoices;
 
 public class InvoiceHoliday
 {

@@ -1,7 +1,7 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Worker
+namespace Covenant.Common.Entities.Workers
 {
     public class WorkerProfileOtherDocument
     {

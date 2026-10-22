@@ -1,6 +1,6 @@
-using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Models.Requests.Agencies;
 
-namespace Covenant.Common.Models.Request.Company;
+namespace Covenant.Common.Models.Requests.Companies;
 
 public class GetRequestForCompanyFilter : Pagination
 {

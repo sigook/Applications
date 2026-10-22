@@ -1,9 +1,9 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Request.Worker;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;

@@ -1,7 +1,8 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Requests;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
@@ -15,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public class WorkerNotesControllerTest :
     IClassFixture<CustomWebApplicationFactory<WorkerNotesControllerTest.Startup>>
@@ -126,11 +127,11 @@ public class WorkerNotesControllerTest :
             services.AddSingleton<AgencyIdFilter>();
         }
 
-        public static readonly Covenant.Common.Entities.Request.Request FakeRequest = FakeData.FakeRequest();
-        public static readonly Covenant.Common.Entities.Worker.WorkerProfile FakeWorker = FakeData.FakeWorkerProfile();
+        public static readonly Request FakeRequest = FakeData.FakeRequest();
+        public static readonly WorkerProfile FakeWorker = FakeData.FakeWorkerProfile();
 
-        public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest =
-            Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorker.Id, FakeRequest.Id);
+        public static readonly WorkerRequest FakeWorkerRequest =
+            WorkerRequest.AgencyBook(FakeWorker.Id, FakeRequest.Id);
 
         public static readonly WorkerRequestNote FakeNote = new WorkerRequestNote(FakeWorkerRequest.Id,
             CovenantNote.Create("Fake request note", "#CCC111", "a@mail.com").Value);

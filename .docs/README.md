@@ -54,7 +54,7 @@
 **Modify the sales module / dashboard:**
 1. [SALES_MODULE.md](./business/SALES_MODULE.md) — concepts, deal lifecycle, KPI definitions
 2. [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) (routes, `Dashboard.vue` layout, `sales_dashboard/` components) + [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) §4 (deals/interactions CRUD + modal wiring) and §18 (dashboard aggregate endpoints)
-3. Code: `Sigook.Web/src/modules/agency/sales/dashboard/`; backend `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/`
+3. Code: `Sigook.Web/src/modules/agency/sales/dashboard/`; backend `Covenant.Api/Covenant.Api/Controllers/Agencies/Sales/`
 
 ---
 

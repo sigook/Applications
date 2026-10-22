@@ -1,12 +1,12 @@
-using Covenant.Api.Controllers.Agency.Sales;
-using Covenant.Api.Controllers.Agency.Profile;
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Agency;
+using Covenant.Api.Controllers.Agencies.Profile;
+using Covenant.Api.Controllers.Agencies.Sales;
+using Covenant.Api.Controllers.Agencies;
 using Covenant.Api.Utils;
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Agency;
+using Covenant.Common.Models.Agencies;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
@@ -18,7 +18,7 @@ using System.Net.Http.Json;
 using System.Reflection;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency;
+namespace Covenant.Integration.Tests.Agencies;
 
 public class AgencyIdFilterTest : ControllerBase, IClassFixture<CustomWebApplicationFactory<AgencyIdFilterTest.Startup>>
 {
@@ -48,7 +48,7 @@ public class AgencyIdFilterTest : ControllerBase, IClassFixture<CustomWebApplica
     public class Startup
     {
         private static readonly User FakeUser = new User(CvnEmail.Create("a.a@sigook.com").Value);
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("agency", "3459876543") { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency = new Agency("agency", "3459876543") { User = FakeData.FakeUser() };
 
         public void ConfigureServices(IServiceCollection services)
         {

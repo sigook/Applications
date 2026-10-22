@@ -1,16 +1,17 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Requests;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Requests.Runners;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Request.Runners;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests.Runners;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Request.Runners;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Core.BL.Interfaces.Requests;
@@ -25,7 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<RunnersControllerTest.Startup>>
 {
@@ -350,8 +351,8 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
         public static readonly AgencyPersonnel FakeRecruiter =
             AgencyPersonnel.CreatePrimary(AgencyId, FakeRecruiterUser.Id, FakeRecruiterUser.Email);
 
-        public static readonly Covenant.Common.Entities.Request.Request FakeRequest = FakeData.FakeRequest(AgencyId);
-        public static readonly Covenant.Common.Entities.Request.Request FakeRequestWithoutRunners = FakeData.FakeRequest(AgencyId);
+        public static readonly Request FakeRequest = FakeData.FakeRequest(AgencyId);
+        public static readonly Request FakeRequestWithoutRunners = FakeData.FakeRequest(AgencyId);
 
         public static readonly WorkerProfile FakeWorkerSearch = FakeWorker("Ready", "Prospect", "ready.prospect@mail.com");
         public static readonly WorkerProfile FakeWorkerSearchTaken = FakeWorker("Taken", "Prospect", "taken.prospect@mail.com");

@@ -1,14 +1,14 @@
-using Covenant.Api.Controllers.Worker.TimeSheets;
+using Covenant.Api.Controllers.Workers.TimeSheets;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request.TimeSheet;
-using Covenant.Common.Models.Request.Worker;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
 using Covenant.Common.Utils.Extensions;
@@ -27,7 +27,7 @@ using Moq;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Worker.TimeSheets;
+namespace Covenant.Integration.Tests.Workers.TimeSheets;
 
 public class TimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<TimeSheetsControllerTest.Startup>>
 {
@@ -161,7 +161,7 @@ public class TimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         public static readonly Request Request = FakeData.FakeRequest(AgencyId, location: FakeLocation, startAt: Now);
         internal static readonly double HoursDay2 = 2;
 
-        public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(FakeWorker.Id, Request.Id);
+        public static readonly WorkerRequest FakeWorkerRequest = WorkerRequest.AgencyBook(FakeWorker.Id, Request.Id);
         public static readonly TimeSheet Day1 = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, Now.AddDays(-2).Date).Value;
         public static readonly TimeSheet Day2 = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, Now.AddDays(-1).Date).Value;
 

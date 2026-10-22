@@ -1,15 +1,15 @@
-using Covenant.Api.Controllers.Agency.Accounting;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Accounting;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Models.Accounting.Invoices;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting.Invoices;
@@ -20,7 +20,7 @@ using Moq;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Accounting;
+namespace Covenant.Integration.Tests.Agencies.Accounting;
 
 public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<CanadaInvoicesControllerTest.Startup, CanadaInvoicesControllerTest.Data>>
 {
@@ -135,7 +135,7 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
         private readonly BillableCompany preview;
         private readonly BillableCompany payStubs;
 
-        public Covenant.Common.Entities.Agency.Agency Agency { get; }
+        public Agency Agency { get; }
         public CompanyProfile CompanyProfile => post.CompanyProfile;
         public CompanyProfile PreviewCompanyProfile => preview.CompanyProfile;
         public CompanyProfile PayStubsCompanyProfile => payStubs.CompanyProfile;
@@ -168,7 +168,7 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
             public CompanyProfile CompanyProfile { get; }
             public TimeSheet[] TimeSheets { get; }
 
-            public BillableCompany(Covenant.Common.Entities.Agency.Agency agency, City city, string key)
+            public BillableCompany(Agency agency, City city, string key)
             {
                 CompanyProfile = FakeData.FakeCompanyProfile(agency, city: city, companyEmail: $"{key}@company.ca");
                 worker = FakeData.FakeWorkerProfile(agency, $"{key}@worker.ca", city);

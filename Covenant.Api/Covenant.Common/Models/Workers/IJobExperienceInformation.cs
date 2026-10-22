@@ -1,4 +1,4 @@
-﻿namespace Covenant.Common.Models.Worker
+﻿namespace Covenant.Common.Models.Workers
 {
     public interface IJobExperienceInformation<TJobExperienceModel> where TJobExperienceModel : IWorkerProfileJobExperience
     {

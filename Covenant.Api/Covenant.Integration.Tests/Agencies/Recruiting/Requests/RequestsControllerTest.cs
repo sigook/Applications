@@ -1,16 +1,16 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Agency.Recruiting.Requests;
+using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
@@ -33,7 +33,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
@@ -48,7 +48,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     private static string RequestUri() => RequestsController.RouteName;
 
-    private static string ListUri() => Covenant.Api.Controllers.Agency.Recruiting.Requests.RequestsListController.RouteName;
+    private static string ListUri() => RequestsListController.RouteName;
 
     [Fact]
     public async Task Get()
@@ -425,7 +425,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     private static class Data
     {
         public static readonly DateTime FakeNow = DateTime.Now;
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Test", "Test") { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency = new Agency("Test", "Test") { User = FakeData.FakeUser() };
         public static readonly Guid AgencyId = FakeAgency.Id;
         public static readonly Country Canada = Country.Canada;
         public static readonly City Toronto = new City { Value = "Toronto", Province = new Province { Country = Canada } };

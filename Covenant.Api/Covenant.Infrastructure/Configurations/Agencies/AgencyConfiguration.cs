@@ -1,11 +1,12 @@
+using Covenant.Common.Entities.Agencies;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Configurations.Agencies;
 
-public class AgencyConfiguration : IEntityTypeConfiguration<Common.Entities.Agency.Agency>
+public class AgencyConfiguration : IEntityTypeConfiguration<Agency>
 {
-    public void Configure(EntityTypeBuilder<Common.Entities.Agency.Agency> builder)
+    public void Configure(EntityTypeBuilder<Agency> builder)
     {
         builder.ToTable("Agencies");
         builder.Property(a => a.NumberId).ValueGeneratedOnAdd();

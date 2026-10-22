@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Request.Agency;
+namespace Covenant.Common.Models.Requests.Agencies;
 
 public class WorkerRequestHistoryModel
 {

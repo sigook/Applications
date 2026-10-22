@@ -1,6 +1,6 @@
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 
 namespace Covenant.Core.BL.Interfaces.Workers;
 

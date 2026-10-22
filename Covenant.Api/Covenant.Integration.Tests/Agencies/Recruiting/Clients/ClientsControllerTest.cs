@@ -1,13 +1,14 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Clients;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Clients;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Identity;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
@@ -22,7 +23,7 @@ using Moq;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Clients;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
 public class ClientsControllerTest : IClassFixture<CustomWebApplicationFactory<ClientsControllerTest.Startup>>
 {
@@ -154,7 +155,7 @@ public class ClientsControllerTest : IClassFixture<CustomWebApplicationFactory<C
 
         public static readonly Industry Drivers = new Industry { Value = "Drivers" };
 
-        private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Test", "Test") { User = FakeData.FakeUser() };
+        private static readonly Agency FakeAgency = new Agency("Test", "Test") { User = FakeData.FakeUser() };
 
         public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
             "ABC Corporation", "657890764", new CompanyProfileIndustry("Company Industry"));

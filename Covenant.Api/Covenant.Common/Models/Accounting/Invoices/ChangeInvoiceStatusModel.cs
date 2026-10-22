@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Accounting.Invoice;
+namespace Covenant.Common.Models.Accounting.Invoices;
 
 public class ChangeInvoiceStatusModel
 {

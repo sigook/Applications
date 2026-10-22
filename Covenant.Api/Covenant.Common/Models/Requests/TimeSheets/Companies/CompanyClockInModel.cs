@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.TimeSheet.Company;
+namespace Covenant.Common.Models.Requests.TimeSheets.Companies;
 
 public class CompanyClockInModel
 {

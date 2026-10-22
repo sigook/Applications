@@ -1,6 +1,6 @@
 using Covenant.Common.Functionals;
 
-namespace Covenant.Common.Entities.Accounting.PayStub;
+namespace Covenant.Common.Entities.Accounting.PayStubs;
 
 public class PayStubPublicHoliday
 {

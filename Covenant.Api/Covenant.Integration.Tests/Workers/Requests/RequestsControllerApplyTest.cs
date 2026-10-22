@@ -1,21 +1,22 @@
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Request.Worker;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Workers;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 
-using Covenant.Api.Controllers.Worker.Requests;
+using Covenant.Api.Controllers.Workers.Requests;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
+using Covenant.Common.Entities.Agencies;
 
-namespace Covenant.Integration.Tests.Worker.Requests;
+namespace Covenant.Integration.Tests.Workers.Requests;
 public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerApplyTest.Startup>>
 {
     private static string RequestUri => $"{RequestsController.RouteName}/Apply";
@@ -153,7 +154,7 @@ public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWe
 
         public static readonly DateTime Now = new DateTime(2019, 01, 01);
 
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency
+        public static readonly Agency FakeAgency = new Agency
         {
             User = new User(CvnEmail.Create("agency_applybyemail@mail.com").Value)
         }.With(a => a.ChangeLogo(new CovenantFile("logo.png")));

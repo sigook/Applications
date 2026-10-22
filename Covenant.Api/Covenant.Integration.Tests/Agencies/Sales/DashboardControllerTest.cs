@@ -1,8 +1,8 @@
-using Covenant.Api.Controllers.Agency.Sales;
+using Covenant.Api.Controllers.Agencies.Sales;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Sales.Dashboard;
@@ -14,7 +14,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Sales;
+namespace Covenant.Integration.Tests.Agencies.Sales;
 
 public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<DashboardControllerTest.Startup>>
 {
@@ -196,8 +196,8 @@ public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApp
 
         private static DateTime Utc(int day, int hour = 12) => new(2026, 9, day, hour, 0, 0, DateTimeKind.Utc);
 
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new("Dashboard Agency", "4160000001") { User = FakeData.FakeUser() };
-        public static readonly Covenant.Common.Entities.Agency.Agency OtherAgency = new("Other Agency", "4160000002") { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency = new("Dashboard Agency", "4160000001") { User = FakeData.FakeUser() };
+        public static readonly Agency OtherAgency = new("Other Agency", "4160000002") { User = FakeData.FakeUser() };
 
         public static readonly User SalesUser = new(CvnEmail.Create("sales@dashboard.com").Value);
         public static readonly User OtherSalesUser = new(CvnEmail.Create("other.sales@dashboard.com").Value);

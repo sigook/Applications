@@ -1,8 +1,8 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Services.Requests;

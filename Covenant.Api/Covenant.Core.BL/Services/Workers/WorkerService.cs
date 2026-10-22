@@ -1,27 +1,28 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Notifications;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
+using Covenant.Common.Entities;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Identity;
-using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
-using Covenant.Common.Constants;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Notification;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Enums;
-using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
-using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Models;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
@@ -547,7 +548,7 @@ public class WorkerService(
         foreach (var file in createdFiles) await workerRepository.Create(file);
     }
 
-    private async Task NotifyAgencyAndSubscribe(Common.Entities.Agency.Agency agency, WorkerProfile workerProfile)
+    private async Task NotifyAgencyAndSubscribe(Agency agency, WorkerProfile workerProfile)
     {
         try
         {

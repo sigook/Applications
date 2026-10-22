@@ -2,7 +2,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Company;
+namespace Covenant.Common.Entities.Companies;
 
 public class CompanyProfileIndustry
 {

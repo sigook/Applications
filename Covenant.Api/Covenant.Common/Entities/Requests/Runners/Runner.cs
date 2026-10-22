@@ -1,8 +1,8 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 
-namespace Covenant.Common.Entities.Request.Runners;
+namespace Covenant.Common.Entities.Requests.Runners;
 
 public class Runner
 {

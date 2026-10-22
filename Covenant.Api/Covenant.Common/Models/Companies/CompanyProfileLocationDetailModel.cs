@@ -1,6 +1,6 @@
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 
-namespace Covenant.Common.Models.Company
+namespace Covenant.Common.Models.Companies
 {
     public class CompanyProfileLocationDetailModel : LocationModel
     {

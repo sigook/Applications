@@ -1,6 +1,6 @@
 ﻿using Covenant.Common.Entities;
 
-namespace Covenant.Common.Models.Worker
+namespace Covenant.Common.Models.Workers
 {
     public interface IWorkerBasicInformation<out TGender> where TGender : ICatalog<Guid>
     {

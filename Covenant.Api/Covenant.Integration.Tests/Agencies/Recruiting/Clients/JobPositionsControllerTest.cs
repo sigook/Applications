@@ -1,11 +1,12 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Clients;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Clients;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories;
 using Covenant.Common.Utils.Extensions;
@@ -22,7 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Clients;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
 public class JobPositionsControllerTest
 {
@@ -30,7 +31,7 @@ public class JobPositionsControllerTest
     private readonly HttpClient _client;
     private const string GeneralLabour = "General Labour";
     private const string Driver = "Driver";
-    private readonly Covenant.Common.Entities.Agency.Agency FakeAgency;
+    private readonly Agency FakeAgency;
     private readonly CompanyProfile FakeCompanyProfile;
     private readonly CompanyProfileJobPositionRate FakePosition;
     private readonly CompanyProfileJobPositionRate FakeUpdatePosition;
@@ -58,7 +59,7 @@ public class JobPositionsControllerTest
                 });
                 builder.UseSetting("EmailsPetitionNewJobPosition", "e@sigook.com,b@siggok.com");
             });
-        FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+        FakeAgency = new Agency() { User = FakeData.FakeUser() };
         FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
             "", "", new CompanyProfileIndustry("Company Industry"));
         FakePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "Forklift List", 2, 1, default, "tst@mail.com").Value;

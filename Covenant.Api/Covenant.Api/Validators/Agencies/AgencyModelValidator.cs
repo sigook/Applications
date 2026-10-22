@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Agency;
+using Covenant.Common.Models.Agencies;
 using Covenant.Common.Repositories;
 using FluentValidation;
 

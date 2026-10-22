@@ -1,13 +1,13 @@
-﻿using Covenant.Api.Controllers.Agency.Accounting;
+﻿using Covenant.Api.Controllers.Agencies.Accounting;
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -20,8 +20,9 @@ using UglyToad.PdfPig;
 using System.Globalization;
 using System.Net.Mime;
 using Xunit;
+using Covenant.Common.Entities.Agencies;
 
-namespace Covenant.Integration.Tests.Agency.Accounting;
+namespace Covenant.Integration.Tests.Agencies.Accounting;
 
 public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<InvoiceDocumentControllerTest.Startup>>
 {
@@ -80,7 +81,7 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
     {
         private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
         private static readonly City Miami = new City { Value = "Miami", Province = new Province { Code = "FL", Country = FakeData.FakeCountry("USA") } };
-        private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency(
+        private static readonly Agency FakeAgency = new Agency(
             "XYZ USA", "98765432109")
         {
             User = FakeData.FakeUser()

@@ -1,6 +1,6 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Tests.Accounting;

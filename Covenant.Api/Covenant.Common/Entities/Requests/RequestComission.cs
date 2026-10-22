@@ -1,6 +1,6 @@
-﻿using Covenant.Common.Entities.Agency;
+﻿using Covenant.Common.Entities.Agencies;
 
-namespace Covenant.Common.Entities.Request
+namespace Covenant.Common.Entities.Requests
 {
     public class RequestComission
     {

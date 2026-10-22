@@ -1,7 +1,7 @@
-using Covenant.Common.Entities.Request.Runners;
+using Covenant.Common.Entities.Requests.Runners;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.Runners;
+using Covenant.Common.Models.Requests.Runners;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;

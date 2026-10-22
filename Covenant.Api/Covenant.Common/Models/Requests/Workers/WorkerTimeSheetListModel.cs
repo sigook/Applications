@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.Worker;
+namespace Covenant.Common.Models.Requests.Workers;
 
 public class WorkerTimeSheetListModel
 {

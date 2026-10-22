@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Workers;
 using FluentValidation;
 
 namespace Covenant.Api.Validators.Workers;

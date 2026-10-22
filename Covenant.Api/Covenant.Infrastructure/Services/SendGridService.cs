@@ -1,7 +1,7 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -1,14 +1,15 @@
-using Covenant.Api.Controllers.Company.Profile;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Companies.Profile;
 using Covenant.Api.Utils;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
@@ -24,7 +25,7 @@ using Moq;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Profile;
+namespace Covenant.Integration.Tests.Companies.Profile;
 
 public class CompanyControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyControllerTest.Startup>>
 {
@@ -59,7 +60,7 @@ public class CompanyControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
         private static readonly Guid FakeCompanyId = Guid.NewGuid();
         public static readonly City FakeCity = new City { Value = "Toronto", Province = new Province { Country = FakeData.FakeCountry("CA") } };
 
-        public static readonly Covenant.Common.Entities.Agency.Agency MasterAgency = FakeData.FakeAgency();
+        public static readonly Agency MasterAgency = FakeData.FakeAgency();
 
         public void ConfigureServices(IServiceCollection services)
         {

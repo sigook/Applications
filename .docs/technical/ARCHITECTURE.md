@@ -199,9 +199,9 @@ methods and factories (`private set`, or `internal set` for aggregate children a
 ### Controllers (presentation layer)
 
 One layout under `Covenant.Api/Controllers/`, mirroring the Sigook.Web navigation:
-**portal → menu → feature**. The folder is the route: `Controllers/Agency/Recruiting/Requests/`
-serves `api/agency/recruiting/requests`, `Controllers/Company/Invoices/` serves
-`api/company/invoices`, `Controllers/Worker/History/` serves `api/worker/history`. Class-level
+**portal → menu → feature**. The folder is the route: `Controllers/Agencies/Recruiting/Requests/`
+serves `api/agency/recruiting/requests`, `Controllers/Companies/Invoices/` serves
+`api/company/invoices`, `Controllers/Workers/History/` serves `api/worker/history`. Class-level
 prefixes are lowercase and without hyphens; action templates keep their own casing.
 
 | Path | Route prefix | Controllers |
@@ -210,23 +210,23 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 | `Controllers/Shared/` | `api/catalog`, `api/location`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `EmailPreferencesController`, `WebsiteController` (public marketing endpoints). Files are never served by the API: every environment reads them straight from its blob container through `FilesConfiguration:FilesPath`, and uploads are multipart on each domain endpoint |
 | `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed Sigook.App builds call them), `UserNotificationController` |
 | `Controllers/Shared/Jobs/` | `api/jobs/scheduletasks`, `api/jobs/deductions` | machine-to-machine, called by Sigook.Functions: `ScheduleTasksController`, `DeductionsController` (CRA table import) |
-| `Controllers/Agency/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |
-| `Controllers/Agency/Profile/` | `api/agency/profile[/locations\|personnel\|personnel/agencies\|attendance]` | the caller's own agency: `AgencyProfileController`, `LocationsController`, `PersonnelController`, `PersonnelAgenciesController` (agencies the caller belongs to), `AttendanceController` (staff clock in/out) |
-| `Controllers/Agency/Recruiting/Requests/` | `api/agency/recruiting/requests[/{requestId}/…]` | `RequestsListController` (lists + Excel, Policy `Recruiting`), `RequestsController` (detail/CRUD), `ApplicantsController`, `RunnersController` (Policy `Recruiting`), `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController`, `WorkersReportController`, `NotesController`, `ShiftController`, `SkillsController`, `ReportToController`, `RequestedByController` |
-| `Controllers/Agency/Recruiting/Applicants/` | `api/agency/recruiting/applicants` | `ApplicantsController` (cross-request applicants board) |
-| `Controllers/Agency/Recruiting/Runners/` | `api/agency/recruiting/runners` | `RunnersController` (cross-request runners board: grouped list, bulk status, Excel) |
-| `Controllers/Agency/Recruiting/WeeklyBoard/` | `api/agency/recruiting/weeklyboard` | `WeeklyBoardController` |
-| `Controllers/Agency/Recruiting/Candidates/` | `api/agency/recruiting/candidates[/{candidateId}/…]` | `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
-| `Controllers/Agency/Recruiting/Workers/` | `api/agency/recruiting/workers[/{workerProfileId}/…]` | `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController`, `TimeSheetHistoryController`, `WageHistoryController` |
-| `Controllers/Agency/Recruiting/Clients/` | `api/agency/recruiting/clients[/{profileId}/…]` | `ClientsListController` (lists + Excel, Policy `Recruiting`), `ClientsController` (CRUD, Policy `Agency`), `ContactInformationController`, `ContactPeopleController`, `DocumentsController`, `InvoiceNotesController`, `InvoiceRecipientsController`, `JobPositionsController`, `LocationsController`, `LogoController`, `NotesController`, `UsersController` |
-| `Controllers/Agency/Sales/` | `api/agency/sales/{dashboard\|clients\|requests\|agencies}` | sales-rep scoped (Policy `Sales`): `DashboardController`, `ClientsController`, `RequestsController`; `AgenciesController` (sub-agencies, Policy `Agency`) |
-| `Controllers/Agency/Sales/Clients/` | `api/agency/sales/clients/{profileId}/{deals\|interactions}` | owner-scoped `DealsController`, `InteractionsController` (Policy `Sales`) |
-| `Controllers/Agency/Accounting/` | `api/agency/accounting/{invoices\|paystubs\|reports\|locations}` | `InvoicesController`, `PayStubsController`, `ReportsController` (Policy `Admin`), `LocationTaxController` |
-| `Controllers/Company/Profile/` | `api/company/profile[/users\|contactpeople\|jobpositions\|locations]` | `CompanyController` (own profile), `UsersController`, `ContactPeopleController`, `JobPositionsController`, `LocationsController` |
-| `Controllers/Company/Requests/` | `api/company/requests[/{requestId}/…]` | `RequestsController`, `ShiftController`, `WorkersController`, `WorkerTimeSheetsController` |
-| `Controllers/Company/Invoices/` | `api/company/invoices` | `InvoicesController` |
-| `Controllers/Company/Workers/` | `api/company/workers/{workerProfileId}/comments` | `CommentsController` |
-| `Controllers/Worker/` | `api/worker/{profile\|requests\|history\|comments}`, `api/worker/requests/{requestId}/timesheet` | the worker's own endpoints (Policy `Worker`): `Profile/ProfileController` (+ `ProfileUpdateController`, `JobExperienceController`), `Requests/RequestsController`, `History/HistoryController`, `Comments/CommentsController`, `TimeSheets/TimeSheetsController` (clock in/out) |
+| `Controllers/Agencies/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |
+| `Controllers/Agencies/Profile/` | `api/agency/profile[/locations\|personnel\|personnel/agencies\|attendance]` | the caller's own agency: `AgencyProfileController`, `LocationsController`, `PersonnelController`, `PersonnelAgenciesController` (agencies the caller belongs to), `AttendanceController` (staff clock in/out) |
+| `Controllers/Agencies/Recruiting/Requests/` | `api/agency/recruiting/requests[/{requestId}/…]` | `RequestsListController` (lists + Excel, Policy `Recruiting`), `RequestsController` (detail/CRUD), `ApplicantsController`, `RunnersController` (Policy `Recruiting`), `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController`, `WorkersReportController`, `NotesController`, `ShiftController`, `SkillsController`, `ReportToController`, `RequestedByController` |
+| `Controllers/Agencies/Recruiting/Applicants/` | `api/agency/recruiting/applicants` | `ApplicantsController` (cross-request applicants board) |
+| `Controllers/Agencies/Recruiting/Runners/` | `api/agency/recruiting/runners` | `RunnersController` (cross-request runners board: grouped list, bulk status, Excel) |
+| `Controllers/Agencies/Recruiting/WeeklyBoard/` | `api/agency/recruiting/weeklyboard` | `WeeklyBoardController` |
+| `Controllers/Agencies/Recruiting/Candidates/` | `api/agency/recruiting/candidates[/{candidateId}/…]` | `CandidatesController`, `NotesController`, `PhoneNumbersController`, `SkillsController`, `DocumentsController` |
+| `Controllers/Agencies/Recruiting/Workers/` | `api/agency/recruiting/workers[/{workerProfileId}/…]` | `WorkersController`, `NotesController`, `CommentsController`, `HolidaysController`, `RequestHistoryController`, `TimeSheetHistoryController`, `WageHistoryController` |
+| `Controllers/Agencies/Recruiting/Clients/` | `api/agency/recruiting/clients[/{profileId}/…]` | `ClientsListController` (lists + Excel, Policy `Recruiting`), `ClientsController` (CRUD, Policy `Agency`), `ContactInformationController`, `ContactPeopleController`, `DocumentsController`, `InvoiceNotesController`, `InvoiceRecipientsController`, `JobPositionsController`, `LocationsController`, `LogoController`, `NotesController`, `UsersController` |
+| `Controllers/Agencies/Sales/` | `api/agency/sales/{dashboard\|clients\|requests\|agencies}` | sales-rep scoped (Policy `Sales`): `DashboardController`, `ClientsController`, `RequestsController`; `AgenciesController` (sub-agencies, Policy `Agency`) |
+| `Controllers/Agencies/Sales/Clients/` | `api/agency/sales/clients/{profileId}/{deals\|interactions}` | owner-scoped `DealsController`, `InteractionsController` (Policy `Sales`) |
+| `Controllers/Agencies/Accounting/` | `api/agency/accounting/{invoices\|paystubs\|reports\|locations}` | `InvoicesController`, `PayStubsController`, `ReportsController` (Policy `Admin`), `LocationTaxController` |
+| `Controllers/Companies/Profile/` | `api/company/profile[/users\|contactpeople\|jobpositions\|locations]` | `CompanyController` (own profile), `UsersController`, `ContactPeopleController`, `JobPositionsController`, `LocationsController` |
+| `Controllers/Companies/Requests/` | `api/company/requests[/{requestId}/…]` | `RequestsController`, `ShiftController`, `WorkersController`, `WorkerTimeSheetsController` |
+| `Controllers/Companies/Invoices/` | `api/company/invoices` | `InvoicesController` |
+| `Controllers/Companies/Workers/` | `api/company/workers/{workerProfileId}/comments` | `CommentsController` |
+| `Controllers/Workers/` | `api/worker/{profile\|requests\|history\|comments}`, `api/worker/requests/{requestId}/timesheet` | the worker's own endpoints (Policy `Worker`): `Profile/ProfileController` (+ `ProfileUpdateController`, `JobExperienceController`), `Requests/RequestsController`, `History/HistoryController`, `Comments/CommentsController`, `TimeSheets/TimeSheetsController` (clock in/out) |
 
 Routing: every controller declares `public const string RouteName = "api/..."` +
 `[Route(RouteName)]` (grep for `RouteName =` to find an endpoint; integration tests reference the
@@ -518,8 +518,8 @@ Local development connects to the **staging** Service Bus — services and contr
 - **Policies** in `Covenant.Api/Authorization/PolicyConfiguration.cs`: `Agency`, `Recruiting`,
   `Sales`, `Company`, `Worker`, `Admin`, `SuperAdmin`. Every policy requires a role — there is no
   authenticated-only policy, no `Accounting` policy, and no cross-actor policies. An endpoint
-  reachable by two actors is exposed once per actor (`Controllers/Agency/`, `Controllers/Company/`,
-  `Controllers/Worker/`), each under its own policy, with the shared behaviour in a `Covenant.Core.BL`
+  reachable by two actors is exposed once per actor (`Controllers/Agencies/`, `Controllers/Companies/`,
+  `Controllers/Workers/`), each under its own policy, with the shared behaviour in a `Covenant.Core.BL`
   service. The default authentication scheme is the OpenIddict validation (bearer) scheme; the
   Identity application cookie only backs the Microsoft 365 sign-in and the authorize endpoint.
 
@@ -538,7 +538,7 @@ Scoping rules:
 
 - **Agency staff** see only their agency's data (`AgencyId` filter in every agency repository).
 - **Sales users** additionally see only their own portfolio: the sales controllers
-  (`Controllers/Agency/Sales/`) pass the personnel id down, and
+  (`Controllers/Agencies/Sales/`) pass the personnel id down, and
   `Covenant.Infrastructure/Repositories/Companies/CompanyRepository.cs` filters
   `CompanyProfile.SalesRepresentativeId == salesPersonnelId` (requests are filtered by the
   companies assigned to that rep in `RequestRepository`).

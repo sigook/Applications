@@ -1,10 +1,10 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Workers;
 using Covenant.Api.Authorization;
-using Covenant.Common.Entities.Worker;
+using Covenant.Api.Controllers.Agencies.Recruiting.Workers;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Worker.Agency;
+using Covenant.Common.Models.Workers.Agencies;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Workers;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
 public class NotesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
 {
@@ -47,7 +47,7 @@ public class NotesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplica
 
     public class Startup
     {
-        public static readonly Covenant.Common.Entities.Worker.WorkerProfile FakeWorkerProfile = FakeData.FakeWorkerProfile();
+        public static readonly WorkerProfile FakeWorkerProfile = FakeData.FakeWorkerProfile();
         public static readonly Guid WorkerProfileId = FakeWorkerProfile.Id;
         public void ConfigureServices(IServiceCollection services)
         {

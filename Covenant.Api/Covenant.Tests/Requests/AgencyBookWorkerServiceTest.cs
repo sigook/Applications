@@ -1,13 +1,13 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Accounting;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
@@ -33,7 +33,7 @@ public class AgencyBookWorkerServiceTest
     private readonly WorkerProfile _worker;
     private readonly Mock<IWorkerRepository> _workerRepository;
     private readonly DateTime _fakeNow = new DateTime(2019, 01, 01);
-    private readonly Covenant.Common.Entities.Request.Request request;
+    private readonly Request request;
     private readonly Mock<IWorkerRequestRepository> _workerRequestRepository;
     private readonly Mock<IRequestRepository> requestRepository;
     private readonly AgencyService _sut;
@@ -46,12 +46,12 @@ public class AgencyBookWorkerServiceTest
         sinInfo.SetupGet(g => g.SocialInsurance).Returns("980-897-987");
         sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(new CovenantFile("sin.pdf"));
         _worker.PatchSinInformation(sinInfo.Object);
-        request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), _fakeNow, default, workersQuantity: 1).Value;
+        request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), _fakeNow, default, workersQuantity: 1).Value;
         _workerRepository = new Mock<IWorkerRepository>();
         _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(_worker);
         _workerRequestRepository = new Mock<IWorkerRequestRepository>();
         requestRepository = new Mock<IRequestRepository>();
-        requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
+        requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>())).ReturnsAsync(request);
         requestRepository.Setup(r => r.GetRequestShift(It.IsAny<Guid>())).ReturnsAsync(new ShiftModel());
         _sut = new AgencyService(
             Mock.Of<IAgencyRepository>(),
@@ -112,7 +112,7 @@ public class AgencyBookWorkerServiceTest
         Assert.True(result);
 
         requestRepository.Verify(c => c.GetRequestApplicant(It.IsAny<Expression<Func<RequestApplicant, bool>>>()), Times.Once);
-        requestRepository.Verify(c => c.Update(It.IsAny<Covenant.Common.Entities.Request.Request>()), Times.Once);
+        requestRepository.Verify(c => c.Update(It.IsAny<Request>()), Times.Once);
         requestRepository.Verify(c => c.SaveChangesAsync(), Times.Once);
     }
 

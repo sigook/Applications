@@ -1,13 +1,14 @@
-using Covenant.Api.Controllers.Worker.Profile;
+using Covenant.Api.Controllers.Workers.Profile;
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
@@ -29,7 +30,7 @@ using System.Net;
 using System.Text.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Worker.Profile;
+namespace Covenant.Integration.Tests.Workers.Profile;
 
 public class ProfileControllerTest : IClassFixture<CustomWebApplicationFactory<ProfileControllerTest.Startup>>
 {
@@ -251,7 +252,7 @@ public class ProfileControllerTest : IClassFixture<CustomWebApplicationFactory<P
             context.Languages.Add(FakeLanguage);
 
             var agencyUser = new User(CvnEmail.Create("a@agency.com").Value, Guid.NewGuid());
-            var agency = new Covenant.Common.Entities.Agency.Agency("", "")
+            var agency = new Agency("", "")
             {
                 Id = agencyUser.Id,
                 AgencyType = AgencyType.Master,

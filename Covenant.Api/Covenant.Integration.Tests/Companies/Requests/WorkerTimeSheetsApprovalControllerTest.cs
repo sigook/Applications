@@ -1,12 +1,13 @@
-using Covenant.Api.Controllers.Company.Requests;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Companies.Requests;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
@@ -19,7 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Requests;
+namespace Covenant.Integration.Tests.Companies.Requests;
 
 public class WorkerTimeSheetsApprovalControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerTimeSheetsApprovalControllerTest.Startup>>
 {
@@ -107,7 +108,7 @@ public class WorkerTimeSheetsApprovalControllerTest : BaseTestOrder, IClassFixtu
     private static class Data
     {
         private static readonly DateTime FakeNow = new DateTime(2019, 01, 01);
-        public static readonly Covenant.Common.Entities.Agency.Agency Agency = FakeData.FakeAgency();
+        public static readonly Agency Agency = FakeData.FakeAgency();
         public static readonly CompanyProfile CompanyProfile = FakeData.FakeCompanyProfile(Agency);
         public static readonly Guid CompanyId = CompanyProfile.CompanyId;
         public static readonly CompanyProfileJobPositionRate JobPositionRate = FakeData.FakeJobPositionRate(CompanyProfile);
@@ -115,8 +116,8 @@ public class WorkerTimeSheetsApprovalControllerTest : BaseTestOrder, IClassFixtu
         public static readonly User Worker = new User(CvnEmail.Create("w_worker@mail.com").Value);
         public static readonly WorkerProfile WorkerProfile = new WorkerProfile(Worker) { AgencyId = Agency.Id, Location = FakeData.FakeLocation() };
 
-        private static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest =
-            Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
+        private static readonly WorkerRequest FakeWorkerRequest =
+            WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
 
         public static readonly TimeSheet TimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow, TimeSpan.FromHours(8), now: FakeNow).Value;
 

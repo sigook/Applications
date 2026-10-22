@@ -105,7 +105,7 @@ Evaluated per week in `GeneratePayStubForWorker` (PayStubService.cs:346-366) aga
 
 1. **Entitlement flags** from `payStubRepository.GetWorkerRegularWages(workerProfileId, holiday, qualifyingDays)`: `HolidayWasPaid` (already paid in a prior pay stub — `PayStubPublicHolidays` lookup), `CustomPublicHolidayValue` (per-WorkerProfile × per-holiday override from `WorkerProfileHolidays.StatPaidWorker`, `PayStubRepository.cs:114-117`), `IsEntitledToReceiveHolidayPay` (worked at least one qualifying day around the holiday — day before, the holiday, or day after; `DateExtensions.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay`).
 2. **Base wage** (`HolidayPayBase`) from `TimesheetCalculatorService.CalculateHolidayPayBase`: the worker's **regular wages** (regular + other-regular + missing hours at regular rate) over the **four work weeks before** the holiday's work week, **plus 4% vacation pay** computed over the full gross of that window (including overtime and worked-holiday premium, since vacation pay accrues on all wages). Per the Ontario ESA definition of "regular wages", **overtime pay, worked-holiday premium pay (1.5×) and missing-overtime pay are excluded** from the base — hours above the weekly threshold drop out entirely, they are not re-added at straight time. The window is computed with `holiday.GetEnd()` (last Saturday of the week before the holiday's Sunday–Saturday week) and `.GetStart()` (four weeks earlier). Source is the approved timesheets, not previously generated pay stubs, so the amount does not depend on generation order.
-3. **Resolution** via `RegularWageWorker.CalculateAmount()` (Covenant.Common/Models/Accounting/PayStub/RegularWageWorker.cs:16-35), evaluated in order:
+3. **Resolution** via `RegularWageWorker.CalculateAmount()` (Covenant.Common/Models/Accounting/PayStubs/RegularWageWorker.cs:16-35), evaluated in order:
    1. Holiday already paid on a previous pay stub → $0.
    2. Custom value > 0 configured → that amount.
    3. Worker not entitled (no qualifying day worked) → $0.
@@ -150,7 +150,7 @@ No maximum insurable earnings cap is implemented.
 
 ### Per-worker overrides — `WorkerProfileTaxCategory`
 
-`Covenant.Common/Entities/Worker/WorkerProfileTaxCategory.cs` (1:1 with WorkerProfile), applied in `CalculateDeductions`:
+`Covenant.Common/Entities/Workers/WorkerProfileTaxCategory.cs` (1:1 with WorkerProfile), applied in `CalculateDeductions`:
 
 | Field | Effect |
 |-------|--------|
@@ -267,4 +267,4 @@ The 2026 weekly CPP table is 8,928 brackets, from `0.00 - 67.30` to `9344.62 - 9
 
 ## T4
 
-`PayStubService.GenerateT4(from, to)` only produces an **Excel summary** of pay stubs (ClosedXML workbook), exposed via `ReportsController` (Covenant.Api/Controllers/Agency/Accounting/ReportsController.cs:81). A second CRA report exists: `PayStubService.GenerateCraPayroll` (PayStubService.cs:87-98) produces `CRA_Payroll_{year}.xlsx`, exposed at `GET .../cra-payroll` (ReportsController.cs:102). No CRA slip generation or T4A/contractor handling exists.
+`PayStubService.GenerateT4(from, to)` only produces an **Excel summary** of pay stubs (ClosedXML workbook), exposed via `ReportsController` (Covenant.Api/Controllers/Agencies/Accounting/ReportsController.cs:81). A second CRA report exists: `PayStubService.GenerateCraPayroll` (PayStubService.cs:87-98) produces `CRA_Payroll_{year}.xlsx`, exposed at `GET .../cra-payroll` (ReportsController.cs:102). No CRA slip generation or T4A/contractor handling exists.

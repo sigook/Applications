@@ -1,4 +1,4 @@
-namespace Covenant.Common.Entities.Accounting.Invoice;
+namespace Covenant.Common.Entities.Accounting.Invoices;
 
 public class InvoiceAdditionalDetail
 {

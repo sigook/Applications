@@ -1,9 +1,9 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Workers;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Workers;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Identity;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Workers;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
 public class WorkersControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerEmailTest.Startup>>
 {

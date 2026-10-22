@@ -1,7 +1,8 @@
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
 using CsvHelper.Configuration.Attributes;
 
-namespace Covenant.Common.Models.Candidate;
+namespace Covenant.Common.Models.Candidates;
 
 public class CandidateCsvModel
 {
@@ -31,9 +32,9 @@ public class CandidateCsvModel
 
 public class BulkCandidate
 {
-    public Entities.Candidate.Candidate Candidate { get; set; }
-    public Entities.Candidate.CandidatePhone CandidatesPhone { get; set; }
-    public List<Entities.Candidate.CandidateSkill> CandidatesSkills { get; set; } = new List<Entities.Candidate.CandidateSkill>();
-    public Entities.Candidate.CandidateDocument CandidatesDocument { get; set; }
+    public Candidate Candidate { get; set; }
+    public CandidatePhone CandidatesPhone { get; set; }
+    public List<CandidateSkill> CandidatesSkills { get; set; } = new List<CandidateSkill>();
+    public CandidateDocument CandidatesDocument { get; set; }
     public RequestApplicant RequestApplicant { get; set; }
 }

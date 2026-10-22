@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.WeeklyBoard
+namespace Covenant.Common.Models.Requests.WeeklyBoard
 {
     public class WeeklyBoardModel
     {

@@ -1,13 +1,13 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Worker.Profile;
+namespace Covenant.Api.Controllers.Workers.Profile;
 
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Worker)]

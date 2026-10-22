@@ -1,6 +1,6 @@
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 
-namespace Covenant.Common.Models.Worker;
+namespace Covenant.Common.Models.Workers;
 
 public class WorkerProfileContactInformation : IWorkerContactInformation<LocationModel, CityModel>
 {

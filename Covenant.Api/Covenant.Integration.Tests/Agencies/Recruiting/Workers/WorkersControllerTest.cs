@@ -1,14 +1,15 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Workers;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Workers;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Notifications;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Notification;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -23,7 +24,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Workers;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
 public partial class WorkersControllerTest : BaseTestOrder
 {
@@ -43,7 +44,7 @@ public partial class WorkersControllerTest : BaseTestOrder
     private readonly Lift FakeLift;
     private readonly Language FakeLanguage;
     private readonly User FakeAgencyUser;
-    private readonly Covenant.Common.Entities.Agency.Agency FakeAgency;
+    private readonly Agency FakeAgency;
     private readonly WorkerProfile FakeWorkerProfileToFilter;
     private readonly WorkerProfile FakeWorkerToDelete;
     private readonly WorkerProfile FakeWorkerToDnu;
@@ -91,7 +92,7 @@ public partial class WorkersControllerTest : BaseTestOrder
         FakeLift = new Lift("Lift");
         FakeLanguage = new Language();
         FakeAgencyUser = new User(CvnEmail.Create("FakeAgencyUser@email.com").Value);
-        FakeAgency = new Covenant.Common.Entities.Agency.Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
+        FakeAgency = new Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
         FakeWorkerProfileToFilter = new WorkerProfile(new User(CvnEmail.Create("some@e.com").Value))
         {
             AvailabilityTimes = new List<WorkerProfileAvailabilityTime> { new WorkerProfileAvailabilityTime { AvailabilityTime = new AvailabilityTime { Value = "Morning" } } },

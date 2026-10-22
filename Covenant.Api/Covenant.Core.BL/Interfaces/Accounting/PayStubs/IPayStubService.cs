@@ -1,7 +1,7 @@
-using Covenant.Common.Entities.Accounting.PayStub;
+using Covenant.Common.Entities.Accounting.PayStubs;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting.PayStub;
 
 namespace Covenant.Core.BL.Interfaces.Accounting.PayStubs;
 

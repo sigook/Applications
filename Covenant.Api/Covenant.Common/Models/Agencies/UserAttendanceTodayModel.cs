@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Agency;
+namespace Covenant.Common.Models.Agencies;
 
 public class UserAttendanceTodayModel
 {

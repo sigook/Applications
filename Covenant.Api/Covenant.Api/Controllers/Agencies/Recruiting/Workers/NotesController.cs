@@ -1,15 +1,15 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Core.BL.Interfaces.Workers;
-using Covenant.Common.Models.Worker.Agency;
+using Covenant.Common.Models.Workers.Agencies;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Workers;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Workers;
 
 [ApiController]
 [Route(RouteName)]
@@ -20,7 +20,7 @@ public class NotesController : Controller
     public const string RouteName = "api/agency/recruiting/workers/{workerProfileId}/notes";
 
     /// <summary>Creates a new note for the specified worker profile.</summary>
-    /// <param name="repository">Worker repository.</param>
+    /// <param name="workerService">Worker service.</param>
     /// <param name="workerProfileId">Identifier of the worker profile.</param>
     /// <param name="model">Note content.</param>
     [HttpPost]

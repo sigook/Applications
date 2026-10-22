@@ -1,7 +1,7 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Companies;
@@ -9,7 +9,7 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Company.Requests;
+namespace Covenant.Api.Controllers.Companies.Requests;
 
 [Route(RouteName)]
 [ApiController]

@@ -180,6 +180,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     }
 
     /// <summary>Creates a new industry.</summary>
+    /// <param name="catalogService">Catalog service.</param>
     /// <param name="model">Industry data to create.</param>
     [Authorize(Policy = PolicyConfiguration.Agency)]
     [HttpPost("industry")]

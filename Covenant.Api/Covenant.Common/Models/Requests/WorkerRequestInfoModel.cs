@@ -1,6 +1,6 @@
 using Covenant.Common.Entities;
 
-namespace Covenant.Common.Models.Request
+namespace Covenant.Common.Models.Requests
 {
     public class WorkerRequestInfoModel
     {

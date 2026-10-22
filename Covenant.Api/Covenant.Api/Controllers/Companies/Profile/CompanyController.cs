@@ -2,7 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Api.Validators.Locations;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Companies;
@@ -10,7 +10,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Company.Profile;
+namespace Covenant.Api.Controllers.Companies.Profile;
 
 [Route(RouteName)]
 [ApiController]

@@ -1,10 +1,10 @@
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Models.Accounting.Subcontractors;
 using Covenant.Common.Models;
-using Covenant.Infrastructure.Extensions;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Accounting.Subcontractor;
 using Covenant.Common.Repositories.Accounting.Subcontractors;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Repositories.Accounting.Subcontractors;

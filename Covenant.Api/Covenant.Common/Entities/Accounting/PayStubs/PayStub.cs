@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Workers;
 
-namespace Covenant.Common.Entities.Accounting.PayStub;
+namespace Covenant.Common.Entities.Accounting.PayStubs;
 
 public class PayStub
 {

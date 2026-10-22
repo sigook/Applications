@@ -1,7 +1,7 @@
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 
-namespace Covenant.Common.Entities.Notification
+namespace Covenant.Common.Entities.Notifications
 {
     public class NotificationType
     {

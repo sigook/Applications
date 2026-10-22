@@ -1,6 +1,6 @@
 using Covenant.Common.Constants;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;

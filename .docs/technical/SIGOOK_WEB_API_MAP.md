@@ -176,7 +176,7 @@ Policy `Sales` (sales, admin, superadmin). Owner-scoped: a sales user lists, upd
 | `updateDeal(profileId, id, model, file?)` | PUT | `/api/agency/sales/clients/{profileId}/deals/{id}` | `UpdateDealModel` (multipart: `data` + optional document) | `void` | A new file replaces the current document and deletes the previous one |
 | `deleteDeal(profileId, id)` | DELETE | `/api/agency/sales/clients/{profileId}/deals/{id}` | — | `void` | |
 
-Backend: `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs` → `SalesService`; entities in ENTITIES_RELATIONSHIPS.md ("Sales entities"). The dashboard's cross-client "latest 6" lists come from the dashboard api (§18), not from here.
+Backend: `Covenant.Api/Covenant.Api/Controllers/Agencies/Sales/Clients/{InteractionsController,DealsController}.cs` → `SalesService`; entities in ENTITIES_RELATIONSHIPS.md ("Sales entities"). The dashboard's cross-client "latest 6" lists come from the dashboard api (§18), not from here.
 
 **UI:** the client detail's Interactions / Deals tabs (`sales/clients/components/CompanyInteractions.vue` / `CompanyDeals.vue`) — rendered only when the route is the sales view **and** the user has a sales-access role (`useModuleBase().isSalesView` + `useSalesAccess()`); delete is a row action behind a confirm dialog. Create/edit go through one modal per entity — `sales/clients/components/InteractionModal`, `DealModal` (and `sales/dashboard/components/ClientModal` for new clients) — each a plain `b-modal custom-content-class="card"` wrapping its form, emitting `saved` so the host reloads:
 
@@ -583,7 +583,7 @@ In-app notification bell (agency roles). A single aggregated call returns every 
 ---
 
 ## 17. Sales-scoped lists — `src/modules/agency/sales/api.ts`
-Sales-role-scoped lists (parallel to the recruiting-scoped lists in §9 and §4). Backend bases: `/api/agency/sales/requests`, `/api/agency/sales/clients` (`Controllers/Agency/Sales/{RequestsController,ClientsController}.cs`).
+Sales-role-scoped lists (parallel to the recruiting-scoped lists in §9 and §4). Backend bases: `/api/agency/sales/requests`, `/api/agency/sales/clients` (`Controllers/Agencies/Sales/{RequestsController,ClientsController}.cs`).
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
@@ -598,7 +598,7 @@ Sales-role-scoped lists (parallel to the recruiting-scoped lists in §9 and §4)
 
 ## 18. Sales dashboard — `src/modules/agency/sales/dashboard/api.ts`
 Live sales dashboard aggregates. Base: `/api/agency/sales/dashboard` (backend
-`Covenant.Api/Covenant.Api/Controllers/Agency/Sales/DashboardController.cs`). Owner-scoped exactly like deals and interactions: a
+`Covenant.Api/Covenant.Api/Controllers/Agencies/Sales/DashboardController.cs`). Owner-scoped exactly like deals and interactions: a
 sales user always sees only their own rows, admin/superadmin see the whole agency and may pass `ownerId`.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |

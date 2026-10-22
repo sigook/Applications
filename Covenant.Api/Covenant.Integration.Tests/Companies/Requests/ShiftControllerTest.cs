@@ -1,7 +1,7 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Company.Requests;
+using Covenant.Api.Controllers.Companies.Requests;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
@@ -13,7 +13,7 @@ using Covenant.Integration.Tests.Utils;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Requests;
+namespace Covenant.Integration.Tests.Companies.Requests;
 
 public class ShiftControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<ShiftControllerTest.Startup>>
 {

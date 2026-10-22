@@ -1,6 +1,6 @@
-using System.Text.Json;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Enums;
+using System.Text.Json;
 using Xunit;
 
 namespace Covenant.Tests.Requests;

@@ -62,7 +62,7 @@ export interface LocationTax {
   tax1: number;
 }
 
-// Matches backend ProvinceModel (Covenant.Common.Models.Location.ProvinceModel).
+// Matches backend ProvinceModel (Covenant.Common.Models.Locations.ProvinceModel).
 export interface Province {
   id: string;
   value: string;
@@ -71,7 +71,7 @@ export interface Province {
   settings?: ProvinceSettings | null;
 }
 
-// Matches backend CityModel (Covenant.Common.Models.Location.CityModel).
+// Matches backend CityModel (Covenant.Common.Models.Locations.CityModel).
 export interface City {
   id: string;
   value: string;
@@ -89,7 +89,7 @@ export interface CovenantFileModel {
   canDownload?: boolean;
 }
 
-// Matches backend LocationModel (Covenant.Common.Models.Location.LocationModel).
+// Matches backend LocationModel (Covenant.Common.Models.Locations.LocationModel).
 // Base location payload used by agencies/companies.
 export interface LocationModel {
   id?: string;

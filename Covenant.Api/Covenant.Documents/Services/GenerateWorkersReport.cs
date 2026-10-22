@@ -1,7 +1,7 @@
-using Covenant.Documents.Extensions;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Documents.Extensions;
 using MediatR;
  using ClosedXML.Excel;
 

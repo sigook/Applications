@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Companies;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,7 +1,7 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
 
-namespace Covenant.Common.Models.Agency;
+namespace Covenant.Common.Models.Agencies;
 
 public enum GetAgenciesSortBy
 {

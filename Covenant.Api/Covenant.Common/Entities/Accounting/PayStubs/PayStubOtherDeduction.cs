@@ -1,4 +1,4 @@
-namespace Covenant.Common.Entities.Accounting.PayStub;
+namespace Covenant.Common.Entities.Accounting.PayStubs;
 
 public class PayStubOtherDeduction
 {

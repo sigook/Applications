@@ -1,10 +1,10 @@
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Tests.Utils;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Core.BL.Services.Workers;
+using Covenant.Tests.Utils;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;

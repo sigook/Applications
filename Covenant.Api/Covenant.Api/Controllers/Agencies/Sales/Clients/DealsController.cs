@@ -1,14 +1,14 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities.Sales;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Core.BL.Interfaces.Sales;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Sales.Clients;
+namespace Covenant.Api.Controllers.Agencies.Sales.Clients;
 
 [Route(RouteName)]
 [ApiController]

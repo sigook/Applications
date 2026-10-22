@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Request.Runners;
+namespace Covenant.Common.Models.Requests.Runners;
 
 public class AgencyRunnerListModel
 {

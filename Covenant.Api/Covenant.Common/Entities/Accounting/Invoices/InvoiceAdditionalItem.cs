@@ -1,6 +1,6 @@
 using Covenant.Common.Utils.Extensions;
 
-namespace Covenant.Common.Entities.Accounting.Invoice;
+namespace Covenant.Common.Entities.Accounting.Invoices;
 
 public class InvoiceAdditionalItem
 {

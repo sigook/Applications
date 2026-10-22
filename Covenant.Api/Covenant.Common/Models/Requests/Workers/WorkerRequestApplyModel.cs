@@ -1,5 +1,5 @@
-using Covenant.Common.Models.Worker;
-namespace Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Models.Workers;
+namespace Covenant.Common.Models.Requests.Workers;
 
 public class WorkerRequestApplyModel
 {

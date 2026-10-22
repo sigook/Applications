@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Request.TimeSheet;
+namespace Covenant.Common.Models.Requests.TimeSheets;
 
 public class PunchStatusModel
 {

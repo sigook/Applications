@@ -1,14 +1,15 @@
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Requests;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
 public partial class WorkersControllerTest
 {
@@ -19,7 +20,7 @@ public partial class WorkersControllerTest
 
         private readonly Availability availability = new();
 
-        public Covenant.Common.Entities.Agency.Agency Agency { get; }
+        public Agency Agency { get; }
         public CompanyProfile CompanyProfile { get; }
         public CompanyProfileJobPositionRate JobPositionRate { get; }
         public Request Request { get; }

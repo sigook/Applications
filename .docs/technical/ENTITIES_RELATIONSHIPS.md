@@ -105,7 +105,7 @@ AgencyPersonnel, Agency, Candidate`.
 
 ---
 
-## Agency domain — `Entities/Agency/`
+## Agency domain — `Entities/Agencies/`
 
 ### Agency (`Agency.cs`)
 
@@ -138,7 +138,7 @@ wall-clock time (time zone of their device when punching), stored as `timestamp 
 
 ---
 
-## Company domain — `Entities/Company/`
+## Company domain — `Entities/Companies/`
 
 ### CompanyProfile (`CompanyProfile.cs`)
 
@@ -188,11 +188,11 @@ Both live in the `Sales` domain (entities, models under `Models/Sales/`, `SalesS
 | `Deal` | `Title`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; exposed as `OwnerId` in `DealListModel` / `GetDealsFilter`), `Date` (business date), `Value` (decimal), `Type` (`DealType`: Temporal 0, Permanent 1, TempToPerm 2), `Status` (`DealStatus`: ToSend 0, Sent 1, Rejected 2, Accepted 3, UnderReview 4, Closed 5, Completed 6), `DocumentId?` → CovenantFile, `CreatedAt` / `UpdatedAt`. `Update()` never touches `CompanyProfileId` or `UserId` |
 | `CompanyInteraction` | `Description`, `CompanyProfileId` → CompanyProfile, `UserId` → User (owner; `OwnerId` in list/filter models), `InteractionPurpose` (Intro 0 … Closing 4), `InteractionType` (Call 0, Mail 1, Sms 2, LinkedIn 3), `InteractionStatus` (NotStarted 0 default, InProgress 1, Completed 2), `CreatedAt` / `UpdatedAt`. Same immutable `CompanyProfileId` / `UserId` on update |
 
-Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `SalesService`, behind `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs` (routes `api/agency/sales/clients/{profileId}/deals|interactions`; the client comes from the route) — rule in `.docs/business/ROLES_PERMISSIONS.md`.
+Owner scoping (sales lists/updates/deletes only its own rows; `UserId` overwritten on create; admin/superadmin unscoped) is enforced in `SalesService`, behind `Covenant.Api/Covenant.Api/Controllers/Agencies/Sales/Clients/{InteractionsController,DealsController}.cs` (routes `api/agency/sales/clients/{profileId}/deals|interactions`; the client comes from the route) — rule in `.docs/business/ROLES_PERMISSIONS.md`.
 
 ---
 
-## Worker domain — `Entities/Worker/`
+## Worker domain — `Entities/Workers/`
 
 ### WorkerProfile (`WorkerProfile.cs`)
 
@@ -231,7 +231,7 @@ Comments about a worker visible to agency/company (see Agency/Company WorkerComm
 
 ---
 
-## Candidate domain — `Entities/Candidate/`
+## Candidate domain — `Entities/Candidates/`
 
 Pre-registration prospect managed by recruiters — no `User`, no login, minimal data.
 
@@ -262,7 +262,7 @@ personal data is never copied. Runners are worker-only: a candidate must be conv
 
 ---
 
-## Request domain — `Entities/Request/`
+## Request domain — `Entities/Requests/`
 
 ### Request (`Request.cs`)
 
@@ -308,7 +308,7 @@ rejected worker reuses the same row (`Book()` clears rejection fields). Unique
 
 Someone who applied/was submitted to a request: `RequestId` + **either** `WorkerProfileId`
 **or** `CandidateId` (mutually exclusive — factories `CreateWithWorker` / `CreateWithCandidate`),
-`CreatedBy`, `Comments`. Managed by `Controllers/Agency/Recruiting/Requests/ApplicantsController.cs`;
+`CreatedBy`, `Comments`. Managed by `Controllers/Agencies/Recruiting/Requests/ApplicantsController.cs`;
 `RequestApplicantConsumer` reacts to new-applicant bus messages.
 
 ### RequestSource (`RequestSource.cs`)
@@ -323,12 +323,12 @@ with `Source.IsAvailableForRequests = true` are selectable as job boards
 `WorkDate` (day cell on the recruiting weekly board). Max 10 recruiters per request per day;
 unique `(RequestId, RecruiterId, WorkDate)`. Managed through `Request.AddRecruiter` /
 `RemoveRecruiter` / `MoveRecruiterAssignment` and `WeeklyBoardService` /
-`Controllers/Agency/Recruiting/WeeklyBoard/WeeklyBoardController.cs`.
+`Controllers/Agencies/Recruiting/WeeklyBoard/WeeklyBoardController.cs`.
 
 The people a recruiter sends under an assignment are **Runners** (`RequestRecruiter.Runners`,
 FK `Runner.RequestRecruiterId`, `ON DELETE SET NULL`).
 
-### Runner (`Entities/Request/Runners/`)
+### Runner (`Entities/Requests/Runners/`)
 
 Recruiting pipeline for a worker actively submitted to one request. `Runner.cs`:
 `Id`, `NumberId` (long), `RequestId`, `WorkerProfileId` (required — runners are
@@ -352,12 +352,12 @@ Entity-enforced constraints:
   added/rescheduled only in `InterviewScheduled`/`InterviewRescheduled`; rescheduling
   auto-transitions to `InterviewRescheduled`.
 
-API: `Controllers/Agency/Recruiting/Requests/RunnersController.cs`
+API: `Controllers/Agencies/Recruiting/Requests/RunnersController.cs`
 (`api/agency/recruiting/requests/{requestId}/runners`). Business narrative: WORKFLOWS.md §6.
 
 ---
 
-## Timesheet entities — `Entities/Request/`
+## Timesheet entities — `Entities/Requests/`
 
 ### TimeSheet (`TimeSheet.cs`)
 

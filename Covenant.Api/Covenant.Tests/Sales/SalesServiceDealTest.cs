@@ -1,13 +1,13 @@
 using Covenant.Api.Validators.Sales;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities.Sales;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Core.BL.Interfaces.Requests;

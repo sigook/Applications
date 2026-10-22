@@ -1,10 +1,10 @@
 ﻿using Covenant.Common.Functionals;
-using Covenant.Common.Models.Accounting.Invoice.Company;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Accounting.Invoices.Companies;
+using Covenant.Common.Models.Companies.Agencies;
 using Covenant.Common.Models.Website;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Accounting.Invoices;
+using Covenant.Common.Models.Companies;
 
 namespace Covenant.Core.BL.Interfaces.Companies;
 

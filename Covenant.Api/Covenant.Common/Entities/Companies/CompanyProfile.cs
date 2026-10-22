@@ -1,10 +1,10 @@
-﻿using Covenant.Common.Entities.Agency;
+﻿using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Resources;
 
-namespace Covenant.Common.Entities.Company
+namespace Covenant.Common.Entities.Companies
 {
     public class CompanyProfile
     {
@@ -20,7 +20,7 @@ namespace Covenant.Common.Entities.Company
         {
         }
 
-        public CompanyProfile(User company, Agency.Agency agency, string fullName, string phone, CompanyProfileIndustry industry)
+        public CompanyProfile(User company, Agency agency, string fullName, string phone, CompanyProfileIndustry industry)
         {
             Company = company ?? throw new ArgumentNullException(nameof(company));
             CompanyId = company.Id;
@@ -33,7 +33,7 @@ namespace Covenant.Common.Entities.Company
         public Guid Id { get; internal set; } = Guid.NewGuid();
         public User Company { get; internal set; }
         public Guid CompanyId { get; private set; }
-        public Agency.Agency Agency { get; internal set; }
+        public Agency Agency { get; internal set; }
         public Guid AgencyId { get; internal set; }
         public int NumberId { get; private set; }
         public Guid? LogoId { get; private set; }

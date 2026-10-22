@@ -1,4 +1,4 @@
-namespace Covenant.Common.Entities.Candidate
+namespace Covenant.Common.Entities.Candidates
 {
     public class CandidateDocument
     {

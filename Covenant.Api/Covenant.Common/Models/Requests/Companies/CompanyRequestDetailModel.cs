@@ -1,8 +1,8 @@
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models.Website;
 
-namespace Covenant.Common.Models.Request.Company;
+namespace Covenant.Common.Models.Requests.Companies;
 
 public class CompanyRequestDetailModel
 {

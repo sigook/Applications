@@ -4,7 +4,7 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Company.Requests;
+namespace Covenant.Api.Controllers.Companies.Requests;
 
 [Route(RouteName)]
 [ApiController]

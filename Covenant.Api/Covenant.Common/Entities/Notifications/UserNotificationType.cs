@@ -1,4 +1,4 @@
-namespace Covenant.Common.Entities.Notification
+namespace Covenant.Common.Entities.Notifications
 {
     public class UserNotificationType
     {

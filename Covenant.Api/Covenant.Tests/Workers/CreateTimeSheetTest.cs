@@ -1,10 +1,11 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces.Requests;
@@ -34,7 +35,7 @@ public class CreateTimeSheetTest
     public CreateTimeSheetTest()
     {
         var companyProfile = new CompanyProfile { FullName = "Test Company" };
-        var agency = new Covenant.Common.Entities.Agency.Agency();
+        var agency = new Agency();
         var jobPositionRate = new CompanyProfileJobPositionRate();
         var location = new Location
         {
@@ -46,7 +47,7 @@ public class CreateTimeSheetTest
                 }
             }
         };
-        var request = new Covenant.Common.Entities.Request.Request(companyProfile, jobPositionRate);
+        var request = new Request(companyProfile, jobPositionRate);
         request.UpdateJobLocation(location, false);
         _workerRequest.Request = request;
         var catalogRepository = new Mock<ICatalogRepository>();

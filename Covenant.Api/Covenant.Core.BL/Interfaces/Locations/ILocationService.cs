@@ -1,6 +1,6 @@
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Location;
 using System.Threading.Tasks;
 
 namespace Covenant.Core.BL.Interfaces.Locations;

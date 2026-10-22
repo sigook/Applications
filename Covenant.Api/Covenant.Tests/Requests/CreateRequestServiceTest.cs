@@ -1,24 +1,24 @@
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
+using Covenant.Common.Repositories;
+using Covenant.Common.Resources;
+using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Requests;
 using Covenant.Core.BL.Services;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Enums;
-using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Repositories;
-using Covenant.Common.Resources;
-using Covenant.Core.BL.Adapters;
 using Covenant.Tests.Utils;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -108,7 +108,7 @@ public class CreateRequestServiceTest
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.True(result);
         Assert.Empty(result.Errors);
-        _requestRepository.Verify(r => r.Create(It.IsAny<Covenant.Common.Entities.Request.Request>()), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.IsAny<Request>()), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 

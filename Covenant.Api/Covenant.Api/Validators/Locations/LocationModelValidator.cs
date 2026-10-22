@@ -1,5 +1,5 @@
 using Covenant.Common.Entities;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Resources;
 using FluentValidation;
 

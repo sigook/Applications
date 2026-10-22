@@ -1,13 +1,13 @@
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;

@@ -1,5 +1,5 @@
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Workers;
 
 namespace Covenant.Core.BL.Interfaces.Workers;
 

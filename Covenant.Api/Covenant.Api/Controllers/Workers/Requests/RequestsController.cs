@@ -1,17 +1,17 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Workers;
-using Covenant.Common.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Worker.Requests;
+namespace Covenant.Api.Controllers.Workers.Requests;
 
 [Route(RouteName)]
 [ApiController]

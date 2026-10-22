@@ -1,10 +1,12 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Agency.Recruiting.Workers;
+using Covenant.Api.Controllers.Agencies.Recruiting.Workers;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
@@ -14,7 +16,7 @@ using Microsoft.Extensions.Time.Testing;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Workers;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
 public class CommentsControllerGetTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerGetTest.Startup>>
 {
@@ -64,7 +66,7 @@ public class CommentsControllerGetTest : BaseTestOrder, IClassFixture<CustomWebA
             });
             context.WorkerProfiles.Add(Data.WorkerProfile);
             context.CompanyProfiles.Add(Data.CompanyProfile);
-            context.AgencyPersonnel.Add(Common.Entities.Agency.AgencyPersonnel.CreatePrimary(Data.WorkerProfile.Agency.Id, Data.LoginUser.Id, Data.LoginUser.Email));
+            context.AgencyPersonnel.Add(AgencyPersonnel.CreatePrimary(Data.WorkerProfile.Agency.Id, Data.LoginUser.Id, Data.LoginUser.Email));
             context.WorkerComments.AddRange(Data.AgencyComment, Data.CompanyComment);
             context.SaveChanges();
         }
@@ -74,10 +76,10 @@ public class CommentsControllerGetTest : BaseTestOrder, IClassFixture<CustomWebA
     {
         public static readonly User LoginUser = new User(CvnEmail.Create("login_user@mail.com").Value);
 
-        public static readonly Common.Entities.Worker.WorkerProfile WorkerProfile =
-            new Common.Entities.Worker.WorkerProfile(new User(CvnEmail.Create("worker_worker@mail.com").Value))
+        public static readonly WorkerProfile WorkerProfile =
+            new WorkerProfile(new User(CvnEmail.Create("worker_worker@mail.com").Value))
             {
-                Agency = new Common.Entities.Agency.Agency { Id = LoginUser.Id, User = LoginUser },
+                Agency = new Agency { Id = LoginUser.Id, User = LoginUser },
                 Location = FakeData.FakeLocation()
             };
 
@@ -89,10 +91,10 @@ public class CommentsControllerGetTest : BaseTestOrder, IClassFixture<CustomWebA
             Agency = FakeData.FakeAgency()
         };
 
-        public static readonly Common.Entities.Worker.WorkerComment AgencyComment =
-            Common.Entities.Worker.WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
+        public static readonly WorkerComment AgencyComment =
+            WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
 
-        public static readonly Common.Entities.Worker.WorkerComment CompanyComment =
-            Common.Entities.Worker.WorkerComment.CommentPostByCompany(WorkerProfile.Id, CompanyProfile.Id, "Posted by the company", 3);
+        public static readonly WorkerComment CompanyComment =
+            WorkerComment.CommentPostByCompany(WorkerProfile.Id, CompanyProfile.Id, "Posted by the company", 3);
     }
 }

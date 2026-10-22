@@ -1,6 +1,6 @@
 using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
 
 namespace Covenant.Core.BL.Adapters;
 

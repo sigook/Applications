@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 
-namespace Covenant.Common.Entities.Accounting.PayStub;
+namespace Covenant.Common.Entities.Accounting.PayStubs;
 
 public class PayStubWageDetail(decimal workerRate, decimal regular, decimal otherRegular, decimal missing, decimal missingOvertime, decimal nightShift, decimal holiday, decimal overtime, Guid timeSheetTotalId, Guid id = default)
 {

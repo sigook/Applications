@@ -1,7 +1,7 @@
 import { CatalogItem, City, Skill } from '@/shared/types/common';
 
 // Candidate item returned by GET /api/agency/recruiting/candidates.
-// Mirrors backend CandidateListModel (Covenant.Common.Models.Candidate).
+// Mirrors backend CandidateListModel (Covenant.Common.Models.Candidates).
 export interface Candidate {
   id: string;
   agencyId: string;
@@ -30,7 +30,7 @@ export interface CandidateRow extends Candidate {
 }
 
 // Candidate returned by GET /api/agency/recruiting/candidates/{id}.
-// Mirrors backend CandidateDetailModel (Covenant.Common.Models.Candidate).
+// Mirrors backend CandidateDetailModel (Covenant.Common.Models.Candidates).
 export interface CandidateDetail {
   id: string;
   numberId: number;

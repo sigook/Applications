@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Enums;
 
 namespace Covenant.Common.Entities.Sales;

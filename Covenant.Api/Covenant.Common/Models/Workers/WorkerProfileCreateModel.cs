@@ -1,7 +1,7 @@
 using Covenant.Common.Models.Identity;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 
-namespace Covenant.Common.Models.Worker
+namespace Covenant.Common.Models.Workers
 {
     public class WorkerProfileCreateModel :
         IWorkerBasicInformation<BaseModel<Guid>>,

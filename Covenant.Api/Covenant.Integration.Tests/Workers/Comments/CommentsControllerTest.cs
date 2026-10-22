@@ -1,7 +1,8 @@
-using Covenant.Api.Controllers.Worker.Comments;
+using Covenant.Api.Controllers.Workers.Comments;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Worker.Comments;
+namespace Covenant.Integration.Tests.Workers.Comments;
 
 public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
 {
@@ -63,14 +64,14 @@ public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     internal static class Data
     {
-        public static readonly Common.Entities.Worker.WorkerProfile WorkerProfile =
-            new Common.Entities.Worker.WorkerProfile(new User(CvnEmail.Create("worker_me@mail.com").Value))
+        public static readonly WorkerProfile WorkerProfile =
+            new WorkerProfile(new User(CvnEmail.Create("worker_me@mail.com").Value))
             {
                 Agency = FakeData.FakeAgency(),
                 Location = FakeData.FakeLocation()
             };
 
-        public static readonly Common.Entities.Worker.WorkerComment AgencyComment =
-            Common.Entities.Worker.WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
+        public static readonly WorkerComment AgencyComment =
+            WorkerComment.CommentPostByAgency(WorkerProfile.Id, "Ok", 1);
     }
 }

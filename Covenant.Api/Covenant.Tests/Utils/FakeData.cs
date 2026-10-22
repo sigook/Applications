@@ -1,3 +1,4 @@
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using System.Text;
@@ -27,7 +28,7 @@ namespace Covenant.Tests.Utils
 
         public static Location FakeLocation() => new Location { City = new City { Province = new Province { Country = new Country() } } };
 
-        public static Covenant.Common.Entities.Request.Request FakeRequest(Guid agencyId = default,
+        public static Request FakeRequest(Guid agencyId = default,
             Guid companyProfileId = default, Guid jobPositionRateId = default,
             Location location = default, DateTime startAt = default,
             DateTime? finishAt = null, int workersQuantity = 1,
@@ -38,7 +39,7 @@ namespace Covenant.Tests.Utils
             jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
             location = location ?? FakeLocation();
             startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-            return Covenant.Common.Entities.Request.Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
+            return Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
                 workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
         }
     }

@@ -1,10 +1,10 @@
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.Runners;
-using Covenant.Common.Models.Request.WeeklyBoard;
+using Covenant.Common.Models.Requests.Runners;
+using Covenant.Common.Models.Requests.WeeklyBoard;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Core.BL.Interfaces.Requests;

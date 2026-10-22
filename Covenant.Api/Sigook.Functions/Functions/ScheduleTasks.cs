@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

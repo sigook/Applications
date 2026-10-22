@@ -1,8 +1,8 @@
-using Covenant.Documents.Extensions;
-using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting.Invoice;
-using MediatR;
 using ClosedXML.Excel;
+using Covenant.Common.Models.Accounting.Invoices;
+using Covenant.Common.Models;
+using Covenant.Documents.Extensions;
+using MediatR;
 
 namespace Covenant.Documents.Services;
 

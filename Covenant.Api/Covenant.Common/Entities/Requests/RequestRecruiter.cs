@@ -1,6 +1,7 @@
-using Covenant.Common.Entities.Agency;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Requests.Runners;
 
-namespace Covenant.Common.Entities.Request
+namespace Covenant.Common.Entities.Requests
 {
     public class RequestRecruiter
     {
@@ -23,7 +24,7 @@ namespace Covenant.Common.Entities.Request
         public Guid RecruiterId { get; private set; }
         public DateTime? WorkDate { get; private set; }
         public DateTime CreatedAt { get; private set; }
-        public ICollection<Runners.Runner> Runners { get; private set; } = new List<Runners.Runner>();
+        public ICollection<Runner> Runners { get; private set; } = new List<Runner>();
 
         public void MoveTo(Guid recruiterId, DateTime? workDate)
         {

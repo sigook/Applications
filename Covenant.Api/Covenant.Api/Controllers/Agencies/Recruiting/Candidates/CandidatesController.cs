@@ -1,8 +1,8 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
+using Covenant.Common.Models.Candidates;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Candidate;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Candidates;
@@ -11,7 +11,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Candidates;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Candidates;
 
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]

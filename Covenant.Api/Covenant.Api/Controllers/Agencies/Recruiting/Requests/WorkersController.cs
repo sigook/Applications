@@ -1,9 +1,9 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
@@ -11,7 +11,7 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 
 [Route(RouteName)]
 [ApiController]
@@ -46,7 +46,7 @@ public class WorkersController(IAgencyService agencyService, IRequestService req
     }
 
     /// <summary>Updates the start-working date of a worker request.</summary>
-    /// <param name="repository">Worker request repository.</param>
+    /// <param name="requestDetailsService">Request details service.</param>
     /// <param name="requestId">Identifier of the request.</param>
     /// <param name="id">Identifier of the worker request.</param>
     /// <param name="model">Worker booking data containing the new start date.</param>

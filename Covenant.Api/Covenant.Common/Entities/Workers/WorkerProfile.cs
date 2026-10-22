@@ -1,14 +1,16 @@
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Resources;
-using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Common.Utils;
 using System.Text;
 
-namespace Covenant.Common.Entities.Worker;
+namespace Covenant.Common.Entities.Workers;
 
 public class WorkerProfile :
     ISinInformation<CovenantFile>,
@@ -34,7 +36,7 @@ public class WorkerProfile :
 
     public WorkerProfile(User user, Guid agencyId) : this(user) => AgencyId = agencyId;
 
-    public static WorkerProfile Register(WorkerProfileCreateModel model, Agency.Agency agency, User user)
+    public static WorkerProfile Register(WorkerProfileCreateModel model, Agency agency, User user)
     {
         var entity = new WorkerProfile
         {
@@ -218,7 +220,7 @@ public class WorkerProfile :
     public WorkerProfileTaxCategory WorkerProfileTaxCategory { get; internal set; }
     public Gender Gender { get; private set; }
     public User Worker { get; private set; }
-    public Agency.Agency Agency { get; internal set; }
+    public Agency Agency { get; internal set; }
     public CovenantFile ProfileImage { get; private set; }
     public CovenantFile SocialInsuranceFile { get; private set; }
     public IdentificationType IdentificationType1 { get; internal set; }
@@ -240,7 +242,7 @@ public class WorkerProfile :
     public List<WorkerProfileLicense> Licenses { get; internal set; } = [];
     public List<WorkerProfileCertificate> Certificates { get; internal set; } = [];
     public List<WorkerProfileJobExperience> JobExperiences { get; internal set; } = [];
-    public List<Request.WorkerRequest> WorkerRequests { get; private set; } = [];
+    public List<WorkerRequest> WorkerRequests { get; private set; } = [];
 
     public string FullName =>
         FirstName +

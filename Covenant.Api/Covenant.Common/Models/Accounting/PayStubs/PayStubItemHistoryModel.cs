@@ -1,5 +1,5 @@
-using Covenant.Common.Models.Worker;
-namespace Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Workers;
+namespace Covenant.Common.Models.Accounting.PayStubs;
 
 public class PayStubItemHistoryModel
 {

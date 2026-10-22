@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests;
 
 namespace Covenant.Common.Interfaces.Adapters;
 

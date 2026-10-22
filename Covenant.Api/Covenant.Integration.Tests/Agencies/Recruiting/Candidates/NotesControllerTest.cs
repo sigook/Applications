@@ -1,7 +1,8 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Candidates;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Candidates;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidates;
@@ -17,7 +18,7 @@ using System.Net;
 using Xunit.Abstractions;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Candidates;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Candidates;
 
 public class NotesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<NotesControllerTest.Startup, NotesControllerTest.Data>>
 {
@@ -118,7 +119,7 @@ public class NotesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplica
     {
         public static readonly Guid AgencyId = Guid.NewGuid();
 
-        public Covenant.Common.Entities.Agency.Agency Agency { get; }
+        public Agency Agency { get; }
         public Candidate Candidate { get; }
         public CandidateNote Note { get; }
         public CandidateNote UpdateNote { get; }

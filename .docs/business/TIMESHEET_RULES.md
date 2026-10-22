@@ -3,7 +3,7 @@
 How worked hours are captured (clock in/out, manual entry), approved, and broken down into pay/bill categories.
 
 **Source of truth:**
-- `Covenant.Api/Covenant.Common/Entities/Request/TimeSheet.cs` — entity + clock/approval invariants
+- `Covenant.Api/Covenant.Common/Entities/Requests/TimeSheet.cs` — entity + clock/approval invariants
 - `Covenant.Api/Covenant.Core.BL/Services/Requests/TimesheetService.cs` (`TimesheetService` class) — clock in/out, CRUD, geofence
 - `Covenant.Api/Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs` — **all hours-breakdown calculation** (not TimesheetService)
 - Consumers: `PayStubService.GeneratePayStubForWorker` (payroll) and the invoice services (billing) — see `PAYROLL_RULES.md` / `BILLING_RULES.md`
@@ -12,7 +12,7 @@ How worked hours are captured (clock in/out, manual entry), approved, and broken
 
 ## TimeSheet Entity (real fields)
 
-`Covenant.Common/Entities/Request/TimeSheet.cs`:
+`Covenant.Common/Entities/Requests/TimeSheet.cs`:
 
 | Field | Type | Notes |
 |-------|------|-------|

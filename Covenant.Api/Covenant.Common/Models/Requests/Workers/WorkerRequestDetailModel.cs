@@ -1,7 +1,7 @@
-using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Workers;
 
-namespace Covenant.Common.Models.Request.Worker;
+namespace Covenant.Common.Models.Requests.Workers;
 
 public class WorkerRequestDetailModel
 {

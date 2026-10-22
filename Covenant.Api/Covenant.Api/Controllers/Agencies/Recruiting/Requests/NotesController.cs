@@ -6,7 +6,7 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 
 [ApiController]
 [Route(RouteName)]

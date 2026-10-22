@@ -1,6 +1,7 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 using Covenant.Api.Authorization;
-using Covenant.Common.Entities.Candidate;
+using Covenant.Api.Controllers.Agencies.Recruiting.Candidates;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Candidates;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Candidates;
@@ -14,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Candidates;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Candidates;
 
 public class PhoneNumbersControllerTest :
     IClassFixture<CustomWebApplicationFactory<PhoneNumbersControllerTest.Startup>>
@@ -82,7 +83,7 @@ public class PhoneNumbersControllerTest :
             services.AddSingleton<AgencyIdFilter>();
         }
 
-        private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+        private static readonly Agency FakeAgency = new Agency() { User = FakeData.FakeUser() };
         public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "B Martin") { Agency = FakeAgency };
         public static CandidatePhone FakePhone = null;
         public static CandidatePhone FakeDeletePhone = null;

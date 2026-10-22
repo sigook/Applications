@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 
 namespace Covenant.Core.BL.Interfaces.Notifications;
 

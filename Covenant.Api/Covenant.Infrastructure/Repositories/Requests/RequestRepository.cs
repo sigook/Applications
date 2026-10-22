@@ -1,21 +1,21 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Request;
-using CandidateEntity = Covenant.Common.Entities.Candidate.Candidate;
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request.Company;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests.Companies;
+using Covenant.Common.Models.Requests.WeeklyBoard;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models.Website;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Request.WeeklyBoard;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -478,7 +478,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
              FinishAt = r.FinishAt
          }).SingleOrDefaultAsync();
 
-    public Task<Common.Entities.Request.Request> GetRequest(Expression<Func<Common.Entities.Request.Request, bool>> condition) =>
+    public Task<Request> GetRequest(Expression<Func<Request, bool>> condition) =>
         Context.Requests.Where(condition)
             .Include(r => r.JobPositionRate)
             .Include(r => r.JobLocation).ThenInclude(l => l.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
@@ -1333,14 +1333,14 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return predicate.And(exclusion).And(search);
     }
 
-    private static Expression<Func<CandidateEntity, bool>> BuildCandidateSearchPredicate(
-        Guid agencyId, string searchTerm, Expression<Func<CandidateEntity, bool>> exclusion)
+    private static Expression<Func<Candidate, bool>> BuildCandidateSearchPredicate(
+        Guid agencyId, string searchTerm, Expression<Func<Candidate, bool>> exclusion)
     {
-        var search = SearchExtensions.SearchPredicate<CandidateEntity>(searchTerm, c => c.Name, c => c.Email);
+        var search = SearchExtensions.SearchPredicate<Candidate>(searchTerm, c => c.Name, c => c.Email);
         if (long.TryParse(searchTerm.Trim(), out var numberId))
             search = search.Or(c => c.NumberId == numberId);
 
-        Expression<Func<CandidateEntity, bool>> predicate = c => c.AgencyId == agencyId;
+        Expression<Func<Candidate, bool>> predicate = c => c.AgencyId == agencyId;
         return predicate.And(exclusion).And(search);
     }
 
@@ -1352,12 +1352,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .And(SearchExtensions.SimilarityPredicate<WorkerProfile>(searchTerm, SimilarityThreshold, wp => wp.FirstName + " " + wp.LastName));
     }
 
-    private static Expression<Func<CandidateEntity, bool>> BuildCandidateSimilarityPredicate(
-        Guid agencyId, string searchTerm, Expression<Func<CandidateEntity, bool>> exclusion)
+    private static Expression<Func<Candidate, bool>> BuildCandidateSimilarityPredicate(
+        Guid agencyId, string searchTerm, Expression<Func<Candidate, bool>> exclusion)
     {
-        Expression<Func<CandidateEntity, bool>> predicate = c => c.AgencyId == agencyId;
+        Expression<Func<Candidate, bool>> predicate = c => c.AgencyId == agencyId;
         return predicate.And(exclusion)
-            .And(SearchExtensions.SimilarityPredicate<CandidateEntity>(searchTerm, SimilarityThreshold, c => c.Name));
+            .And(SearchExtensions.SimilarityPredicate<Candidate>(searchTerm, SimilarityThreshold, c => c.Name));
     }
 
     private IQueryable<ApplicantSearchResultModel> BuildWorkerSearchQuery(Expression<Func<WorkerProfile, bool>> workerPredicate) =>
@@ -1385,7 +1385,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private async Task<List<ApplicantSearchResultModel>> SearchWorkersAndCandidates(
         Expression<Func<WorkerProfile, bool>> workerPredicate,
-        Expression<Func<CandidateEntity, bool>> candidatePredicate)
+        Expression<Func<Candidate, bool>> candidatePredicate)
     {
         var workers = BuildWorkerSearchQuery(workerPredicate);
 
@@ -1416,7 +1416,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var bookedWorkers = Context.WorkerRequests.Where(wr => wr.RequestId == requestId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
         Expression<Func<WorkerProfile, bool>> workerExclusion = wp =>
             !existingApplicants.Any(ra => ra.WorkerProfileId == wp.Id) && !bookedWorkers.Any(wr => wr.WorkerProfileId == wp.Id);
-        Expression<Func<CandidateEntity, bool>> candidateExclusion = c => !existingApplicants.Any(ra => ra.CandidateId == c.Id);
+        Expression<Func<Candidate, bool>> candidateExclusion = c => !existingApplicants.Any(ra => ra.CandidateId == c.Id);
 
         var results = await SearchWorkersAndCandidates(
             BuildWorkerSearchPredicate(agencyId, searchTerm, workerExclusion),
@@ -1478,7 +1478,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return result;
     }
 
-    public async Task<IEnumerable<Common.Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids)
+    public async Task<IEnumerable<Request>> GetRequests(IEnumerable<Guid> ids)
     {
         var requests = Context.Requests.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();

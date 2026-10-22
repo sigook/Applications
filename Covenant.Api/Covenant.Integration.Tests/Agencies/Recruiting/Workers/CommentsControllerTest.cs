@@ -1,9 +1,10 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Workers;
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Worker;
+using Covenant.Api.Controllers.Agencies.Recruiting.Workers;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Services;
@@ -12,7 +13,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Workers;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
 public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
 {
@@ -43,7 +44,7 @@ public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     public class Startup
     {
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("Covenant", null) { User = FakeData.FakeUser() };
+        public static readonly Agency FakeAgency = new Agency("Covenant", null) { User = FakeData.FakeUser() };
         public static readonly WorkerProfile FakeWorker = new WorkerProfile(new User(CvnEmail.Create("w@s.com").Value), FakeAgency.Id) { Location = FakeData.FakeLocation() };
 
         public void ConfigureServices(IServiceCollection services)

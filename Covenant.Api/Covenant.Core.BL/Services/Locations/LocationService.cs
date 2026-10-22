@@ -1,7 +1,7 @@
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces.Locations;
 using Microsoft.Extensions.Logging;

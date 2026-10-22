@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request;
+namespace Covenant.Common.Models.Requests;
 
 public record SendInvitationJob(Guid RequestId, string Nickname);
 

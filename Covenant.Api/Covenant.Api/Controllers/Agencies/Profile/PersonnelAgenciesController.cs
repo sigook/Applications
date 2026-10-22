@@ -1,12 +1,12 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Agency;
+using Covenant.Common.Models.Agencies;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Profile;
+namespace Covenant.Api.Controllers.Agencies.Profile;
 
 [Route(RouteName)]
 [ApiController]
@@ -25,7 +25,7 @@ public class PersonnelAgenciesController : ControllerBase
 
     /// <summary>Sets the specified personnel record as the current user's primary agency.</summary>
     /// <param name="id">Identifier of the personnel record to set as primary.</param>
-    /// <param name="repository">Agency repository.</param>
+    /// <param name="agencyService">Agency service.</param>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Put(Guid id, [FromServices] IAgencyService agencyService)

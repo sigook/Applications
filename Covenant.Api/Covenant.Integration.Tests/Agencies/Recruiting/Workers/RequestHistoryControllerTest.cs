@@ -1,11 +1,11 @@
 using Covenant.Api.Authorization;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Agencies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request.Agency;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Requests;
@@ -13,9 +13,9 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using System.Net.Http.Json;
 using Xunit;
-using static Covenant.Api.Controllers.Agency.Recruiting.Workers.RequestHistoryController;
+using static Covenant.Api.Controllers.Agencies.Recruiting.Workers.RequestHistoryController;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Workers;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
 public class RequestHistoryControllerTest : IClassFixture<CustomWebApplicationFactory<RequestHistoryControllerTest.Startup>>
 {

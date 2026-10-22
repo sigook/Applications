@@ -6,7 +6,7 @@ using Covenant.Core.BL.Interfaces.Candidates;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Candidates;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Candidates;
 
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]

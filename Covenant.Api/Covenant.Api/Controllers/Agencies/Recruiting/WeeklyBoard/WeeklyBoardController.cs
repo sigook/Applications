@@ -1,11 +1,11 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Request.WeeklyBoard;
+using Covenant.Common.Models.Requests.WeeklyBoard;
 using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.WeeklyBoard;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.WeeklyBoard;
 
 [Route(RouteName)]
 [ApiController]

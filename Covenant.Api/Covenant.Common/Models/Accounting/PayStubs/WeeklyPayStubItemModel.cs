@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Accounting.PayStub
+namespace Covenant.Common.Models.Accounting.PayStubs
 {
 	public class WeeklyPayStubItemModel
 	{

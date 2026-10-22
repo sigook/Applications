@@ -1,7 +1,8 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Clients;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Clients;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
@@ -21,7 +22,7 @@ using Moq;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Clients;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
 public class ClientsControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<ClientsControllerEmailTest.Startup>>
 {
@@ -69,7 +70,7 @@ public class ClientsControllerEmailTest : BaseTestOrder, IClassFixture<CustomWeb
         public static readonly CvnEmail OtherUserEmail = CvnEmail.Create("other.user@mail.com").Value;
         private static readonly User FakeAgencyUser = new User(CvnEmail.Create($"agency{Guid.NewGuid():N}@email.com").Value);
 
-        private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency("AG", "AG_NUMBER") { Id = FakeAgencyUser.Id, User = FakeData.FakeUser() };
+        private static readonly Agency FakeAgency = new Agency("AG", "AG_NUMBER") { Id = FakeAgencyUser.Id, User = FakeData.FakeUser() };
 
         public static readonly CompanyProfile FakeCompany = CompanyProfile.AgencyCreateCompany(
             new User(CvnEmail.Create("updateMyEmail@e.com").Value),

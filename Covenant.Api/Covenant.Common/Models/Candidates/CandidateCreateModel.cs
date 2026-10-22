@@ -1,6 +1,6 @@
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 
-namespace Covenant.Common.Models.Candidate;
+namespace Covenant.Common.Models.Candidates;
 
 public class CandidateCreateModel
 {

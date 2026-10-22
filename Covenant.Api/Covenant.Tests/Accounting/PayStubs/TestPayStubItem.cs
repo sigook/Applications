@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Accounting.PayStub;
+using Covenant.Common.Entities.Accounting.PayStubs;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Xunit;

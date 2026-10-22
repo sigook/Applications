@@ -1,10 +1,10 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Core.BL.Interfaces.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency;
+namespace Covenant.Api.Controllers.Agencies;
 
 [Route(RouteName)]
 [ApiController]

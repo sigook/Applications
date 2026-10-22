@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]

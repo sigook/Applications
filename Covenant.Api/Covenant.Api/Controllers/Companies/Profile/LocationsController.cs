@@ -1,14 +1,14 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Company.Profile;
+namespace Covenant.Api.Controllers.Companies.Profile;
 
 [Route(RouteName)]
 [ApiController]
@@ -54,7 +54,6 @@ public class LocationsController(ICompanyService companyService) : ControllerBas
     }
 
     /// <summary>Deletes a company profile location by its identifier.</summary>
-    /// <param name="repository">Company repository resolved from DI.</param>
     /// <param name="id">Location identifier.</param>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]

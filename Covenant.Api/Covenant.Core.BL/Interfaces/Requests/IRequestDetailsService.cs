@@ -1,7 +1,7 @@
 using Covenant.Common.Functionals;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Request.Agency;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 

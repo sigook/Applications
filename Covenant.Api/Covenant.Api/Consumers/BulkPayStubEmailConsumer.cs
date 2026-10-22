@@ -1,7 +1,7 @@
 using Azure.Messaging.ServiceBus;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Core.BL.Interfaces.Accounting.PayStubs;
 using Covenant.Infrastructure.Services;
 using Microsoft.Extensions.Options;

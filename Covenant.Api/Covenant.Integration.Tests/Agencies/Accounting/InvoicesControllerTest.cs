@@ -1,20 +1,20 @@
-using Covenant.Api.Controllers.Agency.Accounting;
-using Covenant.Api.Controllers.Shared.Jobs;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Accounting;
+using Covenant.Api.Controllers.Shared.Jobs;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -26,7 +26,7 @@ using Moq;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Accounting;
+namespace Covenant.Integration.Tests.Agencies.Accounting;
 
 public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<InvoicesControllerTest.Startup, InvoicesControllerTest.Data>>
 {
@@ -288,7 +288,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
 
         private readonly City toronto;
 
-        public Covenant.Common.Entities.Agency.Agency Agency { get; }
+        public Agency Agency { get; }
         public BillableCompany ForPreview { get; }
         public BillableCompany ForPost { get; }
         public BillableCompany ForPaid { get; }
@@ -335,7 +335,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             public CompanyProfile CompanyProfile { get; }
             public Guid[] TimeSheetIds => timeSheets.Select(t => t.Id).ToArray();
 
-            public BillableCompany(Covenant.Common.Entities.Agency.Agency agency, City city, string key)
+            public BillableCompany(Agency agency, City city, string key)
             {
                 CompanyProfile = FakeData.FakeCompanyProfile(agency, city: city, companyEmail: $"{key}@company.com");
                 worker = FakeData.FakeWorkerProfile(agency, $"{key}@worker.com", city);

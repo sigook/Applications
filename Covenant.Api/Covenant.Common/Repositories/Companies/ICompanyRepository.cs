@@ -1,12 +1,12 @@
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities.Sales;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models.Sales.Dashboard;
 using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Companies;

@@ -79,7 +79,7 @@ export interface AgencyDetail {
   profileImage?: string | null;
 }
 
-// Mirrors backend AgencyContactInformationModel (Covenant.Common.Models.Agency).
+// Mirrors backend AgencyContactInformationModel (Covenant.Common.Models.Agencies).
 export interface AgencyContactInformation {
   id?: string;
   title?: string;

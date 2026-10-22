@@ -1,14 +1,14 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Request.TimeSheet.Agency;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Requests.TimeSheets.Agencies;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Core.BL.Interfaces.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 
 [Route(RouteName)]
 [ApiController]

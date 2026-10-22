@@ -1,14 +1,13 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Accounting.Deductions;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Accounting;
-using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
 namespace Covenant.Core.BL.Services.Accounting;
 
@@ -246,14 +245,14 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
     #region TimeSheetTotal Entity Creation
 
-    public TimeSheetTotalEntity CreateTimeSheetTotalEntity(
+    public TimeSheetTotal CreateTimeSheetTotalEntity(
         Guid timeSheetId,
         TimeSheetHoursBreakdown hoursBreakdown,
         TimeSpan accumulatedHours)
     {
         if (hoursBreakdown.HolidayHours > TimeSpan.Zero)
         {
-            return TimeSheetTotalEntity.CreateTotalForHoliday(
+            return TimeSheetTotal.CreateTotalForHoliday(
                 timeSheetId,
                 hoursBreakdown.HolidayHours,
                 accumulatedHours);
@@ -265,7 +264,7 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
         if (hoursBreakdown.OtherRegularHours > TimeSpan.Zero)
         {
-            return TimeSheetTotalEntity.CreateTotalWithOtherRegular(
+            return TimeSheetTotal.CreateTotalWithOtherRegular(
                 timeSheetId,
                 totalHours,
                 hoursBreakdown.RegularHours,
@@ -275,7 +274,7 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
                 accumulatedHours);
         }
 
-        return TimeSheetTotalEntity.CreateTotal(
+        return TimeSheetTotal.CreateTotal(
             timeSheetId,
             totalHours,
             hoursBreakdown.RegularHours,
@@ -292,7 +291,7 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
         if (hoursBreakdown.HolidayHours > TimeSpan.Zero)
         {
             return new TimeSheetTotalPayroll(
-                TimeSheetTotalEntity.CreateTotalForHoliday(
+                TimeSheetTotal.CreateTotalForHoliday(
                     timeSheetId,
                     hoursBreakdown.HolidayHours,
                     accumulatedHours));

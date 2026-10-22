@@ -1,14 +1,14 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Constants;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Core.BL.Interfaces.Sales;
 using Covenant.Documents.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Sales;
+namespace Covenant.Api.Controllers.Agencies.Sales;
 
 [Route(RouteName)]
 [ApiController]

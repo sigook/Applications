@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.Agency;
+namespace Covenant.Common.Models.Requests.Agencies;
 
 // The page is a page of requests: a request always brings every applicant that
 // matches the filter, so no request is ever split across pages.

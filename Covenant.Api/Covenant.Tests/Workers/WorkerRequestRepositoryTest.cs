@@ -1,8 +1,9 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Requests;
@@ -20,10 +21,10 @@ public class WorkerRequestRepositoryTest
     private readonly CovenantContext _context;
     private static readonly DateTime FakeNow = new DateTime(2019, 10, 02);
     private static readonly User UserAgency = new User(CvnEmail.Create("uAgency@com.com").Value);
-    private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { Id = UserAgency.Id, User = UserAgency };
+    private static readonly Agency FakeAgency = new Agency { Id = UserAgency.Id, User = UserAgency };
     private static readonly User UserWorker = new User(CvnEmail.Create("uWorker@com.com").Value);
     private static readonly WorkerProfile Wp = new WorkerProfile(UserWorker) { Agency = FakeAgency, PunchCardId = "ABC" };
-    private static readonly Covenant.Common.Entities.Request.Request FakeRequest = new Covenant.Common.Entities.Request.Request(new CompanyProfile { FullName = "Fake Company" }, new CompanyProfileJobPositionRate());
+    private static readonly Request FakeRequest = new Request(new CompanyProfile { FullName = "Fake Company" }, new CompanyProfileJobPositionRate());
     private static readonly WorkerRequest Wr = WorkerRequest.AgencyBook(Wp.Id, FakeRequest.Id);
 
     public WorkerRequestRepositoryTest()

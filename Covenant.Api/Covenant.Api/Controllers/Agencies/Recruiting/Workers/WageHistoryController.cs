@@ -1,5 +1,5 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Workers;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Workers;
 
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]

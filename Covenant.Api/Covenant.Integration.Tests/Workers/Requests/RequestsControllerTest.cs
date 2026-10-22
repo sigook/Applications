@@ -1,14 +1,15 @@
-using Covenant.Api.Controllers.Worker.Requests;
+using Covenant.Api.Controllers.Workers.Requests;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
@@ -19,7 +20,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Worker.Requests;
+namespace Covenant.Integration.Tests.Workers.Requests;
 
 public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
@@ -212,7 +213,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     {
         public static readonly DateTime Now = new DateTime(2019, 01, 01);
 
-        public static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency
+        public static readonly Agency FakeAgency = new Agency
         {
             User = new User(CvnEmail.Create("agency@mail.com").Value)
         }.With(a => a.ChangeLogo(new CovenantFile("logo.png")));
@@ -242,8 +243,8 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         }, Now, FakeRate.Id).Value;
         public static readonly Request OpenRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
         public static readonly Request SecondBookedRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
-        public static readonly Covenant.Common.Entities.Request.WorkerRequest FakeWorkerRequest;
-        public static readonly Covenant.Common.Entities.Request.WorkerRequest SecondWorkerRequest;
+        public static readonly WorkerRequest FakeWorkerRequest;
+        public static readonly WorkerRequest SecondWorkerRequest;
 
         static Data()
         {
@@ -265,8 +266,8 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             WorkerProfile.PatchSinInformation(new FakeSinInfo());
             WorkerProfile.PatchDocuments(new FakeDocuments());
             CompanyProfile.UpdateName("Microsoft");
-            FakeWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);
-            SecondWorkerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(WorkerProfile.Id, SecondBookedRequest.Id);
+            FakeWorkerRequest = WorkerRequest.AgencyBook(WorkerProfile.Id, FakeRequest.Id);
+            SecondWorkerRequest = WorkerRequest.AgencyBook(WorkerProfile.Id, SecondBookedRequest.Id);
         }
 
         private class FakeSinInfo : ISinInformation<CovenantFile>

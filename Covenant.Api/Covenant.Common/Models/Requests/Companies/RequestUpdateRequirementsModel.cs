@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.Company;
+namespace Covenant.Common.Models.Requests.Companies;
 
 public class RequestUpdateRequirementsModel
 {

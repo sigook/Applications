@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Company.Agency;
+namespace Covenant.Common.Models.Companies.Agencies;
 
 public class CompanyProfileListModel
 {

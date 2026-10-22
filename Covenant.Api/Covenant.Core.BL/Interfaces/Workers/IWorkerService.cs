@@ -1,11 +1,11 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Request.Worker;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Worker;
 using System.Linq.Expressions;
 
 namespace Covenant.Core.BL.Interfaces.Workers;

@@ -1,15 +1,15 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Agencies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Profile;
+namespace Covenant.Api.Controllers.Agencies.Profile;
 
 [Route(RouteName)]
 [ApiController]
@@ -73,7 +73,6 @@ public class PersonnelController(IAgencyService agencyService) : ControllerBase
     }
 
     /// <summary>Deletes a personnel record of the current agency.</summary>
-    /// <param name="service">Identity server service used to remove the associated user or claim.</param>
     /// <param name="id">Identifier of the personnel record to delete.</param>
     [HttpDelete("{id:guid}")]
     [Authorize(Policy = PolicyConfiguration.Admin)]

@@ -1,15 +1,15 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Core.BL.Interfaces.Companies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Clients;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Clients;
 
 [Route(RouteName)]
 [Authorize(Policy = PolicyConfiguration.Agency)]
@@ -82,8 +82,7 @@ public class JobPositionsController(ICompanyRepository repository, IAgencyServic
     }
 
     /// <summary>Sends a petition email requesting the creation of a new job position.</summary>
-    /// <param name="emailService">Email service used to send the petition.</param>
-    /// <param name="configuration">Application configuration providing petition recipient emails.</param>
+    /// <param name="companyService">Company service used to send the petition.</param>
     /// <param name="profileId">Identifier of the company profile.</param>
     /// <param name="model">Petition data including the requested job position.</param>
     [HttpPost("Petition")]

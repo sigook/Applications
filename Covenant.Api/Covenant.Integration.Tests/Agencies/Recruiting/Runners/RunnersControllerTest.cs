@@ -1,14 +1,14 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Requests.Runners;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Request.Runners;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Request.Runners;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Runners;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Core.BL.Interfaces.Requests;
@@ -20,12 +20,12 @@ using Covenant.Infrastructure.Services;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
 using System.Net.Http.Json;
+using System.Net;
 using Xunit;
-using RecruitingRunnersController = Covenant.Api.Controllers.Agency.Recruiting.Runners.RunnersController;
+using RecruitingRunnersController = Covenant.Api.Controllers.Agencies.Recruiting.Runners.RunnersController;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Runners;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Runners;
 
 public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<RunnersControllerTest.Startup>>
 {

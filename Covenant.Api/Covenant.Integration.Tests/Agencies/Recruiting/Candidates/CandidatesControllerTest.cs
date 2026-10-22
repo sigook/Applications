@@ -1,12 +1,13 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Candidates;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Candidates;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Candidates;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Candidates;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Candidate;
-using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
@@ -26,7 +27,7 @@ using System.Net;
 using System.Text.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Candidates;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Candidates;
 
 public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CandidatesControllerTest.Startup>>
 {
@@ -179,7 +180,7 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         public static readonly Gender Female = new Gender { Id = Guid.NewGuid(), Value = "Female" };
         public static readonly Source WebPageSource = new Source { Id = Guid.NewGuid(), Value = "Web page" };
         private static readonly User FakeAgencyUser = new User(CvnEmail.Create("FakeAgencyUser@email.com").Value);
-        private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
+        private static readonly Agency FakeAgency = new Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
         public static readonly City FakeCity = FakeData.FakeCity();
         public static readonly City FakeOtherCity = FakeData.FakeCity(FakeCity.Province);
         public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "J Martin")

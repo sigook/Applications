@@ -1,6 +1,6 @@
 using Covenant.Common.Utils.Extensions;
 
-namespace Covenant.Common.Models.Accounting.Invoice;
+namespace Covenant.Common.Models.Accounting.Invoices;
 
 public class InvoiceSummaryHolidayModel
 {

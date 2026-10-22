@@ -1,5 +1,5 @@
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Request.Runners;
+using Covenant.Common.Models.Requests.Runners;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 

@@ -1,16 +1,17 @@
 using Covenant.Api.Authorization;
-using Covenant.Api.Controllers.Company.Requests;
+using Covenant.Api.Controllers.Companies.Requests;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Identity;
-using Covenant.Common.Models.Request.Company;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Companies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
@@ -32,7 +33,7 @@ using System.Net.Http.Json;
 using System.Net;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Company.Requests;
+namespace Covenant.Integration.Tests.Companies.Requests;
 
 public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
@@ -173,7 +174,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
 
     private static class Data
     {
-        private static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency { User = new User(CvnEmail.Create("agency@agency.com").Value) };
+        private static readonly Agency Agency = new Agency { User = new User(CvnEmail.Create("agency@agency.com").Value) };
         public static readonly DateTime Now = new DateTime(2019, 01, 01);
         public static readonly Guid Sub = Guid.NewGuid();
         public static readonly City Toronto = new City

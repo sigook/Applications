@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Notification;
+namespace Covenant.Common.Models.Notifications;
 
 public class EmailParams
 {

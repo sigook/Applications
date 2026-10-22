@@ -1,4 +1,4 @@
-﻿namespace Covenant.Common.Entities.Company
+﻿namespace Covenant.Common.Entities.Companies
 {
     public class CompanyProfileLocation
     {

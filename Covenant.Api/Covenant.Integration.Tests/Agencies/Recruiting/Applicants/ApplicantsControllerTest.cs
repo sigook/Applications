@@ -1,13 +1,13 @@
 using Covenant.Api.Authorization;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -18,9 +18,9 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
-using RecruitingApplicantsController = Covenant.Api.Controllers.Agency.Recruiting.Applicants.ApplicantsController;
+using RecruitingApplicantsController = Covenant.Api.Controllers.Agencies.Recruiting.Applicants.ApplicantsController;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Applicants;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Applicants;
 
 public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactory<ApplicantsControllerTest.Startup>>
 {

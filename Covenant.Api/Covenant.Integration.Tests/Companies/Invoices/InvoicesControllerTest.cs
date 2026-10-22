@@ -1,10 +1,10 @@
-﻿using Covenant.Api.Controllers.Company.Invoices;
+﻿using Covenant.Api.Controllers.Companies.Invoices;
 using Covenant.Api.Authorization;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
@@ -13,8 +13,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit.Abstractions;
 using Xunit;
+using Covenant.Common.Entities.Agencies;
 
-namespace Covenant.Integration.Tests.Company.Invoices;
+namespace Covenant.Integration.Tests.Companies.Invoices;
 
 public class InvoicesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
@@ -93,7 +94,7 @@ public class Startup
 
 public static class Data
 {
-    public static readonly Covenant.Common.Entities.Agency.Agency Agency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+    public static readonly Agency Agency = new Agency() { User = FakeData.FakeUser() };
     public static readonly CompanyProfile CompanyProfile = new CompanyProfile
     {
         Company = new User(CvnEmail.Create("comp@a.com").Value),

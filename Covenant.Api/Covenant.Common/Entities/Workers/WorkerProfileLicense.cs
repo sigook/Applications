@@ -1,6 +1,6 @@
-﻿using Covenant.Common.Models.Worker;
+﻿using Covenant.Common.Models.Workers;
 
-namespace Covenant.Common.Entities.Worker
+namespace Covenant.Common.Entities.Workers
 {
     public class WorkerProfileLicense : IWorkerProfileLicense<CovenantFile>
     {

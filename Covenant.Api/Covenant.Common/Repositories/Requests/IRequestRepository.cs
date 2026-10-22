@@ -1,22 +1,22 @@
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request.Company;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests.Companies;
+using Covenant.Common.Models.Requests.WeeklyBoard;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models.Website;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Worker;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Request.WeeklyBoard;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
 public interface IRequestRepository : IBaseRepository
 {
-    Task<Entities.Request.Request> GetRequest(Expression<Func<Entities.Request.Request, bool>> condition);
-    Task<IEnumerable<Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids);
+    Task<Request> GetRequest(Expression<Func<Request, bool>> condition);
+    Task<IEnumerable<Request>> GetRequests(IEnumerable<Guid> ids);
     IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<PaginatedList<AgencyRequestListModel>> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(Guid agencyId, GetRequestForAgencyFilter filter);

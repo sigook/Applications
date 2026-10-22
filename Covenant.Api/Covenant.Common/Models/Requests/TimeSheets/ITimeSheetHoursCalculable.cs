@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Request.TimeSheet;
+namespace Covenant.Common.Models.Requests.TimeSheets;
 
 /// <summary>
 /// Interface for timesheet models that can be used for hours calculation

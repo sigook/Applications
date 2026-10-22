@@ -1,12 +1,12 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Constants;
-using Covenant.Common.Models.Agency;
+using Covenant.Common.Models.Agencies;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Profile;
+namespace Covenant.Api.Controllers.Agencies.Profile;
 
 [Route(RouteName)]
 [ApiController]

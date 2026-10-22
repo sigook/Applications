@@ -1,15 +1,16 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Accounting.Subcontractor;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Accounting.Subcontractors;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Common.Repositories.Accounting.Subcontractors;
@@ -25,7 +26,6 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
-using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
 namespace Covenant.Core.BL.Services.Accounting.Invoices;
 
@@ -442,7 +442,7 @@ public class InvoiceService(
         return items;
     }
 
-    private static InvoiceTotal CreateItem(TimeSheetTotalEntity timeSheetTotal, double quantity, decimal unitPrice, string description, decimal agencyRate, decimal amount, Action<InvoiceTotal> setBucket)
+    private static InvoiceTotal CreateItem(TimeSheetTotal timeSheetTotal, double quantity, decimal unitPrice, string description, decimal agencyRate, decimal amount, Action<InvoiceTotal> setBucket)
     {
         var item = InvoiceTotal.Create(timeSheetTotal, quantity, unitPrice, description, agencyRate, amount);
         setBucket(item);

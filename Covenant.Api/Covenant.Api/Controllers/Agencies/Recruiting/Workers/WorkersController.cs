@@ -4,9 +4,9 @@ using Covenant.Common.Constants;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Identity;
-using Covenant.Common.Models.Worker.Agency;
+using Covenant.Common.Models.Workers.Agencies;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
@@ -17,7 +17,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Covenant.Api.Controllers.Agency.Recruiting.Workers;
+namespace Covenant.Api.Controllers.Agencies.Recruiting.Workers;
 
 [ApiController]
 [Route(RouteName)]
@@ -123,7 +123,6 @@ public class WorkersController(
     }
 
     /// <summary>Updates the email address of the user linked to a worker profile.</summary>
-    /// <param name="service">Identity server service used to update the user email.</param>
     /// <param name="workerProfileId">Identifier of the worker profile.</param>
     /// <param name="model">New email information.</param>
     [HttpPut("{workerProfileId:guid}/Email")]

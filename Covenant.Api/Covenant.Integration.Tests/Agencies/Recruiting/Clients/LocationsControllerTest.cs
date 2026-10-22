@@ -1,10 +1,11 @@
-using Covenant.Api.Controllers.Agency.Recruiting.Clients;
 using Covenant.Api.Authorization;
+using Covenant.Api.Controllers.Agencies.Recruiting.Clients;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -16,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Xunit;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Clients;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
 public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory<LocationsControllerTest.Startup>>
 {
@@ -149,7 +150,7 @@ public class LocationsControllerTest : IClassFixture<CustomWebApplicationFactory
         private static readonly City York = new City { Value = "York", Province = Ontario };
         public static readonly City Brampton = new City { Value = "Brampton", Province = Ontario };
 
-        private static readonly Covenant.Common.Entities.Agency.Agency FakeAgency = new Covenant.Common.Entities.Agency.Agency() { User = FakeData.FakeUser() };
+        private static readonly Agency FakeAgency = new Agency() { User = FakeData.FakeUser() };
         public static readonly CompanyProfile FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
             "", "", new CompanyProfileIndustry("Company Industry"));
 

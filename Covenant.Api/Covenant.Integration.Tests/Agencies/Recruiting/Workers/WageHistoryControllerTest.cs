@@ -1,10 +1,10 @@
 using Covenant.Api.Authorization;
+using Covenant.Common.Entities.Accounting.PayStubs;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.PayStub;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting.PayStub;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Workers;
@@ -12,9 +12,9 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using System.Net.Http.Json;
 using Xunit;
-using static Covenant.Api.Controllers.Agency.Recruiting.Workers.WageHistoryController;
+using static Covenant.Api.Controllers.Agencies.Recruiting.Workers.WageHistoryController;
 
-namespace Covenant.Integration.Tests.Agency.Recruiting.Workers;
+namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
 public class WageHistoryControllerTest : IClassFixture<CustomWebApplicationFactory<WageHistoryControllerTest.Startup>>
 {

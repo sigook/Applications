@@ -1,6 +1,6 @@
 ﻿using Covenant.Common.Entities;
 
-namespace Covenant.Common.Models.Location
+namespace Covenant.Common.Models.Locations
 {
     public class ProvinceModel : ICatalog<Guid>
     {

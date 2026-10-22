@@ -33,7 +33,7 @@ Agency client that needs temporary or permanent staff. Defines job positions wit
 
 ### 3. WORKER
 
-Job seeker using the Flutter mobile app. Entity: `Covenant.Common/Entities/Worker/WorkerProfile.cs`.
+Job seeker using the Flutter mobile app. Entity: `Covenant.Common/Entities/Workers/WorkerProfile.cs`.
 
 A worker **User** has exactly **one** `WorkerProfile`, bound to exactly one agency (`WorkerProfile.AgencyId` is non-nullable, and `WorkerId` has a single-column unique index); companies follow the same pattern (`CompanyProfile.CompanyId` unique). Only agency staff genuinely span agencies, via multiple `AgencyPersonnel` rows (the `agencyIds` claim).
 
@@ -46,7 +46,7 @@ Profile holds personal data (SIN with file + expiry, IDs), contact/location, pro
 
 ### 4. CANDIDATE
 
-Prospect managed by the agency that does NOT yet have a user account (`Covenant.Common/Entities/Candidate/`). A Candidate exists only in the agency's system; a Worker has an associated User and can use the app. Candidates can be applicants on a Request, but **not** Runners: they must be converted to a Worker first to enter the recruiting pipeline (see `WORKFLOWS.md` section 6).
+Prospect managed by the agency that does NOT yet have a user account (`Covenant.Common/Entities/Candidates/`). A Candidate exists only in the agency's system; a Worker has an associated User and can use the app. Candidates can be applicants on a Request, but **not** Runners: they must be converted to a Worker first to enter the recruiting pipeline (see `WORKFLOWS.md` section 6).
 
 ---
 
@@ -66,7 +66,7 @@ AgencyRate ($25/hr billed to Company) − WorkerRate ($18/hr paid to Worker) = $
 
 Agency costs against that markup: employer CPP/EI contributions, insurance, overhead.
 
-**Direct Hiring:** a Request with `WorkerSalary` set (`Covenant.Common/Entities/Request/Request.cs:53`) is a permanent-placement order — the company hires the worker directly for a salary. These orders change billing behavior (no punch-card billing — see `WORKFLOWS.md` section 6).
+**Direct Hiring:** a Request with `WorkerSalary` set (`Covenant.Common/Entities/Requests/Request.cs:53`) is a permanent-placement order — the company hires the worker directly for a salary. These orders change billing behavior (no punch-card billing — see `WORKFLOWS.md` section 6).
 
 ---
 

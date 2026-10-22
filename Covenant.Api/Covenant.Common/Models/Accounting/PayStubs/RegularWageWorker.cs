@@ -1,6 +1,6 @@
 using Covenant.Common.Utils.Extensions;
 
-namespace Covenant.Common.Models.Accounting.PayStub;
+namespace Covenant.Common.Models.Accounting.PayStubs;
 
 public class RegularWageWorker
 {

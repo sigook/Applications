@@ -1,6 +1,6 @@
 using ClosedXML.Excel;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Request.Runners;
+using Covenant.Common.Models.Requests.Runners;
 
 namespace Covenant.Documents.Services;
 

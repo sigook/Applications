@@ -1,6 +1,6 @@
 using Covenant.Common.Entities;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;

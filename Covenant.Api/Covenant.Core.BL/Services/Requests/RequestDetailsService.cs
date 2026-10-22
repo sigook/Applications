@@ -1,12 +1,12 @@
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces.Shared;
 

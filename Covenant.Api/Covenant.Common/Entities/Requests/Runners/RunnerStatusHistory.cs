@@ -1,6 +1,6 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Entities.Request.Runners;
+namespace Covenant.Common.Entities.Requests.Runners;
 
 public class RunnerStatusHistory
 {

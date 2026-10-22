@@ -7,27 +7,27 @@ nuget.org only through `nuget.config`).
 ## Code Navigation
 
 ```
-Controllers:     Covenant.Api/Controllers/{Portal}/{Menu}/{Feature}/     folder = route: Controllers/Agency/Recruiting/Requests/ serves api/agency/recruiting/requests (lowercase class prefix, action templates keep their casing)
+Controllers:     Covenant.Api/Controllers/{Portal}/{Menu}/{Feature}/     folder = route: Controllers/Agencies/Recruiting/Requests/ serves api/agency/recruiting/requests (lowercase class prefix, action templates keep their casing)
                  Covenant.Api/Controllers/Identity/                     (AuthorizationController = OpenIddict /connect/* passthrough; AccountController = POST /Account/ConfirmEmail|CreatePassword|ResendConfirmationLink + legacy email-link redirects; ExternalController = Microsoft 365 sign-in; PasswordController = /Password/forgot|reset; HomeController = / and /Home/InvalidUser, redirects to Sigook.Web)
                  Covenant.Api/Controllers/Shared/                       (any role / anonymous: Catalog, Location, EmailPreferences, Website, MobileApp → api/catalog, api/location, api/emailpreferences, api/website, api/mobileapp; files are never served by the API, every environment reads blobs directly through `FilesConfiguration:FilesPath`; `MobileApp` serves the forced-update gate of Sigook.App from `MobileAppConfiguration` — bump `MobileAppConfiguration__MinimumVersion` in App Settings to lock out older builds)
                  Covenant.Api/Controllers/Shared/Account/               (the caller's own account, bearer: UserAccount = api/account/* + PATCH /identity; UserNotification = api/usernotification)
                  Covenant.Api/Controllers/Shared/Jobs/                  (machine-to-machine, called by Sigook.Functions: ScheduleTasks = api/jobs/scheduletasks, Deductions = api/jobs/deductions)
-                 Covenant.Api/Controllers/Agency/                       (Notifications = api/agency/notifications, the sidebar bell)
-                 Covenant.Api/Controllers/Agency/Profile/               (own agency: AgencyProfile = api/agency/profile, Locations, Personnel, PersonnelAgencies, Attendance)
-                 Covenant.Api/Controllers/Agency/Recruiting/Requests/   (RequestsList = lists/Excel, Requests = detail/CRUD, Applicants, Runners, Workers, TimeSheets, WorkerTimeSheets, WorkerNotes, WorkersReport, Notes, Shift, Skills, ReportTo, RequestedBy → api/agency/recruiting/requests[/{requestId}/…])
-                 Covenant.Api/Controllers/Agency/Recruiting/Applicants/ (cross-request applicants board)
-                 Covenant.Api/Controllers/Agency/Recruiting/WeeklyBoard/
-                 Covenant.Api/Controllers/Agency/Recruiting/Candidates/ (Candidates, Notes, PhoneNumbers, Skills, Documents)
-                 Covenant.Api/Controllers/Agency/Recruiting/Workers/    (Workers, Notes, Comments, Holidays, RequestHistory, WageHistory, TimeSheetHistory)
-                 Covenant.Api/Controllers/Agency/Recruiting/Clients/    (ClientsList = lists/Excel, Clients = CRUD, ContactInformation, ContactPeople, Documents, InvoiceNotes, InvoiceRecipients, JobPositions, Locations, Logo, Notes, Users → api/agency/recruiting/clients[/{profileId}/…])
-                 Covenant.Api/Controllers/Agency/Sales/                 (sales-rep scoped: Dashboard, Clients, Requests; Agencies = sub-agencies → api/agency/sales/*)
-                 Covenant.Api/Controllers/Agency/Sales/Clients/         (owner-scoped Deals + Interactions under {profileId}, Policy=Sales)
-                 Covenant.Api/Controllers/Agency/Accounting/            (Invoices, PayStubs, Reports, LocationTax → api/agency/accounting/*)
-                 Covenant.Api/Controllers/Company/Profile/              (Company = api/company/profile, Users, ContactPeople, JobPositions, Locations)
-                 Covenant.Api/Controllers/Company/Requests/             (Requests, Shift, Workers, WorkerTimeSheets → api/company/requests[/{requestId}/…])
-                 Covenant.Api/Controllers/Company/Invoices/             (api/company/invoices)
-                 Covenant.Api/Controllers/Company/Workers/              (Comments)
-                 Covenant.Api/Controllers/Worker/                       (the worker's own endpoints, Policy=Worker: Profile/, Requests/, History/, Comments/, TimeSheets/ → api/worker/*)
+                 Covenant.Api/Controllers/Agencies/                       (Notifications = api/agency/notifications, the sidebar bell)
+                 Covenant.Api/Controllers/Agencies/Profile/               (own agency: AgencyProfile = api/agency/profile, Locations, Personnel, PersonnelAgencies, Attendance)
+                 Covenant.Api/Controllers/Agencies/Recruiting/Requests/   (RequestsList = lists/Excel, Requests = detail/CRUD, Applicants, Runners, Workers, TimeSheets, WorkerTimeSheets, WorkerNotes, WorkersReport, Notes, Shift, Skills, ReportTo, RequestedBy → api/agency/recruiting/requests[/{requestId}/…])
+                 Covenant.Api/Controllers/Agencies/Recruiting/Applicants/ (cross-request applicants board)
+                 Covenant.Api/Controllers/Agencies/Recruiting/WeeklyBoard/
+                 Covenant.Api/Controllers/Agencies/Recruiting/Candidates/ (Candidates, Notes, PhoneNumbers, Skills, Documents)
+                 Covenant.Api/Controllers/Agencies/Recruiting/Workers/    (Workers, Notes, Comments, Holidays, RequestHistory, WageHistory, TimeSheetHistory)
+                 Covenant.Api/Controllers/Agencies/Recruiting/Clients/    (ClientsList = lists/Excel, Clients = CRUD, ContactInformation, ContactPeople, Documents, InvoiceNotes, InvoiceRecipients, JobPositions, Locations, Logo, Notes, Users → api/agency/recruiting/clients[/{profileId}/…])
+                 Covenant.Api/Controllers/Agencies/Sales/                 (sales-rep scoped: Dashboard, Clients, Requests; Agencies = sub-agencies → api/agency/sales/*)
+                 Covenant.Api/Controllers/Agencies/Sales/Clients/         (owner-scoped Deals + Interactions under {profileId}, Policy=Sales)
+                 Covenant.Api/Controllers/Agencies/Accounting/            (Invoices, PayStubs, Reports, LocationTax → api/agency/accounting/*)
+                 Covenant.Api/Controllers/Companies/Profile/              (Company = api/company/profile, Users, ContactPeople, JobPositions, Locations)
+                 Covenant.Api/Controllers/Companies/Requests/             (Requests, Shift, Workers, WorkerTimeSheets → api/company/requests[/{requestId}/…])
+                 Covenant.Api/Controllers/Companies/Invoices/             (api/company/invoices)
+                 Covenant.Api/Controllers/Companies/Workers/              (Comments)
+                 Covenant.Api/Controllers/Workers/                       (the worker's own endpoints, Policy=Worker: Profile/, Requests/, History/, Comments/, TimeSheets/ → api/worker/*)
 Identity config: Covenant.Api/Configuration/OpenIddictConfiguration.cs  (server + local validation, certificates)
                  Covenant.Api/Configuration/Microsoft365OpenIdConnect.cs (scheme "oidc")
                  Covenant.Api/Configuration/OpenIddictSeeder.cs         (scopes, Functions client, dev clients)
@@ -41,7 +41,7 @@ Services:        Covenant.Core.BL/Services/{Domain}/                    by domai
                  Covenant.Core.BL/Services/Accounting/{Deductions,Invoices,PayStubs}/ (DeductionImportService; InvoiceService + CanadaInvoiceStrategy/UsaInvoiceStrategy + InvoiceCountryStrategyResolver; PayStubService)
 Bus consumers:   Covenant.Api/Consumers/                                (Invitation, NewCandidate, RequestApplicant, Teams, BulkPayStubEmail — thin: deserialize, call one Core.BL service, complete)
 Entities:        Covenant.Common/Entities/{Domain}/                     singular (Accounting/{Deductions,Invoice,PayStub,Subcontractor}/, Agency/, Candidate/, Company/, Identity/, Request/{,Runners}/, Sales/ = Deal + CompanyInteraction, Worker/); catalogs and Location* in the root
-Models/DTOs:     Covenant.Common/Models/{Domain}/                       same singular domains as Entities + Location/, Notification/, Website/, Sales/{,Dashboard}/. Inside a domain, the root holds what is shared or belongs to the domain's own portal; DTOs consumed by ONE other portal go in Agency/, Company/ or Worker/ (Models/Worker/Agency/ = agency view of workers, Models/Request/{Agency,Company,Worker}/). Never Domain/Domain/
+Models/DTOs:     Covenant.Common/Models/{Domain}/                       same singular domains as Entities + Location/, Notification/, Website/, Sales/{,Dashboard}/. Inside a domain, the root holds what is shared or belongs to the domain's own portal; DTOs consumed by ONE other portal go in Agency/, Company/ or Worker/ (Models/Workers/Agency/ = agency view of workers, Models/Requests/{Agency,Company,Worker}/). Never Domain/Domain/
 Repo interfaces: Covenant.Common/Repositories/{Domain}/                 PLURAL (Agencies/, Candidates/, Companies/, Identity/, Notifications/, Requests/, Workers/, Accounting/{Deductions,Invoices,PayStubs,Subcontractors}/; Catalog/Location/Shift/User in the root)
 Repo impls:      Covenant.Infrastructure/Repositories/{Domain}/         same tree
 DbContexts:      Covenant.Infrastructure/Contexts/                      (CovenantContext = API DB; IdentityContext = identity DB + OpenIddict stores; MyKeysContext)

@@ -1,4 +1,4 @@
-namespace Covenant.Common.Models.Notification
+namespace Covenant.Common.Models.Notifications
 {
 	public class UserNotificationUpdateModel
 	{

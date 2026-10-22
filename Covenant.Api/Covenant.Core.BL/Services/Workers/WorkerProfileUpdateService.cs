@@ -1,8 +1,8 @@
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Resources;
 using Covenant.Core.BL.Interfaces.Shared;
