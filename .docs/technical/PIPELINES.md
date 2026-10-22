@@ -45,7 +45,7 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Sigook.App iOS Bootstrap | `sigook-app-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
-| Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob container `files` of `sigookfilesstaging` |
+| Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob containers `files`, `invoices`, `paystubs` of `sigookfilesstaging` |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
@@ -200,6 +200,18 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 - Play serves every user the highest `versionCode` across all tracks they are enrolled in and never downgrades, so an enrolled tester runs the staging build whenever `dev` was released after `main` (and sees the "(Beta)" suffix in the store). Only people who accept that belong in the closed track; anyone who needs the production app must be removed from it and reinstall. Staging and local builds show an orange environment banner, so a phone running the wrong backend is obvious
 - Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
 
+### Sigook.App Forced Update (manual)
+
+The pipeline never touches the forced-update gate. On every launch and every resume the app calls `GET api/mobileapp/version` and compares its installed `appVersionName` with `MobileAppConfiguration__MinimumVersion` (App Setting of the Api in each environment): below it, the whole UI is replaced by the update screen that links to the store; equal or above, the app opens normally. Nothing is stored on the phone, so once the user installs the store version the screen disappears on the next check. When the check fails (offline, Api down) the app is never blocked.
+
+Raising the minimum is optional and only needed when older builds must stop working (a critical bug, an Api change that breaks them):
+
+1. Release the version through `main` as usual
+2. Wait until it is approved and live in **both** the App Store and Google Play
+3. Set `MobileAppConfiguration__MinimumVersion` in the production Api App Settings to that `appVersionName` (`YYYY.M.D`)
+
+Never set a value higher than the version live in both stores: every user is locked out, installing from the store does not help, and the only way out is lowering the setting or shipping that version. Comparison uses `appVersionName` only, so builds released the same day count as the same version.
+
 ### Sigook.App iOS Bootstrap (manual)
 
 `sigook-app-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever `flutterVersion` changes (nobody on the team has a Mac), so CI never mutates an unreviewed checkout and the lockfiles stay reproducible. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion` (keep them equal to `sigook-app-pipeline.yml`).
@@ -275,10 +287,11 @@ Review the PNGs (staging data is visible: pick an account with presentable jobs 
 - Final step restarts `sigook-api-staging` (resource group `SigookStaging`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
 
 **Stage RefreshFiles - Refresh Staging Files:**
-- `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` from `https://sigookfiles.blob.core.windows.net/files` to `https://sigookfilesstaging.blob.core.windows.net/files` with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
+- `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` for each of the containers `files`, `invoices` and `paystubs`, from `https://sigookfiles.blob.core.windows.net/{container}` to `https://sigookfilesstaging.blob.core.windows.net/{container}`, with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
 - The copy is server-to-server: the agent orchestrates but the bytes move between the two accounts. Only changed or missing blobs are transferred after the first run
 - `azcopy` authenticates with the task's `az login` (`AZCOPY_AUTO_LOGIN_TYPE=AZCLI`); if the agent lacks the binary the step downloads it into `$(Agent.TempDirectory)`
-- Only the `files` container is mirrored. `cra-tables` is left alone on purpose: the staging Sigook.Functions blob trigger would re-import every CRA table dropped into it. The staging-only `scripts` container is not touched
+- `invoices` and `paystubs` hold the cached PDFs keyed by the invoice/pay stub id; mirroring them keeps staging serving the same documents as production for the restored database instead of regenerating them from current data
+- `cra-tables` is left alone on purpose: the staging Sigook.Functions blob trigger would re-import every CRA table dropped into it. The staging-only `scripts` container is not touched
 - Object replication was rejected for this purpose: an active policy makes the destination container read-only (409 on every write), and the staging Api uploads files
 
 **Requirements:**
