@@ -67,7 +67,8 @@ public class WorkerService(
     ICatalogRepository catalogRepository,
     IRequestApplicantNotificationService applicantNotificationService,
     IWorkerRequirementService workerRequirementService,
-    IOptions<PunchConfiguration> punchOptions) : IWorkerService
+    IOptions<PunchConfiguration> punchOptions,
+    ISkillService skillService) : IWorkerService
 {
     private readonly PunchConfiguration punchConfiguration = punchOptions.Value;
     private readonly IWorkerRepository workerRepository = workerRepository;
@@ -116,6 +117,7 @@ public class WorkerService(
         });
         if (!user) return Result.Fail<Guid>(user.Errors);
 
+        model.Skills = (await skillService.Canonicalize(model.Skills.Select(s => s.Skill))).Select(s => new SkillModel(s));
         var entity = workerAdapter.MapToWorkerProfile(model, agency, user.Value);
 
         var socialInsuranceFill = await ApplySocialInsuranceFromIdentification(entity, model);

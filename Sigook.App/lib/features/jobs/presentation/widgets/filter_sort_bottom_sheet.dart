@@ -1,23 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-
-enum SortOption {
-  dateNewest,
-  dateOldest,
-  rateHighest,
-  rateLowest,
-}
-
-enum FilterStatus { all, open, booked, pending, cancelled }
+import '../../../../core/widgets/inputs/custom_text_field.dart';
+import '../../domain/entities/jobs_filter.dart';
 
 class FilterSortBottomSheet extends StatefulWidget {
-  final SortOption currentSort;
-  final FilterStatus currentFilter;
-  final Function(SortOption, FilterStatus) onApply;
+  final JobsFilter currentFilter;
+  final ValueChanged<JobsFilter> onApply;
 
   const FilterSortBottomSheet({
     super.key,
-    required this.currentSort,
     required this.currentFilter,
     required this.onApply,
   });
@@ -27,14 +18,20 @@ class FilterSortBottomSheet extends StatefulWidget {
 }
 
 class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
-  late SortOption _selectedSort;
-  late FilterStatus _selectedFilter;
+  late JobsFilter _filter;
+  late final TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
-    _selectedSort = widget.currentSort;
-    _selectedFilter = widget.currentFilter;
+    _filter = widget.currentFilter;
+    _searchController = TextEditingController(text: _filter.search);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,8 +73,8 @@ class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
                 TextButton(
                   onPressed: () {
                     setState(() {
-                      _selectedSort = SortOption.dateNewest;
-                      _selectedFilter = FilterStatus.all;
+                      _filter = JobsFilter.defaults;
+                      _searchController.clear();
                     });
                   },
                   child: const Text('Reset'),
@@ -93,6 +90,27 @@ class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
+                    'Search',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CustomTextField(
+                    controller: _searchController,
+                    hint: 'Position or request number',
+                    prefixIcon: Icons.search,
+                    textInputAction: TextInputAction.search,
+                    onChanged: (value) {
+                      setState(() {
+                        _filter = _filter.copyWith(search: value);
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
                     'Sort By',
                     style: TextStyle(
                       fontSize: 16,
@@ -104,61 +122,24 @@ class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
                   _buildSortOption(
                     'Date: Newest First',
                     Icons.arrow_downward,
-                    SortOption.dateNewest,
+                    JobSortBy.newest,
                   ),
                   _buildSortOption(
                     'Date: Oldest First',
                     Icons.arrow_upward,
-                    SortOption.dateOldest,
+                    JobSortBy.oldest,
                   ),
                   _buildSortOption(
                     'Pay Rate: Highest',
                     Icons.attach_money,
-                    SortOption.rateHighest,
+                    JobSortBy.highestRate,
                   ),
                   _buildSortOption(
                     'Pay Rate: Lowest',
                     Icons.money_off,
-                    SortOption.rateLowest,
+                    JobSortBy.lowestRate,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Filter by Status',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildFilterChip('All', FilterStatus.all, Colors.grey),
-                      _buildFilterChip(
-                        'Open',
-                        FilterStatus.open,
-                        AppTheme.primaryBlue,
-                      ),
-                      _buildFilterChip(
-                        'Booked',
-                        FilterStatus.booked,
-                        AppTheme.successGreen,
-                      ),
-                      _buildFilterChip(
-                        'Pending',
-                        FilterStatus.pending,
-                        Colors.orange,
-                      ),
-                      _buildFilterChip(
-                        'Cancelled',
-                        FilterStatus.cancelled,
-                        AppTheme.errorRed,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -180,7 +161,7 @@ class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    widget.onApply(_selectedSort, _selectedFilter);
+                    widget.onApply(_filter);
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
@@ -207,84 +188,62 @@ class _FilterSortBottomSheetState extends State<FilterSortBottomSheet> {
     );
   }
 
-  Widget _buildSortOption(String title, IconData icon, SortOption option) {
-    final isSelected = _selectedSort == option;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedSort = option;
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryBlue.withValues(alpha: 0.1)
-              : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade200,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppTheme.primaryBlue : AppTheme.textLight,
-              size: 20,
+  Widget _buildSortOption(String title, IconData icon, JobSortBy option) {
+    final isSelected = _filter.sortBy == option;
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _filter = _filter.copyWith(sortBy: option);
+          });
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryBlue.withValues(alpha: 0.1)
+                : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade200,
+              width: isSelected ? 2 : 1,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? AppTheme.primaryBlue : AppTheme.textDark,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? AppTheme.primaryBlue : AppTheme.textLight,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected
+                        ? AppTheme.primaryBlue
+                        : AppTheme.textDark,
+                  ),
                 ),
               ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: AppTheme.primaryBlue,
-                size: 22,
-              ),
-          ],
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle,
+                  color: AppTheme.primaryBlue,
+                  size: 22,
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, FilterStatus status, Color color) {
-    final isSelected = _selectedFilter == status;
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (selected) {
-        setState(() {
-          _selectedFilter = status;
-        });
-      },
-      backgroundColor: Colors.grey.shade100,
-      selectedColor: color.withValues(alpha: 0.15),
-      checkmarkColor: color,
-      labelStyle: TextStyle(
-        color: isSelected ? color : AppTheme.textDark,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        fontSize: 14,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(
-          color: isSelected ? color : Colors.grey.shade300,
-          width: isSelected ? 2 : 1,
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    );
-  }
 }

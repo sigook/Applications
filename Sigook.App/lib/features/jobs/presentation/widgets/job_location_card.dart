@@ -39,27 +39,31 @@ class JobLocationCard extends StatelessWidget {
             if (mapUri != null) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: InkWell(
-                  onTap: () => _openMaps(context, latitude, longitude),
-                  child: AspectRatio(
-                    aspectRatio: 2,
-                    child: Image.network(
-                      mapUri.toString(),
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, progress) =>
-                          progress == null
-                          ? child
-                          : _buildPlaceholder(
-                              const CircularProgressIndicator(strokeWidth: 2),
+                child: Semantics(
+                  button: true,
+                  label: 'Open location in Maps',
+                  child: InkWell(
+                    onTap: () => _openMaps(context, latitude, longitude),
+                    child: AspectRatio(
+                      aspectRatio: 2,
+                      child: Image.network(
+                        mapUri.toString(),
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) =>
+                            progress == null
+                            ? child
+                            : _buildPlaceholder(
+                                const CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildPlaceholder(
+                              Icon(
+                                Icons.map_outlined,
+                                size: 40,
+                                color: Colors.grey.shade500,
+                              ),
                             ),
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildPlaceholder(
-                            Icon(
-                              Icons.map_outlined,
-                              size: 40,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
+                      ),
                     ),
                   ),
                 ),

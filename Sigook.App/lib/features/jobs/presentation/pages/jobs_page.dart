@@ -13,7 +13,6 @@ import '../widgets/job_card.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/filter_sort_bottom_sheet.dart';
 import '../widgets/profile_warning_banner.dart';
-import '../../domain/entities/job.dart';
 
 class JobsPage extends ConsumerStatefulWidget {
   const JobsPage({super.key});
@@ -25,8 +24,6 @@ class JobsPage extends ConsumerStatefulWidget {
 class _JobsPageState extends ConsumerState<JobsPage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  SortOption _currentSort = SortOption.dateNewest;
-  FilterStatus _currentFilter = FilterStatus.all;
 
   @override
   void initState() {
@@ -73,64 +70,28 @@ class _JobsPageState extends ConsumerState<JobsPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => FilterSortBottomSheet(
-        currentSort: _currentSort,
-        currentFilter: _currentFilter,
-        onApply: (sort, filter) {
-          setState(() {
-            _currentSort = sort;
-            _currentFilter = filter;
-          });
+        currentFilter: ref.read(jobsViewModelProvider).filter,
+        onApply: (filter) {
+          ref.read(jobsViewModelProvider.notifier).applyFilter(filter);
           ref
               .read(analyticsServiceProvider)
               .logEvent(
                 name: 'jobs_filter_applied',
-                parameters: {'filter': filter.name, 'sort': sort.name},
+                parameters: {
+                  'sort': filter.sortBy.name,
+                  'search': filter.hasSearch,
+                },
               );
         },
       ),
     );
   }
 
-  List<Job> _getFilteredAndSortedJobs(List<Job> jobs) {
-    var filtered = List<Job>.from(jobs);
-
-    if (_currentFilter != FilterStatus.all) {
-      filtered = filtered.where((job) {
-        switch (_currentFilter) {
-          case FilterStatus.open:
-            return job.status?.toLowerCase() == 'open';
-          case FilterStatus.booked:
-            return job.status?.toLowerCase() == 'booked';
-          case FilterStatus.pending:
-            return job.status?.toLowerCase() == 'pending';
-          case FilterStatus.cancelled:
-            return job.status?.toLowerCase() == 'cancelled';
-          default:
-            return true;
-        }
-      }).toList();
-    }
-
-    filtered.sort((a, b) {
-      switch (_currentSort) {
-        case SortOption.dateNewest:
-          return b.createdAt.compareTo(a.createdAt);
-        case SortOption.dateOldest:
-          return a.createdAt.compareTo(b.createdAt);
-        case SortOption.rateHighest:
-          return b.workerRate.compareTo(a.workerRate);
-        case SortOption.rateLowest:
-          return a.workerRate.compareTo(b.workerRate);
-      }
-    });
-
-    return filtered;
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(jobsViewModelProvider);
-    final filteredJobs = _getFilteredAndSortedJobs(state.jobs);
+    final jobs = state.jobs;
+    final hasSearch = state.filter.hasSearch;
 
     return Scaffold(
       key: _scaffoldKey,
@@ -141,6 +102,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Filter jobs',
           icon: const Icon(Icons.filter_list),
           onPressed: () {
             notifyLogoFlash();
@@ -150,6 +112,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
         title: const NavbarLogo(),
         actions: [
           IconButton(
+            tooltip: 'Menu',
             icon: const Icon(Icons.menu),
             onPressed: () {
               notifyLogoFlash();
@@ -254,17 +217,15 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                 ),
               ),
             )
-          : filteredJobs.isEmpty
+          : jobs.isEmpty
           ? RefreshIndicator(
               onRefresh: _onRefresh,
               color: AppTheme.primaryBlue,
               child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
+                  child: SizedBox(
+                    height: constraints.maxHeight,
                     child: Column(
                       children: [
                         const ProfileWarningBanner(),
@@ -280,8 +241,8 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  _currentFilter != FilterStatus.all
-                                      ? 'No jobs match the filter'
+                                  hasSearch
+                                      ? 'No jobs match your search'
                                       : 'No jobs available',
                                   style: TextStyle(
                                     fontSize: 18,
@@ -291,23 +252,21 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  _currentFilter != FilterStatus.all
-                                      ? 'Try adjusting your filters'
+                                  hasSearch
+                                      ? 'Try a different position or request number'
                                       : 'Check back later for new opportunities',
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey.shade600,
                                   ),
                                 ),
-                                if (_currentFilter != FilterStatus.all) ...[
+                                if (hasSearch) ...[
                                   const SizedBox(height: 16),
                                   TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _currentFilter = FilterStatus.all;
-                                      });
-                                    },
-                                    child: const Text('Clear Filter'),
+                                    onPressed: () => ref
+                                        .read(jobsViewModelProvider.notifier)
+                                        .clearSearch(),
+                                    child: const Text('Clear Search'),
                                   ),
                                 ],
                               ],
@@ -327,12 +286,11 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.only(top: 8, bottom: 16),
-                itemCount:
-                    filteredJobs.length + 1 + (state.isLoadingMore ? 1 : 0),
+                itemCount: jobs.length + 1 + (state.isLoadingMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == 0) return const ProfileWarningBanner();
                   final jobIndex = index - 1;
-                  if (jobIndex == filteredJobs.length) {
+                  if (jobIndex == jobs.length) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(
@@ -342,7 +300,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
                       ),
                     );
                   }
-                  return JobCard(job: filteredJobs[jobIndex]);
+                  return JobCard(job: jobs[jobIndex]);
                 },
               ),
             ),

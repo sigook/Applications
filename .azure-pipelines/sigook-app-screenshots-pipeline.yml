@@ -1,0 +1,365 @@
+name: Sigook.App-Screenshots-$(Date:yyyyMMdd)$(Rev:.r)
+
+# PIPELINE: Sigook.App store screenshots (manual)
+# ============================================
+# Drives Sigook.App/integration_test/store_screenshots_test.dart against
+# staging and publishes the captures in the folder layout fastlane expects,
+# ready to unzip into Sigook.App/ and commit:
+#   store-screenshots-ios:      fastlane/screenshots/en-US/                               iPhone 6.9" + iPad 13" (deliver)
+#   store-screenshots-android:  fastlane/metadata/android/en-US/images/phoneScreenshots/  1080x1920 (supply)
+# Two jobs: iOS on a hosted macOS agent (nobody on the team has a Mac) and
+# Android on a hosted Linux agent with KVM. The org has a single hosted
+# parallel job, so they run one after the other. The Android ones can also
+# be taken locally with scripts/store_screenshots.sh.
+# Uploading to the stores is done by sigook-app-pipeline.yml
+# (parameter uploadStoreScreenshots) from the committed files.
+# ============================================
+
+trigger: none
+pr: none
+
+parameters:
+- name: macosImage
+  displayName: 'Hosted macOS image'
+  type: string
+  default: 'macOS-26'
+- name: xcodeVersion
+  displayName: 'Xcode version installed on the image'
+  type: string
+  default: '26.6'
+- name: flutterVersion
+  displayName: 'Flutter version (must match sigook-app-pipeline.yml)'
+  type: string
+  default: '3.47.4'
+- name: iphoneSimulator
+  displayName: 'iPhone simulator (6.9" class, 1320x2868)'
+  type: string
+  default: 'iPhone 17 Pro Max'
+- name: ipadSimulator
+  displayName: 'iPad simulator (13" class, 2064x2752)'
+  type: string
+  default: 'iPad Pro 13-inch (M4)'
+- name: captureIos
+  displayName: 'Capture iOS on the simulators'
+  type: boolean
+  default: true
+- name: captureAndroid
+  displayName: 'Capture Android on an emulator'
+  type: boolean
+  default: true
+- name: androidImage
+  displayName: 'Hosted image for the Android emulator job (needs /dev/kvm)'
+  type: string
+  default: 'ubuntu-24.04'
+- name: androidSystemImage
+  displayName: 'Android system image for the emulator (arch is appended)'
+  type: string
+  default: 'system-images;android-35;google_apis'
+- name: screenshotLocation
+  displayName: 'GPS position the device reports as "lat,lon" (the punch card needs a fix; use the address of the first job of the screenshot account)'
+  type: string
+  default: '37.697173,-77.669072'
+
+variables:
+- group: SigookApp-Staging
+- name: workingDirectory
+  value: '$(System.DefaultWorkingDirectory)/Sigook.App'
+- name: outputRoot
+  value: '$(Build.ArtifactStagingDirectory)/store-screenshots'
+
+stages:
+- stage: Capture
+  displayName: 'Capture store screenshots'
+  jobs:
+  - ${{ if eq(parameters.captureIos, true) }}:
+    - job: iOS
+      displayName: 'iOS simulators (iPhone + iPad)'
+      pool:
+        vmImage: '${{ parameters.macosImage }}'
+      timeoutInMinutes: 90
+      steps:
+      - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
+        displayName: 'Checkout Repository'
+        inputs:
+          repository: self
+          fetchDepth: 1
+      - script: |
+          XCODE_APP="/Applications/Xcode_${{ parameters.xcodeVersion }}.app"
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "ERROR: $XCODE_APP not found on ${{ parameters.macosImage }}. Installed versions:"
+            ls -d /Applications/Xcode*.app
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          xcodebuild -version
+          uname -m
+        displayName: 'Select Xcode ${{ parameters.xcodeVersion }}'
+      - task: Cache@2
+        displayName: 'Cache Flutter Packages'
+        inputs:
+          key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
+          restoreKeys: |
+            pub | "$(Agent.OS)"
+          path: $(HOME)/.pub-cache
+      - task: Cache@2
+        displayName: 'Cache CocoaPods'
+        inputs:
+          key: 'pods | "$(Agent.OS)" | $(workingDirectory)/ios/Podfile | $(workingDirectory)/pubspec.lock'
+          restoreKeys: |
+            pods | "$(Agent.OS)"
+          path: $(HOME)/Library/Caches/CocoaPods
+      - template: templates/flutter-setup.yml
+        parameters:
+          flutterVersion: '${{ parameters.flutterVersion }}'
+          cacheSdk: true
+      - task: CmdLine@2
+        displayName: 'Flutter Pub Get'
+        inputs:
+          script: |
+            cd $(workingDirectory)
+            flutter pub get
+      - task: Bash@3
+        displayName: 'Check screenshot account variables'
+        env:
+          SCREENSHOT_USER: $(SCREENSHOT_USER)
+          SCREENSHOT_PASSWORD: $(SCREENSHOT_PASSWORD)
+        inputs:
+          targetType: 'inline'
+          script: |
+            if [ -z "${SCREENSHOT_USER:-}" ] || [ -z "${SCREENSHOT_PASSWORD:-}" ]; then
+              echo "##vso[task.logissue type=error]SCREENSHOT_USER / SCREENSHOT_PASSWORD missing from the SigookApp-Staging variable group"
+              exit 1
+            fi
+            echo "Screenshot account: $SCREENSHOT_USER"
+      - task: Bash@3
+        displayName: 'Resolve simulators and boot the iPhone'
+        inputs:
+          targetType: 'inline'
+          script: |
+            set -euo pipefail
+
+            resolve_simulator() {
+              local name="$1"
+              xcrun simctl list devices available -j | python3 -c '
+            import json, sys
+            name = sys.argv[1]
+            family = name.split(" (")[0]
+            devices = [d for runtime, ds in sorted(json.load(sys.stdin)["devices"].items()) if "iOS" in runtime for d in ds if d["isAvailable"]]
+            exact = [d for d in devices if d["name"] == name]
+            similar = sorted((d for d in devices if d["name"].startswith(family)), key=lambda d: d["name"])
+            candidates = exact or similar
+            if not candidates:
+                sys.exit(1)
+            chosen = candidates[-1]
+            if not exact:
+                print("Simulator %r not found, using %r" % (name, chosen["name"]), file=sys.stderr)
+            print(chosen["udid"])' "$name" || {
+                echo "ERROR: simulator '$name' not available on this image. Available iOS devices:" >&2
+                xcrun simctl list devices available | grep -E "iPhone|iPad" >&2
+                exit 1
+              }
+            }
+
+            IPHONE=$(resolve_simulator "${{ parameters.iphoneSimulator }}")
+            IPAD=$(resolve_simulator "${{ parameters.ipadSimulator }}")
+            xcrun simctl boot "$IPHONE" || true
+            echo "iPhone: $IPHONE"
+            echo "iPad:   $IPAD"
+            echo "##vso[task.setvariable variable=IPHONE_UDID]$IPHONE"
+            echo "##vso[task.setvariable variable=IPAD_UDID]$IPAD"
+      - task: Bash@3
+        displayName: 'Capture iPhone'
+        env:
+          SCREENSHOT_USER: $(SCREENSHOT_USER)
+          SCREENSHOT_PASSWORD: $(SCREENSHOT_PASSWORD)
+          SCREENSHOT_GEO: ${{ parameters.screenshotLocation }}
+          GOOGLE_MAPS_API_KEY: $(GOOGLE_MAPS_API_KEY)
+        inputs:
+          targetType: 'inline'
+          workingDirectory: '$(workingDirectory)'
+          script: |
+            set -euo pipefail
+            OUT="$(outputRoot)/fastlane/screenshots/en-US"
+            mkdir -p "$OUT"
+            xcrun simctl bootstatus "$(IPHONE_UDID)" -b
+            echo "=== iPhone ${{ parameters.iphoneSimulator }} ($(IPHONE_UDID)) ==="
+            bash scripts/store_screenshots.sh ios "$(IPHONE_UDID)" "$OUT"
+            xcrun simctl shutdown "$(IPHONE_UDID)"
+      - task: Bash@3
+        displayName: 'Capture iPad'
+        env:
+          SCREENSHOT_USER: $(SCREENSHOT_USER)
+          SCREENSHOT_PASSWORD: $(SCREENSHOT_PASSWORD)
+          SCREENSHOT_GEO: ${{ parameters.screenshotLocation }}
+          GOOGLE_MAPS_API_KEY: $(GOOGLE_MAPS_API_KEY)
+          SCREENSHOT_SKIP_BUILD: 'true'
+        inputs:
+          targetType: 'inline'
+          workingDirectory: '$(workingDirectory)'
+          script: |
+            set -euo pipefail
+            OUT="$(outputRoot)/fastlane/screenshots/en-US"
+            xcrun simctl boot "$(IPAD_UDID)" || true
+            xcrun simctl bootstatus "$(IPAD_UDID)" -b
+            echo "=== iPad ${{ parameters.ipadSimulator }} ($(IPAD_UDID)) ==="
+            bash scripts/store_screenshots.sh ios "$(IPAD_UDID)" "$OUT" "ipad_"
+            xcrun simctl shutdown "$(IPAD_UDID)"
+      - task: Bash@3
+        displayName: 'List captures'
+        condition: succeededOrFailed()
+        inputs:
+          targetType: 'inline'
+          script: |
+            mkdir -p "$(outputRoot)"
+            find "$(outputRoot)" -type f -name '*.png' | sort | while read -r f; do
+              echo "${f#$(outputRoot)/}: $(file -b "$f" | grep -oE '[0-9]+ x [0-9]+')"
+            done
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish iOS Screenshots'
+        condition: succeededOrFailed()
+        inputs:
+          PathtoPublish: '$(outputRoot)'
+          ArtifactName: 'store-screenshots-ios'
+          publishLocation: 'Container'
+
+  - ${{ if eq(parameters.captureAndroid, true) }}:
+    - job: Android
+      displayName: 'Android emulator'
+      pool:
+        vmImage: '${{ parameters.androidImage }}'
+      timeoutInMinutes: 60
+      variables:
+        ANDROID_AVD_HOME: '$(Pipeline.Workspace)/avd'
+      steps:
+      - task: 6d15af64-176c-496d-b583-fd2ae21d4df4@1
+        displayName: 'Checkout Repository'
+        inputs:
+          repository: self
+          fetchDepth: 1
+      - task: Bash@3
+        displayName: 'Install Android emulator'
+        inputs:
+          targetType: 'inline'
+          script: |
+            set -euo pipefail
+            case "$(uname -m)" in
+              arm64|aarch64) ABI="arm64-v8a" ;;
+              *) ABI="x86_64" ;;
+            esac
+            if [ "$(uname -s)" = "Linux" ]; then
+              if [ ! -e /dev/kvm ]; then
+                echo "##vso[task.logissue type=error]/dev/kvm not available on ${{ parameters.androidImage }}; the emulator needs hardware acceleration. Use a macOS image for androidImage."
+                exit 1
+              fi
+              sudo chown "$USER" /dev/kvm
+            fi
+            IMAGE="${{ parameters.androidSystemImage }};$ABI"
+            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+            AVDMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
+
+            yes | "$SDKMANAGER" --licenses >/dev/null || true
+            "$SDKMANAGER" "platform-tools" "emulator" "$IMAGE"
+            mkdir -p "$ANDROID_AVD_HOME"
+            echo no | "$AVDMANAGER" create avd -n screenshots -k "$IMAGE" -d pixel_6 --force
+            "$ANDROID_HOME/emulator/emulator" -list-avds | grep -qx screenshots || {
+              echo "##vso[task.logissue type=error]AVD 'screenshots' not visible to the emulator in $ANDROID_AVD_HOME"
+              ls -laR "$ANDROID_AVD_HOME" "$HOME/.android" "${XDG_CONFIG_HOME:-$HOME/.config}/.android" 2>/dev/null || true
+              exit 1
+            }
+            echo "##vso[task.prependpath]$ANDROID_HOME/platform-tools"
+            echo "##vso[task.prependpath]$ANDROID_HOME/emulator"
+      - task: Cache@2
+        displayName: 'Cache Flutter Packages'
+        inputs:
+          key: 'pub | "$(Agent.OS)" | $(workingDirectory)/pubspec.lock'
+          restoreKeys: |
+            pub | "$(Agent.OS)"
+          path: $(HOME)/.pub-cache
+      - task: Cache@2
+        displayName: 'Cache Gradle'
+        inputs:
+          key: 'gradle | "$(Agent.OS)" | $(workingDirectory)/android/gradle/wrapper/gradle-wrapper.properties | $(workingDirectory)/pubspec.lock'
+          restoreKeys: |
+            gradle | "$(Agent.OS)"
+          path: $(HOME)/.gradle
+      - template: templates/flutter-setup.yml
+        parameters:
+          flutterVersion: '${{ parameters.flutterVersion }}'
+          cacheSdk: true
+      - task: CmdLine@2
+        displayName: 'Flutter Pub Get'
+        inputs:
+          script: |
+            cd $(workingDirectory)
+            flutter pub get
+      - task: Bash@3
+        displayName: 'Check screenshot account variables'
+        env:
+          SCREENSHOT_USER: $(SCREENSHOT_USER)
+          SCREENSHOT_PASSWORD: $(SCREENSHOT_PASSWORD)
+        inputs:
+          targetType: 'inline'
+          script: |
+            if [ -z "${SCREENSHOT_USER:-}" ] || [ -z "${SCREENSHOT_PASSWORD:-}" ]; then
+              echo "##vso[task.logissue type=error]SCREENSHOT_USER / SCREENSHOT_PASSWORD missing from the SigookApp-Staging variable group"
+              exit 1
+            fi
+            echo "Screenshot account: $SCREENSHOT_USER"
+      - task: Bash@3
+        displayName: 'Capture Android'
+        env:
+          SCREENSHOT_USER: $(SCREENSHOT_USER)
+          SCREENSHOT_PASSWORD: $(SCREENSHOT_PASSWORD)
+          SCREENSHOT_GEO: ${{ parameters.screenshotLocation }}
+          GOOGLE_MAPS_API_KEY: $(GOOGLE_MAPS_API_KEY)
+        inputs:
+          targetType: 'inline'
+          workingDirectory: '$(workingDirectory)'
+          script: |
+            set -euo pipefail
+            if [ -n "${JAVA_HOME_17_X64:-}" ]; then
+              export JAVA_HOME="$JAVA_HOME_17_X64"
+            fi
+            OUT="$(outputRoot)/fastlane/metadata/android/en-US/images/phoneScreenshots"
+            mkdir -p "$OUT"
+            EMULATOR_LOG="$(Build.ArtifactStagingDirectory)/emulator.log"
+            DEVICE=emulator-5554
+
+            emulator -avd screenshots -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+            EMULATOR_PID=$!
+            trap 'rc=$?; if [ $rc -ne 0 ]; then echo "=== emulator.log ==="; tail -n 100 "$EMULATOR_LOG"; cp "$EMULATOR_LOG" "$(outputRoot)/"; fi' EXIT
+
+            DEADLINE=$((SECONDS + 600))
+            until [ "$(adb -s "$DEVICE" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
+              if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+                echo "##vso[task.logissue type=error]The emulator exited while booting"
+                exit 1
+              fi
+              if [ "$SECONDS" -ge "$DEADLINE" ]; then
+                echo "##vso[task.logissue type=error]The emulator did not boot within 10 minutes"
+                exit 1
+              fi
+              echo "waiting for emulator boot..."
+              sleep 10
+            done
+            adb -s "$DEVICE" shell input keyevent 82
+            adb devices
+
+            bash scripts/store_screenshots.sh android "$DEVICE" "$OUT"
+            adb -s "$DEVICE" emu kill || true
+      - task: Bash@3
+        displayName: 'List captures'
+        condition: succeededOrFailed()
+        inputs:
+          targetType: 'inline'
+          script: |
+            find "$(outputRoot)" -type f -name '*.png' | sort | while read -r f; do
+              echo "${f#$(outputRoot)/}: $(file -b "$f" | grep -oE '[0-9]+ x [0-9]+')"
+            done
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Android Screenshots'
+        condition: succeededOrFailed()
+        inputs:
+          PathtoPublish: '$(outputRoot)'
+          ArtifactName: 'store-screenshots-android'
+          publishLocation: 'Container'

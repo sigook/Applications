@@ -152,6 +152,7 @@ class _RegistrationFormScreenState
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
+                            tooltip: 'Back',
                             onPressed: () => context.go(AppRoutes.welcome),
                             icon: const Icon(Icons.arrow_back),
                             style: IconButton.styleFrom(

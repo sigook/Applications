@@ -747,7 +747,7 @@ Worker portal: profile build, applications, timesheet.
 ### Requests (Job Applications)
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getJobs(filter)` | GET | `/api/worker/requests` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | Available jobs |
+| `getJobs(filter)` | GET | `/api/worker/requests` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | Available jobs. API filter is `GetWorkerRequestsFilter` (`sortBy`: NumberId/Rate + `isDescending`, newest first by default; `numberId` exact, `jobTitle` contains); desktop sorts by the `numberId`/`workerRate` column headers and searches through the searchable `numberId`/`jobTitle` columns, touch widths through `MobileFiltersPanel` (both fields + the `WorkerRequestSortOptions` presets). No status filter: a booked worker only sees booked rows and an unbooked one only available rows |
 | `getWorkerRequest(id)` | GET | `/api/worker/requests/{id}` | — | `WorkerRequestDetail` | Includes `responsibilities`, `displayShift` and `skills` (names) |
 | `workerRequestApplySelf(requestId, model)` | POST | `/api/worker/requests/{requestId}/Apply/` | `WorkerRequestApplyModel` | `void` | Self-apply; the worker comes from the token, `email` in the body is ignored |
 | `requestApplyByEmail(numberId, email)` | POST | `/api/worker/requests/Apply` | `WorkerRequestApplyModel` | `void` | Anonymous invitation apply (`/worker-apply?n=&e=`): resolves the email to a worker of the request's agency first, then to a candidate (city-validated) |
@@ -756,7 +756,7 @@ Worker portal: profile build, applications, timesheet.
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `workerRegisterTime(requestId, lat, lon)` | POST | `/api/worker/requests/{requestId}/timesheet` | `{ latitude, longitude }` | `void` | Clock-in with GPS |
-| `workerGetTimeSheet(requestId)` | GET | `/api/worker/requests/{requestId}/timesheet` | — | `WorkerTimeSheetItem[]` | Loaded only when the Time Sheet tab is opened; the punch card no longer depends on it |
+| `workerGetTimeSheet(requestId)` | GET | `/api/worker/requests/{requestId}/timesheet` | — | `PaginatedList<WorkerTimeSheetItem>` (API `WorkerTimeSheetListModel`: punches, approved times, missing hours, worker-side amounts; never the agency rate) | Loaded only when the Time Sheet tab is opened; the punch card no longer depends on it. On touch widths each row is a card that opens a detail sheet |
 | `getPunchStatus(requestId, latitude, longitude)` | GET | `/api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}` | — | `PunchStatus` (`clockType`, `clockIn`, `clockOut`, `dayHours`, `weekHours`) | One call for the whole punch card: next punch (ClockOut while the latest punch is open and under 14 h, ClockIn otherwise), the stamps of the open or today's punch, and the hours since Sunday. Coordinates resolve the time zone. Replaces `clock-type`, which the API keeps only (`[Obsolete]`) for older mobile builds |
 
 ### Comments

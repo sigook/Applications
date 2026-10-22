@@ -13,7 +13,7 @@
 # - SigookApp-iOS: APP_STORE_CONNECT_KEY_ID, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_API_KEY
 #   (base64 .p8), MATCH_GIT_URL, MATCH_PASSWORD, IOS_RELEASE_NOTES (optional)
 #
-# LANE / TARGET MAPPING (see .azure-pipelines/sigookapp-pipeline.yml):
+# LANE / TARGET MAPPING (see .azure-pipelines/sigook-app-pipeline.yml):
 # - dev  -> android deploy track:"Closed Testing - SIGOOK V2" | ios build + ios beta (TestFlight internal group "Staging")
 # - main -> android deploy track:production | ios build + ios release (App Store, submitted for review)
 
@@ -149,6 +149,31 @@ platform :android do
     UI.success("✅ Successfully uploaded to Google Play track '#{track}'!")
   end
 
+  desc "Replace the phone screenshots of the Play listing with fastlane/metadata/android/<locale>/images/phoneScreenshots"
+  lane :screenshots do
+    metadata_path = project_path("fastlane/metadata/android")
+    files = Dir.glob("#{metadata_path}/*/images/phoneScreenshots/*.png")
+    UI.user_error!("❌ No screenshots under fastlane/metadata/android/<locale>/images/phoneScreenshots/") if files.empty?
+    UI.message("🖼  #{files.size} screenshot(s): #{files.map { |f| File.basename(f) }.join(', ')}")
+
+    json_key_raw = ENV["GOOGLE_PLAY_JSON_KEY"]
+    UI.user_error!("❌ GOOGLE_PLAY_JSON_KEY environment variable is not set") if json_key_raw.nil? || json_key_raw.empty?
+
+    upload_to_play_store(
+      package_name: ANDROID_PACKAGE_NAME,
+      json_key_data: decode_if_base64(json_key_raw, "{"),
+      metadata_path: metadata_path,
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: false
+    )
+
+    UI.success("✅ Play listing screenshots updated")
+  end
+
   desc "Clean Android build artifacts"
   lane :clean do
     gradle(
@@ -274,6 +299,42 @@ platform :ios do
     locales = ["en-US"] if locales.empty?
     UI.message("🌐 Store locales: #{locales.join(', ')}")
     locales
+  end
+
+  # Screenshots can only change on a version that is not live yet, so they are
+  # attached to the version the release lane is about to submit.
+  desc "Replace the screenshots of the App Store version with fastlane/screenshots/<locale> (version:)"
+  lane :screenshots do |options|
+    UI.user_error!("❌ version: is required") if options[:version].to_s.empty?
+
+    screenshots_path = project_path("fastlane/screenshots")
+    files = Dir.glob("#{screenshots_path}/*/*.png")
+    UI.user_error!("❌ No screenshots under fastlane/screenshots/<locale>/") if files.empty?
+    UI.message("🖼  #{files.size} screenshot(s): #{files.map { |f| File.basename(f) }.join(', ')}")
+
+    api_key = asc_api_key
+    locales = store_locales(api_key: api_key)
+    folders = Dir.children(screenshots_path).select { |name| File.directory?(File.join(screenshots_path, name)) }
+    unknown = folders - locales
+    UI.user_error!("❌ fastlane/screenshots has locales the listing does not (#{unknown.join(', ')}); listing locales: #{locales.join(', ')}") unless unknown.empty?
+
+    upload_to_app_store(
+      api_key: api_key,
+      app_identifier: IOS_BUNDLE_ID,
+      app_version: options[:version],
+      screenshots_path: screenshots_path,
+      overwrite_screenshots: true,
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: false,
+      skip_app_version_update: false,
+      force: true,
+      run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false,
+      submit_for_review: false
+    )
+
+    UI.success("✅ App Store screenshots attached to version #{options[:version]}")
   end
 
   desc "Upload production IPA and submit it for App Store review (version:)"

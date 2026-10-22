@@ -13,6 +13,8 @@ class ChipSelector extends StatelessWidget {
   final void Function(String id, bool selected) onToggle;
   final String? selectAllLabel;
   final void Function(Set<String> ids)? onSelectAll;
+  final bool showLabel;
+  final String? errorText;
 
   const ChipSelector({
     super.key,
@@ -24,6 +26,8 @@ class ChipSelector extends StatelessWidget {
     required this.onToggle,
     this.selectAllLabel,
     this.onSelectAll,
+    this.showLabel = true,
+    this.errorText,
   });
 
   @override
@@ -31,23 +35,25 @@ class ChipSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 16, color: Colors.grey.shade600),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
+        if (showLabel) ...[
+          Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
+            ],
+          ),
+          const SizedBox(height: 6),
+        ],
         asyncValue.when(
           data: (items) {
             final list = items as List;
@@ -125,6 +131,14 @@ class ChipSelector extends StatelessWidget {
             style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
           ),
         ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              errorText!,
+              style: const TextStyle(color: AppTheme.errorRed, fontSize: 12),
+            ),
+          ),
       ],
     );
   }

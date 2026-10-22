@@ -302,36 +302,46 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
                       ),
                       const Text(
                         ' *',
-                        style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  InkWell(
-                    onTap: _selectDate,
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        hintText: 'Select your date of birth',
-                        errorText: _dateError,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Semantics(
+                    button: true,
+                    label: 'Date of birth',
+                    child: InkWell(
+                      onTap: _selectDate,
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          hintText: 'Select your date of birth',
+                          errorText: _dateError,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          suffixIcon: const Icon(Icons.calendar_today),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        suffixIcon: const Icon(Icons.calendar_today),
-                      ),
-                      child: Text(
-                        _selectedDate != null
-                            ? DateFormat('MMM dd, yyyy').format(_selectedDate!)
-                            : 'Select date',
-                        style: TextStyle(
-                          color: _selectedDate != null
-                              ? Colors.black
-                              : Colors.grey,
+                        child: Text(
+                          _selectedDate != null
+                              ? DateFormat(
+                                  'MMM dd, yyyy',
+                                ).format(_selectedDate!)
+                              : 'Select date',
+                          style: TextStyle(
+                            color: _selectedDate != null
+                                ? Colors.black
+                                : Colors.grey,
+                          ),
                         ),
                       ),
                     ),
@@ -392,11 +402,11 @@ class _BasicInfoPageState extends ConsumerState<BasicInfoPage> {
               PhoneNumberField(
                 label: 'Mobile Number',
                 initialValue: _mobileNumber.value,
-                countryCode: _selectedCountry?.isoCode ,
+                countryCode: _selectedCountry?.isoCode,
                 errorText: _mobileNumberError,
                 isRequired: true,
                 onChanged: (value) {
-                  final countryCode = _selectedCountry?.isoCode ;
+                  final countryCode = _selectedCountry?.isoCode;
                   final validated = _phoneService.validate(value, countryCode);
                   setState(() {
                     _mobileNumber = validated;

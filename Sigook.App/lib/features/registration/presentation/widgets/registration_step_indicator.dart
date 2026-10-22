@@ -96,11 +96,7 @@ class RegistrationStepIndicator extends StatelessWidget {
         shape: BoxShape.circle,
         color: AppTheme.primaryBlue,
       );
-      content = const Icon(
-        Icons.check_rounded,
-        color: Colors.white,
-        size: 18,
-      );
+      content = const Icon(Icons.check_rounded, color: Colors.white, size: 18);
     } else if (isActive) {
       decoration = BoxDecoration(
         shape: BoxShape.circle,
@@ -137,20 +133,25 @@ class RegistrationStepIndicator extends StatelessWidget {
       );
     }
 
-    return GestureDetector(
-      onTap: () => onStepTapped(index),
-      child: SizedBox(
-        width: 36,
-        height: 36,
-        child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            width: dotSize,
-            height: dotSize,
-            decoration: decoration,
-            alignment: Alignment.center,
-            child: content,
+    return Semantics(
+      button: true,
+      selected: isActive,
+      label: 'Step ${index + 1}',
+      child: GestureDetector(
+        onTap: () => onStepTapped(index),
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              width: dotSize,
+              height: dotSize,
+              decoration: decoration,
+              alignment: Alignment.center,
+              child: ExcludeSemantics(child: content),
+            ),
           ),
         ),
       ),

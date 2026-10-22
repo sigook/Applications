@@ -48,9 +48,6 @@
       <None Update="Files\some_pay_stub.pdf">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-        <None Update="Common\Fake_Invoice.pdf">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
         <None Update="Files\some_invoice.pdf">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
@@ -61,21 +58,6 @@
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
         <None Update="Common\cpp_monthly.xlsx">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\fake_paystub.pdf">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\fake_paystub.html">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\fake_paystub_usa.html">
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\fake_invoice.html">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="Common\fake_invoice_usa.html">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>

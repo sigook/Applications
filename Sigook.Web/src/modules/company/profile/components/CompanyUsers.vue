@@ -13,7 +13,10 @@
             <b-button size="is-small" type="is-danger" outlined rounded icon-right="delete"
               @click="deleteUser(user.id)"></b-button>
           </div>
-          <p class="rcard__sub">{{ user.email }}<span v-if="user.mobileNumber"> · {{ user.mobileNumber }}</span></p>
+          <p class="rcard__sub">
+            <copy-link kind="email" :value="user.email" />
+            <span v-if="user.mobileNumber"> · <copy-link kind="phone" :value="user.mobileNumber" /></span>
+          </p>
           <div class="rcard__rows" v-if="user.position">
             <div class="rcard__row">
               <span class="rcard__label">Position</span>
@@ -29,13 +32,13 @@
         {{ props.row.lastname }}
       </b-table-column>
       <b-table-column field="mobileNumber" label="Phone Number" searchable v-slot="props">
-        {{ props.row.mobileNumber }}
+        <copy-link kind="phone" :value="props.row.mobileNumber" />
       </b-table-column>
       <b-table-column field="position" label="Position" searchable v-slot="props">
         {{ props.row.position }}
       </b-table-column>
       <b-table-column field="email" label="Email" searchable v-slot="props">
-        {{ props.row.email }}
+        <copy-link kind="email" :value="props.row.email" />
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-button type="is-danger" outlined rounded icon-right="delete"
@@ -54,6 +57,7 @@
 import { ref, computed } from 'vue';
 import CreateUser from "@/shared/company-profile/CompanyCreateUserModal.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 import { showAlertConfirm, showAlertError } from "@/shared/utils/toast";
 import { getCompanyUser, deleteCompanyUser, createCompanyUser } from '@/modules/company/profile/api';
 import { useBreakpoint } from '@/shared/composables/useBreakpoint';

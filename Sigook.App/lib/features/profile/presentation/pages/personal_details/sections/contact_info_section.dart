@@ -6,6 +6,7 @@ import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../contact_info/presentation/viewmodels/contact_info_viewmodel.dart';
+import '../../../../domain/entities/worker_profile.dart';
 import '../../../../domain/validators/profile_validators.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../../registration/domain/entities/city.dart';
@@ -44,10 +45,7 @@ class _ContactInfoSectionCardState
   Map<String, String?> _errors = {};
 
   bool _validate() {
-    final profile = ref.read(cachedWorkerProfileProvider).asData?.value;
-    final countryCode = _editCountry != null
-        ? (_editCountry!.code ?? _editCountry!.value)
-        : (profile?.countryCode ?? profile?.country);
+    final countryCode = _editCountry?.code ?? _editCountry?.value;
     setState(() => _errors = {
       'mobileNumber': ProfileValidators.phone(
           _mobileNumberController.text, 'Mobile number',
@@ -56,8 +54,12 @@ class _ContactInfoSectionCardState
       'address': ProfileValidators.address(_addressController.text),
       'postalCode': ProfileValidators.postalCode(
           _postalCodeController.text, countryCode),
-      'city': _editCountry != null && _editCity == null
-          ? 'Select a city to change the location'
+      'country': _editCountry == null ? 'Country is required' : null,
+      'province': _editCountry != null && _editProvince == null
+          ? 'Province/State is required'
+          : null,
+      'city': _editProvince != null && _editCity == null
+          ? 'City is required'
           : null,
     });
     return _errors.values.every((e) => e == null);
@@ -72,6 +74,45 @@ class _ContactInfoSectionCardState
       'postalCode': _postalCodeController.text.trim(),
       if (_editCity?.id != null) 'cityId': _editCity!.id!,
     });
+  }
+
+  void _populateLocation(WorkerProfile? profile) {
+    _editCountry = null;
+    _editProvince = null;
+    _editCity = null;
+    if (profile?.countryId == null || profile?.country == null) return;
+    _editCountry = Country(
+      id: profile!.countryId,
+      value: profile.country!,
+      code: profile.countryCode,
+    );
+    if (profile.provinceId == null || profile.province == null) return;
+    _editProvince = Province(
+      id: profile.provinceId,
+      value: profile.province!,
+      country: _editCountry!,
+    );
+    if (profile.cityId == null || profile.city == null) return;
+    _editCity = City(
+      id: profile.cityId,
+      value: profile.city!,
+      province: _editProvince!,
+    );
+  }
+
+  Widget _locationRow(LocationField field, Widget control) {
+    final (label, icon) = switch (field) {
+      LocationField.country => ('Country *', Icons.flag_outlined),
+      LocationField.province => ('State / Province *', Icons.map_outlined),
+      LocationField.city => ('City *', Icons.location_city_outlined),
+    };
+    return ProfileInfoRow(
+      label: label,
+      value: '',
+      icon: icon,
+      isEditing: true,
+      child: control,
+    );
   }
 
   @override
@@ -92,9 +133,7 @@ class _ContactInfoSectionCardState
     _addressController.text = profile?.address ?? '';
     _postalCodeController.text = profile?.postalCode ?? '';
     setState(() {
-      _editCountry = null;
-      _editProvince = null;
-      _editCity = null;
+      _populateLocation(profile);
       _errors = {};
     });
   }
@@ -160,63 +199,47 @@ class _ContactInfoSectionCardState
           value: profile?.email ?? 'N/A',
           icon: Icons.email_outlined,
         ),
-        ProfileInfoRow(
-          label: 'Country',
-          value: vm.isEditing
-              ? (_editCountry?.value ?? profile?.country ?? 'N/A')
-              : (profile?.country ?? 'N/A'),
-          icon: Icons.flag_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'State / Province',
-          value: vm.isEditing
-              ? (_editProvince?.value ?? profile?.province ?? 'N/A')
-              : (profile?.province ?? 'N/A'),
-          icon: Icons.map_outlined,
-        ),
-        ProfileInfoRow(
-          label: 'City',
-          value: vm.isEditing
-              ? (_editCity?.value ?? profile?.city ?? 'N/A')
-              : (profile?.city ?? 'N/A'),
-          icon: Icons.location_city_outlined,
-        ),
-        if (vm.isEditing) ...[
-          const SizedBox(height: 4),
-          Text(
-            'Change Location',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
+        if (!vm.isEditing) ...[
+          ProfileInfoRow(
+            label: 'Country',
+            value: profile?.country ?? 'N/A',
+            icon: Icons.flag_outlined,
           ),
-          const SizedBox(height: 8),
+          ProfileInfoRow(
+            label: 'State / Province',
+            value: profile?.province ?? 'N/A',
+            icon: Icons.map_outlined,
+          ),
+          ProfileInfoRow(
+            label: 'City',
+            value: profile?.city ?? 'N/A',
+            icon: Icons.location_city_outlined,
+          ),
+        ] else
           LocationSelector(
             selectedCountry: _editCountry,
             selectedProvince: _editProvince,
             selectedCity: _editCity,
+            countryError: _errors['country'],
+            provinceError: _errors['province'],
+            cityError: _errors['city'],
+            rowBuilder: _locationRow,
             onCountryChanged: (c) => setState(() {
               _editCountry = c;
               _editProvince = null;
               _editCity = null;
+              _errors = {..._errors, 'country': null};
             }),
             onProvinceChanged: (p) => setState(() {
               _editProvince = p;
               _editCity = null;
+              _errors = {..._errors, 'province': null};
             }),
-            onCityChanged: (c) => setState(() => _editCity = c),
+            onCityChanged: (c) => setState(() {
+              _editCity = c;
+              _errors = {..._errors, 'city': null};
+            }),
           ),
-          if (_errors['city'] != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                _errors['city']!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
-            ),
-          const SizedBox(height: 8),
-        ],
         ProfileInfoRow(
           label: 'Address',
           value: profile?.address ?? 'N/A',

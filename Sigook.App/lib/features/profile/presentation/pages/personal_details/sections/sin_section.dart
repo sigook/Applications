@@ -5,12 +5,14 @@ import '../../../../../../core/services/file_picker_service.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
+import '../../../../../../core/widgets/inputs/date_picker_field.dart';
 import '../../../../../../core/widgets/navigation/document_preview_page.dart';
 import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../domain/validators/profile_validators.dart';
 import '../../../../sin/presentation/viewmodels/sin_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../widgets/document_file_row.dart';
+import '../../../widgets/profile_switch_row.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class SinSectionCard extends ConsumerStatefulWidget {
@@ -78,7 +80,9 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _dueDate ?? now,
+      initialDate: _dueDate != null && !_dueDate!.isBefore(now)
+          ? _dueDate!
+          : now,
       firstDate: now,
       lastDate: DateTime(now.year + 20),
     );
@@ -172,42 +176,31 @@ class _SinSectionCardState extends ConsumerState<SinSectionCard> {
             ),
         ],
         if (vm.isEditing) ...[
-          SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-            title: Row(
-              children: [
-                const Icon(Icons.event_busy_outlined, size: 18, color: Colors.grey),
-                const SizedBox(width: 8),
-                const Text('Expires', style: TextStyle(fontSize: 14)),
-              ],
-            ),
+          ProfileSwitchRow(
+            label: 'Expires',
+            icon: Icons.event_busy_outlined,
             value: _expiresSin,
             onChanged: (v) => setState(() {
               _expiresSin = v;
-              if (!v) _dueDate = null;
+              if (!v) {
+                _dueDate = null;
+                _dueDateError = null;
+              }
             }),
           ),
           if (_expiresSin)
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-              leading: const Icon(Icons.calendar_today_outlined, size: 18, color: Colors.grey),
-              title: Text(
-                _dueDate != null
-                    ? '${_dueDate!.year}-${_dueDate!.month.toString().padLeft(2, '0')}-${_dueDate!.day.toString().padLeft(2, '0')}'
-                    : 'Select due date',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _dueDate != null ? Colors.black87 : Colors.grey,
-                ),
+            ProfileInfoRow(
+              label: 'Due Date *',
+              value: profile?.formattedDueDate ?? 'N/A',
+              icon: Icons.calendar_today_outlined,
+              isEditing: true,
+              child: DatePickerField(
+                label: 'Due Date',
+                value: _dueDate,
+                onTap: _pickDueDate,
+                errorText: _dueDateError,
+                dense: true,
               ),
-              subtitle: _dueDateError != null
-                  ? Text(
-                      _dueDateError!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
-                    )
-                  : null,
-              trailing: const Icon(Icons.edit_calendar_outlined, size: 18),
-              onTap: _pickDueDate,
             ),
         ],
         DocumentFileRow(

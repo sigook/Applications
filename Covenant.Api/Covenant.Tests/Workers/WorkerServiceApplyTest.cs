@@ -80,7 +80,8 @@ public class WorkerServiceApplyTest
             Mock.Of<ICatalogRepository>(),
             _applicantNotificationService.Object,
             Mock.Of<IWorkerRequirementService>(),
-            Options.Create(new PunchConfiguration()));
+            Options.Create(new PunchConfiguration()),
+            Mock.Of<ISkillService>());
     }
 
     private RequestEntity SetupRequest(string city = "Toronto", int numberId = 4242)

@@ -8,7 +8,7 @@
           <b-field label="Worker" :type="formErrors.worker ? 'is-danger' : ''"
             :message="formErrors.worker || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="worker" :data="workers" placeholder="Worker" name="worker"
-              :loading="isLoadingList" @typing="onWorkerInput" @select="selectWorker">
+              :loading="isLoadingList" @typing="searchWorkers" @select="selectWorker">
             </b-autocomplete>
           </b-field>
         </div>
@@ -151,6 +151,7 @@ import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { getAgencyWorkersDropdown } from '@/modules/agency/recruiting/workers/api';
 import { createAgencyPayStub } from '@/modules/agency/accounting/paystubs/api';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
+import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { payStubsCrumbs } from '@/shared/ui/breadcrumbs';
 import type { AgencyWorkerDropdownItem } from '@/modules/agency/recruiting/workers/types';
@@ -211,12 +212,12 @@ const { worker, position, datesOfWork } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const isLoadingList = ref(false);
+const { results: workers, isSearching: isLoadingList, search: searchWorkers } =
+  useDebouncedSearch((term) => getAgencyWorkersDropdown({ searchTerm: term }));
 const payVacations = ref(false);
 const workerProfileId = ref<string | null>(null);
 const workBegins = ref<string | null>(null);
 const workEnd = ref<string | null>(null);
-const workers = ref<AgencyWorkerDropdownItem[]>([]);
 const items = ref<PayStubItem[]>([]);
 const discount = ref<Discount | null>(null);
 const itemErrors = reactive<Record<string, string>>({});
@@ -239,30 +240,12 @@ watch(payVacations, (value) => {
   }
 });
 
-function onWorkerInput(text: string) {
-  if (text.length >= 3) searchWorkers(text);
-  else workers.value = [];
-}
-
 function onDatesSelected() {
   const d = datesOfWork.value;
   if (d && d.length === 2) {
     workBegins.value = dayjs(d[0]).format('YYYY-MM-DD');
     workEnd.value = dayjs(d[1]).format('YYYY-MM-DD');
   }
-}
-
-function searchWorkers(text: string) {
-  isLoadingList.value = true;
-  getAgencyWorkersDropdown({ searchTerm: text })
-    .then(response => {
-      isLoadingList.value = false;
-      workers.value = response;
-    })
-    .catch(error => {
-      isLoadingList.value = false;
-      showAlertError(error);
-    });
 }
 
 function selectWorker(w: AgencyWorkerDropdownItem | null) {

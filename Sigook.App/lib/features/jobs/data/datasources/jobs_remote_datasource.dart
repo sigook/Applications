@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../domain/entities/jobs_filter.dart';
 import '../models/paginated_jobs_model.dart';
 import '../models/job_details_model.dart';
 
 abstract class JobsRemoteDataSource {
   Future<PaginatedJobsModel> getJobs({
-    required int sortBy,
-    required bool isDescending,
+    required JobsFilter filter,
     required int pageIndex,
     required int pageSize,
   });
@@ -24,8 +24,7 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
 
   @override
   Future<PaginatedJobsModel> getJobs({
-    required int sortBy,
-    required bool isDescending,
+    required JobsFilter filter,
     required int pageIndex,
     required int pageSize,
   }) async {
@@ -33,8 +32,9 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
       final response = await apiClient.dio.get(
         '/worker/requests',
         queryParameters: {
-          'sortBy': sortBy,
-          'isDescending': isDescending,
+          'sortBy': _sortByParam(filter.sortBy),
+          'isDescending': _isDescendingParam(filter.sortBy),
+          ..._searchParams(filter.search),
           'pageIndex': pageIndex,
           'pageSize': pageSize,
         },
@@ -80,6 +80,23 @@ class JobsRemoteDataSourceImpl implements JobsRemoteDataSource {
     } catch (e) {
       throw ServerException(message: 'Failed to load jobs: $e');
     }
+  }
+
+  static int _sortByParam(JobSortBy sortBy) => switch (sortBy) {
+    JobSortBy.newest || JobSortBy.oldest => 0,
+    JobSortBy.highestRate || JobSortBy.lowestRate => 1,
+  };
+
+  static bool _isDescendingParam(JobSortBy sortBy) => switch (sortBy) {
+    JobSortBy.newest || JobSortBy.highestRate => true,
+    JobSortBy.oldest || JobSortBy.lowestRate => false,
+  };
+
+  static Map<String, dynamic> _searchParams(String search) {
+    final query = search.trim();
+    if (query.isEmpty) return const {};
+    final numberId = int.tryParse(query);
+    return numberId != null ? {'numberId': numberId} : {'jobTitle': query};
   }
 
   @override

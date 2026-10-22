@@ -156,6 +156,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                     ),
                   ),
                   IconButton(
+                    tooltip: 'Close',
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
                     color: Colors.grey.shade600,
@@ -198,6 +199,7 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                                 prefixIcon: const Icon(Icons.search),
                                 suffixIcon: _searchQuery.isNotEmpty
                                     ? IconButton(
+                                        tooltip: 'Clear',
                                         icon: const Icon(Icons.clear),
                                         onPressed: () {
                                           setState(() {
@@ -512,67 +514,76 @@ class _FileUploadModalState extends ConsumerState<FileUploadModal> {
                       ),
                       child: Material(
                         color: Colors.transparent,
-                        child: InkWell(
-                          onTap:
-                              (_selectedIdentificationType != null &&
-                                  _identificationNumber.isNotEmpty &&
-                                  !_isPickingFile)
-                              ? _pickFile
-                              : null,
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 40,
-                            ),
-                            child: Column(
-                              children: [
-                                if (_isPickingFile)
-                                  const CircularProgressIndicator()
-                                else
-                                  Icon(
-                                    _selectedFile != null
-                                        ? Icons.cloud_done_outlined
-                                        : Icons.cloud_upload_outlined,
-                                    size: 48,
-                                    color: _selectedFile != null
-                                        ? Colors.green
-                                        : _selectedIdentificationType != null &&
-                                              _identificationNumber.isNotEmpty
-                                        ? Theme.of(context).primaryColor
-                                        : Colors.grey.shade400,
-                                  ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  _isPickingFile
-                                      ? 'Selecting file...'
-                                      : _selectedFile != null
-                                      ? 'Click to change file'
-                                      : _selectedIdentificationType != null &&
-                                            _identificationNumber.isNotEmpty
-                                      ? 'Click to select file'
-                                      : _selectedIdentificationType == null
-                                      ? 'Select identification type first'
-                                      : 'Enter identification number',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        _selectedIdentificationType != null &&
-                                            _identificationNumber.isNotEmpty
-                                        ? AppTheme.textDark
-                                        : Colors.grey.shade500,
-                                  ),
+                        child: MergeSemantics(
+                          child: Semantics(
+                            button: true,
+                            child: InkWell(
+                              onTap:
+                                  (_selectedIdentificationType != null &&
+                                      _identificationNumber.isNotEmpty &&
+                                      !_isPickingFile)
+                                  ? _pickFile
+                                  : null,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 40,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Supported: PDF, images, Word, Excel (Max ${FilePickerService.maxDocumentSizeMB}MB)',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
+                                child: Column(
+                                  children: [
+                                    if (_isPickingFile)
+                                      const CircularProgressIndicator()
+                                    else
+                                      Icon(
+                                        _selectedFile != null
+                                            ? Icons.cloud_done_outlined
+                                            : Icons.cloud_upload_outlined,
+                                        size: 48,
+                                        color: _selectedFile != null
+                                            ? Colors.green
+                                            : _selectedIdentificationType !=
+                                                      null &&
+                                                  _identificationNumber
+                                                      .isNotEmpty
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.grey.shade400,
+                                      ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      _isPickingFile
+                                          ? 'Selecting file...'
+                                          : _selectedFile != null
+                                          ? 'Click to change file'
+                                          : _selectedIdentificationType !=
+                                                    null &&
+                                                _identificationNumber.isNotEmpty
+                                          ? 'Click to select file'
+                                          : _selectedIdentificationType == null
+                                          ? 'Select identification type first'
+                                          : 'Enter identification number',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            _selectedIdentificationType !=
+                                                    null &&
+                                                _identificationNumber.isNotEmpty
+                                            ? AppTheme.textDark
+                                            : Colors.grey.shade500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Supported: PDF, images, Word, Excel (Max ${FilePickerService.maxDocumentSizeMB}MB)',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),

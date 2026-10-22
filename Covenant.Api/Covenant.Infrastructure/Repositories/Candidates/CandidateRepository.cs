@@ -6,6 +6,7 @@ using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using Covenant.Infrastructure.Mappers;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
@@ -54,10 +55,12 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
             .Include(c => c.Notes)
             .Include(c => c.RequestApplicants)
             .AsQueryable();
-        if (!string.IsNullOrWhiteSpace(filter.Skills))
+        if (SearchExtensions.HasSearchTokens(filter.Skills))
         {
-            candidates = candidates.Where(c => c.Skills.Any(s => s.Skill.ToLower().Contains(filter.Skills.ToLower())));
+            var skillMatches = Context.SkillSearchPredicate<CandidateSkill>(filter.Skills, s => s.Skill);
+            candidates = candidates.Where(c => c.Skills.AsQueryable().Any(skillMatches));
         }
+        candidates = candidates.WhereSearch(filter.Name, c => c.Name, c => c.Email);
         var query = candidates.Select(c => new CandidateListModel
         {
             AgencyId = c.AgencyId,
@@ -89,13 +92,6 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
     private Expression<Func<CandidateListModel, bool>> ApplyFilterCandidates(Guid agencyId, GetCandidatesFilter filter)
     {
         Expression<Func<CandidateListModel, bool>> predicate = c => c.AgencyId == agencyId;
-        if (!string.IsNullOrWhiteSpace(filter.Name))
-        {
-            var name = filter.Name.ToLower();
-            predicate = predicate.And(c =>
-                c.Name.ToLower().Contains(name) ||
-                c.Email.ToLower().Contains(name));
-        }
         if (!string.IsNullOrWhiteSpace(filter.Phone))
         {
             var expression = new Regex(@"\s+");
@@ -104,20 +100,12 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
                 c.PhoneNumbers.Any(pn => pn.PhoneNumber.Replace("(", string.Empty).Replace(")", string.Empty).Contains(filter.Phone)) ||
                 c.PhoneNumbers.Any(pn => pn.PhoneNumber.Contains(phoneWithoutBlankSpaces)));
         }
-        if (!string.IsNullOrWhiteSpace(filter.Address))
-        {
-            var address = filter.Address.ToLower();
-            predicate = predicate.And(c =>
-                c.Address.ToLower().Contains(address) ||
-                c.PostalCode.ToLower().Contains(address) ||
-                c.City.ToLower().Contains(address));
-        }
+        predicate = predicate.AndSearch(filter.Address, c => c.Address, c => c.PostalCode, c => c.City);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(c => c.Requests.Any(r => r.Value == filter.NumberId.Value.ToString()));
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(c => c.CreatedAt.Date >= filter.CreatedAtFrom.Value.Date && c.CreatedAt.Date <= filter.CreatedAtTo.Value.Date);
-        if (!string.IsNullOrWhiteSpace(filter.Recruiter))
-            predicate = predicate.And(c => c.Recruiter.ToLower().Contains(filter.Recruiter.ToLower()));
+        predicate = predicate.AndSearch(filter.Recruiter, c => c.Recruiter);
         if (filter.Statuses != null && filter.Statuses.Any())
             predicate = predicate.And(c => filter.Statuses.Contains(c.ResidencyStatus));
         if (filter.Sources != null && filter.Sources.Any())

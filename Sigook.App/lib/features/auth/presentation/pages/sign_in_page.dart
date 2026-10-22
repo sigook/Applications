@@ -188,6 +188,9 @@ class _SignInPageState extends ConsumerState<SignInPage> {
                                 obscureText: _obscurePassword,
                                 textInputAction: TextInputAction.done,
                                 suffixIcon: IconButton(
+                                  tooltip: _obscurePassword
+                                      ? 'Show password'
+                                      : 'Hide password',
                                   icon: Icon(
                                     _obscurePassword
                                         ? Icons.visibility
@@ -310,6 +313,7 @@ class _SignInPageState extends ConsumerState<SignInPage> {
               top: 16,
               left: 16,
               child: IconButton(
+                tooltip: 'Back',
                 onPressed: _goBack,
                 icon: const Icon(Icons.arrow_back),
                 style: IconButton.styleFrom(backgroundColor: Colors.white),

@@ -7,7 +7,7 @@
           <b-field label="Worker/Candidate" :type="formErrors.applicant ? 'is-danger' : ''"
             :message="formErrors.applicant || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="applicant" :data="applicants" placeholder="Search by name, email or ID..."
-              name="applicant" append-to-body :loading="isLoadingList" @typing="onSearchInput" @select="selectApplicant"
+              name="applicant" append-to-body :loading="isLoadingList" @typing="searchApplicants" @select="selectApplicant"
               :custom-formatter="(option) => `#${option.numberId} | ${option.name} | ${option.email || 'No Email' } | ${option.type}`">
               <template v-slot="props">
                 <div class="is-flex is-justify-content-space-between is-align-items-center">
@@ -33,9 +33,9 @@
 import { ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import * as yup from 'yup';
-import { showAlertError } from "@/shared/utils/toast";
 import { searchAgencyRequestApplicants } from "@/modules/agency/recruiting/requests/api";
 import { useStickyForm } from '@/shared/composables/useStickyForm';
+import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { ApplicantSearchResult, CreateRequestApplicantModel } from '@/modules/agency/recruiting/requests/types';
 
 const props = defineProps<{ requestId?: string | null }>();
@@ -55,35 +55,14 @@ const formErrors = form.errors;
 const route = useRoute();
 
 const isLoading = ref(false);
-const isLoadingList = ref(false);
 const requestId = props.requestId ?? (route.params.id as string);
-const applicants = ref<ApplicantSearchResult[]>([]);
+const { results: applicants, isSearching: isLoadingList, search: searchApplicants } =
+  useDebouncedSearch((term) => searchAgencyRequestApplicants(requestId, term));
 const model = reactive<CreateRequestApplicantModel>({
   workerProfileId: null,
   candidateId: null,
   comments: null
 });
-
-function onSearchInput(text: string) {
-  if (text.length >= 3) {
-    searchApplicants(text);
-  } else {
-    applicants.value = [];
-  }
-}
-
-function searchApplicants(text: string) {
-  isLoadingList.value = true;
-  searchAgencyRequestApplicants(requestId as string, text)
-    .then(response => {
-      isLoadingList.value = false;
-      applicants.value = response;
-    })
-    .catch(error => {
-      isLoadingList.value = false;
-      showAlertError(error);
-    });
-}
 
 function selectApplicant(item: ApplicantSearchResult | null) {
   if (!item) return;

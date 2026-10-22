@@ -39,6 +39,7 @@ import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { searchAgencyRunnerProspects } from '@/modules/agency/recruiting/requests/runners/api';
+import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import { showAlertError } from '@/shared/utils/toast';
 import type { ApplicantSearchResult } from '@/modules/agency/recruiting/requests/types';
 import { RunnerType } from '@/modules/agency/recruiting/requests/runners/types';
@@ -48,8 +49,7 @@ const props = defineProps<{ requestId: string; isSaving?: boolean }>();
 const emit = defineEmits<{ (e: 'create', model: CreateRunnerModel): void; (e: 'close'): void }>();
 
 const searchText = ref('');
-const results = ref<ApplicantSearchResult[]>([]);
-const isSearching = ref(false);
+const { results, isSearching, search } = useDebouncedSearch((term) => searchAgencyRunnerProspects(props.requestId, term));
 
 const schema = yup.object({
   type: yup.number().required(),
@@ -69,19 +69,7 @@ function formatOption(option: ApplicantSearchResult): string {
 
 function onSearchInput(text: string) {
   workerProfileId.value = '';
-  if (text.length < 3) {
-    results.value = [];
-    return;
-  }
-  isSearching.value = true;
-  searchAgencyRunnerProspects(props.requestId, text)
-    .then(res => {
-      results.value = res;
-    })
-    .catch(err => showAlertError(err))
-    .finally(() => {
-      isSearching.value = false;
-    });
+  search(text);
 }
 
 function onSelect(item: ApplicantSearchResult | null) {

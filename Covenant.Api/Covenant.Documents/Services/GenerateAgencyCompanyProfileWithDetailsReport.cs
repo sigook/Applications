@@ -20,6 +20,7 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
         using var workbook = new XLWorkbook();
 
         BuildCompaniesSheet(workbook, request.Model);
+        BuildLocationsSheet(workbook, request.Model);
         BuildUsersSheet(workbook, request.Model);
         BuildContactsSheet(workbook, request.Model);
         BuildJobPositionsSheet(workbook, request.Model);
@@ -33,7 +34,7 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
     private static void BuildCompaniesSheet(XLWorkbook workbook, IReadOnlyList<CompanyProfileWithDetailsModel> companies)
     {
         var sheet = workbook.Worksheets.Add("Companies");
-        sheet.SetupHeaders(["Company Name", "Industry", "Company Status", "Phone", "Email", "Website", "Created By", "Created At", "Updated By", "Updated At"]);
+        sheet.SetupHeaders(["Company Name", "Industry", "Company Status", "Phone", "Email", "Website", "Location", "Created By", "Created At", "Updated By", "Updated At"]);
 
         var row = 2;
         foreach (var company in companies)
@@ -45,11 +46,36 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
             sheet.Cell($"D{row}").SetValue(c.Phone);
             sheet.Cell($"E{row}").SetValue(c.Email);
             sheet.Cell($"F{row}").SetValue(c.Website);
-            sheet.Cell($"G{row}").SetValue(c.CreatedBy);
-            sheet.Cell($"H{row}").SetValue(c.CreatedAt);
-            sheet.Cell($"I{row}").SetValue(c.UpdatedBy);
-            sheet.Cell($"J{row}").SetValue(c.UpdatedAt);
+            sheet.Cell($"G{row}").SetValue(company.Locations.FirstOrDefault()?.FormattedAddress);
+            sheet.Cell($"H{row}").SetValue(c.CreatedBy);
+            sheet.Cell($"I{row}").SetValue(c.CreatedAt);
+            sheet.Cell($"J{row}").SetValue(c.UpdatedBy);
+            sheet.Cell($"K{row}").SetValue(c.UpdatedAt);
             row++;
+        }
+    }
+
+    private static void BuildLocationsSheet(XLWorkbook workbook, IReadOnlyList<CompanyProfileWithDetailsModel> companies)
+    {
+        var sheet = workbook.Worksheets.Add("Locations");
+        sheet.SetupHeaders(["Company", "Address", "City", "Province", "Country", "Postal Code", "Entrance", "Main Intersection", "Billing"]);
+
+        var row = 2;
+        foreach (var company in companies)
+        {
+            foreach (var location in company.Locations)
+            {
+                sheet.Cell($"A{row}").SetValue(company.Company.FullName);
+                sheet.Cell($"B{row}").SetValue(location.Address);
+                sheet.Cell($"C{row}").SetValue(location.City);
+                sheet.Cell($"D{row}").SetValue(location.Province);
+                sheet.Cell($"E{row}").SetValue(location.Country);
+                sheet.Cell($"F{row}").SetValue(location.PostalCode);
+                sheet.Cell($"G{row}").SetValue(location.Entrance);
+                sheet.Cell($"H{row}").SetValue(location.MainIntersection);
+                sheet.Cell($"I{row}").SetValue(location.IsBilling ? "Yes" : "No");
+                row++;
+            }
         }
     }
 
@@ -78,7 +104,7 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
     private static void BuildContactsSheet(XLWorkbook workbook, IReadOnlyList<CompanyProfileWithDetailsModel> companies)
     {
         var sheet = workbook.Worksheets.Add("Contacts");
-        sheet.SetupHeaders(["Company", "Title", "First Name", "Middle Name", "Last Name", "Position", "Email", "Mobile", "Office Number", "Office Ext"]);
+        sheet.SetupHeaders(["Company", "Company Status", "Title", "First Name", "Middle Name", "Last Name", "Position", "Email", "Mobile", "Office Number", "Office Ext"]);
 
         var row = 2;
         foreach (var company in companies)
@@ -86,15 +112,16 @@ public class GenerateAgencyCompanyProfileWithDetailsReportHandler : IRequestHand
             foreach (var contact in company.Contacts)
             {
                 sheet.Cell($"A{row}").SetValue(company.Company.FullName);
-                sheet.Cell($"B{row}").SetValue(contact.Title);
-                sheet.Cell($"C{row}").SetValue(contact.FirstName);
-                sheet.Cell($"D{row}").SetValue(contact.MiddleName);
-                sheet.Cell($"E{row}").SetValue(contact.LastName);
-                sheet.Cell($"F{row}").SetValue(contact.Position);
-                sheet.Cell($"G{row}").SetValue(contact.Email);
-                sheet.Cell($"H{row}").SetValue(contact.MobileNumber);
-                sheet.Cell($"I{row}").SetValue(contact.OfficeNumber);
-                sheet.Cell($"J{row}").SetValue(contact.OfficeNumberExt);
+                sheet.Cell($"B{row}").SetValue(company.Company.CompanyStatus.ToString());
+                sheet.Cell($"C{row}").SetValue(contact.Title);
+                sheet.Cell($"D{row}").SetValue(contact.FirstName);
+                sheet.Cell($"E{row}").SetValue(contact.MiddleName);
+                sheet.Cell($"F{row}").SetValue(contact.LastName);
+                sheet.Cell($"G{row}").SetValue(contact.Position);
+                sheet.Cell($"H{row}").SetValue(contact.Email);
+                sheet.Cell($"I{row}").SetValue(contact.MobileNumber);
+                sheet.Cell($"J{row}").SetValue(contact.OfficeNumber);
+                sheet.Cell($"K{row}").SetValue(contact.OfficeNumberExt);
                 row++;
             }
         }

@@ -14,9 +14,12 @@ How to install, run and build the app: `Sigook.App/README.md`.
 Sigook.App/
 ├── lib/                       # Dart source (see below)
 ├── test/                      # Unit tests mirroring lib/ (core/, features/, helpers/)
+├── integration_test/          # store_screenshots_test.dart: signs in against staging and captures the store screenshots
+├── test_driver/               # Host side of `flutter drive`; writes each capture to $SCREENSHOT_DIR
+├── scripts/                   # store_screenshots.sh <android|ios> <device> <out-dir>: device prep + flutter drive
 ├── android/                   # Gradle 9.1 / AGP 9 / Kotlin 2.3; debug manifest allows cleartext to 10.0.2.2
 ├── ios/                       # Single scheme `Runner`, CocoaPods (SPM disabled in pubspec.yaml)
-├── fastlane/                  # iOS build + App Store Connect upload used by the pipeline
+├── fastlane/                  # Store lanes (see PIPELINES.md); screenshots/ (App Store) and metadata/android/ (Play) hold the committed store screenshots
 ├── .env.local / .env.staging / .env.production   # Public compile-time config per environment
 ├── pubspec.yaml               # Date-based version YYYY.M.D+BUILD (CI overrides both numbers)
 ├── analysis_options.yaml
@@ -153,6 +156,8 @@ The environment is selected by **entry point + `.env` file**, not by flavors (An
 | Production | `lib/main_production.dart` | `.env.production` | none |
 
 Keys: `ENVIRONMENT`, `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY`. The `.env` files are committed and hold public values only; CI passes the same keys as individual `--dart-define` flags from the `SigookApp-Staging` / `SigookApp-Production` variable groups and is the only place `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` are set (see `PIPELINES.md`). `GOOGLE_MAPS_API_KEY` feeds the Static Maps image of the job location card (`features/jobs/presentation/widgets/job_location_card.dart`); without it the card keeps the address and the "Open in Maps" button but shows no map.
+
+`SCREENSHOT_MODE=true` (a boolean `--dart-define`, never set in the `.env` files) hides the environment banner so a staging build can be used for store screenshots; `scripts/store_screenshots.sh` is the only caller.
 
 ## Adding a Feature — Walkthrough
 

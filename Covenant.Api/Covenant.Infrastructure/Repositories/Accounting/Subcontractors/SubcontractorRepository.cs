@@ -16,7 +16,7 @@ public class SubcontractorRepository(CovenantContext context) : BaseRepository<C
          select new ReportSubcontractorModel
          {
              Email = rs.WorkerProfile.Worker.Email,
-             FullName = rs.WorkerProfile.FirstName + " " + rs.WorkerProfile.MiddleName + " " + rs.WorkerProfile.LastName + " " + rs.WorkerProfile.SecondLastName,
+             FullName = rs.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(rs.WorkerProfile.MiddleName) ? string.Empty : " " + rs.WorkerProfile.MiddleName) + " " + rs.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(rs.WorkerProfile.SecondLastName) ? string.Empty : " " + rs.WorkerProfile.SecondLastName),
              WeekEnding = rs.WeekEnding,
              Deductions = rs.DeductionOthers,
              TotalNet = rs.TotalNet,

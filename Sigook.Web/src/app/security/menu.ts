@@ -177,8 +177,8 @@ export default {
         items: [
           {
             to: "/worker-requests",
-            icon: "calendar-month",
-            label: "Jobs available for you",
+            icon: "briefcase-outline",
+            label: "Jobs",
           },
           {
             to: "/worker-history",

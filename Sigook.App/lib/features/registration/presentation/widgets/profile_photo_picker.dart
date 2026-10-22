@@ -28,34 +28,39 @@ class ProfilePhotoPicker extends ConsumerWidget {
 
     return Column(
       children: [
-        GestureDetector(
-          onTap: () => _showPhotoSourceBottomSheet(context, ref),
-          child: Container(
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: showError && !photo.hasPhoto
-                    ? AppTheme.errorRed
-                    : AppTheme.primaryBlue,
-                width: showError && !photo.hasPhoto ? 3 : 3,
+        Semantics(
+          button: true,
+          image: photo.hasPhoto,
+          label: photo.hasPhoto ? 'Change profile photo' : 'Add profile photo',
+          child: GestureDetector(
+            onTap: () => _showPhotoSourceBottomSheet(context, ref),
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: showError && !photo.hasPhoto
+                      ? AppTheme.errorRed
+                      : AppTheme.primaryBlue,
+                  width: showError && !photo.hasPhoto ? 3 : 3,
+                ),
+                image: photo.hasPhoto
+                    ? DecorationImage(
+                        image: FileImage(File(photo.path)),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                color: photo.hasPhoto ? null : Colors.grey.shade200,
               ),
-              image: photo.hasPhoto
-                  ? DecorationImage(
-                      image: FileImage(File(photo.path)),
-                      fit: BoxFit.cover,
+              child: !photo.hasPhoto
+                  ? Icon(
+                      Icons.person,
+                      size: size * 0.5,
+                      color: Colors.grey.shade600,
                     )
                   : null,
-              color: photo.hasPhoto ? null : Colors.grey.shade200,
             ),
-            child: !photo.hasPhoto
-                ? Icon(
-                    Icons.person,
-                    size: size * 0.5,
-                    color: Colors.grey.shade600,
-                  )
-                : null,
           ),
         ),
 
@@ -165,9 +170,7 @@ class ProfilePhotoPicker extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             Icon(
@@ -216,7 +219,10 @@ class ProfilePhotoPicker extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   _buildInstructionStep('1', 'Tap "Open Settings" below'),
-                  _buildInstructionStep('2', 'Find "$permissionType" in the list'),
+                  _buildInstructionStep(
+                    '2',
+                    'Find "$permissionType" in the list',
+                  ),
                   _buildInstructionStep(
                     '3',
                     isCamera
@@ -285,10 +291,7 @@ class ProfilePhotoPicker extends ConsumerWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.blue.shade900,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
             ),
           ),
         ],

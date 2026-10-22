@@ -127,6 +127,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IPayStubService, PayStubService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IUploadedFilesService, UploadedFilesService>();
+        services.AddScoped<ISkillService, SkillService>();
         services.AddScoped<IGeocodeService, GeocodeService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IUserAccountService, UserAccountService>();
@@ -141,7 +142,6 @@ public static class ApiServicesConfiguration
         services.AddSingleton<IPushNotificationSender, FirebasePushNotificationSender>();
         services.AddScoped<ITeamsService, TeamsService>();
         services.AddScoped<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-        services.AddScoped<IPdfGeneratorService, PdfGeneratorService>();
         services.AddScoped<IAccountingService, AccountingService>();
         services.AddScoped<ILocationService, LocationService>();
         services.AddScoped<CompanyIdFilter>();
@@ -216,9 +216,9 @@ public static class ApiServicesConfiguration
         return services;
     }
 
-    public static IServiceCollection AddClients(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddClients(this IServiceCollection services)
     {
-        services.AddHttpClient(PdfGeneratorService.PdfGeneratorClient, c => c.BaseAddress = new Uri(configuration["PdfGeneratorUrl"]));
+        services.AddHttpClient();
         return services;
     }
 
@@ -253,19 +253,15 @@ public static class ApiServicesConfiguration
 
     public static IServiceCollection AddContainers(this IServiceCollection services, WebApplicationBuilder builder)
     {
-        var accountingStorageConnection = builder.Configuration.GetConnectionString("AccountingStorageConnection");
-        var fileStorageConnection = builder.Configuration.GetConnectionString("FileStorageConnection");
+        var fileConnectionSafe = builder.Configuration.GetConnectionString("FileStorageConnection") ?? string.Empty;
 
-        var accountingConnectionSafe = accountingStorageConnection ?? string.Empty;
-        var fileConnectionSafe = fileStorageConnection ?? string.Empty;
-
-        services.AddSingleton(new AzureStorageConfiguration(new[]
-        {
-            new AccessKey(InvoicesContainer.ContainerName, accountingConnectionSafe),
-            new AccessKey(PayStubsContainer.ContainerName, accountingConnectionSafe),
+        services.AddSingleton(new AzureStorageConfiguration(
+        [
+            new AccessKey(InvoicesContainer.ContainerName, fileConnectionSafe),
+            new AccessKey(PayStubsContainer.ContainerName, fileConnectionSafe),
             new AccessKey(FilesContainer.ContainerName, fileConnectionSafe),
             new AccessKey(CraTablesContainer.ContainerName, fileConnectionSafe)
-        }, new AccessKey("default", accountingConnectionSafe)));
+        ]));
         services.AddScoped<IInvoicesContainer, InvoicesContainer>();
         services.AddScoped<IPayStubsContainer, PayStubsContainer>();
         services.AddScoped<IFilesContainer, FilesContainer>();
@@ -297,7 +293,6 @@ public static class ApiServicesConfiguration
     {
         // Get all connection strings
         var databaseConnection = configuration.GetConnectionString("DefaultConnection");
-        var accountingStorageConnection = configuration.GetConnectionString("AccountingStorageConnection");
         var fileStorageConnection = configuration.GetConnectionString("FileStorageConnection");
         var serviceBusConnection = configuration.GetConnectionString("ServiceBusConnection");
 
@@ -313,7 +308,7 @@ public static class ApiServicesConfiguration
             "config-azure-storage",
             HealthStatus.Unhealthy,
             tags: ["config", "ready"],
-            args: [accountingStorageConnection!, fileStorageConnection!]);
+            args: [fileStorageConnection!]);
 
         healthChecksBuilder.AddTypeActivatedCheck<ServiceBusConfigurationHealthCheck>(
             "config-service-bus",
@@ -336,11 +331,6 @@ public static class ApiServicesConfiguration
                 HealthStatus.Unhealthy,
                 tags: ["connectivity", "ready"]);
         }
-
-        healthChecksBuilder.AddCheck("azure-storage-accounting-connectivity",
-            new AzureStorageHealthCheck(accountingStorageConnection, "Accounting"),
-            HealthStatus.Unhealthy,
-            tags: ["connectivity", "ready"]);
 
         healthChecksBuilder.AddCheck("azure-storage-files-connectivity",
             new AzureStorageHealthCheck(fileStorageConnection, "Files"),

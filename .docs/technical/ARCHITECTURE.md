@@ -18,7 +18,7 @@ Monorepo with six applications. Each has its own `CLAUDE.md` with app-specific c
 ### Covenant.Api (.NET 10)
 
 ```
-Framework:  ASP.NET Core 10.0 Web API + Razor views (email and PDF templates only)
+Framework:  ASP.NET Core 10.0 Web API + Razor views (email templates only)
 Database:   PostgreSQL (cloud-hosted), EF Core 10.0.12 + Npgsql 10.0.3 — two databases:
             CovenantContext (API data) and IdentityContext (users, roles, OpenIddict stores)
 Identity:   ASP.NET Core Identity (custom table names) + OpenIddict 7 server/validation
@@ -142,7 +142,7 @@ Covenant.Api/                       # Covenant.Api.slnx, Directory.Build.props (
 ├── Covenant.Common/                # Entities (incl. Entities/Identity), enums, models/DTOs, repository+service interfaces, constants
 ├── Covenant.Core.BL/               # Services (business logic, incl. Services/Identity) + Service Bus consumers
 ├── Covenant.Infrastructure/        # EF Core (CovenantContext, IdentityContext), repositories, integrations, deductions
-├── Covenant.Documents/             # Excel/PDF report generators (MediatR handlers)
+├── Covenant.Documents/             # MediatR handlers: Excel reports (ClosedXML) + invoice/pay stub PDFs (QuestPDF, Community license, DejaVu Sans embedded in Pdf/Fonts)
 ├── Sigook.Functions/               # Azure Functions (timers + blob trigger), references Covenant.Common only
 ├── Covenant.Tests/                 # API unit tests
 ├── Covenant.Integration.Tests/     # API integration tests (Testcontainers Postgres)
@@ -269,7 +269,9 @@ Contexts/         CovenantContext.cs (main DbContext), IdentityContext.cs (ASP.N
                   User/Rol/UserClaim/UserRole/UserLogin/RoleClaim/UserToken + InactiveUsers +
                   PasswordResetCode + OpenIddict stores), MyKeysContext (DataProtection keys),
                   PostgresFunctions.cs (EF DbFunction mappings backing
-                  Scripts/Functions/get_week_start_sunday.sql)
+                  Scripts/Functions/*.sql + pg_trgm word_similarity)
+Extensions/       SearchExtensions.cs: the one free-text search used by every repository
+                  (see "Free-text search" below)
 Repositories/     by domain, plural folders mirroring Covenant.Common/Repositories/:
                   Accounting/{Deductions,Invoices,PayStubs,Subcontractors}/, Agencies/, Candidates/,
                   Companies/, Identity/, Notifications/, Requests/, Workers/ + root repositories
@@ -290,17 +292,17 @@ Configurations/   EF Core IEntityTypeConfiguration classes, same plural tree as 
                   Covenant.Infrastructure.Configurations.Identity, so never nest folders under it
 Migrations/       EF Core migrations for CovenantContext; Migrations/Identity/ for IdentityContext
 Scripts/          raw SQL run at startup by DatabaseScriptRunner (copied to the output dir).
-                  Schemas/ Tables/ Views/ Functions/ StoredProcedures/ Types/ run on EVERY
-                  start (must be idempotent: CREATE OR REPLACE). Data/ runs each file ONCE,
+                  Schemas/ Tables/ Views/ Functions/ Indexes/ StoredProcedures/ Types/ run on
+                  EVERY start, in that order (must be idempotent: CREATE OR REPLACE,
+                  IF NOT EXISTS). Data/ runs each file ONCE,
                   in a transaction, tracked by file name in the "ScriptHistory" table
                   (one-off data fixes that don't deserve an EF migration). The root
-                  .gitignore ignores *.sql, so a script only ships (and only runs in
-                  staging/production) when added with `git add -f`; the integration test
+                  .gitignore ignores *.sql except under this folder; the integration test
                   exercises the runner with a temporary script instead of a real one
 Services/         integrations: EmailService + SendGridService (SendGrid), GeocodeService
                   (Google Maps), PushNotificationPublisher (IPushNotifications → `PushNotificationQueue`
                   on Service Bus) + FirebasePushNotificationSender (IPushNotificationSender, FCM), TeamsService
-                  (webhooks), DocumentService, PdfGeneratorService, RazorViewToStringRenderer,
+                  (webhooks), DocumentService, RazorViewToStringRenderer,
                   UserAccountService, CurrentUserService, Microsoft365AccountService (Graph
                   accountEnabled check), CraPdfParser (PdfPig reader for the CRA
                   deduction tables), SigookBusClient / SigookBusAdministrationClient (Service Bus)
@@ -311,9 +313,11 @@ Services/Storage/ Azure Blob containers, one class per container (see below)
 `BaseAzureStorage`, with interfaces in `Covenant.Common/Interfaces/Storage/`:
 `InvoicesContainer` (invoice PDFs), `PayStubsContainer` (pay stub PDFs), `FilesContainer`
 (worker/company documents), `CraTablesContainer` (CRA deduction PDFs). Registered in
-`ApiServicesConfiguration.AddContainers` against two connection strings —
-`AccountingStorageConnection` (invoices, pay stubs) and `FileStorageConnection` (files, CRA
-tables). Invoice and pay stub PDFs are **cached** in their container: delete the blob to force a
+`ApiServicesConfiguration.AddContainers` against one connection string, `FileStorageConnection`:
+every container lives in the same storage account (`sigookfiles` in production,
+`sigookfilesstaging` in staging). `files` is public at blob level (web and app read it through
+`FilesConfiguration:FilesPath`); `invoices`, `paystubs` and `cra-tables` are private and only
+reached through the API. Invoice and pay stub PDFs are **cached** in their container: delete the blob to force a
 regeneration after fixing a Razor template.
 
 Payroll deductions are **DB table lookups, not formulas**: `TimesheetCalculatorService` →
@@ -326,9 +330,33 @@ blob reference) → `DeductionImportService` (uses `CraPdfParser` + `CraTablesCo
 2 years. Reads happen only through `TimesheetCalculatorService`; there is no endpoint to read
 the tables back.
 
+**Free-text search** — every name/email/text filter goes through
+`Covenant.Infrastructure/Extensions/SearchExtensions.cs`; never write `ToLower().Contains` or
+`EF.Functions.Like` by hand in a repository.
+
+- `query.WhereSearch(term, x => x.FieldA, x => x.FieldB)` on an `IQueryable`, or
+  `predicate.AndSearch(term, ...)` on an `Expression<Func<T, bool>>` (declare the variable as
+  `Expression<...>`: extension methods don't bind on LinqKit's `ExpressionStarter`).
+- The term is trimmed and split on whitespace. **Every word must appear in at least one field**
+  (AND of words, OR of fields), so "perez juan" finds "Juan Carlos Pérez".
+- Comparison is `unaccent_lower(field) LIKE '%word%' ESCAPE '\'`: case- and accent-insensitive,
+  and `%`/`_` typed by the user are literal. `unaccent_lower` is an IMMUTABLE SQL function
+  (`Scripts/Functions/unaccent_lower.sql`) over the `unaccent` extension, so it can be indexed.
+- Pass the **separate entity columns** (FirstName, MiddleName, LastName, SecondLastName, Email)
+  before the projection rather than a concatenated full name, so trigram indexes can apply.
+- Skill filters (workers, candidates) use `context.SkillSearchPredicate`: a skill matches by text
+  or when the term is the catalog `Value` or one of its `Aliases`, so "cb" finds "Counter Balance".
+- `SearchExtensions.SimilarityPredicate` (pg_trgm `word_similarity`, threshold 0.4) is a
+  typo-tolerant fallback, used only by the applicant and runner autocompletes when the exact
+  search returns nothing.
+- Extensions `unaccent` and `pg_trgm` are created by `Scripts/Schemas/extensions.sql`; on Azure
+  Database for PostgreSQL they must be allow-listed in the server parameter `azure.extensions`
+  first, or startup fails. Trigram GIN indexes live in `Scripts/Indexes/search_indexes.sql`;
+  changing the body of `unaccent_lower` requires dropping and rebuilding those indexes.
+
 **Health checks** — `AddCovenantHealthChecks` + `Covenant.Api/HealthChecks/` (tagged
 `config`/`ready`/`live`) probe the connection strings `DefaultConnection`, `IdentityConnection`,
-`AccountingStorageConnection`, `FileStorageConnection`, `ServiceBusConnection`.
+`FileStorageConnection`, `ServiceBusConnection`.
 
 **API reference** — the OpenAPI document is generated by `Microsoft.AspNetCore.OpenApi`
 (`AddOpenApi("v1")` + transformers in `Covenant.Api/Configuration/OpenApi/`) and written to
@@ -441,7 +469,7 @@ rather than constructing clients directly.
   `POST /Account/CreatePassword` (`IPasswordResetService.CreatePassword`, which also confirms the
   email); a bad or expired token answers `400 { error: "invalid_token" }`. The old
   `GET /Account/ConfirmEmailAddress|CreatePassword|ResetPassword` links still in inboxes redirect to
-  those pages. The API serves no HTML pages: `Views/` only holds email and PDF templates.
+  those pages. The API serves no HTML pages: `Views/` only holds email templates.
 - **Browser sign-in is Microsoft 365 only.** `/connect/authorize` without a session always goes to
   `External/Challenge` (also the cookie `LoginPath`); a rejected staff login lands on
   `{WebClientUrl}/login?error=invalid_user`.
@@ -497,6 +525,18 @@ Azure DevOps pipelines with path-based triggers and reusable templates
 (`.azure-pipelines/templates/`); Docker builds for the API (context `Covenant.Api/`, image
 `sigook.azurecr.io/api`) and Sigook.Web, zip deploy for the Functions, static build for
 Covenant.Web. Full details: [PIPELINES.md](PIPELINES.md).
+
+### Google Cloud
+
+Everything Google lives in the single project `sigookapps` (number 475603730166, "Covenant Billing Account"):
+
+| Resource | Used by | Where the credential lives |
+|---|---|---|
+| Firebase / FCM (service account `firebase-adminsdk-2ynl5`) | `FirebasePushNotificationSender` in the API; Android/iOS apps `com.sigook.sigook` / `com.all2job.all2job` | Key Vault `*-api--PushNotificationConfiguration--*` |
+| Google Play publishing (service accounts `playstore-ci`, `prod-playstore-ci`) | fastlane `android deploy` | Variable groups `SigookApp-Staging` / `SigookApp-Production` (`GOOGLE_PLAY_JSON_KEY`) |
+| Geocoding API key "Sigook Api - Geocoding" | `GeocodeService` (company locations) | Key Vault `*-api--GeocodeGoogleConfiguration--Key` |
+| Maps Embed API key "Sigook Web - Maps Embed" (referrers: sigook.com, sigook.ca, azurewebsites, localhost) | `mapsEmbedUrl` in `Sigook.Web/src/shared/request-detail/requestDetail.ts` | Hardcoded (public browser key, referrer-restricted) |
+| Maps Static API key "Sigook App - Maps Static" (one key for Android and iOS: Google does not enforce Android/iOS app restrictions on Maps Static requests, only the API restriction holds, so the key is limited to the Maps Static API and baked into the binaries) | `JobLocationCard` in Sigook.App | Variable groups `SigookApp-Staging` / `SigookApp-Production` (`GOOGLE_MAPS_API_KEY`) |
 
 ---
 

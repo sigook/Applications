@@ -3,6 +3,7 @@ using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Entities.Request;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Core.BL.Interfaces.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +13,7 @@ namespace Covenant.Api.Controllers.Agency.Recruiting.Requests;
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ApiController]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class SkillsController(IRequestRepository repository) : Controller
+public class SkillsController(IRequestRepository repository, ISkillService skillService) : Controller
 {
     public const string RouteName = "api/agency/recruiting/requests/{requestId}/skills";
 
@@ -25,6 +26,7 @@ public class SkillsController(IRequestRepository repository) : Controller
     public async Task<ActionResult> Post(Guid requestId, [FromBody] SkillModel model)
     {
         if (!ModelState.IsValid || string.IsNullOrEmpty(model?.Skill)) return BadRequest(ModelState);
+        model.Skill = (await skillService.Canonicalize([model.Skill])).FirstOrDefault();
         var result = RequestSkill.Create(requestId, model.Skill);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         await repository.Create(result.Value);

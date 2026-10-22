@@ -9,7 +9,9 @@ class EnvironmentBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (EnvironmentConfig.isProduction) return child;
+    if (EnvironmentConfig.isProduction || EnvironmentConfig.isScreenshotMode) {
+      return child;
+    }
 
     final apiHost = Uri.tryParse(EnvironmentConfig.apiBaseUrl)?.host ?? '';
 
@@ -22,7 +24,10 @@ class EnvironmentBanner extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4,
+                  horizontal: 16,
+                ),
                 child: Text(
                   '${EnvironmentConfig.environmentName.toUpperCase()} · $apiHost',
                   textAlign: TextAlign.center,

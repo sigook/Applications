@@ -11,6 +11,7 @@ using Covenant.Common.Models.Candidate;
 using Covenant.Common.Models.Location;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
+using Covenant.Core.BL.Interfaces.Shared;
 
 namespace Covenant.Core.BL.Adapters;
 
@@ -18,7 +19,8 @@ public class CandidateAdapter(
     ICatalogRepository catalogRepository,
     ICurrentUserService currentUserService,
     ITeamsService teamsService,
-    IFilesContainer filesContainer) : ICandidateAdapter
+    IFilesContainer filesContainer,
+    ISkillService skillService) : ICandidateAdapter
 {
     private readonly ICatalogRepository catalogRepository = catalogRepository;
     private readonly ICurrentUserService currentUserService = currentUserService;
@@ -43,17 +45,10 @@ public class CandidateAdapter(
         };
         bulkCandidate.Candidate = candidate;
         bulkCandidate.CandidatesPhone = new CandidatePhone(candidate.Id, model.Phone);
-        if (!string.IsNullOrWhiteSpace(model.Skills))
-        {
-            var skills = model.Skills
-                .Split(',')
-                .Select(s => CandidateSkill.Create(candidate.Id, s).Value);
-            bulkCandidate.CandidatesSkills.AddRange(skills);
-        }
+        var skills = await skillService.Canonicalize([.. (model.Skills ?? string.Empty).Split(','), request?.JobTitle]);
+        bulkCandidate.CandidatesSkills.AddRange(skills.Select(s => CandidateSkill.Create(candidate.Id, s).Value));
         if (request != null)
         {
-            var requestSkill = CandidateSkill.Create(candidate.Id, request.JobTitle).Value;
-            bulkCandidate.CandidatesSkills.Add(requestSkill);
             bulkCandidate.RequestApplicant = RequestApplicant.CreateWithCandidate(request.Id, candidate.Id, "Sigook", string.Empty, RequestApplicantStatus.InProgress).Value;
         }
         if (!string.IsNullOrWhiteSpace(model.UrlResume))
@@ -67,7 +62,6 @@ public class CandidateAdapter(
                 bulkCandidate.CandidatesDocument = new CandidateDocument(candidate.Id, covenantFile);
             }
         }
-        bulkCandidate.CandidatesSkills = bulkCandidate.CandidatesSkills.Distinct().ToList();
         return bulkCandidate;
     }
 

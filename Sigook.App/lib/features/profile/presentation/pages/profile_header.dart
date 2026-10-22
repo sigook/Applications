@@ -78,19 +78,23 @@ class ProfileHeader extends StatelessWidget {
           Positioned(
             right: 0,
             bottom: 0,
-            child: GestureDetector(
-              onTap: onPhotoTap,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppTheme.secondaryRed,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  size: 14,
-                  color: Colors.white,
+            child: Semantics(
+              button: true,
+              label: 'Change profile photo',
+              child: GestureDetector(
+                onTap: onPhotoTap,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondaryRed,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    size: 14,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

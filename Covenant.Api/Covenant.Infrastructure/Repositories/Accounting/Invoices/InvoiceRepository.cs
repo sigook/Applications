@@ -9,6 +9,7 @@ using Covenant.Common.Models.Company;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -247,15 +248,13 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
 
     private Expression<Func<InvoiceListModel, bool>> ApplyFilterInvoices(GetInvoicesFilter filter)
     {
-        var predicate = PredicateBuilder.New<InvoiceListModel>(true);
-        if (!string.IsNullOrWhiteSpace(filter.InvoiceNumber))
-            predicate = predicate.And(i => i.InvoiceNumber.Contains(filter.InvoiceNumber));
+        Expression<Func<InvoiceListModel, bool>> predicate = PredicateBuilder.New<InvoiceListModel>(true);
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(i => i.CreatedAt >= filter.CreatedAtFrom.Value && i.CreatedAt <= filter.CreatedAtTo.Value);
-        if (!string.IsNullOrWhiteSpace(filter.CompanyFullName))
-            predicate = predicate.And(i => i.CompanyFullName.ToLower().Contains(filter.CompanyFullName.ToLower()));
-        if (!string.IsNullOrWhiteSpace(filter.SalesRepresentative))
-            predicate = predicate.And(i => i.SalesRepresentative.ToLower().Contains(filter.SalesRepresentative.ToLower()));
+        predicate = predicate
+            .AndSearch(filter.InvoiceNumber, i => i.InvoiceNumber)
+            .AndSearch(filter.CompanyFullName, i => i.CompanyFullName)
+            .AndSearch(filter.SalesRepresentative, i => i.SalesRepresentative);
         if (filter.Status.HasValue)
             predicate = predicate.And(i => i.Status == filter.Status.Value);
         return predicate;

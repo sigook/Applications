@@ -27,6 +27,7 @@ public interface ICatalogRepository : IBaseRepository
     Task<List<BaseModel<Guid>>> GetIndustries();
     Task<List<BaseModel<Guid>>> GetSources();
     Task<List<BaseModel<Guid>>> GetSourcesForRequests();
+    Task<List<SkillCatalogModel>> GetSkillCatalog();
     Task<bool> IsHoliday(DateTime date, string countryCode);
     Task<List<DateTime>> GetHolidaysInWeek(DateTime firstDateOfTheWeek, string countryCode);
     Task CreateHolidayIfNotExist(string countryCode, DateTime date);

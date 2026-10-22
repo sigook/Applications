@@ -11,6 +11,7 @@ class ProfileInfoRow extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
   final String? errorText;
+  final Widget? child;
 
   const ProfileInfoRow({
     super.key,
@@ -22,7 +23,46 @@ class ProfileInfoRow extends StatelessWidget {
     this.onChanged,
     this.inputFormatters,
     this.errorText,
+    this.child,
   });
+
+  static InputDecoration decoration({
+    String? errorText,
+    String? hintText,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      isDense: true,
+      hintText: hintText,
+      errorText: errorText,
+      errorMaxLines: 2,
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade200),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: AppTheme.primaryBlue),
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 10,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,37 +86,15 @@ class ProfileInfoRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (isEditing)
+                if (isEditing && child != null)
+                  child!
+                else if (isEditing)
                   TextField(
                     controller:
                         controller ?? TextEditingController(text: value),
                     onChanged: onChanged,
                     inputFormatters: inputFormatters,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      errorText: errorText,
-                      errorMaxLines: 2,
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(
-                          color: AppTheme.primaryBlue,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                    ),
+                    decoration: decoration(errorText: errorText),
                   )
                 else
                   Text(

@@ -214,12 +214,12 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    ref.listen(
-      authViewModelProvider.select((s) => s.sessionExpired),
-      (previous, next) {
-        if (next) _showSessionExpiredMessage();
-      },
-    );
+    ref.listen(authViewModelProvider.select((s) => s.sessionExpired), (
+      previous,
+      next,
+    ) {
+      if (next) _showSessionExpiredMessage();
+    });
 
     return Scaffold(
       body: Stack(
@@ -350,15 +350,20 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                     offset: _legalSlide.value,
                     child: child!,
                   ),
-                  child: GestureDetector(
-                    onTap: _showLegalModal,
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: SvgPicture.asset(
-                        'assets/images/welcome-screen/dots-rectangle.svg',
-                        width: 50,
-                        height: 20,
+                  child: Semantics(
+                    button: true,
+                    label: 'Legal information',
+                    child: GestureDetector(
+                      onTap: _showLegalModal,
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: SvgPicture.asset(
+                          'assets/images/welcome-screen/dots-rectangle.svg',
+                          width: 50,
+                          height: 20,
+                          excludeFromSemantics: true,
+                        ),
                       ),
                     ),
                   ),

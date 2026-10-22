@@ -10,24 +10,22 @@ enum Environment { local, staging, production }
 ///
 /// String.fromEnvironment is resolved at compile time - values are baked into the binary.
 class EnvironmentConfig {
-  static const String _environment =
-      String.fromEnvironment('ENVIRONMENT');
-  static const String _authAuthority =
-      String.fromEnvironment('AUTH_AUTHORITY');
-  static const String _apiBaseUrl =
-      String.fromEnvironment('API_BASE_URL');
-  static const String _clientId =
-      String.fromEnvironment('CLIENT_ID');
-  static const String _redirectUri =
-      String.fromEnvironment('REDIRECT_URI');
-  static const String _scopes =
-      String.fromEnvironment('SCOPES');
-  static const String _appName =
-      String.fromEnvironment('APP_NAME');
-  static const String _appInsightsConnectionString =
-      String.fromEnvironment('APP_INSIGHTS_CONNECTION_STRING', defaultValue: '');
-  static const String _googleMapsApiKey =
-      String.fromEnvironment('GOOGLE_MAPS_API_KEY', defaultValue: '');
+  static const String _environment = String.fromEnvironment('ENVIRONMENT');
+  static const String _authAuthority = String.fromEnvironment('AUTH_AUTHORITY');
+  static const String _apiBaseUrl = String.fromEnvironment('API_BASE_URL');
+  static const String _clientId = String.fromEnvironment('CLIENT_ID');
+  static const String _redirectUri = String.fromEnvironment('REDIRECT_URI');
+  static const String _scopes = String.fromEnvironment('SCOPES');
+  static const String _appName = String.fromEnvironment('APP_NAME');
+  static const String _appInsightsConnectionString = String.fromEnvironment(
+    'APP_INSIGHTS_CONNECTION_STRING',
+    defaultValue: '',
+  );
+  static const String _googleMapsApiKey = String.fromEnvironment(
+    'GOOGLE_MAPS_API_KEY',
+    defaultValue: '',
+  );
+  static const bool _screenshotMode = bool.fromEnvironment('SCREENSHOT_MODE');
 
   // Every value is trimmed: CI variable editors silently keep a pasted
   // trailing space or newline, and an untrimmed client_id makes the token
@@ -81,6 +79,8 @@ class EnvironmentConfig {
 
   static bool get isLocal => current == Environment.local;
 
+  static bool get isScreenshotMode => _screenshotMode;
+
   /// Validates that all required configuration values are present.
   /// Throws an exception if any required values are missing.
   /// Call this during app initialization to fail fast.
@@ -120,8 +120,12 @@ class EnvironmentConfig {
     _printConfigLine('REDIRECT_URI', redirectUri);
     _printConfigLine('SCOPES', scopes.join(','));
     _printConfigLine('APP_NAME', appName);
-    debugPrint(' APP_INSIGHTS_CONNECTION_STRING: ${_appInsightsConnectionString.isNotEmpty ? '[set]' : '[not set]'}');
-    debugPrint(' GOOGLE_MAPS_API_KEY: ${googleMapsApiKey.isNotEmpty ? '[set]' : '[not set]'}');
+    debugPrint(
+      ' APP_INSIGHTS_CONNECTION_STRING: ${_appInsightsConnectionString.isNotEmpty ? '[set]' : '[not set]'}',
+    );
+    debugPrint(
+      ' GOOGLE_MAPS_API_KEY: ${googleMapsApiKey.isNotEmpty ? '[set]' : '[not set]'}',
+    );
     debugPrint('========================================================');
     debugPrint('');
   }

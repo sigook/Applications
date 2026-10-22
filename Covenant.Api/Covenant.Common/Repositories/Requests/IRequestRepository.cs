@@ -28,7 +28,7 @@ public interface IRequestRepository : IBaseRepository
     Task<CompanyRequestDetailModel> GetRequestDetailForCompany(Guid id);
     Task<PaginatedList<AgencyWorkerRequestModel>> GetWorkersRequestByRequestId(Guid requestId, GetWorkersRequestFilter filter);
     Task<AgencyWorkerRequestModel> GetWorkerRequestByAgencyId(Guid agencyId, Guid requestId, Guid workerRequestId);
-    Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, Pagination pagination);
+    Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, GetWorkerRequestsFilter filter);
     Task<WorkerRequestDetailModel> GetRequestDetailForWorker(Guid workerId, Guid requestId);
     Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, Pagination pagination);
     Task<PaginatedList<WorkerRequestHistoryModel>> GetWorkerRequestHistory(Guid agencyId, Guid workerProfileId, GetWorkerRequestHistoryFilter filter);

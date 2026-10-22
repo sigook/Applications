@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
+import '../../domain/entities/jobs_filter.dart';
 import '../../domain/entities/paginated_jobs.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/repositories/jobs_repository.dart';
@@ -22,8 +23,7 @@ class JobsRepositoryImpl implements JobsRepository {
 
   @override
   Future<Either<Failure, PaginatedJobs>> getJobs({
-    required int sortBy,
-    required bool isDescending,
+    required JobsFilter filter,
     required int pageIndex,
     required int pageSize,
   }) async {
@@ -53,14 +53,13 @@ class JobsRepositoryImpl implements JobsRepository {
 
     try {
       final resultModel = await remoteDataSource.getJobs(
-        sortBy: sortBy,
-        isDescending: isDescending,
+        filter: filter,
         pageIndex: pageIndex,
         pageSize: pageSize,
       );
 
-      // Cache the first page of jobs
-      if (pageIndex == 0 && resultModel.items.isNotEmpty) {
+      // Cache the first unfiltered page of jobs
+      if (pageIndex == 1 && filter.isDefault && resultModel.items.isNotEmpty) {
         try {
           await localDataSource.cacheJobs(resultModel.items);
           debugPrint('💾 Cached ${resultModel.items.length} jobs');

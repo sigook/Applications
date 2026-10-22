@@ -41,11 +41,11 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test+Publish+Docker → Deploy → Notify | `sigook-api-staging` / `sigook-api` |
 | Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check+Build+Docker → Deploy → Notify | `sigook-web-staging` / `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
-| Sigook.App | `sigookapp-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
-| Sigook.App iOS Bootstrap | `sigookapp-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
+| Sigook.App | `sigook-app-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
+| Sigook.App iOS Bootstrap | `sigook-app-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
-| Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob container `files` of `sigookfilesstaging` |
+| Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob containers `files`, `invoices`, `paystubs` of `sigookfilesstaging` |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
@@ -171,17 +171,21 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. A failed upload fails the run; the step `DeployGooglePlay` also exposes `deployStatus` (`success`/`failed`) as an output variable.
 
+**Store screenshots** (pipeline parameter `uploadStoreScreenshots`, default `false`): when set, the run also pushes the screenshots committed under `Sigook.App/fastlane/` to the store listings. Android (`fastlane android screenshots`, after the Play deploy) runs on any branch because the Play listing is shared by every track. iOS (`fastlane ios screenshots version:`) runs only on `main`, right before `ios release`: App Store Connect only accepts new screenshots on a version that is not live yet, so they are attached to the version the run is about to submit. Capturing the screenshots is a separate manual pipeline (see *Sigook.App Store Screenshots* below).
+
 **Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when the previous stages succeeded and both `deployStatus` outputs are `success`.
 
 **Fastlane** (`Sigook.App/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
 - `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
+- `android screenshots` — `upload_to_play_store` with every upload skipped except screenshots: replaces the phone screenshots of the listing with `fastlane/metadata/android/<locale>/images/phoneScreenshots/*.png` (2-8 files, 1080x1920). Fails when the folder is empty
+- `ios screenshots version:` — `upload_to_app_store` with `skip_binary_upload`, `skip_metadata`, `overwrite_screenshots`, `submit_for_review: false`: replaces the screenshots of that App Store version (creating it when it does not exist yet) with `fastlane/screenshots/<locale>/*.png`. deliver infers the device from the image size (1320x2868 = iPhone 6.9", 2064x2752 = iPad 13"; both are mandatory because the app targets iPad). The lane first resolves the listing locales (`store_locales`) and fails when a folder names a locale the listing does not have
 - `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`). The lane reads them from `ENV`, and Azure DevOps never exposes a **secret** variable as an environment variable, so every secret the lane needs is mapped explicitly in the `env:` block of the `Build iOS IPA` step (`APP_STORE_CONNECT_API_KEY`, `MATCH_PASSWORD`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY`). `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` are optional for the lane, so forgetting the mapping does not fail the build: it silently ships an iOS binary that sends no telemetry (the Android step uses `$(VAR)` macros inside the script, which do expand secrets)
 - `ios beta` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
 - `ios release` — `upload_to_app_store` with `submit_for_review`, `automatic_release`, `reject_if_possible`, export compliance = no encryption. Release notes come from `IOS_RELEASE_NOTES` (default text) and are written to every locale the App Store listing already has (`store_locales` private lane, resolved through the App Store Connect API): submission fails with `You must provide a value for the attribute 'whatsNew'` when any locale is left empty
 - iOS plugins are kept on CocoaPods (`config: enable-swift-package-manager: false` in `pubspec.yaml`) because `image_cropper` and `file_picker`'s `DKImagePickerController` require incompatible `TOCropViewController` majors under SPM
 
 **Required Variable Groups:**
-- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY` (Static Maps API key restricted to the Android package and iOS bundle id; optional, the job location card shows no map image without it), `GOOGLE_PLAY_JSON_KEY`
+- `SigookApp-Staging`: `AUTH_AUTHORITY`, `API_BASE_URL`, `CLIENT_ID`, `REDIRECT_URI`, `POST_LOGOUT_REDIRECT_URI`, `SCOPES`, `APP_NAME`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY` (the "Sigook App - Maps Static" key, shared by Android and iOS; optional, the job location card shows no map image without it), `GOOGLE_PLAY_JSON_KEY`, `SCREENSHOT_USER` / `SCREENSHOT_PASSWORD` (secret; the staging worker account the screenshots pipeline signs in with — a worker with presentable data, never the store review account)
 - `SigookApp-Production`: Same variables with production values
 - `SigookApp-Android`: `KEYSTORE_FILE`, `KEY_PASSWORD`, `KEY_ALIAS`
 - `SigookApp-iOS`: `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY` (secret, base64 of the `.p8`, App Manager role), `MATCH_GIT_URL` (private Azure Repos git repo holding the encrypted certificate/profile), `MATCH_PASSWORD` (secret, match encryption passphrase), `IOS_RELEASE_NOTES` (optional)
@@ -196,9 +200,21 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 - Play serves every user the highest `versionCode` across all tracks they are enrolled in and never downgrades, so an enrolled tester runs the staging build whenever `dev` was released after `main` (and sees the "(Beta)" suffix in the store). Only people who accept that belong in the closed track; anyone who needs the production app must be removed from it and reinstall. Staging and local builds show an orange environment banner, so a phone running the wrong backend is obvious
 - Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
 
+### Sigook.App Forced Update (manual)
+
+The pipeline never touches the forced-update gate. On every launch and every resume the app calls `GET api/mobileapp/version` and compares its installed `appVersionName` with `MobileAppConfiguration__MinimumVersion` (App Setting of the Api in each environment): below it, the whole UI is replaced by the update screen that links to the store; equal or above, the app opens normally. Nothing is stored on the phone, so once the user installs the store version the screen disappears on the next check. When the check fails (offline, Api down) the app is never blocked.
+
+Raising the minimum is optional and only needed when older builds must stop working (a critical bug, an Api change that breaks them):
+
+1. Release the version through `main` as usual
+2. Wait until it is approved and live in **both** the App Store and Google Play
+3. Set `MobileAppConfiguration__MinimumVersion` in the production Api App Settings to that `appVersionName` (`YYYY.M.D`)
+
+Never set a value higher than the version live in both stores: every user is locked out, installing from the store does not help, and the only way out is lowering the setting or shipping that version. Comparison uses `appVersionName` only, so builds released the same day count as the same version.
+
 ### Sigook.App iOS Bootstrap (manual)
 
-`sigookapp-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever `flutterVersion` changes (nobody on the team has a Mac), so CI never mutates an unreviewed checkout and the lockfiles stay reproducible. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion` (keep them equal to `sigookapp-pipeline.yml`).
+`sigook-app-ios-bootstrap-pipeline.yml` runs `flutter build ios --release --no-codesign` on a hosted macOS agent with the pinned Flutter and publishes the artifact `ios-bootstrap` (`migration.patch` = `git diff --binary`, `untracked-files.txt`, `Podfile.lock`, `Gemfile.lock`, `toolchain.txt`). Use it whenever `flutterVersion` changes (nobody on the team has a Mac), so CI never mutates an unreviewed checkout and the lockfiles stay reproducible. Parameters: `macosImage`, `xcodeVersion`, `flutterVersion` (keep them equal to `sigook-app-pipeline.yml`).
 
 Applying the artifact from the repo root (Git Bash):
 
@@ -210,6 +226,26 @@ git diff --stat
 ```
 
 Review the diff under `Sigook.App/ios/` (the app has no macOS target, hence the exclude), then commit and push.
+
+### Sigook.App Store Screenshots (manual)
+
+`sigook-app-screenshots-pipeline.yml` captures the store screenshots in two jobs, iOS on a hosted macOS agent and Android on a hosted Linux agent (`androidImage`, needs `/dev/kvm`). The org has a single hosted parallel job, so they run one after the other and every minute counts against the 1800 free minutes per month. It publishes them as the artifacts `store-screenshots-ios` and `store-screenshots-android`, already in the folder layout fastlane reads. Uploading is done by the main pipeline from the committed files (`uploadStoreScreenshots`), so the images are reviewed in a PR like any other change.
+
+Where the time goes on a cold hosted agent: the iOS simulator takes ~9 min to boot and the simulator build ~15 min (CocoaPods + Xcode from scratch), while the test itself runs in under 2 min. The iOS job keeps a single simulator booted at a time: two booted simulators, even idle, saturate the 3-core macOS agent and make everything else run about ten times slower (a 2 min Flutter install took 28 min, the iPhone capture never finished in an hour). The iPhone boots after Flutter and the packages are installed, the `.app` is built once, and the iPad boots only after the iPhone is shut down and reuses the `.app` with `SCREENSHOT_SKIP_BUILD=true`. The Android job installs the emulator and the AVD first, then starts the emulator, waits for the boot (10 min deadline, `emulator.log` is dumped and added to the artifact on failure) and drives it inside the same step, because the agent kills background processes when a step ends. Expect ~35 min for iOS and ~15 min for Android; the jobs time out at 90 (iOS) and 60 (Android) minutes.
+
+What runs (`Sigook.App/scripts/store_screenshots.sh`, one call per device): the script builds the debug binary with `integration_test/store_screenshots_test.dart` as entry point against `.env.staging` plus `--dart-define=SCREENSHOT_MODE=true` (hides the environment banner), `SCREENSHOT_USER`, `SCREENSHOT_PASSWORD` and `GOOGLE_MAPS_API_KEY` (from the variable group; without it the job detail capture shows no map); installs it, resets the app data, grants the location permission and sets the device position to `SCREENSHOT_GEO` (`lat,lon`, pipeline parameter `screenshotLocation`); on Android sets the display to `1080x1920` (Play wants 9:16; the Flutter surface follows the window); then runs `flutter drive --use-application-binary`. The install-and-grant step has to happen before the drive: the punch card tab requests location, and the native permission dialog pauses the app, which stalls the test for good; without a position the punch card stays on "Checking your distance...", so the position should be the address of the first job of the screenshot account. The test signs in, waits for real data and takes `binding.takeScreenshot` of: welcome, jobs, job detail, punch card, filter sheet, menu, history, profile (8 = the Play maximum per device type). `test_driver/integration_test.dart` writes `<SCREENSHOT_PREFIX><name>.png` into `SCREENSHOT_DIR`. The captures are the Flutter surface only: the status bar strip is blank (no clock or battery), which is what `frameit`-style store images expect.
+
+Devices (parameters): iPhone 6.9" simulator (`iPhone 17 Pro Max`, 1320x2868) and iPad 13" (`iPad Pro 13-inch (M4)`, 2064x2752, files prefixed `ipad_`) into `fastlane/screenshots/en-US/` (`captureIos`); Android emulator (`captureAndroid`, system image parameter + host ABI) into `fastlane/metadata/android/en-US/images/phoneScreenshots/`. The simulator names must exist on the image; the step lists the available ones when they do not.
+
+Applying the artifacts from the repo root:
+
+```bash
+rm -rf Sigook.App/fastlane/screenshots Sigook.App/fastlane/metadata/android/en-US/images
+cp -r ~/Downloads/store-screenshots-ios/fastlane/. Sigook.App/fastlane/
+cp -r ~/Downloads/store-screenshots-android/fastlane/. Sigook.App/fastlane/
+```
+
+Review the PNGs (staging data is visible: pick an account with presentable jobs and profile), commit, then run the main pipeline with `uploadStoreScreenshots` on. The Android captures can also be produced locally on an emulator: `SCREENSHOT_USER=... SCREENSHOT_PASSWORD=... SCREENSHOT_GEO=lat,lon GOOGLE_MAPS_API_KEY=... bash scripts/store_screenshots.sh android emulator-5554 fastlane/metadata/android/en-US/images/phoneScreenshots` from `Sigook.App/` (Git Bash). Locale folders are `en-US`; rename them if the listings use another locale (the iOS lane lists the real ones when they differ).
 
 ### Sigook.Functions (.NET 10 Azure Functions, isolated worker)
 
@@ -251,10 +287,11 @@ Review the diff under `Sigook.App/ios/` (the app has no macOS target, hence the 
 - Final step restarts `sigook-api-staging` (resource group `SigookStaging`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
 
 **Stage RefreshFiles - Refresh Staging Files:**
-- `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` from `https://sigookfiles.blob.core.windows.net/files` to `https://sigookfilesstaging.blob.core.windows.net/files` with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
+- `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` for each of the containers `files`, `invoices` and `paystubs`, from `https://sigookfiles.blob.core.windows.net/{container}` to `https://sigookfilesstaging.blob.core.windows.net/{container}`, with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
 - The copy is server-to-server: the agent orchestrates but the bytes move between the two accounts. Only changed or missing blobs are transferred after the first run
 - `azcopy` authenticates with the task's `az login` (`AZCOPY_AUTO_LOGIN_TYPE=AZCLI`); if the agent lacks the binary the step downloads it into `$(Agent.TempDirectory)`
-- Only the `files` container is mirrored. `cra-tables` is left alone on purpose: the staging Sigook.Functions blob trigger would re-import every CRA table dropped into it. The staging-only `scripts` container is not touched
+- `invoices` and `paystubs` hold the cached PDFs keyed by the invoice/pay stub id; mirroring them keeps staging serving the same documents as production for the restored database instead of regenerating them from current data
+- `cra-tables` is left alone on purpose: the staging Sigook.Functions blob trigger would re-import every CRA table dropped into it. The staging-only `scripts` container is not touched
 - Object replication was rejected for this purpose: an active policy makes the destination container read-only (409 on every write), and the staging Api uploads files
 
 **Requirements:**

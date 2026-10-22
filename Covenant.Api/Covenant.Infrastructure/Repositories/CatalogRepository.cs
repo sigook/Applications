@@ -152,6 +152,17 @@ namespace Covenant.Infrastructure.Repositories
             .Select(c => new BaseModel<Guid>(c.Id, c.Value))
             .ToListAsync();
 
+        public Task<List<SkillCatalogModel>> GetSkillCatalog() =>
+            Context.Skills
+            .AsNoTracking()
+            .OrderBy(s => s.Value)
+            .Select(s => new SkillCatalogModel
+            {
+                Value = s.Value,
+                Aliases = s.Aliases
+            })
+            .ToListAsync();
+
         public Task<List<ReasonCancellationRequest>> GetReasonCancellationRequest() =>
             Context.ReasonCancellationRequests.AsNoTracking().ToListAsync();
 

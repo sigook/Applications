@@ -1,8 +1,9 @@
 # Azure Pipeline for Staging Refresh
 # Databases: dumps CovenantCore and CovenantSecurity from production and restores
 #            them into their Staging counterparts on the same Postgres server
-# Files:     mirrors the production `files` blob container into staging with
-#            azcopy sync (server-to-server copy, deletes what only exists in staging)
+# Files:     mirrors the production `files`, `invoices` and `paystubs` blob containers
+#            into staging with azcopy sync (server-to-server copy, deletes what only
+#            exists in staging)
 
 name: StagingRefresh-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
@@ -16,7 +17,7 @@ parameters:
     type: boolean
     default: true
   - name: refreshFiles
-    displayName: 'Refresh files (blob container "files")'
+    displayName: 'Refresh files (blob containers files, invoices, paystubs)'
     type: boolean
     default: true
 
@@ -92,7 +93,7 @@ stages:
           # the source account and Storage Blob Data Contributor on the target one;
           # azcopy reuses the az login of this task (AZCOPY_AUTO_LOGIN_TYPE=AZCLI)
           - task: AzureCLI@2
-            displayName: 'azcopy sync files container'
+            displayName: 'azcopy sync blob containers'
             inputs:
               azureSubscription: 'SigookPipelines'
               scriptType: 'bash'
@@ -108,10 +109,13 @@ stages:
                 export AZCOPY_AUTO_LOGIN_TYPE=AZCLI
                 export AZCOPY_LOG_LOCATION="$(Agent.TempDirectory)/azcopy-logs"
                 export AZCOPY_JOB_PLAN_LOCATION="$(Agent.TempDirectory)/azcopy-plans"
-                azcopy sync \
-                  "https://$(sourceStorageAccount).blob.core.windows.net/files" \
-                  "https://$(targetStorageAccount).blob.core.windows.net/files" \
-                  --recursive \
-                  --delete-destination=true \
-                  --s2s-preserve-access-tier=false \
-                  --log-level=WARNING
+                for container in files invoices paystubs; do
+                  echo "Syncing container $container..."
+                  azcopy sync \
+                    "https://$(sourceStorageAccount).blob.core.windows.net/$container" \
+                    "https://$(targetStorageAccount).blob.core.windows.net/$container" \
+                    --recursive \
+                    --delete-destination=true \
+                    --s2s-preserve-access-tier=false \
+                    --log-level=WARNING
+                done

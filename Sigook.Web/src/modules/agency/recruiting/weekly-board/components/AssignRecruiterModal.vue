@@ -10,7 +10,7 @@
           <b-field label="Request">
             <b-autocomplete :data="requests" placeholder="RequestID, Position" :loading="isLoadingRequests"
               :custom-formatter="(option: AgencyRequestListItem) => `#${option.numberId} | ${option.jobTitle} | ${option.companyFullName}`"
-              icon="magnify" append-to-body @typing="onRequestTyping" @select="onRequestSelected">
+              icon="magnify" append-to-body @typing="searchRequests" @select="onRequestSelected">
               <template v-slot="props">
                 <small>#{{ props.option.numberId }} | {{ props.option.jobTitle }} | {{ props.option.companyFullName }}
                 </small>
@@ -55,7 +55,8 @@ import { showAlertError } from '@/shared/utils/toast';
 import { getAllAgencyRequests } from '@/modules/agency/recruiting/requests/api';
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
 import { RequestStatus } from '@/shared/constants/enums';
-import type { AgencyRequestListItem, AgencyRequestFilter } from '@/modules/agency/recruiting/requests/types';
+import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
+import type { AgencyRequestListItem } from '@/modules/agency/recruiting/requests/types';
 import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
 import type { AssignRecruitersPayload, WeekDay, AssignPreset } from '@/modules/agency/recruiting/weekly-board/types';
 
@@ -70,8 +71,9 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const isLoadingRequests = ref(false);
-const requests = ref<AgencyRequestListItem[]>([]);
+const { results: requests, isSearching: isLoadingRequests, search: searchRequests } = useDebouncedSearch(
+  (term) => getAllAgencyRequests({ filter: term, statuses: [RequestStatus.Open, RequestStatus.Filled] }),
+  { minLength: 1 });
 const selectedRequest = ref<AgencyRequestListItem | null>(null);
 
 const personnel = ref<AgencyPersonnelListItem[]>([]);
@@ -83,22 +85,6 @@ const selectedDays = ref<string[]>(props.preset?.workDate ? [props.preset.workDa
 const canAssign = computed(
   () => !!selectedRequest.value && selectedDays.value.length > 0 && selectedRecruiters.value.length > 0
 );
-
-function onRequestTyping(value: string): void {
-  const filter: AgencyRequestFilter = {
-    filter: value,
-    statuses: [RequestStatus.Open, RequestStatus.Filled],
-  };
-  isLoadingRequests.value = true;
-  getAllAgencyRequests(filter)
-    .then(response => {
-      requests.value = response;
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isLoadingRequests.value = false;
-    });
-}
 
 function onRequestSelected(option: AgencyRequestListItem | null): void {
   selectedRequest.value = option;

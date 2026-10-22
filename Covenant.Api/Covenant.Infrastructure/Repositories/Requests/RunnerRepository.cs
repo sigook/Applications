@@ -5,6 +5,7 @@ using Covenant.Common.Models.Request.Runners;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -149,12 +150,7 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
             runners = runners.Where(r => r.Request.CompanyProfileId == filter.CompanyProfileId.Value);
         if (filter.NumberId.HasValue)
             runners = runners.Where(r => r.Request.NumberId == filter.NumberId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.JobTitle))
-        {
-            var jobTitle = filter.JobTitle.ToLower();
-            runners = runners.Where(r => r.Request.JobTitle.ToLower().Contains(jobTitle)
-                || (r.Request.BillingTitle != null && r.Request.BillingTitle.ToLower().Contains(jobTitle)));
-        }
+        runners = runners.WhereSearch(filter.JobTitle, r => r.Request.JobTitle, r => r.Request.BillingTitle);
         if (!string.IsNullOrWhiteSpace(filter.Recruiter))
         {
             var recruiter = filter.Recruiter.ToLower();
@@ -169,12 +165,8 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
 
     private static Expression<Func<AgencyRunnerListModel, bool>> ApplyFilterAgencyRunners(GetAgencyRunnersFilter filter)
     {
-        var predicate = PredicateBuilder.New<AgencyRunnerListModel>(true);
-        if (!string.IsNullOrWhiteSpace(filter.Name))
-        {
-            var name = filter.Name.ToLower();
-            predicate = predicate.And(r => r.Name.ToLower().Contains(name) || r.Email.ToLower().Contains(name));
-        }
+        Expression<Func<AgencyRunnerListModel, bool>> predicate = PredicateBuilder.New<AgencyRunnerListModel>(true);
+        predicate = predicate.AndSearch(filter.Name, r => r.Name, r => r.Email);
         if (filter.Type.HasValue)
             predicate = predicate.And(r => r.Type == filter.Type.Value);
         if (filter.Statuses is { Count: > 0 })
@@ -244,11 +236,7 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
         Expression<Func<RunnerListModel, bool>> predicate = r => r.AgencyId == agencyId;
         if (filter.RequestId.HasValue)
             predicate = predicate.And(r => r.RequestId == filter.RequestId.Value);
-        if (!string.IsNullOrWhiteSpace(filter.Name))
-        {
-            var name = filter.Name.ToLower();
-            predicate = predicate.And(r => r.Name.ToLower().Contains(name) || r.Email.ToLower().Contains(name));
-        }
+        predicate = predicate.AndSearch(filter.Name, r => r.Name, r => r.Email);
         if (filter.Type.HasValue)
             predicate = predicate.And(r => r.Type == filter.Type.Value);
         if (filter.Statuses != null && filter.Statuses.Any())

@@ -12,11 +12,11 @@
         {{ props.row.position }}
       </b-table-column>
       <b-table-column field="mobileNumber" label="Mobile Number" v-slot="props">
-        <copy-link kind="phone" v-if="props.row.mobileNumber" :phone="props.row.mobileNumber" />
+        <copy-link kind="phone" v-if="props.row.mobileNumber" :value="props.row.mobileNumber" />
         <span v-else>None</span>
       </b-table-column>
       <b-table-column field="officeNumber" label="Office Number" v-slot="props">
-        <copy-link kind="phone" v-if="props.row.officeNumber" :phone="props.row.officeNumber" :ext="props.row.officeNumberExt" />
+        <copy-link kind="phone" v-if="props.row.officeNumber" :value="props.row.officeNumber" :ext="props.row.officeNumberExt" />
         <span v-else>None</span>
       </b-table-column>
       <b-table-column field="email" label="Email" v-slot="props">

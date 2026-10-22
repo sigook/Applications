@@ -65,7 +65,7 @@ public class WorkerRequestRepository(CovenantContext context) : BaseRepository<C
                     orderby wr.StartWorking
                     select new WorkerRequestInfoModel
                     {
-                        WorkerFullName = wr.WorkerProfile.FirstName + " " + wr.WorkerProfile.MiddleName + " " + wr.WorkerProfile.LastName + " " + wr.WorkerProfile.SecondLastName,
+                        WorkerFullName = wr.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.MiddleName) ? string.Empty : " " + wr.WorkerProfile.MiddleName) + " " + wr.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(wr.WorkerProfile.SecondLastName) ? string.Empty : " " + wr.WorkerProfile.SecondLastName),
                         WorkerEmail = wr.WorkerProfile.Worker.Email,
                         WorkerNumberId = wr.WorkerProfile.NumberId,
                         RequestNumberId = wr.Request.NumberId,

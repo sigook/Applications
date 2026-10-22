@@ -136,6 +136,7 @@ class _CountryAutocompleteFieldState
                         prefixIcon: const Icon(Icons.public),
                         suffixIcon: fieldTextEditingController.text.isNotEmpty
                             ? IconButton(
+                                tooltip: 'Clear',
                                 icon: const Icon(Icons.clear),
                                 onPressed: () {
                                   fieldTextEditingController.clear();

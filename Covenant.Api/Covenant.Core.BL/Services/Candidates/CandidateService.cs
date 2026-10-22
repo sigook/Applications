@@ -45,6 +45,7 @@ public class CandidateService : ICandidateService
     private readonly IValidator<CandidateCsvModel> bulkCandidateValidator;
     private readonly IUploadedFilesService uploadedFilesService;
     private readonly ILogger<CandidateService> logger;
+    private readonly ISkillService skillService;
 
     public CandidateService(
         IUserRepository userRepository,
@@ -58,7 +59,8 @@ public class CandidateService : ICandidateService
         IDocumentService documentService,
         IValidator<CandidateCsvModel> bulkCandidateValidator,
         IUploadedFilesService uploadedFilesService,
-        ILogger<CandidateService> logger)
+        ILogger<CandidateService> logger,
+        ISkillService skillService)
     {
         this.userRepository = userRepository;
         this.candidateRepository = candidateRepository;
@@ -72,6 +74,7 @@ public class CandidateService : ICandidateService
         this.bulkCandidateValidator = bulkCandidateValidator;
         this.uploadedFilesService = uploadedFilesService;
         this.logger = logger;
+        this.skillService = skillService;
     }
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, IFormFile file)
@@ -218,6 +221,7 @@ public class CandidateService : ICandidateService
 
     public async Task<Result<Guid>> CreateCandidate(CandidateCreateModel model, Guid agencyId, bool validatePhone = true)
     {
+        model.Skills = (await skillService.Canonicalize(model.Skills?.Select(s => s.Skill))).Select(s => new SkillModel(s));
         var candidate = candidateAdapter.ConvertCandidateModelToCandidate(model, agencyId);
         if (!candidate) return Result.Fail<Guid>(candidate.Errors);
         if (!string.IsNullOrWhiteSpace(candidate.Value.Email) && (await userRepository.UserExists(candidate.Value.Email) || await candidateRepository.CandidateExists(candidate.Value.Email)))

@@ -3,8 +3,8 @@ using Covenant.Api.Utils;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Request.Worker;
 using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
@@ -36,7 +36,7 @@ public class TimeSheetsController : ControllerBase
     /// <param name="requestId">Identifier of the request.</param>
     /// <param name="pagination">Pagination parameters.</param>
     [HttpGet]
-    [ProducesResponseType(typeof(PaginatedList<TimeSheetListModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedList<WorkerTimeSheetListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid requestId, Pagination pagination) => Ok(await _timesheetRepository.GetTimeSheetsForWorker(User.GetUserId(), requestId, pagination));
 
     /// <summary>

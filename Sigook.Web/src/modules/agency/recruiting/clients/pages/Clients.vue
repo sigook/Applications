@@ -46,7 +46,7 @@
           <template v-slot="props">
             {{ props.row.contactName || 'No contact name' }}
             <p><i class="fz-2 block"><copy-link kind="email" :value="props.row.email" /></i></p>
-            <p><i class="fz-2 block"><copy-link kind="phone" v-if="props.row.phone" :phone="props.row.phone" /><template v-else>No phone</template></i></p>
+            <p><i class="fz-2 block"><copy-link kind="phone" v-if="props.row.phone" :value="props.row.phone" /><template v-else>No phone</template></i></p>
             <p><i class="fz-2 block">{{ props.row.contactRole || 'No role' }}</i></p>
             <p>
               <i v-if="!props.row.website" class="fz-2 block">No website</i>

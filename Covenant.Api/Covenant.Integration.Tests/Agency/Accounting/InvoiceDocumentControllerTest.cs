@@ -5,7 +5,6 @@ using Covenant.Common.Entities;
 using Covenant.Common.Entities.Accounting.Invoice;
 using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
-using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Notification;
@@ -17,6 +16,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using UglyToad.PdfPig;
 using System.Globalization;
 using System.Net.Mime;
 using Xunit;
@@ -39,8 +39,12 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
     {
         HttpResponseMessage response = await _client.GetAsync($"{RouteName}/pdf");
         response.EnsureSuccessStatusCode();
-        string expectedInvoiceHtml = Path.Combine(Directory.GetCurrentDirectory(), "Common", "fake_invoice_usa.html");
-        FileAssert.Equal(expectedInvoiceHtml, Startup.InvoiceHtmlPath);
+        using var document = PdfDocument.Open(await response.Content.ReadAsByteArrayAsync());
+        string text = string.Join(" ", document.GetPages().SelectMany(p => p.GetWords()).Select(w => w.Text));
+        Assert.Contains(Startup.FakeInvoice.InvoiceNumber, text);
+        Assert.Contains("ABC USA", text);
+        Assert.Contains("$1.00", text);
+        Assert.Contains("Tax $0.06 Total $1.06", text);
     }
 
     [Fact]
@@ -101,7 +105,6 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
             CompanyStatus.Lead,
             null).Value;
 
-        public static string InvoiceHtmlPath;
         public static EmailParams SentEmailParams;
 
         public static Invoice FakeInvoice;
@@ -140,15 +143,6 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
             var payStubContainer = new Mock<IInvoicesContainer>();
             services.AddSingleton(payStubContainer.Object);
             services.AddSingleton(Mock.Of<IPayStubsContainer>());
-            var pdfGeneratorService = new Mock<IPdfGeneratorService>();
-            pdfGeneratorService.Setup(s => s.GeneratePdfFromHtml(It.IsAny<PdfParams>()))
-                .Callback<PdfParams>(pdfParams =>
-                {
-                    InvoiceHtmlPath = Path.Combine(Directory.GetCurrentDirectory(), "Common", "fake_invoice_usa.html");
-                    File.WriteAllText(InvoiceHtmlPath, pdfParams.Html);
-                })
-                .ReturnsAsync(Result.Ok(File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Common", "Fake_Invoice.pdf"))));
-            services.AddSingleton(pdfGeneratorService.Object);
             var currentUserService = new Mock<ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(FakeAgency.Id);
             currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { FakeAgency.Id });

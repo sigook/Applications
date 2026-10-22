@@ -189,6 +189,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               top: 16,
               left: 16,
               child: IconButton(
+                tooltip: 'Back',
                 onPressed: _goBack,
                 icon: const Icon(Icons.arrow_back),
                 style: IconButton.styleFrom(backgroundColor: Colors.white),
@@ -345,6 +346,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           obscureText: _obscurePassword,
           textInputAction: TextInputAction.next,
           suffixIcon: IconButton(
+            tooltip: _obscurePassword ? 'Show password' : 'Hide password',
             icon: Icon(
               _obscurePassword ? Icons.visibility : Icons.visibility_off,
             ),
@@ -401,6 +403,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           obscureText: _obscureConfirm,
           textInputAction: TextInputAction.done,
           suffixIcon: IconButton(
+            tooltip: _obscureConfirm ? 'Show password' : 'Hide password',
             icon: Icon(
               _obscureConfirm ? Icons.visibility : Icons.visibility_off,
             ),

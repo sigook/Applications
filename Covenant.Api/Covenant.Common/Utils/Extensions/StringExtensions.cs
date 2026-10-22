@@ -40,5 +40,31 @@ public static class StringExtensions
         return source.RemoveDiacritics().IndexOf(value.RemoveDiacritics(), StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
+    public static string CollapseWhitespace(this string value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : string.Join(' ', value.Split((char[])null, StringSplitOptions.RemoveEmptyEntries));
+
+    public static string ToComparisonKey(this string value) => value.RemoveDiacritics().CollapseWhitespace().ToLowerInvariant();
+
+    public static string[] ToSearchTokens(this string term) =>
+        string.IsNullOrWhiteSpace(term)
+            ? []
+            : term.RemoveDiacritics().ToLowerInvariant()
+                .Split((char[])null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct()
+                .ToArray();
+
+    public static bool MatchesSearch(this string term, params string[] fields)
+    {
+        var tokens = term.ToSearchTokens();
+        if (tokens.Length == 0) return true;
+        var values = fields
+            .Where(f => !string.IsNullOrWhiteSpace(f))
+            .Select(f => f.RemoveDiacritics().ToLowerInvariant())
+            .ToArray();
+        return tokens.All(token => values.Any(value => value.Contains(token, StringComparison.Ordinal)));
+    }
+
     private static string ToAccountingFileBlobName(string accountingFileType, Guid id) => $"{accountingFileType}_{id:N}.pdf";
 }

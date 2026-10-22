@@ -10,7 +10,7 @@ import '../../../../domain/validators/profile_validators.dart';
 import '../../../../preferences/presentation/widgets/chip_selector.dart';
 import '../../../../personal_details/presentation/viewmodels/personal_details_viewmodel.dart';
 import '../../../../../profile/presentation/providers/cached_worker_profile_provider.dart';
-import '../../../../personal_details/presentation/widgets/has_vehicle_row.dart';
+import '../../../widgets/profile_switch_row.dart';
 import '../../../widgets/section_edit_actions.dart';
 
 class BasicInfoSectionCard extends ConsumerStatefulWidget {
@@ -217,35 +217,37 @@ class _BasicInfoSectionCardState extends ConsumerState<BasicInfoSectionCard> {
             icon: Icons.wc_outlined,
           ),
         ] else ...[
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+          ProfileInfoRow(
+            label: 'Date of Birth *',
+            value: profile?.formattedBirthDay ?? 'N/A',
+            icon: Icons.cake_outlined,
+            isEditing: true,
             child: DatePickerField(
-              label: 'Date of Birth *',
+              label: 'Date of Birth',
               value: _birthDay,
               onTap: _pickBirthDay,
               errorText: _errors['birthDay'],
+              dense: true,
             ),
           ),
-          ChipSelector(
+          ProfileInfoRow(
             label: 'Gender *',
+            value: profile?.gender ?? 'N/A',
             icon: Icons.wc_outlined,
-            asyncValue: ref.watch(gendersProvider),
-            selectedIds: _genderId != null ? {_genderId!} : {},
-            singleSelect: true,
-            onToggle: (id, selected) => setState(() {
-              _genderId = selected ? id : null;
-              _errors = {..._errors, 'gender': null};
-            }),
-          ),
-          if (_errors['gender'] != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                _errors['gender']!,
-                style: const TextStyle(color: Colors.red, fontSize: 12),
-              ),
+            isEditing: true,
+            child: ChipSelector(
+              label: 'Gender',
+              showLabel: false,
+              asyncValue: ref.watch(gendersProvider),
+              selectedIds: _genderId != null ? {_genderId!} : {},
+              singleSelect: true,
+              errorText: _errors['gender'],
+              onToggle: (id, selected) => setState(() {
+                _genderId = selected ? id : null;
+                _errors = {..._errors, 'gender': null};
+              }),
             ),
-          const SizedBox(height: 12),
+          ),
         ],
         if (!vm.isEditing)
           ProfileInfoRow(
@@ -254,7 +256,9 @@ class _BasicInfoSectionCardState extends ConsumerState<BasicInfoSectionCard> {
             icon: Icons.directions_car_outlined,
           )
         else
-          HasVehicleRow(
+          ProfileSwitchRow(
+            label: 'Do you have your own vehicle?',
+            icon: Icons.directions_car_outlined,
             value: _hasVehicle,
             onChanged: (v) => setState(() => _hasVehicle = v),
           ),

@@ -135,6 +135,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 errorText: _passwordError,
                 obscureText: _obscurePassword,
                 suffixIcon: IconButton(
+                  tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                   icon: Icon(
                     _obscurePassword ? Icons.visibility : Icons.visibility_off,
                   ),
@@ -195,6 +196,9 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 errorText: _confirmPasswordError,
                 obscureText: _obscureConfirmPassword,
                 suffixIcon: IconButton(
+                  tooltip: _obscureConfirmPassword
+                      ? 'Show password'
+                      : 'Hide password',
                   icon: Icon(
                     _obscureConfirmPassword
                         ? Icons.visibility

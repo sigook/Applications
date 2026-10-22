@@ -1,4 +1,5 @@
 import type { RouteLocationRaw } from 'vue-router';
+import type { CopyLinkKind } from '@/shared/types/common';
 
 export type DetailChipVariant = 'is-success' | 'is-info' | 'is-warning' | 'is-danger' | '';
 
@@ -22,6 +23,7 @@ export interface DetailFact {
   href?: string;
   linkLabel?: string;
   onAction?: () => void;
+  copy?: { kind: CopyLinkKind; value?: string | null; ext?: string | number | null };
 }
 
 export interface DetailSection {

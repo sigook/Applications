@@ -110,52 +110,55 @@ class _RequirementRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final section = requirement.section;
-    return InkWell(
-      onTap: section == null ? null : () => _openSection(context, section),
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 6),
-              child: Icon(
-                Icons.circle,
-                size: 6,
-                color: AppTheme.warningOrange,
+    return Semantics(
+      button: section != null ? true : null,
+      child: InkWell(
+        onTap: section == null ? null : () => _openSection(context, section),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Icon(
+                  Icons.circle,
+                  size: 6,
+                  color: AppTheme.warningOrange,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    requirement.label,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textDark,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      requirement.label,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textDark,
+                      ),
                     ),
-                  ),
-                  Text(
-                    requirement.hint,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textMedium,
+                    Text(
+                      requirement.hint,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textMedium,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (section != null)
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: AppTheme.textMedium,
-              ),
-          ],
+              if (section != null)
+                const Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: AppTheme.textMedium,
+                ),
+            ],
+          ),
         ),
       ),
     );

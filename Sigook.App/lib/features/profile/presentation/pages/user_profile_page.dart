@@ -148,6 +148,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Back',
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             notifyLogoFlash();

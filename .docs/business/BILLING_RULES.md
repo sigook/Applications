@@ -123,7 +123,7 @@ Some older invoices have `InvoiceTotals` rows with zero quantity/amounts and a n
 
 ## Timesheet Line Items — `InvoiceService.ProcessTimesheets`
 
-Timesheets are grouped by **`Week + WorkerId + RequestId`** and processed in date order with a running `accumulatedRegularHours` per group. Hours come from `TimesheetCalculatorService.CalculateHoursBreakdown`, called via `InvoiceService.CalculateHoursForItem` with `breakIsPaid: false` and `holidayIsPaid: true` (see holiday asymmetry below). Timesheets without both `TimeInApproved` and `TimeOutApproved` produce an empty breakdown (no charge).
+Timesheets are grouped by **`Week + WorkerId + RequestId`** and processed in date order with a running `accumulatedRegularHours` per group. Hours come from `TimesheetCalculatorService.CalculateHoursBreakdown`, called via `InvoiceService.CalculateHoursForItem` with the request's `BreakIsPaid` and `holidayIsPaid: true` (see holiday asymmetry below). Timesheets without both `TimeInApproved` and `TimeOutApproved` produce an empty breakdown (no charge).
 
 One line item (`InvoiceTotal`) is emitted per non-zero bucket per timesheet, each linked to a `TimeSheetTotal` entity:
 
@@ -146,7 +146,7 @@ Notes:
 
 `TimesheetCalculatorService.CalculateHoursBreakdown` (shared by invoices, pay stubs and subcontractor reports):
 
-1. `totalHours = TimeOut − TimeIn`, minus `DurationBreak` when `BreakIsPaid` is **true** (the flag name reads inverted relative to its effect — see `TIMESHEET_RULES.md`). Invoices hardcode `breakIsPaid: false` (`InvoiceService.CalculateHoursForItem`), so the break is **never** deducted on the billing side.
+1. `totalHours = TimeOut − TimeIn`, minus `DurationBreak` when the break is **not** paid (`BreakIsPaid = false`), clamped at zero (see `TIMESHEET_RULES.md`). Invoices read the request's `BreakIsPaid` (`InvoiceService.CalculateHoursForItem`), so an unpaid break is deducted from both the invoice and the pay stub, and a paid break is billed and paid in full.
 2. If `isHoliday && holidayIsPaid`: **all** hours become `HolidayHours`; the day does not feed the overtime accumulator; return.
 3. Otherwise add `totalHours` to the running per-group accumulator.
 4. `OvertimeHours` = the portion of this day's hours past the `OvertimeStartsAfter` threshold (accumulated basis — `CalculateExcessHours`).
@@ -296,7 +296,7 @@ Clearing the `TimeSheetTotal` link re-qualifies the timesheets for billing — i
 ## PDF & Email
 
 - Summary: `IInvoiceRepository.GetInvoiceSummaryById` projects the invoice plus live company/agency data into `InvoiceSummaryModel` (`Tax`, `AgencyId` — the latter only to resolve the strategy); `InvoiceService.GetInvoicePdf` then applies `strategy.Decorate` (tax label, Covenant/Sigook color and payroll block, HST number hidden for the USA) before rendering.
-- PDF: rendered from `/Views/Billing/Invoice/Invoice.cshtml` via `IRazorViewToStringRenderer` + `IPdfGeneratorService`, cached in the invoices blob container keyed by invoice `Id` (`InvoiceService.GetInvoicePdf` / `UploadInvoicePdf`). Regenerate (delete blob) after template fixes.
+- PDF: rendered in-process with QuestPDF by the MediatR handler `GenerateInvoicePdf` (`Covenant.Documents/Services/`), cached in the invoices blob container keyed by invoice `Id` (`InvoiceService.GetInvoicePdf` / `UploadInvoicePdf`). The company's invoice notes (Quill HTML) go through `Covenant.Documents/Pdf/HtmlNotes.cs`, which only understands `p`, `div`, `li`, `br`, `strong`/`b`, `em`/`i`, `u`, `a` and inline `color` styles; any other tag is dropped and its text kept. Regenerate (delete blob) after layout fixes.
 - Email: `InvoiceService.SendInvoiceEmail` attaches the PDF plus caller-supplied files and sends through `IEmailService` using the body template `/Views/Billing/Invoice/InvoiceEmail.cshtml`. The summary's email is `Invoice.Email` when set, otherwise `CompanyProfile.Company.Email`.
 - Company portal: `GET api/company/invoices` → `CompanyService.GetCompanyInvoices` (no country branch); `GET api/company/invoices/{id}` → `CompanyService.GetCompanyInvoice` → `IInvoiceRepository.GetInvoiceSummaryForCompany(companyId, id)`, which enforces that the invoice belongs to the calling company.
 

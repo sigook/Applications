@@ -163,6 +163,7 @@ class _SkillAutocompleteFieldState
                         prefixIcon: const Icon(Icons.workspace_premium),
                         suffixIcon: fieldTextEditingController.text.isNotEmpty
                             ? IconButton(
+                                tooltip: 'Clear',
                                 icon: const Icon(Icons.clear),
                                 onPressed: () {
                                   fieldTextEditingController.clear();

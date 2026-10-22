@@ -4,6 +4,7 @@ How pay stubs are generated and how earnings and deductions are actually compute
 
 **Source of truth:**
 - `Covenant.Api/Covenant.Core.BL/Services/Accounting/PayStubs/PayStubService.cs` — pay stub generation (`Generate` → `GeneratePayStubForWorker`, `CreateManualPayStub`)
+- `Covenant.Api/Covenant.Documents/Services/GeneratePayStubPdf.cs` — pay stub PDF (QuestPDF, MediatR handler), cached in the paystubs blob container by `PayStubService.GetPayStubPdf`
 - `Covenant.Api/Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs` — hours breakdown, amounts, deductions
 - `Covenant.Api/Covenant.Infrastructure/Repositories/Accounting/Deductions/DeductionsRepository.cs` — CPP/tax lookup tables
 - `Covenant.Api/Covenant.Common/Configuration/Rates.cs` + `Covenant.Api/appsettings.json` (`Rates` section) — multipliers

@@ -3,7 +3,8 @@
     <div v-for="field in fields" :key="field.label" class="detail-field">
       <dt>{{ field.label }}</dt>
       <dd>
-        <a v-if="field.href" :href="field.href" target="_blank" rel="noopener noreferrer">{{ field.value }}</a>
+        <copy-link v-if="field.copy?.value" :kind="field.copy.kind" :value="field.copy.value" :ext="field.copy.ext" />
+        <a v-else-if="field.href" :href="field.href" target="_blank" rel="noopener noreferrer">{{ field.value }}</a>
         <template v-else>{{ field.value }}</template>
         <b-button v-if="field.to" tag="router-link" :to="field.to" type="is-ghost" size="is-small"
           class="detail-field-link">
@@ -20,6 +21,7 @@
 
 <script setup lang="ts">
 import type { DetailFact } from '@/shared/detail-page/types';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 defineProps<{ fields: DetailFact[]; columns?: 2 | 3 }>();
 </script>

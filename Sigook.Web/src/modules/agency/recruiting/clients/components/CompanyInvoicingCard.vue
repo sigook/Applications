@@ -13,7 +13,8 @@
       <span class="detail-muted">Recipients</span>
       <div v-if="recipients.length" class="company-recipients">
         <span v-for="(recipient, index) in recipients" :key="recipient.id ?? recipient.email" class="company-recipient">
-          <span>{{ recipient.name }} · {{ recipient.email }}</span>
+          <span>{{ recipient.name }} ·</span>
+          <copy-link kind="email" :value="recipient.email" />
           <b-button type="is-ghost" size="is-small" icon-left="close" class="detail-icon-button is-destructive"
             :aria-label="`Remove ${recipient.email}`" @click="removeRecipient(recipient, index)" />
         </span>
@@ -42,6 +43,7 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/uti
 import { deleteCompanyInvoiceRecipient, getCompanyInvoiceRecipients, getInvoiceNotes, postCompanyInvoiceRecipient, postInvoiceNotes } from '@/modules/agency/recruiting/clients/api';
 import type { InvoiceRecipientModel } from '@/modules/agency/recruiting/clients/types';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const props = defineProps<{ profileId: string }>();
 

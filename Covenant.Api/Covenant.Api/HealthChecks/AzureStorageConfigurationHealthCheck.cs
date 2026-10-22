@@ -3,20 +3,17 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Covenant.Api.HealthChecks;
 
 /// <summary>
-/// Health check that validates Azure Storage connection strings configuration exists
+/// Health check that validates the Azure Storage connection string configuration exists
 /// </summary>
 public class AzureStorageConfigurationHealthCheck : IHealthCheck
 {
-    private readonly string _accountingStorageConnection;
     private readonly string _fileStorageConnection;
     private readonly ILogger<AzureStorageConfigurationHealthCheck> _logger;
 
     public AzureStorageConfigurationHealthCheck(
-        string accountingStorageConnection,
         string fileStorageConnection,
         ILogger<AzureStorageConfigurationHealthCheck> logger)
     {
-        _accountingStorageConnection = accountingStorageConnection;
         _fileStorageConnection = fileStorageConnection;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -27,50 +24,23 @@ public class AzureStorageConfigurationHealthCheck : IHealthCheck
     {
         try
         {
-            var missingConfigurations = new List<string>();
-            var data = new Dictionary<string, object>();
-
-            if (string.IsNullOrWhiteSpace(_accountingStorageConnection))
-            {
-                missingConfigurations.Add("AccountingStorageConnection");
-                data["accountingStorageConnection"] = "missing";
-                _logger.LogWarning("Accounting storage connection string is missing");
-            }
-            else
-            {
-                data["accountingStorageConnection"] = "configured";
-            }
-
             if (string.IsNullOrWhiteSpace(_fileStorageConnection))
             {
-                missingConfigurations.Add("FileStorageConnection");
-                data["fileStorageConnection"] = "missing";
                 _logger.LogWarning("File storage connection string is missing");
-            }
-            else
-            {
-                data["fileStorageConnection"] = "configured";
-            }
-
-            if (missingConfigurations.Any())
-            {
-                data["missingConfigurations"] = missingConfigurations.ToArray();
-                data["environmentVariables"] = new[]
-                {
-                    "CUSTOMCONNSTR_AccountingStorageConnection",
-                    "CUSTOMCONNSTR_FileStorageConnection"
-                };
-
                 return Task.FromResult(HealthCheckResult.Unhealthy(
-                    $"Azure Storage configuration is incomplete. Missing: {string.Join(", ", missingConfigurations)}",
+                    "Azure Storage configuration is incomplete. Missing: FileStorageConnection",
                     null,
-                    data));
+                    new Dictionary<string, object>
+                    {
+                        ["fileStorageConnection"] = "missing",
+                        ["environmentVariables"] = new[] { "CUSTOMCONNSTR_FileStorageConnection" }
+                    }));
             }
 
-            _logger.LogDebug("All Azure Storage connection strings are configured");
+            _logger.LogDebug("Azure Storage connection string is configured");
             return Task.FromResult(HealthCheckResult.Healthy(
-                "All Azure Storage connection strings are configured",
-                data));
+                "Azure Storage connection string is configured",
+                new Dictionary<string, object> { ["fileStorageConnection"] = "configured" }));
         }
         catch (Exception ex)
         {

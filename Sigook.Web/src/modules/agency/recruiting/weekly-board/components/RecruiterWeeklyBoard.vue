@@ -99,7 +99,7 @@
                       {{ worker.fullName }}
                     </router-link>
                   </div>
-                  <p class="sent-worker-email">{{ worker.email }}</p>
+                  <p class="sent-worker-email"><copy-link kind="email" :value="worker.email" /></p>
                 </div>
               </div>
               <runner-actions-dropdown :status="worker.status" :can-edit="assignment.usesRunners"
@@ -147,6 +147,7 @@ import type { CreateRunnerModel } from '@/modules/agency/recruiting/requests/run
 import CreateRunner from '@/modules/agency/recruiting/requests/runners/CreateRunner.vue';
 import RunnerActionsDropdown from '@/modules/agency/recruiting/requests/runners/RunnerActionsDropdown.vue';
 import RunnerActionModals from '@/modules/agency/recruiting/requests/runners/RunnerActionModals.vue';
+import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 

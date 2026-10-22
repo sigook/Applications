@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$JobsState {
 
- List<Job> get jobs; bool get isLoading; bool get isLoadingMore; String? get error; int get currentPage; bool get hasMore;
+ List<Job> get jobs; bool get isLoading; bool get isLoadingMore; String? get error; int get currentPage; bool get hasMore; JobsFilter get filter;
 /// Create a copy of JobsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,20 +27,20 @@ $JobsStateCopyWith<JobsState> get copyWith => _$JobsStateCopyWithImpl<JobsState>
 @override
 bool operator ==(Object other) {
   final _this = this as JobsState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobsState&&const DeepCollectionEquality().equals(other.jobs, _this.jobs)&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.isLoadingMore, _this.isLoadingMore) || other.isLoadingMore == _this.isLoadingMore)&&(identical(other.error, _this.error) || other.error == _this.error)&&(identical(other.currentPage, _this.currentPage) || other.currentPage == _this.currentPage)&&(identical(other.hasMore, _this.hasMore) || other.hasMore == _this.hasMore));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is JobsState&&const DeepCollectionEquality().equals(other.jobs, _this.jobs)&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.isLoadingMore, _this.isLoadingMore) || other.isLoadingMore == _this.isLoadingMore)&&(identical(other.error, _this.error) || other.error == _this.error)&&(identical(other.currentPage, _this.currentPage) || other.currentPage == _this.currentPage)&&(identical(other.hasMore, _this.hasMore) || other.hasMore == _this.hasMore)&&(identical(other.filter, _this.filter) || other.filter == _this.filter));
 }
 
 
 @override
 int get hashCode {
   final _this = this as JobsState;
-  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.jobs),_this.isLoading,_this.isLoadingMore,_this.error,_this.currentPage,_this.hasMore);
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.jobs),_this.isLoading,_this.isLoadingMore,_this.error,_this.currentPage,_this.hasMore,_this.filter);
 }
 
 @override
 String toString() {
   final _this = this as JobsState;
-  return 'JobsState(jobs: ${_this.jobs}, isLoading: ${_this.isLoading}, isLoadingMore: ${_this.isLoadingMore}, error: ${_this.error}, currentPage: ${_this.currentPage}, hasMore: ${_this.hasMore})';
+  return 'JobsState(jobs: ${_this.jobs}, isLoading: ${_this.isLoading}, isLoadingMore: ${_this.isLoadingMore}, error: ${_this.error}, currentPage: ${_this.currentPage}, hasMore: ${_this.hasMore}, filter: ${_this.filter})';
 }
 
 
@@ -51,7 +51,7 @@ abstract mixin class $JobsStateCopyWith<$Res>  {
   factory $JobsStateCopyWith(JobsState value, $Res Function(JobsState) _then) = _$JobsStateCopyWithImpl;
 @useResult
 $Res call({
- List<Job> jobs, bool isLoading, bool isLoadingMore, String? error, int currentPage, bool hasMore
+ List<Job> jobs, bool isLoading, bool isLoadingMore, String? error, int currentPage, bool hasMore, JobsFilter filter
 });
 
 
@@ -68,7 +68,7 @@ class _$JobsStateCopyWithImpl<$Res>
 
 /// Create a copy of JobsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? jobs = null,Object? isLoading = null,Object? isLoadingMore = null,Object? error = freezed,Object? currentPage = null,Object? hasMore = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? jobs = null,Object? isLoading = null,Object? isLoadingMore = null,Object? error = freezed,Object? currentPage = null,Object? hasMore = null,Object? filter = null,}) {
   return _then(JobsState(
 jobs: null == jobs ? _self.jobs : jobs // ignore: cast_nullable_to_non_nullable
 as List<Job>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
@@ -76,7 +76,8 @@ as bool,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMo
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,filter: null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
+as JobsFilter,
   ));
 }
 
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<Job> jobs,  bool isLoading,  bool isLoadingMore,  String? error,  int currentPage,  bool hasMore)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( List<Job> jobs,  bool isLoading,  bool isLoadingMore,  String? error,  int currentPage,  bool hasMore,  JobsFilter filter)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _JobsState() when $default != null:
-return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that.currentPage,_that.hasMore);case _:
+return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that.currentPage,_that.hasMore,_that.filter);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<Job> jobs,  bool isLoading,  bool isLoadingMore,  String? error,  int currentPage,  bool hasMore)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( List<Job> jobs,  bool isLoading,  bool isLoadingMore,  String? error,  int currentPage,  bool hasMore,  JobsFilter filter)  $default,) {final _that = this;
 switch (_that) {
 case _JobsState():
-return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that.currentPage,_that.hasMore);case _:
+return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that.currentPage,_that.hasMore,_that.filter);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<Job> jobs,  bool isLoading,  bool isLoadingMore,  String? error,  int currentPage,  bool hasMore)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( List<Job> jobs,  bool isLoading,  bool isLoadingMore,  String? error,  int currentPage,  bool hasMore,  JobsFilter filter)?  $default,) {final _that = this;
 switch (_that) {
 case _JobsState() when $default != null:
-return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that.currentPage,_that.hasMore);case _:
+return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that.currentPage,_that.hasMore,_that.filter);case _:
   return null;
 
 }
@@ -217,7 +218,7 @@ return $default(_that.jobs,_that.isLoading,_that.isLoadingMore,_that.error,_that
 
 
 class _JobsState implements JobsState {
-  const _JobsState({ List<Job> jobs = const [], this.isLoading = false, this.isLoadingMore = false, this.error, this.currentPage = 1, this.hasMore = true}): _jobs = jobs;
+  const _JobsState({ List<Job> jobs = const [], this.isLoading = false, this.isLoadingMore = false, this.error, this.currentPage = 1, this.hasMore = true, this.filter = JobsFilter.defaults}): _jobs = jobs;
   
 
  final  List<Job> _jobs;
@@ -232,6 +233,7 @@ class _JobsState implements JobsState {
 @override final  String? error;
 @override@JsonKey() final  int currentPage;
 @override@JsonKey() final  bool hasMore;
+@override@JsonKey() final  JobsFilter filter;
 
 /// Create a copy of JobsState
 /// with the given fields replaced by the non-null parameter values.
@@ -243,18 +245,18 @@ _$JobsStateCopyWith<_JobsState> get copyWith => __$JobsStateCopyWithImpl<_JobsSt
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobsState&&const DeepCollectionEquality().equals(other.jobs, _jobs)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.error, error) || other.error == error)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _JobsState&&const DeepCollectionEquality().equals(other.jobs, _jobs)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.error, error) || other.error == error)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.filter, filter) || other.filter == filter));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_jobs),isLoading,isLoadingMore,error,currentPage,hasMore);
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_jobs),isLoading,isLoadingMore,error,currentPage,hasMore,filter);
 }
 
 @override
 String toString() {
-    return 'JobsState(jobs: $jobs, isLoading: $isLoading, isLoadingMore: $isLoadingMore, error: $error, currentPage: $currentPage, hasMore: $hasMore)';
+    return 'JobsState(jobs: $jobs, isLoading: $isLoading, isLoadingMore: $isLoadingMore, error: $error, currentPage: $currentPage, hasMore: $hasMore, filter: $filter)';
 }
 
 
@@ -265,7 +267,7 @@ abstract mixin class _$JobsStateCopyWith<$Res> implements $JobsStateCopyWith<$Re
   factory _$JobsStateCopyWith(_JobsState value, $Res Function(_JobsState) _then) = __$JobsStateCopyWithImpl;
 @override @useResult
 $Res call({
- List<Job> jobs, bool isLoading, bool isLoadingMore, String? error, int currentPage, bool hasMore
+ List<Job> jobs, bool isLoading, bool isLoadingMore, String? error, int currentPage, bool hasMore, JobsFilter filter
 });
 
 
@@ -282,7 +284,7 @@ class __$JobsStateCopyWithImpl<$Res>
 
 /// Create a copy of JobsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? jobs = null,Object? isLoading = null,Object? isLoadingMore = null,Object? error = freezed,Object? currentPage = null,Object? hasMore = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? jobs = null,Object? isLoading = null,Object? isLoadingMore = null,Object? error = freezed,Object? currentPage = null,Object? hasMore = null,Object? filter = null,}) {
   return _then(_JobsState(
 jobs: null == jobs ? _self._jobs : jobs // ignore: cast_nullable_to_non_nullable
 as List<Job>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
@@ -290,7 +292,8 @@ as bool,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMo
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,filter: null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
+as JobsFilter,
   ));
 }
 

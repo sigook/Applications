@@ -51,7 +51,7 @@ public static class TestStartupExtensions
         services.AddHttpClient();
         services.AddSingleton(Mock.Of<IDocumentService>());
         services.AddSingleton(Mock.Of<IPushNotifications>());
-        services.AddSingleton(Mock.Of<AzureStorageConfiguration>());
+        services.AddSingleton(new AzureStorageConfiguration([]));
         services.AddSingleton(Mock.Of<Rates>());
         services.AddSingleton(Mock.Of<TimeLimits>());
         services.AddSingleton(Mock.Of<IInvoicesContainer>());

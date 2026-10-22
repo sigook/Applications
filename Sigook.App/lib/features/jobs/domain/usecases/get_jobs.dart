@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../entities/jobs_filter.dart';
 import '../entities/paginated_jobs.dart';
 import '../repositories/jobs_repository.dart';
 
@@ -12,8 +13,7 @@ class GetJobs implements UseCase<PaginatedJobs, GetJobsParams> {
   @override
   Future<Either<Failure, PaginatedJobs>> call(GetJobsParams params) {
     return repository.getJobs(
-      sortBy: params.sortBy,
-      isDescending: params.isDescending,
+      filter: params.filter,
       pageIndex: params.pageIndex,
       pageSize: params.pageSize,
     );
@@ -21,14 +21,12 @@ class GetJobs implements UseCase<PaginatedJobs, GetJobsParams> {
 }
 
 class GetJobsParams {
-  final int sortBy;
-  final bool isDescending;
+  final JobsFilter filter;
   final int pageIndex;
   final int pageSize;
 
   const GetJobsParams({
-    this.sortBy = 0,
-    this.isDescending = false,
+    this.filter = JobsFilter.defaults,
     this.pageIndex = 1,
     this.pageSize = 30,
   });

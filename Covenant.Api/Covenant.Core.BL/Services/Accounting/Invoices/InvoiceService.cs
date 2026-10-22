@@ -44,7 +44,6 @@ public class InvoiceService(
     ICurrentUserService currentUserService,
     IInvoicesContainer invoicesContainer,
     IRazorViewToStringRenderer renderer,
-    IPdfGeneratorService pdfGenerator,
     IEmailService emailService,
     IMediator mediator,
     IPayStubsContainer payStubsContainer,
@@ -54,7 +53,6 @@ public class InvoiceService(
     IValidator<ChangeInvoiceStatusModel> changeStatusValidator,
     ILogger<InvoiceService> logger) : IInvoiceService
 {
-    private const string InvoiceHtmlTemplate = "/Views/Billing/Invoice/Invoice.cshtml";
     private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
     private const int MaxInvoiceNumbersInNotification = 20;
 
@@ -292,12 +290,10 @@ public class InvoiceService(
     private async Task<byte[]> UploadInvoicePdf(InvoiceSummaryModel model)
     {
         string fileName = model.Id.ToInvoiceBlobName();
-        string html = await renderer.RenderViewToStringAsync(InvoiceHtmlTemplate, invoiceDocumentAdapter.MapToInvoiceViewModel(model));
-        var pdf = await pdfGenerator.GeneratePdfFromHtml(new PdfParams(fileName, html));
-        if (!pdf) return null;
+        byte[] pdf = await mediator.Send(new GenerateInvoicePdf(invoiceDocumentAdapter.MapToInvoiceViewModel(model)));
         try
         {
-            await invoicesContainer.UploadAsync(pdf.Value, fileName, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
+            await invoicesContainer.UploadAsync(pdf, fileName, MediaTypeNames.Application.Pdf, new Dictionary<string, string>
             {
                 {nameof(model.InvoiceNumber), model.InvoiceNumber.Trim()}
             });
@@ -306,7 +302,7 @@ public class InvoiceService(
         {
             Console.WriteLine(e);
         }
-        return pdf.Value;
+        return pdf;
     }
 
     private async Task<List<InvoiceHoliday>> GetInvoiceHolidaysAsync(
@@ -354,7 +350,7 @@ public class InvoiceService(
             item.TimeInApproved.Value,
             item.TimeOutApproved.Value,
             item.DurationBreak,
-            breakIsPaid: false,
+            item.BreakIsPaid,
             isHoliday: isHoliday,
             holidayIsPaid: true,
             ref accumulatedRegularHours,

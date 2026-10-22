@@ -26,7 +26,11 @@ class CertificateCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.workspace_premium_outlined, size: 18, color: Colors.orange.shade700),
+            Icon(
+              Icons.workspace_premium_outlined,
+              size: 18,
+              color: Colors.orange.shade700,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -39,18 +43,34 @@ class CertificateCard extends StatelessWidget {
               ),
             ),
             if (certificate.fileUrl != null) ...[
-              InkWell(
-                onTap: onPreview,
-                borderRadius: BorderRadius.circular(4),
-                child: Icon(Icons.visibility_outlined, size: 18, color: Colors.orange.shade400),
+              Semantics(
+                button: true,
+                label: 'Preview certificate',
+                child: InkWell(
+                  onTap: onPreview,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Icon(
+                    Icons.visibility_outlined,
+                    size: 18,
+                    color: Colors.orange.shade400,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
             ],
             if (onDelete != null)
-              InkWell(
-                onTap: onDelete,
-                borderRadius: BorderRadius.circular(4),
-                child: Icon(Icons.delete_outline, size: 18, color: Colors.red.shade400),
+              Semantics(
+                button: true,
+                label: 'Delete certificate',
+                child: InkWell(
+                  onTap: onDelete,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: Colors.red.shade400,
+                  ),
+                ),
               ),
           ],
         ),

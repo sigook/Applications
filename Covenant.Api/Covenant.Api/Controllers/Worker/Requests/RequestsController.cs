@@ -32,12 +32,12 @@ public class RequestsController : ControllerBase
     /// <summary>
     /// Lists all requests the authenticated worker can apply to.
     /// </summary>
-    /// <param name="pagination">Pagination parameters.</param>
+    /// <param name="filter">Pagination, sort and status filter.</param>
     /// <returns>PaginatedList</returns>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<WorkerRequestListModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult> Get(Pagination pagination) =>
-        Ok(await _requestRepository.GetRequestsForWorker(User.GetUserId(), pagination));
+    public async Task<ActionResult> Get([FromQuery] GetWorkerRequestsFilter filter) =>
+        Ok(await _requestRepository.GetRequestsForWorker(User.GetUserId(), filter));
 
     /// <summary>
     /// Gets the detail of a specific request for the authenticated worker.

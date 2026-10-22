@@ -50,60 +50,66 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
-          Text(label!, style: AppTheme.label),
+          ExcludeSemantics(child: Text(label!, style: AppTheme.label)),
           SizedBox(height: AppTheme.spacing8),
         ],
-        TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-          onChanged: onChanged,
-          onTap: onTap,
-          readOnly: readOnly,
-          maxLines: maxLines,
-          maxLength: maxLength,
-          enabled: enabled,
-          validator: validator,
-          textInputAction: textInputAction,
-          style: AppTheme.bodyMedium,
-          decoration: InputDecoration(
-            hintText: hint,
-            errorText: errorText,
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: enabled ? Colors.white : Colors.grey.shade100,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppTheme.spacing16,
-              vertical: AppTheme.spacing16,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              borderSide: const BorderSide(color: AppTheme.borderLight),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              borderSide: const BorderSide(color: AppTheme.borderLight),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              borderSide: const BorderSide(
-                color: AppTheme.primaryBlue,
-                width: 2,
+        Semantics(
+          label: label,
+          child: TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
+            onChanged: onChanged,
+            onTap: onTap,
+            readOnly: readOnly,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            enabled: enabled,
+            validator: validator,
+            textInputAction: textInputAction,
+            style: AppTheme.bodyMedium,
+            decoration: InputDecoration(
+              hintText: hint,
+              errorText: errorText,
+              prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+              suffixIcon: suffixIcon,
+              filled: true,
+              fillColor: enabled ? Colors.white : Colors.grey.shade100,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing16,
+                vertical: AppTheme.spacing16,
               ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              borderSide: const BorderSide(
-                color: AppTheme.errorRed,
-                width: 1.5,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderSide: const BorderSide(color: AppTheme.borderLight),
               ),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
-              borderSide: const BorderSide(color: AppTheme.errorRed, width: 2),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderSide: const BorderSide(color: AppTheme.borderLight),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderSide: const BorderSide(
+                  color: AppTheme.primaryBlue,
+                  width: 2,
+                ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderSide: const BorderSide(
+                  color: AppTheme.errorRed,
+                  width: 1.5,
+                ),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                borderSide: const BorderSide(
+                  color: AppTheme.errorRed,
+                  width: 2,
+                ),
+              ),
             ),
           ),
         ),
