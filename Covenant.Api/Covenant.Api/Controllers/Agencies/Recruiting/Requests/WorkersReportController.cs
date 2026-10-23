@@ -17,7 +17,7 @@ public class WorkersReportController(IRequestService requestService) : Controlle
     /// <summary>Generates the workers report for a request as an Excel file.</summary>
     /// <param name="requestId">Request identifier.</param>
     [HttpGet]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromRoute] Guid requestId)
     {

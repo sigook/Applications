@@ -261,6 +261,8 @@ Identity lives under `Services/Identity/` (interfaces in `Covenant.Common/Interf
 
 - `UserAdministrationService` — creates users (with confirmation emails), agency/company claims,
   role changes, email changes, deactivation (adds `InactiveUsers` and revokes OpenIddict tokens).
+  `CreateUser` adds the claim and the role first and sends the welcome email last; if the claim or
+  the role fails, the just-created user is deleted and no email goes out.
   `Covenant.Infrastructure/Services/UserAccountService.cs` implements `IUserAccountService` on
   top of it and keeps the `Users` mirror table of the API database in sync. The split follows the
   two databases: integration tests replace `IUserAdministrationService` with a mock and run the real

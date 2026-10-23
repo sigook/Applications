@@ -71,7 +71,8 @@ public class GeneratePayStubHolidayPayTest
             Mock.Of<IMediator>(),
             rates,
             timeLimits,
-            Mock.Of<IPayrollDocumentAdapter>());
+            Mock.Of<IPayrollDocumentAdapter>(),
+            TimeProvider.System);
     }
 
     [Fact]

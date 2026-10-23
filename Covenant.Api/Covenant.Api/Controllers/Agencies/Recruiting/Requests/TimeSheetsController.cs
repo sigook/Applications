@@ -16,7 +16,7 @@ public class TimeSheetsController(ITimesheetService timesheetService) : Controll
     /// <summary>Generates and downloads an Excel timesheet report for a request.</summary>
     /// <param name="requestId">Identifier of the request.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile(Guid requestId)
     {

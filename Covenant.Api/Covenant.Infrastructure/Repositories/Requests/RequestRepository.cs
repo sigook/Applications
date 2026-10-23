@@ -31,6 +31,8 @@ namespace Covenant.Infrastructure.Repositories.Requests;
 
 public class RequestRepository(CovenantContext context, IOptions<FilesConfiguration> options) : BaseRepository<CovenantContext>(context), IRequestRepository
 {
+    private const double SimilarityThreshold = 0.4;
+
     private readonly FilesConfiguration filesConfiguration = options.Value;
 
     public IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
@@ -998,9 +1000,9 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    }).ToList()
                }).ToListAsync();
 
-    public async Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid agencyId, Guid requestId) =>
+    public async Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId) =>
         await (from r in Context.Runners
-               where r.RequestId == requestId && r.Request.CompanyProfile.AgencyId == agencyId
+               where r.RequestId == requestId
                orderby r.CreatedAt
                select new WeeklyBoardRunnerModel
                {
@@ -1064,13 +1066,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                    }).ToList()
                }).ToListAsync();
 
-    public Task<RequestRecruiter> GetRequestRecruiter(Guid agencyId, Guid requestId, Guid recruiterId, DateTime workDate) =>
+    public Task<RequestRecruiter> GetRequestRecruiter(Guid requestId, Guid recruiterId, DateTime workDate) =>
         Context.RequestRecruiters
             .Include(rr => rr.Runners)
             .SingleOrDefaultAsync(rr => rr.RequestId == requestId
                 && rr.RecruiterId == recruiterId
-                && rr.WorkDate == workDate.Date
-                && rr.Request.CompanyProfile.AgencyId == agencyId);
+                && rr.WorkDate == workDate.Date);
 
     public async Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt)
     {
@@ -1308,8 +1309,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return query;
     }
 
-    private const double SimilarityThreshold = 0.4;
-
     private static readonly Expression<Func<RequestApplicant, string>>[] ApplicantSearchFields =
     [
         ra => ra.Candidate.Name,
@@ -1482,12 +1481,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var requests = Context.Requests.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();
-    }
-
-    public async Task<bool> ExistsRequestByNumber(int requestId)
-    {
-        var result = await Context.Requests.AnyAsync(r => r.NumberId == requestId);
-        return result;
     }
 
     public async Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId)

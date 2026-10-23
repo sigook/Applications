@@ -42,7 +42,7 @@ public class ReportsController(
     /// <summary>Exports the hours-worked report to an Excel file.</summary>
     /// <param name="filter">Filter criteria for the report.</param>
     [HttpGet("hours-worked/file")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHoursWorkedFile([FromQuery] HoursWorkedFilter filter)
     {
@@ -53,7 +53,7 @@ public class ReportsController(
     /// <summary>Exports the timesheets report to an Excel file for the given date range (USA agencies).</summary>
     /// <param name="filter">Filter criteria for the report.</param>
     [HttpGet("timesheets/file")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTimesheetsReportFile([FromQuery] TimesheetsReportFilter filter)
     {
@@ -79,7 +79,7 @@ public class ReportsController(
     /// <param name="startDate">Start of the date range.</param>
     /// <param name="endDate">End of the date range.</param>
     [HttpGet("t4")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetT4([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
@@ -100,7 +100,7 @@ public class ReportsController(
     /// <param name="startDate">Start of the date range.</param>
     /// <param name="endDate">End of the date range.</param>
     [HttpGet("cra-payroll")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetCraPayroll([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
@@ -130,7 +130,7 @@ public class ReportsController(
     /// <summary>Exports the weekly payroll for a given week-ending date to an Excel file.</summary>
     /// <param name="weekEnding">Week-ending date.</param>
     [HttpGet("payments/file")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPaymentsFile([FromQuery] string weekEnding)
@@ -156,7 +156,7 @@ public class ReportsController(
     /// <summary>Exports the subcontractor report for a given week-ending date to an Excel file.</summary>
     /// <param name="weekEnding">Week-ending date.</param>
     [HttpGet("subcontractors/file")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetSubcontractorFile([FromQuery] string weekEnding)

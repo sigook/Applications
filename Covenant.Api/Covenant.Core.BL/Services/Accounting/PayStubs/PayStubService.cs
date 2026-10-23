@@ -40,6 +40,7 @@ public class PayStubService : IPayStubService
     private readonly Rates rates;
     private readonly TimeLimits timeLimits;
     private readonly IPayrollDocumentAdapter payrollDocumentAdapter;
+    private readonly TimeProvider timeProvider;
 
     public PayStubService(
         IPayStubRepository payStubRepository,
@@ -54,7 +55,8 @@ public class PayStubService : IPayStubService
         IMediator mediator,
         Rates rates,
         TimeLimits timeLimits,
-        IPayrollDocumentAdapter payrollDocumentAdapter)
+        IPayrollDocumentAdapter payrollDocumentAdapter,
+        TimeProvider timeProvider)
     {
         this.payStubRepository = payStubRepository;
         this.calculatorService = calculatorService;
@@ -69,6 +71,7 @@ public class PayStubService : IPayStubService
         this.rates = rates;
         this.timeLimits = timeLimits;
         this.payrollDocumentAdapter = payrollDocumentAdapter;
+        this.timeProvider = timeProvider;
     }
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> GenerateT4(DateTime from, DateTime to)
@@ -82,7 +85,7 @@ public class PayStubService : IPayStubService
         GetDetail(result, workbook);
         GetReport(result, workbook);
         workbook.SaveAs(stream);
-        return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"T4_Resume_{DateTime.Now.Year}.xlsx", string.Empty));
+        return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"T4_Resume_{Now.Year}.xlsx", string.Empty));
     }
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> GenerateCraPayroll(DateTime from, DateTime to)
@@ -95,7 +98,7 @@ public class PayStubService : IPayStubService
         using var workbook = new XLWorkbook();
         GetCraPayrollReport(result, workbook);
         workbook.SaveAs(stream);
-        return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"CRA_Payroll_{DateTime.Now.Year}.xlsx", string.Empty));
+        return Result.Ok(new ResultGenerateDocument<byte[]>(stream.ToArray(), $"CRA_Payroll_{Now.Year}.xlsx", string.Empty));
     }
 
     public async Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model)
@@ -172,7 +175,11 @@ public class PayStubService : IPayStubService
         var totalDeductions = deductions.Cpp + deductions.Ei + deductions.FederalTax + deductions.ProvincialTax + otherDeductionsTotal;
 
         // Step 9: Calculate net pay
-        var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).DefaultMoneyRound();
+        var reimbursementTotal = payStubItems
+            .Where(i => i.Type == PayStubItemType.Reimbursement)
+            .Sum(i => i.Total)
+            .DefaultMoneyRound();
+        var totalPaid = decimal.Subtract(totalEarnings, totalDeductions).Add(reimbursementTotal).DefaultMoneyRound();
 
         // Step 10: Build PayStub entity
         var regularWage = payStubItems
@@ -183,13 +190,13 @@ public class PayStubService : IPayStubService
         var payStub = PayStub.Create(
             workerProfileId: model.WorkerProfileId,
             payStubNumberId: payStubNumber,
-            payStubNumber: GeneratePayStubNumber(payStubNumber, DateTime.Now),
+            payStubNumber: GeneratePayStubNumber(payStubNumber, Now),
             position: model.Position,
             dateWorkBegins: dateWorkBegins,
             dateWorkEnd: dateWorkEnd,
             paymentDate: dateWorkEnd.GetPaymentDateForInternalWorkers(),
             weekEnding: dateWorkEnd.GetWeekEndingCurrentWeek(),
-            createdAt: DateTime.Now,
+            createdAt: Now,
             regularWage: regularWage,
             grossPayment: grossPayment,
             vacations: vacations,
@@ -430,13 +437,13 @@ public class PayStubService : IPayStubService
         var payStub = PayStub.Create(
             workerProfileId: workerProfileId,
             payStubNumberId: payStubNumber,
-            payStubNumber: GeneratePayStubNumber(payStubNumber, DateTime.Now),
+            payStubNumber: GeneratePayStubNumber(payStubNumber, Now),
             position: typeOfWork,
             dateWorkBegins: dateWorkBegins,
             dateWorkEnd: dateWorkEnd,
             paymentDate: paymentDate,
             weekEnding: dateWorkEnd.GetWeekEndingCurrentWeek(),
-            createdAt: DateTime.Now,
+            createdAt: Now,
             regularWage: regularWage,
             grossPayment: grossPayment,
             vacations: vacations,
@@ -825,4 +832,6 @@ public class PayStubService : IPayStubService
     }
 
     private string GeneratePayStubNumber(long number, DateTime date) => $"PS-{number:0000}-{date:yy}";
+
+    private DateTime Now => timeProvider.GetLocalNow().DateTime;
 }

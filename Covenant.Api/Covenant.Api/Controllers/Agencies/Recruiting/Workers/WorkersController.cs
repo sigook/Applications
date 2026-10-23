@@ -42,7 +42,7 @@ public class WorkersController(
     /// <summary>Generates and downloads an Excel report of the current agency's worker profiles.</summary>
     /// <param name="filter">Worker profile filter parameters.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile([FromQuery] GetWorkerProfileFilter filter)
     {

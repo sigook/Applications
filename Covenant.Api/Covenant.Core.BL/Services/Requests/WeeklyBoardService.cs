@@ -63,16 +63,12 @@ public class WeeklyBoardService(
         return model;
     }
 
-    public async Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId)
-    {
-        var agencyId = currentUserService.GetAgencyId();
-        return await requestRepository.GetOrderRunners(agencyId, requestId);
-    }
+    public Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId) =>
+        requestRepository.GetOrderRunners(requestId);
 
     public async Task<Result> AssignRecruiters(AssignRecruitersModel model)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId);
         if (request is null) return Result.Fail("Order not found");
 
         var recruiterIds = model.RecruiterIds.Distinct().ToList();
@@ -94,8 +90,7 @@ public class WeeklyBoardService(
 
     public async Task<Result> UnassignRecruiter(Guid requestId, Guid recruiterId, DateTime workDate)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null) return Result.Fail("Order not found");
 
         Result result = request.RemoveRecruiter(recruiterId, timeProvider.GetLocalNow().DateTime, workDate);
@@ -108,14 +103,13 @@ public class WeeklyBoardService(
 
     public async Task<Result> MoveAssignment(MoveAssignmentModel model)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId && r.CompanyProfile.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == model.RequestId);
         if (request is null) return Result.Fail("Order not found");
 
         if (model.FromRecruiterId != model.ToRecruiterId)
         {
             var personnel = await agencyRepository.GetPersonnels([model.ToRecruiterId]);
-            if (personnel.Count == 0 || personnel[0].AgencyId != agencyId) return Result.Fail("Recruiter not found");
+            if (personnel.Count == 0) return Result.Fail("Recruiter not found");
         }
 
         Result result = request.MoveRecruiterAssignment(model.FromRecruiterId, model.FromWorkDate, model.ToRecruiterId, model.ToWorkDate, timeProvider.GetLocalNow().DateTime);
@@ -132,7 +126,7 @@ public class WeeklyBoardService(
         var recruiter = await GetCurrentRecruiter(agencyId);
         if (recruiter is null) return Result.Fail("Recruiter not found");
 
-        var assignment = await requestRepository.GetRequestRecruiter(agencyId, model.RequestId, recruiter.Id, model.WorkDate);
+        var assignment = await requestRepository.GetRequestRecruiter(model.RequestId, recruiter.Id, model.WorkDate);
         if (assignment is null) return Result.Fail("Assignment not found");
 
         var created = await runnerService.CreateRunner(

@@ -197,7 +197,7 @@ public class ClientsController(
     /// <param name="file">Spreadsheet file containing the company data to import.</param>
     [HttpPost("bulk/{agencyId:guid}")]
     [Consumes("multipart/form-data")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> BulkCompanyData([FromRoute] Guid agencyId, IFormFile file)

@@ -14,6 +14,7 @@ public class PasswordResetService(
     IIdentityRepository identityRepository,
     IPasswordHasher<CovenantUser> passwordHasher,
     IAccountNotificationService notifications,
+    TimeProvider timeProvider,
     ILogger<PasswordResetService> logger) : IPasswordResetService
 {
     public const string InvalidCode = "invalid_code";
@@ -45,7 +46,7 @@ public class PasswordResetService(
         }
 
         var previousCodes = await identityRepository.GetPendingResetCodes(user.Id);
-        var now = DateTimeOffset.UtcNow;
+        var now = timeProvider.GetUtcNow();
         var recentCode = previousCodes.FirstOrDefault(prc => prc.CreatedAt > now.AddSeconds(-ResendCooldownSeconds));
         if (recentCode is not null)
         {
@@ -77,7 +78,7 @@ public class PasswordResetService(
 
         var resetCode = await identityRepository.GetLatestPendingResetCode(user.Id);
         if (resetCode is null) return PasswordResetResult.Fail(InvalidCode);
-        if (resetCode.ExpiresAt < DateTimeOffset.UtcNow) return PasswordResetResult.Fail(CodeExpired);
+        if (resetCode.ExpiresAt < timeProvider.GetUtcNow()) return PasswordResetResult.Fail(CodeExpired);
 
         if (resetCode.Attempts >= MaxAttempts)
         {

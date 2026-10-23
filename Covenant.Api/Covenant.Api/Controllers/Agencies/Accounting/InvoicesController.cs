@@ -33,7 +33,7 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
     /// <summary>Exports the filtered invoices to an Excel file.</summary>
     /// <param name="filter">Filter criteria for invoices.</param>
     [HttpGet("file")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInvoicesFile([FromQuery] GetInvoicesFilter filter)
     {
@@ -44,7 +44,7 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
     /// <summary>Exports the filtered invoices to the payments follow-up Excel (amounts before/after tax, due date, due days, payment date).</summary>
     /// <param name="filter">Filter criteria for invoices.</param>
     [HttpGet("payments-report")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInvoicesPaymentsReport([FromQuery] GetInvoicesFilter filter)
     {
@@ -79,7 +79,7 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
     /// <summary>Generates and returns the invoice document as a PDF file.</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
     [HttpGet("{invoiceId:guid}/pdf")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetInvoicePdf(Guid invoiceId)

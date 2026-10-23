@@ -34,7 +34,7 @@ public class ClientsListController(IMediator mediator, ICompanyRepository compan
     /// <summary>Generates and downloads an Excel report of the current agency's company profiles.</summary>
     /// <param name="filter">Company filter parameters.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile([FromQuery] GetCompanyForAgencyFilter filter)
     {
@@ -47,7 +47,7 @@ public class ClientsListController(IMediator mediator, ICompanyRepository compan
     /// <summary>Generates and downloads a detailed Excel report of the current agency's company profiles.</summary>
     /// <param name="filter">Company filter parameters.</param>
     [HttpGet("FileWithDetails")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFileWithDetails([FromQuery] GetCompanyForAgencyFilter filter)
     {

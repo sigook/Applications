@@ -70,7 +70,7 @@ public class AttendanceController(IAgencyService agencyService) : ControllerBase
     /// <param name="filter">User and date range (inclusive, at most one year).</param>
     [HttpGet("report/file")]
     [Authorize(Policy = PolicyConfiguration.Admin)]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetReportFile([FromQuery] GetUserAttendanceReportFilter filter)

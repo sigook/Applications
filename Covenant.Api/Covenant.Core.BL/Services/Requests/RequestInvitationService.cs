@@ -40,7 +40,7 @@ public class RequestInvitationService(
                     $"Sent {result.Value.WorkersSentCount} worker and {result.Value.CandidatesSentCount} candidate invitations for request #{result.Value.NumberId} ({result.Value.JobTitle})")
                 : TeamsNotificationModel.CreateWarning(
                     $"Invitations sent by {job.Nickname}",
-                    string.Join(" - ", result.Errors));
+                    string.Join(" - ", result.Errors.Select(e => e.Message)));
             await teamsService.SendNotification(webhook, notification);
         }
         catch (Exception e)

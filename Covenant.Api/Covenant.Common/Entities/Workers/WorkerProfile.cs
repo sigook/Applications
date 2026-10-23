@@ -688,7 +688,8 @@ public class WorkerProfile :
             jobExperienceModel.EndDate, jobExperienceModel.IsCurrentJobPosition);
         if (!result) return result;
         WorkerProfileJobExperience current = JobExperiences.FirstOrDefault(e => e.Id == id);
-        current?.Update(result.Value);
+        if (current is null) return Result.Fail("Job experience not found");
+        current.Update(result.Value);
         return Result.Ok();
     }
 

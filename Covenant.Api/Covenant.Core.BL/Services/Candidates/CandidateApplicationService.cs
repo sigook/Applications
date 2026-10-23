@@ -91,7 +91,7 @@ public class CandidateApplicationService(
         }
 
         var email = CvnEmail.Create(message.Email);
-        if (!email) return ApplicationOutcome.Failed(string.Join(", ", email.Errors));
+        if (!email) return ApplicationOutcome.Failed(string.Join(", ", email.Errors.Select(e => e.Message)));
 
         var normalizedEmail = email.Value.Email.ToLower();
         var worker = await workerRepository.GetProfile(wp => wp.Worker.Email.ToLower() == normalizedEmail);

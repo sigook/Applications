@@ -51,7 +51,7 @@ public class ApplicantsController(
     /// <summary>Generates and downloads an Excel report with every applicant that matches the filter.</summary>
     /// <param name="filter">Applicant filter parameters.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile(GetAgencyApplicantsFilter filter)
     {

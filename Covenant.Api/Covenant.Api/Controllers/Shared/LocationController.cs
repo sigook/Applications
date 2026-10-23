@@ -43,15 +43,13 @@ public class LocationController(ILocationService locationService) : ControllerBa
     public async Task<IActionResult> GetProvinces([FromRoute] string countryCode)
     {
         var code = countryCode.ToUpperInvariant();
-        Console.WriteLine(code);
 
         if (code is not "CA" and not "USA")
         {
-            Console.WriteLine(code);
             return UnprocessableEntity(new
             {
                 Code = countryCode,
-                Error = "Muste be either CA or USA"
+                Error = "Must be either CA or USA"
             });
         }
 

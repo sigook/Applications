@@ -50,7 +50,7 @@ public class PayStubsController(
     /// <summary>Exports the filtered pay stubs to an Excel file.</summary>
     /// <param name="filter">Filter and pagination criteria.</param>
     [HttpGet("file")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPayStubsFile([FromQuery] GetPayStubsFilter filter)
     {
@@ -127,7 +127,7 @@ public class PayStubsController(
     /// <summary>Generates and returns the pay stub document as a PDF file.</summary>
     /// <param name="payStubId">Identifier of the pay stub.</param>
     [HttpGet("{payStubId}/pdf")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPayStubPdf(Guid payStubId)

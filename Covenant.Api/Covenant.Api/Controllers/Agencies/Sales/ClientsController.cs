@@ -30,7 +30,7 @@ public class ClientsController(IMediator mediator, ISalesService salesService) :
     /// <summary>Generates and downloads an Excel report of the sales module company profiles.</summary>
     /// <param name="filter">Company filter parameters.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile([FromQuery] GetCompanyForAgencyFilter filter)
     {

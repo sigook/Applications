@@ -36,7 +36,7 @@ public class CandidatesController(
     /// <summary>Generates and downloads an Excel report of the current agency's candidates.</summary>
     /// <param name="filter">Candidate filter parameters.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCandidatesFile([FromQuery] GetCandidatesFilter filter)
     {
@@ -126,7 +126,7 @@ public class CandidatesController(
     /// <param name="file">Spreadsheet file containing the candidates to import.</param>
     [HttpPost("bulk/{agencyId}")]
     [Consumes("multipart/form-data")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> BulkCandidates([FromRoute] Guid agencyId, IFormFile file)

@@ -78,7 +78,7 @@ public class RequestsController(IRequestService requestService) : ControllerBase
     /// <param name="timesheetService">Timesheet service resolved from DI.</param>
     /// <param name="id">Request identifier.</param>
     [HttpGet("{id}/TimeSheets/File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTimeSheetsFile([FromServices] ITimesheetService timesheetService, [FromRoute] Guid id)

@@ -1,14 +1,12 @@
 using Covenant.Common.Entities.Requests;
+using Covenant.Common.Models;
 using Covenant.Common.Models.Companies.Agencies;
-using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models.Requests.Agencies;
 using Covenant.Common.Models.Requests.Companies;
 using Covenant.Common.Models.Requests.WeeklyBoard;
 using Covenant.Common.Models.Requests.Workers;
-using Covenant.Common.Models.Requests;
 using Covenant.Common.Models.Website;
-using Covenant.Common.Models.Workers;
-using Covenant.Common.Models;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
@@ -47,9 +45,9 @@ public interface IRequestRepository : IBaseRepository
     Task<RequestNote> GetNote(Guid requestId, Guid id);
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignments(Guid agencyId, DateTime weekStart, DateTime weekEnd);
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd);
-    Task<RequestRecruiter> GetRequestRecruiter(Guid agencyId, Guid requestId, Guid recruiterId, DateTime workDate);
+    Task<RequestRecruiter> GetRequestRecruiter(Guid requestId, Guid recruiterId, DateTime workDate);
     Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt);
-    Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid agencyId, Guid requestId);
+    Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId);
     Task<Dictionary<Guid, string>> GetWorkerProfileNames(IEnumerable<Guid> workerProfileIds);
     Task<RequestSkill> GetSkill(Guid requestId, Guid id);
     Task<IEnumerable<SkillModel>> GetSkills(Guid requestId);
@@ -68,6 +66,5 @@ public interface IRequestRepository : IBaseRepository
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceItems(Guid applicantId);
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceCompletions(IEnumerable<Guid> complianceItemIds);
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
-    Task<bool> ExistsRequestByNumber(int requestId);
     Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId);
 }

@@ -15,7 +15,8 @@ How pay stubs are generated and how earnings and deductions are actually compute
 ## Entry Points
 
 - `PayStubService.Generate(agencyIds, workerIds)` iterates sequentially (plain `foreach`, no locking) over each worker and calls `GeneratePayStubForWorker`. The whole batch aborts on the first worker failure (`PayStubService.cs:217-222`: `if (!result) return result;`) — remaining workers are skipped.
-- `PayStubService.CreateManualPayStub` — independent path that builds a pay stub from manually entered items (supports a `PayVacations` flag and an explicit `Vacations` item type) instead of approved timesheets. Unlike the timesheet path (`PayStubService.cs:423`), it does **not** add reimbursements back into net (`PayStubService.cs:174`: `totalPaid = totalEarnings - totalDeductions`) — an asymmetry, possibly a bug.
+- `PayStubService.CreateManualPayStub` — independent path that builds a pay stub from manually entered items (supports a `PayVacations` flag and an explicit `Vacations` item type) instead of approved timesheets. Like the timesheet path, reimbursement items are excluded from gross and added back into net (`totalPaid = totalEarnings - totalDeductions + reimbursements`).
+- `PayStubNumber` (`PS-{number:0000}-{yy}`), `CreatedAt` and the T4/CRA report file names take "now" from the injected `TimeProvider`.
 
 ---
 

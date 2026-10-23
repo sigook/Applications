@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Companies.Profile;
 using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Locations;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
@@ -37,6 +38,80 @@ public class LocationsControllerTest : ControllerBase, IClassFixture<CustomWebAp
             Assert.Contains(list, m => m.Address == item.Location.Address);
             Assert.Contains(list, m => m.PostalCode == item.Location.PostalCode);
         }
+    }
+
+    private static CompanyProfileLocationDetailModel NewLocation(string address, bool isBilling = false) => new()
+    {
+        Address = address,
+        PostalCode = "M5H1A1",
+        City = new CityModel { Id = Data.CompanyProfile.Locations.First().Location.City.Id },
+        IsBilling = isBilling,
+        Latitude = 43.65,
+        Longitude = -79.38
+    };
+
+    private Task<List<LocationDetailModel>> List() => _client.GetFromJsonAsync<List<LocationDetailModel>>(LocationsController.RouteName);
+
+    [Fact]
+    public async Task Post_AddsALocationToTheCallerCompany()
+    {
+        HttpResponseMessage response = await _client.PostAsJsonAsync(LocationsController.RouteName, NewLocation("1 New Street", isBilling: true));
+
+        response.EnsureSuccessStatusCode();
+        LocationDetailModel created = Assert.Single(await List(), l => l.Address == "1 New Street");
+        Assert.True(created.IsBilling);
+    }
+
+    [Fact]
+    public async Task Post_WithoutCity_ReturnsBadRequest()
+    {
+        CompanyProfileLocationDetailModel model = NewLocation("No City Street");
+        model.City = null;
+
+        HttpResponseMessage response = await _client.PostAsJsonAsync(LocationsController.RouteName, model);
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Put_UpdatesAddressAndBillingFlag()
+    {
+        (await _client.PostAsJsonAsync(LocationsController.RouteName, NewLocation("2 Before Street"))).EnsureSuccessStatusCode();
+        Guid id = (await List()).Single(l => l.Address == "2 Before Street").Id;
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{LocationsController.RouteName}/{id}", NewLocation("2 After Street", isBilling: true));
+
+        response.EnsureSuccessStatusCode();
+        LocationDetailModel updated = Assert.Single(await List(), l => l.Id == id);
+        Assert.Equal("2 After Street", updated.Address);
+        Assert.True(updated.IsBilling);
+    }
+
+    [Fact]
+    public async Task Put_UnknownLocation_ReturnsBadRequest()
+    {
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{LocationsController.RouteName}/{Guid.NewGuid()}", NewLocation("Nowhere"));
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_RemovesTheLocation()
+    {
+        (await _client.PostAsJsonAsync(LocationsController.RouteName, NewLocation("3 Delete Street"))).EnsureSuccessStatusCode();
+        Guid id = (await List()).Single(l => l.Address == "3 Delete Street").Id;
+
+        (await _client.DeleteAsync($"{LocationsController.RouteName}/{id}")).EnsureSuccessStatusCode();
+
+        Assert.DoesNotContain(await List(), l => l.Id == id);
+    }
+
+    [Fact]
+    public async Task Delete_UnknownLocation_ReturnsBadRequest()
+    {
+        HttpResponseMessage response = await _client.DeleteAsync($"{LocationsController.RouteName}/{Guid.NewGuid()}");
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     public class Startup

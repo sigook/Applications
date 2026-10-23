@@ -50,7 +50,7 @@ public class RunnersController(
     /// <summary>Generates and downloads an Excel report with every runner that matches the filter.</summary>
     /// <param name="filter">Runner filter parameters.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile(GetAgencyRunnersFilter filter)
     {

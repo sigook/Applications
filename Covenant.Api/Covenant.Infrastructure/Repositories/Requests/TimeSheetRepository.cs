@@ -438,7 +438,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
             .Where(it => it.TimeSheetTotal.TimeSheetId == id)
             .Select(it => it.Invoice.InvoiceNumber)
             .FirstOrDefaultAsync();
-        var paystubNumber = await (from tst in Context.TimeSheetTotals.Where(tst => tst.TimeSheetId == id)
+        var paystubNumber = await (from tst in Context.TimeSheetTotalPayrolls.Where(tst => tst.TimeSheetId == id)
                                    join pswd in Context.PayStubWageDetails on tst.Id equals pswd.TimeSheetTotalId
                                    select pswd.PayStub.PayStubNumber).FirstOrDefaultAsync();
         return new TimeSheetUsagesModel
@@ -490,10 +490,10 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                               OvertimeHoursWorked = jwrwp.Sum(a => a.OvertimeHoursWorked),
                               HolidayHoursWorked = jwrwp.Sum(a => a.HolidayHoursWorked),
                               NightHoursWorked = jwrwp.Sum(a => a.NightHoursWorked),
-                              TotalPayRegularRate = jwrwp.Key.BillRate.Value * (int)jwrwp.Sum(a => a.RegularHoursWorked),
-                              TotalPayOvertimeRate = jwrwp.Key.BillRate.Value * rates.OverTime * (int)jwrwp.Sum(a => a.OvertimeHoursWorked),
-                              TotalPayHolidayRate = jwrwp.Key.BillRate.Value * rates.Holiday * (int)jwrwp.Sum(a => a.HolidayHoursWorked),
-                              TotalPayNightRate = jwrwp.Key.BillRate.Value * rates.NightShift * (int)jwrwp.Sum(a => a.NightHoursWorked),
+                              TotalPayRegularRate = jwrwp.Key.BillRate.Value * (decimal)jwrwp.Sum(a => a.RegularHoursWorked),
+                              TotalPayOvertimeRate = jwrwp.Key.BillRate.Value * rates.OverTime * (decimal)jwrwp.Sum(a => a.OvertimeHoursWorked),
+                              TotalPayHolidayRate = jwrwp.Key.BillRate.Value * rates.Holiday * (decimal)jwrwp.Sum(a => a.HolidayHoursWorked),
+                              TotalPayNightRate = jwrwp.Key.BillRate.Value * rates.NightShift * (decimal)jwrwp.Sum(a => a.NightHoursWorked),
                           };
         var result = await workedHours.ToListAsync();
         return result;
@@ -597,7 +597,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
     {
         var timesheetInvoice = await Context.TimeSheetTotals.AnyAsync(ts => ts.TimeSheetId == id);
         var timsheetPayroll = await Context.TimeSheetTotalPayrolls.AnyAsync(ts => ts.TimeSheetId == id);
-        return timesheetInvoice && timsheetPayroll;
+        return timesheetInvoice || timsheetPayroll;
     }
 
     public Task<List<RequestTimeSheetModel>> GetRequestTimeSheet(Guid requestId)

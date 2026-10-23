@@ -49,7 +49,7 @@ public class RequestsListController(IMediator mediator, IRequestService requestS
     /// <summary>Generates and downloads an Excel report of the current agency's requests.</summary>
     /// <param name="pagination">Request filter parameters.</param>
     [HttpGet("File")]
-    [Produces("application/octet-stream")]
+    [Produces("application/octet-stream", "application/json")]
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile(GetRequestForAgencyFilter pagination)
     {

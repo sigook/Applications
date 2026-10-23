@@ -12,7 +12,7 @@ public class Industry
     public ICollection<CompanyProfileIndustry> CompanyProfileIndustries { get; private set; }
 
     public static Result<Industry> Create(string value) =>
-        string.IsNullOrEmpty(value)
+        string.IsNullOrWhiteSpace(value)
             ? Result.Fail<Industry>(ValidationMessages.RequiredMsg(nameof(Value)))
             : Result.Ok(new Industry { Value = value });
 }

@@ -4346,7 +4346,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "404": {
@@ -4357,7 +4361,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
             }
           },
           "500": {
@@ -6910,7 +6918,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "500": {
@@ -7558,7 +7570,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "500": {
@@ -9313,6 +9329,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -10712,7 +10733,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "500": {
@@ -13667,7 +13692,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "500": {
@@ -14591,6 +14620,11 @@
             "description": "OK",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
@@ -15568,6 +15602,11 @@
             "description": "OK",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
@@ -16952,7 +16991,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "400": {
@@ -16963,7 +17006,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
             }
           },
           "500": {
@@ -17107,7 +17154,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "500": {
@@ -17251,7 +17302,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "500": {
@@ -19982,6 +20037,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -20337,6 +20397,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -20344,6 +20409,11 @@
             "description": "Bad Request",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
@@ -21721,7 +21791,11 @@
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
               },
-              "application/json": { }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              }
             }
           },
           "500": {
@@ -22151,13 +22225,19 @@
           "200": {
             "description": "OK",
             "content": {
-              "application/octet-stream": { }
+              "application/octet-stream": { },
+              "application/json": { }
             }
           },
           "400": {
             "description": "Bad Request",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
@@ -23242,6 +23322,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -23340,6 +23425,11 @@
             "description": "OK",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
@@ -23463,6 +23553,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -23470,6 +23565,11 @@
             "description": "Not Found",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
@@ -24123,6 +24223,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -24438,6 +24543,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -24445,6 +24555,11 @@
             "description": "Not Found",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
@@ -24704,6 +24819,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -24746,6 +24866,11 @@
             "description": "OK",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
@@ -24882,6 +25007,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -24889,6 +25019,11 @@
             "description": "Bad Request",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
@@ -24939,6 +25074,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -24946,6 +25086,11 @@
             "description": "Bad Request",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
@@ -25050,6 +25195,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -25057,6 +25207,11 @@
             "description": "Bad Request",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }
@@ -25211,6 +25366,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
                 }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileContentResult"
+                }
               }
             }
           },
@@ -25218,6 +25378,11 @@
             "description": "Bad Request",
             "content": {
               "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
                 }

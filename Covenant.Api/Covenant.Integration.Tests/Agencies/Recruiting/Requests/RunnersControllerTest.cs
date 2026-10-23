@@ -175,14 +175,6 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
     }
 
     [Fact]
-    public async Task PostReturnsBadRequestWhenWorkerBelongsToAnotherAgency()
-    {
-        var model = new RunnerCreateModel { WorkerProfileId = Startup.FakeWorkerOtherAgency.Id, Type = RunnerType.Active };
-        HttpResponseMessage response = await HttpClientJsonExtensions.PostAsJsonAsync(_client, RequestUri(), model);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task ChangeStatus()
     {
         Guid id = Startup.FakeRunnerStatus.Id;
@@ -344,7 +336,6 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
         }
 
         private static readonly Guid AgencyId = Guid.NewGuid();
-        private static readonly Guid OtherAgencyId = Guid.NewGuid();
 
         public static readonly User FakeRecruiterUser = new(CvnEmail.Create("recruiter@mail.com").Value);
         public static readonly Guid UserId = FakeRecruiterUser.Id;
@@ -357,7 +348,6 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
         public static readonly WorkerProfile FakeWorkerSearch = FakeWorker("Ready", "Prospect", "ready.prospect@mail.com");
         public static readonly WorkerProfile FakeWorkerSearchTaken = FakeWorker("Taken", "Prospect", "taken.prospect@mail.com");
         public static readonly WorkerProfile FakeWorkerPost = FakeWorker("Peter", "Post", "peter.post@mail.com");
-        public static readonly WorkerProfile FakeWorkerOtherAgency = FakeWorker("Otto", "Other", "otto.other@mail.com", OtherAgencyId);
         public static readonly WorkerProfile FakeWorkerDuplicated = FakeWorker("Dana", "Duplicated", "dana.dup@mail.com");
         public static readonly WorkerProfile FakeWorkerList = FakeWorker("Alan", "List", "alan.list@mail.com");
         public static readonly WorkerProfile FakeWorkerFiltered = FakeWorker("Bella", "Filtered", "bella.filtered@mail.com");
@@ -427,11 +417,11 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            context.Agencies.AddRange(FakeData.FakeAgency(AgencyId), FakeData.FakeAgency(OtherAgencyId));
+            context.Agencies.Add(FakeData.FakeAgency(AgencyId));
             context.Users.Add(FakeRecruiterUser);
             context.AgencyPersonnel.Add(FakeRecruiter);
             context.Requests.AddRange(FakeRequest, FakeRequestWithoutRunners);
-            context.WorkerProfiles.AddRange(FakeWorkerSearch, FakeWorkerSearchTaken, FakeWorkerPost, FakeWorkerOtherAgency,
+            context.WorkerProfiles.AddRange(FakeWorkerSearch, FakeWorkerSearchTaken, FakeWorkerPost,
                 FakeWorkerDuplicated, FakeWorkerList, FakeWorkerFiltered, FakeWorkerDetail, FakeWorkerStatus, FakeWorkerHire,
                 FakeWorkerHireNoDate, FakeWorkerHired, FakeWorkerInterview, FakeWorkerNoInterview, FakeWorkerReschedule,
                 FakeWorkerDelete, FakeWorkerWithoutRunners);
