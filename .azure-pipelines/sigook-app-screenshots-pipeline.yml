@@ -252,6 +252,8 @@ stages:
                 exit 1
               fi
               sudo chown "$USER" /dev/kvm
+              sudo rm -rf /usr/share/dotnet /usr/share/swift /usr/local/share/boost /usr/local/.ghcup /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/local/lib/node_modules || true
+              df -h /
             fi
             IMAGE="${{ parameters.androidSystemImage }};$ABI"
             SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
@@ -262,10 +264,10 @@ stages:
             mkdir -p "$ANDROID_AVD_HOME"
             echo no | "$AVDMANAGER" create avd -n screenshots -k "$IMAGE" -d pixel_6 --force
             AVD_CONFIG="$ANDROID_AVD_HOME/screenshots.avd/config.ini"
-            grep -v '^disk\.dataPartition\.size=' "$AVD_CONFIG" > "$AVD_CONFIG.tmp" || true
+            grep -v '^[[:space:]]*disk\.dataPartition\.size[[:space:]]*=' "$AVD_CONFIG" > "$AVD_CONFIG.tmp" || true
             echo "disk.dataPartition.size=2048M" >> "$AVD_CONFIG.tmp"
             mv "$AVD_CONFIG.tmp" "$AVD_CONFIG"
-            df -h "$ANDROID_AVD_HOME"
+            grep -i 'partition\|ramSize' "$AVD_CONFIG" || true
             "$ANDROID_HOME/emulator/emulator" -list-avds | grep -qx screenshots || {
               echo "##vso[task.logissue type=error]AVD 'screenshots' not visible to the emulator in $ANDROID_AVD_HOME"
               ls -laR "$ANDROID_AVD_HOME" "$HOME/.android" "${XDG_CONFIG_HOME:-$HOME/.config}/.android" 2>/dev/null || true
