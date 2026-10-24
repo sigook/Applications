@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Agency;
+using Covenant.Common.Entities.Agencies;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +11,7 @@ public class AgencyContactInformationConfiguration : IEntityTypeConfiguration<Ag
         builder.ToTable("AgencyContactInformation");
         builder.HasKey(x => x.Id);
 
-        builder.HasOne<Common.Entities.Agency.Agency>()
+        builder.HasOne<Agency>()
             .WithMany(x => x.ContactInformation)
             .HasForeignKey("AgencyId");
     }

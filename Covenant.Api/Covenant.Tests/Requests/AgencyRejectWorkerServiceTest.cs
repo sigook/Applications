@@ -1,18 +1,18 @@
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
-using Covenant.Common.Repositories.Agencies;
-using Covenant.Common.Repositories.Companies;
-using Covenant.Common.Repositories.Notifications;
-using Covenant.Common.Repositories.Requests;
-using Covenant.Core.BL.Services.Requests;
-using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Services;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Repositories.Notifications;
+using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Adapters;
+using Covenant.Core.BL.Services.Requests;
+using Covenant.Core.BL.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,10 +29,10 @@ public class AgencyRejectWorkerServiceTest
     public async Task Reject()
     {
         var workerId = Guid.NewGuid();
-        var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
+        var request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
         request.AddWorker(workerId, new DateTime(2019, 01, 01));
         var requestRepository = new Mock<IRequestRepository>();
-        requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
+        requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>())).ReturnsAsync(request);
 
         var sut = new RequestService(
             Mock.Of<ICompanyRepository>(),
@@ -41,11 +41,10 @@ public class AgencyRejectWorkerServiceTest
             new FakeTimeProvider(),
             requestRepository.Object,
             Mock.Of<INotificationDataRepository>(),
-            Mock.Of<IPushNotifications>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<ISigookBusClient>(),
+            Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
             Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),
@@ -64,9 +63,9 @@ public class AgencyRejectWorkerServiceTest
     public async Task IfWorkerHasNotBeenBookedCannotBeRejected()
     {
         var workerId = Guid.NewGuid();
-        var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
+        var request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workersQuantity: 1).Value;
         var requestRepository = new Mock<IRequestRepository>();
-        requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
+        requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>())).ReturnsAsync(request);
         var sut = new RequestService(
             Mock.Of<ICompanyRepository>(),
             Mock.Of<IAgencyRepository>(),
@@ -74,11 +73,10 @@ public class AgencyRejectWorkerServiceTest
             new FakeTimeProvider(),
             requestRepository.Object,
             Mock.Of<INotificationDataRepository>(),
-            Mock.Of<IPushNotifications>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<ISigookBusClient>(),
+            Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
             Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),

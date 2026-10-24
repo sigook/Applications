@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Notification;
+using Covenant.Common.Entities.Notifications;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 
 namespace Covenant.Common.Repositories.Notifications;
 

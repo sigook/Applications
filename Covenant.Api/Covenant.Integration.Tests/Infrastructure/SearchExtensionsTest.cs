@@ -1,8 +1,8 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Models.Candidate;
-using Covenant.Common.Models.Worker.Agency;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Workers;
+using Covenant.Common.Models.Candidates;
+using Covenant.Common.Models.Workers.Agencies;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Extensions;
 using Covenant.Infrastructure.Repositories.Candidates;

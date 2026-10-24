@@ -1,3 +1,4 @@
+using Covenant.Common.Entities.Requests;
 using System;
 using Xunit;
 
@@ -8,7 +9,7 @@ public class WorkerRequestTest
 	[Fact]
 	public void UpdateStartWorking()
 	{
-		var workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
+		var workerRequest = WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
 		var startWorking = new DateTime(2021,04,13);
 		var weekStartWorking = new DateTime(2021,04,11);
 		workerRequest.UpdateStartWorking(startWorking);

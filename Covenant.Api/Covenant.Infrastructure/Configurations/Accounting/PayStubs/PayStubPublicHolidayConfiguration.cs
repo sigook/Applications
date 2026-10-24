@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Accounting.PayStub;
+using Covenant.Common.Entities.Accounting.PayStubs;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 

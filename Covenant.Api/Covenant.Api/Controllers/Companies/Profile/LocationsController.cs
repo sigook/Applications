@@ -1,0 +1,67 @@
+using Covenant.Api.Authorization;
+using Covenant.Api.Utils.Extensions;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Repositories.Companies;
+using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Companies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Covenant.Api.Controllers.Companies.Profile;
+
+[Route(RouteName)]
+[ApiController]
+[Produces("application/json")]
+[Authorize(Policy = PolicyConfiguration.Company)]
+[ServiceFilter(typeof(CompanyIdFilter))]
+public class LocationsController(ICompanyService companyService) : ControllerBase
+{
+    public const string RouteName = "api/company/profile/locations";
+
+    /// <summary>Gets the locations of the current company profile.</summary>
+    /// <param name="repository">Company repository resolved from DI.</param>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<LocationDetailModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get([FromServices] ICompanyRepository repository) =>
+        Ok(await repository.GetCompanyLocations(c => c.CompanyProfile.CompanyId == User.GetCompanyId()));
+
+    /// <summary>Creates a new location for the current company profile.</summary>
+    /// <param name="model">Location data.</param>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Post([FromBody] CompanyProfileLocationDetailModel model)
+    {
+        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
+        var result = await companyService.CreateCompanyLocation(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Updates an existing company profile location.</summary>
+    /// <param name="id">Location identifier.</param>
+    /// <param name="model">Updated location data.</param>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] CompanyProfileLocationDetailModel model)
+    {
+        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
+        var result = await companyService.UpdateCompanyLocation(id, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Deletes a company profile location by its identifier.</summary>
+    /// <param name="id">Location identifier.</param>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
+    {
+        var result = await companyService.DeleteCompanyLocation(id);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+}

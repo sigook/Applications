@@ -2,7 +2,7 @@
 
 How a `Request` transitions between states throughout its lifecycle.
 
-**Source of truth:** `Covenant.Api/Covenant.Common/Entities/Request/Request.cs`
+**Source of truth:** `Covenant.Api/Covenant.Common/Entities/Requests/Request.cs`
 
 ---
 
@@ -157,7 +157,7 @@ Relevant tests in `Covenant.Tests/Request/RequestTest.cs`:
 
 ## Key Endpoints
 
-Agency request controllers live in `Covenant.Api/Controllers/Agency/Recruiting/Requests/` (shared detail/actions) with role-scoped lists under `Recruiting/` and `Sales/`.
+Agency request controllers live in `Covenant.Api/Controllers/Agencies/Recruiting/Requests/` (shared detail/actions) with role-scoped lists under `Recruiting/` and `Sales/`.
 
 - `GET    /api/agency/recruiting/requests` — List requests (recruiting-scoped; sales users have their own scoped list)
 - `GET    /api/agency/recruiting/requests/{id}` — Request detail (`Requests/RequestsController`)
@@ -166,7 +166,7 @@ Agency request controllers live in `Covenant.Api/Controllers/Agency/Recruiting/R
 - `POST   /api/agency/recruiting/requests/{requestId}/workers/{workerId}/Book` — Assign a worker (automatic transition; `Requests/WorkersController` → `AgencyService.BookWorker`)
 - `PUT    /api/agency/recruiting/requests/{id}/Cancel` — Cancel (only valid when `Open` + no workers; also `PUT /bulk-cancel`)
 - `PUT    /api/agency/recruiting/requests/{id:guid}/Open` — Reopen
-- `GET    /api/company/requests` — Same listing from the company's perspective (`Controllers/Company/Requests/`)
+- `GET    /api/company/requests` — Same listing from the company's perspective (`Controllers/Companies/Requests/`)
 
 ---
 

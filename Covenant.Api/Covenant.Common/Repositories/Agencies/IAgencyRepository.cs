@@ -1,14 +1,14 @@
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Location;
 
 namespace Covenant.Common.Repositories.Agencies;
 
 public interface IAgencyRepository : IBaseRepository
 {
-    Task<Entities.Agency.Agency> GetAgency(Guid id);
+    Task<Agency> GetAgency(Guid id);
     Task<AgencyModel> GetAgencyDetail(Guid id);
     Task<bool> AgencyExists(Guid id);
     Task<IEnumerable<AgencyPersonnelModel>> GetAllPersonnel(Guid agencyId);
@@ -23,8 +23,8 @@ public interface IAgencyRepository : IBaseRepository
     Task<bool> PersonnelHasCompanies(Guid personnelId);
     Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId);
     Task<Location> GetBillingLocation(Guid agencyId);
-    Task<Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city);
-    Task<Entities.Agency.Agency> GetAgencyMasterByCountry(Guid countryId);
+    Task<Agency> GetAgencyMasterByLocation(CityModel city);
+    Task<Agency> GetAgencyMasterByCountry(Guid countryId);
     Task<PaginatedList<AgencyModel>> GetAgencies(Guid agencyId, GetAgenciesFilter filter);
     IQueryable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter);
     Task<UserAttendance> GetUserAttendance(Guid userId, DateTime date);

@@ -1,9 +1,9 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Accounting.PayStub;
+using Covenant.Common.Entities.Accounting.PayStubs;
 using Covenant.Common.Enums;
-using Covenant.Common.Models;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;

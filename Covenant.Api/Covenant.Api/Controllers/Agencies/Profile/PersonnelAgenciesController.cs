@@ -1,0 +1,36 @@
+using Covenant.Api.Authorization;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Agencies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Covenant.Api.Controllers.Agencies.Profile;
+
+[Route(RouteName)]
+[ApiController]
+[Authorize(Policy = PolicyConfiguration.Agency)]
+[ServiceFilter(typeof(AgencyIdFilter))]
+public class PersonnelAgenciesController : ControllerBase
+{
+    public const string RouteName = "api/agency/profile/personnel/agencies";
+
+    /// <summary>Gets the personnel of the agencies the current user belongs to.</summary>
+    /// <param name="repository">Agency repository.</param>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<PersonnelAgencyModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get([FromServices] IAgencyRepository repository) =>
+        Ok(await repository.GetPersonnelAgency(User.GetUserId()));
+
+    /// <summary>Sets the specified personnel record as the current user's primary agency.</summary>
+    /// <param name="id">Identifier of the personnel record to set as primary.</param>
+    /// <param name="agencyService">Agency service.</param>
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Put(Guid id, [FromServices] IAgencyService agencyService)
+    {
+        await agencyService.SetPrimaryPersonnelAgency(User.GetUserId(), id);
+        return Ok();
+    }
+}

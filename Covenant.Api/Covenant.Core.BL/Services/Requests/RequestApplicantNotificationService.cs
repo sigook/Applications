@@ -1,8 +1,8 @@
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models;
 using Covenant.Core.BL.Interfaces.Requests;
 

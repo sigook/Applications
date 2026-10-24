@@ -15,9 +15,9 @@ public class CovenantFile : ICovenantFile
         Description = description;
     }
 
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public string FileName { get; set; }
-    public string Description { get; set; }
+    public Guid Id { get; private set; } = Guid.NewGuid();
+    public string FileName { get; internal set; }
+    public string Description { get; internal set; }
 
     public CovenantFile UpdateFileName(string fileName)
     {

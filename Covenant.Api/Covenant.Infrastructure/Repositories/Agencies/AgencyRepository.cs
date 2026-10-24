@@ -1,10 +1,10 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -21,7 +21,7 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
 {
     private readonly FilesConfiguration filesConfiguration = options.Value;
 
-    public async Task<Common.Entities.Agency.Agency> GetAgency(Guid id)
+    public async Task<Agency> GetAgency(Guid id)
     {
         var query = Context.Agencies
             .Include(a => a.User)
@@ -143,7 +143,7 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
         };
     }
 
-    public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByLocation(CityModel city)
+    public async Task<Agency> GetAgencyMasterByLocation(CityModel city)
     {
         var country = await Context.Cities.AsNoTracking()
             .Where(c => c.Id == city.Id)
@@ -153,7 +153,7 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
         return await GetAgencyMasterByCountry(country.Id);
     }
 
-    public async Task<Common.Entities.Agency.Agency> GetAgencyMasterByCountry(Guid countryId)
+    public async Task<Agency> GetAgencyMasterByCountry(Guid countryId)
     {
         var agencyLocation = await Context.AgencyLocations
             .Include(al => al.Location)

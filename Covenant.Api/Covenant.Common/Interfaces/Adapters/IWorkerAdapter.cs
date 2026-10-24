@@ -1,7 +1,7 @@
 ﻿using Covenant.Common.Entities;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Workers;
+using Covenant.Common.Models.Workers;
 
 namespace Covenant.Common.Interfaces.Adapters;
 

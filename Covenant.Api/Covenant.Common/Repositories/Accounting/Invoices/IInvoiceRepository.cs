@@ -1,10 +1,10 @@
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Models.Accounting.Invoice.Company;
-using Covenant.Common.Models;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Models.Accounting.Invoices.Companies;
+using Covenant.Common.Models.Accounting.Invoices;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models;
 
 namespace Covenant.Common.Repositories.Accounting.Invoices;
 

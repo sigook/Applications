@@ -298,7 +298,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
             ),
           ),
         ],
-        if (_punchRejectedMessage != null) ...[
+        if (_punchRejectedMessage != null && !_isClearlyOutOfRange) ...[
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -490,9 +490,13 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         color = AppTheme.errorRed;
         icon = Icons.location_off;
         title = 'About ${formatDistance(meters)} $direction of the check point';
-        subtitle = 'Get closer before you clock in.';
+        subtitle = _isClearlyOutOfRange
+            ? 'Get closer to ${_clockType == ClockType.clockOut ? 'clock out' : 'clock in'}. '
+                  'Already on site? Contact your agency.'
+            : 'Get closer before you clock in.';
       }
     }
+    final reference = _isClearlyOutOfRange ? _workerReference() : null;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -548,6 +552,13 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                     ],
                   ),
                 ],
+                if (reference != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '$reference\nRequest #${widget.jobNumberId}',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                  ),
+                ],
               ],
             ),
           ),
@@ -560,6 +571,22 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
       _clockType == ClockType.none &&
       _punchStatus.clockIn != null &&
       _punchStatus.clockOut != null;
+
+  bool get _isClearlyOutOfRange {
+    final position = _livePosition;
+    if (!widget.hasCheckpoint ||
+        position == null ||
+        _clockType == ClockType.none) {
+      return false;
+    }
+    final meters = distanceInMeters(
+      widget.checkpointLatitude!,
+      widget.checkpointLongitude!,
+      position.latitude,
+      position.longitude,
+    );
+    return meters - position.accuracy > widget.checkpointRadiusMeters!;
+  }
 
   bool get _showsCheckpointStrip =>
       _clockType != ClockType.none ||
@@ -580,7 +607,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         ? null
         : isRetry
         ? () => _loadClockType(refreshCheckpoint: true)
-        : _clockType == ClockType.none
+        : _clockType == ClockType.none || _isClearlyOutOfRange
         ? null
         : _onClockTapped;
 
@@ -1008,6 +1035,13 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
+  }
+
+  String _workerReference() {
+    final profile = ref.watch(cachedWorkerProfileProvider).value;
+    return profile == null
+        ? 'Worker: unknown'
+        : 'Worker #${profile.numberId ?? '-'} · ${profile.fullName}';
   }
 
   String _punchReference() {

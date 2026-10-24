@@ -1,8 +1,8 @@
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Functionals;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Functionals;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Utils.Extensions;
 using Moq;
 using Xunit;

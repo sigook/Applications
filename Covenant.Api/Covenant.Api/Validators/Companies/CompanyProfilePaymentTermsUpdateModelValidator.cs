@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
 using FluentValidation;
 
 namespace Covenant.Api.Validators.Companies;

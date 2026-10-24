@@ -1,4 +1,4 @@
-# Reusable Node.js setup via the official NodeTool task.
+# Reusable Node.js setup via the official UseNode task.
 # Downloads + activates the requested Node version on any agent (no NVM dependency).
 
 parameters:
@@ -8,10 +8,10 @@ parameters:
     displayName: 'Node.js version spec (e.g. 22.x, 20.19.0)'
 
 steps:
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: 'Setup Node.js ${{ parameters.nodeVersion }}'
     inputs:
-      versionSpec: '${{ parameters.nodeVersion }}'
+      version: '${{ parameters.nodeVersion }}'
 
   - script: |
       echo "Node version: $(node --version)"

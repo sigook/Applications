@@ -1,7 +1,7 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities.Sales;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Companies;

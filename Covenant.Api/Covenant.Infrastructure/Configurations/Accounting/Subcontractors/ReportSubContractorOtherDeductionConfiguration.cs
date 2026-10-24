@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Accounting.Subcontractor;
+using Covenant.Common.Entities.Accounting.Subcontractors;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 

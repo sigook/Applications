@@ -1,15 +1,16 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Accounting.Subcontractor;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Accounting.Subcontractors;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Common.Repositories.Accounting.Subcontractors;
@@ -25,7 +26,6 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Mime;
-using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
 
 namespace Covenant.Core.BL.Services.Accounting.Invoices;
 
@@ -265,18 +265,15 @@ public class InvoiceService(
         var createdAt = model.InvoiceDate ?? timeProvider.GetLocalNow().DateTime;
         var nextNumber = await invoiceRepository.GetNextInvoiceNumber(companyProfile.AgencyId);
 
-        var invoice = new Invoice
-        {
-            CompanyProfileId = model.CompanyProfileId,
-            InvoiceNumberId = nextNumber.NextNumber,
-            InvoiceNumber = strategy.BuildInvoiceNumber(nextNumber.NextNumber, createdAt),
-            Email = model.Email,
-            SubTotal = subtotal,
-            Tax = tax,
-            TotalNet = subtotal + tax,
-            CreatedAt = createdAt,
-            WeekEnding = model.DirectHiring || timesheets.Count == 0 ? null : timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek()
-        };
+        var invoice = Invoice.Create(
+            model.CompanyProfileId,
+            nextNumber.NextNumber,
+            strategy.BuildInvoiceNumber(nextNumber.NextNumber, createdAt),
+            model.Email,
+            subtotal,
+            tax,
+            createdAt,
+            model.DirectHiring || timesheets.Count == 0 ? null : timesheets.Max(t => t.Date).GetWeekEndingCurrentWeek());
 
         invoice.AddInvoiceTotals(invoiceTotals);
         invoice.AddHolidays(invoiceHolidays);
@@ -406,35 +403,35 @@ public class InvoiceService(
                 if (regularHours > 0)
                 {
                     var regularAmount = calculatorService.CalculateRegularAmount(agencyRate, regularHours);
-                    items.Add(CreateItem(timeSheetTotal, regularHours, agencyRate, $"Charge for {jobTitle} / Regular", agencyRate, regularAmount, item => item.Regular = regularAmount));
+                    items.Add(CreateItem(timeSheetTotal, regularHours, agencyRate, $"Charge for {jobTitle} / Regular", agencyRate, regularAmount, item => item.ChargeRegular(regularAmount)));
                 }
 
                 var overtimeHours = hoursBreakdown.OvertimeHours.TotalHours;
                 if (overtimeHours > 0)
                 {
                     var overtimeAmount = calculatorService.CalculateOvertimeAmount(agencyRate, rates.OverTime, overtimeHours);
-                    items.Add(CreateItem(timeSheetTotal, overtimeHours, agencyRate * rates.OverTime, $"Charge for {jobTitle} / Overtime", agencyRate, overtimeAmount, item => item.Overtime = overtimeAmount));
+                    items.Add(CreateItem(timeSheetTotal, overtimeHours, agencyRate * rates.OverTime, $"Charge for {jobTitle} / Overtime", agencyRate, overtimeAmount, item => item.ChargeOvertime(overtimeAmount)));
                 }
 
                 var holidayHours = hoursBreakdown.HolidayHours.TotalHours;
                 if (holidayHours > 0)
                 {
                     var holidayAmount = calculatorService.CalculateHolidayAmount(agencyRate, rates.Holiday, holidayHours);
-                    items.Add(CreateItem(timeSheetTotal, holidayHours, agencyRate * rates.Holiday, $"Charge for {jobTitle} / Holiday", agencyRate, holidayAmount, item => item.Holiday = holidayAmount));
+                    items.Add(CreateItem(timeSheetTotal, holidayHours, agencyRate * rates.Holiday, $"Charge for {jobTitle} / Holiday", agencyRate, holidayAmount, item => item.ChargeHoliday(holidayAmount)));
                 }
 
                 var missingHours = timesheet.MissingHours.TotalHours;
                 if (missingHours > 0)
                 {
                     var missingAmount = calculatorService.CalculateMissingAmount(agencyRate, missingHours);
-                    items.Add(CreateItem(timeSheetTotal, missingHours, agencyRate, $"Charge for {jobTitle} / Missing Hours", agencyRate, missingAmount, item => item.Missing = missingAmount));
+                    items.Add(CreateItem(timeSheetTotal, missingHours, agencyRate, $"Charge for {jobTitle} / Missing Hours", agencyRate, missingAmount, item => item.ChargeMissing(missingAmount)));
                 }
 
                 var missingOvertimeHours = timesheet.MissingHoursOvertime.TotalHours;
                 if (missingOvertimeHours > 0)
                 {
                     var missingOvertimeAmount = calculatorService.CalculateOvertimeAmount(agencyRate, rates.OverTime, missingOvertimeHours);
-                    items.Add(CreateItem(timeSheetTotal, missingOvertimeHours, agencyRate * rates.OverTime, $"Charge for {jobTitle} / Missing Overtime Hours", agencyRate, missingOvertimeAmount, item => item.MissingOvertime = missingOvertimeAmount));
+                    items.Add(CreateItem(timeSheetTotal, missingOvertimeHours, agencyRate * rates.OverTime, $"Charge for {jobTitle} / Missing Overtime Hours", agencyRate, missingOvertimeAmount, item => item.ChargeMissingOvertime(missingOvertimeAmount)));
                 }
 
                 var timesheetGross = items.Skip(itemsBeforeTimesheet).Sum(i => i.Total);
@@ -445,20 +442,9 @@ public class InvoiceService(
         return items;
     }
 
-    private static InvoiceTotal CreateItem(TimeSheetTotalEntity timeSheetTotal, double quantity, decimal unitPrice, string description, decimal agencyRate, decimal amount, Action<InvoiceTotal> setBucket)
+    private static InvoiceTotal CreateItem(TimeSheetTotal timeSheetTotal, double quantity, decimal unitPrice, string description, decimal agencyRate, decimal amount, Action<InvoiceTotal> setBucket)
     {
-        var item = new InvoiceTotal
-        {
-            TimeSheetTotalId = timeSheetTotal.Id,
-            TimeSheetTotal = timeSheetTotal,
-            Quantity = quantity,
-            UnitPrice = unitPrice,
-            Description = description,
-            AgencyRate = agencyRate,
-            Total = amount,
-            TotalGross = amount,
-            TotalNet = amount
-        };
+        var item = InvoiceTotal.Create(timeSheetTotal, quantity, unitPrice, description, agencyRate, amount);
         setBucket(item);
         return item;
     }
@@ -550,10 +536,7 @@ public class InvoiceService(
                         missingOvertime: 0,
                         nightShift: 0,
                         holiday: holidayAmount,
-                        overtime: overtimeAmount)
-                    {
-                        TimeSheetTotal = timeSheetTotal
-                    });
+                        overtime: overtimeAmount).AttachTimeSheetTotal(timeSheetTotal));
                 }
             }
 
@@ -562,18 +545,13 @@ public class InvoiceService(
             var totalHoliday = wageDetails.Sum(w => w.Holiday);
             var gross = totalRegular + totalOvertime + totalHoliday;
 
-            var report = new ReportSubcontractor
-            {
-                WorkerProfileId = workerProfileId,
-                RegularWage = totalRegular,
-                Gross = gross,
-                PublicHolidayPay = 0,
-                Earnings = gross,
-                TotalNet = gross,
-                DateWorkBegins = group.Min(t => t.Date),
-                DateWorkEnd = group.Max(t => t.Date),
-                WeekEnding = group.Key.Week,
-            };
+            var report = ReportSubcontractor.Create(
+                workerProfileId,
+                totalRegular,
+                gross,
+                group.Min(t => t.Date),
+                group.Max(t => t.Date),
+                group.Key.Week);
 
             report.AddWageDetail(wageDetails);
 

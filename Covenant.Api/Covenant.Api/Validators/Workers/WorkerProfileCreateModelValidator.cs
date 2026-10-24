@@ -1,6 +1,6 @@
 using Covenant.Common.Constants;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;

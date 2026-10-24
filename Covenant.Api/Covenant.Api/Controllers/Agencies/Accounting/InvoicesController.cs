@@ -1,0 +1,140 @@
+﻿using Covenant.Api.Authorization;
+using Covenant.Api.Utils.Extensions;
+using Covenant.Common.Constants;
+using Covenant.Common.Models.Accounting;
+using Covenant.Common.Models.Accounting.Invoices;
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Repositories.Accounting.PayStubs;
+using Covenant.Core.BL.Interfaces.Accounting.Invoices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
+
+namespace Covenant.Api.Controllers.Agencies.Accounting;
+
+[Route(RouteName)]
+[ApiController]
+[Authorize(Policy = PolicyConfiguration.Admin)]
+[ServiceFilter(typeof(AgencyIdFilter))]
+public class InvoicesController(IInvoiceService invoiceService, IPayStubRepository payStubRepository) : ControllerBase
+{
+    public const string RouteName = "api/agency/accounting/invoices";
+
+    /// <summary>Gets the list of invoices matching the given filter with totals.</summary>
+    /// <param name="filter">Filter criteria for invoices.</param>
+    [HttpGet]
+    [ProducesResponseType(typeof(InvoiceListModelWithTotals), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInvoices([FromQuery] GetInvoicesFilter filter)
+    {
+        var data = await invoiceService.GetInvoices(filter);
+        return Ok(data);
+    }
+
+    /// <summary>Exports the filtered invoices to an Excel file.</summary>
+    /// <param name="filter">Filter criteria for invoices.</param>
+    [HttpGet("file")]
+    [Produces("application/octet-stream", "application/json")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInvoicesFile([FromQuery] GetInvoicesFilter filter)
+    {
+        var file = await invoiceService.GetInvoicesFile(filter);
+        return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
+    /// <summary>Exports the filtered invoices to the payments follow-up Excel (amounts before/after tax, due date, due days, payment date).</summary>
+    /// <param name="filter">Filter criteria for invoices.</param>
+    [HttpGet("payments-report")]
+    [Produces("application/octet-stream", "application/json")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInvoicesPaymentsReport([FromQuery] GetInvoicesFilter filter)
+    {
+        var file = await invoiceService.GetInvoicesPaymentsReport(filter);
+        return File(file.Document, CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
+    /// <summary>Generates a preview of an invoice without persisting it.</summary>
+    /// <param name="model">Invoice data to preview.</param>
+    [HttpPost("Preview")]
+    [ProducesResponseType(typeof(InvoicePreviewModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Preview([FromBody] CreateInvoiceModel model)
+    {
+        var result = await invoiceService.PreviewInvoice(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok(result.Value);
+    }
+
+    /// <summary>Creates a new invoice.</summary>
+    /// <param name="model">Invoice data to create.</param>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Post([FromBody] CreateInvoiceModel model)
+    {
+        var result = await invoiceService.CreateInvoice(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Generates and returns the invoice document as a PDF file.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    [HttpGet("{invoiceId:guid}/pdf")]
+    [Produces("application/octet-stream", "application/json")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetInvoicePdf(Guid invoiceId)
+    {
+        var document = await invoiceService.GetInvoicePdf(invoiceId);
+        if (document is null) return NotFound();
+        return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
+    }
+
+    /// <summary>Gets the pay stubs linked to an invoice, including delete-warning information.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    [HttpGet("{invoiceId:guid}/paystubs")]
+    [ProducesResponseType(typeof(List<PayStubDeleteWarningListModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPayStubs(Guid invoiceId) =>
+        Ok(await payStubRepository.GetPayStubs(invoiceId));
+
+    /// <summary>Generates the invoice PDF and emails it, with optional attachments, to the client.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    /// <param name="model">Email content and recipients.</param>
+    /// <param name="files">Files to attach to the email.</param>
+    [HttpPost("{invoiceId:guid}/email")]
+    [Consumes("multipart/form-data")]
+
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendInvoiceEmail(Guid invoiceId, [FromForm] InvoiceEmailModel model, IFormFileCollection files)
+    {
+        model.Attachments = files.ToEmailAttachments();
+        var result = await invoiceService.SendInvoiceEmail(invoiceId, model);
+        if (result) return Ok();
+        return BadRequest(ModelState.AddError(result.StringErrors));
+    }
+
+    /// <summary>Changes the status of an invoice (Pending / Paid) and records who changed it and when. Paid accepts an optional payment date (defaults to today).</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    /// <param name="model">The new status and, for Paid, the payment date.</param>
+    [HttpPut("{invoiceId:guid}/status")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ChangeStatus([FromRoute] Guid invoiceId, [FromBody] ChangeInvoiceStatusModel model)
+    {
+        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
+        var result = await invoiceService.ChangeInvoiceStatus(invoiceId, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Deletes an invoice and its related pay stubs, and notifies the accounting team.</summary>
+    /// <param name="id">Identifier of the invoice to delete.</param>
+    /// <param name="model">The pay stubs to delete alongside the invoice.</param>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Delete([FromRoute] Guid id, [FromBody] DeleteInvoiceModel model)
+    {
+        await invoiceService.DeleteInvoice(id, model);
+        return Ok();
+    }
+}

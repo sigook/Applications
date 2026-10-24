@@ -6,7 +6,7 @@ using Azure.Messaging.ServiceBus;
 
 namespace Covenant.Infrastructure.Services
 {
-    public class SigookBusClient : ServiceBusClient, ISigookBusClient
+    public class SigookBusClient : ServiceBusClient, ISigookBusClient, IMessagePublisher
     {
         private readonly SigookBusAdministrationClient administrationClient;
         private readonly ILogger<SigookBusClient> logger;
@@ -48,19 +48,17 @@ namespace Covenant.Infrastructure.Services
             await processor.StartProcessingAsync();
         }
 
-        public async Task SendMessageAsync(ServiceBusMessage message, string queueOrTopic)
+        public async Task SendMessageAsync<T>(T message, string queueOrTopic, IReadOnlyDictionary<string, object> properties = null)
         {
-            await using var sender = CreateSender(queueOrTopic);
-            await sender.SendMessageAsync(message);
-        }
-
-        public async Task SendMessageAsync<T>(T message, string queueOrTopic)
-        {
-            var busMessage = new ServiceBusMessage(JsonSerializer.Serialize(message))
+            var busMessage = message is null
+                ? new ServiceBusMessage()
+                : new ServiceBusMessage(JsonSerializer.Serialize(message)) { ContentType = MediaTypeNames.Application.Json };
+            foreach (var (key, value) in properties ?? new Dictionary<string, object>())
             {
-                ContentType = MediaTypeNames.Application.Json,
-            };
-            await SendMessageAsync(busMessage, queueOrTopic);
+                busMessage.ApplicationProperties[key] = value;
+            }
+            await using var sender = CreateSender(queueOrTopic);
+            await sender.SendMessageAsync(busMessage);
         }
 
         private async Task OnFailDefault(ProcessErrorEventArgs args)

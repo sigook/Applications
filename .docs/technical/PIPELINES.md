@@ -64,6 +64,7 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 - Build `Covenant.Api/Covenant.Api.slnx` (template: `dotnet-build-test.yml`; packages come from nuget.org only, see `Covenant.Api/nuget.config`)
 - Unit tests: `Covenant.Tests`, `Sigook.Functions.Tests`
 - Integration tests: `Covenant.Integration.Tests`
+- Code coverage gate: both test steps run with `--settings Covenant.Api/coverage.runsettings` (Microsoft code coverage, Cobertura). ReportGenerator (local tool in `Covenant.Api/dotnet-tools.json`) merges the reports, `PublishCodeCoverageResults@2` shows them in the run's Code Coverage tab, and `dotnet run coverage-gate.cs` fails the build when **line coverage is below 80%** (`minLineCoverage`), so nothing is published or deployed. Measured over `Covenant.Api`, `Covenant.Common`, `Covenant.Core.BL`, `Covenant.Documents`, `Covenant.Infrastructure` and `Sigook.Functions`; EF migrations, Razor views, `obj/` and source-generated code (`[GeneratedCode]`, `*.g.cs`) and `[ExcludeFromCodeCoverage]` members are excluded
 - dev/main only (the steps are left out of PR runs at compile time): `dotnet publish --no-build` of `Covenant.Api.csproj` into `$(Build.ArtifactStagingDirectory)/api`, then Docker build + push with that folder as build context
 - Docker tags: `latest_staging` (dev) or `latest_production` (main), plus the immutable `$(Build.BuildId)`
 - Dockerfile: `Covenant.Api/Dockerfile` — runtime-only (`aspnet:10.0` + the published output); the solution is compiled once, on the agent
@@ -312,7 +313,7 @@ Installs .NET SDK via `UseDotNet@2` task.
 | `includePreviewVersions` | boolean | `false` | Include preview SDK versions |
 
 ### node-setup.yml
-Installs Node.js via the official `NodeTool@0` task (no NVM dependency) and verifies the installation. Used by the Sigook.Web and Covenant.Web pipelines.
+Installs Node.js via the official `UseNode@1` task (no NVM dependency) and verifies the installation. Used by the Sigook.Web and Covenant.Web pipelines.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -329,6 +330,9 @@ Builds solution, authenticates NuGet, and optionally runs tests.
 | `unitTestProjects` | string | `''` | Unit test project pattern |
 | `runIntegrationTests` | boolean | `false` | Run integration tests |
 | `integrationTestProjects` | string | `''` | Integration test project pattern |
+| `coverageSettings` | string | `''` | Runsettings that enables code coverage; empty = no coverage steps |
+| `coverageWorkingDirectory` | string | `''` | Folder with `dotnet-tools.json` (ReportGenerator) and `coverage-gate.cs` |
+| `minLineCoverage` | number | `0` | Minimum merged line coverage (%) for the build to pass |
 
 ### cleanup.yml
 Frees disk space on self-hosted agents after builds.

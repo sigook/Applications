@@ -1,0 +1,10 @@
+namespace Covenant.Common.Models.Candidates;
+
+public class CandidateContactInfoModel
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Address { get; set; }
+    public Guid? CityId { get; set; }
+}

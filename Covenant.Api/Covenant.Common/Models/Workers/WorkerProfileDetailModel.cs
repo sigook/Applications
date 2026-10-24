@@ -1,0 +1,89 @@
+using Covenant.Common.Enums;
+using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Locations;
+using System.Text.Json.Serialization;
+
+namespace Covenant.Common.Models.Workers
+{
+    public class WorkerProfileDetailModel :
+        IWorkerBasicInformation<BaseModel<Guid>>,
+        IWorkerContactInformation<LocationDetailModel, CityModel>,
+        IJobExperienceInformation<WorkerProfileJobExperienceDetailModel>,
+        IEmailInformation,
+        IWorkerProfileStatusInformation,
+        IWorkerRequirementsInformation
+    {
+        public Guid Id { get; set; }
+        public long NumberId { get; set; }
+        public CovenantFileModel ProfileImage { get; set; }
+        public string FirstName { get; set; }
+        public string MiddleName { get; set; }
+        public string LastName { get; set; }
+        public string SecondLastName { get; set; }
+        public DateTime BirthDay { get; set; }
+        public BaseModel<Guid> Gender { get; set; }
+        public string SocialInsurance { get; set; }
+        public bool SocialInsuranceExpire { get; set; }
+        public DateTime? DueDate { get; set; }
+        public CovenantFileModel SocialInsuranceFile { get; set; }
+        public string IdentificationNumber1 { get; set; }
+        public string IdentificationNumber2 { get; set; }
+        public bool HavePoliceCheckBackground { get; set; }
+        public CovenantFileModel IdentificationType1File { get; set; }
+        public CovenantFileModel IdentificationType2File { get; set; }
+        public BaseModel<Guid> IdentificationType1 { get; set; }
+        public BaseModel<Guid> IdentificationType2 { get; set; }
+        public CovenantFileModel PoliceCheckBackGround { get; set; }
+        public string MobileNumber { get; set; }
+        public string Phone { get; set; }
+        public int? PhoneExt { get; set; }
+        public LocationDetailModel Location { get; set; }
+        public bool HasVehicle { get; set; }
+        public IEnumerable<WorkerProfileLicenseDetailModel> Licenses { get; set; } = [];
+        public IEnumerable<CovenantFileModel> Certificates { get; set; } = [];
+        public IEnumerable<CovenantFileModel> OtherDocuments { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> Availabilities { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> AvailabilityTimes { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> AvailabilityDays { get; set; } = [];
+        public IEnumerable<BaseModel<Guid>> LocationPreferences { get; set; } = [];
+        public BaseModel<Guid> Lift { get; set; }
+        public IEnumerable<BaseModel<Guid>> Languages { get; set; } = [];
+        public IEnumerable<SkillModel> Skills { get; set; } = [];
+        public CovenantFileModel Resume { get; set; }
+        public bool HaveAnyHealthProblem { get; set; }
+        public string HealthProblem { get; set; }
+        public string OtherHealthProblem { get; set; }
+        public string ContactEmergencyName { get; set; }
+        public string ContactEmergencyLastName { get; set; }
+        public string ContactEmergencyPhone { get; set; }
+        public IEnumerable<WorkerProfileJobExperienceDetailModel> JobExperiences { get; set; } = [];
+        public string Email { get; set; }
+        public bool ApprovedToWork { get; set; }
+        public Guid WorkerId { get; set; }
+        public bool IsSubcontractor { get; set; }
+        public bool IsContractor { get; set; }
+        public TaxCategory? FederalTaxCategory { get; set; }
+        public TaxCategory? ProvincialTaxCategory { get; set; }
+        public decimal? Cpp { get; set; }
+        public decimal? Ei { get; set; }
+        public bool Dnu { get; set; }
+        public string CreatedBy { get; set; }
+        public string PunchCardId { get; set; }
+        public string ExternalId { get; set; }
+        public string WcCode { get; set; }
+        public IReadOnlyList<WorkerRequirement> MissingRequirements { get; set; } = [];
+
+        [JsonIgnore]
+        public bool IsUsa => Location?.City?.Province?.Country?.Code == "USA";
+        [JsonIgnore]
+        public bool HasProfileImage => ProfileImage is not null && ProfileImage.Id != Guid.Empty;
+        [JsonIgnore]
+        public bool HasTaxCategory => FederalTaxCategory != null || ProvincialTaxCategory != null;
+        [JsonIgnore]
+        public bool HasSocialInsuranceFile => !string.IsNullOrEmpty(SocialInsuranceFile?.FileName);
+        [JsonIgnore]
+        public bool HasIdentification1File => !string.IsNullOrEmpty(IdentificationType1File?.FileName);
+        [JsonIgnore]
+        public bool HasIdentification2File => !string.IsNullOrEmpty(IdentificationType2File?.FileName);
+    }
+}

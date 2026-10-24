@@ -1,8 +1,9 @@
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities.Sales;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 
 namespace Covenant.Integration.Tests.Utils;
@@ -30,13 +31,12 @@ public static class FakeData
         return location;
     }
 
-    public static Covenant.Common.Entities.Agency.Agency FakeAgency(Guid id = default, City city = null)
+    public static Agency FakeAgency(Guid id = default, City city = null)
     {
         id = id == default ? Guid.NewGuid() : id;
-        var agency = new Covenant.Common.Entities.Agency.Agency
+        var agency = new Agency("Test Agency", null)
         {
             Id = id,
-            FullName = "Test Agency",
             RecruitmentEmail = "recruit@test.com",
             User = FakeUser($"agency.{id:N}@test.com")
         };
@@ -44,7 +44,7 @@ public static class FakeData
         return agency;
     }
 
-    public static CompanyProfile FakeCompanyProfile(Covenant.Common.Entities.Agency.Agency agency = null,
+    public static CompanyProfile FakeCompanyProfile(Agency agency = null,
         string fullName = "Test Company", City city = null, Guid id = default, string companyEmail = null)
     {
         agency ??= FakeAgency(city: city);
@@ -64,9 +64,9 @@ public static class FakeData
             Company = FakeUser(companyEmail),
             AgencyId = agencyId,
             FullName = fullName,
-            Phone = "4165551234",
             Industry = new CompanyProfileIndustry("Test")
         };
+        companyProfile.UpdatePhones("4165551234", null, null, null);
         if (id != default) companyProfile.Id = id;
         companyProfile.AddLocation(FakeLocation(city), true);
         return companyProfile;
@@ -83,7 +83,16 @@ public static class FakeData
             WorkerRate = workerRate
         };
 
-    public static WorkerProfile FakeWorkerProfile(Covenant.Common.Entities.Agency.Agency agency = null,
+    public static CompanyProfileContactPerson FakeContactPerson(Guid companyProfileId,
+        string title = null, string firstName = null, string middleName = null, string lastName = null,
+        string position = null, string mobileNumber = null, string officeNumber = null, int? officeNumberExt = null, string email = null)
+    {
+        var contactPerson = new CompanyProfileContactPerson(companyProfileId);
+        contactPerson.Update(title, firstName, middleName, lastName, position, mobileNumber, officeNumber, officeNumberExt, email);
+        return contactPerson;
+    }
+
+    public static WorkerProfile FakeWorkerProfile(Agency agency = null,
         string email = null, City city = null, Guid id = default)
     {
         agency ??= FakeAgency(city: city);

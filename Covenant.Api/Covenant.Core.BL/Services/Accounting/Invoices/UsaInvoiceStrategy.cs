@@ -1,5 +1,5 @@
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
 using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 
 namespace Covenant.Core.BL.Services.Accounting.Invoices;

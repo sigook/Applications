@@ -1,22 +1,21 @@
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities.Sales;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Sales.Dashboard;
-using Covenant.Common.Models.Sales;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Sales.Dashboard;
+using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces.Sales;
-using Covenant.Core.BL.Interfaces.Shared;
 using FluentValidation;
 using System.Globalization;
 
@@ -130,7 +129,7 @@ public class SalesService(
             var file = CovenantFile.Create(model.FileName);
             if (!file) return Result.Fail<Guid>(file.Errors);
             await companyRepository.Create(file.Value);
-            deal.Document = file.Value;
+            deal.AttachDocument(file.Value);
         }
         await companyRepository.Create(deal);
         await companyRepository.SaveChangesAsync();

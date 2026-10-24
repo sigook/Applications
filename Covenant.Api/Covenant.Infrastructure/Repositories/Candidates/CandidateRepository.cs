@@ -1,8 +1,8 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Candidate;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Models.Candidates;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Candidate;
-using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -205,7 +205,7 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
     public Task<CandidateDocument> GetDocument(Guid candidateId, Guid id) =>
         Context.CandidateDocuments.SingleOrDefaultAsync(c => c.CandidateId == candidateId && c.DocumentId == id);
 
-    public async Task<Common.Entities.Candidate.Candidate> GetCandidate(Expression<Func<Common.Entities.Candidate.Candidate, bool>> expression)
+    public async Task<Candidate> GetCandidate(Expression<Func<Candidate, bool>> expression)
     {
         var candidate = await Context.Candidates
             .Include(c => c.Gender)

@@ -1,22 +1,20 @@
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request.Company;
-using Covenant.Common.Models.Request.Worker;
-using Covenant.Common.Models.Website;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Worker;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Request.WeeklyBoard;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests.Companies;
+using Covenant.Common.Models.Requests.WeeklyBoard;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Website;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
 public interface IRequestRepository : IBaseRepository
 {
-    Task<Entities.Request.Request> GetRequest(Expression<Func<Entities.Request.Request, bool>> condition);
-    Task<IEnumerable<Entities.Request.Request>> GetRequests(IEnumerable<Guid> ids);
+    Task<Request> GetRequest(Expression<Func<Request, bool>> condition);
+    Task<IEnumerable<Request>> GetRequests(IEnumerable<Guid> ids);
     IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<PaginatedList<AgencyRequestListModel>> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
@@ -47,9 +45,9 @@ public interface IRequestRepository : IBaseRepository
     Task<RequestNote> GetNote(Guid requestId, Guid id);
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignments(Guid agencyId, DateTime weekStart, DateTime weekEnd);
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd);
-    Task<RequestRecruiter> GetRequestRecruiter(Guid agencyId, Guid requestId, Guid recruiterId, DateTime workDate);
+    Task<RequestRecruiter> GetRequestRecruiter(Guid requestId, Guid recruiterId, DateTime workDate);
     Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt);
-    Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid agencyId, Guid requestId);
+    Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId);
     Task<Dictionary<Guid, string>> GetWorkerProfileNames(IEnumerable<Guid> workerProfileIds);
     Task<RequestSkill> GetSkill(Guid requestId, Guid id);
     Task<IEnumerable<SkillModel>> GetSkills(Guid requestId);
@@ -68,6 +66,5 @@ public interface IRequestRepository : IBaseRepository
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceItems(Guid applicantId);
     Task<IEnumerable<RequestApplicantComplianceItem>> GetApplicantComplianceCompletions(IEnumerable<Guid> complianceItemIds);
     Task<IEnumerable<CompanyProfileListModel>> GetCompaniesWithRequests(IEnumerable<Guid> agencyIds);
-    Task<bool> ExistsRequestByNumber(int requestId);
     Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId);
 }

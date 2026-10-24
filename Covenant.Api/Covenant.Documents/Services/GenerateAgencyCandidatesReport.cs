@@ -1,6 +1,6 @@
-using Covenant.Common.Models.Candidate;
-using Covenant.Common.Utils.Extensions;
 using ClosedXML.Excel;
+using Covenant.Common.Models.Candidates;
+using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Documents.Services
 {

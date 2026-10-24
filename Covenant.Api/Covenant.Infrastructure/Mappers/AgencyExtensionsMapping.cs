@@ -1,7 +1,7 @@
-using Covenant.Common.Entities.Agency;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Location;
 using System.Linq.Expressions;
 
 namespace Covenant.Infrastructure.Mappers;

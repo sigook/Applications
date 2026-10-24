@@ -252,6 +252,8 @@ stages:
                 exit 1
               fi
               sudo chown "$USER" /dev/kvm
+              sudo rm -rf /usr/share/dotnet /usr/share/swift /usr/local/share/boost /usr/local/.ghcup /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/powershell /usr/local/lib/node_modules || true
+              df -h /
             fi
             IMAGE="${{ parameters.androidSystemImage }};$ABI"
             SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
@@ -261,6 +263,11 @@ stages:
             "$SDKMANAGER" "platform-tools" "emulator" "$IMAGE"
             mkdir -p "$ANDROID_AVD_HOME"
             echo no | "$AVDMANAGER" create avd -n screenshots -k "$IMAGE" -d pixel_6 --force
+            AVD_CONFIG="$ANDROID_AVD_HOME/screenshots.avd/config.ini"
+            grep -v '^[[:space:]]*disk\.dataPartition\.size[[:space:]]*=' "$AVD_CONFIG" > "$AVD_CONFIG.tmp" || true
+            echo "disk.dataPartition.size=2048M" >> "$AVD_CONFIG.tmp"
+            mv "$AVD_CONFIG.tmp" "$AVD_CONFIG"
+            grep -i 'partition\|ramSize' "$AVD_CONFIG" || true
             "$ANDROID_HOME/emulator/emulator" -list-avds | grep -qx screenshots || {
               echo "##vso[task.logissue type=error]AVD 'screenshots' not visible to the emulator in $ANDROID_AVD_HOME"
               ls -laR "$ANDROID_AVD_HOME" "$HOME/.android" "${XDG_CONFIG_HOME:-$HOME/.config}/.android" 2>/dev/null || true
@@ -325,7 +332,7 @@ stages:
             EMULATOR_LOG="$(Build.ArtifactStagingDirectory)/emulator.log"
             DEVICE=emulator-5554
 
-            emulator -avd screenshots -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
+            emulator -avd screenshots -no-window -no-audio -no-boot-anim -no-snapshot -no-metrics -partition-size 2048 -gpu swiftshader_indirect > "$EMULATOR_LOG" 2>&1 &
             EMULATOR_PID=$!
             trap 'rc=$?; if [ $rc -ne 0 ]; then echo "=== emulator.log ==="; tail -n 100 "$EMULATOR_LOG"; cp "$EMULATOR_LOG" "$(outputRoot)/"; fi' EXIT
 
@@ -362,4 +369,14 @@ stages:
         inputs:
           PathtoPublish: '$(outputRoot)'
           ArtifactName: 'store-screenshots-android'
+      - task: Bash@3
+        displayName: 'Free disk for post-job caches'
+        condition: always()
+        inputs:
+          targetType: 'inline'
+          script: |
+            adb emu kill 2>/dev/null || true
+            pkill -f qemu-system 2>/dev/null || true
+            rm -rf "$ANDROID_AVD_HOME" "$ANDROID_HOME/system-images" "$(workingDirectory)/build" "$(workingDirectory)/android/.gradle"
+            df -h /
           publishLocation: 'Container'

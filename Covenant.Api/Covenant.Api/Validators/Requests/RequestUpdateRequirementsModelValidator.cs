@@ -1,6 +1,6 @@
 using Covenant.Common.Constants;
-using Covenant.Common.Models.Request.Company;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests.Companies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Resources;
 using FluentValidation;
 

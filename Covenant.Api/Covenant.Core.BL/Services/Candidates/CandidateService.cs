@@ -1,31 +1,30 @@
 using ClosedXML.Excel;
+using Covenant.Common.Constants;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
+using Covenant.Common.Entities;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Candidates;
 using Covenant.Common.Models.Identity;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
-using Covenant.Core.BL.Interfaces.Candidates;
-using Covenant.Core.BL.Interfaces.Shared;
-using Covenant.Documents.Extensions;
-using Covenant.Common.Constants;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Enums;
-using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
-using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Models;
-using Covenant.Common.Models.Candidate;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Candidates;
+using Covenant.Core.BL.Interfaces.Shared;
+using Covenant.Documents.Extensions;
 using CsvHelper.Configuration;
 using CsvHelper;
 using FluentValidation.Results;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 
@@ -33,6 +32,9 @@ namespace Covenant.Core.BL.Services.Candidates;
 
 public class CandidateService : ICandidateService
 {
+    private const string CandidateNotFound = "Candidate not found";
+    private const string NoteNotFound = "Note not found";
+    private const string DocumentNotFound = "Document not found";
     private readonly IUserRepository userRepository;
     private readonly ICandidateRepository candidateRepository;
     private readonly IRequestRepository requestRepository;
@@ -77,7 +79,7 @@ public class CandidateService : ICandidateService
         this.skillService = skillService;
     }
 
-    public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, IFormFile file)
+    public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, Stream file)
     {
         try
         {
@@ -180,8 +182,7 @@ public class CandidateService : ICandidateService
         });
         if (!user) return Result.Fail(user.Errors);
 
-        profile.Worker = user.Value;
-        profile.AgencyId = agency.Id;
+        profile.AssignTo(user.Value, agency.Id);
 
         candidateRepository.DeleteRange(candidate.Documents);
 
@@ -192,10 +193,9 @@ public class CandidateService : ICandidateService
         {
             foreach (var note in candidate.Notes)
             {
-                var workerProfileNote = WorkerProfileNote.Create(profile.Id, note.Note.Note, note.Note.CreatedBy);
+                var workerProfileNote = WorkerProfileNote.Create(profile.Id, note.Note.Note, note.Note.CreatedBy, note.Note.CreatedAt);
                 if (workerProfileNote)
                 {
-                    workerProfileNote.Value.CreatedAt = note.Note.CreatedAt;
                     await workerRepository.Create(workerProfileNote.Value);
                 }
             }
@@ -207,8 +207,7 @@ public class CandidateService : ICandidateService
         {
             foreach (var requestApplicant in requestApplicants)
             {
-                requestApplicant.CandidateId = null;
-                requestApplicant.WorkerProfileId = profile.Id;
+                requestApplicant.MoveToWorker(profile.Id);
             }
             await workerRepository.SaveChangesAsync();
         }
@@ -278,6 +277,100 @@ public class CandidateService : ICandidateService
         return Result.Ok(entity.DocumentId);
     }
 
+    public async Task<Result> DeleteCandidateDocument(Guid candidateId, Guid documentId)
+    {
+        var entity = await candidateRepository.GetDocument(candidateId, documentId);
+        if (entity is null) return Result.Fail(DocumentNotFound);
+        candidateRepository.Delete(entity);
+        await candidateRepository.SaveChangesAsync();
+        await documentService.DeleteFile(entity.DocumentId);
+        return Result.Ok();
+    }
+
+    public async Task<Result<Guid>> AddPhoneNumber(Guid candidateId, string phoneNumber)
+    {
+        var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
+        if (candidate is null) return Result.Fail<Guid>(CandidateNotFound);
+        var result = candidate.AddPhone(phoneNumber);
+        if (!result) return Result.Fail<Guid>(result.Errors);
+        candidateRepository.Update(candidate);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok(result.Value.Id);
+    }
+
+    public async Task<Result> DeletePhoneNumber(Guid candidateId, Guid phoneNumberId)
+    {
+        var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
+        if (candidate is null) return Result.Fail(CandidateNotFound);
+        var result = candidate.DeletePhone(phoneNumberId);
+        if (!result) return result;
+        candidateRepository.Update(candidate);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result<SkillModel>> AddSkill(Guid candidateId, string skill)
+    {
+        var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
+        if (candidate is null) return Result.Fail<SkillModel>(CandidateNotFound);
+        var canonicalSkill = (await skillService.Canonicalize([skill])).FirstOrDefault();
+        var result = candidate.AddSkill(canonicalSkill);
+        if (!result) return Result.Fail<SkillModel>(result.Errors);
+        candidateRepository.Update(candidate);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok(new SkillModel(canonicalSkill) { Id = result.Value.Id });
+    }
+
+    public async Task<Result> DeleteSkill(Guid candidateId, Guid skillId)
+    {
+        var candidate = await candidateRepository.GetCandidate(c => c.Id == candidateId);
+        if (candidate is null) return Result.Fail(CandidateNotFound);
+        var result = candidate.DeleteSkill(skillId);
+        if (!result) return result;
+        candidateRepository.Update(candidate);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result<NoteModel>> CreateNote(Guid candidateId, NoteModel model)
+    {
+        var note = CovenantNote.Create(model.Note, model.Color, currentUserService.GetNickname());
+        if (!note) return Result.Fail<NoteModel>(note.Errors);
+        var entity = new CandidateNote(candidateId, note.Value);
+        await candidateRepository.Create(entity);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok(new NoteModel
+        {
+            Id = entity.NoteId,
+            CreatedBy = entity.Note.CreatedBy,
+            CreatedAt = entity.Note.CreatedAt,
+            Color = entity.Note.Color
+        });
+    }
+
+    public async Task<Result> UpdateNote(Guid candidateId, Guid noteId, NoteModel model)
+    {
+        var nickname = currentUserService.GetNickname();
+        var note = CovenantNote.Create(model.Note, model.Color, nickname);
+        if (!note) return note;
+        var entity = await candidateRepository.GetNote(candidateId, noteId);
+        if (entity is null) return Result.Fail(NoteNotFound);
+        entity.Update(note.Value, nickname);
+        candidateRepository.Update(entity);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteNote(Guid candidateId, Guid noteId)
+    {
+        var entity = await candidateRepository.GetNote(candidateId, noteId);
+        if (entity is null) return Result.Fail(NoteNotFound);
+        entity.Delete(currentUserService.GetNickname());
+        candidateRepository.Update(entity);
+        await candidateRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
     public async Task<Result> DeleteCandidate(Guid id)
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
@@ -317,14 +410,8 @@ public class CandidateService : ICandidateService
         var result = CvnEmail.Create(model.Email);
         if (!result) return result;
         candidate.AddEmail(result.Value);
-        candidate.Name = model.Name;
-        candidate.Address = model.Address;
-        candidate.CityId = model.City?.Id;
-        candidate.ResidencyStatus = model.ResidencyStatus;
-        candidate.GenderId = model.Gender?.Id;
-        candidate.HasVehicle = model.HasVehicle;
-        candidate.SourceId = model.SourceId;
-        candidate.Dnu = model.Dnu;
+        candidate.UpdateProfile(model.Name, model.Address, model.City?.Id, model.ResidencyStatus, model.Gender?.Id, model.HasVehicle, model.SourceId);
+        candidate.UpdateDnu(model.Dnu);
         if (!string.IsNullOrEmpty(model.PostalCode))
         {
             var rPostalCode = CvnPostalCode.Create(model.PostalCode);
@@ -347,7 +434,7 @@ public class CandidateService : ICandidateService
     {
         var candidate = await candidateRepository.GetCandidate(c => c.Id == id);
         if (candidate == null) return Result.Fail();
-        candidate.Recruiter = currentUserService.GetNickname();
+        candidate.AssignRecruiter(currentUserService.GetNickname());
         candidateRepository.Update(candidate);
         await candidateRepository.SaveChangesAsync();
         return Result.Ok();

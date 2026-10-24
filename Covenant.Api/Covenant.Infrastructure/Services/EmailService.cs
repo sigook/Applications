@@ -1,6 +1,7 @@
+using Azure.Identity;
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,6 @@ using Microsoft.Graph.Models;
 using Microsoft.Graph.Users.Item.SendMail;
 using Microsoft.Graph;
 using MimeKit;
-using Azure.Identity;
 using ContentType = MimeKit.ContentType;
 using EmailSettings = Covenant.Common.Configuration.EmailSettings;
 

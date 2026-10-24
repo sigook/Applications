@@ -45,36 +45,39 @@ public class UserAdministrationService(
         var result = await userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded) return Fail<Guid>(result);
 
-        switch (model.UserType)
+        var claim = model.UserType switch
         {
-            case UserType.Agency:
-                result = await userManager.AddClaimAsync(user, IdentityClaims.AgencyId(model.AgencyId.Value));
-                break;
-            case UserType.AgencyPersonnel:
-                result = await userManager.AddClaimAsync(user, IdentityClaims.AgencyId(model.AgencyId.Value));
-                await notifications.SendConfirmAndSetPassword(user);
-                break;
-            case UserType.CompanyUser:
-                result = await userManager.AddClaimAsync(user, IdentityClaims.CompanyId(model.CompanyId.Value));
-                await notifications.SendConfirmAndSetPassword(user);
-                break;
-            case UserType.Company:
-                if (!user.EmailConfirmed) await notifications.SendConfirmAccount(user, ConfirmAccountWorker);
-                break;
-            case UserType.Worker:
-                if (!string.IsNullOrEmpty(model.ConfirmPassword))
-                    await notifications.SendConfirmAccount(user, ConfirmAccountWorker);
-                else
-                    await notifications.SendConfirmAndSetPassword(user);
-                break;
+            UserType.Agency or UserType.AgencyPersonnel => IdentityClaims.AgencyId(model.AgencyId.Value),
+            UserType.CompanyUser => IdentityClaims.CompanyId(model.CompanyId.Value),
+            _ => null
+        };
+        if (claim is not null)
+        {
+            result = await userManager.AddClaimAsync(user, claim);
+            if (!result.Succeeded) return await DeleteAndFail(user, result);
         }
-        if (!result.Succeeded) return Fail<Guid>(result);
 
         result = await userManager.AddToRolesAsync(user, [model.Role]);
-        if (!result.Succeeded) return Fail<Guid>(result);
+        if (!result.Succeeded) return await DeleteAndFail(user, result);
 
+        await SendWelcome(user, model);
         return Result.Ok(user.Id);
     }
+
+    private async Task<Result<Guid>> DeleteAndFail(CovenantUser user, IdentityResult result)
+    {
+        await userManager.DeleteAsync(user);
+        return Fail<Guid>(result);
+    }
+
+    private Task SendWelcome(CovenantUser user, CreateUserModel model) => model.UserType switch
+    {
+        UserType.AgencyPersonnel or UserType.CompanyUser => notifications.SendConfirmAndSetPassword(user),
+        UserType.Company when !user.EmailConfirmed => notifications.SendConfirmAccount(user, ConfirmAccountWorker),
+        UserType.Worker when !string.IsNullOrEmpty(model.ConfirmPassword) => notifications.SendConfirmAccount(user, ConfirmAccountWorker),
+        UserType.Worker => notifications.SendConfirmAndSetPassword(user),
+        _ => Task.CompletedTask
+    };
 
     public async Task<Result> AddAgencyClaim(Guid userId, Guid agencyId)
     {
@@ -113,7 +116,7 @@ public class UserAdministrationService(
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null) return Result.Fail(UserNotFound);
 
-        await identityRepository.Create(new InactiveUser { UserId = user.Id });
+        await identityRepository.Create(new InactiveUser(user.Id));
         await identityRepository.SaveChangesAsync();
         await identityRepository.RevokeTokens(user.Id);
         return Result.Ok();

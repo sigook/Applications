@@ -1,5 +1,5 @@
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies;
 
 namespace Covenant.Common.Models.Sales;
 

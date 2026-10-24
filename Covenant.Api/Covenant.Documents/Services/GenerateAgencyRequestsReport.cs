@@ -1,7 +1,7 @@
-using Covenant.Common.Enums;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request;
 using ClosedXML.Excel;
+using Covenant.Common.Enums;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
 
 namespace Covenant.Documents.Services;
 

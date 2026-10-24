@@ -1,5 +1,5 @@
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Accounting.Invoices;
 using FluentValidation;
 
 namespace Covenant.Api.Validators.Accounting.Invoices;

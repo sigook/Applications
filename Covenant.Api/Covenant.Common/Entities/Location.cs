@@ -12,16 +12,16 @@ namespace Covenant.Common.Entities
         {
         }
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Address { get; set; }
-        public Guid CityId { get; set; }
-        public City City { get; set; }
-        public string PostalCode { get; set; }
-        public string Entrance { get; set; }
-        public string MainIntersection { get; set; }
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
-        public LocationTax LocationTax { get; set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public string Address { get; internal set; }
+        public Guid CityId { get; internal set; }
+        public City City { get; internal set; }
+        public string PostalCode { get; internal set; }
+        public string Entrance { get; internal set; }
+        public string MainIntersection { get; internal set; }
+        public double? Latitude { get; private set; }
+        public double? Longitude { get; private set; }
+        public LocationTax LocationTax { get; private set; }
         public virtual string FormattedAddress => $"{Address} {City?.Value} {City?.Province?.Code} {PostalCode}";
         public bool IsUSA => City?.Province?.Country?.Code == "USA";
 

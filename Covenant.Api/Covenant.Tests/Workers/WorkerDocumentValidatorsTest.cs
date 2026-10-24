@@ -1,6 +1,6 @@
 using Covenant.Api.Validators.Workers;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using FluentValidation.TestHelper;
 using Xunit;
 

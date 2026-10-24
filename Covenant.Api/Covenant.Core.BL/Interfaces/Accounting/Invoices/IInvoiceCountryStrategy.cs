@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Accounting.Invoice;
+using Covenant.Common.Models.Accounting.Invoices;
 
 namespace Covenant.Core.BL.Interfaces.Accounting.Invoices;
 

@@ -14,8 +14,8 @@ namespace Covenant.Common.Entities
 
         public Guid Id { get; private set; } = Guid.NewGuid();
         public string Email { get; private set; }
-        public bool Enabled { get; set; } = true;
-        public DateTime LastModified { get; set; }
+        public bool Enabled { get; private set; } = true;
+        public DateTime LastModified { get; private set; }
 
         public void UpdateEmail(CvnEmail email)
         {

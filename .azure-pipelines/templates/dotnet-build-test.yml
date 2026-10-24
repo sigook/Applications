@@ -6,6 +6,9 @@
 #       runUnitTests: true
 #       unitTestProjects: '**/Covenant.Tests/*.csproj'
 #       runIntegrationTests: false
+#       coverageSettings: 'Covenant.Api/coverage.runsettings'
+#       coverageWorkingDirectory: 'Covenant.Api'
+#       minLineCoverage: 80
 
 parameters:
   - name: buildProjects
@@ -37,6 +40,21 @@ parameters:
     default: ''
     displayName: 'Integration test project pattern'
 
+  - name: coverageSettings
+    type: string
+    default: ''
+    displayName: 'Runsettings file that enables code coverage (empty = no coverage)'
+
+  - name: coverageWorkingDirectory
+    type: string
+    default: ''
+    displayName: 'Folder holding dotnet-tools.json and coverage-gate.cs'
+
+  - name: minLineCoverage
+    type: number
+    default: 0
+    displayName: 'Minimum line coverage (%) required to pass the build'
+
 steps:
   # Build Solution/Projects
   - task: DotNetCoreCLI@2
@@ -53,7 +71,10 @@ steps:
       inputs:
         command: 'test'
         projects: ${{ parameters.unitTestProjects }}
-        arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        ${{ if eq(parameters.coverageSettings, '') }}:
+          arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        ${{ else }}:
+          arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }} --settings ${{ parameters.coverageSettings }}'
         testRunTitle: 'Unit Tests'
         publishTestResults: true
 
@@ -64,6 +85,27 @@ steps:
       inputs:
         command: 'test'
         projects: ${{ parameters.integrationTestProjects }}
-        arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        ${{ if eq(parameters.coverageSettings, '') }}:
+          arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }}'
+        ${{ else }}:
+          arguments: '--logger "console;verbosity=minimal" --no-build --configuration ${{ parameters.buildConfiguration }} --settings ${{ parameters.coverageSettings }}'
         testRunTitle: 'Integration Tests'
         publishTestResults: true
+
+  # Merge coverage, publish it and enforce the minimum (if enabled)
+  - ${{ if ne(parameters.coverageSettings, '') }}:
+    - script: |
+        dotnet tool restore
+        dotnet tool run reportgenerator "-reports:$(Agent.TempDirectory)/**/*.cobertura.xml" "-targetdir:$(Agent.TempDirectory)/coverage" "-reporttypes:Cobertura;TextSummary"
+        cat "$(Agent.TempDirectory)/coverage/Summary.txt"
+      displayName: 'Merge Code Coverage'
+      workingDirectory: ${{ parameters.coverageWorkingDirectory }}
+
+    - task: PublishCodeCoverageResults@2
+      displayName: 'Publish Code Coverage'
+      inputs:
+        summaryFileLocation: '$(Agent.TempDirectory)/coverage/Cobertura.xml'
+
+    - script: dotnet run coverage-gate.cs "$(Agent.TempDirectory)/coverage/Cobertura.xml" ${{ parameters.minLineCoverage }}
+      displayName: 'Code Coverage Gate (min ${{ parameters.minLineCoverage }}%)'
+      workingDirectory: ${{ parameters.coverageWorkingDirectory }}

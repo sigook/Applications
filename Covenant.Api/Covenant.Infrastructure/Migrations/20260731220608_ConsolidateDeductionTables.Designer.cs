@@ -25,7 +25,7 @@ namespace Covenant.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -86,7 +86,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Invoices", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceAdditionalDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -112,7 +112,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceAdditionalDetails", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceAdditionalItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -137,7 +137,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceAdditionalItems", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceDiscount", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceDiscount", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -165,7 +165,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceDiscounts", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceHoliday", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -195,7 +195,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceHolidays", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceTotal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -258,7 +258,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceTotals", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSA", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -332,7 +332,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoicesUSA", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSADiscount", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSADiscount", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -360,7 +360,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceUSADiscounts", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSAItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSAItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -423,7 +423,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceUSAItems", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSATimeSheetTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSATimeSheetTotal", b =>
                 {
                     b.Property<Guid>("InvoiceUSAId")
                         .HasColumnType("uuid");
@@ -438,7 +438,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("InvoiceUSATimeSheetTotals", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.SkipPayrollNumber", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.SkipPayrollNumber", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -452,7 +452,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("SkipPayrollNumbers", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStub", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStub", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -528,7 +528,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("PayStubs", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubHistory", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubHistory", b =>
                 {
                     b.Property<DateTime>("DateWorkBegins")
                         .HasColumnType("timestamp with time zone");
@@ -568,7 +568,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToView("PayStubHistory", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -599,7 +599,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("PayStubItems", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubOtherDeduction", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubOtherDeduction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -627,7 +627,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("PayStubOtherDeductions", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubPublicHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubPublicHoliday", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -652,7 +652,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("PayStubPublicHolidays", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubWageDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubWageDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -697,7 +697,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("PayStubWageDetails", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubContractorOtherDeduction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -725,7 +725,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("ReportSubContractorOtherDeductions", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractor", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -774,7 +774,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("ReportSubcontractors", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractorPublicHoliday", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -799,7 +799,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("ReportSubcontractorPublicHolidays", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorWageDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractorWageDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -844,7 +844,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("ReportSubcontractorWageDetails", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.Agency", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -903,7 +903,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Agencies", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyContactInformation", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyContactInformation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -946,7 +946,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("AgencyContactInformation", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyLocation", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyLocation", b =>
                 {
                     b.Property<Guid>("AgencyId")
                         .HasColumnType("uuid");
@@ -964,7 +964,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("AgencyLocations", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyPersonnel", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyPersonnel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -995,7 +995,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("AgencyPersonnel", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyWsibGroup", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyWsibGroup", b =>
                 {
                     b.Property<Guid>("AgencyId")
                         .HasColumnType("uuid");
@@ -1038,7 +1038,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("AvailabilityTimes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.Candidate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1097,7 +1097,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Candidates", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateDocument", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidateDocument", b =>
                 {
                     b.Property<Guid>("CandidateId")
                         .HasColumnType("uuid");
@@ -1112,7 +1112,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CandidateDocuments", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidateNote", b =>
                 {
                     b.Property<Guid>("CandidateId")
                         .HasColumnType("uuid");
@@ -1127,7 +1127,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CandidateNotes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidatePhone", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidatePhone", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1146,7 +1146,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CandidatePhones", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateSkill", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidateSkill", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1187,7 +1187,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Cities", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1296,7 +1296,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfiles", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileContactPerson", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileContactPerson", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1339,7 +1339,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileContactPeople", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileDocument", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileDocument", b =>
                 {
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uuid");
@@ -1363,7 +1363,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileDocuments", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileIndustry", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileIndustry", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1382,7 +1382,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileIndustries", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceNotes", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileInvoiceNotes", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1401,7 +1401,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileInvoiceNotes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceRecipient", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileInvoiceRecipient", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1423,7 +1423,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileInvoiceRecipients", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileJobPositionRate", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileJobPositionRate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1480,7 +1480,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileJobPositionRates", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileLocation", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileLocation", b =>
                 {
                     b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
@@ -1498,7 +1498,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileLocations", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileNote", b =>
                 {
                     b.Property<Guid>("CompanyProfileId")
                         .HasColumnType("uuid");
@@ -1513,7 +1513,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("CompanyProfileNotes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyUser", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1865,7 +1865,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("LocationTaxes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Notification.NotificationType", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Notifications.NotificationType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1887,7 +1887,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("NotificationTypes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Notification.UserNotificationType", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Notifications.UserNotificationType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1973,7 +1973,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("ReasonCancellationRequests", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Request", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2103,7 +2103,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Requests", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestApplicant", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestApplicant", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2138,7 +2138,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestApplicants", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCancellationDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestCancellationDetail", b =>
                 {
                     b.Property<Guid>("RequestId")
                         .ValueGeneratedOnAdd()
@@ -2163,7 +2163,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestCancellationDetails", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestComission", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestComission", b =>
                 {
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
@@ -2178,7 +2178,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestComissions", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCompanyUser", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestCompanyUser", b =>
                 {
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
@@ -2193,7 +2193,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestCompanyUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestFinalizationDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestFinalizationDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2218,7 +2218,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestFinalizationDetails", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestNote", b =>
                 {
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
@@ -2233,7 +2233,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestNotes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestRecruiter", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2261,7 +2261,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestRecruiters", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestReportTo", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestReportTo", b =>
                 {
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
@@ -2276,7 +2276,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestReportTos", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRequestedBy", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestRequestedBy", b =>
                 {
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
@@ -2291,7 +2291,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestRequestedBys", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSkill", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestSkill", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2310,7 +2310,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestSkills", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSource", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestSource", b =>
                 {
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
@@ -2335,7 +2335,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RequestSources", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Runners.Runner", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2394,7 +2394,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Runners", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Runners.RunnerInterview", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2449,7 +2449,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RunnerInterviews", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Runners.RunnerStatusHistory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2483,7 +2483,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("RunnerStatusHistories", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimeSheet", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2562,7 +2562,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("TimeSheets", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimeSheetTotal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2600,7 +2600,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("TimeSheetTotals", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimeSheetTotalPayroll", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2638,7 +2638,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("TimeSheetTotalPayrolls", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimesheetHistory", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimesheetHistory", b =>
                 {
                     b.Property<string>("CompanyName")
                         .HasColumnType("text");
@@ -2681,7 +2681,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToView("TimesheetHistory", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.WorkerRequest", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2727,7 +2727,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerRequests", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequestNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.WorkerRequestNote", b =>
                 {
                     b.Property<Guid>("WorkerRequestId")
                         .HasColumnType("uuid");
@@ -2869,7 +2869,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerComment", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerComment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -2905,7 +2905,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerComments", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfile", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3078,7 +3078,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfiles", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailability", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileAvailability", b =>
                 {
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
@@ -3093,7 +3093,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileAvailabilities", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityDay", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileAvailabilityDay", b =>
                 {
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
@@ -3108,7 +3108,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileAvailabilityDays", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityTime", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileAvailabilityTime", b =>
                 {
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
@@ -3123,7 +3123,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileAvailabilityTimes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileCertificate", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3144,7 +3144,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileCertificates", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileHoliday", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3169,7 +3169,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileHolidays", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileJobExperience", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileJobExperience", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3203,7 +3203,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileJobExperiences", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLanguage", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileLanguage", b =>
                 {
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
@@ -3218,7 +3218,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileLanguages", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLicense", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileLicense", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3248,7 +3248,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileLicenses", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLocationPreference", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileLocationPreference", b =>
                 {
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
@@ -3263,7 +3263,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileLocationPreferences", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileNote", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3288,7 +3288,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileNotes", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileOtherDocument", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileOtherDocument", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3309,7 +3309,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileOtherDocuments", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileSkill", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileSkill", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -3328,7 +3328,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("WorkerProfileSkills", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileTaxCategory", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileTaxCategory", b =>
                 {
                     b.Property<Guid>("WorkerProfileId")
                         .HasColumnType("uuid");
@@ -3380,9 +3380,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToView("view_doesnt_exitst", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.Invoice", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany()
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3391,16 +3391,16 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("CompanyProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceAdditionalDetail", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "CanadaInvoice")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.Invoice", "CanadaInvoice")
                         .WithOne("AdditionalDetail")
-                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", "CanadaInvoiceId")
+                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoices.InvoiceAdditionalDetail", "CanadaInvoiceId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "UsaInvoice")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSA", "UsaInvoice")
                         .WithOne("AdditionalDetail")
-                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalDetail", "UsaInvoiceId")
+                        .HasForeignKey("Covenant.Common.Entities.Accounting.Invoices.InvoiceAdditionalDetail", "UsaInvoiceId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("CanadaInvoice");
@@ -3408,9 +3408,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("UsaInvoice");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceAdditionalItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceAdditionalItem", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "Invoice")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.Invoice", "Invoice")
                         .WithMany("AdditionalItems")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3419,9 +3419,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceDiscount", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceDiscount", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "Invoice")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.Invoice", "Invoice")
                         .WithMany("Discounts")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3430,15 +3430,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceHoliday", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "Invoice")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.Invoice", "Invoice")
                         .WithMany("Holidays")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId");
 
@@ -3447,15 +3447,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceTotal", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.Invoice", "Invoice")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.Invoice", "Invoice")
                         .WithMany("InvoiceTotals")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
+                    b.HasOne("Covenant.Common.Entities.Requests.TimeSheetTotal", "TimeSheetTotal")
                         .WithMany()
                         .HasForeignKey("TimeSheetTotalId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3466,9 +3466,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSA", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany()
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3477,9 +3477,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("CompanyProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSADiscount", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSADiscount", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "InvoiceUSA")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSA", "InvoiceUSA")
                         .WithMany("Discounts")
                         .HasForeignKey("InvoiceUSAId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3488,15 +3488,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("InvoiceUSA");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSAItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSAItem", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "InvoiceUSA")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSA", "InvoiceUSA")
                         .WithMany("Items")
                         .HasForeignKey("InvoiceUSAId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
+                    b.HasOne("Covenant.Common.Entities.Requests.TimeSheetTotal", "TimeSheetTotal")
                         .WithMany()
                         .HasForeignKey("TimeSheetTotalId");
 
@@ -3505,15 +3505,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSATimeSheetTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSATimeSheetTotal", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", "InvoiceUSA")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSA", "InvoiceUSA")
                         .WithMany("TimeSheetTotals")
                         .HasForeignKey("InvoiceUSAId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetTotal")
+                    b.HasOne("Covenant.Common.Entities.Requests.TimeSheetTotal", "TimeSheetTotal")
                         .WithMany()
                         .HasForeignKey("TimeSheetTotalId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3524,9 +3524,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStub", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStub", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3535,9 +3535,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubItem", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubItem", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayStub", "PayStub")
+                    b.HasOne("Covenant.Common.Entities.Accounting.PayStubs.PayStub", "PayStub")
                         .WithMany("Items")
                         .HasForeignKey("PayStubId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3546,9 +3546,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("PayStub");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubOtherDeduction", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubOtherDeduction", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayStub", "PayStub")
+                    b.HasOne("Covenant.Common.Entities.Accounting.PayStubs.PayStub", "PayStub")
                         .WithMany("OtherDeductions")
                         .HasForeignKey("PayStubId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3557,9 +3557,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("PayStub");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubPublicHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubPublicHoliday", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayStub", "PayStub")
+                    b.HasOne("Covenant.Common.Entities.Accounting.PayStubs.PayStub", "PayStub")
                         .WithMany("Holidays")
                         .HasForeignKey("PayStubId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3568,15 +3568,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("PayStub");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStubWageDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStubWageDetail", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.PayStub.PayStub", "PayStub")
+                    b.HasOne("Covenant.Common.Entities.Accounting.PayStubs.PayStub", "PayStub")
                         .WithMany("WageDetails")
                         .HasForeignKey("PayStubId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", "TimeSheetTotal")
+                    b.HasOne("Covenant.Common.Entities.Requests.TimeSheetTotalPayroll", "TimeSheetTotal")
                         .WithMany()
                         .HasForeignKey("TimeSheetTotalId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3587,9 +3587,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubContractorOtherDeduction", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubContractorOtherDeduction", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", "ReportSubcontractor")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractor", "ReportSubcontractor")
                         .WithMany("OtherDeductionsDetail")
                         .HasForeignKey("ReportSubcontractorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3598,9 +3598,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("ReportSubcontractor");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractor", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3609,9 +3609,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorPublicHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractorPublicHoliday", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", "ReportSubcontractor")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractor", "ReportSubcontractor")
                         .WithMany("Holidays")
                         .HasForeignKey("ReportSubcontractorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3620,15 +3620,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("ReportSubcontractor");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractorWageDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractorWageDetail", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", "ReportSubcontractor")
+                    b.HasOne("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractor", "ReportSubcontractor")
                         .WithMany("WageDetails")
                         .HasForeignKey("ReportSubcontractorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", "TimeSheetTotal")
+                    b.HasOne("Covenant.Common.Entities.Requests.TimeSheetTotalPayroll", "TimeSheetTotal")
                         .WithMany()
                         .HasForeignKey("TimeSheetTotalId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3639,9 +3639,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotal");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.Agency", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "AgencyParent")
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "AgencyParent")
                         .WithMany()
                         .HasForeignKey("AgencyParentId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -3663,16 +3663,16 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyContactInformation", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyContactInformation", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", null)
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", null)
                         .WithMany("ContactInformation")
                         .HasForeignKey("AgencyId");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyLocation", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyLocation", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
                         .WithMany("Locations")
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3689,9 +3689,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Location");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyPersonnel", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyPersonnel", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
                         .WithMany()
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3708,9 +3708,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.AgencyWsibGroup", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyWsibGroup", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
                         .WithMany("WsibGroup")
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3727,9 +3727,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WsibGroup");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.Candidate", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
                         .WithMany()
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3751,9 +3751,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Source");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateDocument", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidateDocument", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
+                    b.HasOne("Covenant.Common.Entities.Candidates.Candidate", "Candidate")
                         .WithMany("Documents")
                         .HasForeignKey("CandidateId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3770,9 +3770,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidateNote", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
+                    b.HasOne("Covenant.Common.Entities.Candidates.Candidate", "Candidate")
                         .WithMany("Notes")
                         .HasForeignKey("CandidateId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3789,9 +3789,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Note");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidatePhone", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidatePhone", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
+                    b.HasOne("Covenant.Common.Entities.Candidates.Candidate", "Candidate")
                         .WithMany("PhoneNumbers")
                         .HasForeignKey("CandidateId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3800,9 +3800,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Candidate");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.CandidateSkill", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.CandidateSkill", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
+                    b.HasOne("Covenant.Common.Entities.Candidates.Candidate", "Candidate")
                         .WithMany("Skills")
                         .HasForeignKey("CandidateId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3822,9 +3822,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Province");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfile", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
                         .WithMany()
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3836,7 +3836,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfileIndustry", "Industry")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfileIndustry", "Industry")
                         .WithMany()
                         .HasForeignKey("IndustryId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3846,7 +3846,7 @@ namespace Covenant.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("LogoId");
 
-                    b.HasOne("Covenant.Common.Entities.Agency.AgencyPersonnel", "SalesRepresentative")
+                    b.HasOne("Covenant.Common.Entities.Agencies.AgencyPersonnel", "SalesRepresentative")
                         .WithMany()
                         .HasForeignKey("SalesRepresentativeId");
 
@@ -3861,9 +3861,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("SalesRepresentative");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileContactPerson", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileContactPerson", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany("ContactPeople")
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3872,9 +3872,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("CompanyProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileDocument", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileDocument", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany("Documents")
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3891,7 +3891,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileIndustry", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileIndustry", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Industry", "Industry")
                         .WithMany("CompanyProfileIndustries")
@@ -3900,9 +3900,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Industry");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceNotes", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileInvoiceNotes", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany()
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3911,9 +3911,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("CompanyProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileInvoiceRecipient", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileInvoiceRecipient", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany()
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3922,9 +3922,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("CompanyProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileJobPositionRate", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileJobPositionRate", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany("JobPositionRates")
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3939,9 +3939,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Shift");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileLocation", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileLocation", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany("Locations")
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3958,9 +3958,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Location");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfileNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfileNote", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany("Notes")
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -3977,9 +3977,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Note");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyUser", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyUser", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany()
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4018,9 +4018,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Location");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Notification.UserNotificationType", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Notifications.UserNotificationType", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Notification.NotificationType", "NotificationType")
+                    b.HasOne("Covenant.Common.Entities.Notifications.NotificationType", "NotificationType")
                         .WithMany()
                         .HasForeignKey("NotificationTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4059,9 +4059,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Province");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Request", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany()
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -4073,7 +4073,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfileJobPositionRate", "JobPositionRate")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfileJobPositionRate", "JobPositionRate")
                         .WithMany()
                         .HasForeignKey("JobPositionRateId");
 
@@ -4090,19 +4090,19 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Shift");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestApplicant", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestApplicant", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Candidate.Candidate", "Candidate")
+                    b.HasOne("Covenant.Common.Entities.Candidates.Candidate", "Candidate")
                         .WithMany("RequestApplicants")
                         .HasForeignKey("CandidateId");
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId");
 
@@ -4113,7 +4113,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCancellationDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestCancellationDetail", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.ReasonCancellationRequest", "ReasonCancellationRequest")
                         .WithMany()
@@ -4122,17 +4122,17 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("ReasonCancellationRequest");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestComission", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestComission", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.AgencyPersonnel", "AgencyPersonnel")
+                    b.HasOne("Covenant.Common.Entities.Agencies.AgencyPersonnel", "AgencyPersonnel")
                         .WithMany()
                         .HasForeignKey("AgencyPersonnelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithOne("RequestComission")
-                        .HasForeignKey("Covenant.Common.Entities.Request.RequestComission", "RequestId")
+                        .HasForeignKey("Covenant.Common.Entities.Requests.RequestComission", "RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -4141,15 +4141,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestCompanyUser", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestCompanyUser", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyUser", "CompanyUser")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyUser", "CompanyUser")
                         .WithMany("RequestCompanyUser")
                         .HasForeignKey("CompanyUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany("RequestCompanyUser")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4160,9 +4160,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestFinalizationDetail", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestFinalizationDetail", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4171,7 +4171,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestNote", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.CovenantNote", "Note")
                         .WithMany()
@@ -4179,7 +4179,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany("Notes")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4190,15 +4190,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestRecruiter", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.AgencyPersonnel", "Recruiter")
+                    b.HasOne("Covenant.Common.Entities.Agencies.AgencyPersonnel", "Recruiter")
                         .WithMany()
                         .HasForeignKey("RecruiterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany("Recruiters")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4209,15 +4209,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestReportTo", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestReportTo", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfileContactPerson", "ContactPerson")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfileContactPerson", "ContactPerson")
                         .WithMany()
                         .HasForeignKey("ContactPersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4228,15 +4228,15 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRequestedBy", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestRequestedBy", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfileContactPerson", "ContactPerson")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfileContactPerson", "ContactPerson")
                         .WithMany()
                         .HasForeignKey("ContactPersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4247,9 +4247,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSkill", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestSkill", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4258,9 +4258,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestSource", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestSource", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany("Sources")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4277,7 +4277,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Source");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Runners.Runner", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.User", "CreatedByUser")
                         .WithMany()
@@ -4285,13 +4285,13 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.RequestRecruiter", "RequestRecruiter")
+                    b.HasOne("Covenant.Common.Entities.Requests.RequestRecruiter", "RequestRecruiter")
                         .WithMany("Runners")
                         .HasForeignKey("RequestRecruiterId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -4301,7 +4301,7 @@ namespace Covenant.Infrastructure.Migrations
                         .HasForeignKey("UpdatedBy")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -4318,7 +4318,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerInterview", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Runners.RunnerInterview", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.User", "CreatedByUser")
                         .WithMany()
@@ -4331,7 +4331,7 @@ namespace Covenant.Infrastructure.Migrations
                         .HasForeignKey("RescheduledBy")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
+                    b.HasOne("Covenant.Common.Entities.Requests.Runners.Runner", "Runner")
                         .WithMany("Interviews")
                         .HasForeignKey("RunnerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4344,7 +4344,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Runner");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.RunnerStatusHistory", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Runners.RunnerStatusHistory", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.User", "ChangedByUser")
                         .WithMany()
@@ -4352,7 +4352,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.Runners.Runner", "Runner")
+                    b.HasOne("Covenant.Common.Entities.Requests.Runners.Runner", "Runner")
                         .WithMany("StatusHistory")
                         .HasForeignKey("RunnerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4363,9 +4363,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Runner");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimeSheet", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Request.WorkerRequest", "WorkerRequest")
+                    b.HasOne("Covenant.Common.Entities.Requests.WorkerRequest", "WorkerRequest")
                         .WithMany("TimeSheets")
                         .HasForeignKey("WorkerRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4374,37 +4374,37 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerRequest");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotal", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimeSheetTotal", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheet", "TimeSheet")
+                    b.HasOne("Covenant.Common.Entities.Requests.TimeSheet", "TimeSheet")
                         .WithOne("TimeSheetTotal")
-                        .HasForeignKey("Covenant.Common.Entities.Request.TimeSheetTotal", "TimeSheetId")
+                        .HasForeignKey("Covenant.Common.Entities.Requests.TimeSheetTotal", "TimeSheetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("TimeSheet");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimeSheetTotalPayroll", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Request.TimeSheet", "TimeSheet")
+                    b.HasOne("Covenant.Common.Entities.Requests.TimeSheet", "TimeSheet")
                         .WithOne("TimeSheetTotalPayroll")
-                        .HasForeignKey("Covenant.Common.Entities.Request.TimeSheetTotalPayroll", "TimeSheetId")
+                        .HasForeignKey("Covenant.Common.Entities.Requests.TimeSheetTotalPayroll", "TimeSheetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("TimeSheet");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.WorkerRequest", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Request.Request", "Request")
+                    b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithMany("Workers")
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -4415,7 +4415,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequestNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.WorkerRequestNote", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.CovenantNote", "Note")
                         .WithMany()
@@ -4423,7 +4423,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Request.WorkerRequest", "WorkerRequest")
+                    b.HasOne("Covenant.Common.Entities.Requests.WorkerRequest", "WorkerRequest")
                         .WithMany("Notes")
                         .HasForeignKey("WorkerRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4434,14 +4434,14 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerRequest");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerComment", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerComment", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Company.CompanyProfile", "CompanyProfile")
+                    b.HasOne("Covenant.Common.Entities.Companies.CompanyProfile", "CompanyProfile")
                         .WithMany()
                         .HasForeignKey("CompanyProfileId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4452,9 +4452,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfile", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfile", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agency.Agency", "Agency")
+                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
                         .WithMany()
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4539,7 +4539,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Worker");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailability", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileAvailability", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Availability", "Availability")
                         .WithMany()
@@ -4547,7 +4547,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("Availabilities")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4558,7 +4558,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityDay", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileAvailabilityDay", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Day", "Day")
                         .WithMany()
@@ -4566,7 +4566,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("AvailabilityDays")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4577,7 +4577,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileAvailabilityTime", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileAvailabilityTime", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.AvailabilityTime", "AvailabilityTime")
                         .WithMany()
@@ -4585,7 +4585,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("AvailabilityTimes")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4596,7 +4596,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileCertificate", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileCertificate", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.CovenantFile", "Certificate")
                         .WithMany()
@@ -4604,7 +4604,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("Certificates")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4615,7 +4615,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileHoliday", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileHoliday", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Holiday", "Holiday")
                         .WithMany()
@@ -4623,7 +4623,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany()
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4634,9 +4634,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileJobExperience", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileJobExperience", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("JobExperiences")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4645,7 +4645,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLanguage", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileLanguage", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Language", "Language")
                         .WithMany()
@@ -4653,7 +4653,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("Languages")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4664,7 +4664,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLicense", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileLicense", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.CovenantFile", "License")
                         .WithMany()
@@ -4672,7 +4672,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("Licenses")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4683,7 +4683,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileLocationPreference", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileLocationPreference", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.City", "City")
                         .WithMany()
@@ -4691,7 +4691,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("LocationPreferences")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4702,9 +4702,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileNote", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileNote", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("Notes")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4713,7 +4713,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileOtherDocument", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileOtherDocument", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.CovenantFile", "Document")
                         .WithMany()
@@ -4721,7 +4721,7 @@ namespace Covenant.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("OtherDocuments")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4732,9 +4732,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileSkill", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileSkill", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithMany("Skills")
                         .HasForeignKey("WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -4743,18 +4743,18 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfileTaxCategory", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfileTaxCategory", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Worker.WorkerProfile", "WorkerProfile")
+                    b.HasOne("Covenant.Common.Entities.Workers.WorkerProfile", "WorkerProfile")
                         .WithOne("WorkerProfileTaxCategory")
-                        .HasForeignKey("Covenant.Common.Entities.Worker.WorkerProfileTaxCategory", "WorkerProfileId")
+                        .HasForeignKey("Covenant.Common.Entities.Workers.WorkerProfileTaxCategory", "WorkerProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("WorkerProfile");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.Invoice", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.Invoice", b =>
                 {
                     b.Navigation("AdditionalDetail");
 
@@ -4767,7 +4767,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("InvoiceTotals");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoice.InvoiceUSA", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Invoices.InvoiceUSA", b =>
                 {
                     b.Navigation("AdditionalDetail");
 
@@ -4778,7 +4778,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("TimeSheetTotals");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStub.PayStub", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.PayStubs.PayStub", b =>
                 {
                     b.Navigation("Holidays");
 
@@ -4789,7 +4789,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WageDetails");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractor.ReportSubcontractor", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Accounting.Subcontractors.ReportSubcontractor", b =>
                 {
                     b.Navigation("Holidays");
 
@@ -4798,7 +4798,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WageDetails");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agency.Agency", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Agencies.Agency", b =>
                 {
                     b.Navigation("ContactInformation");
 
@@ -4807,7 +4807,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("WsibGroup");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Candidate.Candidate", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Candidates.Candidate", b =>
                 {
                     b.Navigation("Documents");
 
@@ -4820,7 +4820,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Skills");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyProfile", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyProfile", b =>
                 {
                     b.Navigation("ContactPeople");
 
@@ -4833,7 +4833,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Notes");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Company.CompanyUser", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Companies.CompanyUser", b =>
                 {
                     b.Navigation("RequestCompanyUser");
                 });
@@ -4853,7 +4853,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("ProvinceSetting");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Request", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Request", b =>
                 {
                     b.Navigation("Notes");
 
@@ -4868,26 +4868,26 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Workers");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.RequestRecruiter", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestRecruiter", b =>
                 {
                     b.Navigation("Runners");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.Runners.Runner", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.Runners.Runner", b =>
                 {
                     b.Navigation("Interviews");
 
                     b.Navigation("StatusHistory");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.TimeSheet", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.TimeSheet", b =>
                 {
                     b.Navigation("TimeSheetTotal");
 
                     b.Navigation("TimeSheetTotalPayroll");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Request.WorkerRequest", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Requests.WorkerRequest", b =>
                 {
                     b.Navigation("Notes");
 
@@ -4899,7 +4899,7 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Candidates");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Worker.WorkerProfile", b =>
+            modelBuilder.Entity("Covenant.Common.Entities.Workers.WorkerProfile", b =>
                 {
                     b.Navigation("Availabilities");
 

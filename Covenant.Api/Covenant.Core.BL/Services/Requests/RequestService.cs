@@ -1,18 +1,18 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Notifications;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Notification;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Request.Agency;
-using Covenant.Common.Models.Request.Company;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests.Companies;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
@@ -22,7 +22,6 @@ using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Documents.Services;
-using Covenant.Infrastructure.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -39,11 +38,10 @@ public class RequestService : IRequestService
     private readonly TimeProvider timeProvider;
     private readonly IRequestRepository requestRepository;
     private readonly INotificationDataRepository notificationDataRepository;
-    private readonly IPushNotifications pushNotifications;
     private readonly ICurrentUserService currentUserService;
     private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
     private readonly IEmailService emailService;
-    private readonly ISigookBusClient busClient;
+    private readonly IMessagePublisher busClient;
     private readonly ServiceBusConfiguration serviceBusConfiguration;
     private readonly ILogger<RequestService> logger;
     private readonly IValidator<RequestCreateModel> requestCreateValidator;
@@ -58,11 +56,10 @@ public class RequestService : IRequestService
         TimeProvider timeProvider,
         IRequestRepository requestRepository,
         INotificationDataRepository notificationDataRepository,
-        IPushNotifications pushNotifications,
         ICurrentUserService currentUserService,
         IRazorViewToStringRenderer razorViewToStringRenderer,
         IEmailService emailService,
-        ISigookBusClient busClient,
+        IMessagePublisher busClient,
         IOptions<ServiceBusConfiguration> serviceBusOptions,
         ILogger<RequestService> logger,
         IValidator<RequestCreateModel> requestCreateValidator,
@@ -80,7 +77,6 @@ public class RequestService : IRequestService
         this.timeProvider = timeProvider;
         this.requestRepository = requestRepository;
         this.notificationDataRepository = notificationDataRepository;
-        this.pushNotifications = pushNotifications;
         this.currentUserService = currentUserService;
         this.razorViewToStringRenderer = razorViewToStringRenderer;
         this.emailService = emailService;
@@ -101,22 +97,14 @@ public class RequestService : IRequestService
         await requestRepository.Create(request);
         if (model.SalesRepresentativeId.HasValue)
         {
-            var requestComission = new RequestComission
-            {
-                AgencyPersonnelId = model.SalesRepresentativeId.Value,
-                RequestId = request.Id,
-            };
+            var requestComission = new RequestComission(request.Id, model.SalesRepresentativeId.Value);
             await requestRepository.Create(requestComission);
         }
         if (model.CompanyUserIds != null && model.CompanyUserIds.Any())
         {
             foreach (var companyUserId in model.CompanyUserIds)
             {
-                var requestCompanyUser = new RequestCompanyUser
-                {
-                    CompanyUserId = companyUserId,
-                    RequestId = request.Id
-                };
+                var requestCompanyUser = new RequestCompanyUser(request.Id, companyUserId);
                 await requestRepository.Create(requestCompanyUser);
             }
         }
@@ -124,11 +112,6 @@ public class RequestService : IRequestService
         if (!complianceItems) return Result.Fail<Guid>(complianceItems.Errors);
         await requestRepository.CreateRange(complianceItems.Value);
         await requestRepository.SaveChangesAsync();
-        var location = await locationRepository.GetLocationById(model.LocationId.Value);
-        var currency = location.IsUSA ? "USD" : "CAD";
-        var salary = request.WorkerRate.HasValue ? $"{request.WorkerRate}/h" : $"{request.WorkerSalary} anually";
-        var notificationModel = NotificationModel.NewRequestNotification("Job Alert", $"{request.JobTitle} {currency} ${salary}", request.Id);
-        await pushNotifications.SendNotification(notificationModel);
         return Result.Ok(request.Id);
     }
 
@@ -216,18 +199,12 @@ public class RequestService : IRequestService
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
         if (model.WorkerSalary.HasValue)
         {
-            request.WorkerSalary = model.WorkerSalary.Value;
-            request.AgencyRate = null;
-            request.WorkerRate = null;
-            request.JobPositionRateId = null;
+            request.UpdateRates(model.WorkerSalary.Value, null, null, null);
         }
         else
         {
-            request.WorkerSalary = null;
             var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
-            request.AgencyRate = positionRate.Rate;
-            request.WorkerRate = positionRate.WorkerRate;
-            request.JobPositionRateId = positionRate.Id;
+            request.UpdateRates(null, positionRate.Rate, positionRate.WorkerRate, positionRate.Id);
         }
         request.UpdateJobTitle(model.JobTitle);
         request.UpdateBillingTitle(model.BillingTitle);
@@ -236,34 +213,27 @@ public class RequestService : IRequestService
         request.UpdateJobLocation(location, false);
         request.UpdateDescription(model.Description);
         request.UpdateRequirements(model.Requirements);
-        request.InternalRequirements = model.InternalRequirements;
-        request.Responsibilities = model.Responsibilities;
+        request.UpdateInternalRequirements(model.InternalRequirements);
+        request.UpdateResponsibilities(model.Responsibilities);
         request.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         request.UpdateDurationBreak(model.DurationBreak);
-        request.BreakIsPaid = model.BreakIsPaid;
-        request.WorkersQuantity = model.WorkersQuantity;
+        request.UpdateBreakIsPaid(model.BreakIsPaid);
+        request.UpdateWorkersQuantity(model.WorkersQuantity);
         request.UpdatePunchCardVisibilityStatusInApp(model.PunchCardOptionEnabled);
         request.UpdateIsAsap(model.IsAsap);
         request.UpdateUsesRunners(model.UsesRunners);
-        request.DurationTerm = model.DurationTerm;
-        request.EmploymentType = model.EmploymentType;
-        request.StartAt = model.StartAt;
-        request.FinishAt = model.FinishAt;
+        request.UpdateTerm(model.DurationTerm, model.EmploymentType, model.StartAt, model.FinishAt);
         if (model.SalesRepresentativeId.HasValue)
         {
             var requestComission = await requestRepository.GetRequestComission(request.Id);
             if (requestComission == null)
             {
-                requestComission = new RequestComission
-                {
-                    RequestId = request.Id,
-                    AgencyPersonnelId = model.SalesRepresentativeId.Value
-                };
+                requestComission = new RequestComission(request.Id, model.SalesRepresentativeId.Value);
                 await requestRepository.Create(requestComission);
             }
             else if (requestComission.AgencyPersonnelId != model.SalesRepresentativeId.Value)
             {
-                requestComission.AgencyPersonnelId = model.SalesRepresentativeId.Value;
+                requestComission.ChangeAgencyPersonnel(model.SalesRepresentativeId.Value);
             }
         }
         var requestCompanyUsers = await requestRepository.GetRequestCompanyUsers(request.Id);
@@ -275,11 +245,7 @@ public class RequestService : IRequestService
         {
             foreach (var companyUserId in model.CompanyUserIds)
             {
-                var requestCompanyUser = new RequestCompanyUser
-                {
-                    CompanyUserId = companyUserId,
-                    RequestId = request.Id
-                };
+                var requestCompanyUser = new RequestCompanyUser(request.Id, companyUserId);
                 await requestRepository.Create(requestCompanyUser);
             }
         }
@@ -375,14 +341,12 @@ public class RequestService : IRequestService
         var rCancel = request.Cancel(timeProvider.GetLocalNow().DateTime);
         if (!rCancel) return rCancel;
         var cancelBy = currentUserService.GetNickname();
-        var entity = new RequestCancellationDetail
-        {
-            RequestId = request.Id,
-            ReasonCancellationRequestId = cancellationReasonId == default ? null : cancellationReasonId,
-            OtherReasonCancellationRequest = otherCancellationReason,
-            CancelBy = cancelBy,
-            CancelAt = timeProvider.GetLocalNow().DateTime
-        };
+        var entity = new RequestCancellationDetail(
+            request.Id,
+            cancellationReasonId == default ? null : cancellationReasonId,
+            otherCancellationReason,
+            cancelBy,
+            timeProvider.GetLocalNow().DateTime);
         var noteBuilder = new StringBuilder();
         noteBuilder.Append("Request canceled");
         if (!string.IsNullOrEmpty(entity.OtherReasonCancellationRequest))
@@ -445,15 +409,14 @@ public class RequestService : IRequestService
             isPunchCardOptionEnabled: model.PunchCardOptionEnabled);
         if (!rRequest) return Result.Fail<Request>(rRequest.Errors);
         var entity = rRequest.Value;
-        entity.WorkerSalary = model.WorkerSalary;
-        entity.InternalRequirements = model.InternalRequirements;
-        entity.Responsibilities = model.Responsibilities;
+        entity.UpdateRates(model.WorkerSalary, entity.AgencyRate, entity.WorkerRate, entity.JobPositionRateId);
+        entity.UpdateInternalRequirements(model.InternalRequirements);
+        entity.UpdateResponsibilities(model.Responsibilities);
         if (entity.JobPositionRateId.HasValue)
         {
             var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
             if (positionRate is null) return Result.Fail<Request>(ApiResources.InvalidJobPosition);
-            entity.AgencyRate = positionRate.Rate;
-            entity.WorkerRate = positionRate.WorkerRate;
+            entity.UpdateRates(entity.WorkerSalary, positionRate.Rate, positionRate.WorkerRate, entity.JobPositionRateId);
         }
         entity.UpdateJobTitle(model.JobTitle);
         entity.UpdateBillingTitle(model.BillingTitle);
@@ -471,7 +434,7 @@ public class RequestService : IRequestService
         if (!rIsAsap) return Result.Fail<Request>(rIsAsap.Errors);
         var rUsesRunners = entity.UpdateUsesRunners(model.UsesRunners);
         if (!rUsesRunners) return Result.Fail<Request>(rUsesRunners.Errors);
-        entity.CreatedBy = currentUserService.GetNickname();
+        entity.UpdateCreatedBy(currentUserService.GetNickname());
         return Result.Ok(entity);
     }
 
@@ -503,7 +466,7 @@ public class RequestService : IRequestService
         var requests = await requestRepository.GetRequests(requestsQuickUpdate.Ids);
         foreach (var request in requests)
         {
-            request.IsAsap = requestsQuickUpdate.IsAsap;
+            request.OverrideIsAsap(requestsQuickUpdate.IsAsap);
         }
         await requestRepository.SaveChangesAsync();
         return Result.Ok();

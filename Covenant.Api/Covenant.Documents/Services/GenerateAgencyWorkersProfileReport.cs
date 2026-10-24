@@ -1,7 +1,7 @@
-using Covenant.Common.Models.Worker.Agency;
-using Covenant.Common.Models.Worker;
-using Covenant.Common.Utils.Extensions;
 using ClosedXML.Excel;
+using Covenant.Common.Models.Workers.Agencies;
+using Covenant.Common.Models.Workers;
+using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Documents.Services
 {

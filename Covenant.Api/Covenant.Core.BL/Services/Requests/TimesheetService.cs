@@ -1,15 +1,15 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Request.TimeSheet;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
@@ -91,10 +91,7 @@ public class TimesheetService(
         {
             return Result.Fail<Guid>($"TimeSheet for the date {timeSheet.Date:D} was already created");
         }
-        timeSheet.MissingHours = timeSheetModel.MissingHours;
-        timeSheet.MissingHoursOvertime = timeSheetModel.MissingHoursOvertime;
-        timeSheet.MissingRateWorker = timeSheetModel.MissingRateWorker;
-        timeSheet.MissingRateAgency = timeSheetModel.MissingRateAgency;
+        timeSheet.UpdateMissing(timeSheetModel.MissingHours, timeSheetModel.MissingHoursOvertime, timeSheetModel.MissingRateWorker, timeSheetModel.MissingRateAgency);
         var rDeductions = timeSheet.AddDeductionsOthers(timeSheetModel.DeductionsOthers, timeSheetModel.DeductionsOthersDescription);
         if (!rDeductions)
         {
@@ -102,7 +99,7 @@ public class TimesheetService(
         }
         timeSheet.AddBonusOrOthers(timeSheetModel.BonusOrOthers, timeSheetModel.BonusOrOthersDescription);
         timeSheet.AddReimbursements(timeSheetModel.Reimbursements, timeSheetModel.ReimbursementsDescription);
-        if (!string.IsNullOrWhiteSpace(timeSheetModel.Comments)) timeSheet.Comment = timeSheetModel.Comments;
+        if (!string.IsNullOrWhiteSpace(timeSheetModel.Comments)) timeSheet.UpdateComment(timeSheetModel.Comments);
         await timeSheetRepository.Create(timeSheet);
         await timeSheetRepository.SaveChangesAsync();
         return Result.Ok(timeSheet.Id);
@@ -123,10 +120,7 @@ public class TimesheetService(
         {
             return result;
         }
-        timeSheet.MissingHours = timeSheetModel.MissingHours;
-        timeSheet.MissingHoursOvertime = timeSheetModel.MissingHoursOvertime;
-        timeSheet.MissingRateAgency = timeSheetModel.MissingRateAgency;
-        timeSheet.MissingRateWorker = timeSheetModel.MissingRateWorker;
+        timeSheet.UpdateMissing(timeSheetModel.MissingHours, timeSheetModel.MissingHoursOvertime, timeSheetModel.MissingRateWorker, timeSheetModel.MissingRateAgency);
         result = timeSheet.AddDeductionsOthers(timeSheetModel.DeductionsOthers, timeSheetModel.DeductionsOthersDescription);
         if (!result)
         {
@@ -134,9 +128,9 @@ public class TimesheetService(
         }
         timeSheet.AddBonusOrOthers(timeSheetModel.BonusOrOthers, timeSheetModel.BonusOrOthersDescription);
         timeSheet.AddReimbursements(timeSheetModel.Reimbursements, timeSheetModel.ReimbursementsDescription);
-        timeSheet.Comment = string.IsNullOrWhiteSpace(timeSheetModel.Comments)
+        timeSheet.UpdateComment(string.IsNullOrWhiteSpace(timeSheetModel.Comments)
             ? $"Updated and approved by {updatedBy}"
-            : timeSheetModel.Comments;
+            : timeSheetModel.Comments);
         await timeSheetRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -328,6 +322,20 @@ public class TimesheetService(
         var now = GetJobNow(info, latitude, longitude).DateTime;
         var latest = await timeSheetRepository.GetLatestTimesheet(workerId, requestId);
         return new PunchResolution(workerId, info, now, latest, NextPunch(latest, now));
+    }
+
+    public async Task<Result> ApproveCompanyTimesheets(Guid requestId, Guid workerProfileId, Guid companyId)
+    {
+        var timeSheets = await timeSheetRepository.GetTimeSheets(workerProfileId, requestId, r => r.CompanyProfile.CompanyId == companyId);
+        var now = timeProvider.GetLocalNow().DateTime;
+        foreach (var timeSheet in timeSheets.Where(t => t.TimeOut.HasValue))
+        {
+            var result = timeSheet.AddApprovedTime(timeSheet.TimeIn, timeSheet.TimeOut.GetValueOrDefault());
+            if (!result) return result;
+            timeSheet.UpdateComment($"Approved on {now:D}");
+        }
+        await timeSheetRepository.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<Result> RemoveTimeSheet(Guid id)

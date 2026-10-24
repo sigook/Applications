@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Accounting.PayStubs;
 
 namespace Covenant.Common.Interfaces.Adapters;
 

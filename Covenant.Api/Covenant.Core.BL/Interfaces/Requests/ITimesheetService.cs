@@ -1,10 +1,10 @@
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Request.TimeSheet;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models.Workers;
+using Covenant.Common.Models;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 
@@ -21,6 +21,7 @@ public interface ITimesheetService
     Task<Result<ClockType>> GetClockType(Guid requestId, double latitude, double longitude);
     Task<Result<PunchStatusModel>> GetPunchStatus(Guid requestId, double latitude, double longitude);
     Task<Result> RemoveTimeSheet(Guid id);
+    Task<Result> ApproveCompanyTimesheets(Guid requestId, Guid workerProfileId, Guid companyId);
     Task<ResultGenerateDocument<MemoryStream>> GetRequestTimesheetFile(Guid requestId);
     Task<Result<ResultGenerateDocument<MemoryStream>>> GetCompanyRequestTimesheetFile(Guid requestId, Guid companyId);
 }

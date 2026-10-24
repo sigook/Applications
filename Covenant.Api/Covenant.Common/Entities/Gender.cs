@@ -2,8 +2,8 @@
 {
     public class Gender : ICatalog<Guid>
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Value { get; set; }
+        public Guid Id { get; internal set; } = Guid.NewGuid();
+        public string Value { get; internal set; }
         public Gender()
         {
         }

@@ -1,8 +1,8 @@
-﻿using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Request;
+﻿using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Candidate;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Candidates;
+using Covenant.Common.Models.Workers;
 
 namespace Covenant.Common.Interfaces.Adapters;
 

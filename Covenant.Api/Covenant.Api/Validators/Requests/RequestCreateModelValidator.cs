@@ -1,5 +1,5 @@
 using Covenant.Common.Constants;
-using Covenant.Common.Models.Request;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Resources;
 using FluentValidation;
 

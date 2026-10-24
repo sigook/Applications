@@ -1,0 +1,20 @@
+using Covenant.Common.Models.Locations;
+
+namespace Covenant.Common.Models.Candidates;
+
+public class CandidateDetailModel
+{
+    public Guid Id { get; set; }
+    public long NumberId { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Address { get; set; }
+    public string PostalCode { get; set; }
+    public CityModel City { get; set; }
+    public BaseModel<Guid> Gender { get; set; }
+    public bool HasVehicle { get; set; }
+    public string ResidencyStatus { get; set; }
+    public Guid? SourceId { get; set; }
+    public bool Dnu { get; set; }
+    public IEnumerable<PhoneNumberModel> PhoneNumbers { get; set; } = new List<PhoneNumberModel>();
+}

@@ -2,7 +2,7 @@
 {
     public interface ICatalog<T>
     {
-        T Id { get; set; }
-        string Value { get; set; }
+        T Id { get; }
+        string Value { get; }
     }
 }

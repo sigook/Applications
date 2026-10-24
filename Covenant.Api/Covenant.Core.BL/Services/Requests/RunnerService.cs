@@ -1,7 +1,7 @@
-using Covenant.Common.Entities.Request.Runners;
+using Covenant.Common.Entities.Requests.Runners;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request.Runners;
+using Covenant.Common.Models.Requests.Runners;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Utils.Extensions;
@@ -21,13 +21,12 @@ public class RunnerService(
 
     public async Task<Result<Guid>> CreateRunner(Guid requestId, RunnerCreateModel model, Guid? requestRecruiterId = null)
     {
-        var agencyId = currentUserService.GetAgencyId();
         var createdBy = currentUserService.GetUserId();
-        var request = await requestRepository.GetRequest(r => r.Id == requestId && r.CompanyProfile.AgencyId == agencyId);
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null) return Result.Fail<Guid>("Request not found");
         if (!request.UsesRunners) return Result.Fail<Guid>(RunnersNotAllowed);
 
-        var worker = await workerRepository.GetProfile(w => w.Id == model.WorkerProfileId && w.AgencyId == agencyId);
+        var worker = await workerRepository.GetProfile(w => w.Id == model.WorkerProfileId);
         if (worker is null) return Result.Fail<Guid>("Worker profile not found");
         if (await runnerRepository.RunnerExists(requestId, model.WorkerProfileId))
             return Result.Fail<Guid>("This worker is already a runner on this request");
@@ -41,8 +40,7 @@ public class RunnerService(
 
     public async Task<Result> DeleteRunner(Guid runnerId)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var runner = await runnerRepository.GetRunner(r => r.Id == runnerId && r.Request.CompanyProfile.AgencyId == agencyId);
+        var runner = await runnerRepository.GetRunner(r => r.Id == runnerId);
         if (runner is null) return Result.Fail("Runner not found");
         runnerRepository.Delete(runner);
         await runnerRepository.SaveChangesAsync();
@@ -68,9 +66,8 @@ public class RunnerService(
     {
         var validationResult = await changeRunnersStatusValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<ChangeRunnersStatusResultModel>();
-        var agencyId = currentUserService.GetAgencyId();
         var changedBy = currentUserService.GetUserId();
-        var runners = await runnerRepository.GetRunners(r => model.RunnerIds.Contains(r.Id) && r.Request.CompanyProfile.AgencyId == agencyId);
+        var runners = await runnerRepository.GetRunners(r => model.RunnerIds.Contains(r.Id));
         var response = new ChangeRunnersStatusResultModel();
         foreach (var runner in runners)
         {

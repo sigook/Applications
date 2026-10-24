@@ -1,6 +1,6 @@
 using ClosedXML.Excel;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request.TimeSheet;
 using MediatR;
 
 namespace Covenant.Documents.Services;

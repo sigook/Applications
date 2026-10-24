@@ -1,6 +1,6 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Worker;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Workers;
 using Microsoft.EntityFrameworkCore;

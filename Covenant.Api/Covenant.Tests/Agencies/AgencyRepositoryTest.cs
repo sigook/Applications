@@ -1,4 +1,5 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Infrastructure.Contexts;
@@ -8,8 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using AgencyEntity = Covenant.Common.Entities.Agency.Agency;
-using AgencyPersonnelEntity = Covenant.Common.Entities.Agency.AgencyPersonnel;
 
 namespace Covenant.Tests.Agencies;
 
@@ -28,13 +27,13 @@ public class AgencyRepositoryTest
         _sut = new AgencyRepository(_context, mockFilesConfiguration.Object);
     }
 
-    private static AgencyEntity Agency(string name, string phone, AgencyType type, Guid? parentId = null) =>
+    private static Agency Agency(string name, string phone, AgencyType type, Guid? parentId = null) =>
         new(name, phone) { Id = Guid.NewGuid(), AgencyType = type, AgencyParentId = parentId };
 
-    private async Task<AgencyPersonnelEntity> SeedPersonnel(Guid agencyId, string email, params AgencyEntity[] agencies)
+    private async Task<AgencyPersonnel> SeedPersonnel(Guid agencyId, string email, params Agency[] agencies)
     {
         var user = new User(CvnEmail.Create(email).Value, Guid.NewGuid());
-        var personnel = AgencyPersonnelEntity.CreatePrimary(agencyId, user);
+        var personnel = AgencyPersonnel.CreatePrimary(agencyId, user);
         await _context.Agencies.AddRangeAsync(agencies);
         await _context.AgencyPersonnel.AddAsync(personnel);
         await _context.SaveChangesAsync();

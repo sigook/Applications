@@ -1,11 +1,12 @@
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
+using Covenant.Infrastructure.Extensions;
 using Covenant.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;

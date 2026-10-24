@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Request.Runners;
+using Covenant.Common.Entities.Requests.Runners;
 using Covenant.Common.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

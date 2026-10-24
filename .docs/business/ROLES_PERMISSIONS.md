@@ -75,8 +75,8 @@ the record to belong to the client in the route. The dashboard endpoints
 (`api/agency/sales/dashboard` and its per-card `deals-by-status`, `summary`, `recent-clients`,
 `recent-interactions`, `recent-deals`) count or list only those same owned rows. Admin and superadmin hit every one of these
 endpoints unscoped. Controllers (Policy `Sales` — sales, admin, superadmin):
-`Covenant.Api/Covenant.Api/Controllers/Agency/Sales/Clients/{InteractionsController,DealsController}.cs`
-and `Covenant.Api/Covenant.Api/Controllers/Agency/Sales/DashboardController.cs`. In Sigook.Web the
+`Covenant.Api/Covenant.Api/Controllers/Agencies/Sales/Clients/{InteractionsController,DealsController}.cs`
+and `Covenant.Api/Covenant.Api/Controllers/Agencies/Sales/DashboardController.cs`. In Sigook.Web the
 client's Interactions / Deals tabs render only on the sales route (`/sales/companies/:id`) **and** for a
 sales-access role (`useSalesAccess`), so recruiting never sees them. Business meaning of deals and
 interactions: `SALES_MODULE.md`; entities: `.docs/technical/ENTITIES_RELATIONSHIPS.md`.
@@ -122,8 +122,8 @@ Besides `Agency`, `Recruiting`, `Sales` and `Admin` (`PolicyConfiguration.cs`):
 - `Worker` — `worker` only.
 
 Every policy requires a role: there is no authenticated-only policy and no cross-actor policy. An
-endpoint two actors need is exposed once per actor (`Controllers/Agency/`, `Controllers/Company/`,
-`Controllers/Worker/`), each under its own policy, and the shared logic lives in a `Covenant.Core.BL`
+endpoint two actors need is exposed once per actor (`Controllers/Agencies/`, `Controllers/Companies/`,
+`Controllers/Workers/`), each under its own policy, and the shared logic lives in a `Covenant.Core.BL`
 service. The request shift is the reference case: `GET api/agency/recruiting/requests/{requestId}/shift`
 (policy `Agency`) and `GET api/company/requests/{requestId}/shift` (policy `Company`) both delegate to
 `IRequestService.GetRequestShift`.

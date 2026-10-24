@@ -12,7 +12,7 @@
             Id = id == default ? Guid.NewGuid() : id;
         }
 
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Value { get; set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public string Value { get; private set; }
     }
 }

@@ -1,27 +1,28 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Constants;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Notifications;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Agency;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Notification;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Company.Agency;
-using Covenant.Common.Models.Identity;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Worker.Agency;
-using Covenant.Common.Models;
+using Covenant.Common.Models.Accounting.Invoices;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Agency;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Request.TimeSheet;
-using Covenant.Common.Models.Worker;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Identity;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models.Workers.Agencies;
+using Covenant.Common.Models.Workers;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
@@ -29,10 +30,9 @@ using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
-using Covenant.Common.Utils;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Common.Utils;
 using Covenant.Core.BL.Interfaces.Agencies;
-using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Interfaces.Workers;
 using Covenant.Documents.Services;
 using FluentValidation;
@@ -187,7 +187,7 @@ public class AgencyService : IAgencyService
         {
             var website = CvnWebPage.Create(model.Website);
             if (!website) return Result.Fail<Guid>(website.Errors);
-            company.Website = website.Value;
+            company.UpdateWebsite(website.Value);
         }
         if (!string.IsNullOrEmpty(model.Logo?.FileName))
         {
@@ -197,32 +197,23 @@ public class AgencyService : IAgencyService
             }
             var logo = new CovenantFile(model.Logo.FileName, model.Logo.Description);
             await companyRepository.Create(logo);
-            company.LogoId = logo.Id;
+            company.ReplaceLogo(logo.Id);
         }
-        company.FullName = model.FullName;
+        company.ChangeFullName(model.FullName);
         if (model.Industry.Industry != null)
         {
-            company.Industry.IndustryId = model.Industry.Industry.Id;
-            company.Industry.OtherIndustry = null;
+            company.Industry.Update(model.Industry.Industry.Id, null);
         }
         else
         {
-            company.Industry.IndustryId = null;
-            company.Industry.OtherIndustry = model.Industry.OtherIndustry;
+            company.Industry.Update(null, model.Industry.OtherIndustry);
         }
         if (company.CompanyStatus != model.CompanyStatus)
         {
-            company.CompanyStatus = model.CompanyStatus;
-            company.UpdatedBy = currentUserService.GetNickname();
-            company.UpdatedAt = DateTime.Now;
+            company.UpdateStatus(model.CompanyStatus, currentUserService.GetNickname(), DateTime.Now);
         }
-        company.SalesRepresentativeId = model.SalesRepresentativeId;
-        company.About = model.About;
-        company.InternalInfo = model.InternalInfo;
-        company.Phone = model.Phone;
-        company.PhoneExt = model.PhoneExt;
-        company.Fax = model.Fax;
-        company.FaxExt = model.FaxExt;
+        company.UpdateDetails(model.About, model.InternalInfo, model.SalesRepresentativeId);
+        company.UpdatePhones(model.Phone, model.PhoneExt, model.Fax, model.FaxExt);
 
         companyRepository.Update(company);
         await companyRepository.SaveChangesAsync();
@@ -233,18 +224,8 @@ public class AgencyService : IAgencyService
     {
         var rEmail = CvnEmail.CreateOptional(model.Email);
         if (!rEmail) return Result.Fail<Guid>(rEmail.Errors);
-        var entity = new CompanyProfileContactPerson(profileId)
-        {
-            Title = model.Title,
-            FirstName = model.FirstName,
-            MiddleName = model.MiddleName,
-            LastName = model.LastName,
-            Position = model.Position,
-            MobileNumber = model.MobileNumber,
-            OfficeNumber = model.OfficeNumber,
-            OfficeNumberExt = model.OfficeNumberExt,
-            Email = rEmail.Value
-        };
+        var entity = new CompanyProfileContactPerson(profileId);
+        entity.Update(model.Title, model.FirstName, model.MiddleName, model.LastName, model.Position, model.MobileNumber, model.OfficeNumber, model.OfficeNumberExt, rEmail.Value);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         return Result.Ok(entity.Id);
@@ -259,15 +240,17 @@ public class AgencyService : IAgencyService
         {
             return Result.Fail();
         }
-        entity.Title = model.Title;
-        entity.FirstName = model.FirstName;
-        entity.MiddleName = model.MiddleName;
-        entity.LastName = model.LastName;
-        entity.Position = model.Position;
-        entity.MobileNumber = model.MobileNumber;
-        entity.OfficeNumber = model.OfficeNumber;
-        entity.OfficeNumberExt = model.OfficeNumberExt;
-        entity.Email = rEmail.Value;
+        entity.Update(model.Title, model.FirstName, model.MiddleName, model.LastName, model.Position, model.MobileNumber, model.OfficeNumber, model.OfficeNumberExt, rEmail.Value);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteCompanyJobPosition(Guid id)
+    {
+        var entity = await companyRepository.GetJobPosition(id);
+        if (entity is null) return Result.Fail("Job position not found");
+        entity.Delete(currentUserService.GetNickname());
+        companyRepository.Update(entity);
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }
@@ -395,9 +378,9 @@ public class AgencyService : IAgencyService
         if (!rMax) return Result.Fail<CompanyProfileJobPositionRate>(rMax.Errors);
 
         if (model.Shift != null) result.Value.AddShift(model.Shift.ToShift());
-        result.Value.OvertimeStartsAfter = model.OvertimeStartsAfter.HasValue
+        result.Value.UpdateOvertimeStartsAfter(model.OvertimeStartsAfter.HasValue
             ? TimeSpan.FromHours(model.OvertimeStartsAfter.Value)
-            : null;
+            : null);
         return result;
     }
 
@@ -455,17 +438,12 @@ public class AgencyService : IAgencyService
             var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
             if (workerProfileTaxCategory != null)
             {
-                workerProfileTaxCategory.FederalCategory = model.FederalTaxCategory;
-                workerProfileTaxCategory.ProvincialCategory = model.ProvincialTaxCategory;
+                workerProfileTaxCategory.UpdateCategories(model.FederalTaxCategory, model.ProvincialTaxCategory);
             }
             else
             {
-                var newTaxCategory = new WorkerProfileTaxCategory
-                {
-                    WorkerProfileId = workerProfileId,
-                    FederalCategory = model.FederalTaxCategory,
-                    ProvincialCategory = model.ProvincialTaxCategory
-                };
+                var newTaxCategory = new WorkerProfileTaxCategory(workerProfileId);
+                newTaxCategory.UpdateCategories(model.FederalTaxCategory, model.ProvincialTaxCategory);
                 await workerRepository.Create(newTaxCategory);
             }
             await workerRepository.SaveChangesAsync();
@@ -477,17 +455,12 @@ public class AgencyService : IAgencyService
         var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
         if (workerProfileTaxCategory != null)
         {
-            workerProfileTaxCategory.Cpp = model.Cpp;
-            workerProfileTaxCategory.Ei = model.Ei;
+            workerProfileTaxCategory.UpdateRates(model.Cpp, model.Ei);
         }
         else
         {
-            var newTaxCategory = new WorkerProfileTaxCategory
-            {
-                WorkerProfileId = workerProfileId,
-                Cpp = model.Cpp,
-                Ei = model.Ei
-            };
+            var newTaxCategory = new WorkerProfileTaxCategory(workerProfileId);
+            newTaxCategory.UpdateRates(model.Cpp, model.Ei);
             await workerRepository.Create(newTaxCategory);
         }
         await workerRepository.SaveChangesAsync();
@@ -504,7 +477,7 @@ public class AgencyService : IAgencyService
             return Result.Fail<CompanyProfileDocument>(covenantFile.Errors);
         }
         var entity = new CompanyProfileDocument(companyProfileId, covenantFile.Value, currentUserService.GetNickname());
-        entity.DocumentType = model.DocumentType;
+        entity.UpdateDocumentType(model.DocumentType);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         await uploadedFilesService.Upload([model.FileName]);
@@ -642,6 +615,84 @@ public class AgencyService : IAgencyService
         }
     }
 
+    public async Task<Result> DeleteAgencyPersonnel(Guid agencyId, Guid id)
+    {
+        var entity = await agencyRepository.GetPersonnel(id);
+        if (entity is null || entity.AgencyId != agencyId) return Result.Fail(ResultError.NotFound("Personnel not found"));
+        if (await agencyRepository.PersonnelHasRequests(entity.Id))
+            return Result.Fail("This user cannot be deleted because they are still assigned as a recruiter on one or more orders. Please reassign those orders first.");
+        if (await agencyRepository.PersonnelHasCompanies(entity.Id))
+            return Result.Fail("This user cannot be deleted because they are still set as the sales representative for one or more clients. Please reassign those clients first.");
+        agencyRepository.Delete(entity);
+        await agencyRepository.SaveChangesAsync();
+        return await userAccountService.DeleteUserOrClaim(entity.UserId, new IdModel(agencyId));
+    }
+
+    public async Task SetPrimaryPersonnelAgency(Guid userId, Guid personnelId)
+    {
+        foreach (var personnel in await agencyRepository.GetPersonnelByUserId(userId))
+        {
+            if (personnel.IsPrimary)
+            {
+                personnel.SetToNotPrimary();
+                agencyRepository.Update(personnel);
+            }
+
+            if (personnel.Id != personnelId) continue;
+            personnel.SetToPrimary();
+            agencyRepository.Update(personnel);
+        }
+        await agencyRepository.SaveChangesAsync();
+    }
+
+    public async Task<Result> UpdateAgencyProfile(Guid agencyId, AgencyModel model)
+    {
+        var entity = await agencyRepository.GetAgency(agencyId);
+        if (entity is null) return Result.Fail(ApiResources.AgencyNotFound);
+        entity.UpdateLogo(string.IsNullOrEmpty(model.Logo?.FileName) ? null : model.Logo.Id);
+        entity.UpdateProfile(model.FullName, model.BusinessNumber, model.HstNumber, model.PhonePrincipal, model.PhonePrincipalExt, model.WebPage);
+        entity.ReplaceWsibGroups(model.WsibGroup.Select(w => w.Id));
+        entity.ReplaceContactInformation(model.ContactInformation.Select(c => new AgencyContactInformation(
+            c.Title, c.FirstName, c.MiddleName, c.LastName, c.Position, c.MobileNumber, c.OfficeNumber, c.OfficeNumberExt, c.Email)));
+        agencyRepository.Update(entity);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result<Guid>> CreateAgencyLocation(Guid agencyId, LocationModel model)
+    {
+        var location = Location.Create(model.City?.Id, model.Address, model.PostalCode);
+        if (!location) return Result.Fail<Guid>(location.Errors);
+        var agency = await agencyRepository.GetAgency(agencyId);
+        if (agency is null) return Result.Fail<Guid>(ApiResources.AgencyNotFound);
+        await agencyRepository.Create(new AgencyLocation(location.Value, agency.Id, model.IsBilling));
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok(location.Value.Id);
+    }
+
+    public async Task<Result> UpdateAgencyLocation(Guid agencyId, Guid id, LocationModel model)
+    {
+        var location = Location.Create(model.City?.Id, model.Address, model.PostalCode);
+        if (!location) return location;
+        var agency = await agencyRepository.GetAgency(agencyId);
+        if (agency is null) return Result.Fail(ApiResources.AgencyNotFound);
+        var result = agency.UpdateLocation(id, location.Value, model.IsBilling);
+        if (!result) return result;
+        agencyRepository.Update(agency);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> DeleteAgencyLocation(Guid agencyId, Guid id)
+    {
+        var agency = await agencyRepository.GetAgency(agencyId);
+        if (agency is null) return Result.Fail(ApiResources.AgencyNotFound);
+        agency.DeleteLocation(id);
+        agencyRepository.Update(agency);
+        await agencyRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
     public async Task<Result> UpdateAgencyPersonnel(Guid id, AgencyPersonnelModel model)
     {
         var validation = await agencyPersonnelValidator.ValidateAsync(model);
@@ -750,9 +801,7 @@ public class AgencyService : IAgencyService
             });
             if (user)
             {
-                agency.AgencyType = model.AgencyType;
-                agency.UserId = user.Value.Id;
-                agency.AgencyParentId = agencyParentId;
+                agency.AssignOwner(model.AgencyType, user.Value.Id, agencyParentId);
                 var personnel = AgencyPersonnel.CreatePrimary(agency.Id, user.Value, model.FullName);
                 await agencyRepository.Create(agency);
                 await agencyRepository.Create(personnel);

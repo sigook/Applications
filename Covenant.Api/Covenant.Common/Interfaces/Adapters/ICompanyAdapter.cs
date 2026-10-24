@@ -1,8 +1,8 @@
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
 
 namespace Covenant.Common.Interfaces.Adapters;
 

@@ -1,5 +1,5 @@
 using Covenant.Common.Constants;
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Xunit;
 
 namespace Covenant.Tests.Accounting.PayStubs;

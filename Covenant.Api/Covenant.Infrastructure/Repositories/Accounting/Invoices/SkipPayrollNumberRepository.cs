@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Accounting.Invoice;
+using Covenant.Common.Entities.Accounting.Invoices;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Accounting.Invoices;

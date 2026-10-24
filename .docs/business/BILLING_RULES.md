@@ -14,7 +14,7 @@ How the platform bills Companies for staffing services: line-item generation fro
 | Hours breakdown + amount math | `Covenant.Api/Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs` |
 | Holiday-pay look-back query, invoice numbering query | `Covenant.Api/Covenant.Infrastructure/Repositories/Accounting/InvoiceRepository.cs` (`GetCompanyRegularCharges`, `GetNextInvoiceNumber`; raw SQL in `Covenant.Infrastructure/SqlQueries.resx`) |
 | Global rate multipliers | `Covenant.Api/Covenant.Common/Configuration/Rates.cs` |
-| Invoice entity | `Covenant.Api/Covenant.Common/Entities/Accounting/Invoice/Invoice.cs` |
+| Invoice entity | `Covenant.Api/Covenant.Common/Entities/Accounting/Invoices/Invoice.cs` |
 
 **Entry points:** `InvoicesController` (`api/agency/accounting/invoices`) injects `IInvoiceService` directly. `POST .../Invoices/Preview` → `PreviewInvoice`; `POST .../Invoices` → `CreateInvoice`. Both funnel into `BuildInvoice`, which resolves the country strategy per invoice from the billed company's agency.
 

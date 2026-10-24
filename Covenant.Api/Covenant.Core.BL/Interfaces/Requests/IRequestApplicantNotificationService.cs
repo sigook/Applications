@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 
 namespace Covenant.Core.BL.Interfaces.Requests;
 

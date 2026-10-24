@@ -21,7 +21,6 @@
 		<PackageReference Include="Microsoft.Graph" />
 		<PackageReference Include="Microsoft.Kiota.Abstractions" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-		<PackageReference Include="FirebaseAdmin" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
 		<PackageReference Include="OpenIddict.EntityFrameworkCore" />
@@ -32,6 +31,6 @@
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\Covenant.Documents\Covenant.Documents.csproj" />
+		<ProjectReference Include="..\Covenant.Common\Covenant.Common.csproj" />
 	</ItemGroup>
 </Project>

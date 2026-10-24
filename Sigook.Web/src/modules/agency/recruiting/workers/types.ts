@@ -82,7 +82,7 @@ export interface WorkerTimeSheetHistoryItem {
 }
 
 // Filter for paginated worker list (agency view)
-// Mirrors backend GetWorkerProfileFilter (Covenant.Common.Models.Worker)
+// Mirrors backend GetWorkerProfileFilter (Covenant.Common.Models.Workers)
 export interface AgencyWorkerFilter {
   pageIndex?: number;
   pageSize?: number;
@@ -142,7 +142,7 @@ export interface UpdateWorkerProfileFieldsPayload {
 }
 
 // Holiday assigned to a worker profile.
-// Mirrors backend WorkerProfileHolidayModel (Covenant.Common.Models.Worker).
+// Mirrors backend WorkerProfileHolidayModel (Covenant.Common.Models.Workers).
 export interface AgencyWorkerHoliday {
   workerProfileId?: string;
   holidayId?: string;
@@ -169,7 +169,7 @@ export interface WorkerRequestHistoryFilter extends GridParams {
 }
 
 // Request history item returned for the Worker → Requests tab.
-// Mirrors backend WorkerRequestHistoryModel (Covenant.Common.Models.Request.Agency).
+// Mirrors backend WorkerRequestHistoryModel (Covenant.Common.Models.Requests.Agencies).
 export interface WorkerRequestHistoryItem {
   id: string;
   numberId: number;

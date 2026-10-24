@@ -11,9 +11,9 @@ namespace Covenant.Common.Entities
         public string Color { get; internal set; }
         public string CreatedBy { get; internal set; }
         public DateTime CreatedAt { get; internal set; }
-        public string UpdatedBy { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public bool IsDeleted { get; set; }
+        public string UpdatedBy { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
+        public bool IsDeleted { get; private set; }
 
         private CovenantNote()
         {

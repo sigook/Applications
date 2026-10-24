@@ -1,0 +1,89 @@
+using Covenant.Api.Authorization;
+using Covenant.Api.Utils.Extensions;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Agencies;
+using Covenant.Common.Models;
+using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Agencies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Covenant.Api.Controllers.Agencies.Profile;
+
+[Route(RouteName)]
+[ApiController]
+[Authorize(Policy = PolicyConfiguration.Agency)]
+[ServiceFilter(typeof(AgencyIdFilter))]
+public class PersonnelController(IAgencyService agencyService) : ControllerBase
+{
+    public const string RouteName = "api/agency/profile/personnel";
+
+    /// <summary>Gets all personnel of the current agency.</summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<AgencyPersonnelModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Get()
+    {
+        return Ok(await agencyService.GetAgencyPersonnel(User.GetAgencyId()));
+    }
+
+    /// <summary>Gets the roles that the current user is allowed to assign to a personnel of the current agency.</summary>
+    [HttpGet("Roles")]
+    [Authorize(Policy = PolicyConfiguration.Admin)]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    public IActionResult GetAssignableRoles() => Ok(agencyService.GetAssignableRoles());
+
+    /// <summary>Creates a new personnel record for the current agency.</summary>
+    /// <param name="model">Personnel data.</param>
+    [HttpPost]
+    [Authorize(Policy = PolicyConfiguration.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Post([FromBody] AgencyPersonnelModel model)
+    {
+        var result = await agencyService.CreateAgencyPersonnel(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Gets a personnel record of the current agency by its identifier.</summary>
+    /// <param name="id">Identifier of the personnel record.</param>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(AgencyPersonnelModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    {
+        var model = await agencyService.GetAgencyPersonnel(User.GetAgencyId(), id);
+        if (model is null) return NotFound();
+        return Ok(model);
+    }
+
+    /// <summary>Updates the name, email and role of a personnel record of the current agency.</summary>
+    /// <param name="id">Identifier of the personnel record.</param>
+    /// <param name="model">Personnel data.</param>
+    [HttpPut("{id:guid}")]
+    [Authorize(Policy = PolicyConfiguration.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] AgencyPersonnelModel model)
+    {
+        var result = await agencyService.UpdateAgencyPersonnel(id, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Deletes a personnel record of the current agency.</summary>
+    /// <param name="id">Identifier of the personnel record to delete.</param>
+    [HttpDelete("{id:guid}")]
+    [Authorize(Policy = PolicyConfiguration.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        [FromRoute] Guid id)
+    {
+        var result = await agencyService.DeleteAgencyPersonnel(User.GetAgencyId(), id);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+}

@@ -1,25 +1,24 @@
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
-using Covenant.Common.Models.Request.Agency;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests.Agencies;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories;
+using Covenant.Common.Resources;
+using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Requests;
 using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Services;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
-using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Repositories;
-using Covenant.Common.Resources;
-using Covenant.Core.BL.Adapters;
 using Covenant.Tests.Utils;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -44,7 +43,7 @@ public class DuplicateRequestServiceTest
     public DuplicateRequestServiceTest()
     {
         _requestRepository = new Mock<IRequestRepository>();
-        _requestRepository.Setup(r => r.GetRequest(It.IsAny<System.Linq.Expressions.Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>()))
+        _requestRepository.Setup(r => r.GetRequest(It.IsAny<System.Linq.Expressions.Expression<Func<Request, bool>>>()))
             .ReturnsAsync(FakeData.FakeRequest());
         _requestRepository.Setup(r => r.GetRequestShift(_sourceRequestId)).ReturnsAsync(_sourceShift);
         _requestRepository.Setup(r => r.GetSkills(_sourceRequestId))
@@ -77,11 +76,10 @@ public class DuplicateRequestServiceTest
             new FakeTimeProvider(),
             _requestRepository.Object,
             Mock.Of<INotificationDataRepository>(),
-            Mock.Of<IPushNotifications>(),
             currentUserService.Object,
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<ISigookBusClient>(),
+            Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
             Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),
@@ -108,7 +106,7 @@ public class DuplicateRequestServiceTest
 
         Assert.True(result);
         Assert.NotEqual(_sourceRequestId, result.Value);
-        _requestRepository.Verify(r => r.Create(It.Is<Covenant.Common.Entities.Request.Request>(requests =>
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(requests =>
             requests.Shift.Monday == true)), Times.Once);
         _requestRepository.Verify(r => r.Create(It.Is<RequestSkill>(skills =>
             skills.Skill == "Forklift")), Times.Once);
@@ -140,15 +138,15 @@ public class DuplicateRequestServiceTest
 
         Assert.True(result);
         _requestRepository.Verify(r => r.GetRequestShift(It.IsAny<Guid>()), Times.Never);
-        _requestRepository.Verify(r => r.Create(It.Is<Covenant.Common.Entities.Request.Request>(requests =>
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(requests =>
             requests.Shift.Tuesday == true)), Times.Once);
     }
 
     [Fact]
     public async Task ErrorWhenTheSourceRequestDoesNotExist()
     {
-        _requestRepository.Setup(r => r.GetRequest(It.IsAny<System.Linq.Expressions.Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>()))
-            .ReturnsAsync(default(Covenant.Common.Entities.Request.Request));
+        _requestRepository.Setup(r => r.GetRequest(It.IsAny<System.Linq.Expressions.Expression<Func<Request, bool>>>()))
+            .ReturnsAsync(default(Request));
 
         Result<Guid> result = await _sut.DuplicateRequest(_sourceRequestId, _model);
 

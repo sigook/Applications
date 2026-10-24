@@ -31,6 +31,7 @@ public class PasswordResetServiceTest
             _repository.Object,
             new PasswordHasher<CovenantUser>(),
             _notifications.Object,
+            TimeProvider.System,
             NullLogger<PasswordResetService>.Instance);
     }
 

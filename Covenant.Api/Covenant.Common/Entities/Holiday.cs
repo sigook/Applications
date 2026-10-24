@@ -2,10 +2,10 @@ namespace Covenant.Common.Entities
 {
     public class Holiday
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public DateTime Date { get; set; }
-        public string Description { get; set; }
-        public string CountryCode { get; set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public DateTime Date { get; private set; }
+        public string Description { get; private set; }
+        public string CountryCode { get; private set; }
 
         public Holiday()
         {
@@ -14,5 +14,7 @@ namespace Covenant.Common.Entities
         {
             Date = date;
         }
+
+        public Holiday(DateTime date, string countryCode) : this(date) => CountryCode = countryCode;
     }
 }

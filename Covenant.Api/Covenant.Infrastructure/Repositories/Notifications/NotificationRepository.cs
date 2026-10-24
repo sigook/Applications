@@ -1,6 +1,6 @@
-using Covenant.Common.Entities.Notification;
+using Covenant.Common.Entities.Notifications;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Notification;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -35,15 +35,13 @@ public class NotificationRepository(CovenantContext context) : BaseRepository<Co
         UserNotificationType entity = await Context.UserNotificationTypes.SingleOrDefaultAsync(un => un.UserId == userId && un.NotificationTypeId == model.Id);
         if (entity is null)
         {
-            entity = new UserNotificationType(userId, model.Id)
-            { EmailNotification = model.EmailNotification, PushNotification = model.PushNotification, SMSNotification = model.SMSNotification };
+            entity = new UserNotificationType(userId, model.Id);
+            entity.UpdateChannels(model.EmailNotification, model.PushNotification, model.SMSNotification);
             await Context.UserNotificationTypes.AddAsync(entity);
         }
         else
         {
-            entity.EmailNotification = model.EmailNotification;
-            entity.PushNotification = model.PushNotification;
-            entity.SMSNotification = model.SMSNotification;
+            entity.UpdateChannels(model.EmailNotification, model.PushNotification, model.SMSNotification);
             Context.UserNotificationTypes.Update(entity);
         }
     }

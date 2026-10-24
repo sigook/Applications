@@ -1,14 +1,14 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Accounting.Invoice;
-using Covenant.Common.Models.Request.TimeSheet.Agency;
-using Covenant.Common.Models;
+using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Request.TimeSheet;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.TimeSheets.Agencies;
+using Covenant.Common.Models.Requests.TimeSheets;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -23,7 +23,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
 {
     public Task<TimeSheet> GetTimeSheet(Guid id) => Context.TimeSheets.SingleOrDefaultAsync(s => s.Id == id);
 
-    public async Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerProfileId, Guid requestId, Expression<Func<Common.Entities.Request.Request, bool>> requestCondition)
+    public async Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerProfileId, Guid requestId, Expression<Func<Request, bool>> requestCondition)
     {
         var query = from wr in Context.WorkerRequests.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
                     join r in Context.Requests.Where(requestCondition) on wr.RequestId equals r.Id
@@ -438,7 +438,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
             .Where(it => it.TimeSheetTotal.TimeSheetId == id)
             .Select(it => it.Invoice.InvoiceNumber)
             .FirstOrDefaultAsync();
-        var paystubNumber = await (from tst in Context.TimeSheetTotals.Where(tst => tst.TimeSheetId == id)
+        var paystubNumber = await (from tst in Context.TimeSheetTotalPayrolls.Where(tst => tst.TimeSheetId == id)
                                    join pswd in Context.PayStubWageDetails on tst.Id equals pswd.TimeSheetTotalId
                                    select pswd.PayStub.PayStubNumber).FirstOrDefaultAsync();
         return new TimeSheetUsagesModel
@@ -490,10 +490,10 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                               OvertimeHoursWorked = jwrwp.Sum(a => a.OvertimeHoursWorked),
                               HolidayHoursWorked = jwrwp.Sum(a => a.HolidayHoursWorked),
                               NightHoursWorked = jwrwp.Sum(a => a.NightHoursWorked),
-                              TotalPayRegularRate = jwrwp.Key.BillRate.Value * (int)jwrwp.Sum(a => a.RegularHoursWorked),
-                              TotalPayOvertimeRate = jwrwp.Key.BillRate.Value * rates.OverTime * (int)jwrwp.Sum(a => a.OvertimeHoursWorked),
-                              TotalPayHolidayRate = jwrwp.Key.BillRate.Value * rates.Holiday * (int)jwrwp.Sum(a => a.HolidayHoursWorked),
-                              TotalPayNightRate = jwrwp.Key.BillRate.Value * rates.NightShift * (int)jwrwp.Sum(a => a.NightHoursWorked),
+                              TotalPayRegularRate = jwrwp.Key.BillRate.Value * (decimal)jwrwp.Sum(a => a.RegularHoursWorked),
+                              TotalPayOvertimeRate = jwrwp.Key.BillRate.Value * rates.OverTime * (decimal)jwrwp.Sum(a => a.OvertimeHoursWorked),
+                              TotalPayHolidayRate = jwrwp.Key.BillRate.Value * rates.Holiday * (decimal)jwrwp.Sum(a => a.HolidayHoursWorked),
+                              TotalPayNightRate = jwrwp.Key.BillRate.Value * rates.NightShift * (decimal)jwrwp.Sum(a => a.NightHoursWorked),
                           };
         var result = await workedHours.ToListAsync();
         return result;
@@ -597,7 +597,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
     {
         var timesheetInvoice = await Context.TimeSheetTotals.AnyAsync(ts => ts.TimeSheetId == id);
         var timsheetPayroll = await Context.TimeSheetTotalPayrolls.AnyAsync(ts => ts.TimeSheetId == id);
-        return timesheetInvoice && timsheetPayroll;
+        return timesheetInvoice || timsheetPayroll;
     }
 
     public Task<List<RequestTimeSheetModel>> GetRequestTimeSheet(Guid requestId)

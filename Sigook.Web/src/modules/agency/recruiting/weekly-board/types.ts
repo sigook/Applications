@@ -1,6 +1,6 @@
 // Types for the Recruiting → Weekly Board feature.
 // Mirror the backend models in
-// Covenant.Common.Models.Request.WeeklyBoard.
+// Covenant.Common.Models.Requests.WeeklyBoard.
 import type { RequestStatus } from '@/shared/constants/enums';
 import type { RunnerStatus, RunnerType } from '@/modules/agency/recruiting/requests/runners/types';
 

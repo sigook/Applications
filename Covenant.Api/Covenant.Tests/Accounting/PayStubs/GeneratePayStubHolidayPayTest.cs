@@ -1,11 +1,11 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Accounting.PayStub;
-using Covenant.Common.Interfaces;
+using Covenant.Common.Entities.Accounting.PayStubs;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Accounting.Deductions;
 using Covenant.Common.Repositories.Accounting.Invoices;
 using Covenant.Common.Repositories.Accounting.PayStubs;
@@ -71,7 +71,8 @@ public class GeneratePayStubHolidayPayTest
             Mock.Of<IMediator>(),
             rates,
             timeLimits,
-            Mock.Of<IPayrollDocumentAdapter>());
+            Mock.Of<IPayrollDocumentAdapter>(),
+            TimeProvider.System);
     }
 
     [Fact]

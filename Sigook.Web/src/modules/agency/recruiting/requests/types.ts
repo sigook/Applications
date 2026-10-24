@@ -7,7 +7,7 @@ import type { AgencyCompanyLocationModel, AgencyCompanyJobPosition } from '@/mod
 import type { RequestComplianceItem, RequestShiftModel } from '@/shared/request-detail/types';
 
 // Filter for the paginated list of agency requests.
-// Mirrors backend GetRequestForAgencyFilter (Covenant.Common.Models.Request).
+// Mirrors backend GetRequestForAgencyFilter (Covenant.Common.Models.Requests).
 export interface AgencyRequestFilter {
   pageIndex?: number;
   pageSize?: number;

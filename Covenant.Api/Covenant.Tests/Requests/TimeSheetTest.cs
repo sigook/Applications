@@ -1,5 +1,5 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Request;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Functionals;
 using Xunit;
 

@@ -3,7 +3,7 @@
 How worked hours are captured (clock in/out, manual entry), approved, and broken down into pay/bill categories.
 
 **Source of truth:**
-- `Covenant.Api/Covenant.Common/Entities/Request/TimeSheet.cs` — entity + clock/approval invariants
+- `Covenant.Api/Covenant.Common/Entities/Requests/TimeSheet.cs` — entity + clock/approval invariants
 - `Covenant.Api/Covenant.Core.BL/Services/Requests/TimesheetService.cs` (`TimesheetService` class) — clock in/out, CRUD, geofence
 - `Covenant.Api/Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs` — **all hours-breakdown calculation** (not TimesheetService)
 - Consumers: `PayStubService.GeneratePayStubForWorker` (payroll) and the invoice services (billing) — see `PAYROLL_RULES.md` / `BILLING_RULES.md`
@@ -12,7 +12,7 @@ How worked hours are captured (clock in/out, manual entry), approved, and broken
 
 ## TimeSheet Entity (real fields)
 
-`Covenant.Common/Entities/Request/TimeSheet.cs`:
+`Covenant.Common/Entities/Requests/TimeSheet.cs`:
 
 | Field | Type | Notes |
 |-------|------|-------|
@@ -44,7 +44,7 @@ All entry points are in `TimesheetService` (`Covenant.Core.BL/Services/Requests/
 2. **GPS geofence** (`TimesheetService.ValidateDistance`), always active in every environment (the old `ValidateLocation` flag is gone; to test locally, set the request pin to your own coordinates):
    - Worker coordinates missing → rejected ("Your location is invalid").
    - Request has no coordinates → rejected.
-   - Distance worker↔job pin greater than `PunchConfiguration.CheckpointRadiusMeters` (**100 m** in `appsettings.json` and as the `PunchConfiguration__CheckpointRadiusMeters` App Setting of `sigook-api` and `sigook-api-staging`; the class default is also 100) → rejected. The message tells the worker how far and in which cardinal direction they are from the pin ("You are too far from check point: 165 m to the south. Please get closer."); distances are metres below 1 km, one decimal up to 10 km ("2.5 km") and whole kilometres beyond ("875 km"), and the clients' live strips format the same way.
+   - Distance worker↔job pin greater than `PunchConfiguration.CheckpointRadiusMeters` (**100 m** in `appsettings.json` and as the `PunchConfiguration__CheckpointRadiusMeters` App Setting of `sigook-api` and `sigook-api-staging`; the class default is also 100) → rejected. The message tells the worker how far and in which cardinal direction they are from the pin ("You are too far from check point: 165 m to the south. Please get closer."); distances are metres below 1 km, one decimal up to 10 km ("2.5 km") and whole kilometres beyond ("875 km"), and the clients' live strips format the same way. In Sigook.App the punch button is disabled while the live fix is clearly outside the radius (`distance − accuracy > radius`), and the strip then shows the worker number, name and request number so a screenshot is enough for support; with a borderline or missing fix the button stays enabled and the API decides.
    - Both clients (mobile app and worker portal) show that message as-is in a dismissible red card under the punch button (no modal or toast, so the job pin, the live strip and the worker's coordinates stay visible in one screenshot) with a reference line (worker number id + name, request number id, local time) that identifies the case; the card clears on the next punch attempt, on Retry and after a successful punch.
    - Every distance comparison emits a `TimesheetLocationDistanceCheck` telemetry event with `RequestId`, `RequestNumberId`, `WorkerId`, `WorkerNumberId`, `WorkerFullName`, `WorkerEmail`, both coordinate pairs and the `DistanceMeters` measurement — it fires only when both worker and request coordinates are present; the two rejection branches above return without telemetry.
    - **Punch status in one call**: `GET api/worker/requests/{id}/timesheet/punch-status/{lat}/{lng}` (`TimesheetService.GetPunchStatus` → `PunchStatusModel`: `clockType`, `clockIn`, `clockOut`, `dayHours`, `weekHours`, with "today" and "Sunday" in the job's time zone) is everything the punch card shows: the next punch, today's Clock in / Clock out stamps (the open punch of the last 14 h, else today's entry) and a "This week: N h" total (entries from Sunday), refreshed after every punch and on Retry. The timesheet list is only fetched by the Time Sheet tab. The older `clock-type` endpoint is `[Obsolete]` and stays only for mobile builds released before `punch-status`.

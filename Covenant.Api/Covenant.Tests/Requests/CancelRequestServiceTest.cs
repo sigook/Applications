@@ -1,20 +1,19 @@
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
-using Covenant.Core.BL.Services.Requests;
-using Covenant.Core.BL.Services;
-using Covenant.Infrastructure.Services;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Enums;
-using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Request;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Adapters;
+using Covenant.Core.BL.Services.Requests;
+using Covenant.Core.BL.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,8 +31,8 @@ public class CancelRequestServiceTest
     {
         var companyId = Guid.NewGuid();
         var requestRepository = new Mock<IRequestRepository>();
-        var request = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(companyId, new Location(), default, Guid.NewGuid()).Value;
-        requestRepository.Setup(c => c.GetRequest(It.IsAny<Expression<Func<Covenant.Common.Entities.Request.Request, bool>>>())).ReturnsAsync(request);
+        var request = Request.AgencyCreateRequest(companyId, new Location(), default, Guid.NewGuid()).Value;
+        requestRepository.Setup(c => c.GetRequest(It.IsAny<Expression<Func<Request, bool>>>())).ReturnsAsync(request);
         requestRepository.Setup(c => c.GetRequestCancellationDetail(request.Id)).ReturnsAsync(new RequestCancellationDetail());
         var service = new RequestService(
             Mock.Of<ICompanyRepository>(),
@@ -42,11 +41,10 @@ public class CancelRequestServiceTest
             new FakeTimeProvider(),
             requestRepository.Object,
             Mock.Of<INotificationDataRepository>(),
-            Mock.Of<IPushNotifications>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<IRazorViewToStringRenderer>(),
             Mock.Of<IEmailService>(),
-            Mock.Of<ISigookBusClient>(),
+            Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
             Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),

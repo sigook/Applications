@@ -1,13 +1,15 @@
-﻿using Covenant.Common.Constants;
+﻿﻿using Covenant.Common.Constants;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Accounting.Invoice;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
+using Covenant.Tests.Utils;
+using Covenant.Common.Entities.Accounting.Invoices;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Accounting.Invoices;
 using Covenant.Infrastructure.Repositories.Accounting;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using Covenant.Common.Entities.Agencies;
 
 namespace Covenant.Tests.Accounting.Invoices;
 
@@ -16,13 +18,16 @@ public class TestGetInvoiceSummary
     private static readonly CompanyProfile FakeProfile = new CompanyProfile
     {
         Company = new User(CvnEmail.Create("abc@mail.com").Value),
-        Phone = "6478888888",
-        Agency = new Covenant.Common.Entities.Agency.Agency { HstNumber = "TS123", Logo = new CovenantFile("logo.png") },
+        Agency = new Agency().With(a =>
+        {
+            a.UpdateProfile(null, null, "TS123", null, null, null);
+            a.ChangeLogo(new CovenantFile("logo.png"));
+        }),
         Locations = new List<CompanyProfileLocation> { new CompanyProfileLocation { IsBilling = true, Location = new Location { Address = "4917", City = new City { Province = new Province { Country = new Country() } } } } }
-    };
+    }.With(p => p.UpdatePhones("6478888888", null, null, null));
 
     private static readonly CompanyProfileInvoiceNotes InvoiceNotes = new CompanyProfileInvoiceNotes(FakeProfile.Id, "Pay before Saturday");
-    private readonly List<Covenant.Common.Entities.Request.TimeSheetTotal> _fakeTimeSheetTotal;
+    private readonly List<TimeSheetTotal> _fakeTimeSheetTotal;
     private readonly CovenantContext _context;
 
     private static readonly CompanyProfileJobPositionRate PositionRate = new CompanyProfileJobPositionRate
@@ -30,7 +35,7 @@ public class TestGetInvoiceSummary
         CompanyProfile = FakeProfile
     };
 
-    private static readonly Covenant.Common.Entities.Request.Request FakeRequest = Covenant.Common.Entities.Request.Request.AgencyCreateRequest(FakeProfile.Id, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
+    private static readonly Request FakeRequest = Request.AgencyCreateRequest(FakeProfile.Id, new Location { City = new City { Province = new Province { Country = new Country() } } }, new DateTime(2019, 01, 01), PositionRate.Id).Value;
 
     public TestGetInvoiceSummary()
     {
@@ -243,57 +248,57 @@ public class TestGetInvoiceSummary
         return invoice;
     }
 
-    private static List<Covenant.Common.Entities.Request.TimeSheetTotal> SaveFakeTimeSheet(CovenantContext context)
+    private static List<TimeSheetTotal> SaveFakeTimeSheet(CovenantContext context)
     {
         var worker = new User(CvnEmail.Create("wor@mail.com").Value);
-        var workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(worker.Id, FakeRequest.Id);
+        var workerRequest = WorkerRequest.AgencyBook(worker.Id, FakeRequest.Id);
 
         TimeSheet tRegular = FakeTimeSheet(workerRequest.Id);
-        var tstRegular = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(tRegular.Id, TimeSpan.FromHours(1),
+        var tstRegular = TimeSheetTotal.CreateTotal(tRegular.Id, TimeSpan.FromHours(1),
             TimeSpan.FromHours(1), TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero);
 
         TimeSheet tOtherRegular = FakeTimeSheet(workerRequest.Id);
-        var tstOtherRegular = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotalWithOtherRegular(tOtherRegular.Id,
+        var tstOtherRegular = TimeSheetTotal.CreateTotalWithOtherRegular(tOtherRegular.Id,
             TimeSpan.FromHours(1), TimeSpan.FromHours(1),
             TimeSpan.FromHours(1), TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero);
 
         TimeSheet tOvertime = FakeTimeSheet(workerRequest.Id);
-        var tstOvertime = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(tOvertime.Id,
+        var tstOvertime = TimeSheetTotal.CreateTotal(tOvertime.Id,
             TimeSpan.FromHours(2),
             TimeSpan.Zero, TimeSpan.FromHours(2), TimeSpan.Zero, TimeSpan.Zero);
 
         TimeSheet tHoliday = FakeTimeSheet(workerRequest.Id);
-        var tstHoliday = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotalForHoliday(tHoliday.Id,
+        var tstHoliday = TimeSheetTotal.CreateTotalForHoliday(tHoliday.Id,
             TimeSpan.FromHours(3), TimeSpan.Zero);
 
         TimeSheet tMissing = FakeTimeSheet(workerRequest.Id);
         tMissing.MissingHours = TimeSpan.FromHours(4);
-        var tstMissing = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(tMissing.Id,
+        var tstMissing = TimeSheetTotal.CreateTotal(tMissing.Id,
             TimeSpan.Zero,
             TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero);
 
         TimeSheet tMissingOvertime = FakeTimeSheet(workerRequest.Id);
         tMissingOvertime.MissingHoursOvertime = TimeSpan.FromHours(5);
-        var tstMissingOvertime = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(tMissingOvertime.Id,
+        var tstMissingOvertime = TimeSheetTotal.CreateTotal(tMissingOvertime.Id,
             TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero,
             TimeSpan.Zero, TimeSpan.Zero);
 
         TimeSheet tMissingDifferentRate = FakeTimeSheet(workerRequest.Id);
         tMissingDifferentRate.MissingHours = TimeSpan.FromHours(6);
         tMissingDifferentRate.MissingRateAgency = 10;
-        var tstMissingDifferentRate = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(tMissingDifferentRate.Id,
+        var tstMissingDifferentRate = TimeSheetTotal.CreateTotal(tMissingDifferentRate.Id,
             TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero,
             TimeSpan.Zero, TimeSpan.Zero);
 
         TimeSheet tMissingOvertimeDifferentRate = FakeTimeSheet(workerRequest.Id);
         tMissingOvertimeDifferentRate.MissingHoursOvertime = TimeSpan.FromHours(7);
         tMissingOvertimeDifferentRate.MissingRateAgency = 10;
-        var tstMissingOvertimeDifferentRate = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(tMissingOvertimeDifferentRate.Id,
+        var tstMissingOvertimeDifferentRate = TimeSheetTotal.CreateTotal(tMissingOvertimeDifferentRate.Id,
             TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero,
             TimeSpan.Zero, TimeSpan.Zero);
 
         TimeSheet tNightShift = FakeTimeSheet(workerRequest.Id);
-        var tstNightShift = Covenant.Common.Entities.Request.TimeSheetTotal.CreateTotal(tNightShift.Id,
+        var tstNightShift = TimeSheetTotal.CreateTotal(tNightShift.Id,
             TimeSpan.Zero, TimeSpan.Zero, TimeSpan.Zero,
             TimeSpan.FromHours(8), TimeSpan.Zero);
 

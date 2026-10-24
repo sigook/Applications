@@ -1,5 +1,5 @@
 using Covenant.Common.Interfaces;
-using Covenant.Common.Models.Candidate;
+using Covenant.Common.Models.Candidates;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;

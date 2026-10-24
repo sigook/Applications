@@ -1,7 +1,7 @@
 using Covenant.Api.Validators.Workers;
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;

@@ -1,6 +1,6 @@
-using Covenant.Common.Models;
+using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models.Accounting;
-using Covenant.Common.Models.Accounting.PayStub;
+using Covenant.Common.Models;
 
 namespace Covenant.Common.Repositories.Accounting.PayStubs;
 

@@ -1,5 +1,5 @@
 using Covenant.Common.Constants;
-using Covenant.Common.Models.Company;
+using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Sales;
 using Covenant.Common.Resources;
 using FluentValidation;

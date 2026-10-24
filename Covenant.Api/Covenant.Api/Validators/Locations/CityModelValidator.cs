@@ -1,4 +1,4 @@
-using Covenant.Common.Models.Location;
+using Covenant.Common.Models.Locations;
 using FluentValidation;
 
 namespace Covenant.Api.Validators.Locations;

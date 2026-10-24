@@ -2,10 +2,20 @@
 {
     public class City : ICatalog<Guid>
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Value { get; set; }
-        public string Code { get; set; }
-        public Guid ProvinceId { get; set; }
-        public Province Province { get; set; }
+        public City()
+        {
+        }
+
+        public City(string value, Guid provinceId)
+        {
+            Value = value;
+            ProvinceId = provinceId;
+        }
+
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public string Value { get; internal set; }
+        public string Code { get; private set; }
+        public Guid ProvinceId { get; private set; }
+        public Province Province { get; internal set; }
     }
 }

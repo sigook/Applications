@@ -45,6 +45,9 @@
       <None Update="Common\cpp_weekly.xlsx">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Include="..\Covenant.Tests\Accounting\Deductions\*.pdf" Link="Files\Cra\%(Filename)%(Extension)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="Files\some_pay_stub.pdf">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

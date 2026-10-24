@@ -1,7 +1,8 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Company;
-using Covenant.Common.Entities.Request;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
@@ -23,13 +24,13 @@ public class CompanyAddClockInTest
 {
     private readonly ITimesheetService _sut;
     private readonly DateTime _fakeNow = new DateTime(2019, 01, 01, 08, 00, 00, 00);
-    private readonly Covenant.Common.Entities.Request.WorkerRequest _workerRequest = Covenant.Common.Entities.Request.WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
+    private readonly WorkerRequest _workerRequest = WorkerRequest.AgencyBook(Guid.NewGuid(), Guid.NewGuid());
     private readonly Mock<ITimesheetRepository> _timeSheetRepository;
 
     public CompanyAddClockInTest()
     {
         var companyProfile = new CompanyProfile { FullName = "Test Company" };
-        var agency = new Covenant.Common.Entities.Agency.Agency();
+        var agency = new Agency();
         var jobPositionRate = new CompanyProfileJobPositionRate();
         var location = new Location
         {
@@ -41,7 +42,7 @@ public class CompanyAddClockInTest
                 }
             }
         };
-        var request = new Covenant.Common.Entities.Request.Request(companyProfile, jobPositionRate);
+        var request = new Request(companyProfile, jobPositionRate);
         request.UpdateJobLocation(location, false);
         _workerRequest.Request = request;
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(_fakeNow, TimeSpan.Zero));

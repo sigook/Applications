@@ -1,17 +1,17 @@
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
+using Covenant.Common.Models.Requests;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Request;
 using System.Linq.Expressions;
 
 namespace Covenant.Common.Repositories.Requests;
 
 public interface IWorkerRequestRepository : IBaseRepository
 {
-    Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid id);
-    Task<Common.Entities.Request.WorkerRequest> GetWorkerRequest(Guid workerId, Guid requestId);
-    Task<Common.Entities.Request.WorkerRequest> GetWorkerRequestByWorkerProfileId(Guid workerProfileId, Guid requestId);
-    Task<IEnumerable<Common.Entities.Request.WorkerRequest>> GetWorkerRequestsByWorkerProfileId(Guid workerProfileId);
+    Task<WorkerRequest> GetWorkerRequest(Guid id);
+    Task<WorkerRequest> GetWorkerRequest(Guid workerId, Guid requestId);
+    Task<WorkerRequest> GetWorkerRequestByWorkerProfileId(Guid workerProfileId, Guid requestId);
+    Task<IEnumerable<WorkerRequest>> GetWorkerRequestsByWorkerProfileId(Guid workerProfileId);
     Task<bool> WorkerRequestExists(Guid workerProfileId, Guid requestId);
     Task<bool> CanClockIn(Expression<Func<WorkerProfile, bool>> condition, DateTime now);
     Task<WorkerRequestInfoModel> GetWorkerRequestInfo(Guid workerId, Guid requestId, DateTime now);

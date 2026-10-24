@@ -1,9 +1,10 @@
+using Covenant.Common.Entities.Workers;
 using Covenant.Common.Entities;
-using Covenant.Common.Entities.Worker;
 using Covenant.Common.Enums;
+using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Worker;
 using Covenant.Core.BL.Services.Workers;
+using Covenant.Tests.Utils;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
@@ -76,7 +77,7 @@ public class WorkerRequirementServiceTest
         var worker = new WorkerProfile
         {
             Location = new Location { City = new City { Province = new Province { Country = new Country { Code = "CA" } } } },
-            WorkerProfileTaxCategory = new WorkerProfileTaxCategory { FederalCategory = TaxCategory.Cc0 }
+            WorkerProfileTaxCategory = new WorkerProfileTaxCategory(Guid.Empty).With(t => t.UpdateCategories(TaxCategory.Cc0, null))
         };
         Assert.DoesNotContain(WorkerRequirement.TaxCategory, _sut.GetMissing(worker));
     }

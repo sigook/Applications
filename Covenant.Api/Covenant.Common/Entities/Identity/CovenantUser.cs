@@ -4,5 +4,5 @@ namespace Covenant.Common.Entities.Identity;
 
 public class CovenantUser : IdentityUser<Guid>
 {
-    public string Address { get; set; }
+    public string Address { get; private set; }
 }

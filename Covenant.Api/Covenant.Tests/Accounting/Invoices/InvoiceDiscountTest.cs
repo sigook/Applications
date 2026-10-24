@@ -1,4 +1,4 @@
-using Covenant.Common.Entities.Accounting.Invoice;
+using Covenant.Common.Entities.Accounting.Invoices;
 using Xunit;
 
 namespace Covenant.Tests.Accounting.Invoices;

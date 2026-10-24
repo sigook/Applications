@@ -4,8 +4,8 @@ namespace Covenant.Common.Entities
 {
     public class Language
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Value { get; set; }
+        public Guid Id { get; private set; } = Guid.NewGuid();
+        public string Value { get; internal set; }
         public Language()
         {
         }

@@ -1,5 +1,5 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Models.Request.TimeSheet;
+using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Accounting.Deductions;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;

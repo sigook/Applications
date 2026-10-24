@@ -1,13 +1,13 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Company;
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities.Sales;
 using Covenant.Common.Enums;
-using Covenant.Common.Models.Company.Agency;
+using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Locations;
 using Covenant.Common.Models.Sales.Dashboard;
 using Covenant.Common.Models.Sales;
 using Covenant.Common.Models;
-using Covenant.Common.Models.Company;
-using Covenant.Common.Models.Location;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
@@ -153,7 +153,7 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
         var positionRates = await Context.CompanyProfileJobPositionRates
             .Where(c => !c.IsDeleted && c.CompanyProfileId == profile.Id)
             .ToListAsync();
-        profile.JobPositionRates = positionRates;
+        profile.ReplaceJobPositionRates(positionRates);
         return profile;
     }
 
@@ -534,14 +534,15 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var entity = await Context.CompanyProfileInvoiceRecipients.FirstOrDefaultAsync(r => r.Id == id);
         if (entity is null) return;
-        entity.Name = model.Name;
+        entity.UpdateName(model.Name);
         entity.UpdateEmail(model.Email);
         Context.CompanyProfileInvoiceRecipients.Update(entity);
     }
 
     public async Task<Guid> CreateInvoiceRecipient(Guid companyProfileId, CompanyProfileInvoiceRecipientModel model)
     {
-        var entity = new CompanyProfileInvoiceRecipient(companyProfileId, model.Email) { Name = model.Name };
+        var entity = new CompanyProfileInvoiceRecipient(companyProfileId, model.Email);
+        entity.UpdateName(model.Name);
         await Create(entity);
         return entity.Id;
     }

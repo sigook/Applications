@@ -1,7 +1,6 @@
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Models.Accounting.PayStub;
-using Covenant.Common.Models.Request.TimeSheet;
-using TimeSheetTotalEntity = Covenant.Common.Entities.Request.TimeSheetTotal;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Models.Accounting.PayStubs;
+using Covenant.Common.Models.Requests.TimeSheets;
 
 namespace Covenant.Core.BL.Interfaces.Accounting;
 
@@ -28,7 +27,7 @@ public interface ITimesheetCalculatorService
     decimal CalculateTotalGross(decimal regular, decimal missing, decimal missingOvertime, decimal holiday, decimal overtime);
     Task<decimal> CalculateHolidayPayBase(Guid workerProfileId, DateTime lookbackStart, DateTime holidayWeekEnd);
 
-    TimeSheetTotalEntity CreateTimeSheetTotalEntity(
+    TimeSheetTotal CreateTimeSheetTotalEntity(
         Guid timeSheetId,
         TimeSheetHoursBreakdown hoursBreakdown,
         TimeSpan accumulatedHours);

@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 abstract class AnalyticsService {
   Future<void> logEvent({
     required String name,
@@ -25,101 +23,6 @@ abstract class AnalyticsService {
     required double value,
     Map<String, dynamic>? parameters,
   });
-}
-
-class AnalyticsServiceImpl implements AnalyticsService {
-  @override
-  Future<void> logEvent({
-    required String name,
-    Map<String, dynamic>? parameters,
-  }) async {
-    // NOTE: Firebase Analytics integration pending
-    // To enable, uncomment and configure Firebase:
-    // await FirebaseAnalytics.instance.logEvent(
-    //   name: name,
-    //   parameters: parameters,
-    // );
-
-    // For now, just log to console in debug mode
-    if (const bool.fromEnvironment('dart.vm.product') == false) {
-      debugPrint('Analytics Event: $name');
-      if (parameters != null) {
-        debugPrint('Parameters: $parameters');
-      }
-    }
-  }
-
-  @override
-  Future<void> logScreenView({
-    required String screenName,
-    String? screenClass,
-  }) async {
-    await logEvent(
-      name: 'screen_view',
-      parameters: {'screen_name': screenName, 'screen_class': ?screenClass},
-    );
-  }
-
-  @override
-  Future<void> setUserId(String? userId) async {
-    // NOTE: Firebase Analytics integration pending
-    // await FirebaseAnalytics.instance.setUserId(id: userId);
-    if (const bool.fromEnvironment('dart.vm.product') == false) {
-      debugPrint('Analytics: Set User ID: $userId');
-    }
-  }
-
-  @override
-  Future<void> setUserProperty({
-    required String name,
-    required String value,
-  }) async {
-    // NOTE: Firebase Analytics integration pending
-    // await FirebaseAnalytics.instance.setUserProperty(
-    //   name: name,
-    //   value: value,
-    // );
-    if (const bool.fromEnvironment('dart.vm.product') == false) {
-      debugPrint('Analytics: Set User Property: $name = $value');
-    }
-  }
-
-  @override
-  Future<void> logLogin({String? method}) async {
-    await logEvent(name: 'login', parameters: {'method': ?method});
-  }
-
-  @override
-  Future<void> logSignUp({String? method}) async {
-    await logEvent(name: 'sign_up', parameters: {'method': ?method});
-  }
-
-  @override
-  Future<void> logSearch({String? searchTerm}) async {
-    await logEvent(name: 'search', parameters: {'search_term': ?searchTerm});
-  }
-
-  @override
-  Future<void> logShare({
-    required String contentType,
-    required String itemId,
-  }) async {
-    await logEvent(
-      name: 'share',
-      parameters: {'content_type': contentType, 'item_id': itemId},
-    );
-  }
-
-  @override
-  Future<void> logPurchase({
-    required String currency,
-    required double value,
-    Map<String, dynamic>? parameters,
-  }) async {
-    final params = {'currency': currency, 'value': value, ...?parameters};
-
-    await logEvent(name: 'purchase', parameters: params);
-  }
 }
 
 class JobAnalyticsEvents {

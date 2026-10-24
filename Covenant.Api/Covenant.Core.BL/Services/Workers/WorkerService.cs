@@ -1,29 +1,28 @@
 using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
+using Covenant.Common.Entities.Agencies;
+using Covenant.Common.Entities.Candidates;
+using Covenant.Common.Entities.Notifications;
+using Covenant.Common.Entities.Requests;
+using Covenant.Common.Entities.Workers;
+using Covenant.Common.Entities;
+using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
+using Covenant.Common.Interfaces.Adapters;
+using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Identity;
-using Covenant.Common.Models.Location;
-using Covenant.Common.Models.Request.Worker;
+using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Notifications;
+using Covenant.Common.Models.Requests.Workers;
+using Covenant.Common.Models.Requests;
+using Covenant.Common.Models.Workers;
+using Covenant.Common.Models;
 using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
-using Covenant.Core.BL.Extensions;
-using Covenant.Common.Constants;
-using Covenant.Common.Entities;
-using Covenant.Common.Entities.Candidate;
-using Covenant.Common.Entities.Notification;
-using Covenant.Common.Entities.Request;
-using Covenant.Common.Entities.Worker;
-using Covenant.Common.Enums;
-using Covenant.Common.Functionals;
-using Covenant.Common.Interfaces;
-using Covenant.Common.Interfaces.Adapters;
-using Covenant.Common.Interfaces.Storage;
-using Covenant.Common.Models;
-using Covenant.Common.Models.Notification;
-using Covenant.Common.Models.Request;
-using Covenant.Common.Models.Worker;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
@@ -32,7 +31,6 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Core.BL.Interfaces.Shared;
 using Covenant.Core.BL.Interfaces.Workers;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
@@ -58,8 +56,6 @@ public class WorkerService(
     IValidator<WorkerProfileCreateModel> workerProfileValidator,
     IValidator<WorkerProfileLicenseModel> licenseValidator,
     IValidator<CovenantFileModel> documentFileValidator,
-    IHttpContextAccessor httpContextAccessor,
-    IFilesContainer filesContainer,
     IDocumentService documentService,
     ICandidateService candidateService,
     ICandidateRepository candidateRepository,
@@ -85,8 +81,6 @@ public class WorkerService(
     private readonly TeamsWebhookConfiguration teamsWebhookConfiguration = options.Value;
     private readonly IWorkerAdapter workerAdapter = workerAdapter;
     private readonly IValidator<WorkerProfileCreateModel> workerProfileValidator = workerProfileValidator;
-    private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
-    private readonly IFilesContainer filesContainer = filesContainer;
     private readonly IDocumentService documentService = documentService;
     private readonly ICandidateService candidateService = candidateService;
     private readonly ICandidateRepository candidateRepository = candidateRepository;
@@ -95,10 +89,88 @@ public class WorkerService(
     private readonly ICatalogRepository catalogRepository = catalogRepository;
     private readonly IRequestApplicantNotificationService applicantNotificationService = applicantNotificationService;
 
+    public async Task<Result> AddNote(Guid workerProfileId, string note)
+    {
+        var result = WorkerProfileNote.Create(workerProfileId, note, currentUserService.GetNickname());
+        if (!result) return result;
+        await workerRepository.Create(result.Value);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateApprovedToWork(Guid agencyId, Guid workerProfileId)
+    {
+        var entity = await workerRepository.GetProfile(p => p.Id == workerProfileId);
+        if (entity is null || entity.AgencyId != agencyId) return Result.Fail(ApiResources.WorkerNotFound);
+        var result = entity.UpdateApprovedToWork(workerRequirementService.GetMissing(entity));
+        if (!result) return result;
+        workerRepository.Update(entity);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateExternalId(Guid workerProfileId, string externalId)
+    {
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId);
+        if (entity is null) return Result.Fail(ResultError.NotFound(ApiResources.WorkerNotFound));
+        entity.UpdateExternalId(externalId);
+        workerRepository.Update(entity);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateWcCode(Guid workerProfileId, string wcCode)
+    {
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId);
+        if (entity is null) return Result.Fail(ResultError.NotFound(ApiResources.WorkerNotFound));
+        entity.UpdateWcCode(wcCode);
+        workerRepository.Update(entity);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateDnu(Guid agencyId, Guid workerProfileId)
+    {
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && w.AgencyId == agencyId);
+        if (entity is null) return Result.Fail(ApiResources.WorkerNotFound);
+        entity.UpdateDnu();
+        workerRepository.Update(entity);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateContractor(Guid agencyId, Guid workerProfileId)
+    {
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && w.AgencyId == agencyId);
+        if (entity is null) return Result.Fail(ApiResources.WorkerNotFound);
+        var result = entity.UpdateContractor(workerRequirementService.GetMissingDocuments(entity));
+        if (!result) return result;
+        workerRepository.Update(entity);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateSubcontractor(Guid agencyId, Guid workerProfileId)
+    {
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && w.AgencyId == agencyId);
+        if (entity is null) return Result.Fail(ApiResources.WorkerNotFound);
+        var result = entity.UpdateSubcontractor(workerRequirementService.GetMissingDocuments(entity));
+        if (!result) return result;
+        workerRepository.Update(entity);
+        await workerRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateEmail(Guid agencyId, Guid workerProfileId, string newEmail)
+    {
+        var profile = await workerRepository.GetProfile(c => c.Id == workerProfileId && c.AgencyId == agencyId);
+        if (profile is null) return Result.Fail(ApiResources.WorkerNotFound);
+        return await userAccountService.UpdateUserEmail(new UpdateEmailModel(profile.WorkerId) { NewEmail = newEmail });
+    }
+
     public async Task<Result<Guid>> CreateWorker(int? requestId)
     {
-        var form = httpContextAccessor.HttpContext.Request.Form;
-        var model = form.DeserializeData<WorkerProfileCreateModel>();
+        var model = uploadedFilesService.GetModel<WorkerProfileCreateModel>();
         var filesValidation = uploadedFilesService.Validate();
         if (!filesValidation) return Result.Fail<Guid>(filesValidation.Errors);
         var validationResult = await workerProfileValidator.ValidateAsync(model);
@@ -208,9 +280,8 @@ public class WorkerService(
 
     public async Task<Result> UpdateProfileImage(Guid profileId)
     {
-        var request = httpContextAccessor.HttpContext.Request;
-        var profileImageFile = request.Form.Files[0];
-        if (profileImageFile is null)
+        var profileImageFileName = uploadedFilesService.GetFileNames().FirstOrDefault();
+        if (profileImageFileName is null)
         {
             return Result.Fail("Profile image file is required");
         }
@@ -222,12 +293,12 @@ public class WorkerService(
             return Result.Fail("Worker profile not found");
         }
         var oldProfileImageId = entity.ProfileImage?.Id;
-        var fileModel = new CovenantFileModel(profileImageFile.FileName);
+        var fileModel = new CovenantFileModel(profileImageFileName);
         var result = entity.PatchProfileImage(fileModel);
         if (!result) return result;
         await workerRepository.Create(entity.ProfileImage);
         await workerRepository.SaveChangesAsync();
-        await filesContainer.UploadAsync(profileImageFile.OpenReadStream(), profileImageFile.FileName);
+        await uploadedFilesService.Upload([profileImageFileName]);
         if (oldProfileImageId.HasValue)
         {
             await documentService.DeleteFile(oldProfileImageId.Value);
@@ -237,7 +308,6 @@ public class WorkerService(
 
     public async Task<Result> UpdateDocumentSection(Guid profileId, WorkerDocumentType documentType)
     {
-        var form = httpContextAccessor.HttpContext.Request.Form;
         var filesValidation = uploadedFilesService.Validate();
         if (!filesValidation) return filesValidation;
         var entity = await workerRepository.GetProfile(p => p.Id == profileId);
@@ -245,12 +315,12 @@ public class WorkerService(
 
         var handlerResult = documentType switch
         {
-            WorkerDocumentType.Identification  => await HandleIdentification(entity, form, profileId),
-            WorkerDocumentType.Licenses        => await HandleLicenses(entity, form),
-            WorkerDocumentType.Certificates    => await HandleCertificates(entity, form),
-            WorkerDocumentType.Resume          => await HandleResume(entity, form),
-            WorkerDocumentType.OtherDocument   => await HandleOtherDocument(entity, form),
-            WorkerDocumentType.SocialInsurance => await HandleSocialInsurance(entity, form),
+            WorkerDocumentType.Identification  => await HandleIdentification(entity, profileId),
+            WorkerDocumentType.Licenses        => await HandleLicenses(entity),
+            WorkerDocumentType.Certificates    => await HandleCertificates(entity),
+            WorkerDocumentType.Resume          => await HandleResume(entity),
+            WorkerDocumentType.OtherDocument   => await HandleOtherDocument(entity),
+            WorkerDocumentType.SocialInsurance => await HandleSocialInsurance(entity),
             _ => throw new ArgumentOutOfRangeException(nameof(documentType))
         };
 
@@ -320,9 +390,7 @@ public class WorkerService(
         }
         else
         {
-            entity.EmailNotification = false;
-            entity.PushNotification = false;
-            entity.SMSNotification = false;
+            entity.UpdateChannels(false, false, false);
             notificationRepository.Update(entity);
         }
 
@@ -330,9 +398,9 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    private async Task<Result<IEnumerable<string>>> HandleIdentification(WorkerProfile entity, IFormCollection form, Guid profileId)
+    private async Task<Result<IEnumerable<string>>> HandleIdentification(WorkerProfile entity, Guid profileId)
     {
-        var model = form.DeserializeData<DocumentsInformationModel>();
+        var model = uploadedFilesService.GetModel<DocumentsInformationModel>();
         foreach (var number in new[] { model?.IdentificationNumber1, model?.IdentificationNumber2 })
         {
             if (!string.IsNullOrEmpty(number) && await workerRepository.InfoIsAlreadyTaken(x => x.Id != profileId && (x.IdentificationNumber1 == number || x.IdentificationNumber2 == number)))
@@ -392,9 +460,9 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    private async Task<Result<IEnumerable<string>>> HandleLicenses(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleLicenses(WorkerProfile entity)
     {
-        var model = form.DeserializeData<List<WorkerProfileLicenseModel>>();
+        var model = uploadedFilesService.GetModel<List<WorkerProfileLicenseModel>>();
         var newLicenses = model.Where(m => !entity.Licenses.Any(l => l.License.FileName == m.License?.FileName));
         var validation = await ValidateEach(licenseValidator, newLicenses);
         if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
@@ -403,9 +471,9 @@ public class WorkerService(
         return Result.Ok(model.Select(l => l.License?.FileName));
     }
 
-    private async Task<Result<IEnumerable<string>>> HandleCertificates(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleCertificates(WorkerProfile entity)
     {
-        var model = form.DeserializeData<List<CovenantFileModel>>();
+        var model = uploadedFilesService.GetModel<List<CovenantFileModel>>();
         var newCertificates = model.Where(m => !entity.Certificates.Any(c => c.Certificate.FileName == m.FileName));
         var validation = await ValidateEach(documentFileValidator, newCertificates);
         if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
@@ -425,9 +493,9 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    private async Task<Result<IEnumerable<string>>> HandleResume(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleResume(WorkerProfile entity)
     {
-        var model = form.DeserializeData<CovenantFileModel>();
+        var model = uploadedFilesService.GetModel<CovenantFileModel>();
         if (string.IsNullOrEmpty(model?.FileName))
         {
             entity.RemoveResume();
@@ -440,9 +508,9 @@ public class WorkerService(
         return Result.Ok<IEnumerable<string>>([model.FileName]);
     }
 
-    private async Task<Result<IEnumerable<string>>> HandleOtherDocument(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleOtherDocument(WorkerProfile entity)
     {
-        var model = form.DeserializeData<CovenantFileModel>();
+        var model = uploadedFilesService.GetModel<CovenantFileModel>();
         var validation = await ValidateEach(documentFileValidator, model is null ? [] : [model]);
         if (!validation) return Result.Fail<IEnumerable<string>>(validation.Errors);
         var fileResult = CovenantFile.Create(model);
@@ -453,9 +521,9 @@ public class WorkerService(
         return Result.Ok<IEnumerable<string>>([model?.FileName]);
     }
 
-    private async Task<Result<IEnumerable<string>>> HandleSocialInsurance(WorkerProfile entity, IFormCollection form)
+    private async Task<Result<IEnumerable<string>>> HandleSocialInsurance(WorkerProfile entity)
     {
-        var model = form.DeserializeData<SinInformationModel>();
+        var model = uploadedFilesService.GetModel<SinInformationModel>();
         if (!string.IsNullOrEmpty(model?.SocialInsurance) && await workerRepository.SocialInsuranceIsAlreadyTaken(model.SocialInsurance, entity.Id))
             return Result.Fail<IEnumerable<string>>(ApiResources.SocialInsuranceAlreadyTaken);
         var previousFiles = ProfileFiles(entity);
@@ -480,7 +548,7 @@ public class WorkerService(
         foreach (var file in createdFiles) await workerRepository.Create(file);
     }
 
-    private async Task NotifyAgencyAndSubscribe(Common.Entities.Agency.Agency agency, WorkerProfile workerProfile)
+    private async Task NotifyAgencyAndSubscribe(Agency agency, WorkerProfile workerProfile)
     {
         try
         {

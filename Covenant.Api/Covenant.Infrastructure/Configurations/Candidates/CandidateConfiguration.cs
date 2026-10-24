@@ -1,11 +1,12 @@
+using Covenant.Common.Entities.Candidates;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Configurations.Candidates;
 
-public class CandidateConfiguration : IEntityTypeConfiguration<Common.Entities.Candidate.Candidate>
+public class CandidateConfiguration : IEntityTypeConfiguration<Candidate>
 {
-    public void Configure(EntityTypeBuilder<Common.Entities.Candidate.Candidate> builder)
+    public void Configure(EntityTypeBuilder<Candidate> builder)
     {
         builder.ToTable("Candidates");
         builder.HasKey(x => x.Id);

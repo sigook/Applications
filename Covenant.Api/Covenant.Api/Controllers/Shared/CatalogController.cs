@@ -4,6 +4,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories;
+using Covenant.Core.BL.Interfaces.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
@@ -179,20 +180,17 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     }
 
     /// <summary>Creates a new industry.</summary>
+    /// <param name="catalogService">Catalog service.</param>
     /// <param name="model">Industry data to create.</param>
     [Authorize(Policy = PolicyConfiguration.Agency)]
     [HttpPost("industry")]
     [ProducesResponseType(typeof(Industry), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> AddIndustry([FromBody] BaseModel<Guid> model)
+    public async Task<IActionResult> AddIndustry([FromServices] ICatalogService catalogService, [FromBody] BaseModel<Guid> model)
     {
-        if (model != null)
-        {
-            var industry = Industry.Create(model.Value);
-            await _repository.Create(industry.Value);
-            await _repository.SaveChangesAsync();
-            return Ok(industry.Value);
-        }
-        return BadRequest("Model can not be null");
+        if (model is null) return BadRequest("Model can not be null");
+        var result = await catalogService.AddIndustry(model.Value);
+        if (!result) return BadRequest(result.StringErrors);
+        return Ok(result.Value);
     }
 }
