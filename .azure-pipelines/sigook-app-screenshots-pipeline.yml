@@ -369,4 +369,14 @@ stages:
         inputs:
           PathtoPublish: '$(outputRoot)'
           ArtifactName: 'store-screenshots-android'
+      - task: Bash@3
+        displayName: 'Free disk for post-job caches'
+        condition: always()
+        inputs:
+          targetType: 'inline'
+          script: |
+            adb emu kill 2>/dev/null || true
+            pkill -f qemu-system 2>/dev/null || true
+            rm -rf "$ANDROID_AVD_HOME" "$ANDROID_HOME/system-images" "$(workingDirectory)/build" "$(workingDirectory)/android/.gradle"
+            df -h /
           publishLocation: 'Container'
