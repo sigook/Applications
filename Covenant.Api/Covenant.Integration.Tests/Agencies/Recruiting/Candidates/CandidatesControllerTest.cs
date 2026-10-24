@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Recruiting.Candidates;
 using Covenant.Common.Entities.Agencies;
@@ -173,6 +174,73 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         Assert.True(entity == null);
     }
 
+    [Fact]
+    public async Task GetFile_ExportsAgencyCandidates()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{RequestUri}/File");
+        response.EnsureSuccessStatusCode();
+        using var workbook = new XLWorkbook(await response.Content.ReadAsStreamAsync());
+        var cells = workbook.Worksheet(1).RowsUsed().Skip(1).SelectMany(r => r.CellsUsed()).Select(c => c.GetString()).ToList();
+        Assert.Contains(Startup.FakeCandidate.Email, cells);
+    }
+
+    private Task<HttpResponseMessage> PostBulk(string csv)
+    {
+        var content = new MultipartFormDataContent
+        {
+            { new ByteArrayContent(System.Text.Encoding.UTF8.GetBytes(csv)), "file", "candidates.csv" }
+        };
+        return _client.PostAsync($"{RequestUri}/bulk/{Startup.AgencyId}", content);
+    }
+
+    [Fact]
+    public async Task BulkCandidates_ImportsValidRows_AndReturnsErrorsForInvalidOnes()
+    {
+        const string csv = """
+            Full Name,Email,Phone,Address,Skills,Status,Gender,Has Transportation?,Request ID,Source,URL Resume
+            Bulk Valid,bulk.valid@mail.com,416 555-0101,1 King St,Forklift,Citizen,Female,Yes,,Web page,
+            Bulk Bad Phone,bulk.badphone@mail.com,4165550102,2 King St,Forklift,Citizen,Male,No,,Web page,
+            Bulk Foreign Request,bulk.request@mail.com,416 555-0103,3 King St,,Citizen,Male,No,999999,Web page,
+            """;
+
+        HttpResponseMessage response = await PostBulk(csv);
+
+        response.EnsureSuccessStatusCode();
+        using var workbook = new XLWorkbook(await response.Content.ReadAsStreamAsync());
+        var names = workbook.Worksheet(1).RowsUsed().Skip(1).Select(r => r.Cell(1).GetString()).ToList();
+        Assert.Equal(["Bulk Bad Phone", "Bulk Foreign Request"], names);
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var imported = await context.Candidates.Include(c => c.Gender).Include(c => c.PhoneNumbers).Include(c => c.Skills).SingleAsync(c => c.Name == "Bulk Valid");
+        Assert.Equal(Startup.AgencyId, imported.AgencyId);
+        Assert.Equal("Female", imported.Gender.Value);
+        Assert.Equal(Startup.WebPageSource.Id, imported.SourceId);
+        Assert.Contains(imported.PhoneNumbers, p => p.PhoneNumber == "416 555-0101");
+        Assert.Contains(imported.Skills, s => s.Skill == "Forklift");
+        Assert.False(await context.Candidates.AnyAsync(c => c.Name == "Bulk Bad Phone"));
+    }
+
+    [Fact]
+    public async Task BulkCandidates_OnlyValidRows_ReturnsOkWithoutFile()
+    {
+        const string csv = """
+            Full Name,Email,Phone,Address,Skills,Status,Gender,Has Transportation?,Request ID,Source,URL Resume
+            Bulk Only Valid,bulk.only@mail.com,416 555-0201,4 King St,Packing,Citizen,Female,Yes,,Web page,
+            """;
+
+        HttpResponseMessage response = await PostBulk(csv);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(await response.Content.ReadAsByteArrayAsync());
+    }
+
+    [Fact]
+    public async Task BulkCandidates_MissingHeaders_ReturnsBadRequest()
+    {
+        HttpResponseMessage response = await PostBulk("Full Name,Email\nNo Headers,no.headers@mail.com\n");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     public class Startup
     {
         public const string CurrentUser = "mary@mail.com";
@@ -181,6 +249,7 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         public static readonly Source WebPageSource = new Source { Id = Guid.NewGuid(), Value = "Web page" };
         private static readonly User FakeAgencyUser = new User(CvnEmail.Create("FakeAgencyUser@email.com").Value);
         private static readonly Agency FakeAgency = new Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
+        public static Guid AgencyId => FakeAgency.Id;
         public static readonly City FakeCity = FakeData.FakeCity();
         public static readonly City FakeOtherCity = FakeData.FakeCity(FakeCity.Province);
         public static readonly Candidate FakeCandidate = new Candidate(FakeAgency.Id, "J Martin")

@@ -131,6 +131,9 @@ dotnet test Sigook.Functions.Tests/Sigook.Functions.Tests.csproj
 # Run integration tests (needs Docker running — spins up one postgres:16-alpine via Testcontainers)
 dotnet test Covenant.Integration.Tests/Covenant.Integration.Tests.csproj
 
+# Coverage gate (pipeline fails below 80% lines; full commands in .docs/technical/DEVELOPMENT_COMMANDS.md)
+dotnet test Covenant.Api.slnx --settings coverage.runsettings --results-directory ./TestResults/coverage
+
 # Run the Azure Functions locally
 cd Sigook.Functions && func start
 

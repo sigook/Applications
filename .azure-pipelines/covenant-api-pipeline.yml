@@ -80,6 +80,9 @@ stages:
                 Covenant.Api/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj
               runIntegrationTests: true
               integrationTestProjects: 'Covenant.Api/Covenant.Integration.Tests/Covenant.Integration.Tests.csproj'
+              coverageSettings: 'Covenant.Api/coverage.runsettings'
+              coverageWorkingDirectory: 'Covenant.Api'
+              minLineCoverage: 80
 
           # Publish + Docker image only on dev/main (PRs just build and test)
           - ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/dev', 'refs/heads/development') }}:

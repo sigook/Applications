@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Covenant.Api.Controllers.Agencies.Profile;
 using RecruitingRequestsController = Covenant.Api.Controllers.Agencies.Recruiting.Requests.RequestsListController;
 using SalesRequestsController = Covenant.Api.Controllers.Agencies.Sales.RequestsController;
@@ -52,6 +53,16 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     [Fact]
     public async Task SalesOnlySeesRequestsWhereItIsTheSalesRepresentative() =>
         Assert.Equal([Data.OwnRequest.Id], await RequestIds(await AsSales().GetAsync(SalesRequestsUri)));
+
+    [Fact]
+    public async Task SalesFileOnlyContainsRequestsWhereItIsTheSalesRepresentative()
+    {
+        HttpResponseMessage response = await AsSales().GetAsync($"{SalesRequestsUri}/File");
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(CovenantConstants.ExcelMime, response.Content.Headers.ContentType?.MediaType);
+        using var workbook = new XLWorkbook(await response.Content.ReadAsStreamAsync());
+        Assert.Single(workbook.Worksheet(1).RowsUsed().Skip(1));
+    }
 
     [Fact]
     public async Task AdminSeesEveryRequestInTheSalesModule()

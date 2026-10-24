@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 using Covenant.Common.Entities.Agencies;
@@ -59,6 +60,16 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         var list = await response.Content.ReadFromJsonAsync<PaginatedList<AgencyRequestListModel>>();
         AgencyRequestListModel model = list.Items.Single(c => c.Id == entity.Id);
         AssertListModelEntity(model, entity);
+    }
+
+    [Fact]
+    public async Task GetFile_ExportsRequests()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{ListUri()}/File");
+        response.EnsureSuccessStatusCode();
+        using var workbook = new XLWorkbook(await response.Content.ReadAsStreamAsync());
+        var cells = workbook.Worksheet(1).RowsUsed().Skip(1).SelectMany(r => r.CellsUsed()).Select(c => c.GetString()).ToList();
+        Assert.Contains(Data.FakeRequest.NumberId.ToString(), cells);
     }
 
     private static void AssertListModelEntity(AgencyRequestListModel model, Request entity)

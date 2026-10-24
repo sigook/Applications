@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Accounting;
 using Covenant.Api.Controllers.Shared.Jobs;
@@ -205,6 +206,35 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
     }
 
     [Fact]
+    public async Task GetInvoicesFile_ExportsInvoices()
+    {
+        Invoice invoice = await PostInvoice(_data.ForExport);
+
+        List<string> cells = await SheetCells(await _client.GetAsync($"{InvoicesController.RouteName}/file"), "Report");
+
+        Assert.Contains(invoice.InvoiceNumber, cells);
+    }
+
+    [Fact]
+    public async Task GetInvoicesPaymentsReport_ExportsInvoicesWithDueDates()
+    {
+        Invoice invoice = await PostInvoice(_data.ForPaymentsReport);
+        (await ChangeStatus(invoice.Id, InvoiceStatus.Paid, new DateTime(2019, 01, 05))).EnsureSuccessStatusCode();
+
+        List<string> cells = await SheetCells(await _client.GetAsync($"{InvoicesController.RouteName}/payments-report"), "Payments");
+
+        Assert.Contains(invoice.InvoiceNumber, cells);
+        Assert.Contains("2019-01-05", cells);
+    }
+
+    private static async Task<List<string>> SheetCells(HttpResponseMessage response, string sheetName)
+    {
+        response.EnsureSuccessStatusCode();
+        using var workbook = new XLWorkbook(await response.Content.ReadAsStreamAsync());
+        return [.. workbook.Worksheet(sheetName).RowsUsed().Skip(1).SelectMany(r => r.CellsUsed()).Select(c => c.GetString())];
+    }
+
+    [Fact]
     public async Task Delete_ReleasesTimeSheetTotals()
     {
         Invoice invoice = await PostInvoice(_data.ForDelete);
@@ -298,8 +328,10 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         public BillableCompany ForDelete { get; }
         public BillableCompany ForOverdue { get; }
         public BillableCompany ForNotOverdue { get; }
+        public BillableCompany ForExport { get; }
+        public BillableCompany ForPaymentsReport { get; }
 
-        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForSameStatus, ForList, ForDelete, ForOverdue, ForNotOverdue];
+        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForSameStatus, ForList, ForDelete, ForOverdue, ForNotOverdue, ForExport, ForPaymentsReport];
 
         public Data()
         {
@@ -314,6 +346,8 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             ForDelete = new BillableCompany(Agency, toronto, "delete");
             ForOverdue = new BillableCompany(Agency, toronto, "overdue");
             ForNotOverdue = new BillableCompany(Agency, toronto, "not-overdue");
+            ForExport = new BillableCompany(Agency, toronto, "export");
+            ForPaymentsReport = new BillableCompany(Agency, toronto, "payments-report");
         }
 
         public void Seed(CovenantContext context)

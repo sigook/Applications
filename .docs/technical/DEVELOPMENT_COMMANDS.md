@@ -15,6 +15,12 @@ dotnet test Covenant.Api/Covenant.Tests/Covenant.Tests.csproj                   
 dotnet test Covenant.Api/Covenant.Integration.Tests/Covenant.Integration.Tests.csproj # Needs Docker (Testcontainers Postgres)
 dotnet test Covenant.Api/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj         # Functions unit tests
 
+# Code coverage, same gate as the pipeline (from Covenant.Api/, Docker running; minimum 80% lines)
+dotnet test Covenant.Api.slnx --settings coverage.runsettings --results-directory ./TestResults/coverage
+dotnet tool restore
+dotnet tool run reportgenerator "-reports:TestResults/coverage/**/*.cobertura.xml" "-targetdir:TestResults/report" "-reporttypes:Cobertura;Html"
+dotnet run coverage-gate.cs TestResults/report/Cobertura.xml 80
+
 # Migrations (run from the repo root; the API is the startup project for both contexts)
 dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context CovenantContext
 dotnet ef migrations add <Name> --project Covenant.Api/Covenant.Infrastructure --startup-project Covenant.Api/Covenant.Api --context IdentityContext --output-dir Migrations/Identity
