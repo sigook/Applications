@@ -296,7 +296,7 @@ platform :ios do
 
     version = app.get_edit_app_store_version || app.get_live_app_store_version
     locales = version&.get_app_store_version_localizations&.map(&:locale) || []
-    locales = ["en-US"] if locales.empty?
+    locales = ["en-CA"] if locales.empty?
     UI.message("🌐 Store locales: #{locales.join(', ')}")
     locales
   end

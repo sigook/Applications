@@ -29,12 +29,13 @@
               <b-icon icon="crosshairs-gps" size="is-small"></b-icon>
               {{ geo.coordinates }}
             </div>
+            <div v-if="geo.reference" class="punch-geo__ref">{{ geo.reference }}</div>
           </div>
         </div>
 
         <div v-if="confirmAction" class="punch-confirm">
           <div class="punch-confirm__question">
-            {{ confirmAction === 'in' ? 'Start your shift now?' : 'End your shift now?' }}
+            Are you sure you want to {{ confirmAction === 'in' ? 'clock in' : 'clock out' }}?
           </div>
           <div class="punch-confirm__actions">
             <b-button rounded expanded @click="confirmAction = null">Cancel</b-button>
@@ -53,7 +54,7 @@
           <div v-if="ctaHint" class="punch-hint">{{ ctaHint }}</div>
         </template>
 
-        <div v-if="punchRejected" class="punch-rejected">
+        <div v-if="punchRejected && !isClearlyOutOfRange" class="punch-rejected">
           <b-icon icon="map-marker-off-outline" size="is-small"></b-icon>
           <div class="punch-rejected__body">
             <div class="punch-rejected__title">Too far from workplace</div>
@@ -110,6 +111,7 @@ interface GeoStrip {
   title: string;
   subtitle: string;
   coordinates?: string;
+  reference?: string;
 }
 
 interface PunchRejected {
@@ -156,7 +158,18 @@ const phase = computed(() => {
   return 'idle';
 });
 
-const canPunch = computed(() => hasPosition.value && clockType.value !== ClockType.None);
+const isClearlyOutOfRange = computed(() => {
+  const checkpoint = props.request?.punchCheckpoint;
+  const current = position.value;
+  if (!checkpoint || !current || clockType.value === ClockType.None) return false;
+  const { latitude, longitude, accuracy } = current.coords;
+  const meters = distanceInMeters(checkpoint.latitude, checkpoint.longitude, latitude, longitude);
+  return meters - accuracy > checkpoint.radiusMeters;
+});
+
+const canPunch = computed(
+  () => hasPosition.value && clockType.value !== ClockType.None && !isClearlyOutOfRange.value
+);
 
 const pillText = computed(() => {
   switch (phase.value) {
@@ -212,21 +225,28 @@ const geo = computed<GeoStrip>(() => {
     };
   }
   const direction = cardinalDirection(checkpoint.latitude, checkpoint.longitude, latitude, longitude);
+  const blocked = isClearlyOutOfRange.value;
   return {
     state: 'far',
     icon: 'map-marker-off-outline',
     title: `About ${formatDistance(meters)} ${direction} of the check point`,
-    subtitle: 'Get closer before you clock in.',
-    coordinates
+    subtitle: blocked
+      ? `Get closer to ${clockType.value === ClockType.ClockOut ? 'clock out' : 'clock in'}. Already on site? Contact your agency.`
+      : 'Get closer before you clock in.',
+    coordinates,
+    reference: blocked ? `${workerReference()} · Request #${props.request?.numberId ?? '-'}` : undefined
   };
 });
 
-function punchReference(): string {
+function workerReference(): string {
   const profile = workerStore.workerProfile;
-  const worker = profile.numberId
+  return profile.numberId
     ? `Worker #${profile.numberId} · ${[profile.firstName, profile.lastName].filter(Boolean).join(' ')}`
     : 'Worker: unknown';
-  return `${worker} · Request #${props.request?.numberId ?? '-'} · ${dayjs().format('MMM DD, YYYY hh:mm A')}`;
+}
+
+function punchReference(): string {
+  return `${workerReference()} · Request #${props.request?.numberId ?? '-'} · ${dayjs().format('MMM DD, YYYY hh:mm A')}`;
 }
 
 function elapsed(seconds: number): string {
@@ -256,14 +276,15 @@ const clockLabel = computed(() => {
 
 const ctaLabel = computed(() => {
   if (phase.value === 'error') return 'Retry';
-  if (phase.value === 'working') return 'End shift';
-  if (phase.value === 'done') return 'Shift closed';
-  return 'Start shift';
+  if (phase.value === 'working') return 'Clock out';
+  if (phase.value === 'done') return 'Shift completed';
+  if (phase.value === 'none') return 'Unavailable';
+  return 'Clock in';
 });
 
 const ctaHint = computed(() => {
   if (phase.value === 'error') return 'We could not reach the server. Check your connection and retry.';
-  if (!hasPosition.value) return 'Turn on location to punch.';
+  if (!hasPosition.value) return 'Turn on location to clock in or out.';
   if (phase.value === 'done') return '';
   if (clockType.value === ClockType.None) return 'There is nothing to punch for this day.';
   return '';
@@ -320,7 +341,7 @@ function registerHour() {
       emit('refreshRequest');
       await refreshClockType();
       isLoading.value = false;
-      showAlertSuccess(wasClockIn ? 'Enjoy your shift!' : 'Thanks for your job!');
+      showAlertSuccess(wasClockIn ? 'Clocked in successfully!' : 'Clocked out successfully!');
     })
     .catch(async (error: unknown) => {
       isLoading.value = false;
@@ -586,6 +607,12 @@ watch(today, async (value) => {
   font-size: 12px;
   color: $grey-light;
   font-variant-numeric: tabular-nums;
+}
+
+.punch-geo__ref {
+  margin-top: 4px;
+  font-size: 11px;
+  color: $grey-light;
 }
 
 .punch-rejected {
