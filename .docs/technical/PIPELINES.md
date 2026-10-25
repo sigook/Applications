@@ -236,17 +236,17 @@ Where the time goes on a cold hosted agent: the iOS simulator takes ~9 min to bo
 
 What runs (`Sigook.App/scripts/store_screenshots.sh`, one call per device): the script builds the debug binary with `integration_test/store_screenshots_test.dart` as entry point against `.env.staging` plus `--dart-define=SCREENSHOT_MODE=true` (hides the environment banner), `SCREENSHOT_USER`, `SCREENSHOT_PASSWORD` and `GOOGLE_MAPS_API_KEY` (from the variable group; without it the job detail capture shows no map); installs it, resets the app data, grants the location permission and sets the device position to `SCREENSHOT_GEO` (`lat,lon`, pipeline parameter `screenshotLocation`); on Android sets the display to `1080x1920` (Play wants 9:16; the Flutter surface follows the window); then runs `flutter drive --use-application-binary`. The install-and-grant step has to happen before the drive: the punch card tab requests location, and the native permission dialog pauses the app, which stalls the test for good; without a position the punch card stays on "Checking your distance...", so the position should be the address of the first job of the screenshot account. The test signs in, waits for real data and takes `binding.takeScreenshot` of: welcome, jobs, job detail, punch card, filter sheet, menu, history, profile (8 = the Play maximum per device type). `test_driver/integration_test.dart` writes `<SCREENSHOT_PREFIX><name>.png` into `SCREENSHOT_DIR`. The captures are the Flutter surface only: the status bar strip is blank (no clock or battery), which is what `frameit`-style store images expect.
 
-Devices (parameters): iPhone 6.9" simulator (`iPhone 17 Pro Max`, 1320x2868) and iPad 13" (`iPad Pro 13-inch (M4)`, 2064x2752, files prefixed `ipad_`) into `fastlane/screenshots/en-US/` (`captureIos`); Android emulator (`captureAndroid`, system image parameter + host ABI) into `fastlane/metadata/android/en-US/images/phoneScreenshots/`. The simulator names must exist on the image; the step lists the available ones when they do not.
+Devices (parameters): iPhone 6.9" simulator (`iPhone 17 Pro Max`, 1320x2868) and iPad 13" (`iPad Pro 13-inch (M4)`, 2064x2752, files prefixed `ipad_`) into `fastlane/screenshots/en-CA/` (`captureIos`); Android emulator (`captureAndroid`, system image parameter + host ABI) into `fastlane/metadata/android/en-CA/images/phoneScreenshots/`. The simulator names must exist on the image; the step lists the available ones when they do not.
 
 Applying the artifacts from the repo root:
 
 ```bash
-rm -rf Sigook.App/fastlane/screenshots Sigook.App/fastlane/metadata/android/en-US/images
+rm -rf Sigook.App/fastlane/screenshots Sigook.App/fastlane/metadata/android/en-CA/images
 cp -r ~/Downloads/store-screenshots-ios/fastlane/. Sigook.App/fastlane/
 cp -r ~/Downloads/store-screenshots-android/fastlane/. Sigook.App/fastlane/
 ```
 
-Review the PNGs (staging data is visible: pick an account with presentable jobs and profile), commit, then run the main pipeline with `uploadStoreScreenshots` on. The Android captures can also be produced locally on an emulator: `SCREENSHOT_USER=... SCREENSHOT_PASSWORD=... SCREENSHOT_GEO=lat,lon GOOGLE_MAPS_API_KEY=... bash scripts/store_screenshots.sh android emulator-5554 fastlane/metadata/android/en-US/images/phoneScreenshots` from `Sigook.App/` (Git Bash). Locale folders are `en-US`; rename them if the listings use another locale (the iOS lane lists the real ones when they differ).
+Review the PNGs (staging data is visible: pick an account with presentable jobs and profile), commit, then run the main pipeline with `uploadStoreScreenshots` on. The Android captures can also be produced locally on an emulator: `SCREENSHOT_USER=... SCREENSHOT_PASSWORD=... SCREENSHOT_GEO=lat,lon GOOGLE_MAPS_API_KEY=... bash scripts/store_screenshots.sh android emulator-5554 fastlane/metadata/android/en-CA/images/phoneScreenshots` from `Sigook.App/` (Git Bash). Locale folders are `en-CA` (the locale of both store listings); rename them if a listing changes locale (the iOS lane lists the real ones when they differ).
 
 ### Sigook.Functions (.NET 10 Azure Functions, isolated worker)
 

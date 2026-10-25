@@ -5,8 +5,8 @@ name: Sigook.App-Screenshots-$(Date:yyyyMMdd)$(Rev:.r)
 # Drives Sigook.App/integration_test/store_screenshots_test.dart against
 # staging and publishes the captures in the folder layout fastlane expects,
 # ready to unzip into Sigook.App/ and commit:
-#   store-screenshots-ios:      fastlane/screenshots/en-US/                               iPhone 6.9" + iPad 13" (deliver)
-#   store-screenshots-android:  fastlane/metadata/android/en-US/images/phoneScreenshots/  1080x1920 (supply)
+#   store-screenshots-ios:      fastlane/screenshots/en-CA/                               iPhone 6.9" + iPad 13" (deliver)
+#   store-screenshots-android:  fastlane/metadata/android/en-CA/images/phoneScreenshots/  1080x1920 (supply)
 # Two jobs: iOS on a hosted macOS agent (nobody on the team has a Mac) and
 # Android on a hosted Linux agent with KVM. The org has a single hosted
 # parallel job, so they run one after the other. The Android ones can also
@@ -179,7 +179,7 @@ stages:
           workingDirectory: '$(workingDirectory)'
           script: |
             set -euo pipefail
-            OUT="$(outputRoot)/fastlane/screenshots/en-US"
+            OUT="$(outputRoot)/fastlane/screenshots/en-CA"
             mkdir -p "$OUT"
             xcrun simctl bootstatus "$(IPHONE_UDID)" -b
             echo "=== iPhone ${{ parameters.iphoneSimulator }} ($(IPHONE_UDID)) ==="
@@ -198,7 +198,7 @@ stages:
           workingDirectory: '$(workingDirectory)'
           script: |
             set -euo pipefail
-            OUT="$(outputRoot)/fastlane/screenshots/en-US"
+            OUT="$(outputRoot)/fastlane/screenshots/en-CA"
             xcrun simctl boot "$(IPAD_UDID)" || true
             xcrun simctl bootstatus "$(IPAD_UDID)" -b
             echo "=== iPad ${{ parameters.ipadSimulator }} ($(IPAD_UDID)) ==="
@@ -327,7 +327,7 @@ stages:
             if [ -n "${JAVA_HOME_17_X64:-}" ]; then
               export JAVA_HOME="$JAVA_HOME_17_X64"
             fi
-            OUT="$(outputRoot)/fastlane/metadata/android/en-US/images/phoneScreenshots"
+            OUT="$(outputRoot)/fastlane/metadata/android/en-CA/images/phoneScreenshots"
             mkdir -p "$OUT"
             EMULATOR_LOG="$(Build.ArtifactStagingDirectory)/emulator.log"
             DEVICE=emulator-5554
