@@ -117,11 +117,11 @@ public class GenerateInvoicePdfHandler(IFilesContainer filesContainer) : IReques
         {
             table.ColumnsDefinition(columns =>
             {
-                columns.RelativeColumn(10);
-                columns.RelativeColumn(54);
+                columns.RelativeColumn(9);
+                columns.RelativeColumn(47);
                 columns.RelativeColumn(12);
-                columns.RelativeColumn(12);
-                columns.RelativeColumn(12);
+                columns.RelativeColumn(14);
+                columns.RelativeColumn(18);
             });
             table.Header(header =>
             {
