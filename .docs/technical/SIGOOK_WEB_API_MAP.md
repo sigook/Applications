@@ -216,9 +216,10 @@ Agency → company billing.
 | `getPayStubsByInvoice(id)` | GET | `/api/agency/accounting/invoices/{id}/paystubs` | — | `PayStubDeleteWarningItem[]` | Linked pay stubs (delete warning) |
 | `sendInvoiceEmail(payload)` | POST | `/api/agency/accounting/invoices/{invoiceId}/email` | FormData (multipart) | `void` | Email invoice + attachments |
 | `changeInvoiceStatus(id, payload)` | PUT | `/api/agency/accounting/invoices/{invoiceId}/status` | `ChangeInvoiceStatusModel` | `void` | Pending/Due → Paid (with optional `paidAt`, ISO instant of the picked day) or Paid → Pending; `Due` is job-only; backend records `UpdatedAt`/`UpdatedBy` |
+| `updateInvoicePaidAt(id, payload)` | PUT | `/api/agency/accounting/invoices/{invoiceId}/paid-at` | `UpdateInvoicePaidAtModel` | `void` | Sets or corrects `PaidAt` of a `Paid` invoice (ISO instant of the picked day); backend records `UpdatedAt`/`UpdatedBy` |
 | `downloadInvoicesPaymentsReport(filter)` | GET | `/api/agency/accounting/invoices/payments-report` | `AgencyInvoiceFilter` (params) | Blob | Payments follow-up Excel (B4 Tax, Amount, Net, Due Date, Due Days, Payment Date) |
 
-**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse` (rows carry `paymentTermDays`, `dueDate`, `dueDays`, `paidAt`), `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (the feature's `types.ts` + `src/shared/types/invoice`)
+**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse` (rows carry `paymentTermDays`, `dueDate`, `dueDays`, `paidAt`), `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `UpdateInvoicePaidAtModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (the feature's `types.ts` + `src/shared/types/invoice`)
 
 **Pinia:** `agencyInvoiceFilter` in `useAgencyStore`.
 

@@ -140,6 +140,20 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
         return Ok();
     }
 
+    /// <summary>Sets or corrects the payment date of a paid invoice and records who changed it and when.</summary>
+    /// <param name="invoiceId">Identifier of the paid invoice.</param>
+    /// <param name="model">The payment date.</param>
+    [HttpPut("{invoiceId:guid}/paid-at")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdatePaidAt([FromRoute] Guid invoiceId, [FromBody] UpdateInvoicePaidAtModel model)
+    {
+        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
+        var result = await invoiceService.UpdateInvoicePaidAt(invoiceId, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
     /// <summary>Deletes an invoice and its related pay stubs, and notifies the accounting team.</summary>
     /// <param name="id">Identifier of the invoice to delete.</param>
     /// <param name="model">The pay stubs to delete alongside the invoice.</param>

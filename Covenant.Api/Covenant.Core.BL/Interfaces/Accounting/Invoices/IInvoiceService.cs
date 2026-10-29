@@ -20,4 +20,5 @@ public interface IInvoiceService
     Task<Result> SendInvoiceEmail(Guid invoiceId, InvoiceEmailModel model);
     Task DeleteInvoice(Guid invoiceId, DeleteInvoiceModel model);
     Task<Result> ChangeInvoiceStatus(Guid invoiceId, ChangeInvoiceStatusModel model);
+    Task<Result> UpdateInvoicePaidAt(Guid invoiceId, UpdateInvoicePaidAtModel model);
 }

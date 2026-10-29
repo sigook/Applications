@@ -1,5 +1,5 @@
 import { api } from '@/app/security/apiService';
-import type { AgencyInvoiceFilter, AgencyInvoiceListResponse, ChangeInvoiceStatusModel, CreateAgencyInvoiceModel, DeleteInvoicePayload, PayStubDeleteWarningItem, SendInvoiceEmailPayload } from '@/modules/agency/accounting/invoices/types';
+import type { AgencyInvoiceFilter, AgencyInvoiceListResponse, ChangeInvoiceStatusModel, CreateAgencyInvoiceModel, DeleteInvoicePayload, PayStubDeleteWarningItem, SendInvoiceEmailPayload, UpdateInvoicePaidAtModel } from '@/modules/agency/accounting/invoices/types';
 import type { InvoicePreviewModel } from '@/shared/types/invoice';
 
 // ---------------------------------------------------------------------------
@@ -24,6 +24,10 @@ export function deleteAgencyInvoice(payload: DeleteInvoicePayload): Promise<void
 
 export function changeInvoiceStatus(invoiceId: string, payload: ChangeInvoiceStatusModel): Promise<void> {
   return api.put(`/api/agency/accounting/invoices/${invoiceId}/status`, payload);
+}
+
+export function updateInvoicePaidAt(invoiceId: string, payload: UpdateInvoicePaidAtModel): Promise<void> {
+  return api.put(`/api/agency/accounting/invoices/${invoiceId}/paid-at`, payload);
 }
 
 // ---------------------------------------------------------------------------

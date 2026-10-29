@@ -52,6 +52,7 @@ public class InvoiceService(
     IOptions<TeamsWebhookConfiguration> teamsOptions,
     IInvoiceDocumentAdapter invoiceDocumentAdapter,
     IValidator<ChangeInvoiceStatusModel> changeStatusValidator,
+    IValidator<UpdateInvoicePaidAtModel> updatePaidAtValidator,
     ILogger<InvoiceService> logger) : IInvoiceService
 {
     private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
@@ -180,6 +181,20 @@ public class InvoiceService(
         if (invoice is null) return Result.Fail("Invoice not found");
 
         var result = invoice.ChangeStatus(model.Status, currentUserService.GetUserId(), timeProvider.GetLocalNow().DateTime, model.PaidAt);
+        if (!result) return result;
+        await invoiceRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> UpdateInvoicePaidAt(Guid invoiceId, UpdateInvoicePaidAtModel model)
+    {
+        var validationResult = await updatePaidAtValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure();
+
+        var invoice = await invoiceRepository.GetInvoiceForAgency(currentUserService.GetAgencyIds(), invoiceId);
+        if (invoice is null) return Result.Fail("Invoice not found");
+
+        var result = invoice.UpdatePaidAt(model.PaidAt!.Value, currentUserService.GetUserId(), timeProvider.GetLocalNow().DateTime);
         if (!result) return result;
         await invoiceRepository.SaveChangesAsync();
         return Result.Ok();

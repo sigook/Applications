@@ -31,6 +31,11 @@ export interface ChangeInvoiceStatusModel {
   paidAt?: string | null;
 }
 
+// Body for PUT /api/agency/accounting/invoices/{id}/paid-at. Mirrors UpdateInvoicePaidAtModel.
+export interface UpdateInvoicePaidAtModel {
+  paidAt: string;
+}
+
 // Filter for GET /api/agency/accounting/invoices. Mirrors GetInvoicesFilterV2.
 export interface AgencyInvoiceFilter {
   pageIndex?: number;
@@ -40,6 +45,10 @@ export interface AgencyInvoiceFilter {
   invoiceNumber?: string;
   createdAtFrom?: string | null;
   createdAtTo?: string | null;
+  dueDateFrom?: string | null;
+  dueDateTo?: string | null;
+  paidAtFrom?: string | null;
+  paidAtTo?: string | null;
   companyFullName?: string;
   salesRepresentative?: string;
   status?: InvoiceStatus | null;

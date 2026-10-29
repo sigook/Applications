@@ -263,6 +263,7 @@ Two paths remove subcontractor reports:
 | From | To | Who | Effect |
 |------|----|-----|--------|
 | `Pending` / `Due` | `Paid` | Agency admin (`PUT …/status`) | `PaidAt` = the instant sent in `ChangeInvoiceStatusModel.PaidAt` (the web sends the picked day's local midnight as ISO, same convention as `CreatedAt`), or now when omitted |
+| `Paid` | `Paid` | Agency admin (`PUT …/paid-at`) | Only `PaidAt` changes, to the instant sent in `UpdateInvoicePaidAtModel.PaidAt` (required). `Invoice.UpdatePaidAt` rejects invoices that are not `Paid`. Sets or corrects the payment date, e.g. legacy paid invoices without one |
 | `Paid` | `Pending` | Agency admin | `PaidAt` cleared. The nightly job may move it to `Due` again if the term already expired |
 | `Pending` | `Due` | `MarkOverdueInvoices` job only | Bulk `ExecuteUpdate` (`IInvoiceRepository.MarkPendingInvoicesAsDue`): `Status = 'Pending'` and `DueDate < today`. `UpdatedAt` = run time, `UpdatedBy` = null (no user). Returns the invoice numbers it marked, ordered by `NumberId` |
 
@@ -276,8 +277,8 @@ Two paths remove subcontractor reports:
 
 ### List & exports
 
-- `InvoiceListModel` exposes `Status`, `PaymentTermDays`, `DueDate`, `DueDays`, `PaidAt`, `SubTotal`, `Tax`, `UpdatedAt` and `UpdatedByName` (the `AgencyPersonnel.Name` of the user in the invoice's agency, falling back to the user email). `GetInvoicesFilter.Status` filters (`Due` included), `GetInvoicesFilterSortBy.Status` sorts.
-- Agency grid (`Sigook.Web` → Invoices): the status tag tooltip shows `Due Date (Net N) · Due Days · Updated by/at`; a `Payment Date` column shows `PaidAt`. "Mark as Paid" opens `MarkInvoicePaidModal` (payment date, defaults to today, max today); "Mark as Pending" is a confirm.
+- `InvoiceListModel` exposes `Status`, `PaymentTermDays`, `DueDate`, `DueDays`, `PaidAt`, `SubTotal`, `Tax`, `UpdatedAt` and `UpdatedByName` (the `AgencyPersonnel.Name` of the user in the invoice's agency, falling back to the user email). `GetInvoicesFilter.Status` filters (`Due` included), `GetInvoicesFilterSortBy.Status` sorts. Date ranges (both ends required, like `CreatedAtFrom/To`): `DueDateFrom/To` compares the computed `CreatedAt.Date + PaymentTermDays` in SQL; `PaidAtFrom/To` compares `PaidAt`, so invoices without a payment date never match.
+- Agency grid (`Sigook.Web` → Invoices): `Due Date` column (`DueDate`, below it `Net N` in small grey text followed by `· N days due` in red when `DueDays` > 0; empty for `Paid`) and `Payment Date` column (`PaidAt`). Created At, Due Date and Payment Date have a range datepicker filter, persisted in the agency store. The status tag tooltip shows `Updated: by · at` only when a person made the last change (`UpdatedByName`), so invoices moved to `Due` by the job have no tooltip. "Mark as Paid" opens `MarkInvoicePaidModal` (payment date, defaults to today, max today); on `Paid` invoices "Edit Payment Date" opens the same modal in edit mode (current `PaidAt` preloaded, calls `…/paid-at`); "Mark as Pending" is a confirm.
 - Two Excel exports, both over the grid's current filter:
   - `GET …/invoices/file` (`GenerateInvoicesReport`): N° Invoice, Created At, Company, Total, Status.
   - `GET …/invoices/payments-report` (`GenerateInvoicesPaymentsReport`, grid action "Payments report"): Invoice Date, Invoice, Company, B4 Tax (`SubTotal`), Tax, Amount (`TotalNet`), Status, Net (`PaymentTermDays`), Due Date, Due Days, Payment Date — mirrors accounting's payments follow-up spreadsheet.

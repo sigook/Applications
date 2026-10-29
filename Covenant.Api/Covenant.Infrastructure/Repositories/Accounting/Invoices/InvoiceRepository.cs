@@ -258,6 +258,11 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
         Expression<Func<InvoiceListModel, bool>> predicate = PredicateBuilder.New<InvoiceListModel>(true);
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
             predicate = predicate.And(i => i.CreatedAt >= filter.CreatedAtFrom.Value && i.CreatedAt <= filter.CreatedAtTo.Value);
+        if (filter.DueDateFrom.HasValue && filter.DueDateTo.HasValue)
+            predicate = predicate.And(i => i.CreatedAt.Date.AddDays(i.PaymentTermDays) >= filter.DueDateFrom.Value
+                                           && i.CreatedAt.Date.AddDays(i.PaymentTermDays) <= filter.DueDateTo.Value);
+        if (filter.PaidAtFrom.HasValue && filter.PaidAtTo.HasValue)
+            predicate = predicate.And(i => i.PaidAt >= filter.PaidAtFrom.Value && i.PaidAt <= filter.PaidAtTo.Value);
         predicate = predicate
             .AndSearch(filter.InvoiceNumber, i => i.InvoiceNumber)
             .AndSearch(filter.CompanyFullName, i => i.CompanyFullName)

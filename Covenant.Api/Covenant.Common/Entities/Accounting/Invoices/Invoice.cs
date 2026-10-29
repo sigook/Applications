@@ -43,6 +43,15 @@ public class Invoice
         return Result.Ok();
     }
 
+    public Result UpdatePaidAt(DateTime paidAt, Guid changedBy, DateTime now)
+    {
+        if (Status != InvoiceStatus.Paid) return Result.Fail("Only paid invoices have a payment date");
+        PaidAt = paidAt;
+        UpdatedAt = now;
+        UpdatedBy = changedBy;
+        return Result.Ok();
+    }
+
     public void AddInvoiceTotals(IEnumerable<InvoiceTotal> invoiceTotals)
     {
         InvoiceTotals = new List<InvoiceTotal>(invoiceTotals);
