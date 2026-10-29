@@ -100,7 +100,7 @@ void main() {
     }
 
     await tester.tap(find.text('Activity'));
-    await _waitFor(tester, find.text('PAY STUBS'));
+    await _waitFor(tester, find.text('TIMESHEETS'));
     await _pump(tester, const Duration(seconds: 5));
     await _shoot(binding, tester, '06_activity');
 
