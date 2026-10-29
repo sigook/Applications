@@ -578,6 +578,48 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
             .OrderByDescending(ts => ts.ClockIn)
             .FirstOrDefaultAsync();
 
+    public Task<List<WorkerWeekTimeSheetModel>> GetWeekTimeSheetsForWorker(Guid workerId, DateTime from, DateTime to) =>
+        Context.TimeSheets
+            .Where(ts => ts.WorkerRequest.WorkerProfile.WorkerId == workerId && ts.Date >= from && ts.Date < to)
+            .OrderBy(ts => ts.Date)
+            .ThenBy(ts => ts.TimeIn)
+            .ThenBy(ts => ts.Id)
+            .Select(ts => new WorkerWeekTimeSheetModel
+            {
+                Id = ts.Id,
+                RequestId = ts.WorkerRequest.RequestId,
+                Date = ts.Date,
+                ClientName = ts.WorkerRequest.Request.CompanyProfile.FullName,
+                JobTitle = ts.WorkerRequest.Request.JobTitle,
+                ClockIn = ts.ClockInRounded ?? ts.ClockIn,
+                ClockOut = ts.ClockOutRounded ?? ts.ClockOut,
+                TimeIn = ts.TimeIn,
+                TimeOut = ts.TimeOut,
+                TimeInApproved = ts.TimeInApproved,
+                TimeOutApproved = ts.TimeOutApproved,
+                DurationBreak = ts.WorkerRequest.Request.DurationBreak,
+                BreakIsPaid = ts.WorkerRequest.Request.BreakIsPaid,
+                IsHoliday = ts.IsHoliday,
+                HolidayIsPaid = ts.WorkerRequest.Request.HolidayIsPaid,
+                IsPaid = ts.TimeSheetTotalPayroll != null,
+                MissingHours = ts.MissingHours,
+                MissingHoursOvertime = ts.MissingHoursOvertime,
+                BonusOrOthers = ts.BonusOrOthers,
+                BonusOrOthersDescription = ts.BonusOrOthersDescription,
+                DeductionsOthers = ts.DeductionsOthers,
+                DeductionsOthersDescription = ts.DeductionsOthersDescription,
+                Reimbursements = ts.Reimbursements,
+                ReimbursementsDescription = ts.ReimbursementsDescription,
+                OvertimeStartsAfter = ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
+                    ? ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.Value
+                    : (ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null &&
+                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
+                        ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
+                        : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter)
+            })
+            .AsNoTracking()
+            .ToListAsync();
+
     public Task<List<TimeSheet>> GetTimesheetsSince(Guid workerId, Guid requestId, DateTime since) =>
         Context.TimeSheets
             .Where(ts => ts.Date >= since

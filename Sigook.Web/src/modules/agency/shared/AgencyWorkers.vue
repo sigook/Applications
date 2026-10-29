@@ -3,6 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div>
       <SigookGrid ref="grid" :fetch="loadRequestWorkers" v-model:params="serverParams" :sort-map="sortMap" focusable
+        :fit-viewport="directHiring" :detailed="!directHiring" show-detail-icon
         @update:loading="(value) => isLoading = value" @cellclick="onCellClick">
         <template #actions>
           <b-button icon-left="plus" @click="modalManageWorkers = true">Manage Workers</b-button>
@@ -11,6 +12,14 @@
           <b-dropdown-item aria-role="listitem" @click="downloadWorkersReportDocument">
             <b-icon icon="file-excel"></b-icon>
             <span>Export</span>
+          </b-dropdown-item>
+          <b-dropdown-item v-if="!directHiring" aria-role="listitem" @click="downloadPunchCardDocument">
+            <b-icon icon="file-excel"></b-icon>
+            <span>Export Punch Card</span>
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" @click="onShowModalFinishAll">
+            <b-icon icon="flag-checkered"></b-icon>
+            <span>End all assignments</span>
           </b-dropdown-item>
         </template>
         <b-table-column field="profileImage" width="50" v-slot="props">
@@ -34,29 +43,20 @@
         </b-table-column>
         <b-table-column field="name" label="Name" sortable searchable>
           <template v-slot:searchable>
-            <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+            <b-input v-model="serverParams.name" placeholder="Name, email or phone" icon="magnify"
+              size="is-small"></b-input>
           </template>
           <template v-slot="props">
-            {{ props.row.name }}
-          </template>
-        </b-table-column>
-        <b-table-column field="mobileNumber" label="Phone" searchable cell-class="is-nowrap">
-          <template v-slot:searchable>
-            <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-              @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
-          </template>
-          <template v-slot="props"><copy-link kind="phone" :value="props.row.mobileNumber" /></template>
-        </b-table-column>
-        <b-table-column field="socialInsurance" label="SIN/SSN" searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.socialInsurance" placeholder="Search..." icon="magnify" size="is-small"></b-input>
-          </template>
-          <template v-slot="props">
-            <div v-if="props.row.socialInsurance">
-              {{ props.row.socialInsurance }}
-              <i class="fz-2 block">{{ dateMonth(props.row.dueDate) }}</i>
+            <div class="worker-cell">
+              <span>{{ props.row.name }}</span>
+              <span class="fz-1"><copy-link kind="email" :value="props.row.email" /></span>
+              <span v-if="props.row.mobileNumber" class="fz-1">
+                <copy-link kind="phone" :value="props.row.mobileNumber" />
+              </span>
+              <span v-if="props.row.socialInsurance" class="fz-1">
+                SIN/SSN {{ props.row.socialInsurance }}<i v-if="props.row.dueDate"> · {{ dateMonth(props.row.dueDate) }}</i>
+              </span>
             </div>
-            <span v-else class="op3">SIN/SNN</span>
           </template>
         </b-table-column>
         <b-table-column field="startWorking" label="Start Working" sortable searchable>
@@ -73,38 +73,9 @@
             </b-button>
           </template>
         </b-table-column>
-        <b-table-column field="createdBy" label="Created By" sortable searchable>
-          <template v-slot:searchable>
-            <b-field>
-              <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.createdBy"></b-input>
-              <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
-                :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" range
-                v-model="createdAtDatesSelected" icon-right-clickable @icon-right-click="onCreatedAtCleared"
-                @update:modelValue="onCreatedAtSelected" append-to-body></b-datepicker>
-            </b-field>
-          </template>
-          <template v-slot="props">
-            {{ emailName(props.row.createdBy) }}
-            <i class="fz-2 block">{{ dateMonth(props.row.createdAt) }}</i>
-          </template>
-        </b-table-column>
-        <b-table-column field="rejectedBy" label="Rejected By" sortable searchable>
-          <template v-slot:searchable>
-            <b-field>
-              <b-input size="is-small" icon="magnify" placeholder="Created By" v-model="serverParams.rejectedBy"></b-input>
-              <b-datepicker size="is-small" :mobile-native="false" placeholder="Created At"
-                :icon-right="rejectedAtDatesSelected.length > 0 ? 'close-circle' : ''" range
-                v-model="rejectedAtDatesSelected" icon-right-clickable @icon-right-click="onRejectedAtCleared"
-                @update:modelValue="onRejectedAtSelected" append-to-body></b-datepicker>
-            </b-field>
-          </template>
-          <template v-slot="props">
-            <div v-if="props.row.rejectedBy">
-              {{ emailName(props.row.rejectedBy) }}
-              <i class="fz-2 block">{{ dateMonth(props.row.rejectedAt) }}</i>
-            </div>
-            <span v-else class="op3">Rejected by</span>
-          </template>
+        <b-table-column v-if="!directHiring" field="hours" label="Hours" cell-class="is-nowrap" v-slot="props">
+          {{ hour(props.row.totalHoursApproved) }}
+          <span class="fz-1 block">of {{ hour(props.row.totalHoursWorker) }}</span>
         </b-table-column>
         <b-table-column field="notesCount" label="Notes" v-slot="props">
           <NotesPopover :can-create="false" :user-id="props.row.id" :request-id="serverParams.requestId"
@@ -120,18 +91,28 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <span class="is-uppercase has-text-weight-bold fz-1" :class="props.row.status">{{ props.row.status }}</span>
+            <b-tag rounded :type="WorkerRequestStatusTagTypes[props.row.workerRequestStatus]">{{ props.row.status }}</b-tag>
+            <span v-if="props.row.finishReason" class="fz-1 block">{{ WorkerRequestFinishReasonLabels[props.row.finishReason] }}</span>
+            <i v-if="props.row.finishComments" class="fz-1 block">{{ props.row.finishComments }}</i>
             <i class="fz-1 block" v-html="props.row.rejectComments"></i>
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-field>
-            <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body>
+          <b-field v-if="props.row.workerRequestStatus === WorkerRequestStatus.Booked" grouped>
+            <b-tooltip label="End assignment" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-primary" outlined rounded icon-right="flag-checkered"
+                @click="onShowModalFinish(props.row)"></b-button>
+            </b-tooltip>
+            <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body class="ml-2">
               <b-button type="is-danger" outlined rounded icon-right="close"
-                v-if="props.row.status === 'Booked'" @click="confirmDelete(props.row)"></b-button>
+                @click="confirmDelete(props.row)"></b-button>
             </b-tooltip>
           </b-field>
         </b-table-column>
+        <template v-if="!directHiring" #detail="props">
+          <PunchCard :workerProfileId="props.row.workerProfileId" :worker="props.row"
+            :requestId="serverParams.requestId" :request="request" />
+        </template>
       </SigookGrid>
     </div>
 
@@ -145,6 +126,11 @@
         class="sm-edit-textarea" @updateContent="(data) => rejectWorker(data)" />
     </b-modal>
 
+    <b-modal custom-content-class="card" v-model="modalFinish" width="560px" destroy-on-hide>
+      <FinishAssignmentModal :subject="finishSubject" :start-working="finishAll ? null : currentWorker?.startWorking"
+        @submit="finishAssignment" @close="modalFinish = false" />
+    </b-modal>
+
     <b-modal custom-content-class="card" v-model="modalStartWorking" width="415px">
       <datepicker-modal v-if="currentWorker" v-model:start-working="currentWorker.startWorking"
         @onSelectCalendar="(date) => onUpdateRequestWorkerStartDate(date)" />
@@ -153,43 +139,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, ref, useTemplateRef } from 'vue';
+import { useRouter } from 'vue-router';
 import { showAlertError } from "@/shared/utils/toast";
 import { downloadFile } from "@/shared/utils/downloadFile";
-import { formatPhone } from '@/shared/utils/phoneFormat';
+import { downloadAgencyReport } from '@/shared/api/reportApi';
+import { isDirectHiring } from '@/shared/punch-card/directHiring';
 import {
+  finishAgencyRequestWorker,
+  finishAllAgencyRequestWorkers,
   getAgencyRequestsWorkers,
   rejectAgencyRequestWorker,
   updateAgencyRequestWorkerStartDate
 } from "@/modules/agency/recruiting/requests/api";
-import { WorkerRequestStatusLabels } from "@/shared/constants/enums";
+import { WorkerRequestFinishReasonLabels, WorkerRequestStatus, WorkerRequestStatusLabels, WorkerRequestStatusTagTypes } from "@/shared/constants/enums";
 import { getWorkersReportDocument } from '@/modules/agency/recruiting/requests/api';
-import { dateMonth, emailName } from '@/shared/format';
+import { dateMonth, hour } from '@/shared/format';
 import {
   getAgencyRequestWorkerNotes,
   createAgencyRequestWorkerNote,
   updateAgencyRequestWorkerNote,
   deleteAgencyRequestWorkerNote
 } from "@/modules/agency/shared/notes/api";
-import type { AgencyRequestWorker, AgencyRequestWorkerFilter } from '@/modules/agency/recruiting/requests/types';
+import type { AgencyRequestDetail, AgencyRequestWorker, AgencyRequestWorkerFilter } from '@/modules/agency/recruiting/requests/types';
 import type { RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/modules/agency/shared/notes/types';
 import type { CatalogItem, GridHandle, PaginatedList, TableColumnRef } from '@/shared/types/common';
+import type { FinishAssignmentModel } from '@/shared/request-detail/types';
 import WorkersList from "@/modules/agency/shared/AgencyWorkersList.vue";
 import NotesPopover from "@/modules/agency/shared/notes/NotesPopover.vue";
 import EditTextarea from "@/shared/ui/EditTextarea.vue";
+import FinishAssignmentModal from "@/shared/request-detail/FinishAssignmentModal.vue";
+import PunchCard from '@/modules/agency/recruiting/requests/components/AgencyPunchCardWorkerContainer.vue';
 import DatepickerModal from "@/modules/agency/recruiting/requests/components/DatepickerModal.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-const props = defineProps<{
-  id?: string;
-  showTitle?: boolean;
-}>();
+const props = defineProps<{ request: AgencyRequestDetail }>();
 
 const emit = defineEmits<{ (e: 'refreshRequest'): void }>();
 
-const route = useRoute();
 const router = useRouter();
 const grid = useTemplateRef<GridHandle>('grid');
 
@@ -198,24 +186,25 @@ const sortMap = {
   name: 1,
   status: 2,
   startWorking: 3,
-  createdBy: 4,
-  rejectedBy: 5,
   externalId: 6,
 };
 
 const isLoading = ref(true);
 const statuses = ref<CatalogItem<number>[]>([
-  { id: 2, value: 'Rejected' },
-  { id: 3, value: 'Booked' },
+  { id: WorkerRequestStatus.Booked, value: WorkerRequestStatusLabels[WorkerRequestStatus.Booked] },
+  { id: WorkerRequestStatus.Finished, value: WorkerRequestStatusLabels[WorkerRequestStatus.Finished] },
+  { id: WorkerRequestStatus.Rejected, value: WorkerRequestStatusLabels[WorkerRequestStatus.Rejected] },
 ]);
 const statusesSelected = ref<CatalogItem<number>[]>([]);
 const startWorkingDatesSelected = ref<Date[]>([]);
-const createdAtDatesSelected = ref<Date[]>([]);
-const rejectedAtDatesSelected = ref<Date[]>([]);
 const modalManageWorkers = ref(false);
 const currentWorker = ref<AgencyRequestWorker | null>(null);
 const modalRejectWorker = ref(false);
 const modalStartWorking = ref(false);
+const modalFinish = ref(false);
+const finishAll = ref(false);
+const finishSubject = ref('');
+const directHiring = computed(() => isDirectHiring(props.request));
 
 const getNotes = ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination);
 const createNote = ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model);
@@ -224,7 +213,7 @@ const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => del
 
 const serverParams = ref<AgencyRequestWorkerFilter>({
   sortBy: 2,
-  requestId: (props.id || route.params.id) as string,
+  requestId: props.request.id,
   isDescending: true,
 });
 
@@ -257,28 +246,6 @@ function onStartWorkingCleared() {
   onStartWorkingSelected();
 }
 
-function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
-  grid.value?.search();
-}
-
-function onCreatedAtCleared() {
-  createdAtDatesSelected.value = [];
-  onCreatedAtSelected();
-}
-
-function onRejectedAtSelected() {
-  serverParams.value.rejectedAtFrom = rejectedAtDatesSelected.value[0]?.toISOString() ?? null;
-  serverParams.value.rejectedAtTo = rejectedAtDatesSelected.value[1]?.toISOString() ?? null;
-  grid.value?.search();
-}
-
-function onRejectedAtCleared() {
-  rejectedAtDatesSelected.value = [];
-  onRejectedAtSelected();
-}
-
 function loadRequestWorkers(params: AgencyRequestWorkerFilter): Promise<PaginatedList<AgencyRequestWorker>> {
   return getAgencyRequestsWorkers(params)
     .then((response) => ({
@@ -300,6 +267,36 @@ function rejectWorker(comments: string) {
   modalRejectWorker.value = false;
   isLoading.value = true;
   rejectAgencyRequestWorker(serverParams.value.requestId, currentWorker.value.workerProfileId, { comments }).then(() => {
+    isLoading.value = false;
+    grid.value?.reload();
+    emit('refreshRequest');
+  }).catch((error) => {
+    isLoading.value = false;
+    showAlertError(error.data);
+  });
+}
+
+function onShowModalFinish(worker: AgencyRequestWorker) {
+  currentWorker.value = worker;
+  finishAll.value = false;
+  finishSubject.value = worker.name;
+  modalFinish.value = true;
+}
+
+function onShowModalFinishAll() {
+  finishAll.value = true;
+  finishSubject.value = 'Every booked worker of this request';
+  modalFinish.value = true;
+}
+
+function finishAssignment(model: FinishAssignmentModel) {
+  modalFinish.value = false;
+  isLoading.value = true;
+  const requestId = serverParams.value.requestId;
+  const call = finishAll.value
+    ? finishAllAgencyRequestWorkers(requestId, model)
+    : finishAgencyRequestWorker(requestId, currentWorker.value?.workerProfileId ?? '', model);
+  call.then(() => {
     isLoading.value = false;
     grid.value?.reload();
     emit('refreshRequest');
@@ -339,9 +336,26 @@ function downloadWorkersReportDocument() {
     });
 }
 
+function downloadPunchCardDocument() {
+  isLoading.value = true;
+  downloadAgencyReport(`/api/agency/recruiting/requests/${serverParams.value.requestId}/TimeSheets/File`, { ...serverParams.value })
+    .then((response) => downloadFile(response, `Timesheet_${new Date().toLocaleDateString()}`))
+    .catch((err) => showAlertError(err))
+    .finally(() => isLoading.value = false);
+}
+
 function onWorkerBooked() {
   modalManageWorkers.value = false;
   grid.value?.reload();
   emit('refreshRequest');
 }
 </script>
+
+<style scoped>
+.worker-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.3;
+}
+</style>

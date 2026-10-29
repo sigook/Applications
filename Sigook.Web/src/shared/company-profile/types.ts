@@ -46,6 +46,25 @@ export interface CompanyProfileJobPositionRate {
   displayShift?: string;
 }
 
+export interface JobPositionModel {
+  id?: string;
+  companyProfileId?: string;
+  jobPosition?: string;
+  rate?: number;
+  workerRate?: number;
+  workerRateMin?: number | null;
+  workerRateMax?: number | null;
+  overtimeStartsAfter?: number | null;
+  description?: string;
+  shift?: RequestShiftModel | null;
+  createdAt?: string | null;
+  createdBy?: string;
+  displayShift?: string;
+}
+
+// POST /api/company/profile/jobpositions · POST /api/agency/recruiting/clients/{profileId}/jobpositions/WithoutRates
+export type CreateJobPositionModel = Pick<JobPositionModel, 'jobPosition' | 'description' | 'shift'>;
+
 export interface CompanyProfileContactPerson {
   id: string;
   companyProfileId: string;

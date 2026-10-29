@@ -17,6 +17,10 @@
         <b-table-column label="Total" field="totalNet" v-slot="props">
           <span>{{ currency(props.row.totalNet) }}</span>
         </b-table-column>
+        <b-table-column field="actions" v-slot="props">
+          <b-button type="is-ghost" icon-right="download" aria-label="Download invoice"
+            @click="onDownloadInvoicePdf(props.row)" />
+        </b-table-column>
       </SigookGrid>
     </div>
   </div>
@@ -26,9 +30,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { datetime, date, currency } from '@/shared/format';
-import { getCompanyInvoice } from '@/modules/company/invoices/api';
+import { getCompanyInvoice, downloadCompanyInvoicePdf } from '@/modules/company/invoices/api';
+import { downloadPDF, openFileUrl } from '@/shared/utils/downloadFile';
+import { showAlertError } from '@/shared/utils/toast';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
-import type { CompanyInvoiceFilter } from '@/modules/company/invoices/types';
+import type { CompanyInvoiceFilter, CompanyInvoiceListItem } from '@/modules/company/invoices/types';
 
 const isLoading = ref(true);
 const serverParams = ref<CompanyInvoiceFilter>({
@@ -37,4 +43,16 @@ const serverParams = ref<CompanyInvoiceFilter>({
   pageIndex: 1,
   pageSize: 30,
 });
+
+function onDownloadInvoicePdf(invoice: CompanyInvoiceListItem) {
+  if (invoice.pdfUrl) {
+    openFileUrl(invoice.pdfUrl);
+    return;
+  }
+  isLoading.value = true;
+  downloadCompanyInvoicePdf(invoice.id)
+    .then((response) => downloadPDF(response, invoice.invoiceNumber))
+    .catch((error) => showAlertError(error))
+    .finally(() => { isLoading.value = false; });
+}
 </script>

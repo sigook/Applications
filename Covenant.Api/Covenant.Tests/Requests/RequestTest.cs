@@ -30,6 +30,113 @@ public class RequestTest
     }
 
     [Fact]
+    public void SubmitForReviewMovesNewRequestToPendingReview()
+    {
+        var request = FakeData.FakeRequest();
+
+        Result result = request.SubmitForReview();
+
+        Assert.True(result);
+        Assert.Equal(RequestStatus.PendingReview, request.Status);
+        Assert.True(request.IsPendingReview);
+        Assert.False(request.IsAvailableToApply);
+    }
+
+    [Fact]
+    public void SubmitForReviewFailsWhenRequestIsNotOpen()
+    {
+        var now = new DateTime(2019, 01, 01);
+        var request = FakeData.FakeRequest();
+        request.Cancel(now);
+
+        Assert.False(request.SubmitForReview());
+        Assert.Equal(RequestStatus.Cancelled, request.Status);
+    }
+
+    [Fact]
+    public void ApproveFailsWhileRatesArePending()
+    {
+        var request = FakeData.FakeRequest(workerRate: 0, agencyRate: 0);
+        request.SubmitForReview();
+
+        Result result = request.Approve(new DateTime(2019, 01, 01));
+
+        Assert.False(result);
+        Assert.Equal(RequestStatus.PendingReview, request.Status);
+    }
+
+    [Fact]
+    public void AddWorkerFailsWhileRatesArePending()
+    {
+        var request = FakeData.FakeRequest(workerRate: null, agencyRate: null);
+
+        var result = request.AddWorker(Guid.NewGuid(), new DateTime(2019, 01, 01));
+
+        Assert.False(result);
+        Assert.False(request.IsAvailableToApply);
+        Assert.Empty(request.Workers);
+    }
+
+    [Fact]
+    public void WorkerSalaryCountsAsRates()
+    {
+        var request = FakeData.FakeRequest(workerRate: null, agencyRate: null);
+        request.UpdateRates(50000M, null, null, null);
+
+        Assert.True(request.HasRates);
+        Assert.True(request.IsAvailableToApply);
+    }
+
+    [Fact]
+    public void ApproveMovesPendingReviewToOpen()
+    {
+        var now = new DateTime(2019, 01, 01);
+        var request = FakeData.FakeRequest();
+        request.SubmitForReview();
+
+        Result result = request.Approve(now);
+
+        Assert.True(result);
+        Assert.Equal(RequestStatus.Open, request.Status);
+        Assert.Equal(now, request.UpdatedAt);
+    }
+
+    [Fact]
+    public void ApproveFailsWhenRequestIsNotPendingReview()
+    {
+        var request = FakeData.FakeRequest();
+
+        Assert.False(request.Approve(new DateTime(2019, 01, 01)));
+        Assert.Equal(RequestStatus.Open, request.Status);
+    }
+
+    [Fact]
+    public void PendingReviewRequestCanBeCancelled()
+    {
+        var now = new DateTime(2019, 01, 01);
+        var request = FakeData.FakeRequest();
+        request.SubmitForReview();
+
+        Result result = request.Cancel(now);
+
+        Assert.True(result);
+        Assert.Equal(RequestStatus.Cancelled, request.Status);
+    }
+
+    [Fact]
+    public void PendingReviewRequestRejectsWorkersAndInvitationsAndReopen()
+    {
+        var now = new DateTime(2019, 01, 01);
+        var request = FakeData.FakeRequest();
+        request.SubmitForReview();
+
+        Assert.False(request.AddWorker(Guid.NewGuid(), now));
+        Assert.False(request.CanInvitationBeSendIt(now));
+        Assert.False(request.Open(now));
+        Assert.Equal(RequestStatus.PendingReview, request.Status);
+    }
+
+    [Fact]
     public void AddWorker()
     {
         var startWorking = new DateTime(2019, 01, 01);
@@ -168,6 +275,122 @@ public class RequestTest
         result = request.Cancel(new DateTime(2019, 01, 01));
         Assert.True(result);
         Assert.Equal(RequestStatus.Cancelled, request.Status);
+    }
+
+    [Fact]
+    public void FinishWorkerReleasesTheSpotAndKeepsTheAssignmentAsFinished()
+    {
+        var request = FakeData.FakeRequest(workersQuantity: 1);
+        var worker = Guid.NewGuid();
+        request.AddWorker(worker, new DateTime(2019, 01, 01));
+        Assert.Equal(RequestStatus.Filled, request.Status);
+
+        Result result = request.FinishWorker(worker, new DateTime(2019, 02, 15), WorkerRequestFinishReason.ContractCompleted, "Season ended", "recruiter@mail.com");
+
+        Assert.True(result);
+        Assert.Equal(0, request.WorkersQuantityWorking);
+        Assert.Equal(RequestStatus.Open, request.Status);
+        WorkerRequest workerRequest = request.Workers.Single();
+        Assert.Equal(WorkerRequestStatus.Finished, workerRequest.WorkerRequestStatus);
+        Assert.Equal(new DateTime(2019, 02, 15), workerRequest.FinishedAt);
+        Assert.Equal(WorkerRequestFinishReason.ContractCompleted, workerRequest.FinishReason);
+        Assert.Equal("Season ended", workerRequest.FinishComments);
+        Assert.Equal("recruiter@mail.com", workerRequest.FinishedBy);
+        Assert.Equal(new DateTime(2019, 03, 15), workerRequest.LimitDateToAddTimeSheet);
+    }
+
+    [Fact]
+    public void FinishWorkerFailsWhenWorkerIsNotBooked()
+    {
+        var request = FakeData.FakeRequest();
+        var worker = Guid.NewGuid();
+        request.AddWorker(worker, new DateTime(2019, 01, 01));
+        request.RejectWorker(worker, "No-show");
+
+        Result result = request.FinishWorker(worker, new DateTime(2019, 02, 01), WorkerRequestFinishReason.ContractCompleted);
+
+        Assert.False(result);
+        Assert.Equal(WorkerRequestStatus.Rejected, request.Workers.Single().WorkerRequestStatus);
+    }
+
+    [Fact]
+    public void FinishWorkerFailsWhenLastDayIsBeforeStartWorking()
+    {
+        var request = FakeData.FakeRequest();
+        var worker = Guid.NewGuid();
+        request.AddWorker(worker, new DateTime(2019, 01, 10));
+
+        Result result = request.FinishWorker(worker, new DateTime(2019, 01, 09), WorkerRequestFinishReason.ContractCompleted);
+
+        Assert.False(result);
+        Assert.Equal(WorkerRequestStatus.Booked, request.Workers.Single().WorkerRequestStatus);
+    }
+
+    [Fact]
+    public void RejectWorkerFailsWhenWorkerAlreadyFinished()
+    {
+        var request = FakeData.FakeRequest();
+        var worker = Guid.NewGuid();
+        request.AddWorker(worker, new DateTime(2019, 01, 01));
+        request.FinishWorker(worker, new DateTime(2019, 02, 01), WorkerRequestFinishReason.WorkerResigned);
+
+        Result result = request.RejectWorker(worker, "Late");
+
+        Assert.False(result);
+        Assert.Equal(WorkerRequestStatus.Finished, request.Workers.Single().WorkerRequestStatus);
+    }
+
+    [Fact]
+    public void FinishedWorkerCanBeBookedAgain()
+    {
+        var request = FakeData.FakeRequest();
+        var worker = Guid.NewGuid();
+        request.AddWorker(worker, new DateTime(2019, 01, 01));
+        request.FinishWorker(worker, new DateTime(2019, 02, 01), WorkerRequestFinishReason.ContractCompleted, "Done");
+
+        Result result = request.AddWorker(worker, new DateTime(2019, 03, 01));
+
+        Assert.True(result);
+        WorkerRequest workerRequest = request.Workers.Single();
+        Assert.Equal(WorkerRequestStatus.Booked, workerRequest.WorkerRequestStatus);
+        Assert.Null(workerRequest.FinishedAt);
+        Assert.Null(workerRequest.FinishReason);
+        Assert.Null(workerRequest.FinishComments);
+        Assert.Null(workerRequest.FinishedBy);
+        Assert.Equal(1, request.WorkersQuantityWorking);
+    }
+
+    [Fact]
+    public void FinishAllWorkersEndsOnlyBookedWorkersAndAllowsCancelWithoutRejectingThem()
+    {
+        var request = FakeData.FakeRequest(workersQuantity: 3);
+        var booked1 = Guid.NewGuid();
+        var booked2 = Guid.NewGuid();
+        var rejected = Guid.NewGuid();
+        request.AddWorker(booked1, new DateTime(2019, 01, 01));
+        request.AddWorker(booked2, new DateTime(2019, 01, 01));
+        request.AddWorker(rejected, new DateTime(2019, 01, 01));
+        request.RejectWorker(rejected, "No-show");
+
+        Result<IReadOnlyList<Guid>> result = request.FinishAllWorkers(new DateTime(2019, 02, 01), WorkerRequestFinishReason.ClientReducedStaff);
+
+        Assert.True(result);
+        Assert.Equal([booked1, booked2], result.Value.OrderBy(i => i == booked2));
+        Assert.Equal(0, request.WorkersQuantityWorking);
+        Assert.Equal(WorkerRequestStatus.Rejected, request.Workers.Single(w => w.WorkerProfileId == rejected).WorkerRequestStatus);
+
+        Assert.True(request.Cancel(new DateTime(2019, 02, 02)));
+        Assert.All(request.Workers.Where(w => w.WorkerProfileId != rejected), w => Assert.Equal(WorkerRequestStatus.Finished, w.WorkerRequestStatus));
+    }
+
+    [Fact]
+    public void FinishAllWorkersFailsWithoutBookedWorkers()
+    {
+        var request = FakeData.FakeRequest();
+
+        Result<IReadOnlyList<Guid>> result = request.FinishAllWorkers(new DateTime(2019, 02, 01), WorkerRequestFinishReason.ContractCompleted);
+
+        Assert.False(result);
     }
 
     [Fact]

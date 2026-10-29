@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/features/auth/data/models/auth_token_model.dart';
 import 'package:sigook_app_flutter/features/auth/domain/entities/auth_token.dart';
+import 'package:sigook_app_flutter/features/auth/domain/entities/user_info.dart';
 import 'package:sigook_app_flutter/core/usecases/usecase.dart';
 import 'package:sigook_app_flutter/features/auth/domain/usecases/logout.dart';
 import 'package:sigook_app_flutter/features/auth/domain/usecases/resend_confirmation_link.dart';
@@ -591,6 +592,44 @@ void main() {
       expect(state.isAuthenticated, false);
       expect(state.token, isNull);
       expect(state.isLoading, false);
+    });
+  });
+
+  group('sessionUserIdProvider', () {
+    test('follows the signed-in user across logout and a new sign-in', () async {
+      final container = buildTestContainer();
+      final notifier = await restoredNotifier(container);
+      final seen = <String?>[];
+      container.listen(
+        sessionUserIdProvider,
+        (_, next) => seen.add(next),
+        fireImmediately: true,
+      );
+      when(
+        () => mockAuthRepo.getUserRole(any()),
+      ).thenAnswer((_) async => const Right('worker'));
+      when(
+        () => mockLogout.call(any()),
+      ).thenAnswer((_) async => const Right(null));
+
+      when(() => mockSignIn.call(any())).thenAnswer(
+        (_) async => const Right(
+          AuthToken(accessToken: 'a', userInfo: UserInfo(sub: 'user-a')),
+        ),
+      );
+      await notifier.signIn(email: 'a@example.com', password: 'password123');
+      await flushMicrotasks();
+      await notifier.logout();
+      await flushMicrotasks();
+      when(() => mockSignIn.call(any())).thenAnswer(
+        (_) async => const Right(
+          AuthToken(accessToken: 'b', userInfo: UserInfo(sub: 'user-b')),
+        ),
+      );
+      await notifier.signIn(email: 'b@example.com', password: 'password123');
+      await flushMicrotasks();
+
+      expect(seen, [null, 'user-a', null, 'user-b']);
     });
   });
 

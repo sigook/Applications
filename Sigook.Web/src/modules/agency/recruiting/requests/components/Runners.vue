@@ -6,7 +6,7 @@
     </b-message>
 
     <RunnersGrid ref="grid" :fetch="loadRunners" v-model:params="serverParams" :sort-map="sortMap" :can-edit="canEdit"
-      @update:loading="(value) => isLoading = value">
+      @update:loading="(value) => isLoading = value" @updated="emit('changed')">
       <template v-if="canEdit" #actions>
         <b-button icon-left="plus" @click="showCreate = true">Add Runner</b-button>
       </template>
@@ -31,6 +31,7 @@ import CreateRunner from '@/modules/agency/recruiting/requests/runners/CreateRun
 import RunnersGrid from '@/modules/agency/recruiting/runners/components/RunnersGrid.vue';
 
 const props = defineProps<{ request?: AgencyRequestDetail | null }>();
+const emit = defineEmits<{ (e: 'changed'): void }>();
 
 const route = useRoute();
 const requestId = route.params.id as string;
@@ -65,6 +66,7 @@ function onCreate(model: CreateRunnerModel) {
     .then(() => {
       showCreate.value = false;
       grid.value?.reload();
+      emit('changed');
     })
     .catch((error) => showAlertError(error))
     .finally(() => {

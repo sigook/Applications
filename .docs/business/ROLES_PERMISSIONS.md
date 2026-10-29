@@ -101,6 +101,7 @@ representative it already had.
 |------|--------|-----|
 | Weekly Board | `Recruiting` | Recruiting planning tool |
 | Unscoped order / client lists | `Recruiting` | Would defeat the sales scoping |
+| Approve company requests (Pending Review) | `Recruiting` | `PUT api/agency/recruiting/requests/{id}/Approve`; the notification bell lists pending requests only for admin/recruiting |
 | Runners | `Recruiting` | Recruiting pipeline (`RunnersController.cs:17`) |
 | Invoices, pay stubs, reports | `Admin` | Financial data |
 | Create / edit / delete agency users | `Admin` | User management |

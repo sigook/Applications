@@ -14,13 +14,11 @@ import 'profile_warning_banner.dart';
 
 class JobDetailsTab extends ConsumerStatefulWidget {
   final JobDetails jobDetails;
-  final bool isFromHistory;
   final VoidCallback? onApplySuccess;
 
   const JobDetailsTab({
     super.key,
     required this.jobDetails,
-    this.isFromHistory = false,
     this.onApplySuccess,
   });
 
@@ -69,7 +67,7 @@ class _JobDetailsTabState extends ConsumerState<JobDetailsTab> {
             ],
           ),
         ),
-        if (jobDetails.shouldShowApplyButton && !widget.isFromHistory)
+        if (jobDetails.shouldShowApplyButton)
           Positioned(
             bottom: 16,
             left: 16,

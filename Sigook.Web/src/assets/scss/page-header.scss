@@ -146,8 +146,7 @@ $page-header-height: 52px;
     display: none;
   }
 
-  .mobile-topbar-title .page-header-back {
-    width: 20px;
-    height: 20px;
+  .page-header-back {
+    display: none;
   }
 }

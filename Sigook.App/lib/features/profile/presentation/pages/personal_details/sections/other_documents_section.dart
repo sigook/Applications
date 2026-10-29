@@ -6,7 +6,6 @@ import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/navigation/document_preview_page.dart';
-import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../other_documents/presentation/viewmodels/other_documents_viewmodel.dart';
 import '../../../../other_documents/presentation/widgets/other_document_card.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
@@ -63,17 +62,8 @@ class _OtherDocumentsSectionCardState
     }
   }
 
-  void _openPage(String url, String title, {String? token}) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => DocumentPreviewPage(url: url, title: title, token: token),
-      ),
-    );
-  }
-
-  void _previewDocument(String url, String title) {
-    _openPage(url, title, token: ref.read(authViewModelProvider).token?.accessToken);
-  }
+  void _previewDocument(String url, String title) =>
+      DocumentPreviewPage.open(context, url: url, title: title);
 
   Future<void> _pickFile() async {
     final result = await ref
@@ -104,7 +94,7 @@ class _OtherDocumentsSectionCardState
 
   Widget _trainingLink(String label, String url) {
     return TextButton.icon(
-      onPressed: () => _openPage(url, label),
+      onPressed: () => _previewDocument(url, label),
       icon: const Icon(Icons.open_in_new, size: 16),
       label: Text(label),
       style: TextButton.styleFrom(

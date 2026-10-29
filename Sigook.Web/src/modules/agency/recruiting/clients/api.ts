@@ -2,10 +2,10 @@ import { api } from '@/app/security/apiService';
 import { buildMultipartFormData } from '@/shared/utils/multipart';
 import { generateFileName } from '@/shared/utils/fileNaming';
 import type { CatalogItem, PaginatedList } from '@/shared/types/common';
-import type { AgencyCompanyFilter, AgencyCompanyListItem, AgencyCompanyContactPerson, AgencyCompanyLocationModel, AgencyCompanyJobPosition, AgencyCompanyJobPositionFilter, VaccinationRequiredModel, InvoiceNotesModel, InvoiceRecipientModel, PetitionJobPositionPayload, UpdateIsAsapRequestsPayload, CompanyDeletionCheck } from '@/modules/agency/recruiting/clients/types';
+import type { AgencyCompanyFilter, AgencyCompanyListItem, AgencyCompanyContactPerson, AgencyCompanyLocationModel, AgencyCompanyJobPosition, AgencyCompanyJobPositionFilter, VaccinationRequiredModel, InvoiceNotesModel, InvoiceRecipientModel, UpdateIsAsapRequestsPayload, CompanyDeletionCheck } from '@/modules/agency/recruiting/clients/types';
 import type { CovenantFileModel } from '@/shared/types/common';
 import type { AgencyCompanyProfileDetail, CompanyProfileDocumentModel, CompanyProfileListItem, CompanyProfilePaymentTermsUpdate, CompanyProfileSettingsUpdate } from '@/modules/agency/recruiting/clients/types';
-import type { CompanyProfileDetail, CompanyUserModel, CreateCompanyUserModel } from '@/shared/company-profile/types';
+import type { CompanyProfileDetail, CompanyUserModel, CreateCompanyUserModel, CreateJobPositionModel } from '@/shared/company-profile/types';
 
 const companyProfilesUrl = '/api/agency/recruiting/clients';
 
@@ -104,8 +104,12 @@ export function updateAgencyCompanyContactInformation(profileId: string, model: 
   return api.put(`${companyProfilesUrl}/${profileId}/ContactInformation`, model);
 }
 
-export function getAgencyCompanyJobPositions(companyProfileId: string, filter?: AgencyCompanyJobPositionFilter): Promise<AgencyCompanyJobPosition[]> {
-  return api.get<AgencyCompanyJobPosition[]>(`${companyProfilesUrl}/${companyProfileId}/JobPositions`, { params: { ...filter } });
+export function getAgencyCompanyJobPositions(companyProfileId: string, filter: AgencyCompanyJobPositionFilter): Promise<PaginatedList<AgencyCompanyJobPosition>> {
+  return api.get<PaginatedList<AgencyCompanyJobPosition>>(`${companyProfilesUrl}/${companyProfileId}/JobPositions`, { params: { ...filter } });
+}
+
+export function getAgencyCompanyJobPositionsDropdown(companyProfileId: string): Promise<AgencyCompanyJobPosition[]> {
+  return api.get<AgencyCompanyJobPosition[]>(`${companyProfilesUrl}/${companyProfileId}/JobPositions/Dropdown`);
 }
 
 export function getAgencyCompanyJobPositionById(profileId: string, id: string): Promise<AgencyCompanyJobPosition> {
@@ -124,8 +128,8 @@ export function deleteAgencyCompanyJobPosition(profileId: string, id: string): P
   return api.del(`${companyProfilesUrl}/${profileId}/JobPositions/${id}`);
 }
 
-export function petitionAgencyCompanyJobPosition(profileId: string, model: PetitionJobPositionPayload): Promise<void> {
-  return api.post(`${companyProfilesUrl}/${profileId}/JobPositions/Petition`, model);
+export function createAgencyCompanyJobPositionWithoutRates(profileId: string, model: CreateJobPositionModel): Promise<{ id: string }> {
+  return api.post<{ id: string }>(`${companyProfilesUrl}/${profileId}/JobPositions/WithoutRates`, model);
 }
 
 export function getAgencyCompanyDocument(

@@ -29,7 +29,7 @@ class NewDocumentSlot extends StatelessWidget {
   });
 
   String get _buttonLabel => isReplacement
-      ? 'Replace with another document type'
+      ? 'Change document type'
       : docType == 'id1File'
       ? 'Add identification 1'
       : 'Add identification 2 (optional)';
@@ -107,11 +107,31 @@ class NewDocumentSlot extends StatelessWidget {
       );
     }
 
+    if (isReplacement) {
+      return Padding(
+        padding: const EdgeInsets.only(left: 32, bottom: 4),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            onPressed: () => _showModal(context),
+            icon: const Icon(Icons.badge_outlined, size: 18),
+            label: Text(_buttonLabel),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.primaryBlue,
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: OutlinedButton.icon(
         onPressed: () => _showModal(context),
-        icon: Icon(isReplacement ? Icons.swap_horiz : Icons.add, size: 18),
+        icon: const Icon(Icons.add, size: 18),
         label: Text(_buttonLabel),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppTheme.primaryBlue,

@@ -19,8 +19,6 @@ namespace Covenant.Common.Models.Requests
         public GetWorkersRequestSortBy SortBy { get; set; }
         public int? NumberId { get; set; }
         public string Name { get; set; }
-        public string Phone { get; set; }
-        public string SocialInsurance { get; set; }
         public DateTime? StartWorkingFrom { get; set; }
         public DateTime? StartWorkingTo { get; set; }
         public string CreatedBy { get; set; }

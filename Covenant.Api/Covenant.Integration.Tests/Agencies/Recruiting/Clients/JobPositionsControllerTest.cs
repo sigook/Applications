@@ -2,6 +2,7 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Recruiting.Clients;
 using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities.Companies;
+using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Companies.Agencies;
@@ -36,6 +37,10 @@ public class JobPositionsControllerTest
     private readonly CompanyProfileJobPositionRate FakePosition;
     private readonly CompanyProfileJobPositionRate FakeUpdatePosition;
     private readonly CompanyProfileJobPositionRate FakeDeletePosition;
+    private readonly CompanyProfileJobPositionRate FakePositionWithoutRates;
+    private readonly CompanyProfileJobPositionRate FakeDeletedPosition;
+    private readonly Request FakeRequestPendingRates;
+    private readonly Request FakeRequestWithSalary;
 
     public JobPositionsControllerTest()
     {
@@ -57,7 +62,6 @@ public class JobPositionsControllerTest
                     services.AddSingleton<IAgencyService, AgencyService>();
                     services.AddSingleton<AgencyIdFilter>();
                 });
-                builder.UseSetting("EmailsPetitionNewJobPosition", "e@sigook.com,b@siggok.com");
             });
         FakeAgency = new Agency() { User = FakeData.FakeUser() };
         FakeCompanyProfile = new CompanyProfile(new User(CvnEmail.Create("c@mail.com").Value), FakeAgency,
@@ -65,6 +69,14 @@ public class JobPositionsControllerTest
         FakePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "Forklift List", 2, 1, default, "tst@mail.com").Value;
         FakeUpdatePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "General Labour", 2, 1, default, "tst@mail.com").Value;
         FakeDeletePosition = CompanyProfileJobPositionRate.Create(FakeCompanyProfile.Id, "Assistance", 2, 1, default, "tst@mail.com").Value;
+        FakePositionWithoutRates = CompanyProfileJobPositionRate.CompanyCreate(FakeCompanyProfile.Id, "Assembler").Value;
+        FakeDeletedPosition = CompanyProfileJobPositionRate.CompanyCreate(FakeCompanyProfile.Id, "Welder").Value;
+        FakeDeletedPosition.Delete("tst@mail.com");
+        FakeRequestPendingRates = FakeData.FakeRequest(FakeAgency.Id, FakeCompanyProfile.Id, FakePositionWithoutRates.Id,
+            workerRate: 0, agencyRate: 0);
+        FakeRequestWithSalary = FakeData.FakeRequest(FakeAgency.Id, FakeCompanyProfile.Id, FakePositionWithoutRates.Id,
+            workerRate: null, agencyRate: null);
+        FakeRequestWithSalary.UpdateRates(50000M, null, null, FakePositionWithoutRates.Id);
         _client = _factory.CreateClient();
         Seed(_factory.Services.GetService<CovenantContext>());
     }
@@ -77,7 +89,7 @@ public class JobPositionsControllerTest
     {
         var model = new CompanyProfileJobPositionRateModel
         {
-            JobPosition = "General Labour",
+            JobPosition = "Picker",
             Rate = 0.5M,
             WorkerRate = 0.4M,
             Description = "Night Position",
@@ -188,10 +200,10 @@ public class JobPositionsControllerTest
     {
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}");
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadFromJsonAsync<IEnumerable<CompanyProfileJobPositionRateModel>>();
-        Assert.NotEmpty(list);
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<CompanyProfileJobPositionRateModel>>();
+        Assert.NotEmpty(list.Items);
         var entity = FakePosition;
-        var model = list.Single(c =>
+        var model = list.Items.Single(c =>
             c.Id == entity.Id &&
             c.Rate == entity.Rate &&
             c.WorkerRate == entity.WorkerRate &&
@@ -202,6 +214,39 @@ public class JobPositionsControllerTest
             c.CreatedBy == entity.CreatedBy &&
             c.DisplayShift == entity.Shift?.DisplayShift);
         Assert.NotNull(model);
+    }
+
+    [Fact]
+    public async Task Get_FiltersByRoleOnServer()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}?role=forklift");
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<CompanyProfileJobPositionRateModel>>();
+        var model = Assert.Single(list.Items);
+        Assert.Equal(FakePosition.Id, model.Id);
+        Assert.Equal(1, list.TotalItems);
+    }
+
+    [Fact]
+    public async Task Get_SortsAndPaginatesOnServer()
+    {
+        HttpResponseMessage response = await _client.GetAsync(
+            $"{RequestUri()}?sortBy={GetJobPositionsSortBy.Role}&isDescending=true&pageSize=1&pageIndex=1");
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<PaginatedList<CompanyProfileJobPositionRateModel>>();
+        var model = Assert.Single(list.Items);
+        Assert.Equal(FakeUpdatePosition.Id, model.Id);
+        Assert.True(list.TotalItems >= 2);
+    }
+
+    [Fact]
+    public async Task GetDropdown()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/Dropdown");
+        response.EnsureSuccessStatusCode();
+        var list = await response.Content.ReadFromJsonAsync<List<CompanyProfileJobPositionRateModel>>();
+        Assert.Contains(list, c => c.Id == FakePosition.Id);
+        Assert.Contains(list, c => c.Id == FakeUpdatePosition.Id);
     }
 
     [Fact]
@@ -231,14 +276,122 @@ public class JobPositionsControllerTest
     }
 
     [Fact]
-    public async Task Petition()
+    public async Task PostWithoutRates()
     {
-        var model = new JobPositionPetitionModel
+        var model = new CreateJobPositionModel
         {
-            JobPosition = "Clerical"
+            JobPosition = "Clerical",
+            Description = "Front desk",
+            Shift = new ShiftModel
+            {
+                Monday = true,
+                MondayStart = TimeSpan.Parse("08:00"),
+                MondayFinish = TimeSpan.Parse("16:00")
+            }
         };
-        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/Petition", model);
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/WithoutRates", model);
         response.EnsureSuccessStatusCode();
+        var detail = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var entity = await context.CompanyProfileJobPositionRates.Include(c => c.Shift).SingleAsync(c => c.Id == detail.Id);
+        Assert.Equal(model.JobPosition, entity.JobPosition);
+        Assert.Equal(model.Description, entity.Description);
+        Assert.Equal(FakeCompanyProfile.Id, entity.CompanyProfileId);
+        Assert.Equal(0, entity.Rate);
+        Assert.Equal(0, entity.WorkerRate);
+        Assert.NotNull(entity.CreatedBy);
+        Assert.True(entity.Shift.Monday);
+        Assert.Equal(TimeSpan.Parse("08:00"), entity.Shift.MondayStart);
+    }
+
+    [Fact]
+    public async Task PostWithoutRatesRequiresName()
+    {
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/WithoutRates", new CreateJobPositionModel());
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostRejectsSameNameAndRates()
+    {
+        var model = new CompanyProfileJobPositionRateModel { JobPosition = " forklift LIST ", Rate = 2M, WorkerRate = 1M };
+        HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        Assert.Equal(1, await context.CompanyProfileJobPositionRates.CountAsync(c =>
+            c.CompanyProfileId == FakeCompanyProfile.Id && c.JobPosition.ToLower().Trim() == "forklift list"));
+    }
+
+    [Fact]
+    public async Task PostAllowsSameNameWithDifferentRates()
+    {
+        var model = new CompanyProfileJobPositionRateModel { JobPosition = FakePosition.JobPosition, Rate = 3M, WorkerRate = 1M };
+        HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task PostWithoutRatesAllowsNameOfRoleWithRates()
+    {
+        var model = new CreateJobPositionModel { JobPosition = FakePosition.JobPosition };
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/WithoutRates", model);
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task PostWithoutRatesRejectsDuplicateName()
+    {
+        var model = new CreateJobPositionModel { JobPosition = FakePositionWithoutRates.JobPosition };
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/WithoutRates", model);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostAllowsNameOfDeletedRole()
+    {
+        var model = new CreateJobPositionModel { JobPosition = FakeDeletedPosition.JobPosition };
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{RequestUri()}/WithoutRates", model);
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task PutRejectsNameAndRatesOfAnotherRole()
+    {
+        var model = new CompanyProfileJobPositionRateModel { JobPosition = FakePosition.JobPosition, Rate = 2M, WorkerRate = 1M };
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{FakeDeletePosition.Id}", model);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var entity = await context.CompanyProfileJobPositionRates.AsNoTracking().SingleAsync(c => c.Id == FakeDeletePosition.Id);
+        Assert.Equal("Assistance", entity.JobPosition);
+    }
+
+    [Fact]
+    public async Task PutKeepsOwnName()
+    {
+        var model = new CompanyProfileJobPositionRateModel { JobPosition = FakePosition.JobPosition, Rate = 3M, WorkerRate = 2M };
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{FakePosition.Id}", model);
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task PutRatesPropagatesToRequestsPendingRates()
+    {
+        var model = new CompanyProfileJobPositionRateModel
+        {
+            JobPosition = FakePositionWithoutRates.JobPosition,
+            Rate = 25M,
+            WorkerRate = 18M
+        };
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{FakePositionWithoutRates.Id}", model);
+        response.EnsureSuccessStatusCode();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var pending = await context.Requests.AsNoTracking().SingleAsync(r => r.Id == FakeRequestPendingRates.Id);
+        Assert.Equal(25M, pending.AgencyRate);
+        Assert.Equal(18M, pending.WorkerRate);
+        Assert.True(pending.HasRates);
+        var salary = await context.Requests.AsNoTracking().SingleAsync(r => r.Id == FakeRequestWithSalary.Id);
+        Assert.Equal(50000M, salary.WorkerSalary);
+        Assert.Null(salary.AgencyRate);
     }
 
     private void Seed(CovenantContext context)
@@ -250,7 +403,10 @@ public class JobPositionsControllerTest
         FakeCompanyProfile.JobPositionRates.Add(FakePosition);
         FakeCompanyProfile.JobPositionRates.Add(FakeUpdatePosition);
         FakeCompanyProfile.JobPositionRates.Add(FakeDeletePosition);
+        FakeCompanyProfile.JobPositionRates.Add(FakePositionWithoutRates);
+        FakeCompanyProfile.JobPositionRates.Add(FakeDeletedPosition);
         context.CompanyProfiles.Add(FakeCompanyProfile);
+        context.Requests.AddRange(FakeRequestPendingRates, FakeRequestWithSalary);
         context.SaveChanges();
     }
 }

@@ -127,7 +127,6 @@ const props = defineProps<{
 const emptyStatus = (): PunchStatus => ({ clockType: ClockType.None, dayHours: 0, weekHours: 0 });
 
 const emit = defineEmits<{
-  (e: 'refreshTimeSheet'): void;
   (e: 'refreshRequest'): void;
 }>();
 
@@ -337,7 +336,6 @@ function registerHour() {
   isLoading.value = true;
   return workerRegisterTime(props.requestId, position.value.coords.latitude, position.value.coords.longitude)
     .then(async () => {
-      emit('refreshTimeSheet');
       emit('refreshRequest');
       await refreshClockType();
       isLoading.value = false;

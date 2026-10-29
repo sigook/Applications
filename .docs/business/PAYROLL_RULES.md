@@ -230,6 +230,13 @@ Build PayStub entity with all children → Save
 
 ---
 
+## Pay Stub PDF
+
+- Rendered by `GeneratePayStubPdf` and stored in the paystubs blob container by `PayStubService.GetPayStubPdf`; `PayStub.PdfGeneratedAt` is set the first time the PDF is stored or found in blob storage.
+- Once it is set, the agency list and the worker list (`api/worker/paystubs`, plus the Activity summary's last pay stub) return `PdfUrl`, a read-only SAS URL valid for 1 hour (file name `PayStub {PayStubNumber}.pdf`), and Sigook.Web opens it directly. Without it, Download renders, stores and marks the PDF. Sigook.App still downloads through `GET api/worker/paystubs/{id}/pdf`.
+- Regenerate: only the agency can rebuild a stored PDF ("Regenerate PDF" → `POST api/agency/accounting/paystubs/{id}/pdf/regenerate`, `PayStubService.RegeneratePayStubPdf`). It deletes the blob and renders again from current data. Workers only download what is stored.
+- YTD block: `IPayStubRepository.GetYtdSummary(workerProfileId, endDate, numberId)` adds the worker's pay stubs of the same year whose `DateWorkEnd` is before this one's, plus those ending the same day with `NumberId` ≤ this one's. A regenerated old pay stub therefore keeps the YTD it had when issued. The worker portal's YTD card (`GetYtdSummaryForWorker`) is different: it adds the whole year.
+
 ## Tax Table Maintenance
 
 CPP and tax brackets are **database rows** in two consolidated tables (`CppDeduction` and `TaxDeduction` entities in `Covenant.Common/Entities/Accounting/Deductions/`), keyed by year plus a `PayPeriod` discriminator (`Weekly`, `BiWeekly`, `SemiMonthly`, `Monthly`); `TaxDeduction` adds a `TaxType` discriminator (`Federal`, `Provincial`) — not code constants.

@@ -46,15 +46,15 @@
           <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
         </template>
         <template v-slot="props">
-          <div class="request-id-cell">
+          <div>
+            <div class="request-id">
+              <router-link :to="{ path: requestDetailBase + '/' + props.row.id }">{{ props.row.numberId }}</router-link>
+              <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
+            </div>
             <div v-if="props.row.isAsap || props.row.workerSalary" class="request-flags">
               <span v-if="props.row.isAsap" class="request-flag request-flag--asap">Asap</span>
               <span v-if="props.row.workerSalary" class="request-flag request-flag--dh">DH</span>
             </div>
-            <router-link :to="{ path: requestDetailBase + '/' + props.row.id }">
-              <p>{{ props.row.numberId }}</p>
-            </router-link>
-            <b-icon v-if="props.row.vaccinationRequired" icon="needle" size="is-small"></b-icon>
           </div>
         </template>
       </b-table-column>
@@ -142,18 +142,10 @@
         </template>
       </b-table-column>
       <b-table-column field="notesCount" label="Notes" :visible="tableConfig.showNotesColumn" v-slot="props">
-        <div @click="onNote(props.row, true)">
-          <b-tag icon="note-text" rounded>
-            <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
-          </b-tag>
-        </div>
-        <div v-if="props.row.showNotes" class="notes-tooltip">
-          <ModalNotes :can-create="false" :user-id="props.row.id" :on-get="getNotes"
-            :on-create="createNote" :on-update="updateNote"
-            :on-delete="deleteNote" @onUpdateNote="(val) => onUpdateNote(props.row, val.size)"
-            @close="onNote(props.row, false)">
-          </ModalNotes>
-        </div>
+        <NotesPopover :can-create="false" :user-id="props.row.id" :notes-count="props.row.notesCount"
+          :on-get="getNotes" :on-create="createNote" :on-update="updateNote" :on-delete="deleteNote"
+          @update:count="(size) => props.row.notesCount = size">
+        </NotesPopover>
       </b-table-column>
       <b-table-column field="jobBoards" label="Job Boards" searchable>
         <template v-slot:searchable>
@@ -235,7 +227,7 @@
 </template>
 <script setup lang="ts">
 import { ref, reactive, computed, watch, useTemplateRef } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAgencyStore } from '@/modules/agency/store';
 import { appGlobals } from '@/app/globals';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
@@ -256,7 +248,9 @@ import {
 } from "@/modules/agency/shared/notes/api";
 import type { NotesFetchPayload, NotesCreatePayload, NotesUpdatePayload, NotesDeletePayload } from '@/modules/agency/shared/notes/types';
 import { RequestStatus, RequestStatusLabels } from "@/shared/constants/enums";
-import ModalNotes from '@/modules/agency/shared/notes/ModalNotes.vue';
+import { requestStatusClass } from '@/shared/request-detail/useRequestStatus';
+import { PENDING_REVIEW_QUERY } from '@/modules/agency/recruiting/requests/types';
+import NotesPopover from '@/modules/agency/shared/notes/NotesPopover.vue';
 import JobBoardsModal from '@/modules/agency/recruiting/requests/components/JobBoardsModal.vue';
 import BulkRecruiterModal from '@/modules/agency/recruiting/requests/components/BulkRecruiterModal.vue';
 import AgencyShift from '@/shared/request-detail/AgencyShiftDetail.vue';
@@ -270,6 +264,7 @@ const emit = defineEmits<{
   (e: 'update:totalItems', value: number): void;
 }>();
 
+const route = useRoute();
 const router = useRouter();
 const agencyStore = useAgencyStore();
 const { isAdmin } = useAdmin();
@@ -310,13 +305,14 @@ const createNote = ({ userId, model }: NotesCreatePayload) => createAgencyReques
 const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRequestNote(userId, id, model);
 const deleteNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id);
 const statuses: CatalogItem<number>[] = [
+  { id: RequestStatus.PendingReview, value: RequestStatusLabels[RequestStatus.PendingReview] },
   { id: 1, value: appGlobals.$statusDisplayOpen },
   { id: 3, value: appGlobals.$statusDisplayFilled },
   { id: 4, value: appGlobals.$statusDisplayCancelled }
 ];
 const statusesSelected = ref<CatalogItem<number>[]>([]);
 const createdAtDatesSelected = ref<Date[]>([]);
-const rows = ref<(AgencyRequestListItem & { showNotes: boolean })[]>([]);
+const rows = ref<AgencyRequestListItem[]>([]);
 const checkedRows = ref<AgencyRequestListItem[]>([]);
 const serverParams = ref<AgencyRequestFilter>({
   onlyMine: false,
@@ -383,31 +379,23 @@ function onCreatedAtCleared() {
   onCreatedAtSelected();
 }
 
-function onNote(row: AgencyRequestListItem & { showNotes: boolean }, status: boolean) {
-  row.showNotes = status;
-}
-
-function onUpdateNote(row: AgencyRequestListItem, size: number) {
-  row.notesCount = size;
-}
-
 function getStatusClass(row: AgencyRequestListItem) {
   if (row.requestStatus === RequestStatus.Open &&
     row.workersQuantityWorking > 0 &&
     row.workersQuantityWorking < row.workersQuantity) {
     return 'status-inprogress';
   }
-  return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
+  return requestStatusClass(row.requestStatus);
 }
 
-function loadRequests(params: AgencyRequestFilter): Promise<PaginatedList<AgencyRequestListItem & { showNotes: boolean }>> {
+function loadRequests(params: AgencyRequestFilter): Promise<PaginatedList<AgencyRequestListItem>> {
   if (!props.companyProfileId && !props.agencyId) {
     agencyStore.updateAgencyRequestFilter(params);
   }
   const fetchRequests = isSalesView.value ? getSalesRequests : getAgencyRequests;
   return fetchRequests(params)
     .then((response) => {
-      rows.value = response.items.map((i) => ({ ...i, showNotes: false, notesCount: i.notesCount || 0 }));
+      rows.value = response.items.map((i) => ({ ...i, notesCount: i.notesCount || 0 }));
       jobBoardsSummary.value = response.jobBoardsSummary || [];
       return { ...response, items: rows.value };
     });
@@ -481,6 +469,16 @@ function onBulkCancelConfirmed({ reasonId, otherMessage }: { reasonId: string; o
     });
 }
 
+function applyPendingReviewFilter() {
+  const { sortBy, isDescending, pageSize } = serverParams.value;
+  for (const key of Object.keys(serverParams.value) as (keyof AgencyRequestFilter)[]) {
+    delete serverParams.value[key];
+  }
+  Object.assign(serverParams.value, { sortBy, isDescending, pageSize, onlyMine: false, statuses: [RequestStatus.PendingReview] });
+  statusesSelected.value = statuses.filter((s) => s.id === RequestStatus.PendingReview);
+  createdAtDatesSelected.value = [];
+}
+
 watch(checkedRows, (selected) => {
   quickActions.isAsap = selected.length > 0 && selected.every((r) => r.isAsap);
 });
@@ -499,6 +497,14 @@ if (!props.companyProfileId && !props.agencyId) {
   } else {
     serverParams.value.onlyMine = !isAdmin.value;
   }
+  if (route.query.status === PENDING_REVIEW_QUERY) {
+    applyPendingReviewFilter();
+  }
+  watch(() => route.query.status, (status) => {
+    if (status !== PENDING_REVIEW_QUERY) return;
+    applyPendingReviewFilter();
+    grid.value?.search();
+  });
 } else {
   serverParams.value.onlyMine = false;
   if (props.companyProfileId) {
@@ -518,19 +524,14 @@ getSourcesForRequests().then((sources) => {
 </script>
 
 <style scoped lang="scss">
-.request-id-cell {
-  position: relative;
-  padding-top: 14px;
+.request-id {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .request-flags {
-  position: absolute;
-  top: -8px;
-  left: -10px;
-  display: flex;
-  flex-direction: row;
-  gap: 2px;
-  z-index: 1;
+  margin-top: 2px;
 }
 
 .quick-action-item {
@@ -539,38 +540,6 @@ getSourcesForRequests().then((sources) => {
   justify-content: space-between;
   gap: 16px;
   min-width: 180px;
-}
-
-.request-flag {
-  position: relative;
-  display: inline-block;
-  padding: 2px 12px 2px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  // convex right-pointing arrow; the tip pokes into the next (solid) flag,
-  // so the seam is always backed by color and never reveals a white sub-pixel gap
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%);
-
-  &--asap {
-    background: #ff9932;
-    color: #1e1e1e;
-    z-index: 2;
-  }
-
-  &--dh {
-    background: #1d4ed8;
-    color: #fff;
-    z-index: 1;
-  }
-
-  // the second flag tucks under the first arrow's tip; its flat left edge keeps
-  // solid colour behind that tip in both expanded and collapsed layouts
-  & + & {
-    margin-left: -6px;
-  }
 }
 
 .job-boards-summary {

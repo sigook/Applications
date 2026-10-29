@@ -26,6 +26,16 @@
       "env": {
         "MOBILEMCP_DISABLE_TELEMETRY": "1"
       }
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--browser",
+        "chrome"
+      ]
     }
   }
 }

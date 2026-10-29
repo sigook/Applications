@@ -14,6 +14,10 @@ export function downloadPayStubPdf(payStubId: string): Promise<Blob> {
   return api.get<Blob>(`/api/agency/accounting/paystubs/${payStubId}/pdf`, { responseType: 'blob' });
 }
 
+export function regeneratePayStubPdf(payStubId: string): Promise<Blob> {
+  return api.post<Blob>(`/api/agency/accounting/paystubs/${payStubId}/pdf/regenerate`, null, { responseType: 'blob' });
+}
+
 export function deleteAgencyPayStub(payStubId: string): Promise<void> {
   return api.del(`/api/agency/accounting/paystubs/${payStubId}`);
 }

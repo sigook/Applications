@@ -7,7 +7,6 @@ import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/inputs/date_picker_field.dart';
 import '../../../../../../core/widgets/navigation/document_preview_page.dart';
-import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../licenses/presentation/viewmodels/licenses_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../licenses/presentation/widgets/license_card.dart';
@@ -66,15 +65,8 @@ class _LicensesSectionCardState extends ConsumerState<LicensesSectionCard> {
     }
   }
 
-  void _previewDocument(String url, String title) {
-    final token = ref.read(authViewModelProvider).token?.accessToken;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            DocumentPreviewPage(url: url, title: title, token: token),
-      ),
-    );
-  }
+  void _previewDocument(String url, String title) =>
+      DocumentPreviewPage.open(context, url: url, title: title);
 
   Future<void> _pickFile() async {
     final result = await ref

@@ -85,7 +85,9 @@ public class RequestService : IRequestService
         this.logger = logger;
     }
 
-    public async Task<Result<Guid>> CreateRequest(RequestCreateModel model)
+    public Task<Result<Guid>> CreateRequest(RequestCreateModel model) => CreateRequest(model, submitForReview: false);
+
+    private async Task<Result<Guid>> CreateRequest(RequestCreateModel model, bool submitForReview)
     {
         if (model.AgencyId == Guid.Empty)
             model.AgencyId = currentUserService.GetAgencyId();
@@ -94,6 +96,11 @@ public class RequestService : IRequestService
         var rRequest = await MapRequest(model);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;
+        if (submitForReview)
+        {
+            var rSubmit = request.SubmitForReview();
+            if (!rSubmit) return Result.Fail<Guid>(rSubmit.Errors);
+        }
         await requestRepository.Create(request);
         if (model.SalesRepresentativeId.HasValue)
         {
@@ -153,12 +160,22 @@ public class RequestService : IRequestService
         }
         model.AgencyId = companyProfile.AgencyId;
         model.CompanyProfileId = companyProfile.Id;
-        var requestId = await CreateRequest(model);
+        model.BillingTitle = model.JobTitle;
+        model.JobCosting = null;
+        model.InternalRequirements = null;
+        model.SalesRepresentativeId = null;
+        model.ComplianceItems = null;
+        model.UsesRunners = true;
+        model.PunchCardOptionEnabled = true;
+        if (currentUserService.IsCompanyUser())
+            model.CompanyUserIds = [currentUserService.GetUserId()];
+        var requestId = await CreateRequest(model, submitForReview: true);
+        if (!requestId) return requestId;
         var data = await notificationDataRepository.GetAgencyData(requestId.Value, NotificationType.NewRequest.Id);
         if (data != null && data.EmailNotification)
         {
             var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnNewRequest/AgencyTemplate.cshtml", data);
-            await emailService.SendEmail(new EmailParams(data.AgencyEmail, $"New Request {data.JobTitle}", message));
+            await emailService.SendEmail(new EmailParams(data.AgencyEmail, $"New Request to review: {data.JobTitle}", message));
         }
         return requestId;
     }
@@ -195,17 +212,28 @@ public class RequestService : IRequestService
         {
             return Result.Fail("Request not found");
         }
+        return await SaveRequestChanges(request, model);
+    }
+
+    public async Task<Result> ApproveRequest(Guid requestId, RequestCreateModel model)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ResultError.NotFound(ApiResources.RequestNotAvailable));
+        var rRates = await ApplyRates(request, model);
+        if (!rRates) return rRates;
+        var rApprove = request.Approve(timeProvider.GetLocalNow().DateTime);
+        if (!rApprove) return rApprove;
+        var note = CovenantNote.Create("Request approved", CovenantNote.RedColor, currentUserService.GetNickname()).Value;
+        await requestRepository.CreateRange([new RequestNote(requestId, note)]);
+        return await SaveRequestChanges(request, model);
+    }
+
+    private async Task<Result> SaveRequestChanges(Request request, RequestCreateModel model)
+    {
         var validationResult = await requestCreateValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
-        if (model.WorkerSalary.HasValue)
-        {
-            request.UpdateRates(model.WorkerSalary.Value, null, null, null);
-        }
-        else
-        {
-            var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
-            request.UpdateRates(null, positionRate.Rate, positionRate.WorkerRate, positionRate.Id);
-        }
+        var rRates = await ApplyRates(request, model);
+        if (!rRates) return rRates;
         request.UpdateJobTitle(model.JobTitle);
         request.UpdateBillingTitle(model.BillingTitle);
         request.UpdateJobCosting(model.JobCosting);
@@ -438,10 +466,25 @@ public class RequestService : IRequestService
         return Result.Ok(entity);
     }
 
+    private async Task<Result> ApplyRates(Request request, RequestCreateModel model)
+    {
+        if (model.WorkerSalary.HasValue)
+        {
+            request.UpdateRates(model.WorkerSalary.Value, null, null, null);
+            return Result.Ok();
+        }
+        if (!model.JobPositionRateId.HasValue) return Result.Fail(ApiResources.InvalidJobPosition);
+        var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
+        if (positionRate is null) return Result.Fail(ApiResources.InvalidJobPosition);
+        request.UpdateRates(null, positionRate.Rate, positionRate.WorkerRate, positionRate.Id);
+        return Result.Ok();
+    }
+
     public async Task<Result> SendInvitation(Guid requestId)
     {
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
         if (request is null || !request.CanBeUpdated) return Result.Fail(ApiResources.RequestNotAvailable);
+        if (!request.HasRates) return Result.Fail(Request.RatesPendingMessage);
 
         var now = timeProvider.GetLocalNow().DateTime;
         var canBeSent = request.CanInvitationBeSendIt(now);
@@ -490,6 +533,28 @@ public class RequestService : IRequestService
         return Result.Ok();
     }
 
+    public async Task<Result> FinishWorker(Guid requestId, Guid workerProfileId, FinishAssignmentModel model)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        var result = request.FinishWorker(workerProfileId, model.LastDay, model.Reason, model.Comments, currentUserService.GetNickname());
+        if (!result) return result;
+        requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public async Task<Result> FinishAllWorkers(Guid requestId, FinishAssignmentModel model)
+    {
+        var request = await requestRepository.GetRequest(r => r.Id == requestId);
+        if (request is null) return Result.Fail(ApiResources.RequestNotAvailable);
+        var result = request.FinishAllWorkers(model.LastDay, model.Reason, model.Comments, currentUserService.GetNickname());
+        if (!result) return Result.Fail(result.Errors);
+        requestRepository.Update(request);
+        await requestRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
     public async Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId)
     {
         var request = await requestRepository.GetRequest(r => r.Id == requestId);
@@ -529,7 +594,7 @@ public class RequestService : IRequestService
             if (model.Request is null) return null;
             companyProfileId = model.Request.CompanyProfileId;
         }
-        model.JobPositions = await companyRepository.GetJobPositions(companyProfileId, new GetJobPositionsFilter());
+        model.JobPositions = await companyRepository.GetJobPositions(companyProfileId);
         model.Locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfileId == companyProfileId);
         model.Personnel = await agencyRepository.GetAllPersonnel(currentUserService.GetAgencyId());
         model.CompanyUsers = await companyRepository.GetAllCompanyUsers(companyProfileId);

@@ -37,6 +37,69 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
         return result;
     }
 
+    private static readonly PayStubItemType[] WorkedHourItemTypes =
+    [
+        PayStubItemType.Regular,
+        PayStubItemType.OtherRegular,
+        PayStubItemType.Overtime,
+        PayStubItemType.StatutoryWorkedHoliday,
+        PayStubItemType.NightShift,
+        PayStubItemType.Missing,
+        PayStubItemType.MissingOvertime
+    ];
+
+    public async Task<PaginatedList<WorkerPayStubListModel>> GetPayStubsForWorker(Guid workerId, GetWorkerPayStubsFilter filter)
+    {
+        var query = Context.PayStubs.Where(ps => ps.WorkerProfile.WorkerId == workerId);
+        if (filter.Year.HasValue)
+            query = query.Where(ps => ps.DateWorkEnd.Year == filter.Year.Value);
+
+        var payStubs = await query
+            .OrderByDescending(ps => ps.WeekEnding)
+            .ThenByDescending(ps => ps.NumberId)
+            .ThenBy(ps => ps.Id)
+            .Select(ps => new WorkerPayStubListModel
+            {
+                Id = ps.Id,
+                PayStubNumber = ps.PayStubNumber,
+                WeekEnding = ps.WeekEnding,
+                PaymentDate = ps.PaymentDate,
+                Hours = ps.Items.Where(i => WorkedHourItemTypes.Contains(i.Type)).Sum(i => i.Quantity),
+                TotalEarnings = ps.TotalEarnings,
+                TotalDeductions = ps.TotalDeductions,
+                TotalPaid = ps.TotalPaid,
+                PdfGeneratedAt = ps.PdfGeneratedAt
+            })
+            .AsNoTracking()
+            .ToPaginatedList(filter);
+
+        if (payStubs.Items.Count == 0) return payStubs;
+
+        var ids = payStubs.Items.Select(ps => ps.Id).ToList();
+        var companies = await Context.PayStubWageDetails
+            .Where(d => ids.Contains(d.PayStubId))
+            .Select(d => new { d.PayStubId, d.TimeSheetTotal.TimeSheet.WorkerRequest.Request.CompanyProfile.FullName })
+            .Distinct()
+            .ToListAsync();
+        foreach (var stub in payStubs.Items)
+            stub.Companies = companies.Where(c => c.PayStubId == stub.Id).Select(c => c.FullName).Order().ToList();
+        return payStubs;
+    }
+
+    public Task<List<int>> GetPayStubYearsForWorker(Guid workerId) =>
+        Context.PayStubs
+            .Where(ps => ps.WorkerProfile.WorkerId == workerId)
+            .Select(ps => ps.DateWorkEnd.Year)
+            .Distinct()
+            .OrderByDescending(year => year)
+            .ToListAsync();
+
+    public Task<bool> IsPayStubOfWorker(Guid payStubId, Guid workerId) =>
+        Context.PayStubs.AnyAsync(ps => ps.Id == payStubId && ps.WorkerProfile.WorkerId == workerId);
+
+    public Task<PayStubYtdModel> GetYtdSummaryForWorker(Guid workerId, int year) =>
+        GetYtdSummary(Context.PayStubs.Where(ps => ps.WorkerProfile.WorkerId == workerId), year);
+
     public Task<PayStubDetailModel> GetPayStubDetail(Guid payStubId)
     {
         return (from ps in Context.PayStubs.Where(s => s.Id == payStubId)
@@ -82,10 +145,19 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
                 }).SingleOrDefaultAsync();
     }
 
-    public async Task<PayStubYtdModel> GetYtdSummary(Guid workerProfileId, int year)
+    public Task<PayStubYtdModel> GetYtdSummary(Guid workerProfileId, DateTime endDate, long numberId) =>
+        GetYtdSummary(Context.PayStubs.Where(ps => ps.WorkerProfileId == workerProfileId
+            && (ps.DateWorkEnd < endDate || (ps.DateWorkEnd == endDate && ps.NumberId <= numberId))), endDate.Year);
+
+    public Task MarkPdfGenerated(Guid payStubId, DateTime generatedAt) =>
+        Context.PayStubs
+            .Where(ps => ps.Id == payStubId && ps.PdfGeneratedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(ps => ps.PdfGeneratedAt, generatedAt));
+
+    private static async Task<PayStubYtdModel> GetYtdSummary(IQueryable<PayStub> payStubs, int year)
     {
-        var result = await Context.PayStubs
-            .Where(ps => ps.WorkerProfileId == workerProfileId && ps.DateWorkEnd.Year == year)
+        var result = await payStubs
+            .Where(ps => ps.DateWorkEnd.Year == year)
             .GroupBy(ps => ps.WorkerProfileId)
             .Select(g => new PayStubYtdModel
             {
@@ -296,7 +368,8 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
                             (string.IsNullOrWhiteSpace(ps.WorkerProfile.SecondLastName) ? string.Empty : " " + ps.WorkerProfile.SecondLastName),
                         CreatedAt = ps.CreatedAt,
                         TotalPaid = ps.TotalPaid,
-                        CanDelete = !ps.WageDetails.Any()
+                        CanDelete = !ps.WageDetails.Any(),
+                        PdfGeneratedAt = ps.PdfGeneratedAt
                     };
         var predicateNew = ApplyFilterPayStubs(filter);
         query = query.Where(predicateNew);

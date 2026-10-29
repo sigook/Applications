@@ -18,8 +18,8 @@
             </ul>
         </div>
 
-        <b-modal has-modal-card v-model="showModalNotes" width="500px" :destroy-on-hide="true" @close="onCloseModalNotes">
-            <div class="modal-card" style="width: 100%">
+        <b-modal has-modal-card v-model="showModalNotes" width="640px" :destroy-on-hide="true" @close="onCloseModalNotes">
+            <div class="modal-card" style="width: 640px">
                 <section class="modal-card-body">
                     <modal-notes :user-id="profileId"
                                  :show-close="false"

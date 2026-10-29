@@ -94,28 +94,6 @@
   }
 }
 
-.filter-trigger {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.filter-count-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 9px;
-  background: $blue;
-  color: $white;
-  font-size: 0.7rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
 
 @include touch {
   .field.is-grouped {

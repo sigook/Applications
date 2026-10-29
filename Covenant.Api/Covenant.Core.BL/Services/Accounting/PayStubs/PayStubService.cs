@@ -26,6 +26,7 @@ namespace Covenant.Core.BL.Services.Accounting.PayStubs;
 public class PayStubService : IPayStubService
 {
     private const string PayStubEmailTemplatePath = "/Views/Billing/Payroll/PayrollEmail.cshtml";
+    private static readonly TimeSpan PdfUrlLifetime = TimeSpan.FromHours(1);
 
     private readonly IPayStubRepository payStubRepository;
     private readonly ITimesheetCalculatorService calculatorService;
@@ -466,19 +467,30 @@ public class PayStubService : IPayStubService
         return Result.Ok();
     }
 
-    public async Task<PayStubDocument> GetPayStubPdf(Guid payStubId)
-    {
-        string fileName = payStubId.ToPayStubBlobName();
-        byte[] content = await payStubsContainer.Download(fileName);
+    public Task<PayStubDocument> GetPayStubPdf(Guid payStubId) => GetPayStubPdf(payStubId, regenerate: false);
 
+    public Task<PayStubDocument> RegeneratePayStubPdf(Guid payStubId) => GetPayStubPdf(payStubId, regenerate: true);
+
+    private async Task<PayStubDocument> GetPayStubPdf(Guid payStubId, bool regenerate)
+    {
         var model = await payStubRepository.GetPayStubDetail(payStubId);
         if (model is null) return null;
-        model.Ytd = await payStubRepository.GetYtdSummary(model.WorkerProfileId, model.EndDate.Year);
+        model.Ytd = await payStubRepository.GetYtdSummary(model.WorkerProfileId, model.EndDate, model.NumberId);
 
-        if (content is not { Length: > 0 }) content = await UploadPdf(model);
+        string fileName = payStubId.ToPayStubBlobName();
+        if (regenerate) await payStubsContainer.DeleteFileIfExists(fileName);
+        byte[] content = regenerate ? null : await payStubsContainer.Download(fileName);
+        if (content is { Length: > 0 }) await payStubRepository.MarkPdfGenerated(payStubId, timeProvider.GetLocalNow().DateTime);
+        else content = await UploadPdf(model);
         if (content is not { Length: > 0 }) return null;
 
         return new PayStubDocument(content, fileName, payrollDocumentAdapter.MapToPayrollEmailViewModel(model));
+    }
+
+    public async Task<PayStubDocument> GetPayStubPdfForWorker(Guid workerId, Guid payStubId)
+    {
+        if (!await payStubRepository.IsPayStubOfWorker(payStubId, workerId)) return null;
+        return await GetPayStubPdf(payStubId);
     }
 
     public async Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId)
@@ -502,8 +514,27 @@ public class PayStubService : IPayStubService
     {
         var agencyIds = currentUserService.GetAgencyIds();
         var result = await payStubRepository.GetPayStubs(agencyIds, filter);
+        var expiresOn = timeProvider.GetUtcNow().Add(PdfUrlLifetime);
+        foreach (var payStub in result.Items.Where(ps => ps.PdfGeneratedAt.HasValue))
+        {
+            payStub.PdfUrl = GetPdfUrl(payStub.Id, payStub.PayStubNumber, expiresOn);
+        }
         return result;
     }
+
+    public async Task<PaginatedList<WorkerPayStubListModel>> GetPayStubsForWorker(Guid workerId, GetWorkerPayStubsFilter filter)
+    {
+        var result = await payStubRepository.GetPayStubsForWorker(workerId, filter);
+        var expiresOn = timeProvider.GetUtcNow().Add(PdfUrlLifetime);
+        foreach (var payStub in result.Items.Where(ps => ps.PdfGeneratedAt.HasValue))
+        {
+            payStub.PdfUrl = GetPdfUrl(payStub.Id, payStub.PayStubNumber, expiresOn);
+        }
+        return result;
+    }
+
+    private string GetPdfUrl(Guid payStubId, string payStubNumber, DateTimeOffset expiresOn) =>
+        payStubsContainer.GetReadUrl(payStubId.ToPayStubBlobName(), $"PayStub {payStubNumber}.pdf", expiresOn);
 
     public async Task<ResultGenerateDocument<byte[]>> GetPayStubsFile(GetPayStubsFilter filter)
     {
@@ -539,6 +570,7 @@ public class PayStubService : IPayStubService
             {
                 { nameof(model.PayrollNumberId), model.PayrollNumberId.ToString() }
             });
+            await payStubRepository.MarkPdfGenerated(model.Id, timeProvider.GetLocalNow().DateTime);
         }
         catch (Exception e)
         {

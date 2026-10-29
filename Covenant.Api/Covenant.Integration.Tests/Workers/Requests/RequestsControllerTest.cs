@@ -240,9 +240,9 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                     }
                 }
             }
-        }, Now, FakeRate.Id).Value;
-        public static readonly Request OpenRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
-        public static readonly Request SecondBookedRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
+        }, Now, FakeRate.Id, workerRate: 15M, agencyRate: 20M).Value;
+        public static readonly Request OpenRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id, workerRate: 15M, agencyRate: 20M).Value;
+        public static readonly Request SecondBookedRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id, workerRate: 15M, agencyRate: 20M).Value;
         public static readonly WorkerRequest FakeWorkerRequest;
         public static readonly WorkerRequest SecondWorkerRequest;
 

@@ -43,7 +43,7 @@ lib/
 │   ├── l10n/                  # Localization
 │   ├── network/               # ApiClient (Dio) + AuthInterceptor, DioErrorInterceptor, CrashReportingInterceptor, NetworkInfo
 │   ├── providers/             # core_providers (sharedPreferences, secureStorage, networkInfo, apiClient), analytics_providers
-│   ├── routing/               # AppRouter (go_router), AppRoutes constants, session redirect
+│   ├── routing/               # AppRouter (go_router), AppRoutes constants, session redirect. Jobs · Activity · Profile are the three branches of a StatefulShellRoute (AppShell bottom bar, each branch keeps its state); job details, About, Privacy and Terms are pushed over it without the bar
 │   ├── services/              # FilePicker, FileNaming, Location, Analytics, CrashReporting (Azure App Insights)
 │   ├── theme/                 # AppTheme (colors, typography)
 │   ├── usecases/              # UseCase<T, Params> base class, NoParams
@@ -55,8 +55,8 @@ lib/
     ├── welcome/               # Onboarding page for signed-out users
     ├── auth/                  # Sign-in, logout, token refresh, password reset, resend confirmation
     ├── registration/          # Multi-step worker registration form (value objects: ZipCode, IdentificationNumber)
-    ├── jobs/                  # Job list, details, apply, clock in/out + timesheets, clock type
-    ├── history/               # Past assignments
+    ├── jobs/                  # Job list, details (tabs Detail + Punch Card), apply, clock in/out, punch status. A worker with an active assignment (GET /worker/history?status=Active) sees only those assignment cards instead of the open jobs list (a booked worker cannot apply to other jobs); their OPEN PUNCH CARD button opens the job on the Punch Card tab
+    ├── activity/              # "Activity" screen: tabs Pay Stubs · Timesheets · History, split into sub-features (see below)
     ├── profile/               # Worker profile, split into self-contained sub-features (see below)
     ├── comments/              # Comments the agency left on the worker (read-only section)
     ├── catalog/               # Read-only catalogs (availabilities, languages, ...)
@@ -87,6 +87,8 @@ features/<feature>/
 ```
 
 `profile/` is the one feature large enough to be split: each section (certificates, contact_info, documents, emergency, job_experience, licenses, personal_details, preferences, resume, sin, ...) is a sub-feature with its own three layers, and `profile/data`, `profile/domain`, `profile/presentation` hold only what they share (`ProfileBaseDatasource`, `guardedProfileCall()`, `WorkerProfile` entity, `cachedWorkerProfileProvider`). Sub-features never import each other. The isolation rules and import depths are in `Sigook.App/CLAUDE.md`.
+
+`activity/` follows the same split: `history/` (`GET /worker/history`, past assignments only: "All" sends `status=Past`, chips Completed/Ended, read-only cards), `pay_stubs/` (`/worker/paystubs`, year selector + YTD net, PDF downloaded to the temp folder and opened through `FileOpenerService` / `open_filex`) and `hours/` (Timesheets tab: `GET /worker/activity/timesheets?weekStart=`, week navigation capped at the current week, tap a day → detail sheet). `activity/data` holds `ActivityBaseDatasource` and `guardedActivityCall()`; `activity/presentation` holds `ActivityPage` (route `/activity`, `/history` redirects; hides Pay Stubs when `WorkerProfile.isUsa`, read from `cachedWorkerProfileProvider`), `ActivityStatusBadge` and `ActivityDetailRow`. Cards and headers mirror the worker portal's mobile cards.
 
 ## Data Flow and Error Handling
 
@@ -130,8 +132,8 @@ Check here before writing a new widget. Everything is re-exported from `core/wid
 | `inputs/` | `CustomTextField`, `CustomDropdown`, `DatePickerField` | Themed form controls |
 | `layout/` | `PageScaffold` | Standard page scaffold (app bar, drawer, padding) |
 | | `SectionDivider` | Titled divider between sections |
-| `navigation/` | `NavbarLogo` | App logo for app bars |
-| | `DocumentPreviewPage` | Full-screen viewer for uploaded documents |
+| `navigation/` | `NavbarLogo`, `AppTabBar`, `AppShell` | App logo for app bars; white icon + label tab bar used as `AppBar.bottom` (Job, Activity, Profile); bottom `NavigationBar` (Jobs · Activity · Profile) wrapping the shell route. There is no side menu: About and Logout live in Profile › Account. The Profile destination shows a red badge with the number of missing approval requirements (`ProfileNavIcon`; "not approved to work" does not count and stays only on Jobs) |
+| | `DocumentPreviewPage` | In-app viewer for uploaded documents (PDF via `pdfx`, images via `Image.memory`) with a Share action; files are fetched into memory from the public blob URL, written to `tmp/preview/` only when shared, and that folder is cleared on app start |
 
 ## Core Services (`lib/core/`)
 

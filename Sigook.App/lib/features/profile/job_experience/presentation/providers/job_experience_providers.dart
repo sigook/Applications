@@ -8,6 +8,7 @@ import '../../domain/repositories/job_experience_repository.dart';
 import '../../domain/usecases/add_job_experience.dart';
 import '../../domain/usecases/update_job_experience.dart';
 import '../../domain/usecases/delete_job_experience.dart';
+import '../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 
 final jobExperienceDatasourceProvider =
     Provider<JobExperienceRemoteDataSource>((ref) {
@@ -37,6 +38,7 @@ final deleteJobExperienceUseCaseProvider = Provider<DeleteJobExperience>((ref) {
 });
 
 final jobExperienceListProvider = FutureProvider<List<JobExperience>>((ref) async {
+  ref.watch(sessionUserIdProvider);
   final repo = ref.read(jobExperienceRepositoryProvider);
   final result = await repo.getAll();
   return result.fold(

@@ -18,4 +18,8 @@ public class WorkerRequestListModel
     public DateTime? FinishAt { get; set; }
     public DateTime? StartAt { get; set; }
     public string DurationTerm { get; set; }
+    public string ClientName { get; set; }
+    public DateTime? StartWorking { get; set; }
+    public DateTime? EndedAt { get; set; }
+    public double HoursWorked { get; set; }
 }

@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Covenant.Tests.Requests;
@@ -108,7 +109,7 @@ public class CreateRequestServiceTest
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.True(result);
         Assert.Empty(result.Errors);
-        _requestRepository.Verify(r => r.Create(It.IsAny<Request>()), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(e => e.Status == RequestStatus.Open)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
@@ -149,6 +150,61 @@ public class CreateRequestServiceTest
     }
 
     [Fact]
+    public async Task CompanyCreateRequestIgnoresAgencyOnlyFields()
+    {
+        SetupCompanyProfile();
+        _model.BillingTitle = "Billing";
+        _model.JobCosting = "Costing";
+        _model.InternalRequirements = "Internal";
+        _model.SalesRepresentativeId = Guid.NewGuid();
+        _model.UsesRunners = false;
+        _model.PunchCardOptionEnabled = false;
+        _model.ComplianceItems = [new RequestComplianceItemModel { Name = "ID", IsMandatory = true }];
+
+        Result<Guid> result = await _sut.CompanyCreateRequest(_model);
+
+        Assert.True(result);
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(e =>
+            e.Status == RequestStatus.PendingReview
+            && e.BillingTitle == _model.JobTitle
+            && e.JobCosting == null
+            && e.InternalRequirements == null
+            && e.UsesRunners
+            && e.PunchCardOptionEnabled)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.IsAny<RequestComission>()), Times.Never);
+        _requestRepository.Verify(r => r.CreateRange(It.Is<List<RequestComplianceItem>>(items => items.Count == 0)), Times.Once);
+    }
+
+    [Fact]
+    public async Task CompanyUserCreatingRequestIsLinkedToIt()
+    {
+        SetupCompanyProfile();
+        var userId = Guid.NewGuid();
+        currentUserService.Setup(c => c.IsCompanyUser()).Returns(true);
+        currentUserService.Setup(c => c.GetUserId()).Returns(userId);
+        _model.CompanyUserIds = [Guid.NewGuid()];
+
+        Result<Guid> result = await _sut.CompanyCreateRequest(_model);
+
+        Assert.True(result);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestCompanyUser>(rcu => rcu.CompanyUserId == userId)), Times.Once);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestCompanyUser>(rcu => rcu.CompanyUserId != userId)), Times.Never);
+    }
+
+    [Fact]
+    public async Task CompanyAdminCreatingRequestKeepsSelectedCompanyUsers()
+    {
+        SetupCompanyProfile();
+        var selectedUserId = Guid.NewGuid();
+        _model.CompanyUserIds = [selectedUserId];
+
+        Result<Guid> result = await _sut.CompanyCreateRequest(_model);
+
+        Assert.True(result);
+        _requestRepository.Verify(r => r.Create(It.Is<RequestCompanyUser>(rcu => rcu.CompanyUserId == selectedUserId)), Times.Once);
+    }
+
+    [Fact]
     public async Task ErrorWhenIsAndInvalidJobPositionRate()
     {
         _companyRepository.Setup(cr => cr.GetJobPosition(It.IsAny<Guid>())).ReturnsAsync(default(CompanyProfileJobPositionRate));
@@ -156,5 +212,11 @@ public class CreateRequestServiceTest
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.False(result);
         Assert.Equal(ApiResources.InvalidJobPosition, result.Errors.First().Message);
+    }
+
+    private void SetupCompanyProfile()
+    {
+        _companyProfile.AgencyId = _agencyId;
+        _companyRepository.Setup(cr => cr.GetCompanyProfile(It.IsAny<Expression<Func<CompanyProfile, bool>>>())).ReturnsAsync(_companyProfile);
     }
 }

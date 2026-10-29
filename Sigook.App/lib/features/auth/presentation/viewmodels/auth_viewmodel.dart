@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/providers/analytics_providers.dart';
@@ -33,6 +34,15 @@ sealed class AuthState with _$AuthState {
     @Default(false) bool justConfirmationSent,
   }) = _AuthState;
 }
+
+final sessionUserIdProvider = Provider<String?>(
+  (ref) => ref.watch(
+    authViewModelProvider.select(
+      (state) =>
+          state.isAuthenticated ? AuthViewModel.subjectOf(state.token) : null,
+    ),
+  ),
+);
 
 @Riverpod(keepAlive: true)
 class AuthViewModel extends _$AuthViewModel {
@@ -306,14 +316,20 @@ class AuthViewModel extends _$AuthViewModel {
   }
 
   void _identifyUser(AuthToken token) {
-    final subject =
-        token.userInfo?.sub ?? _subjectFromAccessToken(token.accessToken);
-    if (subject.isEmpty) return;
+    final subject = subjectOf(token);
+    if (subject == null) return;
     ref.read(analyticsServiceProvider).setUserId(subject);
     ref.read(crashReportingServiceProvider).setUserId(subject);
   }
 
-  String _subjectFromAccessToken(String? accessToken) {
+  static String? subjectOf(AuthToken? token) {
+    if (token == null) return null;
+    final subject =
+        token.userInfo?.sub ?? _subjectFromAccessToken(token.accessToken);
+    return subject.isEmpty ? null : subject;
+  }
+
+  static String _subjectFromAccessToken(String? accessToken) {
     if (accessToken == null || accessToken.isEmpty) return '';
     try {
       return JwtDecoder.decode(accessToken)['sub']?.toString() ?? '';

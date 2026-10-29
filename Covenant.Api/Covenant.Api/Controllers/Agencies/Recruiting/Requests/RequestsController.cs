@@ -80,6 +80,22 @@ public class RequestsController(IRequestService requestService, IAgencyService a
         return BadRequest(ModelState.AddErrors(result.Errors));
     }
 
+    /// <summary>Saves the reviewed data of a request created by a company and approves it, publishing it to workers and the website.</summary>
+    /// <param name="id">Identifier of the request pending review.</param>
+    /// <param name="model">Request data completed by the agency.</param>
+    [HttpPut("{id:guid}/Approve")]
+    [Authorize(Policy = PolicyConfiguration.Recruiting)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Approve([FromRoute] Guid id, [FromBody] RequestCreateModel model)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await requestService.ApproveRequest(id, model);
+        if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
     /// <summary>Toggles the ASAP flag of a request.</summary>
     /// <param name="id">Identifier of the request.</param>
     [HttpPut("{id:guid}/IsAsap")]

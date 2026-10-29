@@ -60,8 +60,8 @@ function saveVaccinationRequired() {
   form.handleSubmit((values) => {
     isLoading.value = true;
     updateCompanyVaccinationRequired(props.companyProfileId, {
-      vaccinationRequired: required.value,
-      vaccinationRequiredComments: values.comments,
+      required: required.value,
+      comments: values.comments,
     }).then(() => {
       isLoading.value = false;
       emit('updated', { required: required.value, comments: values.comments });

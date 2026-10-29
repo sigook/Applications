@@ -10,6 +10,7 @@ public interface ICurrentUserService
     string GetNickname();
     bool IsAdmin();
     bool IsAgencyStaff();
+    bool IsCompanyUser();
     bool IsSales();
     bool IsSuperAdmin();
 }

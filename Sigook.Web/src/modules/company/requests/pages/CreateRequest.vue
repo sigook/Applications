@@ -34,11 +34,18 @@
                   <b-field :label="`${'Rol'} *`" :message="formErrors.jobPosition || ''"
                     :type="formErrors.jobPosition ? 'is-danger' : ''">
                     <b-autocomplete :data="filteredCompanyJobPositions" placeholder="Role" v-model="jobPosition" field="jobPosition"
-                      open-on-focus name="rol" @select="onJobPositionSelected">
+                      open-on-focus name="rol" selectable-footer @select="onJobPositionSelected"
+                      @select-footer="() => showRolesModal = true">
+                      <template #footer>
+                        <a><span>Add new...</span></a>
+                      </template>
                       <template #empty>You don't have any roles created</template>
                     </b-autocomplete>
                   </b-field>
-                  <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
+                  <template v-if="jobPositionSelected">
+                    <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
+                    <b-tag v-else type="is-warning">Rates pending: the agency will set them</b-tag>
+                  </template>
                 </div>
                 <div class="column is-6 is-4-desktop">
                   <b-field :label="`${'Branch office'} *`"
@@ -52,6 +59,22 @@
                       </template>
                       <template #empty>You don't have any location created</template>
                     </b-autocomplete>
+                  </b-field>
+                </div>
+                <div class="column is-6 is-4-desktop" v-if="companyUsers.length > 0">
+                  <b-field label="Company User">
+                    <b-taginput v-model="companyUsersSelected" autocomplete :data="companyUsers" open-on-focus icon="label"
+                      ref="companyUserTagInput" :placeholder="'Select'">
+                      <template v-slot="props">
+                        {{ props.option.name }} {{ props.option.lastname }} - {{ props.option.email }}
+                      </template>
+                      <template #selected="props">
+                        <b-tag v-for="(tag, index) in props.tags" :key="index" tabstop ellipsis closable
+                          @close="companyUserTagInput?.removeTag(index, $event)">
+                          {{ tag.name }} {{ tag.lastname }} - {{ tag.email }}
+                        </b-tag>
+                      </template>
+                    </b-taginput>
                   </b-field>
                 </div>
               </div>
@@ -192,6 +215,10 @@
       </div>
     </form>
 
+    <b-modal custom-content-class="card" v-model="showRolesModal" @close="showRolesModal = false" width="850px">
+      <JobPositionForm kind="basic" :create="createCompanyJobPosition" @updateContent="onUpdateRolesModal"></JobPositionForm>
+    </b-modal>
+
     <b-modal custom-content-class="card" v-model="showLocationModal" @close="showLocationModal = false" width="500px">
       <LocationForm :save="createProfileLocation" @updateContent="onUpdateLocationModal"></LocationForm>
     </b-modal>
@@ -211,17 +238,23 @@ import {
   EmploymentType,
   EmploymentTypeLabels,
 } from '@/shared/constants/enums';
-import { createProfileLocation, getProfileLocations, getCompanyJobPositions } from '@/modules/company/profile/api';
+import { createProfileLocation, getProfileLocations, getCompanyJobPositions, getCompanyUser, createCompanyJobPosition } from '@/modules/company/profile/api';
 import { createRequest } from '@/modules/company/requests/api';
+import { useSecurityStore } from '@/app/stores/security';
+import roles from '@/app/security/roles';
 import LocationForm from '@/shared/company-profile/LocationForm.vue';
+import JobPositionForm from '@/shared/company-profile/JobPositionForm.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import type { PageBreadcrumb } from '@/shared/types/common';
-import type { CompanyProfileJobPositionRate, CompanyProfileLocationDetail } from '@/shared/company-profile/types';
+import type { CompanyProfileJobPositionRate, CompanyProfileLocationDetail, CompanyUserModel } from '@/shared/company-profile/types';
 import type { CompanyRequestFormSettings, CreateCompanyRequestModel } from '@/modules/company/requests/types';
+import type { BTaginput } from 'buefy';
 
 const crumbs: PageBreadcrumb[] = [{ label: 'Requests', to: '/company-requests' }];
 
 const router = useRouter();
+const securityStore = useSecurityStore();
+const isCompanyAdmin = computed(() => securityStore.userRoles.some((ur) => ur === roles.company));
 const errorMessage = 'Please make sure all required fields are filled out correctly';
 
 const directHiring = ref(false);
@@ -297,10 +330,17 @@ const request = reactive<CompanyRequestFormSettings>({
 const jobPositionSelected = ref<CompanyProfileJobPositionRate | null>(null);
 const locationSelected = ref<CompanyProfileLocationDetail | null>(null);
 const showLocationModal = ref(false);
+const showRolesModal = ref(false);
+const companyUsers = ref<CompanyUserModel[]>([]);
+const companyUsersSelected = ref<CompanyUserModel[]>([]);
+const companyUserTagInput = ref<InstanceType<typeof BTaginput> | null>(null);
 
 (async () => {
-  locations.value = await getProfileLocations();
-  companyJobPositions.value = await getCompanyJobPositions();
+  [locations.value, companyJobPositions.value, companyUsers.value] = await Promise.all([
+    getProfileLocations(),
+    getCompanyJobPositions(),
+    isCompanyAdmin.value ? getCompanyUser() : Promise.resolve([]),
+  ]);
   isLoading.value = false;
 })();
 
@@ -335,9 +375,9 @@ function validateAutocompleteSelections(): boolean {
 function submitRequest(payload: CreateCompanyRequestModel) {
   isLoading.value = true;
   createRequest(payload)
-    .then(() => {
+    .then((response) => {
       showAlertSuccess('Request created');
-      router.push('company-requests');
+      router.push(`/company-requests/${response.id}`);
       isLoading.value = false;
     })
     .catch((error: unknown) => {
@@ -377,6 +417,7 @@ function onSubmit() {
       shift: request.shift,
       jobPositionRateId: request.jobPositionRateId,
       locationId: request.locationId,
+      companyUserIds: companyUsersSelected.value.map((cu) => cu.id),
     };
     submitRequest(payload);
   }, () => {
@@ -404,6 +445,15 @@ function onLocationSelected(option: CompanyProfileLocationDetail | null) {
   } else {
     request.locationId = null;
   }
+}
+
+async function onUpdateRolesModal(id?: string) {
+  showRolesModal.value = false;
+  companyJobPositions.value = await getCompanyJobPositions();
+  const role = companyJobPositions.value.find((cjp) => cjp.id === id);
+  if (!role) return;
+  form.setFieldValue('jobPosition', role.jobPosition);
+  onJobPositionSelected(role);
 }
 
 async function onUpdateLocationModal() {

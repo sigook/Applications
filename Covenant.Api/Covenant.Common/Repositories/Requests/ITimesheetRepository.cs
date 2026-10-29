@@ -14,6 +14,7 @@ namespace Covenant.Common.Repositories.Requests;
 public interface ITimesheetRepository : IBaseRepository
 {
     Task<PaginatedList<WorkerTimeSheetListModel>> GetTimeSheetsForWorker(Guid workerId, Guid requestId, Pagination pagination);
+    Task<List<WorkerWeekTimeSheetModel>> GetWeekTimeSheetsForWorker(Guid workerId, DateTime from, DateTime to);
     Task<TimeSheet> GetTimeSheet(Guid id);
     Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerId, Guid requestId, Expression<Func<Request, bool>> requestCondition);
     Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerId, Guid requestId, DateTime? startDate, DateTime? endDate);

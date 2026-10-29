@@ -309,6 +309,12 @@ input[type="file"] {
   transition: all 0.3s ease;
 }
 
+.status-pendingreview {
+  background-color: $purple;
+  box-shadow: 0 0 0 4px rgba(123, 31, 162, 0.3);
+  transition: all 0.3s ease;
+}
+
 .status-cancelled,
 .status-reject,
 .status-rejected {
@@ -356,7 +362,8 @@ input[type="file"] {
   color: $accent-text;
 }
 
-.Book {
+.Book,
+.Finished {
   color: $blue;
 }
 
@@ -484,17 +491,30 @@ input:-webkit-autofill {
   position: relative;
 }
 
-.asap {
-  top: 2px;
-  left: -6px;
-  background: $accent;
-  font-size: 12px;
-  font-weight: 400;
-  padding: 3px 6px;
-  display: inline-block;
-  color: white;
-  letter-spacing: 0;
-  border-radius: 5px;
+.request-flags {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.request-flag {
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  &--asap {
+    background: #ff9932;
+    color: #1e1e1e;
+  }
+
+  &--dh {
+    background: #1d4ed8;
+    color: $white;
+  }
 }
 
 

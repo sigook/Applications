@@ -14,12 +14,15 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router';
 import type { PageBreadcrumb } from '@/shared/types/common';
+import { registerMobileBack } from '@/shared/composables/useMobileBack';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   crumbs?: PageBreadcrumb[];
   backTo?: RouteLocationRaw | null;
 }>(), {
   crumbs: () => [],
   backTo: null,
 });
+
+registerMobileBack(() => props.backTo);
 </script>

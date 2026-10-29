@@ -8,6 +8,7 @@ using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Core.BL.Interfaces.Requests;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,10 @@ namespace Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 [ApiController]
 [Authorize(Policy = PolicyConfiguration.Agency)]
 [ServiceFilter(typeof(AgencyIdFilter))]
-public class WorkersController(IAgencyService agencyService, IRequestService requestService) : ControllerBase
+public class WorkersController(
+    IAgencyService agencyService,
+    IRequestService requestService,
+    IValidator<FinishAssignmentModel> finishValidator) : ControllerBase
 {
     public const string RouteName = "api/agency/recruiting/requests/{requestId}/workers";
 
@@ -85,6 +89,37 @@ public class WorkersController(IAgencyService agencyService, IRequestService req
     public async Task<ActionResult> Reject([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] CommentsModel model)
     {
         var result = await requestService.RejectWorker(requestId, workerProfileId, model);
+        if (result) return Ok();
+        return BadRequest(ModelState.AddErrors(result.Errors));
+    }
+
+    /// <summary>Ends the assignment of a booked worker in the specified request.</summary>
+    /// <param name="requestId">Identifier of the request.</param>
+    /// <param name="workerProfileId">Identifier of the worker profile whose assignment ends.</param>
+    /// <param name="model">Last day worked, reason, comments and whether the worker is notified.</param>
+    [HttpPut("{workerProfileId:guid}/Finish")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> Finish([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] FinishAssignmentModel model)
+    {
+        var validation = await finishValidator.ValidateAsync(model);
+        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
+        var result = await requestService.FinishWorker(requestId, workerProfileId, model);
+        if (result) return Ok();
+        return BadRequest(ModelState.AddErrors(result.Errors));
+    }
+
+    /// <summary>Ends the assignment of every booked worker in the specified request.</summary>
+    /// <param name="requestId">Identifier of the request.</param>
+    /// <param name="model">Last day worked, reason, comments and whether the workers are notified.</param>
+    [HttpPut("Finish")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> FinishAll([FromRoute] Guid requestId, [FromBody] FinishAssignmentModel model)
+    {
+        var validation = await finishValidator.ValidateAsync(model);
+        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
+        var result = await requestService.FinishAllWorkers(requestId, model);
         if (result) return Ok();
         return BadRequest(ModelState.AddErrors(result.Errors));
     }

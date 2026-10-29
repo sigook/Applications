@@ -15,8 +15,10 @@ public interface ICompanyRepository : IBaseRepository
 {
     Task<CompanyProfileJobPositionRate> GetJobPosition(Guid id);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression);
-    Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter);
+    Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId);
+    Task<PaginatedList<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter);
     Task<CompanyProfileJobPositionRateModel> GetJobPositionDetail(Guid id);
+    Task<bool> JobPositionExists(Guid companyProfileId, string jobPosition, decimal rate, decimal workerRate, Guid? excludeId = null);
     Task<CompanyProfileIdsModel> GetCompanyProfileId(Expression<Func<CompanyProfile, bool>> condition);
     Task<CompanyProfile> GetCompanyProfile(Expression<Func<CompanyProfile, bool>> expression);
     Task<CompanyProfileDetailModel> GetCompanyProfileDetail(Expression<Func<CompanyProfile, bool>> expression);

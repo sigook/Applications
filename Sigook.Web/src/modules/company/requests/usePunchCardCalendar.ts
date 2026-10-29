@@ -91,9 +91,10 @@ export function usePunchCardCalendar(options: PunchCardCalendarOptions): PunchCa
 
   function isAvailableToUpdateWorker(date: string | Date) {
     const worker = options.worker()
-    if (worker && worker.workerRequestStatus === WorkerRequestStatus.Rejected && worker.rejectedAt) {
+    const endedAt = worker?.finishedAt ?? worker?.rejectedAt
+    if (worker && worker.workerRequestStatus !== WorkerRequestStatus.Booked && endedAt) {
       const start = dayjs(options.startDate()).subtract(1, 'day')
-      const oneMonth = dayjs(worker.rejectedAt).add(1, 'month')
+      const oneMonth = dayjs(endedAt).add(1, 'month')
       return dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()
     }
     return true

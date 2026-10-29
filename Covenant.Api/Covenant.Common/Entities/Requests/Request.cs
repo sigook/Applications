@@ -80,7 +80,10 @@ namespace Covenant.Common.Entities.Requests
         private string TheRequestCanNotBeChanged => $"The request can't be changed because is: {Status}";
         private int CountWorkersWorking => _workers.Count(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked);
         public bool CanBeUpdated => Status != RequestStatus.Cancelled;
-        public bool IsAvailableToApply => Status == RequestStatus.Open;
+        public const string RatesPendingMessage = "The role of this request has no rates yet. An agency admin must set them first.";
+        public bool HasRates => WorkerSalary.HasValue || (AgencyRate > 0 && WorkerRate > 0);
+        public bool IsAvailableToApply => Status == RequestStatus.Open && HasRates;
+        public bool IsPendingReview => Status == RequestStatus.PendingReview;
         public RequestStatus Status { get; private set; } = RequestStatus.Open;
         public int WorkersQuantity
         {
@@ -97,6 +100,7 @@ namespace Covenant.Common.Entities.Requests
 
         public Result<Guid> AddWorker(Guid workerProfileId, DateTime startWorking, string createdBy = null)
         {
+            if (!HasRates) return Result.Fail<Guid>(RatesPendingMessage);
             if (CountWorkersWorking >= WorkersQuantity) return Result.Fail<Guid>("The Request is complete");
             if (!IsAvailableToApply) return Result.Fail<Guid>(TheRequestCanNotBeChanged);
             WorkerRequest workerRequest = _workers.SingleOrDefault(s => s.WorkerProfileId == workerProfileId);
@@ -104,6 +108,7 @@ namespace Covenant.Common.Entities.Requests
             {
                 case WorkerRequestStatus.Booked: return Result.Ok(workerRequest.Id);
                 case WorkerRequestStatus.Rejected:
+                case WorkerRequestStatus.Finished:
                     {
                         workerRequest.Book();
                         break;
@@ -132,29 +137,56 @@ namespace Covenant.Common.Entities.Requests
             WorkerRequest workerRequest = _workers.SingleOrDefault(a => a.WorkerProfileId == workerProfileId);
             if (workerRequest is null) return Result.Fail("Worker isn't in the request");
             if (workerRequest.IsRejected) return Result.Fail("Worker is already rejected");
+            if (workerRequest.IsFinished) return Result.Fail("Worker already finished the assignment");
             workerRequest.Reject(detail, null, rejectedBy);
-            WorkersQuantityWorking = CountWorkersWorking;
+            RefreshWorkersWorking();
+            return Result.Ok();
+        }
 
-            // Automatic state transitions
+        public Result FinishWorker(Guid workerProfileId, DateTime lastDay, WorkerRequestFinishReason reason, string comments = null, string finishedBy = null)
+        {
+            if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
+            WorkerRequest workerRequest = _workers.SingleOrDefault(a => a.WorkerProfileId == workerProfileId);
+            if (workerRequest is null) return Result.Fail("Worker isn't in the request");
+            Result result = workerRequest.Finish(lastDay, reason, comments, finishedBy);
+            if (!result) return result;
+            RefreshWorkersWorking();
+            return Result.Ok();
+        }
+
+        public Result<IReadOnlyList<Guid>> FinishAllWorkers(DateTime lastDay, WorkerRequestFinishReason reason, string comments = null, string finishedBy = null)
+        {
+            if (!CanBeUpdated) return Result.Fail<IReadOnlyList<Guid>>(TheRequestCanNotBeChanged);
+            var booked = _workers.Where(w => w.IsBooked).ToList();
+            if (booked.Count == 0) return Result.Fail<IReadOnlyList<Guid>>("The request has no booked workers");
+            foreach (WorkerRequest workerRequest in booked)
+            {
+                Result result = workerRequest.Finish(lastDay, reason, comments, finishedBy);
+                if (!result) return Result.Fail<IReadOnlyList<Guid>>(result.Errors);
+            }
+            RefreshWorkersWorking();
+            return Result.Ok<IReadOnlyList<Guid>>(booked.Select(w => w.WorkerProfileId).ToList());
+        }
+
+        private void RefreshWorkersWorking()
+        {
+            WorkersQuantityWorking = CountWorkersWorking;
             if (Status == RequestStatus.Filled && WorkersQuantityWorking < WorkersQuantity)
                 Status = RequestStatus.Open;
-
-            return Result.Ok();
         }
 
         public Result Cancel(DateTime now)
         {
             if (!CanBeUpdated) return Result.Fail(TheRequestCanNotBeChanged);
 
-            // Only requests in Open status can be cancelled
-            if (Status != RequestStatus.Open)
-                return Result.Fail("Only requests in Open status can be cancelled");
+            if (Status != RequestStatus.Open && Status != RequestStatus.PendingReview)
+                return Result.Fail("Only requests in Open or Pending Review status can be cancelled");
 
             // Cannot cancel requests with workers assigned
             if (WorkersQuantityWorking > 0)
                 return Result.Fail("Cannot cancel requests with workers assigned. Please remove all workers first.");
 
-            foreach (WorkerRequest worker in Workers)
+            foreach (WorkerRequest worker in Workers.Where(w => !w.IsFinished))
             {
                 Result rReject = worker.Reject("Request canceled", now);
                 if (!rReject) return rReject;
@@ -172,6 +204,8 @@ namespace Covenant.Common.Entities.Requests
                 case RequestStatus.Open:
                 case RequestStatus.Filled:
                     return Result.Ok();
+                case RequestStatus.PendingReview:
+                    return Result.Fail("The request is pending review and must be approved");
                 case RequestStatus.Cancelled:
                     {
                         // Reopen to appropriate state based on capacity
@@ -186,6 +220,23 @@ namespace Covenant.Common.Entities.Requests
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            return Result.Ok();
+        }
+
+        public Result SubmitForReview()
+        {
+            if (Status != RequestStatus.Open || WorkersQuantityWorking > 0)
+                return Result.Fail("Only new requests can be submitted for review");
+            Status = RequestStatus.PendingReview;
+            return Result.Ok();
+        }
+
+        public Result Approve(DateTime now)
+        {
+            if (!IsPendingReview) return Result.Fail("Only requests pending review can be approved");
+            if (!HasRates) return Result.Fail(RatesPendingMessage);
+            Status = RequestStatus.Open;
+            UpdatedAt = now;
             return Result.Ok();
         }
 
@@ -402,6 +453,7 @@ namespace Covenant.Common.Entities.Requests
 
         public Result CanInvitationBeSendIt(DateTime now)
         {
+            if (IsPendingReview) return Result.Fail("The invitation can't be sent until the request is approved.");
             if (InvitationSentItAt is null) return Result.Ok();
             TimeSpan timeSinceItWasSendIt = now.Date - InvitationSentItAt.GetValueOrDefault().Date;
             if (timeSinceItWasSendIt >= TimeSpan.FromDays(DaysToWaitToResendInvitation)) return Result.Ok();

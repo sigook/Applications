@@ -84,6 +84,9 @@
               <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
             </template>
             <b-dropdown-item aria-role="listitem" @click="onDownloadInvoicePdf(props.row)">Download</b-dropdown-item>
+            <b-dropdown-item v-if="props.row.pdfUrl" aria-role="listitem" @click="onRegenerateInvoicePdf(props.row)">
+              Regenerate PDF
+            </b-dropdown-item>
             <b-dropdown-item aria-role="listitem" @click="openSendEmailModal(props.row)">Send Email</b-dropdown-item>
             <b-dropdown-item v-if="props.row.status === InvoiceStatus.Paid" aria-role="listitem"
               @click="onMarkAsPending(props.row)">
@@ -119,8 +122,8 @@
 import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
-import { downloadFile, downloadPDF } from '@/shared/utils/downloadFile';
-import { getAgencyInvoices, downloadInvoicePdf, downloadInvoicesPaymentsReport, changeInvoiceStatus } from '@/modules/agency/accounting/invoices/api';
+import { downloadFile, downloadPDF, openFileUrl } from '@/shared/utils/downloadFile';
+import { getAgencyInvoices, downloadInvoicePdf, regenerateInvoicePdf, downloadInvoicesPaymentsReport, changeInvoiceStatus } from '@/modules/agency/accounting/invoices/api';
 import { currency, dateMonth } from '@/shared/format';
 import { InvoiceStatus, INVOICE_STATUSES, INVOICE_STATUS_LABELS, invoiceStatusTagType } from '@/modules/agency/accounting/invoices/types';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
@@ -227,11 +230,23 @@ function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<Agency
 }
 
 function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
+  if (invoice.pdfUrl) {
+    openFileUrl(invoice.pdfUrl);
+    return;
+  }
+  renderInvoicePdf(invoice, downloadInvoicePdf);
+}
+
+function onRegenerateInvoicePdf(invoice: AgencyInvoiceListItem) {
+  renderInvoicePdf(invoice, regenerateInvoicePdf);
+}
+
+function renderInvoicePdf(invoice: AgencyInvoiceListItem, render: (invoiceId: string) => Promise<Blob>) {
   isLoading.value = true;
-  downloadInvoicePdf(invoice.id)
+  render(invoice.id)
     .then((response) => {
-      isLoading.value = false;
       downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
+      grid.value?.reload();
     })
     .catch((error) => {
       isLoading.value = false;

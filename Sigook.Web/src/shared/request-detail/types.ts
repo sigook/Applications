@@ -1,6 +1,7 @@
 import type { DetailChipVariant, DetailFact, DetailKpi } from '@/shared/detail-page/types';
 import type { ComplianceDocumentTarget } from '@/shared/request-detail/requestApplicant';
 import type { LocationDetailModel } from '@/shared/types/common';
+import type { WorkerRequestFinishReason } from '@/shared/constants/enums';
 
 export type RequestChipVariant = DetailChipVariant;
 
@@ -88,5 +89,12 @@ export interface RequestShiftModel {
   fridayFinish?: string | null;
   saturdayStart?: string | null;
   saturdayFinish?: string | null;
+  comments?: string;
+}
+
+// Body for PUT .../workers/{workerProfileId}/Finish and .../workers/Finish. Mirrors FinishAssignmentModel.
+export interface FinishAssignmentModel {
+  lastDay: string;
+  reason: WorkerRequestFinishReason;
   comments?: string;
 }

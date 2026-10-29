@@ -25,10 +25,6 @@ export interface Candidate {
   sourceId?: string | null;
 }
 
-export interface CandidateRow extends Candidate {
-  showNotes?: boolean;
-}
-
 // Candidate returned by GET /api/agency/recruiting/candidates/{id}.
 // Mirrors backend CandidateDetailModel (Covenant.Common.Models.Candidates).
 export interface CandidateDetail {

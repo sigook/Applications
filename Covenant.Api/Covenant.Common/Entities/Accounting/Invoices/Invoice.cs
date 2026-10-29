@@ -28,6 +28,7 @@ public class Invoice
     public DateTime? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
     public User UpdatedByUser { get; private set; }
+    public DateTime? PdfGeneratedAt { get; internal set; }
 
     public decimal TotalOvertime => InvoiceTotals.Sum(c => c.Overtime);
     public decimal TotalRegular => InvoiceTotals.Sum(c => c.Regular);

@@ -19,13 +19,20 @@ public class JobPositionsController(ICompanyRepository repository, IAgencyServic
 {
     public const string RouteName = "api/agency/recruiting/clients/{profileId}/jobpositions";
 
-    /// <summary>Gets all active job positions of the specified company profile.</summary>
+    /// <summary>Gets a paginated, sortable list of the active job positions of the specified company profile.</summary>
     /// <param name="profileId">Identifier of the company profile.</param>
-    /// <param name="filter">Optional filter that matches job positions by name.</param>
+    /// <param name="filter">Role search, sorting and pagination.</param>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<CompanyProfileJobPositionRateModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedList<CompanyProfileJobPositionRateModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll([FromRoute] Guid profileId, [FromQuery] GetJobPositionsFilter filter) =>
         Ok(await repository.GetJobPositions(profileId, filter));
+
+    /// <summary>Gets every active job position of the specified company profile, for dropdowns.</summary>
+    /// <param name="profileId">Identifier of the company profile.</param>
+    [HttpGet("Dropdown")]
+    [ProducesResponseType(typeof(IEnumerable<CompanyProfileJobPositionRateModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDropdown([FromRoute] Guid profileId) =>
+        Ok(await repository.GetJobPositions(profileId));
 
     /// <summary>Creates a new job position for the specified company profile.</summary>
     /// <param name="profileId">Identifier of the company profile.</param>
@@ -81,20 +88,20 @@ public class JobPositionsController(ICompanyRepository repository, IAgencyServic
         return Ok();
     }
 
-    /// <summary>Sends a petition email requesting the creation of a new job position.</summary>
-    /// <param name="companyService">Company service used to send the petition.</param>
+    /// <summary>Creates a job position without rates; an agency admin sets the rates later.</summary>
+    /// <param name="companyService">Company service used to create the job position.</param>
     /// <param name="profileId">Identifier of the company profile.</param>
-    /// <param name="model">Petition data including the requested job position.</param>
-    [HttpPost("Petition")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    /// <param name="model">Job position name, description and shift.</param>
+    [HttpPost("WithoutRates")]
+    [ProducesResponseType(typeof(CompanyProfileJobPositionRateModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Petition(
+    public async Task<IActionResult> PostWithoutRates(
         [FromServices] ICompanyService companyService,
         [FromRoute] Guid profileId,
-        [FromBody] JobPositionPetitionModel model)
+        [FromBody] CreateJobPositionModel model)
     {
-        var result = await companyService.PetitionJobPosition(profileId, model);
+        var result = await companyService.CreateJobPositionWithoutRates(profileId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        return Ok();
+        return CreatedAtAction(nameof(GetById), new { profileId, id = result.Value }, new CompanyProfileJobPositionRateModel { Id = result.Value });
     }
 }

@@ -1,5 +1,5 @@
 import type { CovenantFileModel } from '@/shared/types/common';
-import type { CompanyProfileDetail, CompanyProfileSummary } from '@/shared/company-profile/types';
+import type { CompanyProfileDetail, CompanyProfileSummary, JobPositionModel } from '@/shared/company-profile/types';
 import type { CompanyStatus } from '@/shared/constants/enums';
 import type { LocationDetailModel, Province } from '@/shared/types/common';
 import type { RequestShiftModel } from '@/shared/request-detail/types';
@@ -126,29 +126,26 @@ export interface AgencyCompanyLocationModel extends LocationDetailModel {
 
 // Company job position rate.
 // Mirrors backend CompanyProfileJobPositionRateModel.
-export interface AgencyCompanyJobPosition {
-  id?: string;
-  companyProfileId?: string;
-  jobPosition?: string;
-  rate?: number;
-  workerRate?: number;
-  workerRateMin?: number | null;
-  workerRateMax?: number | null;
-  overtimeStartsAfter?: number | null;
-  description?: string;
-  shift?: RequestShiftModel | null;
-  createdAt?: string | null;
-  createdBy?: string;
-  displayShift?: string;
+export type AgencyCompanyJobPosition = JobPositionModel;
+
+export enum JobPositionSortBy {
+  Role = 0,
+  AgencyRate = 1,
+  WorkerRate = 2,
+  CreatedAt = 3,
 }
 
 export interface AgencyCompanyJobPositionFilter {
+  pageIndex?: number;
+  pageSize?: number;
+  isDescending?: boolean;
+  sortBy?: JobPositionSortBy;
   role?: string;
 }
 
 export interface VaccinationRequiredModel {
-  vaccinationRequired: boolean;
-  vaccinationRequiredComments?: string;
+  required: boolean;
+  comments?: string | null;
 }
 
 // Body for PUT /api/agency/recruiting/clients/{profileId}/invoicenotes.
@@ -168,13 +165,6 @@ export interface InvoiceRecipientModel {
 export interface BulkUploadPayload {
   agencyId: string;
   file: File;
-}
-
-// POST /api/AgencyCompanyProfile/{profileId}/JobPosition/Petition
-export interface PetitionJobPositionPayload {
-  id: string | null;
-  jobPosition: string | null;
-  message: string;
 }
 
 // PUT /api/AgencyRequest/is-asap

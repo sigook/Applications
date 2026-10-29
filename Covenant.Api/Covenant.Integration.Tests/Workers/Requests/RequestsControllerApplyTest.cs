@@ -241,6 +241,7 @@ public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWe
             ).Value;
             request.NumberId = numberId;
             request.WorkerRate = 15;
+            request.AgencyRate = 20;
             request.UpdateJobTitle("Driver");
             return request;
         }

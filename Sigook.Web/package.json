@@ -22,7 +22,7 @@
     "@vitejs/plugin-vue": "^6.0.6",
     "@vueup/vue-quill": "^1.2.0",
     "axios": "^1.10.0",
-    "buefy": "^3.0.10",
+    "buefy": "^3.1.0",
     "cropperjs": "^1.6.2",
     "d3-array": "^3.2.4",
     "d3-scale": "^4.0.2",

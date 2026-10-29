@@ -671,7 +671,16 @@ namespace Covenant.Common.Resources {
                 return ResourceManager.GetString("InvalidJobPosition", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to A role with this name and rates already exists for this client.
+        /// </summary>
+        public static string JobPositionAlreadyExists {
+            get {
+                return ResourceManager.GetString("JobPositionAlreadyExists", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Invalid Request.
         /// </summary>

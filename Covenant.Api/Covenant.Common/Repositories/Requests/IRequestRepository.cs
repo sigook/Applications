@@ -1,6 +1,7 @@
 using Covenant.Common.Entities.Requests;
 using Covenant.Common.Models;
 using Covenant.Common.Models.Companies.Agencies;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models.Requests;
 using Covenant.Common.Models.Requests.Agencies;
 using Covenant.Common.Models.Requests.Companies;
@@ -15,6 +16,7 @@ public interface IRequestRepository : IBaseRepository
 {
     Task<Request> GetRequest(Expression<Func<Request, bool>> condition);
     Task<IEnumerable<Request>> GetRequests(IEnumerable<Guid> ids);
+    Task<IEnumerable<Request>> GetRequestsPendingRates(Guid jobPositionRateId);
     IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<PaginatedList<AgencyRequestListModel>> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
     Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
@@ -28,7 +30,7 @@ public interface IRequestRepository : IBaseRepository
     Task<AgencyWorkerRequestModel> GetWorkerRequestByAgencyId(Guid agencyId, Guid requestId, Guid workerRequestId);
     Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, GetWorkerRequestsFilter filter);
     Task<WorkerRequestDetailModel> GetRequestDetailForWorker(Guid workerId, Guid requestId);
-    Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, Pagination pagination);
+    Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, GetWorkerHistoryFilter filter);
     Task<PaginatedList<WorkerRequestHistoryModel>> GetWorkerRequestHistory(Guid agencyId, Guid workerProfileId, GetWorkerRequestHistoryFilter filter);
     Task<AgencyWorkerRequestModel> GetRequestWorkerByCompanyId(Guid companyId, Guid requestId, Guid workerId);
     Task<ShiftModel> GetRequestShift(Guid requestId);
@@ -44,6 +46,7 @@ public interface IRequestRepository : IBaseRepository
     Task<NoteModel> GetNoteDetail(Guid requestId, Guid id);
     Task<RequestNote> GetNote(Guid requestId, Guid id);
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignments(Guid agencyId, DateTime weekStart, DateTime weekEnd);
+    Task<IEnumerable<PendingReviewRequestNotificationModel>> GetPendingReviewRequests(Guid agencyId);
     Task<IEnumerable<WeeklyBoardAssignmentModel>> GetWeeklyBoardAssignmentsForRecruiter(Guid agencyId, Guid recruiterId, DateTime weekStart, DateTime weekEnd);
     Task<RequestRecruiter> GetRequestRecruiter(Guid requestId, Guid recruiterId, DateTime workDate);
     Task BulkReplaceRecruiters(IEnumerable<Guid> requestIds, IEnumerable<Guid> recruiterIds, DateTime createdAt);

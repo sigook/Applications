@@ -8,13 +8,11 @@
           <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
         </template>
         <template v-slot="props">
-          <div class="request-id-cell">
-            <div v-if="props.row.isAsap" class="request-flags">
-              <span class="request-flag request-flag--asap">Asap</span>
-            </div>
-            <router-link :to="{ path: requestBase + '/' + props.row.id }">
-              <p>{{ props.row.numberId }}</p>
-            </router-link>
+          <router-link :to="{ path: requestBase + '/' + props.row.id }">
+            <p>{{ props.row.numberId }}</p>
+          </router-link>
+          <div v-if="props.row.isAsap" class="request-flags">
+            <span class="request-flag request-flag--asap">Asap</span>
           </div>
         </template>
       </b-table-column>
@@ -67,7 +65,7 @@
           </b-taginput>
         </template>
         <template v-slot="props">
-          <b-tag :type="props.row.workerRequestStatus === WorkerRequestStatus.Booked ? 'is-success is-light' : 'is-danger is-light'" rounded>
+          <b-tag :type="`${WorkerRequestStatusTagTypes[props.row.workerRequestStatus as WorkerRequestStatus]} is-light`" rounded>
             {{ WorkerRequestStatusLabels[props.row.workerRequestStatus] }}
           </b-tag>
         </template>
@@ -84,7 +82,7 @@
               <div class="status-dot-container">
                 <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
                   type="is-white" class="request-check"></b-icon>
-                <div class="dot-status" :class="'status-' + RequestStatusLabels[props.row.requestStatus].toLowerCase()"></div>
+                <div class="dot-status" :class="requestStatusClass(props.row.requestStatus)"></div>
               </div>
             </b-tooltip>
           </div>
@@ -102,8 +100,9 @@ import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import { getAgencyWorkerProfileRequestHistory } from '@/modules/agency/recruiting/workers/api';
 import type { WorkerRequestHistoryFilter, WorkerRequestHistoryItem } from '@/modules/agency/recruiting/workers/types';
 import type { CatalogItem, GridHandle, TableColumnRef } from '@/shared/types/common';
-import { RequestStatus, RequestStatusLabels, WorkerRequestStatus, WorkerRequestStatusLabels } from '@/shared/constants/enums';
+import { RequestStatus, RequestStatusLabels, WorkerRequestStatus, WorkerRequestStatusLabels, WorkerRequestStatusTagTypes } from '@/shared/constants/enums';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import { requestStatusClass } from '@/shared/request-detail/useRequestStatus';
 
 const props = defineProps<{ workerId: string }>();
 
@@ -125,6 +124,7 @@ const statuses: CatalogItem<RequestStatus>[] = [
 ];
 const workerStatuses: CatalogItem<WorkerRequestStatus>[] = [
   { id: WorkerRequestStatus.Booked, value: WorkerRequestStatusLabels[WorkerRequestStatus.Booked] },
+  { id: WorkerRequestStatus.Finished, value: WorkerRequestStatusLabels[WorkerRequestStatus.Finished] },
   { id: WorkerRequestStatus.Rejected, value: WorkerRequestStatusLabels[WorkerRequestStatus.Rejected] },
 ];
 
@@ -166,31 +166,7 @@ function onStartWorkingCleared() {
 </script>
 
 <style scoped lang="scss">
-.request-id-cell {
-  position: relative;
-  padding-top: 14px;
-}
-
 .request-flags {
-  position: absolute;
-  top: -8px;
-  left: -10px;
-  z-index: 1;
-}
-
-.request-flag {
-  display: inline-block;
-  padding: 2px 12px 2px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 0 100%);
-
-  &--asap {
-    background: #ff9932;
-    color: #1e1e1e;
-  }
+  margin-top: 2px;
 }
 </style>

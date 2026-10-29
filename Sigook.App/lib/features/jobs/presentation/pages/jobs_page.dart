@@ -9,8 +9,9 @@ import '../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../auth/presentation/widgets/logout_confirmation_dialog.dart';
 import '../../../profile/presentation/providers/cached_worker_profile_provider.dart';
 import '../viewmodels/jobs_viewmodel.dart';
+import '../../../activity/history/presentation/providers/history_providers.dart';
+import '../widgets/current_jobs_section.dart';
 import '../widgets/job_card.dart';
-import '../widgets/app_drawer.dart';
 import '../widgets/filter_sort_bottom_sheet.dart';
 import '../widgets/profile_warning_banner.dart';
 
@@ -23,7 +24,6 @@ class JobsPage extends ConsumerStatefulWidget {
 
 class _JobsPageState extends ConsumerState<JobsPage> {
   final ScrollController _scrollController = ScrollController();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -60,6 +60,7 @@ class _JobsPageState extends ConsumerState<JobsPage> {
   Future<void> _onRefresh() async {
     await Future.wait([
       ref.refresh(cachedWorkerProfileProvider.future),
+      ref.refresh(activeAssignmentsProvider.future),
       ref.read(jobsViewModelProvider.notifier).refresh(),
     ]);
   }
@@ -90,40 +91,45 @@ class _JobsPageState extends ConsumerState<JobsPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(jobsViewModelProvider);
+    final activeAsync = ref.watch(activeAssignmentsProvider);
+    final hasActiveJobs = activeAsync.value?.isNotEmpty ?? false;
     final jobs = state.jobs;
     final hasSearch = state.filter.hasSearch;
 
     return Scaffold(
-      key: _scaffoldKey,
       backgroundColor: AppTheme.surfaceGrey,
-      endDrawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       appBar: AppBar(
         backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          tooltip: 'Filter jobs',
-          icon: const Icon(Icons.filter_list),
-          onPressed: () {
-            notifyLogoFlash();
-            _showFilterModal();
-          },
-        ),
+        automaticallyImplyLeading: false,
+        leading: hasActiveJobs
+            ? null
+            : IconButton(
+                tooltip: 'Filter jobs',
+                icon: const Icon(Icons.filter_list),
+                onPressed: () {
+                  notifyLogoFlash();
+                  _showFilterModal();
+                },
+              ),
         title: const NavbarLogo(),
-        actions: [
-          IconButton(
-            tooltip: 'Menu',
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              notifyLogoFlash();
-              _scaffoldKey.currentState?.openEndDrawer();
-            },
-          ),
-        ],
       ),
-      body: state.isLoading && state.jobs.isEmpty
+      body:
+          (state.isLoading && state.jobs.isEmpty) ||
+              (activeAsync.isLoading && !activeAsync.hasValue)
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+            )
+          : hasActiveJobs
+          ? RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: AppTheme.primaryBlue,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 8, bottom: 16),
+                children: const [ProfileWarningBanner(), CurrentJobsSection()],
+              ),
             )
           : state.error != null && state.jobs.isEmpty
           ? Center(
@@ -224,12 +230,15 @@ class _JobsPageState extends ConsumerState<JobsPage> {
               child: LayoutBuilder(
                 builder: (context, constraints) => SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  child: SizedBox(
-                    height: constraints.maxHeight,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
                     child: Column(
                       children: [
                         const ProfileWarningBanner(),
-                        Expanded(
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 48),
                           child: Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,

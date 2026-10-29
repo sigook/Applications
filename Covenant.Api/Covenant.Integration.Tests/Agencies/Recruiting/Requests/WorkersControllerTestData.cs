@@ -24,13 +24,20 @@ public partial class WorkersControllerTest
         public CompanyProfile CompanyProfile { get; }
         public CompanyProfileJobPositionRate JobPositionRate { get; }
         public Request Request { get; }
+        public Request RequestToFinishAll { get; }
         public WorkerProfile WorkerForList { get; }
         public WorkerProfile WorkerToBook { get; }
         public WorkerProfile WorkerToReject { get; }
         public WorkerProfile WorkerToRejectObsolete { get; }
+        public WorkerProfile WorkerToFinish { get; }
+        public WorkerProfile WorkerToFinishAll1 { get; }
+        public WorkerProfile WorkerToFinishAll2 { get; }
         public WorkerRequest WorkerRequestList { get; }
         public WorkerRequest WorkerRequestReject { get; }
         public WorkerRequest WorkerRequestRejectObsolete { get; }
+        public WorkerRequest WorkerRequestFinish { get; }
+        public WorkerRequest WorkerRequestFinishAll1 { get; }
+        public WorkerRequest WorkerRequestFinishAll2 { get; }
 
         public Data()
         {
@@ -38,13 +45,18 @@ public partial class WorkersControllerTest
             CompanyProfile = FakeData.FakeCompanyProfile(Agency);
             JobPositionRate = FakeData.FakeJobPositionRate(CompanyProfile);
             Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow,
-                JobPositionRate.Id, workersQuantity: 5).Value;
+                JobPositionRate.Id, workerRate: 15M, agencyRate: 20M, workersQuantity: 5).Value;
 
             WorkerForList = FakeData.FakeWorkerProfile(Agency, "w_profile@mail.com");
             WorkerToBook = FakeData.FakeWorkerProfile(Agency, "w_book@mail.com",
                 FakeData.FakeCity(FakeData.FakeProvince(FakeData.FakeCountry("USA"))));
             WorkerToReject = FakeData.FakeWorkerProfile(Agency, "w_reject@mail.com");
             WorkerToRejectObsolete = FakeData.FakeWorkerProfile(Agency, "w_reject_obsolote@mail.com");
+            WorkerToFinish = FakeData.FakeWorkerProfile(Agency, "w_finish@mail.com");
+            WorkerToFinishAll1 = FakeData.FakeWorkerProfile(Agency, "w_finish_all1@mail.com");
+            WorkerToFinishAll2 = FakeData.FakeWorkerProfile(Agency, "w_finish_all2@mail.com");
+            RequestToFinishAll = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow,
+                JobPositionRate.Id, workerRate: 15M, agencyRate: 20M, workersQuantity: 2).Value;
 
             PatchWorker(WorkerForList, "A987654321B");
             PatchWorker(WorkerToBook, "A123456789B");
@@ -52,10 +64,13 @@ public partial class WorkersControllerTest
             WorkerRequestList = WorkerRequest.AgencyBook(WorkerForList.Id, Request.Id, "recruiter@mail.com");
             WorkerRequestReject = WorkerRequest.AgencyBook(WorkerToReject.Id, Request.Id, "recruiter@mail.com");
             WorkerRequestRejectObsolete = WorkerRequest.AgencyBook(WorkerToRejectObsolete.Id, Request.Id, "recruiter@mail.com");
+            WorkerRequestFinish = WorkerRequest.AgencyBook(WorkerToFinish.Id, Request.Id, "recruiter@mail.com");
+            WorkerRequestFinishAll1 = WorkerRequest.AgencyBook(WorkerToFinishAll1.Id, RequestToFinishAll.Id, "recruiter@mail.com");
+            WorkerRequestFinishAll2 = WorkerRequest.AgencyBook(WorkerToFinishAll2.Id, RequestToFinishAll.Id, "recruiter@mail.com");
         }
 
         public IEnumerable<WorkerProfile> Workers =>
-            [WorkerForList, WorkerToBook, WorkerToReject, WorkerToRejectObsolete];
+            [WorkerForList, WorkerToBook, WorkerToReject, WorkerToRejectObsolete, WorkerToFinish, WorkerToFinishAll1, WorkerToFinishAll2];
 
         private void PatchWorker(WorkerProfile worker, string socialInsurance)
         {
@@ -77,8 +92,9 @@ public partial class WorkersControllerTest
             context.CompanyProfiles.Add(CompanyProfile);
             context.CompanyProfileJobPositionRates.Add(JobPositionRate);
             context.WorkerProfiles.AddRange(Workers);
-            context.Requests.Add(Request);
-            context.WorkerRequests.AddRange(WorkerRequestList, WorkerRequestReject, WorkerRequestRejectObsolete);
+            context.Requests.AddRange(Request, RequestToFinishAll);
+            context.WorkerRequests.AddRange(WorkerRequestList, WorkerRequestReject, WorkerRequestRejectObsolete,
+                WorkerRequestFinish, WorkerRequestFinishAll1, WorkerRequestFinishAll2);
             context.SaveChanges();
         }
 

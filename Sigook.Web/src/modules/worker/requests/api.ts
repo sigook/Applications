@@ -1,6 +1,6 @@
 import { api } from '@/app/security/apiService';
 import type { PaginatedList } from '@/shared/types/common';
-import type { WorkerRequestFilter, WorkerRequestApplyModel, WorkerRequestListItem, WorkerRequestDetail, WorkerTimeSheetItem, PunchStatus } from '@/modules/worker/requests/types';
+import type { WorkerRequestFilter, WorkerRequestApplyModel, WorkerRequestListItem, WorkerRequestDetail, PunchStatus } from '@/modules/worker/requests/types';
 
 // Requests
 export function getJobs(filter: WorkerRequestFilter): Promise<PaginatedList<WorkerRequestListItem>> {
@@ -22,10 +22,6 @@ export function requestApplyByEmail(numberId: number, email: string): Promise<vo
 // TimeSheet
 export function workerRegisterTime(requestId: string, latitude: number, longitude: number): Promise<void> {
   return api.post(`/api/worker/requests/${requestId}/TimeSheet`, { latitude, longitude });
-}
-
-export function workerGetTimeSheet(requestId: string): Promise<PaginatedList<WorkerTimeSheetItem>> {
-  return api.get<PaginatedList<WorkerTimeSheetItem>>(`/api/worker/requests/${requestId}/TimeSheet`);
 }
 
 export function getPunchStatus(requestId: string, latitude: number, longitude: number): Promise<PunchStatus> {

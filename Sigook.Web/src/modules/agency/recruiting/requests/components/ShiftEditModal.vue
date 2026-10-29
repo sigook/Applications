@@ -16,7 +16,7 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertError } from "@/shared/utils/toast";
 import { getAgencyRequestShift, updateAgencyRequestShift } from "@/modules/agency/recruiting/requests/api";
-import ShiftForm from "@/modules/agency/recruiting/requests/components/ShiftsForm.vue";
+import ShiftForm from "@/shared/request-detail/ShiftsForm.vue";
 import type { RequestShiftModel } from '@/shared/request-detail/types';
 
 const emit = defineEmits<{ (e: 'onUpdateShift', displayShift: string | undefined): void }>();

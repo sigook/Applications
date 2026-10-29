@@ -8,14 +8,22 @@
       :status-label="statusLabel" :status-variant="statusVariant" :is-asap="request.isAsap"
       :is-direct-hiring="isDirectHiringComputed" :chips="chips" :workers-working="request.workersQuantityWorking"
       :workers-total="request.workersQuantity" :kpis="kpis">
-      <template v-if="!canEdit && request.cancellationDetail" #alert>
-        <b>Cancellation detail:</b> {{ request.cancellationDetail }}
+      <template v-if="isPendingReview || (!canEdit && request.cancellationDetail)" #alert>
+        <template v-if="isPendingReview">
+          <b>Pending review:</b> created by the company. It is not published to workers or the website until it is approved.
+        </template>
+        <template v-else>
+          <b>Cancellation detail:</b> {{ request.cancellationDetail }}
+        </template>
       </template>
 
       <template #actions>
         <template v-if="canEdit">
-          <b-button @click="showShiftModal = true">Edit shift</b-button>
-          <b-button type="is-primary"
+          <b-button v-if="isPendingReview && hasRecruitingAccess" type="is-primary"
+            @click="router.push({ path: `${requestBase}/update/${request.companyProfileId}/${request.id}` })">
+            Review &amp; approve
+          </b-button>
+          <b-button v-else type="is-primary"
             @click="router.push({ path: `${requestBase}/update/${request.companyProfileId}/${request.id}` })">
             Edit request
           </b-button>
@@ -56,8 +64,26 @@
         <b-button size="is-small" icon-left="plus" aria-label="Add one worker" @click="onIncreaseWorkersQuantity" />
       </template>
 
+      <template v-if="!isDirectHiringComputed && request.jobPositionId" #kpi-rate-extra>
+        <b-tooltip v-if="isAdmin" label="Edit role" type="is-dark" append-to-body>
+          <b-button size="is-small" type="is-text" icon-left="pencil" aria-label="Edit role rates"
+            @click="openRoleModal(false)" />
+        </b-tooltip>
+        <b-tooltip label="Duplicate role" type="is-dark" append-to-body>
+          <b-button size="is-small" type="is-text" icon-left="content-copy" aria-label="Duplicate role"
+            @click="openRoleModal(true)" />
+        </b-tooltip>
+      </template>
+
       <template v-if="request.displayShift" #kpi-shift>
         <agency-shift :request-id="request.id" :display-shift="request.displayShift" :fetch-shift="getAgencyRequestShift" />
+      </template>
+
+      <template v-if="canEdit" #kpi-shift-extra>
+        <b-tooltip label="Edit shift" type="is-dark" append-to-body>
+          <b-button size="is-small" type="is-text" icon-left="pencil" aria-label="Edit shift"
+            @click="showShiftModal = true" />
+        </b-tooltip>
       </template>
 
       <b-tabs v-model="currentTab" @update:modelValue="changeTab">
@@ -92,28 +118,32 @@
           <template #header>
             Applicants<span class="detail-tab-count">{{ request.applicantsCount }}</span>
           </template>
-          <applicants v-if="visitedTabs.includes('Applicants')" :request="request" />
+          <applicants v-if="visitedTabs.includes('Applicants')" :request="request" @changed="refreshCounts" />
         </b-tab-item>
         <b-tab-item v-if="hasRecruitingAccess" value="Runners" label="Runners">
           <template #header>
             Runners<span class="detail-tab-count">{{ request.runnersCount }}</span>
           </template>
-          <runners v-if="visitedTabs.includes('Runners')" :request="request" />
+          <runners v-if="visitedTabs.includes('Runners')" :request="request" @changed="refreshCounts" />
         </b-tab-item>
         <b-tab-item value="Workers" label="Workers">
           <template #header>
             Workers<span class="detail-tab-count">{{ request.workersCount }}</span>
           </template>
-          <workers v-if="visitedTabs.includes('Workers')" @refreshRequest="loadRequest" />
-        </b-tab-item>
-        <b-tab-item v-if="!isDirectHiringComputed" value="PunchCard" label="Punch Card">
-          <punch-card v-if="visitedTabs.includes('PunchCard')" :request="request" />
+          <workers v-if="visitedTabs.includes('Workers')" :request="request" @refreshRequest="refreshCounts" />
         </b-tab-item>
       </b-tabs>
     </request-header>
 
     <b-modal custom-content-class="card" v-model="cancelRequestModal" width="500px">
       <cancel-list @sendReason="onCancelRequest"></cancel-list>
+    </b-modal>
+
+    <b-modal custom-content-class="card" v-model="showRoleModal" width="850px">
+      <position-form v-if="request?.jobPositionId" :key="isDuplicatingRole ? 'duplicate' : 'edit'"
+        :kind="isAdmin ? 'full' : 'basic'" :create="createRole" :update="updateRole" :load="loadRole"
+        :current-position="{ id: request.jobPositionId }" :is-duplicate="isDuplicatingRole"
+        @updateContent="onRoleUpdated" />
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="showShiftModal" width="800px">
@@ -143,6 +173,10 @@ import { currency, dateFromNow, emailName } from '@/shared/format';
 import { datesKpi, formatBreak, rateKpi, shiftKpi, staffingItems } from '@/shared/request-detail/requestDetail';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import { useRecruitingAccess } from '@/shared/composables/useRecruitingAccess';
+import { useAdmin } from '@/shared/composables/useAdmin';
+import { createAgencyCompanyJobPosition, createAgencyCompanyJobPositionWithoutRates, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from '@/modules/agency/recruiting/clients/api';
+import type { AgencyCompanyJobPosition } from '@/modules/agency/recruiting/clients/types';
+import PositionForm from '@/shared/company-profile/JobPositionForm.vue';
 import { useRequestStatus } from '@/shared/request-detail/useRequestStatus';
 import Breadcrumbs from '@/shared/ui/Breadcrumbs.vue';
 import type { PageBreadcrumb } from '@/shared/types/common';
@@ -159,7 +193,6 @@ import RequestedBy from '@/modules/agency/recruiting/requests/components/Request
 import ReportTo from '@/modules/agency/recruiting/requests/components/ReportTo.vue';
 import Notes from '@/modules/agency/recruiting/requests/components/RequestNotes.vue';
 import Workers from '@/modules/agency/shared/AgencyWorkers.vue';
-import PunchCard from '@/modules/agency/recruiting/requests/components/MassivePunchCard.vue';
 import CancelList from '@/shared/request-detail/CompanyCancelList.vue';
 import Applicants from '@/modules/agency/recruiting/requests/components/Applicants.vue';
 import Runners from '@/modules/agency/recruiting/requests/components/Runners.vue';
@@ -178,10 +211,18 @@ const cancelRequestModal = ref(false);
 const currentTab = ref<string>('Detail');
 const visitedTabs = ref<string[]>(['Detail']);
 const showShiftModal = ref(false);
+const showRoleModal = ref(false);
+const isDuplicatingRole = ref(false);
+const { isAdmin } = useAdmin();
+const hasRates = computed(() => {
+  const r = request.value;
+  if (!r) return true;
+  return !!r.workerSalary || ((r.agencyRate ?? 0) > 0 && (r.workerRate ?? 0) > 0);
+});
 const canSendInvitation = ref(false);
 const warningMessage = 'The invitation must be sent only once every seven days.';
 
-const { canEdit, canCancel, statusLabel, statusVariant } = useRequestStatus(request);
+const { canEdit, canCancel, isPendingReview, statusLabel, statusVariant } = useRequestStatus(request);
 
 const isDirectHiringComputed = computed(() => isDirectHiring(request.value));
 
@@ -215,7 +256,9 @@ const kpis = computed<RequestKpi[]>(() => {
   if (!r) return [];
   const items = r.complianceItems ?? [];
   const list: RequestKpi[] = [
-    rateKpi(r.workerRate, r.workerSalary, r.incentive),
+    hasRates.value
+      ? rateKpi(r.workerRate, r.workerSalary, r.incentive)
+      : { key: 'rate', label: 'Rate', value: 'Rates pending', hint: '· set by an agency admin' },
     datesKpi(r.startAt, r.finishAt, showFinish.value),
     shiftKpi(r.displayShift, r.durationBreak, r.breakIsPaid),
     {
@@ -283,6 +326,36 @@ function changeTab(tab: string) {
   });
 }
 
+function createRole(model: AgencyCompanyJobPosition): Promise<{ id: string }> {
+  const companyProfileId = request.value?.companyProfileId as string;
+  return isAdmin.value
+    ? createAgencyCompanyJobPosition(companyProfileId, model)
+    : createAgencyCompanyJobPositionWithoutRates(companyProfileId, model);
+}
+
+function updateRole(id: string, model: AgencyCompanyJobPosition): Promise<void> {
+  return updateAgencyCompanyJobPosition(request.value?.companyProfileId as string, id, model);
+}
+
+function loadRole(id: string): Promise<AgencyCompanyJobPosition> {
+  return getAgencyCompanyJobPositionById(request.value?.companyProfileId as string, id);
+}
+
+function openRoleModal(duplicate: boolean) {
+  isDuplicatingRole.value = duplicate;
+  showRoleModal.value = true;
+}
+
+function onRoleUpdated() {
+  showRoleModal.value = false;
+  if (isDuplicatingRole.value) {
+    showAlertSuccess('Role duplicated');
+    return;
+  }
+  showAlertSuccess('Role updated');
+  loadRequest();
+}
+
 function loadRequest() {
   isLoading.value = true;
   getAgencyRequest(route.params.id as string)
@@ -295,6 +368,19 @@ function loadRequest() {
       isLoading.value = false;
       showAlertError(error);
     });
+}
+
+function refreshCounts() {
+  getAgencyRequest(route.params.id as string)
+    .then((response) => {
+      if (!request.value) return;
+      request.value.applicantsCount = response.applicantsCount;
+      request.value.runnersCount = response.runnersCount;
+      request.value.workersCount = response.workersCount;
+      request.value.workersQuantityWorking = response.workersQuantityWorking;
+      request.value.status = response.status;
+    })
+    .catch((error) => showAlertError(error));
 }
 
 function onCancelRequest(reason: { reasonId: string; otherMessage: string }) {

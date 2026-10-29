@@ -9,10 +9,9 @@
           <template v-if="isTouch">
             <b-input v-model="serverParams.jobTitle" placeholder="Search position..." icon="magnify"
               @keyup.enter="onSearch"></b-input>
-            <div class="filter-trigger">
+            <b-badge class="is-flex-shrink-0" :value="activeFilterCount || undefined" type="is-info" rounded>
               <b-button icon-left="filter-variant" @click="showFilters = true" />
-              <span v-if="activeFilterCount > 0" class="filter-count-badge">{{ activeFilterCount }}</span>
-            </div>
+            </b-badge>
           </template>
           <b-button tag="router-link" to="/company-requests/create" icon-left="plus">Create Request</b-button>
         </template>
@@ -21,8 +20,10 @@
             <div class="rcard__head">
               <div>
                 <span class="rcard__title">{{ row.numberId }}</span>
-                <span v-if="row.isAsap" class="asap ml-2">Asap</span>
-                <span v-if="row.isDirectHiring" class="asap ml-2">DH</span>
+                <div v-if="row.isAsap || row.isDirectHiring" class="request-flags">
+                  <span v-if="row.isAsap" class="request-flag request-flag--asap">Asap</span>
+                  <span v-if="row.isDirectHiring" class="request-flag request-flag--dh">DH</span>
+                </div>
               </div>
               <div class="rcard-status">
                 <div class="status-dot-container">
@@ -60,8 +61,10 @@
             <router-link :to="{ path: '/company-requests/' + props.row.id }">
               <p>{{ props.row.numberId }}</p>
             </router-link>
-            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
-            <p v-if="props.row.isDirectHiring" class="asap">DH</p>
+            <div v-if="props.row.isAsap || props.row.isDirectHiring" class="request-flags">
+              <span v-if="props.row.isAsap" class="request-flag request-flag--asap">Asap</span>
+              <span v-if="props.row.isDirectHiring" class="request-flag request-flag--dh">DH</span>
+            </div>
           </template>
         </b-table-column>
         <b-table-column field="jobTitle" label="Position" sortable searchable>
@@ -138,6 +141,7 @@ import PageHeader from '@/shared/ui/PageHeader.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import MobileFiltersPanel from '@/shared/ui/MobileFiltersPanel.vue';
 import { useBreakpoint } from '@/shared/composables/useBreakpoint';
+import { requestStatusClass } from '@/shared/request-detail/useRequestStatus';
 
 const router = useRouter();
 const companyStore = useCompanyStore();
@@ -231,7 +235,7 @@ function getStatusClass(row: CompanyRequestListItem) {
     row.workersQuantityWorking < row.workersQuantity) {
     return 'status-inprogress';
   }
-  return 'status-' + RequestStatusLabels[row.requestStatus].toLowerCase();
+  return requestStatusClass(row.requestStatus);
 }
 </script>
 

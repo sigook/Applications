@@ -68,6 +68,7 @@ export interface AgencyInvoiceListItem {
   paidAt?: string | null;
   updatedAt?: string | null;
   updatedByName?: string | null;
+  pdfUrl: string | null;
 }
 
 // Response shape of GET /api/agency/accounting/invoices.

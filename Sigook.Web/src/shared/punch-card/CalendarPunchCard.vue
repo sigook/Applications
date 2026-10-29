@@ -192,9 +192,10 @@ function distributeWeekHours(week: PunchCardWeek) {
 }
 
 function isAvailableToUpdateWorker(date: string | Date) {
-  if (props.worker && props.worker.workerRequestStatus === WorkerRequestStatus.Rejected && props.worker.rejectedAt) {
+  const endedAt = props.worker?.finishedAt ?? props.worker?.rejectedAt;
+  if (props.worker && props.worker.workerRequestStatus !== WorkerRequestStatus.Booked && endedAt) {
     const start = dayjs(props.startDate).subtract(1, 'day');
-    const oneMonth = dayjs(props.worker.rejectedAt).add(1, 'month');
+    const oneMonth = dayjs(endedAt).add(1, 'month');
     if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
       return true;
     }

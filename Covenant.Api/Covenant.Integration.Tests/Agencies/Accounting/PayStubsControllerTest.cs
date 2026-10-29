@@ -13,6 +13,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Accounting.PayStubs;
 using Covenant.Common.Models.Requests.TimeSheets.Agencies;
 using Covenant.Common.Models;
+using Covenant.Common.Repositories.Accounting.PayStubs;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
@@ -20,6 +21,7 @@ using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
+using System.Net.Mime;
 using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
@@ -198,6 +200,79 @@ public class PayStubsControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
     }
 
     [Fact]
+    public async Task GetPayStubPdf_MarksPdfAsGenerated_AndListReturnsItsUrl()
+    {
+        PaidWorker worker = _data.ForPdf;
+        (await Generate(worker.WorkerId)).EnsureSuccessStatusCode();
+        var payStub = await Context.PayStubs.AsNoTracking().SingleAsync(p => p.WorkerProfileId == worker.Profile.Id);
+        string listUrl = $"{PayStubsController.RouteName}?payStubNumber={payStub.PayStubNumber}";
+        Assert.Null(Assert.Single((await _client.GetFromJsonAsync<PaginatedList<PayStubListModel>>(listUrl)).Items).PdfUrl);
+
+        HttpResponseMessage response = await _client.GetAsync($"{PayStubsController.RouteName}/{payStub.Id}/pdf");
+
+        response.EnsureSuccessStatusCode();
+        Assert.NotNull((await Context.PayStubs.AsNoTracking().SingleAsync(p => p.Id == payStub.Id)).PdfGeneratedAt);
+        PayStubListModel row = Assert.Single((await _client.GetFromJsonAsync<PaginatedList<PayStubListModel>>(listUrl)).Items);
+        Assert.Equal(Data.PdfUrl(payStub.Id.ToPayStubBlobName()), row.PdfUrl);
+    }
+
+    [Fact]
+    public async Task RegeneratePayStubPdf_DiscardsStoredPdf_AndRendersItAgain()
+    {
+        PaidWorker worker = _data.ForRegenerate;
+        (await Generate(worker.WorkerId)).EnsureSuccessStatusCode();
+        var payStub = await Context.PayStubs.AsNoTracking().SingleAsync(p => p.WorkerProfileId == worker.Profile.Id);
+        string blobName = payStub.Id.ToPayStubBlobName();
+
+        HttpResponseMessage response = await _client.PostAsync($"{PayStubsController.RouteName}/{payStub.Id}/pdf/regenerate", null);
+
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(MediaTypeNames.Application.Pdf, response.Content.Headers.ContentType?.MediaType);
+        Startup.PayStubsContainer.Verify(c => c.DeleteFileIfExists(blobName), Times.Once);
+        Startup.PayStubsContainer.Verify(c => c.Download(blobName), Times.Never);
+        Startup.PayStubsContainer.Verify(c => c.UploadAsync(It.IsAny<byte[]>(), blobName, It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegeneratePayStubPdf_UnknownPayStub_ReturnsNotFound()
+    {
+        HttpResponseMessage response = await _client.PostAsync($"{PayStubsController.RouteName}/{Guid.NewGuid()}/pdf/regenerate", null);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetYtdSummary_AddsOnlyThePayStubAndTheOnesBeforeIt()
+    {
+        DateTime[] weeks = [Data.FakeNow, Data.FakeNow.AddDays(7), Data.FakeNow.AddDays(7), Data.FakeNow.AddDays(14)];
+        foreach (DateTime week in weeks)
+        {
+            var model = new CreatePayStubModel
+            {
+                WorkerProfileId = _data.ForYtd.Profile.Id,
+                Position = "Forklift",
+                WorkBegins = week,
+                WorkEnd = week.AddDays(3),
+                Items = [new CreatePayStubItemModel { Type = PayStubItemType.Regular, Quantity = 10, UnitPrice = 20m }]
+            };
+            Assert.Equal(HttpStatusCode.Created, (await _client.PostAsJsonAsync(PayStubsController.RouteName, model)).StatusCode);
+        }
+        var payStubs = await Context.PayStubs.AsNoTracking()
+            .Where(p => p.WorkerProfileId == _data.ForYtd.Profile.Id)
+            .OrderBy(p => p.DateWorkEnd).ThenBy(p => p.NumberId)
+            .ToListAsync();
+        var repository = _factory.Services.CreateScope().ServiceProvider.GetRequiredService<IPayStubRepository>();
+
+        var ytds = new List<decimal>();
+        foreach (var payStub in payStubs)
+        {
+            ytds.Add((await repository.GetYtdSummary(payStub.WorkerProfileId, payStub.DateWorkEnd, payStub.NumberId)).Gross);
+        }
+
+        Assert.Equal([200m, 400m, 600m, 800m], ytds);
+    }
+
+    [Fact]
     public async Task SendPayStubEmail_UnknownPayStub_ReturnsBadRequest()
     {
         HttpResponseMessage response = await _client.PostAsync($"{PayStubsController.RouteName}/{Guid.NewGuid()}/email", null);
@@ -267,6 +342,9 @@ public class PayStubsControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             services.AddSingleton(Rates.DefaultRates);
             services.AddSingleton(TimeLimits.DefaultTimeLimits);
             services.AddSingleton<AgencyIdFilter>();
+            PayStubsContainer
+                .Setup(c => c.GetReadUrl(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<DateTimeOffset>()))
+                .Returns((string fileName, string _, DateTimeOffset _) => Data.PdfUrl(fileName));
             services.AddSingleton(PayStubsContainer.Object);
             services.AddSingleton(Publisher.Object);
             var currentUserService = new Mock<ICurrentUserService>();
@@ -330,6 +408,8 @@ public class PayStubsControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         public static readonly DateTime FakeNow = new(2019, 01, 08);
         public const decimal WorkerRate = 20m;
 
+        public static string PdfUrl(string fileName) => $"https://blob/paystubs/{fileName}";
+
         private readonly City city;
         private readonly Agency agency;
         private readonly CompanyProfile company;
@@ -341,8 +421,11 @@ public class PayStubsControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         public PaidWorker ForFile { get; }
         public PaidWorker ForDelete { get; }
         public PaidWorker ForManual { get; }
+        public PaidWorker ForPdf { get; }
+        public PaidWorker ForRegenerate { get; }
+        public PaidWorker ForYtd { get; }
 
-        private PaidWorker[] Workers => [ForGenerate, ForGenerateTwice, WithoutApprovedTime, ForList, ForFile, ForDelete, ForManual];
+        private PaidWorker[] Workers => [ForGenerate, ForGenerateTwice, WithoutApprovedTime, ForList, ForFile, ForDelete, ForManual, ForPdf, ForRegenerate, ForYtd];
 
         public Data()
         {
@@ -356,6 +439,9 @@ public class PayStubsControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             ForFile = new PaidWorker(agency, company, city, "file");
             ForDelete = new PaidWorker(agency, company, city, "delete");
             ForManual = new PaidWorker(agency, company, city, "manual", approved: false);
+            ForPdf = new PaidWorker(agency, company, city, "pdf");
+            ForRegenerate = new PaidWorker(agency, company, city, "regenerate");
+            ForYtd = new PaidWorker(agency, company, city, "ytd", approved: false);
         }
 
         public void Seed(CovenantContext context)

@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:sigook_app_flutter/core/error/failures.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/punch_status.dart';
 import 'package:sigook_app_flutter/features/jobs/domain/entities/timesheet_response.dart';
-import 'package:sigook_app_flutter/features/jobs/domain/entities/paginated_timesheet.dart';
 
 abstract class TimesheetRepository {
   Future<Either<Failure, PunchStatus>> getPunchStatus({
@@ -15,12 +14,5 @@ abstract class TimesheetRepository {
     required String jobId,
     required double latitude,
     required double longitude,
-  });
-
-  Future<Either<Failure, PaginatedTimesheet>> getTimesheetEntries({
-    required String jobId,
-    int pageIndex = 1,
-    int pageSize = 5,
-    bool isDescending = false,
   });
 }

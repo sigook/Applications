@@ -89,6 +89,19 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
         return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
     }
 
+    /// <summary>Discards the stored invoice PDF, renders it again from the current data and returns it.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    [HttpPost("{invoiceId:guid}/pdf/regenerate")]
+    [Produces("application/octet-stream", "application/json")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RegenerateInvoicePdf(Guid invoiceId)
+    {
+        var document = await invoiceService.RegenerateInvoicePdf(invoiceId);
+        if (document is null) return NotFound();
+        return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
+    }
+
     /// <summary>Gets the pay stubs linked to an invoice, including delete-warning information.</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
     [HttpGet("{invoiceId:guid}/paystubs")]

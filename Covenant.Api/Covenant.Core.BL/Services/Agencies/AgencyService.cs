@@ -262,6 +262,8 @@ public class AgencyService : IAgencyService
         {
             return Result.Fail<Guid>(entity.Errors);
         }
+        if (await companyRepository.JobPositionExists(profileId, entity.Value.JobPosition, entity.Value.Rate, entity.Value.WorkerRate))
+            return Result.Fail<Guid>(ApiResources.JobPositionAlreadyExists);
         await companyRepository.Create(entity.Value);
         await companyRepository.SaveChangesAsync();
         return Result.Ok(entity.Value.Id);
@@ -279,8 +281,16 @@ public class AgencyService : IAgencyService
         {
             return Result.Fail();
         }
+        if (await companyRepository.JobPositionExists(entity.CompanyProfileId, result.Value.JobPosition, result.Value.Rate, result.Value.WorkerRate, id))
+            return Result.Fail(ApiResources.JobPositionAlreadyExists);
         entity.OnShiftUpdated += async (sender, e) => await shiftRepository.Create(e);
         entity.Update(result.Value);
+        if (entity.HasRates)
+        {
+            var requests = await requestRepository.GetRequestsPendingRates(entity.Id);
+            foreach (var request in requests)
+                request.UpdateRates(null, entity.Rate, entity.WorkerRate, entity.Id);
+        }
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }

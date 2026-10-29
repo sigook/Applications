@@ -8,6 +8,7 @@ using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Companies.Agencies;
 using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Locations;
+using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models.Requests.Agencies;
 using Covenant.Common.Models.Requests.Companies;
 using Covenant.Common.Models.Requests.WeeklyBoard;
@@ -225,6 +226,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .Include(r => r.JobLocation).ThenInclude(jl => jl.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Where(r => r.CompanyProfile.Active)
             .Where(r => openStatus.Contains(r.Status))
+            .Where(r => r.WorkerSalary != null || (r.AgencyRate > 0 && r.WorkerRate > 0))
             .Where(r => countries.Contains(r.JobLocation.City.Province.Country.Code))
             .Select(r => new JobViewModel
             {
@@ -391,8 +393,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
 
     private static Expression<Func<RequestListModel, bool>> ApplyFilterForCompany(GetRequestForCompanyFilter filter)
     {
-        // Companies can see Open and Filled orders (InProgress was removed 2026-01-28)
-        var statusToVisualize = new RequestStatus[] { RequestStatus.Open, RequestStatus.Filled };
+        var statusToVisualize = new RequestStatus[] { RequestStatus.PendingReview, RequestStatus.Open, RequestStatus.Filled };
         Expression<Func<RequestListModel, bool>> predicate = r => statusToVisualize.Contains(r.RequestStatus);
         if (filter.NumberId.HasValue)
             predicate = predicate.And(r => r.NumberId == filter.NumberId.Value);
@@ -494,7 +495,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var workerRequests = Context.WorkerRequests.WhereSearch(filter.Name,
             wr => wr.WorkerProfile.FirstName, wr => wr.WorkerProfile.MiddleName, wr => wr.WorkerProfile.LastName,
-            wr => wr.WorkerProfile.SecondLastName, wr => wr.WorkerProfile.Worker.Email);
+            wr => wr.WorkerProfile.SecondLastName, wr => wr.WorkerProfile.Worker.Email, wr => wr.WorkerProfile.MobileNumber,
+            wr => wr.WorkerProfile.MobileNumber.Replace(" ", string.Empty).Replace("-", string.Empty).Replace("(", string.Empty).Replace(")", string.Empty));
         var query = from wr in workerRequests
                     select new AgencyWorkerRequestModel
                     {
@@ -508,11 +510,16 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                             (string.IsNullOrWhiteSpace(wr.WorkerProfile.MiddleName) ? string.Empty : " " + wr.WorkerProfile.MiddleName) +
                             " " + wr.WorkerProfile.LastName +
                             (string.IsNullOrWhiteSpace(wr.WorkerProfile.SecondLastName) ? string.Empty : " " + wr.WorkerProfile.SecondLastName),
+                        Email = wr.WorkerProfile.Worker.Email,
                         ProfileImage = wr.WorkerProfile.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wr.WorkerProfile.ProfileImage.FileName}",
                         WorkerRequestStatus = wr.WorkerRequestStatus,
                         RejectComments = wr.RejectComments,
                         RejectedAt = wr.RejectedAt,
                         RejectedBy = wr.RejectedBy,
+                        FinishedAt = wr.FinishedAt,
+                        FinishedBy = wr.FinishedBy,
+                        FinishReason = wr.FinishReason,
+                        FinishComments = wr.FinishComments,
                         ApprovedToWork = wr.WorkerProfile.ApprovedToWork,
                         IsSubcontractor = wr.WorkerProfile.IsSubcontractor,
                         SocialInsurance = wr.WorkerProfile.SocialInsurance,
@@ -540,16 +547,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             predicate = predicate.And(wr => wr.NumberId == filter.NumberId.Value);
         if (filter.Statuses != null && filter.Statuses.Any())
             predicate = predicate.And(wr => filter.Statuses.Contains(wr.WorkerRequestStatus));
-        if (!string.IsNullOrWhiteSpace(filter.Phone))
-        {
-            var expression = new Regex(@"\s+");
-            var phoneWithoutBlankSpaces = expression.Replace(filter.Phone, string.Empty);
-            predicate = predicate.And(wp =>
-                wp.MobileNumber.Replace("(", string.Empty).Replace(")", string.Empty).Contains(filter.Phone) ||
-                wp.MobileNumber.Contains(phoneWithoutBlankSpaces));
-        }
-        if (!string.IsNullOrWhiteSpace(filter.SocialInsurance))
-            predicate = predicate.And(wr => wr.SocialInsurance.Contains(filter.SocialInsurance));
         if (filter.StartWorkingFrom.HasValue && filter.StartWorkingTo.HasValue)
             predicate = predicate.And(r => r.StartWorking.Value.Date >= filter.StartWorkingFrom.Value.Date && r.StartWorking.Value.Date <= filter.StartWorkingTo.Value.Date);
         if (filter.CreatedAtFrom.HasValue && filter.CreatedAtTo.HasValue)
@@ -613,6 +610,10 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                                                          WorkerRequestStatus = wr.WorkerRequestStatus,
                                                          RejectComments = wr.RejectComments,
                                                          RejectedAt = wr.RejectedAt,
+                                                         FinishedAt = wr.FinishedAt,
+                                                         FinishedBy = wr.FinishedBy,
+                                                         FinishReason = wr.FinishReason,
+                                                         FinishComments = wr.FinishComments,
                                                          ProfileImage = wr.WorkerProfile.ProfileImage == null ? null : $"{filesConfiguration.FilesPath}{wr.WorkerProfile.ProfileImage.FileName}",
                                                          NumberId = wr.WorkerProfile.NumberId,
                                                          ApprovedToWork = wr.WorkerProfile.ApprovedToWork,
@@ -624,29 +625,51 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         return query.AsNoTracking().SingleOrDefaultAsync();
     }
 
-    public Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, Pagination pagination) =>
-        (from wp in Context.WorkerProfiles.Where(c => c.WorkerId == workerId)
-         join r in Context.Requests.Where(r => r.Status == RequestStatus.Cancelled) on wp.AgencyId equals r.CompanyProfile.AgencyId
-         join wr in Context.WorkerRequests.Where(c => c.WorkerProfile.WorkerId == workerId) on r.Id equals wr.RequestId
-         orderby r.NumberId descending
-         select new WorkerRequestListModel
-         {
-             Id = r.Id,
-             NumberId = r.NumberId,
-             IsAsap = r.IsAsap,
-             CreatedAt = r.CreatedAt,
-             JobTitle = r.JobTitle,
-             WorkerRate = r.WorkerRate,
-             WorkerSalary = r.WorkerSalary,
-             WorkerApprovedToWork = wp.ApprovedToWork.ToString(),
-             Location = r.JobLocation.Address + " " + r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value + " " + r.JobLocation.PostalCode,
-             Entrance = r.JobLocation.Entrance,
-             Status = wr.WorkerRequestStatus.ToString(),
-             WorkersQuantity = r.WorkersQuantity,
-             StartAt = r.StartAt,
-             FinishAt = r.FinishAt,
-             DurationTerm = r.DurationTerm.ToString()
-         }).AsNoTracking().ToPaginatedList(pagination);
+    public Task<PaginatedList<WorkerRequestListModel>> GetRequestsHistoryForWorker(Guid workerId, GetWorkerHistoryFilter filter)
+    {
+        var workerRequests = Context.WorkerRequests.Where(wr => wr.WorkerProfile.WorkerId == workerId);
+        workerRequests = filter.Status switch
+        {
+            WorkerAssignmentStatus.Active => workerRequests.Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked),
+            WorkerAssignmentStatus.Completed => workerRequests.Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Finished && wr.FinishReason == WorkerRequestFinishReason.ContractCompleted),
+            WorkerAssignmentStatus.Ended => workerRequests.Where(wr => wr.WorkerRequestStatus == WorkerRequestStatus.Rejected || (wr.WorkerRequestStatus == WorkerRequestStatus.Finished && wr.FinishReason != WorkerRequestFinishReason.ContractCompleted)),
+            WorkerAssignmentStatus.Past => workerRequests.Where(wr => wr.WorkerRequestStatus != WorkerRequestStatus.Booked),
+            _ => workerRequests
+        };
+
+        return workerRequests
+            .OrderByDescending(wr => wr.StartWorking ?? wr.CreatedAt)
+            .ThenBy(wr => wr.Id)
+            .Select(wr => new WorkerRequestListModel
+            {
+                Id = wr.Request.Id,
+                NumberId = wr.Request.NumberId,
+                IsAsap = wr.Request.IsAsap,
+                CreatedAt = wr.Request.CreatedAt,
+                JobTitle = wr.Request.JobTitle,
+                WorkerRate = wr.Request.WorkerRate,
+                WorkerSalary = wr.Request.WorkerSalary,
+                WorkerApprovedToWork = wr.WorkerProfile.ApprovedToWork.ToString(),
+                Location = wr.Request.JobLocation.Address + " " + wr.Request.JobLocation.City.Value + " " + wr.Request.JobLocation.City.Province.Value + " " + wr.Request.JobLocation.PostalCode,
+                Entrance = wr.Request.JobLocation.Entrance,
+                Status = wr.WorkerRequestStatus == WorkerRequestStatus.Booked
+                    ? nameof(WorkerAssignmentStatus.Active)
+                    : wr.WorkerRequestStatus == WorkerRequestStatus.Finished && wr.FinishReason == WorkerRequestFinishReason.ContractCompleted
+                        ? nameof(WorkerAssignmentStatus.Completed)
+                        : nameof(WorkerAssignmentStatus.Ended),
+                WorkersQuantity = wr.Request.WorkersQuantity,
+                StartAt = wr.Request.StartAt,
+                FinishAt = wr.Request.FinishAt,
+                DurationTerm = wr.Request.DurationTerm.ToString(),
+                ClientName = wr.Request.CompanyProfile.FullName,
+                StartWorking = wr.StartWorking,
+                EndedAt = wr.FinishedAt ?? wr.RejectedAt,
+                HoursWorked = wr.TimeSheets.Where(ts => ts.TimeOutApproved != null && ts.TimeInApproved != null).Sum(ts => (ts.TimeOutApproved - ts.TimeInApproved).Value.TotalHours)
+                    - (wr.Request.BreakIsPaid ? 0 : wr.TimeSheets.Count(ts => ts.TimeOutApproved != null && ts.TimeInApproved != null) * wr.Request.DurationBreak.TotalHours)
+            })
+            .AsNoTracking()
+            .ToPaginatedList(filter);
+    }
 
     public async Task<PaginatedList<WorkerRequestListModel>> GetRequestsForWorker(Guid workerId, GetWorkerRequestsFilter filter)
     {
@@ -657,7 +680,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var bookedRequests = Context.WorkerRequests
             .Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Booked);
         var rejectedRequests = Context.WorkerRequests
-            .Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus == WorkerRequestStatus.Rejected);
+            .Where(wr => wr.WorkerProfile.WorkerId == workerId && wr.WorkerRequestStatus != WorkerRequestStatus.Booked);
         var hasBooked = await bookedRequests.AnyAsync();
 
         var requests = Context.Requests.Where(r => r.CompanyProfile.AgencyId == agencyId);
@@ -672,7 +695,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 IsBooked = bookedRequests.Any(wr => wr.RequestId == r.Id),
                 IsRejected = rejectedRequests.Any(wr => wr.RequestId == r.Id)
             })
-            .Where(x => x.IsBooked || (!hasBooked && x.Request.Status == RequestStatus.Open && !x.IsRejected))
+            .Where(x => x.IsBooked || (!hasBooked && x.Request.Status == RequestStatus.Open && !x.IsRejected
+                && (x.Request.WorkerSalary != null || (x.Request.AgencyRate > 0 && x.Request.WorkerRate > 0))))
             .Select(x => new WorkerRequestListModel
         {
             Id = x.Request.Id,
@@ -999,6 +1023,21 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                        SentAt = r.CreatedAt
                    }).ToList()
                }).ToListAsync();
+
+    public async Task<IEnumerable<PendingReviewRequestNotificationModel>> GetPendingReviewRequests(Guid agencyId) =>
+        await Context.Requests
+            .Where(r => r.CompanyProfile.AgencyId == agencyId && r.Status == RequestStatus.PendingReview)
+            .OrderBy(r => r.CreatedAt)
+            .ThenBy(r => r.Id)
+            .Select(r => new PendingReviewRequestNotificationModel
+            {
+                RequestId = r.Id,
+                NumberId = r.NumberId,
+                JobTitle = r.JobTitle,
+                CompanyName = r.CompanyProfile.FullName,
+                CreatedAt = r.CreatedAt
+            })
+            .ToListAsync();
 
     public async Task<IEnumerable<WeeklyBoardRunnerModel>> GetOrderRunners(Guid requestId) =>
         await (from r in Context.Runners
@@ -1482,6 +1521,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var requests = Context.Requests.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();
     }
+
+    public async Task<IEnumerable<Request>> GetRequestsPendingRates(Guid jobPositionRateId) =>
+        await Context.Requests
+            .Where(r => r.JobPositionRateId == jobPositionRateId && r.WorkerSalary == null)
+            .Where(r => r.AgencyRate == null || r.AgencyRate <= 0 || r.WorkerRate == null || r.WorkerRate <= 0)
+            .ToListAsync();
 
     public async Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId)
     {

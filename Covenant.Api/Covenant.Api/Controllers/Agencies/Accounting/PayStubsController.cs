@@ -137,6 +137,19 @@ public class PayStubsController(
         return File(file.Content, MediaTypeNames.Application.Pdf, file.FileName);
     }
 
+    /// <summary>Discards the stored pay stub PDF, renders it again from the current data and returns it.</summary>
+    /// <param name="payStubId">Identifier of the pay stub.</param>
+    [HttpPost("{payStubId:guid}/pdf/regenerate")]
+    [Produces("application/octet-stream", "application/json")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RegeneratePayStubPdf(Guid payStubId)
+    {
+        var file = await payStubService.RegeneratePayStubPdf(payStubId);
+        if (file is null) return NotFound();
+        return File(file.Content, MediaTypeNames.Application.Pdf, file.FileName);
+    }
+
     /// <summary>Generates the pay stub PDF and emails it to the worker.</summary>
     /// <param name="payStubId">Identifier of the pay stub.</param>
     [HttpPost("{payStubId}/email")]

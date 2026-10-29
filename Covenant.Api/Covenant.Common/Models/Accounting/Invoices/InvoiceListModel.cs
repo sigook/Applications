@@ -1,4 +1,5 @@
 using Covenant.Common.Enums;
+using System.Text.Json.Serialization;
 
 namespace Covenant.Common.Models.Accounting.Invoices;
 
@@ -25,6 +26,9 @@ public class InvoiceListModel
     public DateTime? PaidAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string UpdatedByName { get; set; }
+    [JsonIgnore]
+    public DateTime? PdfGeneratedAt { get; set; }
+    public string PdfUrl { get; set; }
 
     public void SetDueDays(DateTime today) =>
         DueDays = Status == InvoiceStatus.Paid ? 0 : Math.Max(0, (today.Date - DueDate).Days);

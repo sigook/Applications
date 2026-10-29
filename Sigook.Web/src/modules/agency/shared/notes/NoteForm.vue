@@ -1,7 +1,7 @@
 <template>
   <div class="form-notes" @keydown="onPressEnter">
     <b-field>
-      <b-input type="textarea" v-model="newNote.note" :rows="2" placeholder="Write a note..."
+      <b-input type="textarea" v-model="newNote.note" :rows="4" placeholder="Write a note..."
         @update:model-value="onEditingNote"></b-input>
     </b-field>
     <div class="is-flex is-flex-wrap-wrap is-align-items-center is-justify-content-space-between">

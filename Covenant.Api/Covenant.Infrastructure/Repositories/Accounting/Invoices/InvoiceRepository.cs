@@ -30,6 +30,7 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                         TotalNet = i.TotalNet,
                         CreatedAt = i.CreatedAt,
                         WeekEnding = i.WeekEnding,
+                        PdfGeneratedAt = i.PdfGeneratedAt
                     };
         return await query.OrderByDescending(i => i.NumberId).ToPaginatedList(filter);
     }
@@ -67,6 +68,11 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                 .SetProperty(i => i.UpdatedBy, (Guid?)null));
         return overdue.Select(i => i.InvoiceNumber).ToList();
     }
+
+    public Task MarkPdfGenerated(Guid invoiceId, DateTime generatedAt) =>
+        Context.Invoices
+            .Where(i => i.Id == invoiceId && i.PdfGeneratedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(i => i.PdfGeneratedAt, generatedAt));
 
     public async Task<List<InvoiceListModel>> GetAllInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter)
     {
@@ -234,6 +240,7 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                         Status = i.Status,
                         PaymentTermDays = i.CompanyProfile.PaymentTermDays,
                         PaidAt = i.PaidAt,
+                        PdfGeneratedAt = i.PdfGeneratedAt,
                         UpdatedAt = i.UpdatedAt,
                         UpdatedByName = Context.AgencyPersonnel
                             .Where(p => p.UserId == i.UpdatedBy && p.AgencyId == i.CompanyProfile.AgencyId)

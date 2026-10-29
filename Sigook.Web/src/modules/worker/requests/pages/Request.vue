@@ -1,6 +1,7 @@
 <template>
   <div>
     <b-loading v-model="isLoading"></b-loading>
+    <Breadcrumbs :crumbs="crumbs" :back-to="crumbs[0].to" />
 
     <RequestHeader v-if="request" :number-id="request.numberId ?? 0" :title="request.jobTitle ?? ''"
       logo-icon="briefcase-outline" :kpis="[]">
@@ -39,7 +40,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { useWorkerStore } from '@/modules/worker/store';
 import { showAlertError } from '@/shared/utils/toast';
 import { getWorkerRequest, workerRequestApplySelf } from '@/modules/worker/requests/api';
-import { getWorkerRequestHistoryDetail } from '@/modules/worker/history/api';
 import { appGlobals } from '@/app/globals';
 import { useWorkerRequestSummary } from '@/modules/worker/requests/useWorkerRequestSummary';
 import type { WorkerRequestDetail } from '@/modules/worker/requests/types';
@@ -48,8 +48,11 @@ import RequestHeader from '@/shared/request-detail/RequestHeader.vue';
 import RequestDetailTab from '@/shared/request-detail/RequestDetailTab.vue';
 import RequestLocationCard from '@/shared/request-detail/RequestLocationCard.vue';
 import JobHeaderLocation from '@/modules/worker/requests/components/JobHeaderLocation.vue';
+import Breadcrumbs from '@/shared/ui/Breadcrumbs.vue';
+import type { PageBreadcrumb } from '@/shared/types/common';
 
 const route = useRoute();
+const crumbs: PageBreadcrumb[] = [{ label: 'Jobs', to: '/worker-requests' }];
 const router = useRouter();
 const workerStore = useWorkerStore();
 
@@ -88,17 +91,6 @@ const canApply = computed(() => {
   return available;
 });
 
-function getWorkerHistoryRequest() {
-  getWorkerRequestHistoryDetail(route.params.id as string)
-    .then((response) => {
-      isLoading.value = false;
-      request.value = response;
-    })
-    .catch(() => {
-      isLoading.value = false;
-    });
-}
-
 function getWorkerRequestFn() {
   getWorkerRequest(route.params.id as string)
     .then((response) => {
@@ -126,9 +118,5 @@ function applyToRequest(comment: string) {
     });
 }
 
-if (route.query.history) {
-  getWorkerHistoryRequest();
-} else {
-  getWorkerRequestFn();
-}
+getWorkerRequestFn();
 </script>

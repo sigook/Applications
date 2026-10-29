@@ -15,8 +15,10 @@
             </span>
           </span>
           <span class="request-group-tags">
-            <span v-if="group.isDirectHiring" class="asap">DH</span>
-            <span v-if="group.isAsap" class="asap">ASAP</span>
+            <span v-if="group.isAsap || group.isDirectHiring" class="request-flags">
+              <span v-if="group.isAsap" class="request-flag request-flag--asap">Asap</span>
+              <span v-if="group.isDirectHiring" class="request-flag request-flag--dh">DH</span>
+            </span>
             <b-tag v-if="group.startAt" :type="isStartingSoon(group.startAt) ? 'is-warning' : ''">
               <b-icon icon="calendar-blank-outline" size="is-small"></b-icon>
               Starts {{ dateMonth(group.startAt) }}
@@ -86,10 +88,6 @@ function isStartingSoon(startAt: string): boolean {
   border-bottom: 1px solid $gray-border;
   cursor: pointer;
   overflow: hidden;
-
-  .asap {
-    margin-right: 0;
-  }
 }
 
 .request-group-info {

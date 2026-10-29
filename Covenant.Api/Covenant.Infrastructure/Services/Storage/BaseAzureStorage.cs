@@ -1,5 +1,7 @@
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
+using System.Net.Http.Headers;
 using Covenant.Common.Configuration;
 using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Storage;
@@ -97,6 +99,18 @@ public class BaseAzureStorage : IBaseAzureStorage
                 await DeleteFileIfExists(file);
             }
         }
+    }
+
+    public string GetReadUrl(string fileName, string downloadName, DateTimeOffset expiresOn)
+    {
+        var blob = container.GetBlobClient(fileName);
+        var sas = new BlobSasBuilder(BlobSasPermissions.Read, expiresOn)
+        {
+            BlobContainerName = _containerName,
+            BlobName = fileName,
+            ContentDisposition = new ContentDispositionHeaderValue("inline") { FileNameStar = downloadName }.ToString()
+        };
+        return blob.GenerateSasUri(sas).ToString();
     }
 
     public async Task<Result> UploadAsync(Stream file, string fileName)

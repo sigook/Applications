@@ -65,6 +65,7 @@ export interface PunchCardEditableDay extends Omit<PunchCardDay, 'timeInApproved
 export interface PunchCardWorker {
   workerRequestStatus: number;
   rejectedAt?: string | null;
+  finishedAt?: string | null;
 }
 
 // Response shape of GET /api/agency/recruiting/requests/{}/Workers/{}/TimeSheets/{}/Usages.

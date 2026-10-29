@@ -38,6 +38,10 @@ export function downloadInvoicePdf(invoiceId: string): Promise<Blob> {
   return api.get<Blob>(`/api/agency/accounting/invoices/${invoiceId}/pdf`, { responseType: 'blob' });
 }
 
+export function regenerateInvoicePdf(invoiceId: string): Promise<Blob> {
+  return api.post<Blob>(`/api/agency/accounting/invoices/${invoiceId}/pdf/regenerate`, null, { responseType: 'blob' });
+}
+
 export function getPayStubsByInvoice(invoiceId: string): Promise<PayStubDeleteWarningItem[]> {
   return api.get<PayStubDeleteWarningItem[]>(`/api/agency/accounting/invoices/${invoiceId}/paystubs`);
 }

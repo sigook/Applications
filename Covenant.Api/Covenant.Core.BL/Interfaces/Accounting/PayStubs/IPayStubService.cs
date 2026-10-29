@@ -12,6 +12,9 @@ public interface IPayStubService
     Task<Result> Generate(IEnumerable<Guid> agencyIds, IEnumerable<Guid> workerIds);
     Task<Result<PayStub>> CreateManualPayStub(CreatePayStubModel model);
     Task<PayStubDocument> GetPayStubPdf(Guid payStubId);
+    Task<PayStubDocument> RegeneratePayStubPdf(Guid payStubId);
+    Task<PaginatedList<WorkerPayStubListModel>> GetPayStubsForWorker(Guid workerId, GetWorkerPayStubsFilter filter);
+    Task<PayStubDocument> GetPayStubPdfForWorker(Guid workerId, Guid payStubId);
     Task<PayStubEmailResult> SendPayStubEmail(Guid payStubId);
     Task<PaginatedList<PayStubListModel>> GetPayStubs(GetPayStubsFilter filter);
     Task<ResultGenerateDocument<byte[]>> GetPayStubsFile(GetPayStubsFilter filter);

@@ -15,7 +15,7 @@ public class NotificationsController(INotificationService notificationService) :
 {
     public const string RouteName = "api/agency/notifications";
 
-    /// <summary>Gets all notifications for the current user in a single payload, grouped by type. Currently surfaces hired workers (non direct-hiring) within their first days so the recruiter can confirm attendance on the punch card.</summary>
+    /// <summary>Gets all notifications for the current user in a single payload, grouped by type. Currently surfaces the requests created by companies that are pending review by the agency.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(NotificationsModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get() =>

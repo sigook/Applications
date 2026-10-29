@@ -179,8 +179,8 @@ importers:
         specifier: ^1.10.0
         version: 1.15.0(debug@4.4.3(supports-color@7.2.0))
       buefy:
-        specifier: ^3.0.10
-        version: 3.0.10(vue@3.5.32(typescript@6.0.3))
+        specifier: ^3.1.0
+        version: 3.1.0(vue@3.5.32(typescript@6.0.3))
       cropperjs:
         specifier: ^1.6.2
         version: 1.6.2
@@ -970,8 +970,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  buefy@3.0.10:
-    resolution: {integrity: sha512-m3RooAH5SsY+d29djgCCrf03dTQJzOuFvhNN4874s02FFS0v79rgqJ2RcC/UzvhpiaWESzUuyH4cGZetEt30SA==}
+  buefy@3.1.0:
+    resolution: {integrity: sha512-c7W9jBI0m9kHREc+nL1Z9He67AbnMFIP9CmA2GbmvJcqhgu47W8uvakH8IZ7IYKUsc5yjisLKy3GpJ89cNgR7A==}
     peerDependencies:
       vue: ^3.0.0
 
@@ -2665,7 +2665,7 @@ snapshots:
       node-releases: 2.0.37
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
-  buefy@3.0.10(vue@3.5.32(typescript@6.0.3)):
+  buefy@3.1.0(vue@3.5.32(typescript@6.0.3)):
     dependencies:
       bulma: 1.0.4
       vue: 3.5.32(typescript@6.0.3)

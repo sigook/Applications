@@ -1,8 +1,8 @@
 <template>
   <div ref="triggerEl" class="notes-popover-trigger" @click="toggle">
-    <b-tag icon="note-text" rounded>
-      <label v-if="notesCount">{{ notesCount }}</label>
-    </b-tag>
+    <b-badge :value="notesCount || undefined" type="is-info" rounded>
+      <b-icon icon="note-text"></b-icon>
+    </b-badge>
   </div>
   <Teleport to="body">
     <div v-if="show" ref="popoverEl" class="notes-tooltip" :style="popoverStyle">

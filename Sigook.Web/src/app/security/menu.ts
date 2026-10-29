@@ -181,9 +181,9 @@ export default {
             label: "Jobs",
           },
           {
-            to: "/worker-history",
-            icon: "history",
-            label: "History",
+            to: "/worker-activity",
+            icon: "calendar-clock-outline",
+            label: "Activity",
           },
         ],
       },

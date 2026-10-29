@@ -474,6 +474,9 @@
   <data name="InvalidJobPosition">
     <value>Invalid job position</value>
   </data>
+  <data name="JobPositionAlreadyExists">
+    <value>A role with this name and rates already exists for this client</value>
+  </data>
   <data name="WorkShiftIncompleteHours" xml:space="preserve">
     <value>You must add at least {0} hours for this day {1}</value>
   </data>
