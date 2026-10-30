@@ -34,7 +34,7 @@
           <span class="legend-item"><span class="dot is-open"></span> Open</span>
           <span class="legend-item"><span class="dot is-filled"></span> Filled</span>
         </div>
-        <b-button type="is-primary" icon-left="plus" @click="openAssign()">Assign recruiter</b-button>
+        <b-button icon-left="plus" @click="openAssign()">Assign recruiter</b-button>
       </div>
     </div>
 

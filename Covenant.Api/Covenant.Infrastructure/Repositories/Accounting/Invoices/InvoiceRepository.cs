@@ -265,8 +265,7 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
             predicate = predicate.And(i => i.PaidAt >= filter.PaidAtFrom.Value && i.PaidAt <= filter.PaidAtTo.Value);
         predicate = predicate
             .AndSearch(filter.InvoiceNumber, i => i.InvoiceNumber)
-            .AndSearch(filter.CompanyFullName, i => i.CompanyFullName)
-            .AndSearch(filter.SalesRepresentative, i => i.SalesRepresentative);
+            .AndSearch(filter.CompanyFullName, i => i.CompanyFullName, i => i.SalesRepresentative);
         if (filter.Status.HasValue)
             predicate = predicate.And(i => i.Status == filter.Status.Value);
         return predicate;
@@ -284,9 +283,6 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                 break;
             case GetInvoicesFilterSortBy.CompanyFullName:
                 query = query.AddOrderBy(filter, i => i.CompanyFullName);
-                break;
-            case GetInvoicesFilterSortBy.SalesRepresentative:
-                query = query.AddOrderBy(filter, i => i.SalesRepresentative);
                 break;
             case GetInvoicesFilterSortBy.Status:
                 query = query.AddOrderBy(filter, i => i.Status);

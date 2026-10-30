@@ -50,7 +50,6 @@ export interface AgencyInvoiceFilter {
   paidAtFrom?: string | null;
   paidAtTo?: string | null;
   companyFullName?: string;
-  salesRepresentative?: string;
   status?: InvoiceStatus | null;
 }
 

@@ -23916,13 +23916,6 @@
             }
           },
           {
-            "name": "SalesRepresentative",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          },
-          {
             "name": "Status",
             "in": "query",
             "schema": {
@@ -24116,13 +24109,6 @@
             }
           },
           {
-            "name": "SalesRepresentative",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          },
-          {
             "name": "Status",
             "in": "query",
             "schema": {
@@ -24244,13 +24230,6 @@
           },
           {
             "name": "CompanyFullName",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/System.String"
-            }
-          },
-          {
-            "name": "SalesRepresentative",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.String"

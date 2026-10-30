@@ -195,6 +195,12 @@ html .collapse .collapse-trigger {
   user-select: none;
 }
 
+html .dropdown-item:has(> .icon) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .notices .toast {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 0 6px rgba(0, 0, 0, 0.04);
   opacity: 0.92;
