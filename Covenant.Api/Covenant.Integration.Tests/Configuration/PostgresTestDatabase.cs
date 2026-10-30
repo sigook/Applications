@@ -54,6 +54,12 @@ public static class PostgresTestDatabase
         using var context = new CovenantContext(options);
         context.Database.EnsureCreated();
         DatabaseScriptRunner.RunAsync(context).GetAwaiter().GetResult();
+        Execute(connectionString, """
+            INSERT INTO "Skills" ("Value", "Aliases") VALUES
+            ('Az Driver', ARRAY['az', 'az truck driver', 'az licence', 'az license']),
+            ('Counter Balance', ARRAY['counterbalance', 'cb', 'counter balance forklift', 'counterbalance forklift']),
+            ('Forklift', ARRAY['forklift operator', 'forklift driver', 'lift truck']);
+            """);
     }
 
     private static void Execute(string connectionString, string sql)
